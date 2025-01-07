@@ -1,0 +1,46 @@
+name: CI on Develop and Auto-Merge to Main (Go)
+
+on:
+  push:
+    branches:
+      - develop  # Trigger on push to 'develop' branch
+
+jobs:
+  build-and-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.23.2
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Run tests on develop
+        run: go test ./test/main
+
+      - name: Merge develop into main
+        if: success()  # Only run if tests passed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Configure Git user for commits
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Fetch the latest main branch
+          git fetch origin main
+
+          # Checkout main branch
+          git checkout main
+
+          # Merge changes from develop into main
+          git merge origin/develop --no-edit
+
+          # Push changes to main
+          git push origin main
