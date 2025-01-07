@@ -175,11 +175,11 @@ func loadHyperBricksConfiguration() *Config {
 		},
 
 		Directories: map[string]string{
-			"render":      "deployments/rendered",
-			"static":      "source/static",
-			"resources":   "source/resources",
-			"templates":   "source/templates",
-			"hyperbricks": "source/hyperbricks",
+			"render":      "modules/default/rendered",
+			"static":      "modules/default/static",
+			"resources":   "modules/default/resources",
+			"templates":   "modules/default/templates",
+			"hyperbricks": "modules/default/hyperbricks",
 		},
 
 		Development: DevelopmentConfig{
