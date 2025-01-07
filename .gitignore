@@ -1,0 +1,15 @@
+# Ignore specific directories in the root folder
+/modules/
+/bin/
+
+# Ignore Go sum file in the root
+/go.sum
+
+# Ignore VSCode workspace settings directory globally
+**/.vscode/
+
+# Ignore all node_modules directories recursively
+**/node_modules/
+
+# Ignore Mac OS DS_Store files everywhere
+**/.DS_Store
