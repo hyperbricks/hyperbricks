@@ -4,6 +4,7 @@ import (
 	"testing"
 )
 
+// adding a comment for testing
 // ComponentError represents an error specific to components.
 type ComponentError struct {
 	Message string
