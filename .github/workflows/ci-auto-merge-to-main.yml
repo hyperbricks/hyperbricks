@@ -1,5 +1,6 @@
 name: CI on Develop and Auto-Merge to Main (Go)
-
+permissions:
+  contents: write
 on:
   push:
     branches:
