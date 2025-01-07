@@ -1,5 +1,6 @@
 name: CI on Develop and Auto-Merge to Main (Go)
-
+permissions:
+  contents: write
 on:
   push:
     branches:
@@ -32,15 +33,16 @@ jobs:
           # Configure Git user for commits
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-      
+
           # Fetch the latest main branch
           git fetch origin main
-      
+
           # Checkout main branch
           git checkout main
-      
-          # Merge changes from develop into main, allowing unrelated histories
-          git merge origin/develop --no-edit --allow-unrelated-histories
-      
+
+          # Merge changes from develop into main,
+          # allowing unrelated histories and preferring develop changes on conflicts
+          git merge origin/develop --no-edit --allow-unrelated-histories -X theirs
+
           # Push changes to main
           git push origin main
