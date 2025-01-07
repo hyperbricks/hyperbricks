@@ -51,7 +51,7 @@ func ensureDirectoriesExist(directories map[string]string) {
 	}
 
 	if count > 0 {
-		log.Fatalf("Exiting, please type \"hyperbrics init\" to create required files and directories\n")
+		log.Fatalf("Exiting, please type \"hyperbricks init\" to create required files and directories\n")
 	}
 
 	logger := logging.GetLogger()
