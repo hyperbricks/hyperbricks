@@ -170,7 +170,7 @@ func extractEmbeddedFiles(module string) {
 func NewInitCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
-		Short: "Create hyperbricks.conf and required directories",
+		Short: "Create package.hyperbricks and required directories",
 		Run: func(cmd *cobra.Command, args []string) {
 
 			createModuleDirectories(module)
