@@ -40,12 +40,12 @@ func (p *LoremIpsumPlugin) Render(instance interface{}) (string, []error) {
 			Rejected: true,
 			Err:      fmt.Sprintf("Failed to decode plugin instance: %v", err),
 		})
-		return "<!--Failed to render lorem_ipsum_v2_plugin  -->", errors
+		return "<!--Failed to render lorem_ipsum_plugin  -->", errors
 	}
 
 	paragraphs := int(config.Fields.Paragraphs)
 
-	return fmt.Sprintf("<div class=\"lorem_ipsum_v2_plugin-content\">%s</div>\n", lorem.Paragraph(paragraphs, paragraphs)), errors
+	return fmt.Sprintf("<div class=\"lorem_ipsum_plugin-content\">%s</div>\n", lorem.Paragraph(paragraphs, paragraphs)), errors
 }
 
 // var Plugin shared.PluginRenderer = &MyPlugin{}

@@ -16,7 +16,6 @@ require (
 	github.com/otiai10/copy v1.14.0
 	github.com/spf13/cobra v1.8.1
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
-	github.com/yuin/goldmark v1.7.8
 	go.uber.org/zap v1.27.0
 )
 

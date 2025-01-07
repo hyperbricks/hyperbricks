@@ -74,22 +74,28 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 	sortedKeys := shared.SortedUniqueKeys(config.Values)
 	var treeRenderOutPut = make(map[string]interface{})
 	for _, key := range sortedKeys {
-		value := config.Values[key].(map[string]interface{})
+		//value := config.Values[key].(map[string]interface{})
+		if value, ok := config.Values[key].(map[string]interface{}); ok {
 
-		if componentType, ok := value["@type"].(string); ok {
-			// Now tree is a map[string]interface{}
-			result, render_errors := tr.RenderManager.Render(componentType, value) // als dit een platte value is ?
+			if componentType, ok := value["@type"].(string); ok {
+				// Now tree is a map[string]interface{}
+				result, render_errors := tr.RenderManager.Render(componentType, value) // als dit een platte value is ?
 
-			// if componentType == "<HTML>" {
-			// 	treeRenderOutPut[key] = template.HTML(result)
-			// } else {
-			// 	treeRenderOutPut[key] = result
-			// }
+				// if componentType == "<HTML>" {
+				// 	treeRenderOutPut[key] = template.HTML(result)
+				// } else {
+				// 	treeRenderOutPut[key] = result
+				// }
 
-			treeRenderOutPut[key] = template.HTML(result)
-			errors = append(errors, render_errors...)
+				treeRenderOutPut[key] = template.HTML(result)
+				errors = append(errors, render_errors...)
+			} else {
+				treeRenderOutPut[key] = value
+			}
 		} else {
-			treeRenderOutPut[key] = value
+			if value, ok := config.Values[key].(string); ok {
+				treeRenderOutPut[key] = value
+			}
 		}
 
 	}
