@@ -9,27 +9,26 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-// HyperMediaConfig represents configuration for a single page.
+// HyperMediaConfig represents configuration hypermedia.
 type HyperMediaConfig struct {
 	shared.Composite `mapstructure:",squash"`
-	ContentType      string                 `mapstructure:"@type" category:"renderer" description:"HyperBricks type: PAGE" example:"{!{page.hyperbricks}}"`
-	Title            string                 `mapstructure:"title" description:"The title of the page" example:"{!{page-title.hyperbricks}}"`
-	Route            string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the page" example:"{!{page-route.hyperbricks}}"`
-	Section          string                 `mapstructure:"section" description:"The section the page belongs to" example:"{!{page-section.hyperbricks}}"`
+	Title            string                 `mapstructure:"title" description:"The title of the hypermedia" example:"{!{hypermedia-title.hyperbricks}}"`
+	Route            string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the hypermedia" example:"{!{hypermedia-route.hyperbricks}}"`
+	Section          string                 `mapstructure:"section" description:"The section the hypermedia belongs to" example:"{!{hypermedia-section.hyperbricks}}"`
 	Items            map[string]interface{} `mapstructure:",remain"`
-	BodyTag          string                 `mapstructure:"bodytag" description:"Special body wrap with use of |. Please note that this will not work when a page.template is configured. In that case, you have to add the bodytag in the template." example:"{!{page-bodywrap.hyperbricks}}"`
-	Enclose          string                 `mapstructure:"enclose" description:"Wrapping property for the page" example:"{!{page-wrap.hyperbricks}}"`
-	Favicon          string                 `mapstructure:"favicon" description:"Path to the favicon for the page" example:"{!{page-favicon.hyperbricks}}"`
-	Template         map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the page" example:"{!{page-template.hyperbricks}}"`
+	BodyTag          string                 `mapstructure:"bodytag" description:"Special body wrap with use of |. Please note that this will not work when a hypermedia.template is configured. In that case, you have to add the bodytag in the template." example:"{!{hypermedia-bodywrap.hyperbricks}}"`
+	Enclose          string                 `mapstructure:"enclose" description:"Wrapping property for the hypermedia" example:"{!{hypermedia-wrap.hyperbricks}}"`
+	Favicon          string                 `mapstructure:"favicon" description:"Path to the favicon for the hypermedia" example:"{!{hypermedia-favicon.hyperbricks}}"`
+	Template         map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the hypermedia" example:"{!{hypermedia-template.hyperbricks}}"`
 	IsStatic         bool                   `mapstructure:"isstatic"`
-	Static           string                 `mapstructure:"static" description:"Static file path associated with the page" example:"{!{page-static.hyperbricks}}"`
-	Index            int                    `mapstructure:"index" description:"Index number is a sort order option for the page menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{page-index.hyperbricks}}"`
-	Meta             map[string]string      `mapstructure:"meta" description:"Metadata for the page, such as descriptions and keywords" example:"{!{page-meta.hyperbricks}}"`
-	Doctype          string                 `mapstructure:"doctype" description:"Doctype for the HTML document" example:"{!{page-doctype.hyperbricks}}"`
-	HtmlTag          string                 `mapstructure:"htmltag" description:"The opening HTML tag with attributes" example:"{!{page-htmltag.hyperbricks}}"`
-	Head             map[string]interface{} `mapstructure:"head" description:"Configurations for the head section of the page" example:"{!{page-head.hyperbricks}}"`
-	Css              []string               `mapstructure:"css" description:"CSS files associated with the page" example:"{!{page-css.hyperbricks}}"`
-	Js               []string               `mapstructure:"js" description:"JavaScript files associated with the page" example:"{!{page-js.hyperbricks}}"`
+	Static           string                 `mapstructure:"static" description:"Static file path associated with the hypermedia" example:"{!{hypermedia-static.hyperbricks}}"`
+	Index            int                    `mapstructure:"index" description:"Index number is a sort order option for the hypermedia menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{page-index.hyperbricks}}"`
+	Meta             map[string]string      `mapstructure:"meta" description:"Metadata for the hypermedia, such as descriptions and keywords" example:"{!{hypermedia-meta.hyperbricks}}"`
+	Doctype          string                 `mapstructure:"doctype" description:"Doctype for the HTML document" example:"{!{hypermedia-doctype.hyperbricks}}"`
+	HtmlTag          string                 `mapstructure:"htmltag" description:"The opening HTML tag with attributes" example:"{!{hypermedia-htmltag.hyperbricks}}"`
+	Head             map[string]interface{} `mapstructure:"head" description:"Configurations for the head section of the hypermedia" example:"{!{hypermedia-head.hyperbricks}}"`
+	Css              []string               `mapstructure:"css" description:"CSS files associated with the hypermedia" example:"{!{hypermedia-css.hyperbricks}}"`
+	Js               []string               `mapstructure:"js" description:"JavaScript files associated with the hypermedia" example:"{!{hypermedia-js.hyperbricks}}"`
 }
 
 // HyperMediaConfigGetName returns the HyperBricks type associated with the HyperMediaConfig.
