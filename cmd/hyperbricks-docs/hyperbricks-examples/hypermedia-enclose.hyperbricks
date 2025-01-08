@@ -1,0 +1,6 @@
+
+	hypermedia = <HYPERMEDIA>
+	hypermedia {
+		enclose = <div>|</div>
+	}
+	

@@ -1,0 +1,6 @@
+
+	hypermedia = <HYPERMEDIA>
+	hypermedia {
+		doctype = <!DOCTYPE html>
+	}
+	

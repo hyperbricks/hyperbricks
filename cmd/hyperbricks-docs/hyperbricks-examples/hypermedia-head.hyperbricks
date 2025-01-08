@@ -1,0 +1,10 @@
+
+	hypermedia = <HYPERMEDIA>
+	hypermedia {
+		head { 
+				meta { 
+					charset = UTF-8 
+				} 
+			}
+	}
+	

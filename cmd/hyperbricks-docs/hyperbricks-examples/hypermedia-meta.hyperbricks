@@ -1,0 +1,9 @@
+
+		hypermedia = <HYPERMEDIA>
+		hypermedia {
+			meta = { 
+				description = Test meta 
+				keywords = test,hypermedia
+			}
+		}
+		

@@ -57,7 +57,7 @@ func Test_HyperMediaConfigPropertiesAndRenderOutput(t *testing.T) {
 		expectError     bool
 	}{
 		{
-			name: "A basic minimal hypermedia setup",
+			name: "hypermedia",
 			propertyLine: `
 	title = just a title
 	route = index
@@ -127,7 +127,7 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "Route field",
+			name:         "hypermedia-route",
 			propertyLine: `route = home`,
 			scope:        "hypermedia",
 			config: `
@@ -148,7 +148,7 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "Section field",
+			name:         "hypermedia-section",
 			propertyLine: `section = main`,
 			scope:        "hypermedia",
 			config: `
@@ -169,7 +169,7 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "BodyTag field",
+			name:         "hypermedia-bodytag",
 			propertyLine: `bodytag = <body>|</body>`,
 			scope:        "hypermedia",
 			config: `
@@ -190,7 +190,7 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "Favicon field",
+			name:         "hypermedia-favicon",
 			propertyLine: `favicon = /favicon.ico`,
 			scope:        "hypermedia",
 			config: `
@@ -211,7 +211,7 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "Doctype field",
+			name:         "hypermedia-doctype",
 			propertyLine: `doctype = <!DOCTYPE html>`,
 			scope:        "hypermedia",
 			config: `
@@ -232,32 +232,32 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "Meta field",
-			propertyLine: `meta = { description = \"Test meta\", keywords = \"test,hypermedia\" }`,
-			scope:        "hypermedia",
+			name: "hypermedia-meta",
+			propertyLine: `meta = { 
+				description = Test meta 
+				keywords = test,hypermedia
+			}`,
+			scope: "hypermedia",
 			config: `
-	hypermedia = <HYPERMEDIA>
-	hypermedia {
-		%s
-	}
-	`,
+		hypermedia = <HYPERMEDIA>
+		hypermedia {
+			%s
+		}
+		`,
 			expectedExample: "{!{hypermedia-meta.hyperbricks}}",
 			expectedOutput: func() map[string]interface{} {
 				out := make(map[string]interface{})
 				for k, v := range defaultExpectedOutput {
 					out[k] = v
 				}
-				out["Meta"] = map[string]string{
-					"description": "Test meta",
-					"keywords":    "test,hypermedia",
-				}
+				out["Meta"] = map[string]string{"description": "Test meta", "keywords": "test,hypermedia"}
 				return out
 			}(),
 			expectError: false,
 		},
 		{
-			name:         "Css field",
-			propertyLine: `css = [ \"styles.css\", \"theme.css\" ]`,
+			name:         "hypermedia-css",
+			propertyLine: `css = [ styles.css, theme.css ]`,
 			scope:        "hypermedia",
 			config: `
 	hypermedia = <HYPERMEDIA>
@@ -277,8 +277,8 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "Js field",
-			propertyLine: `js = [ \"script.js\", \"app.js\" ]`,
+			name:         "hypermedia-js",
+			propertyLine: `js = [ script.js, app.js ]`,
 			scope:        "hypermedia",
 			config: `
 	hypermedia = <HYPERMEDIA>
@@ -298,7 +298,7 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "Enclose field",
+			name:         "hypermedia-enclose",
 			propertyLine: `enclose = <div>|</div>`,
 			scope:        "hypermedia",
 			config: `
@@ -319,9 +319,18 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "Template field",
-			propertyLine: `template = { key = value }`,
-			scope:        "hypermedia",
+			name: "hypermedia-template",
+			propertyLine: `template = { 
+			template = <<[
+				<div>{{myvalue}}</div>
+			]>> 
+			
+			values {
+				myvalue = some value
+			}
+			
+			}`,
+			scope: "hypermedia",
 			config: `
 	hypermedia = <HYPERMEDIA>
 	hypermedia {
@@ -329,18 +338,11 @@ hypermedia {
 	}
 	`,
 			expectedExample: "{!{hypermedia-template.hyperbricks}}",
-			expectedOutput: func() map[string]interface{} {
-				out := make(map[string]interface{})
-				for k, v := range defaultExpectedOutput {
-					out[k] = v
-				}
-				out["Template"] = map[string]interface{}{"key": "value"}
-				return out
-			}(),
-			expectError: false,
+			expectedOutput:  map[string]interface{}{"BodyTag": "", "Composite": shared.CompositeRendererConfig{Meta: shared.Meta{ConfigType: "<HYPERMEDIA>", ConfigCategory: "", Key: "", Path: "", File: ""}, Items: map[string]interface{}(nil)}, "Css": []string(nil), "Doctype": "", "Enclose": "", "Favicon": "", "Head": map[string]interface{}(nil), "HtmlTag": "", "Index": 0, "IsStatic": false, "Items": map[string]interface{}(nil), "Js": []string(nil), "Meta": map[string]string(nil), "Route": "", "Section": "", "Static": "", "Template": map[string]interface{}{"template": "\n\t\t\t\t<div>{{myvalue}}</div>\n\t\t\t]>> \n\t\t\t\n\t\t\tvalues {\n\t\t\t\tmyvalue = some value\n\t\t\t}\n\t\t\t\n\t\t\t}\n\t}\n\t\n"}, "Title": ""},
+			expectError:     false,
 		},
 		{
-			name:         "IsStatic field",
+			name:         "hypermedia-isstatic",
 			propertyLine: `isstatic = true`,
 			scope:        "hypermedia",
 			config: `
@@ -361,7 +363,7 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "Static field",
+			name:         "hypermedia-static",
 			propertyLine: `static = /static/path`,
 			scope:        "hypermedia",
 			config: `
@@ -382,7 +384,7 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "Index field",
+			name:         "hypermedia-index",
 			propertyLine: `index = 5`,
 			scope:        "hypermedia",
 			config: `
@@ -403,7 +405,7 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "HtmlTag field",
+			name:         "hypermedia-htmltag",
 			propertyLine: `htmltag = <html lang="en">`,
 			scope:        "hypermedia",
 			config: `
@@ -424,9 +426,13 @@ hypermedia {
 			expectError: false,
 		},
 		{
-			name:         "Head field",
-			propertyLine: `head = { meta = { charset = "UTF-8" } }`,
-			scope:        "hypermedia",
+			name: "hypermedia-head",
+			propertyLine: `head { 
+				meta { 
+					charset = UTF-8 
+				} 
+			}`,
+			scope: "hypermedia",
 			config: `
 	hypermedia = <HYPERMEDIA>
 	hypermedia {
