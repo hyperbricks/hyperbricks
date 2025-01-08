@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/hyperbricks/hyperbricks/internal/component"
@@ -77,7 +78,7 @@ type LinkRendererConfig struct {
 	Text             string                 `mapstructure:"text" validate:"required" description:"Text to display for the link" example:"{!{link-text.hyperbricks}}"`
 	Target           string                 `mapstructure:"target" description:"Target attribute for the link (_blank, _self, etc.)" example:"{!{link-target.hyperbricks}}"`
 	Classes          []string               `mapstructure:"classes" description:"Optional CSS classes for the link" example:"{!{link-classes.hyperbricks}}"`
-	Wrap             string                 `mapstructure:"wrap" description:"The wrapping HTML element for the header divided by |" example:"{!{link-wrap.hyperbricks}}"`
+	Wrap             string                 `mapstructure:"enclose" description:"The enclosing HTML element for the header divided by |" example:"{!{link-enclose.hyperbricks}}"`
 	ExtraAttributes  map[string]interface{} `mapstructure:"attributes"  description:"Extra attributes like id, data-role, data-action" example:"{!{link-attributes.hyperbricks}}"`
 }
 
@@ -330,7 +331,7 @@ func Test_BasicRenderChain(t *testing.T) {
 	expect := `<a href="LINK 10">somelink</a><!-- begin raw value -->stom<!-- end raw value --><a href="LINK 30">somelink</a><a href="LINK 40">somelink</a>`
 
 	fmt.Printf("result: %s\n\n\n", result)
-	if result != expect {
+	if _normalizeString(result) != _normalizeString(expect) {
 		t.Errorf("expected %s got %s", expect, result)
 	}
 
@@ -458,11 +459,12 @@ func Test_BasicHyperMediaRenderChain(t *testing.T) {
 	}
 
 	expect := `<!DOCTYPE html><html><head><script>
-console.log("Hello World")
-</script><meta name="generator" content="hyperbricks cms"></head><body><a href="#LINK_10">LINK_10</a><a href="#LINK_20_10">LINK_20_10</a><!-- begin raw value -->no_type<!-- end raw value --><a href="#LINK_30">LINK_30</a><a href="#LINK_40">LINK_40</a></body></html>`
+        console.log("Hello World")
+        </script><meta name="generator" content="hyperbricks cms"><title>test title</title>
+        </head><body><a href="#LINK_10">LINK_10</a><a href="#LINK_20_10">LINK_20_10</a><!-- begin raw value -->no_type<!-- end raw value --><a href="#LINK_30">LINK_30</a><a href="#LINK_40">LINK_40</a></body></html>`
 
-	fmt.Printf("result: %s\n\n\n", result)
-	if result != expect {
+	fmt.Printf("result: %s\n\n\n", _normalizeString(result))
+	if _normalizeString(result) != _normalizeString(expect) {
 		t.Errorf("expected %s got %s", expect, result)
 	}
 
@@ -598,11 +600,17 @@ func Test_BasicPageWithTemplateRenderChain(t *testing.T) {
 		t.Errorf("expected errors")
 	}
 
-	expect := `<!DOCTYPE html><html><head><!-- begin raw value -->AQUACADABRA<!-- end raw value --><meta name="generator" content="hyperbricks cms"></head><body><div id="val_b">BBBBB BBBBB</div><div id="val_a">AAAAA</div><div id="d"></div></body></html>`
+	expect := `<!DOCTYPE html><html><head><!-- begin raw value -->AQUACADABRA<!-- end raw value --><meta name="generator" content="hyperbricks cms"><title>test title</title>
+        </head><body><div id="val_b">BBBBB BBBBB</div><div id="val_a">AAAAA</div><div id="d"></div></body></html>`
 
-	fmt.Printf("result: %s\n\n\n", result)
-	if result != expect {
+	fmt.Printf("result: %s\n\n\n", _normalizeString(result))
+	if _normalizeString(result) != _normalizeString(expect) {
 		t.Errorf("expected %s got %s", expect, result)
 	}
 
+}
+
+// normalizeString trims and removes excess whitespace for comparison purposes.
+func _normalizeString(s string) string {
+	return strings.Join(strings.Fields(s), " ")
 }

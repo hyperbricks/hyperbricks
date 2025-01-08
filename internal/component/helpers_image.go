@@ -17,7 +17,6 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
-// SupportedExtensions contains the image formats supported for processing
 var SupportedExtensions = map[string]bool{
 	".jpg":  true,
 	".jpeg": true,
@@ -26,16 +25,13 @@ var SupportedExtensions = map[string]bool{
 	".svg":  true,
 }
 
-// ImageProcessor handles rendering and processing of images
 type ImageProcessor struct{}
 
-// RenderImageConfig represents the configuration for rendering a single or multiple images
 type RenderImageConfig struct {
 	Single   *SingleImageConfig    `mapstructure:"single"`
 	Multiple *MultipleImagesConfig `mapstructure:"multiple"`
 }
 
-// Render processes the image rendering based on the instance configuration
 func (ir *ImageProcessor) Render(instance interface{}) (string, error) {
 	config, ok := instance.(RenderImageConfig)
 	if !ok {
@@ -63,7 +59,6 @@ func (ir *ImageProcessor) Render(instance interface{}) (string, error) {
 	return builder.String(), nil
 }
 
-// ProcessSingleImage processes a single image and generates the HTML
 func (ir *ImageProcessor) ProcessSingleImage(config SingleImageConfig) (string, error) {
 	builder := &strings.Builder{}
 
@@ -82,7 +77,6 @@ func (ir *ImageProcessor) ProcessSingleImage(config SingleImageConfig) (string, 
 	return builder.String(), nil
 }
 
-// ProcessMultipleImages processes multiple images and adjusts their dimensions if width/height is specified
 func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (string, error) {
 	builder := &strings.Builder{}
 
@@ -96,7 +90,7 @@ func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (st
 	if config.IsStatic {
 		destDir = hbConfig.Directories["render"] + "/images/"
 	}
-
+	imgcount := 0
 	for _, file := range files {
 		ext := strings.ToLower(filepath.Ext(file.Name()))
 		if !SupportedExtensions[ext] || ext == ".svg" {
@@ -110,17 +104,26 @@ func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (st
 				Meta: shared.Meta{
 					Path: srcFilePath,
 				},
+				ExtraAttributes: config.ExtraAttributes,
+				Enclose:         config.Enclose,
 			},
-			Width:    config.Width,
-			Height:   config.Height,
-			IsStatic: config.IsStatic,
+			Width:   config.Width,
+			Height:  config.Height,
+			Loading: config.Loading,
+			Alt:     config.Alt,
+			Title:   config.Title,
+			Id:      config.Id + fmt.Sprintf("%d", imgcount),
+			Class:   config.Class,
+			Quality: config.Quality,
 		}
+
 		logging.GetLogger().Debugf("Creating new image file", "source", srcFilePath, "destination", destDir)
 		err := ir.processAndBuildImgTag(srcFilePath, destDir, fileConfig, builder)
 		if err != nil {
 			logging.GetLogger().Errorw("Error processing image", "file", srcFilePath, "error", err)
 			continue
 		}
+		imgcount++
 	}
 
 	return builder.String(), nil
@@ -143,6 +146,10 @@ func (ir *ImageProcessor) processAndBuildImgTag(srcPath, destDir string, config 
 }
 
 func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleImageConfig) (string, error) {
+	if config.IsStatic {
+		return srcPath, nil
+	}
+
 	srcFile, err := os.Open(srcPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to open source image: %v", err)
@@ -229,7 +236,6 @@ func addDimensions(fileName string, builder *strings.Builder) {
 	}
 }
 
-// addOptionalAttributes adds optional and extra attributes to the image tag.
 func addOptionalAttributes(config SingleImageConfig, builder *strings.Builder) {
 	if config.Alt != "" {
 		builder.WriteString(fmt.Sprintf(` alt="%s"`, config.Alt))
@@ -243,15 +249,28 @@ func addOptionalAttributes(config SingleImageConfig, builder *strings.Builder) {
 		builder.WriteString(fmt.Sprintf(` class="%s"`, config.Class))
 	}
 
+	if config.Id != "" {
+		builder.WriteString(fmt.Sprintf(` id="%s"`, config.Id))
+	}
+
 	if config.Loading == "lazy" {
 		builder.WriteString(` loading="lazy"`)
 	}
 
-	// Define allowed extra attributes for the image component
-	allowedAttributes := []string{"id", "data-role", "data-action", "aria-label", "role", "style"}
+	allowedAttributes := []string{
+		"loading",
+		"decoding",
+		"srcset",
+		"sizes",
+		"crossorigin",
+		"usemap",
+		"longdesc",
+		"referrerpolicy",
+		"ismap",
+	}
 
-	// Render extra attributes
 	extraAttributes := shared.RenderAllowedAttributes(config.ExtraAttributes, allowedAttributes)
+
 	builder.WriteString(extraAttributes)
 }
 

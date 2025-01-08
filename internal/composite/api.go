@@ -24,10 +24,10 @@ type HxApiConfig struct {
 	HxDataContainer
 	HxRequest        `mapstructure:",squash"`
 	HxResponse       `mapstructure:"response"`
-	HxResponseWriter http.ResponseWriter    `mapstructure:"hx_response"`
+	HxResponseWriter http.ResponseWriter    `mapstructure:"hx"`
 	Template         map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering output" example:"{!{hxendopint-template.hyperbricks}}"`
 	Items            map[string]interface{} `mapstructure:",remain"`
-	Enclose          string                 `mapstructure:"enclose" description:"Wrapping property for the hxapi" example:"{!{hxapi-wrap.hyperbricks}}"`
+	Enclose          string                 `mapstructure:"enclose" description:"Wrapping property for the hxapi" example:"{!{hxapi-enclose.hyperbricks}}"`
 	IsStatic         bool                   `mapstructure:"isstatic"`
 	Static           string                 `mapstructure:"static" description:"Static file path associated with the hxapi" example:"{!{hxapi-static.hyperbricks}}"`
 }
@@ -60,22 +60,22 @@ type HxRequest struct {
 	HxRoute          string `mapstructure:"hx_route" description:"identifier for the hxapi" example:"{!{hxapi-route.hyperbricks}}"`
 	HxMethod         string `mapstructure:"hx_method"`
 	HxBoosted        string `mapstructure:"hx_boosted" description:"indicates that the request is via an element using hx_boost"`
-	HxCurrentUrl     string `mapstructure:"hx_current-url" description:"the current url of the browser"`
-	HxHistoryRestore string `mapstructure:"hx_history-restore-request" description:"true if the request is for history restoration after a miss in the local history cache"`
+	HxCurrentUrl     string `mapstructure:"hx_current_url" description:"the current url of the browser"`
+	HxHistoryRestore string `mapstructure:"hx_history_restore_request" description:"true if the request is for history restoration after a miss in the local history cache"`
 	HxPrompt         string `mapstructure:"hx_prompt" description:"the user response to an hx_prompt"`
 	HxRequestFlag    string `mapstructure:"hx_request" description:"always true"`
 	HxTarget         string `mapstructure:"hx_target" description:"the id of the target element if it exists"`
-	HxTriggerName    string `mapstructure:"hx_trigger-name" description:"the name of the triggered element if it exists"`
+	HxTriggerName    string `mapstructure:"hx_trigger_name" description:"the name of the triggered element if it exists"`
 	HxTrigger        string `mapstructure:"hx_trigger" description:"the id of the triggered element if it exists"`
 }
 
 type HxResponse struct {
 	HxTemplateResult     string // just for output of the parsed template
-	HxLocation           string `mapstructure:"hx_location" header:"HX-Location"  description:"allows you to do a client-side redirect that does not do a full page reload"`
-	HxPushedUrl          string `mapstructure:"hx_push-url" header:"HX-Pushed-Url" description:"pushes a new url into the history stack"`
+	HxLocation           string `mapstructure:"hx_location" header:"HX-Location"  description:"allows you to do a client-side redirect that does not do a full page reload" `
+	HxPushedUrl          string `mapstructure:"hx_push_url" header:"HX-Pushed-Url" description:"pushes a new url into the history stack"`
 	HxRedirect           string `mapstructure:"hx_redirect" header:"HX-Redirect" description:"can be used to do a client-side redirect to a new location"`
 	HxRefresh            string `mapstructure:"hx_refresh" header:"HX-Refresh" description:"if set to 'true' the client-side will do a full refresh of the page"`
-	HxReplaceUrl         string `mapstructure:"hx_replace-url" header:"HX-Replace-Url" description:"replaces the current url in the location bar"`
+	HxReplaceUrl         string `mapstructure:"hx_replace_url" header:"HX-Replace-Url" description:"replaces the current url in the location bar"`
 	HxReswap             string `mapstructure:"hx_reswap" header:"HX-Reswap" description:"allows you to specify how the response will be swapped"`
 	HxRetarget           string `mapstructure:"hx_retarget" header:"HX-Retarget" description:"a css selector that updates the target of the content update"`
 	HxReselect           string `mapstructure:"hx_reselect" header:"HX-Reselect" description:"a css selector that allows you to choose which part of the response is used to be swapped in"`

@@ -1,0 +1,30 @@
+==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 320
+image.height = 320
+image.loading = lazy
+==== explainer ====
+Lazy loading strategy (e.g., 'lazy', 'eager')
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 320,
+    "Height": 320,
+    "Alt": "",
+    "Title": "",
+    "Class": "",
+    "Id": "",
+    "Quality": 0,
+    "Loading": "lazy",
+    "IsStatic": false
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w320_h320.jpg" width="320" height="320" loading="lazy" /> 

@@ -1,0 +1,62 @@
+==== hyperbricks config {!{fragment}} ====
+
+$test = hello world
+
+myComponent = <TEMPLATE>
+myComponent {
+    template = <<[
+        <h1>{{header}}</h1>
+        <p>{{text}}</p>
+    ]>>
+    istemplate = true
+    values {
+        header = {{VAR:test}}!
+        text = some text
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    enclose = <div class="sometext">|</div>
+}
+==== explainer ====
+Key-value pairs for template rendering
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "File": "",
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0
+  }
+==== expected output ====
+<div class="sometext">
+<h1>hello world!</h1>
+<p>some text</p>
+    </div> 
+==== more details ====

@@ -1,0 +1,41 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_trigger_after_settle = myAfterSettleEvent
+    }
+}
+==== explainer ====
+allows you to trigger client-side events after the settle step
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "myAfterSettleEvent",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "File": "",
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0
+    }
+==== expected output ====

@@ -1,0 +1,22 @@
+==== hyperbricks config {!{text}} ====
+text = <TEXT>
+text {
+	value = SOME VALUE
+    enclose = <span>|</span>
+}
+==== explainer ====
+The enclosing HTML element for the header divided by |
+==== expected json ====
+==== expected json ====
+{
+    "ConfigType": "<TEXT>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "ExtraAttributes": null,
+    "Enclose": "<span>|</span>",
+    "Value": "SOME VALUE"
+  }
+==== expected output ====
+<span>SOME VALUE</span> 

@@ -9,27 +9,24 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-// HyperMediaConfig represents configuration for a single page.
+// HyperMediaConfig represents configuration hypermedia.
 type HyperMediaConfig struct {
-	shared.Composite `mapstructure:",squash"`
-	ContentType      string                 `mapstructure:"@type" category:"renderer" description:"HyperBricks type: PAGE" example:"{!{page.hyperbricks}}"`
-	Title            string                 `mapstructure:"title" description:"The title of the page" example:"{!{page-title.hyperbricks}}"`
-	Route            string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the page" example:"{!{page-route.hyperbricks}}"`
-	Section          string                 `mapstructure:"section" description:"The section the page belongs to" example:"{!{page-section.hyperbricks}}"`
-	Items            map[string]interface{} `mapstructure:",remain"`
-	BodyTag          string                 `mapstructure:"bodytag" description:"Special body wrap with use of |. Please note that this will not work when a page.template is configured. In that case, you have to add the bodytag in the template." example:"{!{page-bodywrap.hyperbricks}}"`
-	Enclose          string                 `mapstructure:"enclose" description:"Wrapping property for the page" example:"{!{page-wrap.hyperbricks}}"`
-	Favicon          string                 `mapstructure:"favicon" description:"Path to the favicon for the page" example:"{!{page-favicon.hyperbricks}}"`
-	Template         map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the page" example:"{!{page-template.hyperbricks}}"`
-	IsStatic         bool                   `mapstructure:"isstatic"`
-	Static           string                 `mapstructure:"static" description:"Static file path associated with the page" example:"{!{page-static.hyperbricks}}"`
-	Index            int                    `mapstructure:"index" description:"Index number is a sort order option for the page menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{page-index.hyperbricks}}"`
-	Meta             map[string]string      `mapstructure:"meta" description:"Metadata for the page, such as descriptions and keywords" example:"{!{page-meta.hyperbricks}}"`
-	Doctype          string                 `mapstructure:"doctype" description:"Doctype for the HTML document" example:"{!{page-doctype.hyperbricks}}"`
-	HtmlTag          string                 `mapstructure:"htmltag" description:"The opening HTML tag with attributes" example:"{!{page-htmltag.hyperbricks}}"`
-	Head             map[string]interface{} `mapstructure:"head" description:"Configurations for the head section of the page" example:"{!{page-head.hyperbricks}}"`
-	Css              []string               `mapstructure:"css" description:"CSS files associated with the page" example:"{!{page-css.hyperbricks}}"`
-	Js               []string               `mapstructure:"js" description:"JavaScript files associated with the page" example:"{!{page-js.hyperbricks}}"`
+	shared.Composite   `mapstructure:",squash"`
+	MetaDocDescription string                 `mapstructure:"@doc" description:"HYPERMEDIA description" example:"{!{hypermedia-@doc.hyperbricks}}"`
+	Title              string                 `mapstructure:"title" description:"The title of the hypermedia site" example:"{!{hypermedia-title.hyperbricks}}"`
+	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the hypermedia" example:"{!{hypermedia-route.hyperbricks}}"`
+	Section            string                 `mapstructure:"section" description:"The section the hypermedia belongs to. This can be used with the component <MENU> for example." example:"{!{hypermedia-section.hyperbricks}}"`
+	Items              map[string]interface{} `mapstructure:",remain"`
+	BodyTag            string                 `mapstructure:"bodytag" description:"Special body enclose with use of |. Please note that this will not work when a <HYPERMEDIA>.template is configured. In that case, you have to add the bodytag in the template." example:"{!{hypermedia-bodytag.hyperbricks}}"`
+	Enclose            string                 `mapstructure:"enclose" description:"Enclosure of the property for the hypermedia" example:"{!{hypermedia-enclose.hyperbricks}}"`
+	Favicon            string                 `mapstructure:"favicon" description:"Path to the favicon for the hypermedia" example:"{!{hypermedia-favicon.hyperbricks}}"`
+	Template           map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions." example:"{!{hypermedia-template.hyperbricks}}"`
+	IsStatic           bool                   `mapstructure:"isstatic" exclude:"true"`
+	Static             string                 `mapstructure:"static" description:"Static file path associated with the hypermedia, for rendering out the hypermedia to static files." example:"{!{hypermedia-static.hyperbricks}}"`
+	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options" example:"{!{hypermedia-index.hyperbricks}}"`
+	Doctype            string                 `mapstructure:"doctype" description:"Alternative Doctype for the HTML document" example:"{!{hypermedia-doctype.hyperbricks}}"`
+	HtmlTag            string                 `mapstructure:"htmltag" description:"The opening HTML tag with attributes" example:"{!{hypermedia-htmltag.hyperbricks}}"`
+	Head               map[string]interface{} `mapstructure:"head" description:"Configurations for the head section of the hypermedia" example:"{!{hypermedia-head.hyperbricks}}"`
 }
 
 // HyperMediaConfigGetName returns the HyperBricks type associated with the HyperMediaConfig.
@@ -38,10 +35,15 @@ func HyperMediaConfigGetName() string {
 }
 
 // Validate ensures that the page has valid data.
-func (page *HyperMediaConfig) Validate() []error {
-	if page.Doctype == "" {
-		page.Doctype = "<!DOCTYPE html>"
+func (hm *HyperMediaConfig) Validate() []error {
+	if hm.Doctype == "" {
+		hm.Doctype = "<!DOCTYPE html>"
 	}
+
+	if hm.HtmlTag == "" {
+		hm.HtmlTag = "<html>"
+	}
+
 	var warnings []error
 	return warnings
 }
@@ -77,7 +79,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		errors = append(errors, shared.ComponentError{
 			Key:      config.Key,
 			Path:     config.Path,
-			Err:      fmt.Errorf("invalid type for ConcurentRenderConfig").Error(),
+			Err:      fmt.Errorf("invalid type for HYPERMEDIA").Error(),
 			Rejected: true,
 		})
 	}
@@ -91,16 +93,37 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	var treebuilder strings.Builder
 
 	if config.BodyTag == "" {
-		// emty bodywrap fallback
+		// emty bodyenclose fallback
 		config.BodyTag = "<body>|</body>"
 	}
 
+	// Not sure how to handle this situation....
+	// if no <HEAD> is defined create it
+	//if config.Head == nil {
+	//	config.Head = make(map[string]interface{})
+	//}
+
 	// If a main header config is present, render add it to the string builder
-	if config.Head != nil {
+	if config.Head != nil || config.Title != "" || config.Favicon != "" {
+
+		if config.Head == nil {
+			config.Head = make(map[string]interface{})
+		}
+
+		//head := shared.StructToMap(config.Head)
 		config.Head["@type"] = HeadConfigGetName()
-		config.Head["file"] = config.File
 		config.Head["path"] = config.File + ":" + config.Path
-		result, errr := pr.RenderManager.Render("HEAD", config.Head)
+		config.Head["file"] = config.File
+
+		if config.Title != "" {
+			config.Head["title"] = config.Title
+		}
+
+		if config.Favicon != "" {
+			config.Head["favicon"] = config.Favicon
+		}
+
+		result, errr := pr.RenderManager.Render(HeadConfigGetName(), config.Head)
 		errors = append(errors, errr...)
 		headbuilder.WriteString(result)
 	}
@@ -113,7 +136,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template)
 		errors = append(errors, errr...)
 		templatebuilder.WriteString(result)
-		outputHtml = shared.EncloseContent(config.BodyTag, templatebuilder.String())
+		outputHtml = shared.EncloseContent(config.Enclose, templatebuilder.String())
 	} else {
 
 		// TREE
@@ -125,17 +148,13 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items)
 		errors = append(errors, errr...)
 		treebuilder.WriteString(result)
-		outputHtml = shared.EncloseContent(config.BodyTag, treebuilder.String())
+		outputHtml = shared.EncloseContent(config.Enclose, treebuilder.String())
 	}
 
-	// TO-DO: INSERT HEAD
-
-	// PAGE COMPOSITION.....
-
 	headHtml := headbuilder.String()
+
 	// Wrap the content with the HTML structure
-	finalHTML := fmt.Sprintf("%s<html>%s%s</html>", config.Doctype, headHtml, outputHtml)
-	//shared.EncloseContent(fmt.Sprintf("%s<html>%s|</html>", config.Doctype, headHtml), outputHtml)
+	finalHTML := fmt.Sprintf("%s%s%s%s</html>", config.Doctype, config.HtmlTag, headHtml, shared.EncloseContent(config.BodyTag, outputHtml))
 
 	return finalHTML, errors
 }
