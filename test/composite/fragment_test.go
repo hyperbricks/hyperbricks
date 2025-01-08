@@ -363,9 +363,11 @@ fragment {
 		},
 		// Example test of HxResponse fields: hx_refresh = true
 		{
-			name:         "fragment-hxrefresh",
-			propertyLine: `hx_refresh = true`,
-			scope:        "fragment",
+			name: "fragment-hxrefresh",
+			propertyLine: `response {
+				hx_refresh = true
+			}`,
+			scope: "fragment",
 			config: `
 fragment = <FRAGMENT>
 fragment {
@@ -374,18 +376,6 @@ fragment {
 `,
 			expectedOutput: func() map[string]interface{} {
 				out := cloneMap(defaultExpectedOutput)
-				out["Composite"] = shared.CompositeRendererConfig{
-					Meta: shared.Meta{
-						ConfigType:     "<FRAGMENT>",
-						ConfigCategory: "",
-						Key:            "",
-						Path:           "",
-						File:           "",
-					},
-					Items: map[string]interface{}{
-						"hx_refresh": "true",
-					},
-				}
 				out["HxResponse"] = composite.HxResponse{
 					HxTemplateResult:     "",
 					HxLocation:           "",

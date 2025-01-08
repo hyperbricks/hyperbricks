@@ -1,8 +1,6 @@
 package composite
 
 import (
-	"fmt"
-	"os"
 	"reflect"
 	"testing"
 
@@ -473,7 +471,7 @@ hypermedia {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Combine configuration string with property line for the test case.
-			configStr := joinTestCode(tt.config, tt.propertyLine)
+			configStr := shared.JoinTestCode(tt.config, tt.propertyLine)
 
 			// Parse the combined configuration.
 			config := parser.ParseHyperScript(configStr[0])
@@ -505,7 +503,7 @@ hypermedia {
 			}
 
 			// Convert the instantiated object to a map for validation.
-			instanceMap := structToMap(response.Instance)
+			instanceMap := shared.StructToMap(response.Instance)
 
 			// Validate the generated instance against the expected output.
 			if !reflect.DeepEqual(tt.expectedOutput, instanceMap) {
@@ -514,8 +512,8 @@ hypermedia {
 				t.Logf("Test passed for %s", tt.name)
 
 				// Write the configuration to a file for documentation purposes.
-				outputFile := outputpath + tt.name + ".hyperbricks"
-				err := writeToFile(outputFile, configStr[0])
+				outputFile := shared.Outputpath + tt.name + ".hyperbricks"
+				err := shared.WriteToFile(outputFile, configStr[0])
 				if err != nil {
 					t.Errorf("Failed to write to file %s: %v", outputFile, err)
 				} else {
@@ -524,41 +522,4 @@ hypermedia {
 			}
 		})
 	}
-}
-
-var (
-	write      bool
-	outputpath string = "../../cmd/hyperbricks-docs/hyperbricks-examples/"
-)
-
-// Helper function to combine the main configuration string with a property-specific test case.
-func joinTestCode(hyperbricks string, propertyTest string) []string {
-	return []string{fmt.Sprintf(hyperbricks, propertyTest), propertyTest}
-}
-
-// Helper function to convert a struct to a map for easy validation in test cases.
-func structToMap(data interface{}) map[string]interface{} {
-	result := make(map[string]interface{})
-	val := reflect.ValueOf(data)
-	typ := reflect.TypeOf(data)
-
-	for i := 0; i < val.NumField(); i++ {
-		field := typ.Field(i)
-		value := val.Field(i)
-		result[field.Name] = value.Interface()
-	}
-
-	return result
-}
-
-// Helper function to write test outputs to a file for documentation purposes.
-func writeToFile(filename, content string) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	_, err = file.WriteString(content)
-	return err
 }
