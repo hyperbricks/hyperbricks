@@ -15,7 +15,6 @@ type FragmentConfig struct {
 	shared.Composite `mapstructure:",squash"`
 	HxResponse       `mapstructure:"response"`
 	HxResponseWriter http.ResponseWriter    `mapstructure:"hx_response"`
-	ContentType      string                 `mapstructure:"@type" category:"renderer" description:"HyperBricks type: PAGE" example:"{!{endpoint.hyperbricks}}"`
 	Title            string                 `mapstructure:"title" description:"The title of the endpoint" example:"{!{endpoint-title.hyperbricks}}"`
 	Route            string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the endpoint" example:"{!{endpoint-route.hyperbricks}}"`
 	Section          string                 `mapstructure:"section" description:"The section the endpoint belongs to" example:"{!{endpoint-section.hyperbricks}}"`
