@@ -1,1 +1,1 @@
- HyperBricks is a powerful CMS that can be configured declarative configurations files, enabling the rapid development of htmx hypermedia-based applications.
+ HHyperBricks is a powerful CMS that uses nested declarative configuration files, enabling the rapid development of htmx hypermedia-based applications.
