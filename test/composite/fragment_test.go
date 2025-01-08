@@ -262,7 +262,7 @@ fragment {
 			expectedOutput: func() map[string]interface{} {
 				out := cloneMap(defaultExpectedOutput)
 				out["Template"] = map[string]interface{}{
-					"template": "\n\t\t\t\t\t<div>Fragment: {{value}}</div>\n\t\t\t]>> \n\t\t\t\tvalues {\n\t\t\t\t\tvalue = some fragment value\n\t\t\t\t}\n\t\t\t",
+					"template": "\n\t\t\t\t\t<div>Fragment: {{value}}</div>\n\t\t\t\t]>> \n\t\t\t\tvalues {\n\t\t\t\t\tvalue = some fragment value\n\t\t\t\t}\n\t\t\t}\n}\n\n",
 				}
 				return out
 			}(),
@@ -374,7 +374,32 @@ fragment {
 `,
 			expectedOutput: func() map[string]interface{} {
 				out := cloneMap(defaultExpectedOutput)
-				out["HxRefresh"] = "true"
+				out["Composite"] = shared.CompositeRendererConfig{
+					Meta: shared.Meta{
+						ConfigType:     "<FRAGMENT>",
+						ConfigCategory: "",
+						Key:            "",
+						Path:           "",
+						File:           "",
+					},
+					Items: map[string]interface{}{
+						"hx_refresh": "true",
+					},
+				}
+				out["HxResponse"] = composite.HxResponse{
+					HxTemplateResult:     "",
+					HxLocation:           "",
+					HxPushedUrl:          "",
+					HxRedirect:           "",
+					HxRefresh:            "true",
+					HxReplaceUrl:         "",
+					HxReswap:             "",
+					HxRetarget:           "",
+					HxReselect:           "",
+					HxTrigger:            "",
+					HxTriggerafterSettle: "",
+					HxTriggerafterSwap:   "",
+				}
 				return out
 			}(),
 			expectError: false,
