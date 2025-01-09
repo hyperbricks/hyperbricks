@@ -1,0 +1,5 @@
+
+head = <HEAD>
+head {
+css = [ styles.css, more.css ]
+}

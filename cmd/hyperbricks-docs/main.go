@@ -10,8 +10,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hyperbricks/hyperbricks/internal/component"
 	"github.com/hyperbricks/hyperbricks/internal/composite"
+	"github.com/hyperbricks/hyperbricks/internal/shared"
 )
 
 // These variables will be set at build time
@@ -25,21 +25,36 @@ func main() {
 	// Create instances of the configurations with ContentType set
 	types := []any{
 		// composite
-		composite.TreeConfig{},
-		composite.TemplateConfig{},
-		composite.HeadConfig{},
-		composite.HyperMediaConfig{},
+		composite.FragmentConfig{
+			Composite: shared.Composite{
+				Meta: shared.Meta{
+					ConfigType:     "<FRAGMENT>",
+					ConfigCategory: "render",
+				},
+			},
+		},
+		composite.HyperMediaConfig{
+			Composite: shared.Composite{
+				Meta: shared.Meta{
+					ConfigType:     "<HYPERMEDIA>",
+					ConfigCategory: "render",
+				},
+			},
+		},
+		// composite.TreeConfig{},
+		// composite.TemplateConfig{},
+		// composite.HeadConfig{},
 
-		// components
-		component.APIConfig{},
-		component.HTMLConfig{},
-		component.SingleImageConfig{},
-		component.MultipleImagesConfig{},
-		component.JavaScriptConfig{},
-		component.LocalJSONConfig{},
-		component.MenuConfig{},
-		component.StyleConfig{},
-		component.TextConfig{},
+		// // components
+		// component.APIConfig{},
+		// component.HTMLConfig{},
+		// component.SingleImageConfig{},
+		// component.MultipleImagesConfig{},
+		// component.JavaScriptConfig{},
+		// component.LocalJSONConfig{},
+		// component.MenuConfig{},
+		// component.StyleConfig{},
+		// component.TextConfig{},
 	}
 
 	// Map to store documentation grouped by category
@@ -57,16 +72,16 @@ func main() {
 
 		// Get the ContentType field's value
 		typeValue := ""
-		_, found := t.FieldByName("ContentType")
+		_, found := t.FieldByName("ConfigType")
 		if found {
-			value := v.FieldByName("ContentType")
+			value := v.FieldByName("ConfigType")
 			if value.IsValid() && value.Kind() == reflect.String {
 				typeValue = value.String()
 			}
 		}
 
 		if typeValue == "" {
-			fmt.Printf("Error: %s does not have a valid ContentType value\n", t.Name())
+			fmt.Printf("Error: %s does not have a valid ConfigType value\n", t.Name())
 			continue
 		}
 
@@ -95,7 +110,7 @@ func main() {
 	}
 
 	// Parse the HTML template
-	tmpl, err := template.ParseFiles("./cmd/hyperbricks-docs/better-template.html")
+	tmpl, err := template.ParseFiles("./cmd/hyperbricks-docs/template.html")
 	if err != nil {
 		log.Fatalf("Error parsing template: %v", err)
 	}
@@ -141,7 +156,7 @@ type FieldDoc struct {
 	Name         string `json:"name"`
 	Type         string `json:"type"`
 	Mapstructure string `json:"mapstructure"`
-	Comment      string `json:"comment"`
+	Description  string `json:"description"`
 	Example      string `json:"example"`
 }
 
@@ -168,7 +183,7 @@ func GenerateDoc(input any) (string, []FieldDoc, error) {
 		field := t.Field(i)
 
 		// Check for category in the ContentType field
-		if field.Name == "ContentType" {
+		if field.Name == "ConfigType" {
 			if cat := field.Tag.Get("category"); cat != "" {
 				category = cat
 			}
@@ -182,7 +197,7 @@ func GenerateDoc(input any) (string, []FieldDoc, error) {
 				Name:         field.Name,
 				Type:         field.Type.String(),
 				Mapstructure: field.Tag.Get("mapstructure"),
-				Comment:      doc,
+				Description:  doc,
 				Example:      checkAndReadFile(example, path),
 			}
 			docs = append(docs, fieldDoc)

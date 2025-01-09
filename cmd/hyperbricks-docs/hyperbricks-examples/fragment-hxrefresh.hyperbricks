@@ -1,0 +1,7 @@
+
+fragment = <FRAGMENT>
+fragment {
+response {
+				hx_refresh = true
+			}
+}

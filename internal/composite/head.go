@@ -19,7 +19,7 @@ type HeadConfig struct {
 
 // HeadConfigGetName returns the HyperBricks type associated with the HeadConfig.
 func HeadConfigGetName() string {
-	return "HEAD"
+	return "<HEAD>"
 }
 
 // Validate ensures that the RENDER has valid data.

@@ -29,8 +29,8 @@ var _ shared.CompositeRenderer = (*TreeRenderer)(nil)
 
 // ConcurentRenderConfig represents the configuration for a RENDER (Container of Assets) type.
 type TreeConfig struct {
-	shared.CompositeRendererConfig `mapstructure:",squash"`
-	Enclose                        string `mapstructure:"enclose" description:"Wrapping property for the tree" example:"{!{tree-wrap.hyperbricks}}"`
+	shared.Composite `mapstructure:",squash"`
+	Enclose          string `mapstructure:"enclose" description:"Wrapping property for the tree" example:"{!{tree-wrap.hyperbricks}}"`
 }
 
 func (r *TreeRenderer) Types() []string {

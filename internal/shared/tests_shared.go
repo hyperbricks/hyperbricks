@@ -42,3 +42,12 @@ func WriteToFile(filename, content string) error {
 	_, err = file.WriteString(content)
 	return err
 }
+
+// cloneMap is a helper to do a shallow clone of map[string]interface{}
+func CloneMap(source map[string]interface{}) map[string]interface{} {
+	dest := make(map[string]interface{}, len(source))
+	for k, v := range source {
+		dest[k] = v
+	}
+	return dest
+}

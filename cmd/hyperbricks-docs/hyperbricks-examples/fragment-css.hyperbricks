@@ -1,0 +1,5 @@
+
+fragment = <FRAGMENT>
+fragment {
+css = [ fragstyles.css, morefrag.css ]
+}

@@ -1,0 +1,5 @@
+
+fragment = <FRAGMENT>
+fragment {
+static = /some/static/path
+}

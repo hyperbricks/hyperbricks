@@ -1,0 +1,5 @@
+
+fragment = <FRAGMENT>
+fragment {
+htmltag = <html lang="fr">
+}

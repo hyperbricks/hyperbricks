@@ -1,0 +1,9 @@
+
+fragment = <FRAGMENT>
+fragment {
+head {
+				meta {
+					charset = UTF-8
+				}
+			}
+}

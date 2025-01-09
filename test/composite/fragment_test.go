@@ -80,7 +80,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Title"] = "A Fragment Title"
 				return out
 			}(),
@@ -97,7 +97,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Route"] = "fragment-route"
 				return out
 			}(),
@@ -114,7 +114,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Section"] = "some-section"
 				return out
 			}(),
@@ -131,7 +131,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["BodyTag"] = "<body>|</body>"
 				return out
 			}(),
@@ -148,7 +148,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Enclose"] = "<div>|</div>"
 				return out
 			}(),
@@ -165,7 +165,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Favicon"] = "/myfragment.ico"
 				return out
 			}(),
@@ -182,7 +182,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Doctype"] = "<!DOCTYPE html>"
 				return out
 			}(),
@@ -202,7 +202,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Meta"] = map[string]string{"description": "Fragment description", "keywords": "fragment,test"}
 				return out
 			}(),
@@ -219,7 +219,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Css"] = []string{"fragstyles.css", "morefrag.css"}
 				return out
 			}(),
@@ -236,7 +236,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Js"] = []string{"fragscript.js", "anotherfrag.js"}
 				return out
 			}(),
@@ -260,7 +260,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Template"] = map[string]interface{}{
 					"template": "\n\t\t\t\t\t<div>Fragment: {{value}}</div>\n\t\t\t\t]>> \n\t\t\t\tvalues {\n\t\t\t\t\tvalue = some fragment value\n\t\t\t\t}\n\t\t\t}\n}\n\n",
 				}
@@ -279,7 +279,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["IsStatic"] = true
 				return out
 			}(),
@@ -296,7 +296,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Static"] = "/some/static/path"
 				return out
 			}(),
@@ -313,7 +313,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Index"] = 99
 				return out
 			}(),
@@ -330,7 +330,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["HtmlTag"] = `<html lang="fr">`
 				return out
 			}(),
@@ -351,7 +351,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["Head"] = map[string]interface{}{
 					"meta": map[string]interface{}{
 						"charset": "UTF-8",
@@ -375,7 +375,7 @@ fragment {
 }
 `,
 			expectedOutput: func() map[string]interface{} {
-				out := cloneMap(defaultExpectedOutput)
+				out := shared.CloneMap(defaultExpectedOutput)
 				out["HxResponse"] = composite.HxResponse{
 					HxTemplateResult:     "",
 					HxLocation:           "",
@@ -446,7 +446,7 @@ fragment {
 
 			// Convert the instantiated object to a map for validation.
 			instanceMap := shared.StructToMap(response.Instance)
-
+			shared.Write = true
 			// Validate the generated instance against the expected output.
 			if !reflect.DeepEqual(tt.expectedOutput, instanceMap) {
 				t.Errorf("Test failed for %s!\nExpected:\n%#v\nGot:\n%#v", tt.name, tt.expectedOutput, instanceMap)
@@ -466,14 +466,4 @@ fragment {
 			}
 		})
 	}
-}
-
-// cloneMap is a helper to do a deep clone of map[string]interface{} that points
-// to simple or nil typed values (works fine for this test).
-func cloneMap(source map[string]interface{}) map[string]interface{} {
-	dest := make(map[string]interface{}, len(source))
-	for k, v := range source {
-		dest[k] = v
-	}
-	return dest
 }

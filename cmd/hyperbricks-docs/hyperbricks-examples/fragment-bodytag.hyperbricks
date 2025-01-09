@@ -1,0 +1,5 @@
+
+fragment = <FRAGMENT>
+fragment {
+bodytag = <body>|</body>
+}

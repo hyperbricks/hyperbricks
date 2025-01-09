@@ -1,0 +1,11 @@
+
+template = <TEMPLATE>
+template {
+
+			
+			template = {{TEMPLATE:test/composite/template.html}}
+			values = {
+                msg = A message
+                count = 10
+			}
+}

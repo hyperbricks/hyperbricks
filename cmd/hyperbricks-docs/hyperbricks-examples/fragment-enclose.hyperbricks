@@ -1,0 +1,5 @@
+
+fragment = <FRAGMENT>
+fragment {
+enclose = <div>|</div>
+}

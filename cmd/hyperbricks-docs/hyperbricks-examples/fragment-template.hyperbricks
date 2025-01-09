@@ -1,0 +1,12 @@
+
+fragment = <FRAGMENT>
+fragment {
+template = {
+				template = <<[
+					<div>Fragment: {{value}}</div>
+				]>> 
+				values {
+					value = some fragment value
+				}
+			}
+}
