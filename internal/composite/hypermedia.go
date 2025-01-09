@@ -112,7 +112,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template)
 		errors = append(errors, errr...)
 		templatebuilder.WriteString(result)
-		outputHtml = shared.EncloseContent(config.BodyTag, templatebuilder.String())
+		outputHtml = shared.EncloseContent(config.Enclose, templatebuilder.String())
 	} else {
 
 		// TREE
@@ -124,7 +124,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items)
 		errors = append(errors, errr...)
 		treebuilder.WriteString(result)
-		outputHtml = shared.EncloseContent(config.BodyTag, treebuilder.String())
+		outputHtml = shared.EncloseContent(config.Enclose, treebuilder.String())
 	}
 
 	// TO-DO: INSERT HEAD
