@@ -1,9 +1,12 @@
 package composite
 
 import (
+	"fmt"
+	"log"
 	"reflect"
 	"testing"
 
+	"github.com/hyperbricks/hyperbricks/internal/component"
 	"github.com/hyperbricks/hyperbricks/internal/composite"
 	"github.com/hyperbricks/hyperbricks/internal/parser"
 	"github.com/hyperbricks/hyperbricks/internal/render"
@@ -71,7 +74,7 @@ func Test_FragmentConfigPropertiesAndRenderOutput(t *testing.T) {
 	}{
 		{
 			name:         "fragment-title",
-			propertyLine: `title = A Fragment Title`,
+			propertyLine: `	title = A Fragment Title`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -88,7 +91,7 @@ fragment {
 		},
 		{
 			name:         "fragment-route",
-			propertyLine: `route = fragment-route`,
+			propertyLine: `	route = fragment-route`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -105,7 +108,7 @@ fragment {
 		},
 		{
 			name:         "fragment-section",
-			propertyLine: `section = some-section`,
+			propertyLine: `	section = some-section`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -122,7 +125,7 @@ fragment {
 		},
 		{
 			name:         "fragment-bodytag",
-			propertyLine: `bodytag = <body>|</body>`,
+			propertyLine: `	bodytag = <body>|</body>`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -139,7 +142,7 @@ fragment {
 		},
 		{
 			name:         "fragment-enclose",
-			propertyLine: `enclose = <div>|</div>`,
+			propertyLine: `	enclose = <div>|</div>`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -156,7 +159,7 @@ fragment {
 		},
 		{
 			name:         "fragment-favicon",
-			propertyLine: `favicon = /myfragment.ico`,
+			propertyLine: `	favicon = /myfragment.ico`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -173,7 +176,7 @@ fragment {
 		},
 		{
 			name:         "fragment-doctype",
-			propertyLine: `doctype = <!DOCTYPE html>`,
+			propertyLine: `	doctype = <!DOCTYPE html>`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -190,10 +193,11 @@ fragment {
 		},
 		{
 			name: "fragment-meta",
-			propertyLine: `meta = { 
-				description = Fragment description
-				keywords = fragment,test
-			}`,
+			propertyLine: `
+	meta = { 
+		description = Fragment description
+		keywords = fragment,test
+	}`,
 			scope: "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -210,7 +214,7 @@ fragment {
 		},
 		{
 			name:         "fragment-css",
-			propertyLine: `css = [ fragstyles.css, morefrag.css ]`,
+			propertyLine: `	css = [ fragstyles.css, morefrag.css ]`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -227,7 +231,7 @@ fragment {
 		},
 		{
 			name:         "fragment-js",
-			propertyLine: `js = [ fragscript.js, anotherfrag.js ]`,
+			propertyLine: `	js = [ fragscript.js, anotherfrag.js ]`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -244,14 +248,15 @@ fragment {
 		},
 		{
 			name: "fragment-template",
-			propertyLine: `template = {
-				template = <<[
-					<div>Fragment: {{value}}</div>
-				]>> 
-				values {
-					value = some fragment value
-				}
-			}`,
+			propertyLine: `	# template
+	template {
+		template = <<[<div>Fragment: {{value}}</div>]>> 
+		isTemplate = true
+		values {
+			value = some fragment value
+		}
+	}
+`,
 			scope: "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -262,15 +267,20 @@ fragment {
 			expectedOutput: func() map[string]interface{} {
 				out := shared.CloneMap(defaultExpectedOutput)
 				out["Template"] = map[string]interface{}{
-					"template": "\n\t\t\t\t\t<div>Fragment: {{value}}</div>\n\t\t\t\t]>> \n\t\t\t\tvalues {\n\t\t\t\t\tvalue = some fragment value\n\t\t\t\t}\n\t\t\t}\n}\n\n",
+					"isTemplate": "true",
+					"template":   "<div>Fragment: {{value}}</div>",
+					"values": map[string]interface{}{
+						"value": "some fragment value",
+					},
 				}
+
 				return out
 			}(),
 			expectError: false,
 		},
 		{
 			name:         "fragment-isstatic",
-			propertyLine: `isstatic = true`,
+			propertyLine: `	isstatic = true`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -287,7 +297,7 @@ fragment {
 		},
 		{
 			name:         "fragment-static",
-			propertyLine: `static = /some/static/path`,
+			propertyLine: `	static = /some/static/path`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -304,7 +314,7 @@ fragment {
 		},
 		{
 			name:         "fragment-index",
-			propertyLine: `index = 99`,
+			propertyLine: `	index = 99`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -321,7 +331,7 @@ fragment {
 		},
 		{
 			name:         "fragment-htmltag",
-			propertyLine: `htmltag = <html lang="fr">`,
+			propertyLine: `	htmltag = <html lang="fr">`,
 			scope:        "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -338,11 +348,12 @@ fragment {
 		},
 		{
 			name: "fragment-head",
-			propertyLine: `head {
-				meta {
-					charset = UTF-8
-				}
-			}`,
+			propertyLine: `
+	head {
+		meta {
+			charset = UTF-8
+		}
+	}`,
 			scope: "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -364,9 +375,10 @@ fragment {
 		// Example test of HxResponse fields: hx_refresh = true
 		{
 			name: "fragment-hxrefresh",
-			propertyLine: `response {
-				hx_refresh = true
-			}`,
+			propertyLine: `
+	response {
+		hx_refresh = true
+	}`,
 			scope: "fragment",
 			config: `
 fragment = <FRAGMENT>
@@ -409,6 +421,60 @@ fragment {
 	}
 	rm.RegisterComponent(composite.FragmentConfigGetName(), fragmentRenderer, reflect.TypeOf(composite.FragmentConfig{}))
 
+	// Mock template provider
+	templateProvider := func(templateName string) (string, bool) {
+		templates := map[string]string{
+			"api_test_template": `{{ (index .quotes 0).author }}:{{ (index .quotes 0).quote }}`,
+		}
+		content, exists := templates[templateName]
+		return content, exists
+	}
+	// TEMPLATE ....
+	pageRenderer := &composite.HyperMediaRenderer{
+		CompositeRenderer: renderer.CompositeRenderer{
+			RenderManager:    rm,
+			TemplateProvider: templateProvider,
+		},
+	}
+
+	rm.RegisterComponent(composite.HyperMediaConfigGetName(), pageRenderer, reflect.TypeOf(composite.HyperMediaConfig{}))
+	rm.RegisterComponent(component.HTMLConfigGetName(), &component.HTMLRenderer{}, reflect.TypeOf(component.HTMLConfig{}))
+
+	treeRenderer := &composite.TreeRenderer{
+		CompositeRenderer: renderer.CompositeRenderer{
+			RenderManager: rm,
+		},
+	}
+
+	rm.RegisterComponent(composite.TreeRendererConfigGetName(), treeRenderer, reflect.TypeOf(composite.TreeConfig{}))
+
+	// TEMPLATE ....
+	templateRenderer := &composite.TemplateRenderer{
+		CompositeRenderer: renderer.CompositeRenderer{
+			RenderManager:    rm,
+			TemplateProvider: templateProvider,
+		},
+	}
+
+	rm.RegisterComponent(composite.TemplateConfigGetName(), templateRenderer, reflect.TypeOf(composite.TemplateConfig{}))
+
+	// API ....
+	apiRenderer := &component.APIRenderer{
+		ComponentRenderer: renderer.ComponentRenderer{
+			TemplateProvider: templateProvider,
+		},
+	}
+
+	headRenderer := &composite.HeadRenderer{
+		CompositeRenderer: renderer.CompositeRenderer{
+			RenderManager: rm,
+		},
+	}
+	rm.RegisterComponent(composite.HeadConfigGetName(), headRenderer, reflect.TypeOf(composite.HeadConfig{}))
+
+	// COMPONENTS
+	rm.RegisterComponent(component.APIConfigGetName(), apiRenderer, reflect.TypeOf(component.APIConfig{}))
+
 	// Iterate through each test case.
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -442,6 +508,18 @@ fragment {
 				}
 				t.Errorf("Error creating instance: %v", err)
 				return
+			}
+			if scopeData != nil {
+				result, errr := rm.Render(composite.FragmentConfigGetName(), scopeData)
+				if errr != nil {
+					log.Printf("%v", errr)
+				}
+				if result != "" {
+					configStr[0] = fmt.Sprintf(`%s
+					==== expected output ====
+					%s
+								`, configStr[0], result)
+				}
 			}
 
 			// Convert the instantiated object to a map for validation.
