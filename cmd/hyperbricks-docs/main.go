@@ -29,7 +29,7 @@ func main() {
 			Composite: shared.Composite{
 				Meta: shared.Meta{
 					ConfigType:     "<FRAGMENT>",
-					ConfigCategory: "render",
+					ConfigCategory: "composite",
 				},
 			},
 		},
@@ -37,7 +37,7 @@ func main() {
 			Composite: shared.Composite{
 				Meta: shared.Meta{
 					ConfigType:     "<HYPERMEDIA>",
-					ConfigCategory: "render",
+					ConfigCategory: "composite",
 				},
 			},
 		},
@@ -80,13 +80,33 @@ func main() {
 			}
 		}
 
+		// Get the ContentType field's value
+		configCategoryValue := ""
+		_, found = t.FieldByName("ConfigCategory")
+		if found {
+			value := v.FieldByName("ConfigCategory")
+			if value.IsValid() && value.Kind() == reflect.String {
+				configCategoryValue = value.String()
+			}
+		}
+
+		// Get the ContentType field's value
+		generalDescriptionValue := ""
+		_, found = t.FieldByName("GeneralDescription")
+		if found {
+			value := v.FieldByName("GeneralDescription")
+			if value.IsValid() && value.Kind() == reflect.String {
+				generalDescriptionValue = value.String()
+			}
+		}
+
 		if typeValue == "" {
 			fmt.Printf("Error: %s does not have a valid ConfigType value\n", t.Name())
 			continue
 		}
 
 		// Generate documentation, including category
-		category, docs, err := GenerateDoc(config)
+		category, docs, err := GenerateDoc(config, configCategoryValue, generalDescriptionValue)
 		if err != nil {
 			fmt.Println("Error generating doc:", err)
 			return
@@ -156,13 +176,13 @@ type FieldDoc struct {
 	Name         string `json:"name"`
 	Type         string `json:"type"`
 	Mapstructure string `json:"mapstructure"`
+	Category     string `json:"category"`
 	Description  string `json:"description"`
 	Example      string `json:"example"`
 }
 
 // GenerateDoc generates documentation for a struct, including categories
-func GenerateDoc(input any) (string, []FieldDoc, error) {
-
+func GenerateDoc(input any, ctype string, cdescription string) (string, []FieldDoc, error) {
 	path := "./cmd/hyperbricks-docs/hyperbricks-examples/"
 
 	t := reflect.TypeOf(input)
@@ -177,7 +197,8 @@ func GenerateDoc(input any) (string, []FieldDoc, error) {
 	}
 
 	var docs []FieldDoc
-	category := "Uncategorized" // Default category
+
+	category := ctype // Default category
 
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
@@ -198,6 +219,7 @@ func GenerateDoc(input any) (string, []FieldDoc, error) {
 				Type:         field.Type.String(),
 				Mapstructure: field.Tag.Get("mapstructure"),
 				Description:  doc,
+				Category:     field.Tag.Get("ConfigCategory"),
 				Example:      checkAndReadFile(example, path),
 			}
 			docs = append(docs, fieldDoc)

@@ -167,7 +167,7 @@
                 <ul class="list-unstyled">
                     
                     <li>
-                        <strong>Uncategorized</strong>
+                        <strong>composite</strong>
                         <ul class="list-unstyled ms-3">
                             
                             <li><a href="#%3cFRAGMENT%3e" class="text-decoration-none">&lt;FRAGMENT&gt;</a></li>
@@ -184,12 +184,12 @@
         
         <main class="col-lg-9 main-content">
             <h4>TyperBricks version v0.1.0-alpha</h4>
-            <h5>2025-01-08T21:40:19Z</h5>
+            <h5>2025-01-11T20:42:27Z</h5>
             <h3>TyperBricks types reference</h3>
             <div id="searchResults" class="search-results"></div>
             
-            <div class="category-section" id="category-Uncategorized">
-                <h2 class="category-title">Uncategorized</h2>
+            <div class="category-section" id="category-composite">
+                <h2 class="category-title">composite</h2>
                 
                 <section class="type-section mb-5" id="&lt;FRAGMENT&gt;">
                     <h3>&lt;FRAGMENT&gt;</h3>
@@ -244,7 +244,7 @@
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-title = A Fragment Title
+	title = A Fragment Title
 }
 </code></pre>
                         </div>
@@ -259,7 +259,7 @@ title = A Fragment Title
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-route = fragment-route
+	route = fragment-route
 }
 </code></pre>
                         </div>
@@ -274,7 +274,7 @@ route = fragment-route
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-section = some-section
+	section = some-section
 }
 </code></pre>
                         </div>
@@ -299,9 +299,12 @@ section = some-section
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-enclose = &lt;div&gt;|&lt;/div&gt;
+	enclose = &lt;div&gt;|&lt;/div&gt;
 }
-</code></pre>
+
+==== expected output ====
+&lt;div&gt;&lt;/div&gt;
+								</code></pre>
                         </div>
                     </div>
                     
@@ -314,7 +317,7 @@ enclose = &lt;div&gt;|&lt;/div&gt;
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-favicon = /myfragment.ico
+	favicon = /myfragment.ico
 }
 </code></pre>
                         </div>
@@ -329,16 +332,20 @@ favicon = /myfragment.ico
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-template = {
-				template = &lt;&lt;[
-					&lt;div&gt;Fragment: {{value}}&lt;/div&gt;
-				]&gt;&gt; 
-				values {
-					value = some fragment value
-				}
-			}
+	# template
+	template {
+		template = &lt;&lt;[&lt;div&gt;Fragment: {{value}}&lt;/div&gt;]&gt;&gt; 
+		isTemplate = true
+		values {
+			value = some fragment value
+		}
+	}
+
 }
-</code></pre>
+
+==== expected output ====
+&lt;div&gt;Fragment: some fragment value&lt;/div&gt;
+								</code></pre>
                         </div>
                     </div>
                     
@@ -351,7 +358,7 @@ template = {
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-static = /some/static/path
+	static = /some/static/path
 }
 </code></pre>
                         </div>
@@ -366,7 +373,7 @@ static = /some/static/path
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-index = 99
+	index = 99
 }
 </code></pre>
                         </div>
@@ -381,10 +388,11 @@ index = 99
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-meta = { 
-				description = Fragment description
-				keywords = fragment,test
-			}
+
+	meta = { 
+		description = Fragment description
+		keywords = fragment,test
+	}
 }
 </code></pre>
                         </div>
@@ -399,7 +407,7 @@ meta = {
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-doctype = &lt;!DOCTYPE html&gt;
+	doctype = &lt;!DOCTYPE html&gt;
 }
 </code></pre>
                         </div>
@@ -414,7 +422,7 @@ doctype = &lt;!DOCTYPE html&gt;
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-htmltag = &lt;html lang=&#34;fr&#34;&gt;
+	htmltag = &lt;html lang=&#34;fr&#34;&gt;
 }
 </code></pre>
                         </div>
@@ -429,11 +437,12 @@ htmltag = &lt;html lang=&#34;fr&#34;&gt;
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-head {
-				meta {
-					charset = UTF-8
-				}
-			}
+
+	head {
+		meta {
+			charset = UTF-8
+		}
+	}
 }
 </code></pre>
                         </div>
@@ -448,7 +457,7 @@ head {
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-css = [ fragstyles.css, morefrag.css ]
+	css = [ fragstyles.css, morefrag.css ]
 }
 </code></pre>
                         </div>
@@ -463,7 +472,7 @@ css = [ fragstyles.css, morefrag.css ]
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-js = [ fragscript.js, anotherfrag.js ]
+	js = [ fragscript.js, anotherfrag.js ]
 }
 </code></pre>
                         </div>
