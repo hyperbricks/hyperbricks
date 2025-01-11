@@ -1,5 +1,5 @@
 
 fragment = <FRAGMENT>
 fragment {
-static = /some/static/path
+	static = /some/static/path
 }

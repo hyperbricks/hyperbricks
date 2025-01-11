@@ -1,8 +1,9 @@
 
 fragment = <FRAGMENT>
 fragment {
-meta = { 
-				description = Fragment description
-				keywords = fragment,test
-			}
+
+	meta = { 
+		description = Fragment description
+		keywords = fragment,test
+	}
 }

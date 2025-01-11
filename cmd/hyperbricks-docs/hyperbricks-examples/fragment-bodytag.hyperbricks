@@ -1,5 +1,5 @@
 
 fragment = <FRAGMENT>
 fragment {
-bodytag = <body>|</body>
+	bodytag = <body>|</body>
 }

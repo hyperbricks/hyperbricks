@@ -1,5 +1,5 @@
 
 fragment = <FRAGMENT>
 fragment {
-title = A Fragment Title
+	title = A Fragment Title
 }

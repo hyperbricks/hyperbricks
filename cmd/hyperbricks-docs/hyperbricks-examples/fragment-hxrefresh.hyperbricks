@@ -1,7 +1,8 @@
 
 fragment = <FRAGMENT>
 fragment {
-response {
-				hx_refresh = true
-			}
+
+	response {
+		hx_refresh = true
+	}
 }

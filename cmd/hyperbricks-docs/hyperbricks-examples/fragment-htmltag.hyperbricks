@@ -1,5 +1,5 @@
 
 fragment = <FRAGMENT>
 fragment {
-htmltag = <html lang="fr">
+	htmltag = <html lang="fr">
 }

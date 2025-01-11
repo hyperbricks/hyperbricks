@@ -1,5 +1,5 @@
 
 fragment = <FRAGMENT>
 fragment {
-section = some-section
+	section = some-section
 }

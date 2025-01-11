@@ -1,5 +1,5 @@
 
 fragment = <FRAGMENT>
 fragment {
-isstatic = true
+	isstatic = true
 }

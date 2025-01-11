@@ -1,5 +1,5 @@
 
 fragment = <FRAGMENT>
 fragment {
-index = 99
+	index = 99
 }

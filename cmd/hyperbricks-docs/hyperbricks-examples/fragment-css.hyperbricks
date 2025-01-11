@@ -1,5 +1,5 @@
 
 fragment = <FRAGMENT>
 fragment {
-css = [ fragstyles.css, morefrag.css ]
+	css = [ fragstyles.css, morefrag.css ]
 }

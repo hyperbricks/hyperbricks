@@ -1,12 +1,17 @@
 
 fragment = <FRAGMENT>
 fragment {
-template = {
-				template = <<[
-					<div>Fragment: {{value}}</div>
-				]>> 
-				values {
-					value = some fragment value
-				}
-			}
+	# template
+	template {
+		template = <<[<div>Fragment: {{value}}</div>]>> 
+		isTemplate = true
+		values {
+			value = some fragment value
+		}
+	}
+
 }
+
+==== expected output ====
+<div>Fragment: some fragment value</div>
+								

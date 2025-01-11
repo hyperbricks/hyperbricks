@@ -1,5 +1,9 @@
 
 fragment = <FRAGMENT>
 fragment {
-enclose = <div>|</div>
+	enclose = <div>|</div>
 }
+
+==== expected output ====
+<div></div>
+								

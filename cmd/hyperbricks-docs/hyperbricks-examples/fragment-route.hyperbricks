@@ -1,5 +1,5 @@
 
 fragment = <FRAGMENT>
 fragment {
-route = fragment-route
+	route = fragment-route
 }
