@@ -99,7 +99,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		config.Head["@type"] = HeadConfigGetName()
 		config.Head["file"] = config.File
 		config.Head["path"] = config.File + ":" + config.Path
-		result, errr := pr.RenderManager.Render("HEAD", config.Head)
+		result, errr := pr.RenderManager.Render(HeadConfigGetName(), config.Head)
 		errors = append(errors, errr...)
 		headbuilder.WriteString(result)
 	}
