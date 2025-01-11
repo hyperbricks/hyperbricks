@@ -516,8 +516,8 @@ fragment {
 				}
 				if result != "" {
 					configStr[0] = fmt.Sprintf(`%s
-					==== expected output ====
-					%s
+==== expected output ====
+%s
 								`, configStr[0], result)
 				}
 			}
