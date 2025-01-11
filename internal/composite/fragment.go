@@ -109,8 +109,9 @@ func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
 
 	// Wrap the content with the HTML structure
 	finalHTML := outputHtml
-
-	SetHeadersFromHxRequest(&config.HxResponse, config.HxResponseWriter)
+	if config.HxResponseWriter != nil {
+		SetHeadersFromHxRequest(&config.HxResponse, config.HxResponseWriter)
+	}
 
 	return finalHTML, errors
 }
