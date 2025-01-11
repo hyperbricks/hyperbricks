@@ -127,14 +127,10 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		outputHtml = shared.EncloseContent(config.Enclose, treebuilder.String())
 	}
 
-	// TO-DO: INSERT HEAD
-
-	// PAGE COMPOSITION.....
-
 	headHtml := headbuilder.String()
+
 	// Wrap the content with the HTML structure
-	finalHTML := fmt.Sprintf("%s<html>%s%s</html>", config.Doctype, headHtml, outputHtml)
-	//shared.EncloseContent(fmt.Sprintf("%s<html>%s|</html>", config.Doctype, headHtml), outputHtml)
+	finalHTML := fmt.Sprintf("%s<html>%s%s</html>", config.Doctype, headHtml, shared.EncloseContent(config.BodyTag, outputHtml))
 
 	return finalHTML, errors
 }
