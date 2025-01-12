@@ -189,19 +189,36 @@
             <div id="searchResults" class="search-results"></div>
             {{range $category, $types := .data}}
             <div class="category-section" id="category-{{$category}}">
-                <h2 class="category-title">{{$category}}</h2>
+                
                 {{range $typeName, $fields := $types}}
                 <section class="type-section mb-5" id="{{$typeName}}">
                     <h3>{{$typeName}}</h3>
-                    <h4>Description</h4>
-                    <p>{{range $fields}}{{if eq .Name "ContentType"}}{{.Comment}}{{end}}{{end}}</p>
+                    <h4 class="category-title">Category: {{$category}}</h4>
+                    <h4>Type Description</h4>
+                    <p>{{range $fields}}
+                        {{if eq .Name "MetaDocDescription"}}
+                        <div class="property mb-3" id="{{$typeName}}-{{.Name}}">
+                            
+                            <p>{{.Description}}</p>
+                            <h5>Main Example</h5>
+                            <div class="position-relative">
+                                <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                                <pre><code class="hljs language-properties properties">{{.Example}}</code></pre>
+                            </div>
+                        </div>
+                        {{end}}
+                    {{end}}</p>
 
-                    <h4>Properties</h4>
-                     
+                    
                     <!-- List of links to properties -->
                     <div class="properties-list mb-4">
+                        <h4>Properties</h4>
                         {{range $fields}}
-                        <a href="#{{$typeName}}-{{.Name}}">{{.Name}}</a>
+                            {{if ne .Name "MetaDocDescription"}}
+                                <a href="#{{$typeName}}-{{.Name}}">{{.Name}}</a>
+                            {{else}}
+                            
+                            {{end}}
                         {{end}}
                     </div>
                     

@@ -71,7 +71,22 @@ func Test_FragmentConfigPropertiesAndRenderOutput(t *testing.T) {
 		scope          string
 		expectedOutput map[string]interface{}
 		expectError    bool
-	}{
+	}{{
+		name:         "fragment",
+		propertyLine: `#main`,
+		scope:        "fragment",
+		config: `
+fragment = <FRAGMENT>
+fragment {
+%s
+}
+`,
+		expectedOutput: func() map[string]interface{} {
+			out := shared.CloneMap(defaultExpectedOutput)
+			return out
+		}(),
+		expectError: false,
+	},
 		{
 			name:         "fragment-title",
 			propertyLine: `	title = A Fragment Title`,

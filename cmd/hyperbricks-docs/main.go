@@ -92,9 +92,9 @@ func main() {
 
 		// Get the ContentType field's value
 		generalDescriptionValue := ""
-		_, found = t.FieldByName("GeneralDescription")
+		_, found = t.FieldByName("MetaDocDescription")
 		if found {
-			value := v.FieldByName("GeneralDescription")
+			value := v.FieldByName("MetaDocDescription")
 			if value.IsValid() && value.Kind() == reflect.String {
 				generalDescriptionValue = value.String()
 			}
@@ -173,12 +173,13 @@ func renderStaticFile(tmpl *template.Template, data interface{}, outputPath stri
 
 // FieldDoc represents a field documentation entry
 type FieldDoc struct {
-	Name         string `json:"name"`
-	Type         string `json:"type"`
-	Mapstructure string `json:"mapstructure"`
-	Category     string `json:"category"`
-	Description  string `json:"description"`
-	Example      string `json:"example"`
+	Name               string `json:"name"`
+	Type               string `json:"type"`
+	Mapstructure       string `json:"mapstructure"`
+	Category           string `json:"category"`
+	Description        string `json:"description"`
+	Example            string `json:"example"`
+	MetaDocDescription string `json:"@doc"`
 }
 
 // GenerateDoc generates documentation for a struct, including categories
@@ -215,12 +216,13 @@ func GenerateDoc(input any, ctype string, cdescription string) (string, []FieldD
 		// Only include fields that have a doc tag
 		if doc != "" {
 			fieldDoc := FieldDoc{
-				Name:         field.Name,
-				Type:         field.Type.String(),
-				Mapstructure: field.Tag.Get("mapstructure"),
-				Description:  doc,
-				Category:     field.Tag.Get("ConfigCategory"),
-				Example:      checkAndReadFile(example, path),
+				Name:               field.Name,
+				Type:               field.Type.String(),
+				Mapstructure:       field.Tag.Get("mapstructure"),
+				Description:        doc,
+				Category:           field.Tag.Get("ConfigCategory"),
+				Example:            checkAndReadFile(example, path),
+				MetaDocDescription: cdescription,
 			}
 			docs = append(docs, fieldDoc)
 		}
