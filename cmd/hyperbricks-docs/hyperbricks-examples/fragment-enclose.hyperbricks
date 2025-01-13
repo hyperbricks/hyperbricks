@@ -1,12 +1,8 @@
 
-==== hyperbricks config ====
 fragment = <FRAGMENT>
 fragment {
 	enclose = <div>|</div>
 }
-==== expected json ====
-{
-	"enclose":"<div>|</div>"
-}
+
 ==== expected output ====
 <div></div>
