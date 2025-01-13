@@ -12,7 +12,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/languages/properties.min.js"></script> -->
     <script>
-
         /*! `properties` grammar compiled for Highlight.js 11.10.0 */
             (()=>{var e=(()=>{"use strict";return e=>{
             const n="[ \\t\\f]*",t=n+"[:=]"+n,s="[ \\t\\f]+",a="([^\\\\:= \\t\\f\\n]|\\\\.)+",r={
@@ -216,14 +215,13 @@
                         {{range $fields}}
                             {{if ne .Name "MetaDocDescription"}}
                                 <a href="#{{$typeName}}-{{.Name}}">{{.Name}}</a>
-                            {{else}}
-                            
                             {{end}}
                         {{end}}
                     </div>
                     
                     <!-- Properties details -->
                     {{range $fields}}
+                    {{if ne .Name "MetaDocDescription"}}
                     <div class="property mb-3" id="{{$typeName}}-{{.Name}}">
                         <strong>{{.Name}}</strong>
                         <p>{{.Description}}</p>
@@ -233,6 +231,7 @@
                             <pre><code class="hljs language-properties properties">{{.Example}}</code></pre>
                         </div>
                     </div>
+                    {{end}}
                     {{end}}
                 </section>
                 {{end}}

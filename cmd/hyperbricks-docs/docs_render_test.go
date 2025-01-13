@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hyperbricks/hyperbricks/internal/component"
 	"github.com/hyperbricks/hyperbricks/internal/composite"
 )
 
@@ -37,7 +38,6 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			Name:            "Hypermedia",
 			TypeDescription: "Basic type description here.....",
 			Embedded: map[string]string{
-
 				"HxResponse": "response",
 			},
 			ConfigType:     "<HYPERMEDIA>",
@@ -53,6 +53,87 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigType:     "<API>",
 			ConfigCategory: "composite",
 			Config:         composite.HxApiConfig{},
+		},
+		// COMPONENTS
+		{
+			Name:            "Html",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<HTML>",
+			ConfigCategory:  "component",
+			Config:          component.HTMLConfig{},
+		},
+		{
+			Name:            "Css",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<CSS>",
+			ConfigCategory:  "component",
+			Config:          component.CssConfig{},
+		},
+		{
+			Name:            "Js",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<JS>",
+			ConfigCategory:  "component",
+			Config:          component.JavaScriptConfig{},
+		},
+		{
+			Name:            "Image",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<IMAGE>",
+			ConfigCategory:  "component",
+			Config:          component.SingleImageConfig{},
+		},
+		{
+			Name:            "Images",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<IMAGES>",
+			ConfigCategory:  "component",
+			Config:          component.MultipleImagesConfig{},
+		},
+		{
+			Name:            "Json",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<JSON>",
+			ConfigCategory:  "component",
+			Config:          component.LocalJSONConfig{},
+		},
+		{
+			Name:            "Plugin",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<PLUGIN>",
+			ConfigCategory:  "component",
+			Config:          component.PluginConfig{},
+		},
+		{
+			Name:            "Text",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<TEXT>",
+			ConfigCategory:  "component",
+			Config:          component.TextConfig{},
+		},
+		{
+			Name:            "Menu",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<MENU>",
+			ConfigCategory:  "component",
+			Config:          component.MenuConfig{},
+		},
+		{
+			Name:            "Api_Render",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<API_RENDER>",
+			ConfigCategory:  "component",
+			Config:          component.APIConfig{},
 		},
 	}
 
@@ -71,7 +152,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 			field := findFieldByName(val, embeddedName)
 			if field.IsValid() {
-				fmt.Print(processFields(field, cfg))
+				fmt.Print(processFieldsWithSquash(field, cfg))
 			} else {
 				fmt.Printf("Field %s not found in Config\n", embeddedName)
 			}
@@ -102,9 +183,13 @@ func processNonEmbeddedFields(val reflect.Value, cfg DocumentationTypeStruct) st
 			if field.Tag.Get("example") != "" {
 				example := _checkAndReadFile(field.Tag.Get("example"))
 				out.WriteString(fmt.Sprintf("example: %s\n", example))
+			} else if field.Tag.Get("mapstructure") != "" {
+				file := strings.ToLower(cfg.Name) + "-" + tag.Get("mapstructure")
+				example := _checkAndReadFile("{!{" + file + "}}")
+				out.WriteString(fmt.Sprintf("example: %s\n", example))
 			}
 		}
-		//file := strings.ToLower(cfg.Name) + "-" + tag.Get("mapstructure")
+		//
 		//out.WriteString(fmt.Sprintf("File: %s\n", file))
 		//out.WriteString(fmt.Sprintf("\tmapstructure: %s\n", tag))
 		//out.WriteString(fmt.Sprintf("\tdescription: %s\n", field.Tag.Get("description")))
@@ -134,6 +219,10 @@ func processFields(val reflect.Value, cfg DocumentationTypeStruct) string {
 			out.WriteString(fmt.Sprintf("description: %s\n", field.Tag.Get("description")))
 			if field.Tag.Get("example") != "" {
 				example := _checkAndReadFile(field.Tag.Get("example"))
+				out.WriteString(fmt.Sprintf("example: %s\n", example))
+			} else if field.Tag.Get("mapstructure") != "" {
+				file := strings.ToLower(cfg.Name) + "-" + tag.Get("mapstructure")
+				example := _checkAndReadFile("{!{" + file + "}}")
 				out.WriteString(fmt.Sprintf("example: %s\n", example))
 			}
 		}
@@ -197,7 +286,11 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct) str
 			out.WriteString(fmt.Sprintf("description: %s\n", field.Tag.Get("description")))
 			if field.Tag.Get("example") != "" {
 				example := _checkAndReadFile(field.Tag.Get("example"))
-				out.WriteString(fmt.Sprintf("example-squash: %s\n", example))
+				out.WriteString(fmt.Sprintf("example: %s\n", example))
+			} else if field.Tag.Get("mapstructure") != "" {
+				file := strings.ToLower(cfg.Name) + "-" + tag
+				example := _checkAndReadFile("{!{" + file + "}}")
+				out.WriteString(fmt.Sprintf("example: %s\n", example))
 			}
 		}
 
@@ -229,7 +322,7 @@ func _checkAndReadFile(input string) string {
 
 		// Check if file exists, create if not
 		if _, err := os.Stat(fileFullPath); os.IsNotExist(err) {
-			fmt.Printf("File %s does not exist. Creating it...\n", fileFullPath)
+			//fmt.Printf("File %s does not exist. Creating it...\n", fileFullPath)
 			f, createErr := os.Create(fileFullPath)
 			if createErr != nil {
 				fmt.Printf("Error creating file %s: %v\n", fileFullPath, createErr)
@@ -237,7 +330,7 @@ func _checkAndReadFile(input string) string {
 				continue
 			}
 			f.Close()
-			fmt.Printf("File %s created successfully.\n", fileFullPath)
+			//fmt.Printf("File %s created successfully.\n", fileFullPath)
 		}
 
 		// Read the file content

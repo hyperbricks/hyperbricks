@@ -13,6 +13,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/internal/typefactory"
+	"github.com/yosssi/gohtml"
 )
 
 // Test_FragmentConfigPropertiesAndRenderOutput tests how FragmentConfig
@@ -52,17 +53,18 @@ func Test_FragmentConfigPropertiesAndRenderOutput(t *testing.T) {
 			HxTriggerafterSettle: "",
 			HxTriggerafterSwap:   "",
 		},
-		"HxResponseWriter": interface{}(nil),
-		"Index":            0,
-		"IsStatic":         false,
-		"Items":            map[string]interface{}(nil),
-		"Js":               []string(nil),
-		"Meta":             map[string]string(nil),
-		"Route":            "",
-		"Section":          "",
-		"Static":           "",
-		"Template":         map[string]interface{}(nil),
-		"Title":            "",
+		"HxResponseWriter":   interface{}(nil),
+		"MetaDocDescription": "",
+		"Index":              0,
+		"IsStatic":           false,
+		"Items":              map[string]interface{}(nil),
+		"Js":                 []string(nil),
+		"Meta":               map[string]string(nil),
+		"Route":              "",
+		"Section":            "",
+		"Static":             "",
+		"Template":           map[string]interface{}(nil),
+		"Title":              "",
 	}
 	tests := []struct {
 		name           string
@@ -73,19 +75,29 @@ func Test_FragmentConfigPropertiesAndRenderOutput(t *testing.T) {
 		expectError    bool
 	}{{
 		name:         "fragment",
-		propertyLine: `#main`,
+		propertyLine: `# EXAMPLE`,
 		scope:        "fragment",
-		config: `
+		config: `%s
 fragment = <FRAGMENT>
-fragment {
-%s
+fragment.route = partial-content
+fragment.template = <TEMPLATE>
+fragment.template {
+
+	template = <<[
+		<div>{{content}}</div>
+	]>>
+
+	isTemplate = true
+	values {
+	content = <HTML>
+	content.value = <<[
+		<button hx-post="/justafragment" hx-swap="outerHTML">Click Me</button>
+	]>>
+	}
 }
 `,
-		expectedOutput: func() map[string]interface{} {
-			out := shared.CloneMap(defaultExpectedOutput)
-			return out
-		}(),
-		expectError: false,
+		expectedOutput: map[string]interface{}{"BodyTag": "", "Composite": shared.CompositeRendererConfig{Meta: shared.Meta{ConfigType: "<FRAGMENT>", ConfigCategory: "", Key: "", Path: "", File: ""}, Items: map[string]interface{}(nil)}, "Css": []string(nil), "Doctype": "", "Enclose": "", "Favicon": "", "File": "", "Head": map[string]interface{}(nil), "HtmlTag": "", "HxResponse": composite.HxResponse{HxTemplateResult: "", HxLocation: "", HxPushedUrl: "", HxRedirect: "", HxRefresh: "", HxReplaceUrl: "", HxReswap: "", HxRetarget: "", HxReselect: "", HxTrigger: "", HxTriggerafterSettle: "", HxTriggerafterSwap: ""}, "HxResponseWriter": interface{}(nil), "Index": 0, "IsStatic": false, "Items": map[string]interface{}(nil), "Js": []string(nil), "Meta": map[string]string(nil), "MetaDocDescription": "", "Route": "partial-content", "Section": "", "Static": "", "Template": map[string]interface{}{"@type": "<TEMPLATE>", "isTemplate": "true", "template": "\n\t\t<div>{{content}}</div>\n\t", "values": map[string]interface{}{"content": map[string]interface{}{"@type": "<HTML>", "value": "\n\t\t<button hx-post=\"/justafragment\" hx-swap=\"outerHTML\">Click Me</button>\n\t"}}}, "Title": ""},
+		expectError:    false,
 	},
 		{
 			name:         "fragment-title",
@@ -103,6 +115,40 @@ fragment {
 				return out
 			}(),
 			expectError: false,
+		},
+		{
+			name: "fragment-response",
+			propertyLine: `
+response {
+  hx_trigger = #content
+}
+`,
+			scope: "fragment",
+			config: `
+fragment = <FRAGMENT>
+fragment {
+%s
+}
+`,
+			expectedOutput: map[string]interface{}{"BodyTag": "", "Composite": shared.CompositeRendererConfig{Meta: shared.Meta{ConfigType: "<FRAGMENT>", ConfigCategory: "", Key: "", Path: "", File: ""}, Items: map[string]interface{}(nil)}, "Css": []string(nil), "Doctype": "", "Enclose": "", "Favicon": "", "File": "", "Head": map[string]interface{}(nil), "HtmlTag": "", "HxResponse": composite.HxResponse{HxTemplateResult: "", HxLocation: "", HxPushedUrl: "", HxRedirect: "", HxRefresh: "", HxReplaceUrl: "", HxReswap: "", HxRetarget: "", HxReselect: "", HxTrigger: "#content", HxTriggerafterSettle: "", HxTriggerafterSwap: ""}, "HxResponseWriter": interface{}(nil), "Index": 0, "IsStatic": false, "Items": map[string]interface{}(nil), "Js": []string(nil), "Meta": map[string]string(nil), "MetaDocDescription": "", "Route": "", "Section": "", "Static": "", "Template": map[string]interface{}(nil), "Title": ""},
+			expectError:    false,
+		},
+		{
+			name: "fragment-response-hx_trigger",
+			propertyLine: `
+response {
+ 	 hx_trigger = #content
+}
+`,
+			scope: "fragment",
+			config: `
+fragment = <FRAGMENT>
+fragment {
+%s
+}
+`,
+			expectedOutput: map[string]interface{}{"BodyTag": "", "Composite": shared.CompositeRendererConfig{Meta: shared.Meta{ConfigType: "<FRAGMENT>", ConfigCategory: "", Key: "", Path: "", File: ""}, Items: map[string]interface{}(nil)}, "Css": []string(nil), "Doctype": "", "Enclose": "", "Favicon": "", "File": "", "Head": map[string]interface{}(nil), "HtmlTag": "", "HxResponse": composite.HxResponse{HxTemplateResult: "", HxLocation: "", HxPushedUrl: "", HxRedirect: "", HxRefresh: "", HxReplaceUrl: "", HxReswap: "", HxRetarget: "", HxReselect: "", HxTrigger: "#content", HxTriggerafterSettle: "", HxTriggerafterSwap: ""}, "HxResponseWriter": interface{}(nil), "Index": 0, "IsStatic": false, "Items": map[string]interface{}(nil), "Js": []string(nil), "Meta": map[string]string(nil), "MetaDocDescription": "", "Route": "", "Section": "", "Static": "", "Template": map[string]interface{}(nil), "Title": ""},
+			expectError:    false,
 		},
 		{
 			name:         "fragment-route",
@@ -533,7 +579,7 @@ fragment {
 					configStr[0] = fmt.Sprintf(`%s
 ==== expected output ====
 %s
-								`, configStr[0], result)
+`, configStr[0], gohtml.Format(result))
 				}
 			}
 

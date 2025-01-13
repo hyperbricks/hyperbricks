@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TyperBricks Documentation</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/slate/bootstrap.min.css" rel="stylesheet">
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/base16/ashes.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+    
+    <script>
+         
+            (()=>{var e=(()=>{"use strict";return e=>{
+            const n="[ \\t\\f]*",t=n+"[:=]"+n,s="[ \\t\\f]+",a="([^\\\\:= \\t\\f\\n]|\\\\.)+",r={
+            end:"("+t+"|"+s+")",relevance:0,starts:{className:"string",end:/$/,relevance:0,
+            keywords: [],
+            contains:[{begin:"\\\\\\\\"},{begin:"\\\\\\n"}]}};return{name:".properties",
+            disableAutodetect:!0,case_insensitive:!0,illegal:/\S/,
+            contains:[e.COMMENT("^\\s*[!#]","$"),{returnBegin:!0,variants:[{begin:a+t},{
+            begin:a+s}],contains:[{className:"attr",begin:a,endsParent:!0}],starts:r},{
+            className:"attr",begin:a+n+"$"}]}}})();hljs.registerLanguage("properties",e)
+            })();
+    </script>
+    
+     
+    <style>
+
+        .property strong {
+            color: var(--bs-danger);
+        }
+        .properties-list a, a,.text-primary{
+            display: block;
+            margin-bottom: 5px;
+            color: #7cbeff !important;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .properties-list a:hover {
+            text-decoration: underline;
+        }
+         
+        @media (min-width: 992px) {
+            .sidebar {
+                position: fixed;
+                top: 70px;
+                bottom: 0;
+                overflow-y: auto;
+                width: 250px;
+                background-color: var(--bs-body-bg);
+            }
+            .main-content {
+                margin-left: 250px;
+               
+            }
+        }
+        @media (max-width: 991.98px) {
+            .sidebar {
+                display: none;
+            }
+        }
+
+        
+        .navbar-nav {
+          
+            overflow-y: auto;
+            height: 61px;
+        }
+     
+        
+       
+         
+        .navbar-toggler:focus {
+            outline: none;  
+            box-shadow: none;  
+        }
+    
+     
+
+         
+        .navbar-toggler:focus-visible {
+            outline: 1px solid rgba(255, 255, 255, 0.2);  
+            border-radius: 4px;  
+        }
+        .search-results {
+            margin-top: 10px;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .type-section {
+            scroll-margin-top: 100px;
+        }
+
+        .category-section {
+            margin-top: 40px;
+        }
+        .category-title {
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+         
+         
+        code {
+            border-radius: .3em;
+            padding: .4em;
+        }
+        h1,h2,h3,.list-unstyled  {
+            color: aliceblue;
+        }
+         
+        @media (min-width: 992px) {
+            .main-content {
+                margin-left: 270px;  
+                padding: 0 20px;     
+            }
+        }
+
+         
+        @media (min-width: 992px) {
+            .sidebar {
+                width: 270px;  
+            }
+        }
+    </style>
+</head>
+<body>
+   
+  
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">TyperBricks Docs <span class="text-muted"></span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
+            aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content" id="navbarContent">
+            
+            <div class="d-flex align-items-center">
+                
+                <form class="d-flex mb-3 mb-lg-0">
+                    
+                    <input style=" margin-left: 30px; margin-right: .5rem !important;width:100%;" class="form-control form-control-sm me-2" type="search" placeholder="Search" aria-label="Search" id="searchInput">
+                </form>
+            </div>
+            
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 d-lg-none">
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+   
+   <div class="container-fluid" style="margin-top: 90px;">
+    <div class="row">
+        
+        <nav class="col-lg-3 sidebar">
+            <div class="p-4">
+                <h5>TYPES</h5>
+                <ul class="list-unstyled">
+                    
+                    <li>
+                        <strong>composite</strong>
+                        <ul class="list-unstyled ms-3">
+                            
+                            <li><a href="#%3cFRAGMENT%3e" class="text-decoration-none">&lt;FRAGMENT&gt;</a></li>
+                            
+                            <li><a href="#%3cHYPERMEDIA%3e" class="text-decoration-none">&lt;HYPERMEDIA&gt;</a></li>
+                            
+                        </ul>
+                    </li>
+                    
+                </ul>
+            </div>
+        </nav>
+
+        
+        <main class="col-lg-9 main-content">
+            <h4>TyperBricks version </h4>
+            <h5></h5>
+            <h3>TyperBricks types reference</h3>
+            <div id="searchResults" class="search-results"></div>
+            
+            <div class="category-section" id="category-composite">
+                
+                
+                <section class="type-section mb-5" id="&lt;FRAGMENT&gt;">
+                    <h3>&lt;FRAGMENT&gt;</h3>
+                    <h4 class="category-title">Category: composite</h4>
+                    <h4>Type Description</h4>
+                    <p>
+                        
+                    
+                        
+                        <div class="property mb-3" id="&lt;FRAGMENT&gt;-MetaDocDescription">
+                            
+                            <p>A &lt;FRAGMENT&gt; dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.</p>
+                            <h5>Main Example</h5>
+                            <div class="position-relative">
+                                <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                                <pre><code class="hljs language-properties properties"># EXAMPLE
+fragment = &lt;FRAGMENT&gt;
+fragment.route = partial-content
+fragment.template = &lt;TEMPLATE&gt;
+fragment.template {
+
+	template = &lt;&lt;[
+		&lt;div&gt;{{content}}&lt;/div&gt;
+	]&gt;&gt;
+
+	isTemplate = true
+	values {
+	content = &lt;HTML&gt;
+	content.value = &lt;&lt;[
+		&lt;button hx-post=&#34;/justafragment&#34; hx-swap=&#34;outerHTML&#34;&gt;Click Me&lt;/button&gt;
+	]&gt;&gt;
+	}
+}
+
+==== expected output ====
+&lt;div&gt;
+  &lt;button hx-post=&#34;/justafragment&#34; hx-swap=&#34;outerHTML&#34;&gt;
+    Click Me
+  &lt;/button&gt;
+&lt;/div&gt;
+</code></pre>
+                            </div>
+                        </div>
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    </p>
+
+                    
+                    
+                    <div class="properties-list mb-4">
+                        <h4>Properties</h4>
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-HxResponse">HxResponse</a>
+                            
+                        
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Title">Title</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Route">Route</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Section">Section</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-BodyTag">BodyTag</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Enclose">Enclose</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Favicon">Favicon</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Template">Template</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Static">Static</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Index">Index</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Meta">Meta</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Doctype">Doctype</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-HtmlTag">HtmlTag</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Head">Head</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Css">Css</a>
+                            
+                        
+                            
+                                <a href="#%3cFRAGMENT%3e-Js">Js</a>
+                            
+                        
+                    </div>
+                    
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-HxResponse">
+                        <strong>HxResponse</strong>
+                        <p>HTMX response header configuration.</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+
+response {
+  hx_trigger = #content
+}
+
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Title">
+                        <strong>Title</strong>
+                        <p>The title of the fragment</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	title = A Fragment Title
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Route">
+                        <strong>Route</strong>
+                        <p>The route (URL-friendly identifier) for the fragment</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	route = fragment-route
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Section">
+                        <strong>Section</strong>
+                        <p>The section the fragment belongs to</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	section = some-section
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-BodyTag">
+                        <strong>BodyTag</strong>
+                        <p>Special body wrap with use of |. Please note that this will not work when a fragment.template is configured. In that case, you have to add the bodytag in the template.</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">no example yet</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Enclose">
+                        <strong>Enclose</strong>
+                        <p>Wrapping property for the fragment</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	enclose = &lt;div&gt;|&lt;/div&gt;
+}
+
+==== expected output ====
+&lt;div&gt;&lt;/div&gt;
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Favicon">
+                        <strong>Favicon</strong>
+                        <p>Path to the favicon for the fragment</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	favicon = /myfragment.ico
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Template">
+                        <strong>Template</strong>
+                        <p>Template configurations for rendering the fragment</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	# template
+	template {
+		template = &lt;&lt;[&lt;div&gt;Fragment: {{value}}&lt;/div&gt;]&gt;&gt; 
+		isTemplate = true
+		values {
+			value = some fragment value
+		}
+	}
+
+}
+
+==== expected output ====
+&lt;div&gt;
+  Fragment: some fragment value
+&lt;/div&gt;
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Static">
+                        <strong>Static</strong>
+                        <p>Static file path associated with the fragment</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	static = /some/static/path
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Index">
+                        <strong>Index</strong>
+                        <p>Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	index = 99
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Meta">
+                        <strong>Meta</strong>
+                        <p>Metadata for the fragment, such as descriptions and keywords</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+
+	meta = { 
+		description = Fragment description
+		keywords = fragment,test
+	}
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Doctype">
+                        <strong>Doctype</strong>
+                        <p>Doctype for the HTML document</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	doctype = &lt;!DOCTYPE html&gt;
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-HtmlTag">
+                        <strong>HtmlTag</strong>
+                        <p>The opening HTML tag with attributes</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	htmltag = &lt;html lang=&#34;fr&#34;&gt;
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Head">
+                        <strong>Head</strong>
+                        <p>Configurations for the head section of the fragment</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+
+	head {
+		meta {
+			charset = UTF-8
+		}
+	}
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Css">
+                        <strong>Css</strong>
+                        <p>CSS files associated with the fragment</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	css = [ fragstyles.css, morefrag.css ]
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-Js">
+                        <strong>Js</strong>
+                        <p>JavaScript files associated with the fragment</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+fragment = &lt;FRAGMENT&gt;
+fragment {
+	js = [ fragscript.js, anotherfrag.js ]
+}
+</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                </section>
+                
+                <section class="type-section mb-5" id="&lt;HYPERMEDIA&gt;">
+                    <h3>&lt;HYPERMEDIA&gt;</h3>
+                    <h4 class="category-title">Category: composite</h4>
+                    <h4>Type Description</h4>
+                    <p>
+                        
+                        <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-MetaDocDescription">
+                            
+                            <p>HYPERMEDIA description</p>
+                            <h5>Main Example</h5>
+                            <div class="position-relative">
+                                <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                                <pre><code class="hljs language-properties properties">
+hypermedia = &lt;HYPERMEDIA&gt;
+hypermedia {
+
+	title = just a title
+	route = index
+	section = main
+	
+}
+</code></pre>
+                            </div>
+                        </div>
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    </p>
+
+                    
+                    
+                    <div class="properties-list mb-4">
+                        <h4>Properties</h4>
+                        
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Title">Title</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Route">Route</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Section">Section</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-BodyTag">BodyTag</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Enclose">Enclose</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Favicon">Favicon</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Template">Template</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Static">Static</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Index">Index</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Meta">Meta</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Doctype">Doctype</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-HtmlTag">HtmlTag</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Head">Head</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Css">Css</a>
+                            
+                        
+                            
+                                <a href="#%3cHYPERMEDIA%3e-Js">Js</a>
+                            
+                        
+                    </div>
+                    
+                    
+                    
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Title">
+                        <strong>Title</strong>
+                        <p>The title of the hypermedia site</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+	hypermedia = &lt;HYPERMEDIA&gt;
+	hypermedia {
+		title = Welcome
+	}
+	</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Route">
+                        <strong>Route</strong>
+                        <p>The route (URL-friendly identifier) for the hypermedia</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+	hypermedia = &lt;HYPERMEDIA&gt;
+	hypermedia {
+		route = home
+	}
+	</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Section">
+                        <strong>Section</strong>
+                        <p>The section the hypermedia belongs to. This can be used with the component &lt;MENU&gt; for example.</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+	hypermedia = &lt;HYPERMEDIA&gt;
+	hypermedia {
+		section = main
+	}
+	</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-BodyTag">
+                        <strong>BodyTag</strong>
+                        <p>Special body wrap with use of |. Please note that this will not work when a &lt;HYPERMEDIA&gt;.template is configured. In that case, you have to add the bodytag in the template.</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">no example yet</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Enclose">
+                        <strong>Enclose</strong>
+                        <p>Enclosure of the property for the hypermedia</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">no example yet</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Favicon">
+                        <strong>Favicon</strong>
+                        <p>Path to the favicon for the hypermedia</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+	hypermedia = &lt;HYPERMEDIA&gt;
+	hypermedia {
+		favicon = /favicon.ico
+	}
+	</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Template">
+                        <strong>Template</strong>
+                        <p>Template configurations for rendering the hypermedia. See &lt;TEMPLATE&gt; for field descriptions.</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+	hypermedia = &lt;HYPERMEDIA&gt;
+	hypermedia {
+		template = { 
+			template = &lt;&lt;[
+				&lt;div&gt;{{myvalue}}&lt;/div&gt;
+			]&gt;&gt; 
+			
+			values {
+				myvalue = some value
+			}
+			
+			}
+	}
+	</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Static">
+                        <strong>Static</strong>
+                        <p>Static file path associated with the hypermedia, for rendering out the hypermedia to static files.</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+	hypermedia = &lt;HYPERMEDIA&gt;
+	hypermedia {
+		static = /static/path
+	}
+	</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Index">
+                        <strong>Index</strong>
+                        <p>Index number is a sort order option for the hypermedia defined in the section field. See &lt;MENU&gt; for further explanation and field options</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">no example yet</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Meta">
+                        <strong>Meta</strong>
+                        <p>Metadata for the hypermedia, such as descriptions and keywords</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+		hypermedia = &lt;HYPERMEDIA&gt;
+		hypermedia {
+			meta = { 
+				description = Test meta 
+				keywords = test,hypermedia
+			}
+		}
+		</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Doctype">
+                        <strong>Doctype</strong>
+                        <p>Alternative Doctype for the HTML document</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+	hypermedia = &lt;HYPERMEDIA&gt;
+	hypermedia {
+		doctype = &lt;!DOCTYPE html&gt;
+	}
+	</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-HtmlTag">
+                        <strong>HtmlTag</strong>
+                        <p>The opening HTML tag with attributes</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+	hypermedia = &lt;HYPERMEDIA&gt;
+	hypermedia {
+		htmltag = &lt;html lang=&#34;en&#34;&gt;
+	}
+	</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Head">
+                        <strong>Head</strong>
+                        <p>Configurations for the head section of the hypermedia</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+	hypermedia = &lt;HYPERMEDIA&gt;
+	hypermedia {
+		head { 
+				meta { 
+					charset = UTF-8 
+				} 
+			}
+	}
+	</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Css">
+                        <strong>Css</strong>
+                        <p>CSS files associated with the hypermedia</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+	hypermedia = &lt;HYPERMEDIA&gt;
+	hypermedia {
+		css = [ styles.css, theme.css ]
+	}
+	</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Js">
+                        <strong>Js</strong>
+                        <p>JavaScript files associated with the hypermedia</p>
+                        <h5>Example</h5>
+                        <div class="position-relative">
+                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
+                            <pre><code class="hljs language-properties properties">
+	hypermedia = &lt;HYPERMEDIA&gt;
+	hypermedia {
+		js = [ script.js, app.js ]
+	}
+	</code></pre>
+                        </div>
+                    </div>
+                    
+                    
+                </section>
+                
+            </div>
+            
+        </main>
+    </div>
+</div>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    
+    document.addEventListener("DOMContentLoaded", () => {
+        const sections = document.querySelectorAll("section.type-section");
+        const navLinks = document.querySelectorAll(".navbar-nav .nav-link");
+
+        window.addEventListener("scroll", () => {
+            let current = "";
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 80;
+                if (pageYOffset >= sectionTop) {
+                    current = section.getAttribute("id");
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove("active");
+                if (link.getAttribute("href") === `#${current}`) {
+                    link.classList.add("active");
+                }
+            });
+        });
+    });
+
+    
+    document.getElementById('searchInput').addEventListener('input', function () {
+        const query = this.value.toLowerCase();
+        const sections = document.querySelectorAll('.type-section');
+        const categories = document.querySelectorAll('.category-section');
+        const resultsContainer = document.getElementById('searchResults');
+        resultsContainer.innerHTML = '';
+
+        let resultsFound = false;
+
+        sections.forEach(section => {
+            const title = section.querySelector('h3').textContent.toLowerCase();
+            if (title.includes(query)) {
+                resultsFound = true;
+                section.style.display = 'block';
+                const resultLink = document.createElement('a');
+                resultLink.href = `#${section.id}`;
+                resultLink.textContent = title;
+                resultLink.className = 'text-decoration-none d-block text-primary';
+                resultsContainer.appendChild(resultLink);
+            } else {
+                section.style.display = query ? 'none' : 'block';
+            }
+        });
+
+        
+        categories.forEach(category => {
+            const visibleSections = category.querySelectorAll('.type-section:not([style*="display: none"])');
+            category.style.display = visibleSections.length > 0 ? 'block' : 'none';
+        });
+
+        if (!resultsFound && query) {
+            resultsContainer.innerHTML = '<p class="text-danger">No results found</p>';
+        }
+    });
+    document.addEventListener("DOMContentLoaded", () => {
+        
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
+    });
+    document.addEventListener("DOMContentLoaded", () => {
+        const copyButtons = document.querySelectorAll(".copy-btn");
+
+        copyButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                const codeBlock = this.nextElementSibling.querySelector("code");
+                const codeText = codeBlock.innerText;
+
+                navigator.clipboard.writeText(codeText).then(() => {
+                    this.textContent = "Copied!";
+                    setTimeout(() => (this.textContent = "Copy"), 2000);
+                }).catch(err => {
+                    console.error("Failed to copy text:", err);
+                });
+            });
+        });
+    });
+    </script>
+</body>
+</html>

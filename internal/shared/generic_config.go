@@ -2,7 +2,7 @@ package shared
 
 // GENERIC CONFIG FIELDS
 type Meta struct {
-	ConfigType     string `mapstructure:"@type"`
+	ConfigType     string `mapstructure:"@type" description:"Identification for renderer"`
 	ConfigCategory string
 	Key            string `mapstructure:"key"`
 	Path           string `mapstructure:"path"`

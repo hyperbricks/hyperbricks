@@ -13,8 +13,8 @@ import (
 // FragmentConfig represents configuration for a single fragment.
 type FragmentConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	HxResponse         `mapstructure:"response"`
-	MetaDocDescription string                 `mapstructure:"@doc" description:"FRAGMENT description" example:"{!{fragment.hyperbricks}}"`
+	HxResponse         `mapstructure:"response" description:"HTMX response header configuration." example:"{!{fragment-response.hyperbricks}}"`
+	MetaDocDescription string                 `mapstructure:"@doc" description:"A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience." example:"{!{fragment.hyperbricks}}"`
 	HxResponseWriter   http.ResponseWriter    `mapstructure:"hx_response"`
 	Title              string                 `mapstructure:"title" description:"The title of the fragment" example:"{!{fragment-title.hyperbricks}}"`
 	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{fragment-route.hyperbricks}}"`

@@ -13,5 +13,6 @@ fragment {
 }
 
 ==== expected output ====
-<div>Fragment: some fragment value</div>
-								
+<div>
+  Fragment: some fragment value
+</div>

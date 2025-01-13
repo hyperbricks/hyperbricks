@@ -1,0 +1,9 @@
+
+fragment = <FRAGMENT>
+fragment {
+
+response {
+  hx_trigger = #content
+}
+
+}

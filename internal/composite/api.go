@@ -46,42 +46,72 @@ type HxFormData struct {
 	HxQuery   map[string]interface{} `mapstructure:"query"`
 }
 
+// | Field                   | `mapstructure` Key          | HTTP Header               | Description                                                                        |
+// |-------------------------|-----------------------------|---------------------------|------------------------------------------------------------------------------------|
+// | **HxTemplateResult**    | *(none)*                   | *(none)*                  | Just for output of the parsed template.                                           |
+// | **HxLocation**          | `hx_location`              | `HX-Location`             | Allows you to do a client-side redirect that does not do a full page reload.      |
+// | **HxPushedUrl**         | `hx_push-url`              | `HX-Pushed-Url`           | Pushes a new URL into the browser’s history stack.                                |
+// | **HxRedirect**          | `hx_redirect`              | `HX-Redirect`             | Can be used to do a client-side redirect to a new location.                       |
+// | **HxRefresh**           | `hx_refresh`               | `HX-Refresh`              | If set to `true`, the client-side will do a full refresh of the page.             |
+// | **HxReplaceUrl**        | `hx_replace-url`           | `HX-Replace-Url`          | Replaces the current URL in the location bar.                                     |
+// | **HxReswap**            | `hx_reswap`                | `HX-Reswap`               | Allows you to specify how the response will be swapped.                           |
+// | **HxRetarget**          | `hx_retarget`              | `HX-Retarget`             | A CSS selector that updates the target of the content update.                     |
+// | **HxReselect**          | `hx_reselect`              | `HX-Reselect`             | A CSS selector that allows you to choose which part of the response is swapped in.|
+// | **HxTrigger**           | `hx_trigger`               | `HX-Trigger`              | Allows you to trigger client-side events.                                         |
+// | **HxTriggerafterSettle**| `hx_trigger_after_settle`  | `HX-Trigger-After-Settle` | Allows you to trigger client-side events after the settle step.                   |
+// | **HxTriggerafterSwap**  | `hx_trigger_after_swap`    | `HX-Trigger-After-Swap`   | Allows you to trigger client-side events after the swap step.                     |
+
 type HxRequest struct {
-	HxFormData    HxFormData    `mapstructure:"hx_form_data"`
-	HXQuery       HxQueryConfig `mapstructure:"hx_query" description:"Middleware chain query"`
-	HXDescription string        `mapstructure:"hx_description" description:"HxRoute description"`
-	HXModel       ModelConfig   `mapstructure:"hx_model" description:"A map[string]interface{} with field descriptions"`
-	HXTable       string        `mapstructure:"hx_table" description:"The database table name"`
-	HXDb          string        `mapstructure:"hx_db" description:"The database (a path to a sqlite3 database at this stage)"`
+	HxFormData    HxFormData    `mapstructure:"hx_request_form_data"`
+	HXQuery       HxQueryConfig `mapstructure:"hx_request_query" description:"Middleware chain query"`
+	HXDescription string        `mapstructure:"hx_request_description" description:"HxRoute description"`
+	HXModel       ModelConfig   `mapstructure:"hx_request_model" description:"A map[string]interface{} with field descriptions"`
+	HXTable       string        `mapstructure:"hx_request_table" description:"The database table name"`
+	HXDb          string        `mapstructure:"hx_request_db" description:"The database (a path to a sqlite3 database at this stage)"`
 
-	HXTemplate      string `mapstructure:"hx_template" description:"Template for rendering the data and send back to the client" example:"{!{hxapi-template.hyperbricks}}"`
-	HXErrorTemplate string `mapstructure:"hx_error_template" description:"Template that is renderend send when an error occurs"`
+	HXTemplate      string `mapstructure:"hx_request_template" description:"Template for rendering the data and send back to the client" example:"{!{hxapi-template.hyperbricks}}"`
+	HXErrorTemplate string `mapstructure:"hx_request_error_template" description:"Template that is renderend send when an error occurs"`
 
-	HxRoute          string `mapstructure:"hx_route" description:"identifier for the hxapi" example:"{!{hxapi-route.hyperbricks}}"`
-	HxMethod         string `mapstructure:"hx_method"`
-	HxBoosted        string `mapstructure:"hx_boosted" description:"indicates that the request is via an element using hx_boost"`
-	HxCurrentUrl     string `mapstructure:"hx_current-url" description:"the current url of the browser"`
-	HxHistoryRestore string `mapstructure:"hx_history-restore-request" description:"true if the request is for history restoration after a miss in the local history cache"`
-	HxPrompt         string `mapstructure:"hx_prompt" description:"the user response to an hx_prompt"`
-	HxRequestFlag    string `mapstructure:"hx_request" description:"always true"`
-	HxTarget         string `mapstructure:"hx_target" description:"the id of the target element if it exists"`
-	HxTriggerName    string `mapstructure:"hx_trigger-name" description:"the name of the triggered element if it exists"`
-	HxTrigger        string `mapstructure:"hx_trigger" description:"the id of the triggered element if it exists"`
+	HxRoute          string `mapstructure:"hx_request_route" description:"identifier for the hxapi" example:"{!{hxapi-route.hyperbricks}}"`
+	HxMethod         string `mapstructure:"hx_request_method"`
+	HxBoosted        string `mapstructure:"hx_request_boosted" description:"indicates that the request is via an element using hx_boost"`
+	HxCurrentUrl     string `mapstructure:"hx_request_current-url" description:"the current url of the browser"`
+	HxHistoryRestore string `mapstructure:"hx_request_history-restore-request" description:"true if the request is for history restoration after a miss in the local history cache"`
+	HxPrompt         string `mapstructure:"hx_request_prompt" description:"the user response to an hx_prompt"`
+	HxRequestFlag    string `mapstructure:"hx_request_request" description:"always true"`
+	HxTarget         string `mapstructure:"hx_request_target" description:"the id of the target element if it exists"`
+	HxTriggerName    string `mapstructure:"hx_request_trigger-name" description:"the name of the triggered element if it exists"`
+	HxTrigger        string `mapstructure:"hx_request_trigger" description:"the id of the triggered element if it exists"`
 }
+
+// | Field                     | `mapstructure` Key        | HTTP Header              | Description                                                                                                        |
+// |---------------------------|---------------------------|--------------------------|--------------------------------------------------------------------------------------------------------------------|
+// | **HxTemplateResult**      | *(none)*                  | *(none)*                 | Output of a parsed template (e.g., HTML). Not associated with a specific HTMX header.                              |
+// | **HxLocation**            | `hx_location`             | `HX-Location`            | Performs a client-side redirect without a full page reload.                                                        |
+// | **HxPushedUrl**           | `hx_push-url`             | `HX-Pushed-Url`          | Pushes a new URL into the browser’s history stack.                                                                 |
+// | **HxRedirect**            | `hx_redirect`             | `HX-Redirect`            | Triggers a client-side redirect (full-page load) to the specified URL.                                             |
+// | **HxRefresh**             | `hx_refresh`              | `HX-Refresh`             | If set to `true`, forces a full page refresh on the client.                                                        |
+// | **HxReplaceUrl**          | `hx_replace-url`          | `HX-Replace-Url`         | Replaces the current URL in the location bar without pushing a new entry in history.                               |
+// | **HxReswap**              | `hx_reswap`               | `HX-Reswap`              | Defines how the incoming response content should be swapped (e.g., innerHTML, outerHTML, beforebegin, afterend).   |
+// | **HxRetarget**            | `hx_retarget`             | `HX-Retarget`            | A CSS selector to update the target element for swapping in the new content.                                       |
+// | **HxReselect**            | `hx_reselect`             | `HX-Reselect`            | A CSS selector specifying which part of the returned HTML should be swapped in.                                    |
+// | **HxTrigger**             | `hx_trigger`              | `HX-Trigger`             | Triggers one or more client-side events (space-separated list).                                                    |
+// | **HxTriggerafterSettle**  | `hx_trigger_after_settle` | `HX-Trigger-After-Settle`| Triggers client-side events after the "settle" step of the HTMX request lifecycle.                                 |
+// | **HxTriggerafterSwap**    | `hx_trigger_after_swap`   | `HX-Trigger-After-Swap`  | Triggers client-side events after the "swap" step of the HTMX request lifecycle.                                   |
 
 type HxResponse struct {
 	HxTemplateResult     string // just for output of the parsed template
-	HxLocation           string `mapstructure:"hx_location" header:"HX-Location"  description:"allows you to do a client-side redirect that does not do a full page reload"`
-	HxPushedUrl          string `mapstructure:"hx_push-url" header:"HX-Pushed-Url" description:"pushes a new url into the history stack"`
-	HxRedirect           string `mapstructure:"hx_redirect" header:"HX-Redirect" description:"can be used to do a client-side redirect to a new location"`
-	HxRefresh            string `mapstructure:"hx_refresh" header:"HX-Refresh" description:"if set to 'true' the client-side will do a full refresh of the page"`
-	HxReplaceUrl         string `mapstructure:"hx_replace-url" header:"HX-Replace-Url" description:"replaces the current url in the location bar"`
-	HxReswap             string `mapstructure:"hx_reswap" header:"HX-Reswap" description:"allows you to specify how the response will be swapped"`
-	HxRetarget           string `mapstructure:"hx_retarget" header:"HX-Retarget" description:"a css selector that updates the target of the content update"`
-	HxReselect           string `mapstructure:"hx_reselect" header:"HX-Reselect" description:"a css selector that allows you to choose which part of the response is used to be swapped in"`
-	HxTrigger            string `mapstructure:"hx_trigger" header:"HX-Trigger" description:"allows you to trigger client-side events"`
-	HxTriggerafterSettle string `mapstructure:"hx_trigger_after_settle"  header:"HX-Trigger-After-Settle" description:"allows you to trigger client-side events after the settle step"`
-	HxTriggerafterSwap   string `mapstructure:"hx_trigger_after_swap"  header:"HX-Trigger-After-Swap" description:"allows you to trigger client-side events after the swap step"`
+	HxLocation           string `mapstructure:"hx_response_location" header:"HX-Location"  description:"allows you to do a client-side redirect that does not do a full page reload" `
+	HxPushedUrl          string `mapstructure:"hx_response_push_url" header:"HX-Pushed-Url" description:"pushes a new url into the history stack"`
+	HxRedirect           string `mapstructure:"hx_response_redirect" header:"HX-Redirect" description:"can be used to do a client-side redirect to a new location"`
+	HxRefresh            string `mapstructure:"hx_response_refresh" header:"HX-Refresh" description:"if set to 'true' the client-side will do a full refresh of the page"`
+	HxReplaceUrl         string `mapstructure:"hx_response_replace_url" header:"HX-Replace-Url" description:"replaces the current url in the location bar"`
+	HxReswap             string `mapstructure:"hx_response_reswap" header:"HX-Reswap" description:"allows you to specify how the response will be swapped"`
+	HxRetarget           string `mapstructure:"hx_response_retarget" header:"HX-Retarget" description:"a css selector that updates the target of the content update"`
+	HxReselect           string `mapstructure:"hx_response_reselect" header:"HX-Reselect" description:"a css selector that allows you to choose which part of the response is used to be swapped in"`
+	HxTrigger            string `mapstructure:"hx_response_trigger" header:"HX-Trigger" description:"allows you to trigger client-side events"`
+	HxTriggerafterSettle string `mapstructure:"hx_response_trigger_after_settle"  header:"HX-Trigger-After-Settle" description:"allows you to trigger client-side events after the settle step"`
+	HxTriggerafterSwap   string `mapstructure:"hx_response_trigger_after_swap"  header:"HX-Trigger-After-Swap" description:"allows you to trigger client-side events after the swap step"`
 }
 
 type ModelConfig struct {

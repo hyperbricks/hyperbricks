@@ -1,5 +1,25 @@
-
+# EXAMPLE
 fragment = <FRAGMENT>
-fragment {
-#main
+fragment.route = partial-content
+fragment.template = <TEMPLATE>
+fragment.template {
+
+	template = <<[
+		<div>{{content}}</div>
+	]>>
+
+	isTemplate = true
+	values {
+	content = <HTML>
+	content.value = <<[
+		<button hx-post="/justafragment" hx-swap="outerHTML">Click Me</button>
+	]>>
+	}
 }
+
+==== expected output ====
+<div>
+  <button hx-post="/justafragment" hx-swap="outerHTML">
+    Click Me
+  </button>
+</div>

@@ -12,7 +12,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
     
     <script>
-
          
             (()=>{var e=(()=>{"use strict";return e=>{
             const n="[ \\t\\f]*",t=n+"[:=]"+n,s="[ \\t\\f]+",a="([^\\\\:= \\t\\f\\n]|\\\\.)+",r={
@@ -184,7 +183,7 @@
         
         <main class="col-lg-9 main-content">
             <h4>TyperBricks version v0.1.0-alpha</h4>
-            <h5>2025-01-12T12:19:52Z</h5>
+            <h5>2025-01-13T08:12:52Z</h5>
             <h3>TyperBricks types reference</h3>
             <div id="searchResults" class="search-results"></div>
             
@@ -197,17 +196,39 @@
                     <h4>Type Description</h4>
                     <p>
                         
+                    
+                        
                         <div class="property mb-3" id="&lt;FRAGMENT&gt;-MetaDocDescription">
                             
-                            <p>FRAGMENT description</p>
+                            <p>A &lt;FRAGMENT&gt; dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.</p>
                             <h5>Main Example</h5>
                             <div class="position-relative">
                                 <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
-                                <pre><code class="hljs language-properties properties">
+                                <pre><code class="hljs language-properties properties"># EXAMPLE
 fragment = &lt;FRAGMENT&gt;
-fragment {
-#main
+fragment.route = partial-content
+fragment.template = &lt;TEMPLATE&gt;
+fragment.template {
+
+	template = &lt;&lt;[
+		&lt;div&gt;{{content}}&lt;/div&gt;
+	]&gt;&gt;
+
+	isTemplate = true
+	values {
+	content = &lt;HTML&gt;
+	content.value = &lt;&lt;[
+		&lt;button hx-post=&#34;/justafragment&#34; hx-swap=&#34;outerHTML&#34;&gt;Click Me&lt;/button&gt;
+	]&gt;&gt;
+	}
 }
+
+==== expected output ====
+&lt;div&gt;
+  &lt;button hx-post=&#34;/justafragment&#34; hx-swap=&#34;outerHTML&#34;&gt;
+    Click Me
+  &lt;/button&gt;
+&lt;/div&gt;
 </code></pre>
                             </div>
                         </div>
@@ -250,7 +271,9 @@ fragment {
                         <h4>Properties</h4>
                         
                             
+                                <a href="#%3cFRAGMENT%3e-HxResponse">HxResponse</a>
                             
+                        
                             
                         
                             
@@ -317,20 +340,45 @@ fragment {
                     
                     
                     
-                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-MetaDocDescription">
-                        <strong>MetaDocDescription</strong>
-                        <p>FRAGMENT description</p>
+                    
+                    <div class="property mb-3" id="&lt;FRAGMENT&gt;-HxResponse">
+                        <strong>HxResponse</strong>
+                        <p>HTMX response header configuration.</p>
                         <h5>Example</h5>
                         <div class="position-relative">
                             <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
                             <pre><code class="hljs language-properties properties">
 fragment = &lt;FRAGMENT&gt;
 fragment {
-#main
+
+response {
+  hx_trigger = #content
+
+	# | Field                 | mapstructure Key        | HTTP Header            | Description                                                                                                        |
+	# |-----------------------|-------------------------|------------------------|--------------------------------------------------------------------------------------------------------------------|
+	# | HxTemplateResult      | *(none)*                | *(none)*               | Output of a parsed template (e.g., HTML). Not associated with a specific HTMX header.                              |
+	# | HxLocation            | hx_location             | HX-Location            | Performs a client-side redirect without a full page reload.                                                        |
+	# | HxPushedUrl           | hx_push-url             | HX-Pushed-Url          | Pushes a new URL into the browser’s history stack.                                                                 |
+	# | HxRedirect            | hx_redirect             | HX-Redirect            | Triggers a client-side redirect (full-page load) to the specified URL.                                             |
+	# | HxRefresh             | hx_refresh              | HX-Refresh             | If set to true, forces a full page refresh on the client.                                                        |
+	# | HxReplaceUrl          | hx_replace-url          | HX-Replace-Url         | Replaces the current URL in the location bar without pushing a new entry in history.                               |
+	# | HxReswap              | hx_reswap               | HX-Reswap              | Defines how the incoming response content should be swapped (e.g., innerHTML, outerHTML, beforebegin, afterend).   |
+	# | HxRetarget            | hx_retarget             | HX-Retarget            | A CSS selector to update the target element for swapping in the new content.                                       |
+	# | HxReselect            | hx_reselect             | HX-Reselect            | A CSS selector specifying which part of the returned HTML should be swapped in.                                    |
+	# | HxTrigger             | hx_trigger              | HX-Trigger             | Triggers one or more client-side events (space-separated list).                                                    |
+	# | HxTriggerafterSettle  | hx_trigger_after_settle | HX-Trigger-After-Settle| Triggers client-side events after the &#34;settle&#34; step of the HTMX request lifecycle.                                 |
+	# | HxTriggerafterSwap    | hx_trigger_after_swap   | HX-Trigger-After-Swap  | Triggers client-side events after the &#34;swap&#34; step of the HTMX request lifecycle.                                   |
+
+}
+
 }
 </code></pre>
                         </div>
                     </div>
+                    
+                    
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Title">
                         <strong>Title</strong>
@@ -347,6 +395,8 @@ fragment {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Route">
                         <strong>Route</strong>
                         <p>The route (URL-friendly identifier) for the fragment</p>
@@ -361,6 +411,8 @@ fragment {
 </code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Section">
                         <strong>Section</strong>
@@ -377,6 +429,8 @@ fragment {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-BodyTag">
                         <strong>BodyTag</strong>
                         <p>Special body wrap with use of |. Please note that this will not work when a fragment.template is configured. In that case, you have to add the bodytag in the template.</p>
@@ -386,6 +440,8 @@ fragment {
                             <pre><code class="hljs language-properties properties">no example yet</code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Enclose">
                         <strong>Enclose</strong>
@@ -401,9 +457,11 @@ fragment {
 
 ==== expected output ====
 &lt;div&gt;&lt;/div&gt;
-								</code></pre>
+</code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Favicon">
                         <strong>Favicon</strong>
@@ -419,6 +477,8 @@ fragment {
 </code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Template">
                         <strong>Template</strong>
@@ -441,10 +501,14 @@ fragment {
 }
 
 ==== expected output ====
-&lt;div&gt;Fragment: some fragment value&lt;/div&gt;
-								</code></pre>
+&lt;div&gt;
+  Fragment: some fragment value
+&lt;/div&gt;
+</code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Static">
                         <strong>Static</strong>
@@ -461,6 +525,8 @@ fragment {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Index">
                         <strong>Index</strong>
                         <p>Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation</p>
@@ -475,6 +541,8 @@ fragment {
 </code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Meta">
                         <strong>Meta</strong>
@@ -495,6 +563,8 @@ fragment {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Doctype">
                         <strong>Doctype</strong>
                         <p>Doctype for the HTML document</p>
@@ -510,6 +580,8 @@ fragment {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-HtmlTag">
                         <strong>HtmlTag</strong>
                         <p>The opening HTML tag with attributes</p>
@@ -524,6 +596,8 @@ fragment {
 </code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Head">
                         <strong>Head</strong>
@@ -545,6 +619,8 @@ fragment {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Css">
                         <strong>Css</strong>
                         <p>CSS files associated with the fragment</p>
@@ -560,6 +636,8 @@ fragment {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;FRAGMENT&gt;-Js">
                         <strong>Js</strong>
                         <p>JavaScript files associated with the fragment</p>
@@ -574,6 +652,7 @@ fragment {
 </code></pre>
                         </div>
                     </div>
+                    
                     
                 </section>
                 
@@ -640,8 +719,6 @@ hypermedia {
                         <h4>Properties</h4>
                         
                             
-                            
-                            
                         
                             
                                 <a href="#%3cHYPERMEDIA%3e-Title">Title</a>
@@ -707,24 +784,8 @@ hypermedia {
                     
                     
                     
-                    <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-MetaDocDescription">
-                        <strong>MetaDocDescription</strong>
-                        <p>HYPERMEDIA description</p>
-                        <h5>Example</h5>
-                        <div class="position-relative">
-                            <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
-                            <pre><code class="hljs language-properties properties">
-hypermedia = &lt;HYPERMEDIA&gt;
-hypermedia {
-
-	title = just a title
-	route = index
-	section = main
-	
-}
-</code></pre>
-                        </div>
-                    </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Title">
                         <strong>Title</strong>
@@ -741,6 +802,8 @@ hypermedia {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Route">
                         <strong>Route</strong>
                         <p>The route (URL-friendly identifier) for the hypermedia</p>
@@ -755,6 +818,8 @@ hypermedia {
 	</code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Section">
                         <strong>Section</strong>
@@ -771,6 +836,8 @@ hypermedia {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-BodyTag">
                         <strong>BodyTag</strong>
                         <p>Special body wrap with use of |. Please note that this will not work when a &lt;HYPERMEDIA&gt;.template is configured. In that case, you have to add the bodytag in the template.</p>
@@ -781,6 +848,8 @@ hypermedia {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Enclose">
                         <strong>Enclose</strong>
                         <p>Enclosure of the property for the hypermedia</p>
@@ -790,6 +859,8 @@ hypermedia {
                             <pre><code class="hljs language-properties properties">no example yet</code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Favicon">
                         <strong>Favicon</strong>
@@ -805,6 +876,8 @@ hypermedia {
 	</code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Template">
                         <strong>Template</strong>
@@ -830,6 +903,8 @@ hypermedia {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Static">
                         <strong>Static</strong>
                         <p>Static file path associated with the hypermedia, for rendering out the hypermedia to static files.</p>
@@ -845,6 +920,8 @@ hypermedia {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Index">
                         <strong>Index</strong>
                         <p>Index number is a sort order option for the hypermedia defined in the section field. See &lt;MENU&gt; for further explanation and field options</p>
@@ -854,6 +931,8 @@ hypermedia {
                             <pre><code class="hljs language-properties properties">no example yet</code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Meta">
                         <strong>Meta</strong>
@@ -873,6 +952,8 @@ hypermedia {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Doctype">
                         <strong>Doctype</strong>
                         <p>Alternative Doctype for the HTML document</p>
@@ -888,6 +969,8 @@ hypermedia {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-HtmlTag">
                         <strong>HtmlTag</strong>
                         <p>The opening HTML tag with attributes</p>
@@ -902,6 +985,8 @@ hypermedia {
 	</code></pre>
                         </div>
                     </div>
+                    
+                    
                     
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Head">
                         <strong>Head</strong>
@@ -922,6 +1007,8 @@ hypermedia {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Css">
                         <strong>Css</strong>
                         <p>CSS files associated with the hypermedia</p>
@@ -937,6 +1024,8 @@ hypermedia {
                         </div>
                     </div>
                     
+                    
+                    
                     <div class="property mb-3" id="&lt;HYPERMEDIA&gt;-Js">
                         <strong>Js</strong>
                         <p>JavaScript files associated with the hypermedia</p>
@@ -951,6 +1040,7 @@ hypermedia {
 	</code></pre>
                         </div>
                     </div>
+                    
                     
                 </section>
                 
