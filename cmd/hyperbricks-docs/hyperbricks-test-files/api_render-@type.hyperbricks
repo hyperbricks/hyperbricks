@@ -1,0 +1,22 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	10 = <HTML>
+	10.value = <p>HELLO WORLD<p>
+	enclose = <div>|</div>
+}
+==== explainer ====
+This code does blah blah blah....
+And is hey hey hey
+==== expected json ====
+{
+	
+	"10":{
+		"@type": "<HTML>",
+		"value": "<p>HELLO WORLD<p>"
+	},
+	"enclose":"<div>|</div>"
+	
+}
+==== expected output ====
+<div><p>HELLO WORLD<p></div>

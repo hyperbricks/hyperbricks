@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"reflect"
 	"regexp"
@@ -16,6 +17,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/render"
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
+	"github.com/hyperbricks/hyperbricks/internal/typefactory"
 )
 
 type DocumentationTypeStruct struct {
@@ -215,7 +217,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 		// Process non-embedded fields first
 		val := reflect.ValueOf(cfg.Config)
-		fmt.Print(processFieldsWithSquash(val, cfg, t))
+		fmt.Print(processFieldsWithSquash(val, cfg, t, rm))
 
 		// Iterate through embedded fields
 		for embeddedName, fieldTag := range cfg.Embedded {
@@ -223,14 +225,14 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 			field := findFieldByName(val, embeddedName)
 			if field.IsValid() {
-				fmt.Print(processFieldsWithSquash(field, cfg, t))
+				fmt.Print(processFieldsWithSquash(field, cfg, t, rm))
 			} else {
 				fmt.Printf("Field %s not found in Config\n", embeddedName)
 			}
 		}
 	}
 }
-func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *testing.T) string {
+func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *testing.T, rm *render.RenderManager) string {
 	var out strings.Builder
 
 	if val.Kind() == reflect.Ptr {
@@ -246,7 +248,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 		tag := field.Tag.Get("mapstructure")
 		if tag == ",squash" {
 			// Recursively process embedded fields
-			out.WriteString(processFieldsWithSquash(val.Field(i), cfg, t))
+			out.WriteString(processFieldsWithSquash(val.Field(i), cfg, t, rm))
 
 		}
 		var example string
@@ -258,7 +260,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				//out.WriteString(fmt.Sprintf("example: %s\n", example))
 			} else if field.Tag.Get("mapstructure") != "" {
 				file := strings.ToLower(cfg.Name) + "-" + tag
-				example = _checkAndReadFile("{!{" + file + "}}")
+				example = _checkAndReadFile("{!{" + file + ".hyperbricks}}")
 				//out.WriteString(fmt.Sprintf("example: %s\n", example))
 
 			}
@@ -288,7 +290,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 					fmt.Println("Error encoding JSON:", err)
 					return
 				}
-				fmt.Print(buf.String())
+				//fmt.Print(buf.String())
 				var expected map[string]interface{}
 
 				// Convert JSON string to bytes and unmarshal into the map
@@ -296,14 +298,14 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 					fmt.Println("Error unmarshaling JSON:", err)
 					return
 				}
-				fmt.Printf("JSON string: %s", parsed.ExpectedJSONAsString)
-				fmt.Printf("converted JSON object: %v", expected)
+				//fmt.Printf("JSON string: %s", parsed.ExpectedJSONAsString)
+				//fmt.Printf("converted JSON object: %v", expected)
 
 				//fmt.Println("\nExpected Output:")
 				//fmt.Println(parsed.ExpectedOutput)
 				// Parse the combined configuration.
 				parsedConfig := parser.ParseHyperScript(parsed.HyperbricksConfig)
-				fmt.Printf("got obj from hyperscript:%v", parsedConfig)
+				//fmt.Printf("got obj from hyperscript:%v", parsedConfig)
 				// Convert the struct to JSON
 				// jsonBytes, err := json.MarshalIndent(parsedConfig[parsed.HyperbricksConfigScope], "", "  ")
 				// if err != nil {
@@ -313,11 +315,42 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				// fmt.Printf("Hyperscript object:%s", string(jsonBytes))
 
 				// Prepare a variable of type map[string]interface{}
+				// Create a TypeRequest for the TypeFactory.
+
+				// Extract the relevant scope data.
+				scopeData, ok := parsedConfig[parsed.HyperbricksConfigScope].(map[string]interface{})
+				if !ok {
+					t.Errorf("Scope '%s' not found or invalid type", parsed.HyperbricksConfigScope)
+					return
+				}
+
+				request := typefactory.TypeRequest{
+					TypeName: scopeData["@type"].(string),
+					Data:     scopeData,
+				}
+
+				// Use the RenderManager to instantiate the configuration.
+				response, err := rm.MakeInstance(request)
+				if err != nil {
+					t.Errorf("Error creating instance: %v", err)
+					return
+				}
+				fmt.Printf("response object:%v", response)
+
+				result, errr := rm.Render(request.TypeName, scopeData)
+				if errr != nil {
+					log.Printf("%v", errr)
+				}
+
+				fmt.Printf("\nrendered result:%s", result)
+				fmt.Printf("\nexpected result:%s", parsed.ExpectedOutput)
+
+				// TO COMPARE THIS....
 
 				if !reflect.DeepEqual(parsed.ExpectedJSON, parsedConfig[parsed.HyperbricksConfigScope]) {
 					t.Errorf("Test failed for %s!\nExpected:\n%#v\nGot:\n%#v", strings.ToLower(cfg.Name)+"-"+tag, expected, parsedConfig[parsed.HyperbricksConfigScope])
 				} else {
-
+					// add to docs....
 				}
 			})
 
@@ -447,7 +480,7 @@ This code does blah blah blah....
 And is hey hey hey
 ==== expected json ====
 {
-	"@type":"<FRAGMENT>"
+	"@type":"<FRAGMENT>",
 	"10":{
 		"@type": "<HTML>",
 		"value": "<p>HELLO WORLD<p>"
@@ -458,7 +491,6 @@ And is hey hey hey
 ==== expected output ====
 <div><p>HELLO WORLD<p></div>
 `
-
 			// Write content to the file
 			_, err = f.WriteString(content)
 			if err != nil {
