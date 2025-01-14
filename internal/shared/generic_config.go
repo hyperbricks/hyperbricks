@@ -2,11 +2,11 @@ package shared
 
 // GENERIC CONFIG FIELDS
 type Meta struct {
-	ConfigType     string `mapstructure:"@type" description:"Identification for renderer"`
+	ConfigType     string `mapstructure:"@type" exclude:"true" description:"Identification for renderer"`
 	ConfigCategory string
-	Key            string `mapstructure:"key"`
-	Path           string `mapstructure:"path"`
-	File           string `mapstructure:"file"`
+	Key            string `mapstructure:"key" exclude:"true"`
+	Path           string `mapstructure:"path" exclude:"true"`
+	File           string `mapstructure:"file" exclude:"true"`
 }
 
 type CompositeRendererConfig struct {

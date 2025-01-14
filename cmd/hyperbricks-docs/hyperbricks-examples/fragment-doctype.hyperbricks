@@ -1,5 +1,0 @@
-
-fragment = <FRAGMENT>
-fragment {
-	doctype = <!DOCTYPE html>
-}

@@ -1,7 +1,0 @@
-
-head = <HEAD>
-head {
-meta { 
-			description = Example head description
-			}
-}

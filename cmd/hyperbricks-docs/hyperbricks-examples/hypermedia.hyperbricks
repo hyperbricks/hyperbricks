@@ -1,9 +1,0 @@
-
-hypermedia = <HYPERMEDIA>
-hypermedia {
-
-	title = just a title
-	route = index
-	section = main
-	
-}

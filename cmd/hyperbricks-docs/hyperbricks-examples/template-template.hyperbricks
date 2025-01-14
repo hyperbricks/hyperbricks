@@ -1,5 +1,0 @@
-
-template = <TEMPLATE>
-template {
-template = <<[<div>Hello Template</div>]>>
-}

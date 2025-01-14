@@ -1,5 +1,0 @@
-
-head = <HEAD>
-head {
-js = [ script.js, extra.js ]
-}

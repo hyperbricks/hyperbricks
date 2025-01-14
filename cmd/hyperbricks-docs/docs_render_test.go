@@ -245,6 +245,13 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Type().Field(i)
+
+		// skip if exclude:"true" in metadata of field
+		exclude := field.Tag.Get("exclude")
+		if exclude != "" {
+			continue
+		}
+
 		tag := field.Tag.Get("mapstructure")
 		if tag == ",squash" {
 			// Recursively process embedded fields
@@ -349,6 +356,20 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 
 				if !reflect.DeepEqual(parsed.ExpectedJSON, parsedConfig[parsed.HyperbricksConfigScope]) {
 					t.Errorf("Test failed for %s!\nExpected:\n%#v\nGot:\n%#v", strings.ToLower(cfg.Name)+"-"+tag, expected, parsedConfig[parsed.HyperbricksConfigScope])
+
+					var buf bytes.Buffer
+					encoder := json.NewEncoder(&buf)
+					encoder.SetEscapeHTML(false) // Disable escaping of HTML characters
+					encoder.SetIndent("", "  ")  // Set indent similar to MarshalIndent
+
+					if err := encoder.Encode(parsedConfig[parsed.HyperbricksConfigScope]); err != nil {
+						fmt.Println("Error encoding to JSON:", err)
+						return
+					}
+
+					// The encoder adds a newline at the end of the output; trim if needed
+					jsonOutput := buf.String()
+					fmt.Printf("Hyperscript to JSON object:%s", jsonOutput)
 				} else {
 					// add to docs....
 				}
