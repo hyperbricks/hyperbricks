@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+Use inline to define css in a multiline block <<[ /* css goes here */ ]>>
 ==== expected json ====
 {
 	

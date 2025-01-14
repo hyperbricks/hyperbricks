@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+The wrapping HTML element for the header divided by |
 ==== expected json ====
 {
 	

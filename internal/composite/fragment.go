@@ -21,7 +21,7 @@ type FragmentConfig struct {
 	Section            string                 `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{fragment-section.hyperbricks}}"`
 	Items              map[string]interface{} `mapstructure:",remain"`
 	// BodyTag            string                 `mapstructure:"bodytag" description:"Special body wrap with use of |. Please note that this will not work when a fragment.template is configured. In that case, you have to add the bodytag in the template." example:"{!{fragment-bodywrap.hyperbricks}}"`
-	Enclose string `mapstructure:"enclose" description:"Wrapping property for the fragment" example:"{!{fragment-enclose.hyperbricks}}"`
+	Enclose string `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{fragment-enclose.hyperbricks}}"`
 	// Favicon            string                 `mapstructure:"favicon" description:"Path to the favicon for the fragment" example:"{!{fragment-favicon.hyperbricks}}"`
 	Template map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks}}"`
 	File     string                 `mapstructure:"@file" exclude:"true"`

@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation
 ==== expected json ====
 {
 	

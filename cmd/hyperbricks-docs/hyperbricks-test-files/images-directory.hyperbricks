@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+The directory path containing the images
 ==== expected json ====
 {
 	

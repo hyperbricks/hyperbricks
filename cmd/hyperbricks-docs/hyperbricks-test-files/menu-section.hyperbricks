@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+The section of the menu to display.
 ==== expected json ====
 {
 	

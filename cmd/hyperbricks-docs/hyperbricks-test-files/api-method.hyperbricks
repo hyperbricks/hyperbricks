@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+HTTP method to use for API calls, GET POST PUT DELETE ect 
 ==== expected json ====
 {
 	

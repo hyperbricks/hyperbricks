@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
 ==== expected json ====
 {
 	

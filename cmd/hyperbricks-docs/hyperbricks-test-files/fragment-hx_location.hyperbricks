@@ -4,11 +4,10 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+allows you to do a client-side redirect that does not do a full page reload
 ==== expected json ====
 {
-	
+    
 }
 ==== expected output ====
 <div>this test fails</div>

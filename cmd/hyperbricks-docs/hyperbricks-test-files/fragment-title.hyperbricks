@@ -1,23 +1,13 @@
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	title = Some Title
-	10 = <HTML>
-	10.value = <p>HELLO WORLD<p>
-	enclose = <div>|</div>
+	
 }
 ==== explainer ====
-Title can be used in a section menu definition. For page title use the <HYPERMEDIA> type.
+The title of the fragment
 ==== expected json ====
 {
-	"@type":"<FRAGMENT>",
-	"title":"Some Title"
-	"10":{
-		"@type": "<HTML>",
-		"value": "<p>HELLO WORLD<p>"
-	},
-	"enclose":"<div>|</div>"
 	
 }
 ==== expected output ====
-<div><p>HELLO WORLD<p></div>
+<div>this test fails</div>

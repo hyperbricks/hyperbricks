@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+file overrides link and inline, it loads contents of a file and renders it in a style tag.
 ==== expected json ====
 {
 	

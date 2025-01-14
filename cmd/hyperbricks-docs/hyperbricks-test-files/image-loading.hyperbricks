@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+Lazy loading strategy (e.g., 'lazy', 'eager')
 ==== expected json ====
 {
 	

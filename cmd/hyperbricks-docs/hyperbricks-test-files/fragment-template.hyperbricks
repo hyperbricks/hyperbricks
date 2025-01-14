@@ -1,40 +1,13 @@
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
-fragment.route = myroute
-fragment.template = <TEMPLATE>
-fragment.template {
-    template = <<[
-       <div>{{content}}</div>
-    ]>>
-    isTemplate = true
-    values {
-        content = <HTML>
-        content.value = <<[
-            <button hx-post="/justafragment" hx-swap="outerHTML">Click Me</button>
-        ]>>
-    }
-	enclose = <div>|</div>
+fragment {
+	
 }
 ==== explainer ====
-You can use a template for a fragment. In this example the template is a multiline inline template with a {{content}} marker that is being replaced by the fragment.template.values.content definition.For more detailed information see the <TEMPLATE> type.
+Template configurations for rendering the fragment
 ==== expected json ====
 {
-	"@type": "<FRAGMENT>",
-	"route": "myroute",
-	"template": {
-	  "@type": "<TEMPLATE>",
-	  "enclose": "<div>|</div>",
-	  "isTemplate": "true",
-	  "template": "\n<div>{{content}}</div>\n",
-	  "values": {
-		"content": {
-		  "@type": "<HTML>",
-		  "value": "\n<button hx-post=\"/justafragment\" hx-swap=\"outerHTML\">Click Me</button>\n"
-		}
-	  }
-	}
-  }
+	
+}
 ==== expected output ====
-<div>
-	<button hx-post="/justafragment" hx-swap="outerHTML">Click Me</button>
-</div>
+<div>this test fails</div>

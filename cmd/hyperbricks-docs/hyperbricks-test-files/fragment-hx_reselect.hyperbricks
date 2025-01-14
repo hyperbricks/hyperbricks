@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+a css selector that allows you to choose which part of the response is used to be swapped in
 ==== expected json ====
 {
 	

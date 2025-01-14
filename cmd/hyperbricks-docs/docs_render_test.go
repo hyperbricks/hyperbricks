@@ -213,7 +213,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	rm.RegisterComponent(component.APIConfigGetName(), apiRenderer, reflect.TypeOf(component.APIConfig{}))
 
 	for _, cfg := range types {
-		fmt.Printf("\n\n======= Processing type: %s =======\n", cfg.Name)
+		//fmt.Printf("\n\n======= Processing type: %s =======\n", cfg.Name)
 
 		// Process non-embedded fields first
 		val := reflect.ValueOf(cfg.Config)
@@ -260,16 +260,15 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 		}
 		var example string
 		if tag != "" && tag != ",squash" && tag != ",remain" {
-			out.WriteString(fmt.Sprintf("Field: %s ->%s\n", tag, field.Name))
-			out.WriteString(fmt.Sprintf("description: %s\n", field.Tag.Get("description")))
+			//out.WriteString(fmt.Sprintf("Field: %s ->%s\n", tag, field.Name))
+			//out.WriteString(fmt.Sprintf("description: %s\n", field.Tag.Get("description")))
 			if field.Tag.Get("example") != "" {
-				example = _checkAndReadFile(field.Tag.Get("example"))
+				example = _checkAndReadFile(field.Tag.Get("example"), field.Tag.Get("description"))
 				//out.WriteString(fmt.Sprintf("example: %s\n", example))
 			} else if field.Tag.Get("mapstructure") != "" {
 				file := strings.ToLower(cfg.Name) + "-" + tag
-				example = _checkAndReadFile("{!{" + file + ".hyperbricks}}")
+				example = _checkAndReadFile("{!{"+file+".hyperbricks}}", field.Tag.Get("description"))
 				//out.WriteString(fmt.Sprintf("example: %s\n", example))
-
 			}
 			// PARSE HYPERSCRIPT
 			// RUN THE TEST (compare json with serialized output go object)
@@ -336,13 +335,13 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 					Data:     scopeData,
 				}
 
-				// Use the RenderManager to instantiate the configuration.
+				//Use the RenderManager to instantiate the configuration.
 				response, err := rm.MakeInstance(request)
 				if err != nil {
 					t.Errorf("Error creating instance: %v", err)
 					return
 				}
-				fmt.Printf("response object:%v", response)
+				//fmt.Printf("response object:%v", response)
 
 				result, errr := rm.Render(request.TypeName, scopeData)
 				if errr != nil {
@@ -361,22 +360,14 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 					t.Errorf("result and expected html output does not match: result:\n%s \nexpected:%s", _res_html, _exp_html)
 				}
 
-				if !reflect.DeepEqual(parsed.ExpectedJSON, parsedConfig[parsed.HyperbricksConfigScope]) {
-					t.Errorf("Test failed for %s!\nExpected:\n%#v\nGot:\n%#v", strings.ToLower(cfg.Name)+"-"+tag, expected, parsedConfig[parsed.HyperbricksConfigScope])
+				if !reflect.DeepEqual(parsed.ExpectedJSON, response) { //parsedConfig[parsed.HyperbricksConfigScope]
 
-					var buf bytes.Buffer
-					encoder := json.NewEncoder(&buf)
-					encoder.SetEscapeHTML(false) // Disable escaping of HTML characters
-					encoder.SetIndent("", "  ")  // Set indent similar to MarshalIndent
+					t.Errorf("Test failed for %s!\n", strings.ToLower(cfg.Name)+"-"+tag)
+					output := convertToJSON(response)
+					expected := buf.String()
+					fmt.Printf("output:\n%s\n", output)
+					fmt.Printf("expected:\n%s\n", expected)
 
-					if err := encoder.Encode(parsedConfig[parsed.HyperbricksConfigScope]); err != nil {
-						fmt.Println("Error encoding to JSON:", err)
-						return
-					}
-
-					// The encoder adds a newline at the end of the output; trim if needed
-					jsonOutput := buf.String()
-					fmt.Printf("Hyperscript to JSON object:%s", jsonOutput)
 				} else {
 					// add to docs....
 				}
@@ -467,7 +458,7 @@ func ParseContent(content string) (*ParsedContent, error) {
 	}, nil
 }
 
-func _checkAndReadFile(input string) string {
+func _checkAndReadFile(input string, description string) string {
 	filePath := "hyperbricks-test-files/"
 	// Define a regex pattern to match {{<filename.extension>}}
 	re := regexp.MustCompile(`\{\!\{([^\}]+)\}\}`)
@@ -502,8 +493,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+` + description + `
 ==== expected json ====
 {
 	
@@ -594,4 +584,20 @@ func stripAllWhitespace(s string) string {
 func removeTabsAndNewlines(s string) string {
 	re := regexp.MustCompile(`[\t\n\r]+`)
 	return re.ReplaceAllString(s, "")
+}
+
+func convertToJSON(obj interface{}) string {
+	var buf bytes.Buffer
+	encoder := json.NewEncoder(&buf)
+	encoder.SetEscapeHTML(false) // Disable escaping of HTML characters
+	encoder.SetIndent("", "  ")  // Set indent similar to MarshalIndent
+
+	//if err := encoder.Encode(parsedConfig[parsed.HyperbricksConfigScope]); err != nil {
+	if err := encoder.Encode(obj); err != nil {
+		fmt.Println("Error encoding to JSON:", err)
+		return ""
+	}
+
+	// The encoder adds a newline at the end of the output; trim if needed
+	return buf.String()
 }

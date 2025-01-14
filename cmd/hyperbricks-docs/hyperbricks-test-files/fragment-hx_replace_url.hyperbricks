@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+replaces the current url in the location bar
 ==== expected json ====
 {
 	

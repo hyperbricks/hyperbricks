@@ -4,8 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+can be used to do a client-side redirect to a new location
 ==== expected json ====
 {
 	
