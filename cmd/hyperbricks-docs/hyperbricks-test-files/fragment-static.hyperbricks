@@ -1,14 +1,14 @@
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	
+	static = static_fragment.html
 }
 ==== explainer ====
-This code does blah blah blah....
-And is hey hey hey
+Field static renders the fragment to a static file named like its configured value.
 ==== expected json ====
 {
-	
+	"@type":"<FRAFMENT>"
+    "static":"static_fragment.html"
 }
 ==== expected output ====
-<div>this test fails</div>
+
