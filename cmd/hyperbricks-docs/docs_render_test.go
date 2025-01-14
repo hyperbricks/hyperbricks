@@ -18,6 +18,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/internal/typefactory"
+	"golang.org/x/net/html"
 )
 
 type DocumentationTypeStruct struct {
@@ -45,23 +46,22 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 		{
 			Name:            "Hypermedia",
 			TypeDescription: "Basic type description here.....",
-			Embedded: map[string]string{
-				"HxResponse": "response",
-			},
-			ConfigType:     "<HYPERMEDIA>",
-			ConfigCategory: "composite",
-			Config:         composite.HyperMediaConfig{},
+			Embedded:        map[string]string{},
+			ConfigType:      "<HYPERMEDIA>",
+			ConfigCategory:  "composite",
+			Config:          composite.HyperMediaConfig{},
 		},
-		{
-			Name:            "Api",
-			TypeDescription: "Basic type description here.....",
-			Embedded: map[string]string{
-				"HxResponse": "response",
-			},
-			ConfigType:     "<API>",
-			ConfigCategory: "composite",
-			Config:         composite.HxApiConfig{},
-		},
+		// API is for version 2.0.0
+		// {
+		// 	Name:            "Api",
+		// 	TypeDescription: "Basic type description here.....",
+		// 	Embedded: map[string]string{
+		// 		"HxResponse": "response",
+		// 	},
+		// 	ConfigType:     "<API>",
+		// 	ConfigCategory: "composite",
+		// 	Config:         composite.HxApiConfig{},
+		// },
 		// COMPONENTS
 		{
 			Name:            "Html",
@@ -349,10 +349,17 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 					log.Printf("%v", errr)
 				}
 
-				fmt.Printf("\nrendered result:%s", result)
-				fmt.Printf("\nexpected result:%s", parsed.ExpectedOutput)
+				// fmt.Printf("\nrendered result:%s", result)
+				// fmt.Printf("\nexpected result:%s", parsed.ExpectedOutput)
 
 				// TO COMPARE THIS....
+				_res_html := removeTabsAndNewlines(result)
+				_exp_html := removeTabsAndNewlines(parsed.ExpectedOutput)
+
+				// Now compare the normalized strings.
+				if _res_html != _exp_html {
+					t.Errorf("result and expected html output does not match: result:\n%s \nexpected:%s", _res_html, _exp_html)
+				}
 
 				if !reflect.DeepEqual(parsed.ExpectedJSON, parsedConfig[parsed.HyperbricksConfigScope]) {
 					t.Errorf("Test failed for %s!\nExpected:\n%#v\nGot:\n%#v", strings.ToLower(cfg.Name)+"-"+tag, expected, parsedConfig[parsed.HyperbricksConfigScope])
@@ -492,25 +499,17 @@ func _checkAndReadFile(input string) string {
 			content := `==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	10 = <HTML>
-	10.value = <p>HELLO WORLD<p>
-	enclose = <div>|</div>
+	
 }
 ==== explainer ====
 This code does blah blah blah....
 And is hey hey hey
 ==== expected json ====
 {
-	"@type":"<FRAGMENT>",
-	"10":{
-		"@type": "<HTML>",
-		"value": "<p>HELLO WORLD<p>"
-	},
-	"enclose":"<div>|</div>"
 	
 }
 ==== expected output ====
-<div><p>HELLO WORLD<p></div>
+<div>this test fails</div>
 `
 			// Write content to the file
 			_, err = f.WriteString(content)
@@ -560,4 +559,39 @@ func findFieldByName(val reflect.Value, fieldName string) reflect.Value {
 	}
 
 	return reflect.Value{}
+}
+
+// normalizeHTML parses the input HTML string and renders it back into a
+// canonical form, removing insignificant whitespace differences.
+func normalizeHTML(input string) (string, error) {
+	// Parse the HTML into a DOM tree.
+	doc, err := html.Parse(strings.NewReader(input))
+	if err != nil {
+		return "", err
+	}
+
+	// Render the DOM tree back to HTML.
+	var buf bytes.Buffer
+	err = html.Render(&buf, doc)
+	if err != nil {
+		return "", err
+	}
+
+	// The rendered HTML may include an outer <html><head></head><body>...
+	// structure depending on the input. If you only need the body’s content,
+	// additional processing might be necessary. For simplicity, this example
+	// compares the entire document structure.
+	return buf.String(), nil
+}
+
+// stripAllWhitespace removes all whitespace characters from the input string.
+func stripAllWhitespace(s string) string {
+	re := regexp.MustCompile(`\s+`)
+	return re.ReplaceAllString(s, "")
+}
+
+// removeTabsAndNewlines removes tab, newline, and carriage return characters from the input string.
+func removeTabsAndNewlines(s string) string {
+	re := regexp.MustCompile(`[\t\n\r]+`)
+	return re.ReplaceAllString(s, "")
 }

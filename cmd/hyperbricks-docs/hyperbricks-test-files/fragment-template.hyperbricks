@@ -35,4 +35,6 @@ You can use a template for a fragment. In this example the template is a multili
 	}
   }
 ==== expected output ====
-<div><button hx-post="/justafragment" hx-swap="outerHTML">Click Me</button></div>	
+<div>
+	<button hx-post="/justafragment" hx-swap="outerHTML">Click Me</button>
+</div>
