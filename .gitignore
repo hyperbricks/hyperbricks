@@ -1,8 +1,9 @@
 # Ignore specific directories in the root folder
 /modules/
 /bin/
+**/archive
+/archive/
 
-/archive/**
 # Ignore Go sum file in the root
 /go.sum
 
