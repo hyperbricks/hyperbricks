@@ -2,6 +2,7 @@
 /modules/
 /bin/
 
+/archive/**
 # Ignore Go sum file in the root
 /go.sum
 

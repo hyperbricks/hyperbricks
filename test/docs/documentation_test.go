@@ -18,7 +18,6 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/internal/typefactory"
-	"golang.org/x/net/html"
 )
 
 type DocumentationTypeStruct struct {
@@ -51,18 +50,6 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory:  "composite",
 			Config:          composite.HyperMediaConfig{},
 		},
-		// API is for version 2.0.0
-		// {
-		// 	Name:            "Api",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded: map[string]string{
-		// 		"HxResponse": "response",
-		// 	},
-		// 	ConfigType:     "<API>",
-		// 	ConfigCategory: "composite",
-		// 	Config:         composite.HxApiConfig{},
-		// },
-		// COMPONENTS
 		{
 			Name:            "Html",
 			TypeDescription: "Basic type description here.....",
@@ -145,11 +132,9 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 		},
 	}
 
-	// Initialize shared configuration settings.
 	shared.Init_configuration()
 	shared.GetHyperBricksConfiguration()
 
-	// Create a new RenderManager instance and register the FragmentRenderer.
 	rm := render.NewRenderManager()
 	fragmentRenderer := &composite.FragmentRenderer{
 		CompositeRenderer: renderer.CompositeRenderer{
@@ -158,7 +143,6 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	}
 	rm.RegisterComponent(composite.FragmentConfigGetName(), fragmentRenderer, reflect.TypeOf(composite.FragmentConfig{}))
 
-	// Mock template provider
 	templateProvider := func(templateName string) (string, bool) {
 		templates := map[string]string{
 			"api_test_template": `{{ (index .quotes 0).author }}:{{ (index .quotes 0).quote }}`,
@@ -166,14 +150,13 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 		content, exists := templates[templateName]
 		return content, exists
 	}
-	// TEMPLATE ....
+
 	pageRenderer := &composite.HyperMediaRenderer{
 		CompositeRenderer: renderer.CompositeRenderer{
 			RenderManager:    rm,
 			TemplateProvider: templateProvider,
 		},
 	}
-
 	rm.RegisterComponent(composite.HyperMediaConfigGetName(), pageRenderer, reflect.TypeOf(composite.HyperMediaConfig{}))
 	rm.RegisterComponent(component.HTMLConfigGetName(), &component.HTMLRenderer{}, reflect.TypeOf(component.HTMLConfig{}))
 
@@ -182,20 +165,16 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			RenderManager: rm,
 		},
 	}
-
 	rm.RegisterComponent(composite.TreeRendererConfigGetName(), treeRenderer, reflect.TypeOf(composite.TreeConfig{}))
 
-	// TEMPLATE ....
 	templateRenderer := &composite.TemplateRenderer{
 		CompositeRenderer: renderer.CompositeRenderer{
 			RenderManager:    rm,
 			TemplateProvider: templateProvider,
 		},
 	}
-
 	rm.RegisterComponent(composite.TemplateConfigGetName(), templateRenderer, reflect.TypeOf(composite.TemplateConfig{}))
 
-	// API ....
 	apiRenderer := &component.APIRenderer{
 		ComponentRenderer: renderer.ComponentRenderer{
 			TemplateProvider: templateProvider,
@@ -208,21 +187,14 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 		},
 	}
 	rm.RegisterComponent(composite.HeadConfigGetName(), headRenderer, reflect.TypeOf(composite.HeadConfig{}))
-
-	// COMPONENTS
 	rm.RegisterComponent(component.APIConfigGetName(), apiRenderer, reflect.TypeOf(component.APIConfig{}))
 
 	for _, cfg := range types {
-		//fmt.Printf("\n\n======= Processing type: %s =======\n", cfg.Name)
-
-		// Process non-embedded fields first
 		val := reflect.ValueOf(cfg.Config)
 		fmt.Print(processFieldsWithSquash(val, cfg, t, rm))
 
-		// Iterate through embedded fields
 		for embeddedName, fieldTag := range cfg.Embedded {
 			fmt.Printf("\nEmbedded Field: %s (mapped as: %s)\n", embeddedName, fieldTag)
-
 			field := findFieldByName(val, embeddedName)
 			if field.IsValid() {
 				fmt.Print(processFieldsWithSquash(field, cfg, t, rm))
@@ -232,154 +204,88 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 		}
 	}
 }
+
 func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *testing.T, rm *render.RenderManager) string {
 	var out strings.Builder
-
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
 	if val.Kind() != reflect.Struct {
-		fmt.Println("Not a struct, skipping.")
 		return ""
 	}
-
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Type().Field(i)
-
-		// skip if exclude:"true" in metadata of field
-		exclude := field.Tag.Get("exclude")
-		if exclude != "" {
+		if field.Tag.Get("exclude") != "" {
 			continue
 		}
-
 		tag := field.Tag.Get("mapstructure")
 		if tag == ",squash" {
-			// Recursively process embedded fields
 			out.WriteString(processFieldsWithSquash(val.Field(i), cfg, t, rm))
-
+			continue
 		}
-		var example string
 		if tag != "" && tag != ",squash" && tag != ",remain" {
-			//out.WriteString(fmt.Sprintf("Field: %s ->%s\n", tag, field.Name))
-			//out.WriteString(fmt.Sprintf("description: %s\n", field.Tag.Get("description")))
+			var example string
 			if field.Tag.Get("example") != "" {
 				example = _checkAndReadFile(field.Tag.Get("example"), field.Tag.Get("description"))
-				//out.WriteString(fmt.Sprintf("example: %s\n", example))
 			} else if field.Tag.Get("mapstructure") != "" {
 				file := strings.ToLower(cfg.Name) + "-" + tag
 				example = _checkAndReadFile("{!{"+file+".hyperbricks}}", field.Tag.Get("description"))
-				//out.WriteString(fmt.Sprintf("example: %s\n", example))
 			}
-			// PARSE HYPERSCRIPT
-			// RUN THE TEST (compare json with serialized output go object)
 			t.Run(strings.ToLower(cfg.Name)+"-"+tag, func(t *testing.T) {
-
 				parsed, err := ParseContent(example)
 				if err != nil {
-					fmt.Println("Error:", err)
+					log.Println("Error:", err)
 					return
 				}
-
-				//fmt.Println("Hyperbricks Config:")
-				//fmt.Println(parsed.HyperbricksConfig)
-
-				//fmt.Println("\nExplainer:")
-				//fmt.Println(parsed.Explainer)
-
-				//fmt.Println("\nExpected JSON (Non-Escaped):")
-
 				var buf bytes.Buffer
-				encoder := json.NewEncoder(&buf)
-				encoder.SetEscapeHTML(false) // Disable HTML escaping
-				encoder.SetIndent("", "  ")  // Enable pretty printing with indentation
-				if err := encoder.Encode(parsed.ExpectedJSON); err != nil {
-					fmt.Println("Error encoding JSON:", err)
+				enc := json.NewEncoder(&buf)
+				enc.SetEscapeHTML(false)
+				enc.SetIndent("", "  ")
+				if err := enc.Encode(parsed.ExpectedJSON); err != nil {
+					log.Println("Error encoding JSON:", err)
 					return
 				}
-				//fmt.Print(buf.String())
 				var expected map[string]interface{}
-
-				// Convert JSON string to bytes and unmarshal into the map
-				if err := json.Unmarshal([]byte(buf.String()), &expected); err != nil {
-					fmt.Println("Error unmarshaling JSON:", err)
+				if err := json.Unmarshal(buf.Bytes(), &expected); err != nil {
+					log.Println("Error unmarshaling JSON:", err)
 					return
 				}
-				//fmt.Printf("JSON string: %s", parsed.ExpectedJSONAsString)
-				//fmt.Printf("converted JSON object: %v", expected)
-
-				//fmt.Println("\nExpected Output:")
-				//fmt.Println(parsed.ExpectedOutput)
-				// Parse the combined configuration.
 				parsedConfig := parser.ParseHyperScript(parsed.HyperbricksConfig)
-				//fmt.Printf("got obj from hyperscript:%v", parsedConfig)
-				// Convert the struct to JSON
-				// jsonBytes, err := json.MarshalIndent(parsedConfig[parsed.HyperbricksConfigScope], "", "  ")
-				// if err != nil {
-				// 	fmt.Println("Error marshaling struct to JSON:", err)
-				// 	return
-				// }
-				// fmt.Printf("Hyperscript object:%s", string(jsonBytes))
-
-				// Prepare a variable of type map[string]interface{}
-				// Create a TypeRequest for the TypeFactory.
-
-				// Extract the relevant scope data.
 				scopeData, ok := parsedConfig[parsed.HyperbricksConfigScope].(map[string]interface{})
 				if !ok {
 					t.Errorf("Scope '%s' not found or invalid type", parsed.HyperbricksConfigScope)
 					return
 				}
-
-				request := typefactory.TypeRequest{
-					TypeName: scopeData["@type"].(string),
-					Data:     scopeData,
-				}
-
-				//Use the RenderManager to instantiate the configuration.
-				response, err := rm.MakeInstance(request)
+				req := typefactory.TypeRequest{TypeName: scopeData["@type"].(string), Data: scopeData}
+				resp, err := rm.MakeInstance(req)
 				if err != nil {
 					t.Errorf("Error creating instance: %v", err)
 					return
 				}
-				//fmt.Printf("response object:%v", response)
-
-				result, errr := rm.Render(request.TypeName, scopeData)
-				if errr != nil {
-					log.Printf("%v", errr)
+				result, renderErr := rm.Render(req.TypeName, scopeData)
+				if renderErr != nil {
+					log.Printf("%v", renderErr)
 				}
-
-				// fmt.Printf("\nrendered result:%s", result)
-				// fmt.Printf("\nexpected result:%s", parsed.ExpectedOutput)
-
-				// TO COMPARE THIS....
-				_res_html := removeTabsAndNewlines(result)
-				_exp_html := removeTabsAndNewlines(parsed.ExpectedOutput)
-
-				// Now compare the normalized strings.
-				if _res_html != _exp_html {
-					t.Errorf("result and expected html output does not match: result:\n%s \nexpected:%s", _res_html, _exp_html)
+				resHTML := removeTabsAndNewlines(result)
+				expHTML := removeTabsAndNewlines(parsed.ExpectedOutput)
+				if resHTML != expHTML {
+					t.Errorf("result and expected HTML differ:\nresult:\n%s\nexpected:\n%s", resHTML, expHTML)
 				}
-
-				if !reflect.DeepEqual(parsed.ExpectedJSON, response) { //parsedConfig[parsed.HyperbricksConfigScope]
-
-					t.Errorf("Test failed for %s!\n", strings.ToLower(cfg.Name)+"-"+tag)
-					output := convertToJSON(response)
-					expected := buf.String()
-					fmt.Printf("output:\n%s\n", output)
-					fmt.Printf("expected:\n%s\n", expected)
-
-				} else {
-					// add to docs....
+				equal, cmpErr := JSONDeepEqual(expected, resp.Instance)
+				if cmpErr != nil {
+					t.Fatalf("Error comparing JSON for %s-%s: %v", strings.ToLower(cfg.Name), tag, cmpErr)
+				}
+				if !equal {
+					t.Errorf("Test failed for %s-%s!\n", strings.ToLower(cfg.Name), tag)
+					fmt.Printf("output:\n%s\n", convertToJSON(resp.Instance))
+					fmt.Printf("expected:\n%s\n", convertToJSON(expected))
 				}
 			})
-
 		}
-
 	}
 	return out.String()
 }
 
-// ParsedContent holds the separated sections and optional scope after parsing.
 type ParsedContent struct {
 	HyperbricksConfig      string
 	HyperbricksConfigScope string
@@ -389,104 +295,67 @@ type ParsedContent struct {
 	ExpectedOutput         string
 }
 
-// ParseContent parses the provided content string into its respective parts.
-// It also extracts an optional scope from the "hyperbricks config" header.
 func ParseContent(content string) (*ParsedContent, error) {
-	// Regular expression to match section headers like:
-	// ==== hyperbricks config {!{fragment}} ====
-	// It captures the header title and an optional scope.
 	headerRegex := regexp.MustCompile(`^====\s*([^!]+?)(?:\s*\{\!\{([^}]+)\}\})?\s*====$`)
-
 	sections := make(map[string]string)
-	var currentSection string
+	var currentSection, hyperbricksConfigScope string
 	var sb strings.Builder
-
-	// Variable to store the scope for "hyperbricks config" if found.
-	var hyperbricksConfigScope string
 
 	lines := strings.Split(content, "\n")
 	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		matches := headerRegex.FindStringSubmatch(line)
+		l := strings.TrimSpace(line)
+		matches := headerRegex.FindStringSubmatch(l)
 		if matches != nil {
-			// When encountering a new header, save the current section's content.
 			if currentSection != "" {
 				sections[strings.ToLower(currentSection)] = strings.TrimSpace(sb.String())
 				sb.Reset()
 			}
-			// matches[1] contains the header title.
 			currentSection = strings.TrimSpace(matches[1])
-
-			// If a scope was provided, matches[2] will contain it.
-			scope := ""
 			if len(matches) >= 3 {
-				scope = strings.TrimSpace(matches[2])
+				if strings.EqualFold(currentSection, "hyperbricks config") {
+					hyperbricksConfigScope = strings.TrimSpace(matches[2])
+				}
 			}
-
-			// Specifically store scope for "hyperbricks config" header.
-			if strings.EqualFold(currentSection, "hyperbricks config") {
-				hyperbricksConfigScope = scope
-			}
-		} else {
-			if currentSection != "" {
-				sb.WriteString(line)
-				sb.WriteString("\n")
-			}
+		} else if currentSection != "" {
+			sb.WriteString(l + "\n")
 		}
 	}
 	if currentSection != "" {
 		sections[strings.ToLower(currentSection)] = strings.TrimSpace(sb.String())
 	}
+	hConfig := sections["hyperbricks config"]
+	expl := sections["explainer"]
+	expJSONStr := sections["expected json"]
+	expOutput := sections["expected output"]
 
-	hyperbricksConfig := sections["hyperbricks config"]
-	explainer := sections["explainer"]
-	expectedJSONStr := sections["expected json"]
-	expectedOutput := sections["expected output"]
-
-	var expectedJSON map[string]interface{}
-	if err := json.Unmarshal([]byte(expectedJSONStr), &expectedJSON); err != nil {
+	var expJSON map[string]interface{}
+	if err := json.Unmarshal([]byte(expJSONStr), &expJSON); err != nil {
 		return nil, fmt.Errorf("error parsing expected JSON: %v", err)
 	}
-
 	return &ParsedContent{
-		HyperbricksConfig:      hyperbricksConfig,
+		HyperbricksConfig:      hConfig,
 		HyperbricksConfigScope: hyperbricksConfigScope,
-		Explainer:              explainer,
-		ExpectedJSON:           expectedJSON,
-		ExpectedJSONAsString:   sections["expected json"],
-		ExpectedOutput:         expectedOutput,
+		Explainer:              expl,
+		ExpectedJSON:           expJSON,
+		ExpectedJSONAsString:   expJSONStr,
+		ExpectedOutput:         expOutput,
 	}, nil
 }
 
-func _checkAndReadFile(input string, description string) string {
+func _checkAndReadFile(input, description string) string {
 	filePath := "hyperbricks-test-files/"
-	// Define a regex pattern to match {{<filename.extension>}}
 	re := regexp.MustCompile(`\{\!\{([^\}]+)\}\}`)
-
-	// Find all matches
 	matches := re.FindAllStringSubmatch(input, -1)
 
-	// Process each match
 	for _, match := range matches {
-		// match[0] is the full placeholder (e.g., "{{api-template.hyperbricks}}")
-		// match[1] is the filename.extension (e.g., "api-template.hyperbricks")
-
-		filename := match[1]
-		fileFullPath := filePath + filename
-
-		// Check if file exists, create if not
-		if _, err := os.Stat(fileFullPath); os.IsNotExist(err) {
-			//fmt.Printf("File %s does not exist. Creating it...\n", fileFullPath)
-			f, createErr := os.Create(fileFullPath)
+		filename := filePath + match[1]
+		if _, err := os.Stat(filename); os.IsNotExist(err) {
+			f, createErr := os.Create(filename)
 			if createErr != nil {
-				fmt.Printf("Error creating file %s: %v\n", fileFullPath, createErr)
 				input = strings.ReplaceAll(input, match[0], "no example yet")
 				continue
 			}
-			// Ensure the file is closed when we're done
 			defer f.Close()
-
-			// Define some content to write and fail
 			content := `==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
@@ -501,29 +370,17 @@ fragment {
 ==== expected output ====
 <div>this test fails</div>
 `
-			// Write content to the file
-			_, err = f.WriteString(content)
-			if err != nil {
-				fmt.Println("Error writing to file:", err)
+			if _, err = f.WriteString(content); err != nil {
 				return ""
 			}
-			//fmt.Printf("File %s created successfully.\n", fileFullPath)
 		}
-
-		// Read the file content
-		content, err := os.ReadFile(fileFullPath)
+		fileContent, err := os.ReadFile(filename)
 		if err != nil {
-			// If the file is not found, replace with an error placeholder
-			fmt.Printf("Error reading file %s: %v\n", fileFullPath, err)
 			input = strings.ReplaceAll(input, match[0], "no example yet")
 			continue
 		}
-
-		// Replace the placeholder with the file content
-		//fmt.Printf("Replacing placeholder %s with content from file %s.\n", match[0], fileFullPath)
-		input = strings.ReplaceAll(input, match[0], string(content))
+		input = strings.ReplaceAll(input, match[0], string(fileContent))
 	}
-
 	return input
 }
 
@@ -534,70 +391,49 @@ func findFieldByName(val reflect.Value, fieldName string) reflect.Value {
 	if !val.IsValid() || val.Kind() != reflect.Struct {
 		return reflect.Value{}
 	}
-
-	fieldVal := val.FieldByName(fieldName)
-	if fieldVal.IsValid() {
-		return fieldVal
+	f := val.FieldByName(fieldName)
+	if f.IsValid() {
+		return f
 	}
-
 	for i := 0; i < val.NumField(); i++ {
-		subVal := val.Field(i)
-		found := findFieldByName(subVal, fieldName)
+		found := findFieldByName(val.Field(i), fieldName)
 		if found.IsValid() {
 			return found
 		}
 	}
-
 	return reflect.Value{}
 }
 
-// normalizeHTML parses the input HTML string and renders it back into a
-// canonical form, removing insignificant whitespace differences.
-func normalizeHTML(input string) (string, error) {
-	// Parse the HTML into a DOM tree.
-	doc, err := html.Parse(strings.NewReader(input))
-	if err != nil {
-		return "", err
-	}
-
-	// Render the DOM tree back to HTML.
-	var buf bytes.Buffer
-	err = html.Render(&buf, doc)
-	if err != nil {
-		return "", err
-	}
-
-	// The rendered HTML may include an outer <html><head></head><body>...
-	// structure depending on the input. If you only need the body’s content,
-	// additional processing might be necessary. For simplicity, this example
-	// compares the entire document structure.
-	return buf.String(), nil
-}
-
-// stripAllWhitespace removes all whitespace characters from the input string.
-func stripAllWhitespace(s string) string {
-	re := regexp.MustCompile(`\s+`)
-	return re.ReplaceAllString(s, "")
-}
-
-// removeTabsAndNewlines removes tab, newline, and carriage return characters from the input string.
 func removeTabsAndNewlines(s string) string {
-	re := regexp.MustCompile(`[\t\n\r]+`)
-	return re.ReplaceAllString(s, "")
+	return regexp.MustCompile(`[\t\n\r]+`).ReplaceAllString(s, "")
 }
 
 func convertToJSON(obj interface{}) string {
 	var buf bytes.Buffer
-	encoder := json.NewEncoder(&buf)
-	encoder.SetEscapeHTML(false) // Disable escaping of HTML characters
-	encoder.SetIndent("", "  ")  // Set indent similar to MarshalIndent
-
-	//if err := encoder.Encode(parsedConfig[parsed.HyperbricksConfigScope]); err != nil {
-	if err := encoder.Encode(obj); err != nil {
-		fmt.Println("Error encoding to JSON:", err)
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(obj); err != nil {
 		return ""
 	}
-
-	// The encoder adds a newline at the end of the output; trim if needed
 	return buf.String()
+}
+
+func JSONDeepEqual(a, b interface{}) (bool, error) {
+	aBytes, err := json.Marshal(a)
+	if err != nil {
+		return false, err
+	}
+	bBytes, err := json.Marshal(b)
+	if err != nil {
+		return false, err
+	}
+	var aJSON, bJSON interface{}
+	if err := json.Unmarshal(aBytes, &aJSON); err != nil {
+		return false, err
+	}
+	if err := json.Unmarshal(bBytes, &bJSON); err != nil {
+		return false, err
+	}
+	return reflect.DeepEqual(aJSON, bJSON), nil
 }

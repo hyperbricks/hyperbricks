@@ -15,7 +15,7 @@ type FragmentConfig struct {
 	shared.Composite   `mapstructure:",squash"`
 	HxResponse         `mapstructure:"response" description:"HTMX response header configuration." example:"{!{fragment-response.hyperbricks}}"`
 	MetaDocDescription string                 `mapstructure:"@doc" exclude:"true" description:"A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience." example:"{!{fragment.hyperbricks}}"`
-	HxResponseWriter   http.ResponseWriter    `mapstructure:"hx_response"`
+	HxResponseWriter   http.ResponseWriter    `mapstructure:"hx_response" exclude:"true"`
 	Title              string                 `mapstructure:"title" description:"The title of the fragment" example:"{!{fragment-title.hyperbricks}}"`
 	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{fragment-route.hyperbricks}}"`
 	Section            string                 `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{fragment-section.hyperbricks}}"`
