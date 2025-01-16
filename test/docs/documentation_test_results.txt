@@ -1,9 +1,11 @@
 === RUN   Test_TestAndDocumentationRender
 loading 
 === RUN   Test_TestAndDocumentationRender/fragment-response
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-response!
 output:
 {
@@ -41,9 +43,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-title
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-title!
 output:
 {
@@ -81,9 +85,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-route
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-route!
 output:
 {
@@ -121,9 +127,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-section
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-section!
 output:
 {
@@ -161,9 +169,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-enclose!
 output:
 {
@@ -201,9 +211,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-template
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-template!
 output:
 {
@@ -241,9 +253,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-static
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-static!
 output:
 {
@@ -281,9 +295,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-index
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-index!
 output:
 {
@@ -324,9 +340,11 @@ expected:
 Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/fragment-hx_location
 === RUN   Test_TestAndDocumentationRender/fragment-hx_push_url
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-hx_push_url!
 output:
 {
@@ -364,9 +382,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-hx_redirect
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-hx_redirect!
 output:
 {
@@ -404,9 +424,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-hx_refresh
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-hx_refresh!
 output:
 {
@@ -444,9 +466,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-hx_replace_url
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-hx_replace_url!
 output:
 {
@@ -484,9 +508,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-hx_reswap
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-hx_reswap!
 output:
 {
@@ -524,9 +550,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-hx_retarget
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-hx_retarget!
 output:
 {
@@ -564,9 +592,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-hx_reselect
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-hx_reselect!
 output:
 {
@@ -604,9 +634,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-hx_trigger!
 output:
 {
@@ -644,9 +676,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-hx_trigger_after_settle!
 output:
 {
@@ -684,9 +718,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for fragment-hx_trigger_after_swap!
 output:
 {
@@ -726,9 +762,11 @@ expected:
 === RUN   Test_TestAndDocumentationRender/hypermedia-@doc
     documentation_source_test.go:488: Scope 'fragment' not found or invalid type
 === RUN   Test_TestAndDocumentationRender/hypermedia-title
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-title!
 output:
 {
@@ -766,9 +804,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-route
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-route!
 output:
 {
@@ -806,9 +846,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-section
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-section!
 output:
 {
@@ -846,44 +888,12 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-bodytag
-    documentation_source_test.go:519: result and expected html output does not match: result:
-        <!DOCTYPE html><html><body id="main">HELLO WORLD!</body></html> 
-        expected:
-    documentation_source_test.go:527: Test failed for hypermedia-bodytag!
-output:
-{
-  "ConfigType": "<HYPERMEDIA>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "File": "",
-  "MetaDocDescription": "",
-  "Title": "",
-  "Route": "index",
-  "Section": "",
-  "Items": null,
-  "BodyTag": "<body id=\"main\">|</body>",
-  "Enclose": "",
-  "Favicon": "",
-  "Template": null,
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0,
-  "Meta": null,
-  "Doctype": "",
-  "HtmlTag": "",
-  "Head": null,
-  "Css": null,
-  "Js": null
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-enclose!
 output:
 {
@@ -921,9 +931,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-favicon!
 output:
 {
@@ -961,9 +973,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-template!
 output:
 {
@@ -1001,9 +1015,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-isstatic
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-isstatic!
 output:
 {
@@ -1041,9 +1057,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-static!
 output:
 {
@@ -1081,9 +1099,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-index
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-index!
 output:
 {
@@ -1121,9 +1141,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-meta
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-meta!
 output:
 {
@@ -1161,9 +1183,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-doctype
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-doctype!
 output:
 {
@@ -1201,9 +1225,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-htmltag
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-htmltag!
 output:
 {
@@ -1241,9 +1267,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-head
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-head!
 output:
 {
@@ -1281,9 +1309,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-css
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-css!
 output:
 {
@@ -1321,9 +1351,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-js
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for hypermedia-js!
 output:
 {
@@ -1361,9 +1393,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/html-attributes
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for html-attributes!
 output:
 {
@@ -1401,9 +1435,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/html-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for html-enclose!
 output:
 {
@@ -1441,9 +1477,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/html-value
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for html-value!
 output:
 {
@@ -1481,9 +1519,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/html-trimspace
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for html-trimspace!
 output:
 {
@@ -1521,9 +1561,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/css-attributes
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for css-attributes!
 output:
 {
@@ -1561,9 +1603,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/css-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for css-enclose!
 output:
 {
@@ -1601,9 +1645,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/css-inline
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for css-inline!
 output:
 {
@@ -1641,9 +1687,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/css-link
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for css-link!
 output:
 {
@@ -1681,9 +1729,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/css-file
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for css-file!
 output:
 {
@@ -1721,9 +1771,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/js-attributes
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for js-attributes!
 output:
 {
@@ -1761,9 +1813,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/js-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for js-enclose!
 output:
 {
@@ -1801,9 +1855,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/js-inline
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for js-inline!
 output:
 {
@@ -1841,9 +1897,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/js-link
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for js-link!
 output:
 {
@@ -1881,9 +1939,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/js-file
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for js-file!
 output:
 {
@@ -1921,9 +1981,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-attributes
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for image-attributes!
 output:
 {
@@ -1961,9 +2023,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for image-enclose!
 output:
 {
@@ -2001,9 +2065,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-src
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for image-src!
 output:
 {
@@ -2041,9 +2107,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-width
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for image-width!
 output:
 {
@@ -2081,9 +2149,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-height
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for image-height!
 output:
 {
@@ -2121,9 +2191,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-alt
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for image-alt!
 output:
 {
@@ -2161,9 +2233,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-title
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for image-title!
 output:
 {
@@ -2201,9 +2275,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-class
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for image-class!
 output:
 {
@@ -2241,9 +2317,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-quality
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for image-quality!
 output:
 {
@@ -2281,9 +2359,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-loading
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for image-loading!
 output:
 {
@@ -2321,9 +2401,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-is_static
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for image-is_static!
 output:
 {
@@ -2361,9 +2443,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-attributes
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for images-attributes!
 output:
 {
@@ -2401,9 +2485,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for images-enclose!
 output:
 {
@@ -2441,9 +2527,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-directory
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for images-directory!
 output:
 {
@@ -2481,9 +2569,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-width
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for images-width!
 output:
 {
@@ -2521,9 +2611,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-height
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for images-height!
 output:
 {
@@ -2561,9 +2653,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-is_static
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for images-is_static!
 output:
 {
@@ -2601,9 +2695,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/json-attributes
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for json-attributes!
 output:
 {
@@ -2641,9 +2737,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/json-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for json-enclose!
 output:
 {
@@ -2681,9 +2779,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/json-file
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for json-file!
 output:
 {
@@ -2721,9 +2821,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/json-template
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for json-template!
 output:
 {
@@ -2761,9 +2863,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-attributes
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for plugin-attributes!
 output:
 {
@@ -2801,9 +2905,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for plugin-enclose!
 output:
 {
@@ -2841,9 +2947,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-plugin
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for plugin-plugin!
 output:
 {
@@ -2881,9 +2989,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-classes
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for plugin-classes!
 output:
 {
@@ -2921,9 +3031,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-data
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for plugin-data!
 output:
 {
@@ -2961,9 +3073,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/text-attributes
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for text-attributes!
 output:
 {
@@ -3001,9 +3115,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/text-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for text-enclose!
 output:
 {
@@ -3041,9 +3157,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/text-value
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for text-value!
 output:
 {
@@ -3081,9 +3199,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-attributes
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for menu-attributes!
 output:
 {
@@ -3121,9 +3241,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for menu-enclose!
 output:
 {
@@ -3161,9 +3283,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-section
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for menu-section!
 output:
 {
@@ -3201,9 +3325,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-order
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for menu-order!
 output:
 {
@@ -3241,9 +3367,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-sort
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for menu-sort!
 output:
 {
@@ -3281,9 +3409,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-active
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for menu-active!
 output:
 {
@@ -3321,9 +3451,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-item
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for menu-item!
 output:
 {
@@ -3361,9 +3493,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for menu-enclose!
 output:
 {
@@ -3401,9 +3535,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-attributes
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for api_render-attributes!
 output:
 {
@@ -3441,9 +3577,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-enclose
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for api_render-enclose!
 output:
 {
@@ -3481,9 +3619,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-endpoint
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for api_render-endpoint!
 output:
 {
@@ -3521,9 +3661,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-method
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for api_render-method!
 output:
 {
@@ -3561,9 +3703,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-headers
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for api_render-headers!
 output:
 {
@@ -3601,9 +3745,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-body
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for api_render-body!
 output:
 {
@@ -3641,9 +3787,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-template
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for api_render-template!
 output:
 {
@@ -3681,9 +3829,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-istemplate
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for api_render-istemplate!
 output:
 {
@@ -3721,9 +3871,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-user
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for api_render-user!
 output:
 {
@@ -3761,9 +3913,11 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-pass
-    documentation_source_test.go:519: result and expected html output does not match: result:
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
          
-        expected:<div>this test fails</div>
+        expected:
+        <div>thistestfails</div>
     documentation_source_test.go:527: Test failed for api_render-pass!
 output:
 {
@@ -3800,9 +3954,9 @@ output:
 expected:
 {}
 
-2025/01/16 20:16:45 Version: v0.1.0-alpha
-2025/01/16 20:16:45 Build Time: 2025-01-16T19:16:45Z
-2025/01/16 20:16:46 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
+2025/01/16 20:39:20 Version: v0.1.0-alpha
+2025/01/16 20:39:20 Build Time: 2025-01-16T19:39:19Z
+2025/01/16 20:39:20 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
 --- FAIL: Test_TestAndDocumentationRender (0.02s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -3827,7 +3981,7 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-title (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-route (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-section (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/hypermedia-bodytag (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-bodytag (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-enclose (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-favicon (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-template (0.00s)
@@ -3902,5 +4056,5 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/api_render-user (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/api_render-pass (0.00s)
 FAIL
-FAIL	command-line-arguments	0.244s
+FAIL	command-line-arguments	0.250s
 FAIL

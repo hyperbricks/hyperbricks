@@ -1,7 +1,7 @@
 
 # HyperBricks
 **Version:** v0.1.0-alpha  
-**Build time:** 2025-01-16T19:16:45Z
+**Build time:** 2025-01-16T19:39:19Z
 
 Go direct to:
 
@@ -2188,12 +2188,10 @@ hypermedia.10.value = HELLO WORLD!
 **Expected Result**
 
 ````html
-<!DOCTYPE html>
+<!DOCTYPEhtml>
 <html>
-  <body id="main">
-    HELLO WORLD!
-  </body>
-</html>
+<bodyid="main">
+HELLOWORLD!
 ````
 
 

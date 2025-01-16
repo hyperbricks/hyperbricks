@@ -511,12 +511,12 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				// fmt.Printf("\nexpected result:%s", parsed.ExpectedOutput)
 
 				// TO COMPARE THIS....
-				_res_html := removeTabsAndNewlines(result)
-				_exp_html := removeTabsAndNewlines(parsed.ExpectedOutput)
+				_res_html := stripAllWhitespace(result)
+				_exp_html := stripAllWhitespace(parsed.ExpectedOutput)
 
 				// Now compare the normalized strings.
 				if _res_html != _exp_html {
-					t.Errorf("result and expected html output does not match: result:\n%s \nexpected:%s", _res_html, _exp_html)
+					t.Errorf("result and expected html output does not match: \nresult:\n%s \nexpected:\n%s\n", _res_html, _exp_html)
 				}
 
 				equal, err := JSONDeepEqual(expected, response.Instance)
