@@ -514,9 +514,9 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				_res_html := stripAllWhitespace(result)
 				_exp_html := stripAllWhitespace(parsed.ExpectedOutput)
 
-				// Now compare the normalized strings.
-				if _res_html != _exp_html {
-					t.Errorf("result and expected html output does not match: \nresult:\n%s \nexpected:\n%s\n", _res_html, _exp_html)
+				// Now compare the normalized strings if expected is given....
+				if _res_html != _exp_html && parsed.ExpectedOutput != "" {
+					t.Errorf("result and expected html output does not match: \nresult:\n%s \nexpected:\n%s\n", result, parsed.ExpectedOutput)
 				}
 
 				equal, err := JSONDeepEqual(expected, response.Instance)
@@ -543,7 +543,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 					Description:     field.Tag.Get("description"),
 					Category:        cfg.ConfigCategory,
 					Example:         template.HTML(parsed.HyperbricksConfig),
-					Result:          template.HTML(gohtml.Format(_res_html)),
+					Result:          template.HTML(gohtml.Format(result)),
 					TypeDescription: cfg.TypeDescription,
 					FieldLink:       template.HTML(strings.ToLower(fmt.Sprintf("[%s](#%s-%s)", field.Tag.Get("mapstructure"), cfg.Name, field.Tag.Get("mapstructure")))),
 					FieldAnchor:     template.HTML(strings.ToLower(fmt.Sprintf(`## %s %s`, cfg.Name, field.Tag.Get("mapstructure")))),

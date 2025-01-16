@@ -99,6 +99,9 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	if config.Head != nil {
 		config.Head["@type"] = HeadConfigGetName()
 		config.Head["file"] = config.File
+		config.Head["css"] = config.Css
+		config.Head["js"] = config.Js
+		config.Head["meta"] = config.Meta
 		config.Head["path"] = config.File + ":" + config.Path
 		result, errr := pr.RenderManager.Render(HeadConfigGetName(), config.Head)
 		errors = append(errors, errr...)
