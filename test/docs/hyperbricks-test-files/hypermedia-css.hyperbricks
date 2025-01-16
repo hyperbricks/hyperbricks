@@ -1,9 +1,6 @@
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
-hypermedia.head {
-    
-}
 hypermedia.css = [styles.css,xxxx]
 hypermedia.10 = <HTML>
 hypermedia.10.value = <p>some HTML</p>
