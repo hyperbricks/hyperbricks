@@ -1,4 +1,3 @@
-==== hyperbricks config {!{fragment}} ====
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
@@ -6,29 +5,32 @@ hypermedia.head = <HEAD>
 hypermedia.head {
     css = [styles.css,xxxx]
     js = [styles.css,xxxx]
+
     meta {
         a = b
         b = c
     }
-    10 = <HTML>
-    10.value = <meta name="generator" content="hyperbrickszzzz cms">
+    999 = <HTML>
+    999.value = <!-- 999 overides default generator meta tag -->
+
+    1001 = <CSS>
+    1001.inline = <<[
+        body {
+            pading:10px;
+        }
+    ]>>
+
+    20 = <HTML>
+    20.value = <meta name="generator" content="hyperbrickszzzz cms">
      
 }
 hypermedia.10 = <HTML>
 hypermedia.10.value = <p>some HTML</p>
 ==== explainer ====
-CSS files associated with the hypermedia
+See <HEADER> for details
 ==== expected json ====
 {
 	
 }
 ==== expected output ====
 xxx
-==== explainer ====
-Configurations for the head section of the hypermedia
-==== expected json ====
-{
-	
-}
-==== expected output ====
-<div>this test fails</div>

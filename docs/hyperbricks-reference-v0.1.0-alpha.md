@@ -1,7 +1,7 @@
 
 # HyperBricks
 **Version:** v0.1.0-alpha  
-**Build time:** 2025-01-16T23:09:22Z
+**Build time:** 2025-01-16T23:38:36Z
 
 Go direct to:
 
@@ -72,6 +72,7 @@ fragment.content.value = <p>THIS IS HTML</p>
 ### Category: **composite**
 
 - &lt;FRAGMENT&gt;
+- &lt;HEAD&gt;
 - &lt;HYPERMEDIA&gt;
 
 
@@ -2049,6 +2050,86 @@ fragment {
 
 ---
 
+#### &lt;HEAD&gt;
+
+**Type Description**
+
+
+
+
+
+
+
+
+---
+**Properties**
+
+- [meta](#head-meta)
+- [css](#head-css)
+- [js](#head-js)
+
+
+---
+
+## head meta
+#### meta
+
+**Description**  
+Metadata for the head section
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+---
+
+## head css
+#### css
+
+**Description**  
+CSS files to include
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+---
+
+## head js
+#### js
+
+**Description**  
+JavaScript files to include
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+---
+
 #### &lt;HYPERMEDIA&gt;
 
 **Type Description**
@@ -2366,12 +2447,23 @@ hypermedia.head = <HEAD>
 hypermedia.head {
     css = [styles.css,xxxx]
     js = [styles.css,xxxx]
+
     meta {
         a = b
         b = c
     }
-    10 = <HTML>
-    10.value = <meta name="generator" content="hyperbrickszzzz cms">
+    999 = <HTML>
+    999.value = <!-- 999 overides default generator meta tag -->
+
+    1001 = <CSS>
+    1001.inline = <<[
+        body {
+            pading:10px;
+        }
+    ]>>
+
+    20 = <HTML>
+    20.value = <meta name="generator" content="hyperbrickszzzz cms">
      
 }
 hypermedia.10 = <HTML>
@@ -2386,13 +2478,18 @@ hypermedia.10.value = <p>some HTML</p>
 <html>
   <head>
     <meta name="generator" content="hyperbrickszzzz cms">
-    <meta name="generator" content="hyperbricks cms">
+    <!-- 999 overides default generator meta tag -->
     <meta name="a" content="b">
     <meta name="b" content="c">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="xxxx">
     <script src="styles.css"></script>
     <script src="xxxx"></script>
+    <style>
+      body {
+      pading:10px;
+      }
+    </style>
   </head>
   <body>
     <p>

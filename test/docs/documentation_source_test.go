@@ -96,6 +96,14 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory:  "composite",
 			Config:          composite.HyperMediaConfig{},
 		},
+		{
+			Name:            "Head",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<HEAD>",
+			ConfigCategory:  "composite",
+			Config:          composite.HeadConfig{},
+		},
 		// API is for version 2.0.0
 		// {
 		// 	Name:            "Api",

@@ -12,7 +12,7 @@ import (
 // HeadConfig represents the configuration for the head section.
 type HeadConfig struct {
 	shared.Composite `mapstructure:",squash"`
-	MetaData         map[string]string `mapstructure:"meta" description:"Metadata for the head section" example:"{!{head-metadata.hyperbricks}}"`
+	MetaData         map[string]string `mapstructure:"meta" description:"Metadata for the head section" example:"{!{head-meta.hyperbricks}}"`
 	Css              []string          `mapstructure:"css" description:"CSS files to include" example:"{!{head-css.hyperbricks}}"`
 	Js               []string          `mapstructure:"js" description:"JavaScript files to include" example:"{!{head-js.hyperbricks}}"`
 }
@@ -101,10 +101,11 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 	}
 
 	renderedHeadContent := headbuilder.String()
-
-	config.Items["999"] = map[string]interface{}{
-		"@type": "<HTML>",
-		"value": `<meta name="generator" content="hyperbricks cms">`,
+	if config.Items["999"] == nil {
+		config.Items["999"] = map[string]interface{}{
+			"@type": "<HTML>",
+			"value": `<meta name="generator" content="hyperbricks cms">`,
+		}
 	}
 
 	// check if css and js is not empty

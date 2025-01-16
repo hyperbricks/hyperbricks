@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+JavaScript files to include
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>
