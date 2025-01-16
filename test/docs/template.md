@@ -33,9 +33,9 @@ Go direct to:
 {{.Description}}
 
 **Main Example**
-```properties
+````properties
 {{.Example}}
-```
+````
 {{end}}
 {{end}}
 
@@ -54,15 +54,15 @@ Go direct to:
 {{.Description}}
 
 **Example**
-```properties
+````properties
 {{.Example}}
-```
+````
 {{if .Result}}
 **Expected Result**
 
-```properties
+````html
 {{.Result}}
-```
+````
 {{end}}
 {{end}}
 {{end}}

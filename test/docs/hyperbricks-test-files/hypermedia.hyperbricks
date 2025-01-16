@@ -1,13 +1,29 @@
 ==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+css = <HTML>
+css.value = <<[
+    <style>
+        body {
+            padding:20px;
+        }
+    </style>
+]>>
+
+
+# index page
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 < css
+    20 = <CSS>
+    20.inline = <<[
+        .content {
+            color:green;
+        }
+    ]>>
 }
 ==== explainer ====
-HYPERMEDIA description
+
 ==== expected json ====
 {
 	
 }
 ==== expected output ====
-<div>this test fails</div>
