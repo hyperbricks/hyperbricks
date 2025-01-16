@@ -260,7 +260,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 		var fields []FieldDoc
 		// Process non-embedded fields first
 		val := reflect.ValueOf(cfg.Config)
-		fields = append(fields, processFieldsWithSquash(val, cfg, t, rm)...)
+		fields = processFieldsWithSquash(val, cfg, t, rm, nil)
 
 		// Iterate through embedded fields
 		for embeddedName, fieldTag := range cfg.Embedded {
@@ -268,7 +268,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 			field := findFieldByName(val, embeddedName)
 			if field.IsValid() {
-				fields = append(fields, processFieldsWithSquash(val, cfg, t, rm)...)
+				fields = append(fields, processFieldsWithSquash(field, cfg, t, rm, nil)...)
 			} else {
 				fmt.Printf("Field %s not found in Config\n", embeddedName)
 			}
@@ -314,9 +314,12 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	// 	log.Fatalf("Error starting server: %v", err)
 	// }
 }
-func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *testing.T, rm *render.RenderManager) []FieldDoc {
+func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *testing.T, rm *render.RenderManager, _fields []FieldDoc) []FieldDoc {
 
 	var fields []FieldDoc
+	if len(_fields) > 0 {
+		fields = _fields
+	}
 
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -338,7 +341,8 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 		tag := field.Tag.Get("mapstructure")
 		if tag == ",squash" {
 			// Recursively process embedded fields
-			fields = append(fields, processFieldsWithSquash(val.Field(i), cfg, t, rm)...)
+			par := val.Field(i)
+			fields = processFieldsWithSquash(par, cfg, t, rm, fields)
 
 		}
 		var example string
