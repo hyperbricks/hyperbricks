@@ -104,6 +104,14 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory:  "composite",
 			Config:          composite.HeadConfig{},
 		},
+		{
+			Name:            "Template",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<TEMPLATE>",
+			ConfigCategory:  "composite",
+			Config:          composite.TemplateConfig{},
+		},
 		// API is for version 2.0.0
 		// {
 		// 	Name:            "Api",

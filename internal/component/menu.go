@@ -16,7 +16,6 @@ type HyperMediaConfig struct {
 	Title string `json:"title"`
 	Route string `json:"route"`
 	Index int    `json:"index"`
-	// Add other fields as needed
 }
 
 // MenuConfig represents configuration for the MENU component.

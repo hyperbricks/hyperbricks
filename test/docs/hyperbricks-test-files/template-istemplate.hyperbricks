@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Determines if the field is a inline template or when not defined a reference to a template file
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>

@@ -1,7 +1,7 @@
 
 # HyperBricks
 **Version:** v0.1.0-alpha  
-**Build time:** 2025-01-16T23:38:36Z
+**Build time:** 2025-01-16T23:40:41Z
 
 Go direct to:
 
@@ -74,6 +74,7 @@ fragment.content.value = <p>THIS IS HTML</p>
 - &lt;FRAGMENT&gt;
 - &lt;HEAD&gt;
 - &lt;HYPERMEDIA&gt;
+- &lt;TEMPLATE&gt;
 
 
 
@@ -2479,8 +2480,8 @@ hypermedia.10.value = <p>some HTML</p>
   <head>
     <meta name="generator" content="hyperbrickszzzz cms">
     <!-- 999 overides default generator meta tag -->
-    <meta name="a" content="b">
     <meta name="b" content="c">
+    <meta name="a" content="b">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="xxxx">
     <script src="styles.css"></script>
@@ -2497,6 +2498,86 @@ hypermedia.10.value = <p>some HTML</p>
     </p>
   </body>
 </html>
+````
+
+
+
+---
+
+#### &lt;TEMPLATE&gt;
+
+**Type Description**
+
+
+
+
+
+
+
+
+---
+**Properties**
+
+- [template](#template-template)
+- [istemplate](#template-istemplate)
+- [values](#template-values)
+
+
+---
+
+## template template
+#### template
+
+**Description**  
+The template used for rendering
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+---
+
+## template istemplate
+#### istemplate
+
+**Description**  
+Determines if the field is a template or reference
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+---
+
+## template values
+#### values
+
+**Description**  
+Key-value pairs for template rendering
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
 ````
 
 
