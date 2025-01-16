@@ -31,6 +31,36 @@ func StructToMap(data interface{}) map[string]interface{} {
 	return result
 }
 
+func StructToMapRecursive(input interface{}) map[string]interface{} {
+	output := make(map[string]interface{})
+
+	v := reflect.ValueOf(input)
+	t := reflect.TypeOf(input)
+
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+		t = t.Elem()
+	}
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		fieldValue := v.Field(i)
+
+		// Use the `mapstructure` tag if present
+		tag := field.Tag.Get("mapstructure")
+		if tag == "" || tag == ",squash" {
+			tag = field.Name
+		}
+
+		// Convert the field value
+		if fieldValue.CanInterface() {
+			output[tag] = fieldValue.Interface()
+		}
+	}
+
+	return output
+}
+
 // Helper function to write test outputs to a file for documentation purposes.
 func WriteToFile(filename, content string) error {
 	file, err := os.Create(filename)

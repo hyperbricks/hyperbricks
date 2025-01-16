@@ -1,8 +1,29 @@
 ==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.head = <HEAD>
+hypermedia.head {
+    css = [styles.css,xxxx]
+    js = [styles.css,xxxx]
+    meta {
+        a = b
+        b = c
+    }
+    10 = <HTML>
+    10.value = <meta name="generator" content="hyperbrickszzzz cms">
+     
+}
+hypermedia.10 = <HTML>
+hypermedia.10.value = <p>some HTML</p>
+==== explainer ====
+CSS files associated with the hypermedia
+==== expected json ====
+{
 	
 }
+==== expected output ====
+xxx
 ==== explainer ====
 Configurations for the head section of the hypermedia
 ==== expected json ====

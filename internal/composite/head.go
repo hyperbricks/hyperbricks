@@ -77,6 +77,12 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 	// appending page validation errors
 	errors = append(errors, config.Validate()...)
 
+	// Generate meta tags
+	for metaName, metaContent := range config.MetaData {
+		headbuilder.WriteString(fmt.Sprintf(`<meta name="%s" content="%s">`, metaName, metaContent))
+		headbuilder.WriteString("\n")
+	}
+
 	// Generate link tags for CSS files
 	for _, cssFile := range config.Css {
 		headbuilder.WriteString(fmt.Sprintf(`<link rel="stylesheet" href="%s">`, cssFile))
@@ -108,6 +114,7 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 			"value": headbuilder.String(),
 		}
 	}
+
 	config.Items["enclose"] = "<head>|</head>"
 
 	result, errr := cr.RenderManager.Render(TreeRendererConfigGetName(), config.Items)

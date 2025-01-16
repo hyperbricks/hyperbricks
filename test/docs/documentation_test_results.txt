@@ -930,18 +930,58 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-bodytag
-2025/01/16 21:21:47 [invalid type for ConcurentRenderConfig type RENDER items are empty]
-    documentation_source_test.go:519: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"></head><body id="main">HELLO WORLD!</body></html> 
-        expected:
-        <!DOCTYPE html>
-        <html>
-          <body id="main">
-            HELLO WORLD!
-          </body>
-        </html>
-        
+    documentation_source_test.go:527: Test failed for hypermedia-bodytag!
+output:
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "Key": "",
+  "Path": "",
+  "File": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "<body id=\"main\">|</body>",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null
+}
+
+expected:
+{
+  "BodyTag": "<body id=\"main\">|</body>",
+  "ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "Css": null,
+  "Doctype": "",
+  "Enclose": "",
+  "Favicon": "",
+  "File": "",
+  "Head": null,
+  "HtmlTag": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "Js": null,
+  "Key": "",
+  "Meta": null,
+  "MetaDocDescription": "",
+  "Path": "",
+  "Route": "index",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
     documentation_source_test.go:519: result and expected html output does not match: 
         result:
@@ -1206,50 +1246,6 @@ output:
 expected:
 {}
 
-=== RUN   Test_TestAndDocumentationRender/hypermedia-meta
-    documentation_source_test.go:519: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:527: Test failed for hypermedia-meta!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/hypermedia-doctype
     documentation_source_test.go:519: result and expected html output does not match: 
         result:
@@ -1339,60 +1335,21 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-head
+2025/01/17 00:09:23 [invalid type for ConcurentRenderConfig]
     documentation_source_test.go:519: result and expected html output does not match: 
         result:
-         
+        <!DOCTYPE html><html><head><meta name="generator" content="hyperbrickszzzz cms"><meta name="generator" content="hyperbricks cms"><meta name="a" content="b">
+        <meta name="b" content="c">
+        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="xxxx">
+        <script src="styles.css"></script>
+        <script src="xxxx"></script>
+        </head><body><p>some HTML</p></body></html> 
         expected:
         <div>this test fails</div>
         
         
     documentation_source_test.go:527: Test failed for hypermedia-head!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
-=== RUN   Test_TestAndDocumentationRender/hypermedia-css
-2025/01/16 21:21:47 [invalid type for ConcurentRenderConfig type RENDER items are empty]
-    documentation_source_test.go:519: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="stylesheet" href="styles.css">
-        <link rel="stylesheet" href="xxxx">
-        </head><body><p>some HTML</p></body></html> 
-        expected:
-        xxx
-        
-    documentation_source_test.go:527: Test failed for hypermedia-css!
 output:
 {
   "ConfigType": "<HYPERMEDIA>",
@@ -1412,59 +1369,27 @@ output:
   "IsStatic": false,
   "Static": "",
   "Index": 0,
-  "Meta": null,
   "Doctype": "",
   "HtmlTag": "",
-  "Head": null,
-  "Css": [
-    "styles.css",
-    "xxxx"
-  ],
-  "Js": null
-}
-
-expected:
-{}
-
-=== RUN   Test_TestAndDocumentationRender/hypermedia-js
-    documentation_source_test.go:519: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:527: Test failed for hypermedia-js!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
+  "Head": {
+    "10": {
+      "@type": "<HTML>",
+      "value": "<meta name=\"generator\" content=\"hyperbrickszzzz cms\">"
+    },
+    "@type": "<HEAD>",
+    "css": [
+      "styles.css",
+      "xxxx"
+    ],
+    "js": [
+      "styles.css",
+      "xxxx"
+    ],
+    "meta": {
+      "a": "b",
+      "b": "c"
+    }
+  }
 }
 
 expected:
@@ -4154,9 +4079,9 @@ output:
 expected:
 {}
 
-2025/01/16 21:21:47 Version: v0.1.0-alpha
-2025/01/16 21:21:47 Build Time: 2025-01-16T20:21:46Z
-2025/01/16 21:21:47 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
+2025/01/17 00:09:23 Version: v0.1.0-alpha
+2025/01/17 00:09:23 Build Time: 2025-01-16T23:09:22Z
+2025/01/17 00:09:23 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
 --- FAIL: Test_TestAndDocumentationRender (0.02s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -4188,12 +4113,9 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-isstatic (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-static (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-index (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/hypermedia-meta (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-doctype (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-htmltag (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-head (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/hypermedia-css (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/hypermedia-js (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/html-attributes (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/html-enclose (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/html-value (0.00s)
@@ -4256,5 +4178,5 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/api_render-user (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/api_render-pass (0.00s)
 FAIL
-FAIL	command-line-arguments	0.251s
+FAIL	command-line-arguments	0.240s
 FAIL

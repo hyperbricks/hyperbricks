@@ -1,7 +1,7 @@
 
 # HyperBricks
-**Version:** v0.1.0-alpha  
-**Build time:** 2025-01-16T23:09:22Z
+**Version:** dev  
+**Build time:** undefined
 
 Go direct to:
 
@@ -2080,6 +2080,12 @@ fragment {
 
 
 
+
+
+
+
+
+
 ---
 **Properties**
 
@@ -2093,9 +2099,12 @@ fragment {
 - [isstatic](#hypermedia-isstatic)
 - [static](#hypermedia-static)
 - [index](#hypermedia-index)
+- [meta](#hypermedia-meta)
 - [doctype](#hypermedia-doctype)
 - [htmltag](#hypermedia-htmltag)
 - [head](#hypermedia-head)
+- [css](#hypermedia-css)
+- [js](#hypermedia-js)
 
 
 ---
@@ -2312,6 +2321,26 @@ fragment {
 
 ---
 
+## hypermedia meta
+#### meta
+
+**Description**  
+Metadata for the hypermedia, such as descriptions and keywords
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+---
+
 ## hypermedia doctype
 #### doctype
 
@@ -2360,20 +2389,29 @@ Configurations for the head section of the hypermedia
 
 **Example**
 ````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+---
+
+## hypermedia css
+#### css
+
+**Description**  
+CSS files associated with the hypermedia
+
+**Example**
+````properties
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
-hypermedia.head = <HEAD>
-hypermedia.head {
-    css = [styles.css,xxxx]
-    js = [styles.css,xxxx]
-    meta {
-        a = b
-        b = c
-    }
-    10 = <HTML>
-    10.value = <meta name="generator" content="hyperbrickszzzz cms">
-     
-}
+
 hypermedia.10 = <HTML>
 hypermedia.10.value = <p>some HTML</p>
 
@@ -2384,22 +2422,32 @@ hypermedia.10.value = <p>some HTML</p>
 ````html
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="generator" content="hyperbrickszzzz cms">
-    <meta name="generator" content="hyperbricks cms">
-    <meta name="a" content="b">
-    <meta name="b" content="c">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="xxxx">
-    <script src="styles.css"></script>
-    <script src="xxxx"></script>
-  </head>
   <body>
     <p>
       some HTML
     </p>
   </body>
 </html>
+````
+
+
+
+
+---
+
+## hypermedia js
+#### js
+
+**Description**  
+JavaScript files associated with the hypermedia
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
 ````
 
 
