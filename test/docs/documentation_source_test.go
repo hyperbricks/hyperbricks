@@ -36,15 +36,17 @@ var (
 
 // FieldDoc represents a field documentation entry
 type FieldDoc struct {
-	Name               string `json:"name"`
-	Type               string `json:"type"`
-	Mapstructure       string `json:"mapstructure"`
-	Category           string `json:"category"`
-	Description        string `json:"description"`
-	Example            string `json:"example"`
-	MetaDocDescription string `json:"@metadoc"`
-	Result             string `json:"result"`
-	TypeDescription    string `json:"@doc"`
+	Name               string        `json:"name"`
+	Type               string        `json:"type"`
+	Mapstructure       string        `json:"mapstructure"`
+	Category           string        `json:"category"`
+	Description        string        `json:"description"`
+	Example            template.HTML `json:"example"`
+	MetaDocDescription string        `json:"@metadoc"`
+	Result             string        `json:"result"`
+	TypeDescription    string        `json:"@doc"`
+	FieldLink          template.HTML `json:"fieldlink"`
+	FieldAnchor        template.HTML `json:"fieldanchor"`
 }
 
 type DocumentationTypeStruct struct {
@@ -290,14 +292,27 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 		"buildtime": BuildTime,
 	}
 
+	// Define a custom function for including files
+	funcMap := template.FuncMap{
+		"include": func(filePath string) (template.HTML, error) {
+			// Read the file content
+			content, err := os.ReadFile(filePath)
+			if err != nil {
+				return "", err
+			}
+
+			return template.HTML(content), nil // Mark as safe HTML
+		},
+	}
+
 	// Parse the HTML template
-	tmpl, err := template.ParseFiles("template.html")
+	tmpl, err := template.New("main").Funcs(funcMap).ParseFiles("template.md")
 	if err != nil {
 		log.Fatalf("Error parsing template: %v", err)
 	}
 
 	// Generate the static HTML file
-	renderStaticFile(tmpl, data, "../../docs/hyperbricks-reference-"+Version+".html")
+	renderStaticFile(tmpl, data, "../../docs/hyperbricks-reference-"+Version+".md")
 
 	// // HTTP handler to serve the page dynamically
 	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -470,14 +485,14 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 					Mapstructure:    field.Tag.Get("mapstructure"),
 					Description:     field.Tag.Get("description"),
 					Category:        cfg.ConfigCategory,
-					Example:         parsed.HyperbricksConfig,
+					Example:         template.HTML(parsed.HyperbricksConfig),
 					Result:          _res_html,
 					TypeDescription: cfg.TypeDescription,
+					FieldLink:       template.HTML(strings.ToLower(fmt.Sprintf("[%s](#%s-%s)", field.Tag.Get("mapstructure"), cfg.Name, field.Tag.Get("mapstructure")))),
+					FieldAnchor:     template.HTML(strings.ToLower(fmt.Sprintf(`## %s %s`, cfg.Name, field.Tag.Get("mapstructure")))),
 				})
 			})
-
 		}
-
 	}
 
 	return fields
