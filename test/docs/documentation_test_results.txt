@@ -1,12 +1,10 @@
 === RUN   Test_TestAndDocumentationRender
 loading 
 === RUN   Test_TestAndDocumentationRender/fragment-response
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-response!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-response!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -43,12 +41,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-title
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-title!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-title!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -85,12 +81,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-route
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-route!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-route!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -127,12 +121,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-section
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-section!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-section!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -169,12 +161,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -211,12 +201,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-template
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-template!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-template!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -253,12 +241,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-static
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-static!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-static!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -295,12 +281,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/fragment-index
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-index!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-index!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -338,14 +322,11 @@ expected:
 
 
 Embedded Field: HxResponse (mapped as: response)
-=== RUN   Test_TestAndDocumentationRender/fragment-hx_location
-=== RUN   Test_TestAndDocumentationRender/fragment-hx_push_url
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-hx_push_url!
+=== RUN   Test_TestAndDocumentationRender/fragment-response#01
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-response!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -381,13 +362,11 @@ output:
 expected:
 {}
 
-=== RUN   Test_TestAndDocumentationRender/fragment-hx_redirect
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-hx_redirect!
+=== RUN   Test_TestAndDocumentationRender/fragment-title#01
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-title!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -423,13 +402,11 @@ output:
 expected:
 {}
 
-=== RUN   Test_TestAndDocumentationRender/fragment-hx_refresh
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-hx_refresh!
+=== RUN   Test_TestAndDocumentationRender/fragment-route#01
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-route!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -465,13 +442,11 @@ output:
 expected:
 {}
 
-=== RUN   Test_TestAndDocumentationRender/fragment-hx_replace_url
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-hx_replace_url!
+=== RUN   Test_TestAndDocumentationRender/fragment-section#01
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-section!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -507,13 +482,11 @@ output:
 expected:
 {}
 
-=== RUN   Test_TestAndDocumentationRender/fragment-hx_reswap
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-hx_reswap!
+=== RUN   Test_TestAndDocumentationRender/fragment-enclose#01
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -549,13 +522,11 @@ output:
 expected:
 {}
 
-=== RUN   Test_TestAndDocumentationRender/fragment-hx_retarget
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-hx_retarget!
+=== RUN   Test_TestAndDocumentationRender/fragment-template#01
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-template!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -591,13 +562,11 @@ output:
 expected:
 {}
 
-=== RUN   Test_TestAndDocumentationRender/fragment-hx_reselect
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-hx_reselect!
+=== RUN   Test_TestAndDocumentationRender/fragment-static#01
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-static!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -633,97 +602,11 @@ output:
 expected:
 {}
 
-=== RUN   Test_TestAndDocumentationRender/fragment-hx_trigger
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-hx_trigger!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
-=== RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-hx_trigger_after_settle!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
-=== RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for fragment-hx_trigger_after_swap!
+=== RUN   Test_TestAndDocumentationRender/fragment-index#01
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for fragment-index!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -760,12 +643,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-@doc
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-@doc!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-@doc!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -802,12 +683,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-title
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-title!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-title!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -844,12 +723,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-route
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-route!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-route!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -886,12 +763,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-section
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-section!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-section!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -928,12 +803,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-bodytag
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-bodytag!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-bodytag!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -970,12 +843,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1012,12 +883,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-favicon!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-favicon!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1054,12 +923,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-template!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-template!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1096,12 +963,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-isstatic
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-isstatic!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-isstatic!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1138,12 +1003,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-static!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-static!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1180,12 +1043,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-index
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-index!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-index!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1222,12 +1083,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-meta
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-meta!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-meta!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1264,12 +1123,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-doctype
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-doctype!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-doctype!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1306,12 +1163,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-htmltag
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-htmltag!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-htmltag!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1348,12 +1203,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-head
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-head!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-head!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1390,12 +1243,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-css
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-css!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-css!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1432,12 +1283,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-js
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for hypermedia-js!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for hypermedia-js!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1474,12 +1323,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/html-attributes
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for html-attributes!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for html-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1516,12 +1363,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/html-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for html-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for html-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1558,12 +1403,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/html-value
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for html-value!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for html-value!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1600,12 +1443,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/html-trimspace
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for html-trimspace!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for html-trimspace!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1642,12 +1483,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/css-attributes
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for css-attributes!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for css-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1684,12 +1523,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/css-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for css-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for css-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1726,12 +1563,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/css-inline
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for css-inline!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for css-inline!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1768,12 +1603,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/css-link
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for css-link!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for css-link!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1810,12 +1643,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/css-file
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for css-file!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for css-file!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1852,12 +1683,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/js-attributes
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for js-attributes!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for js-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1894,12 +1723,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/js-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for js-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for js-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1936,12 +1763,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/js-inline
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for js-inline!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for js-inline!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1978,12 +1803,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/js-link
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for js-link!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for js-link!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2020,12 +1843,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/js-file
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for js-file!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for js-file!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2062,12 +1883,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-attributes
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for image-attributes!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for image-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2104,12 +1923,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for image-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for image-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2146,12 +1963,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-src
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for image-src!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for image-src!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2188,12 +2003,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-width
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for image-width!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for image-width!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2230,12 +2043,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-height
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for image-height!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for image-height!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2272,12 +2083,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-alt
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for image-alt!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for image-alt!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2314,12 +2123,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-title
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for image-title!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for image-title!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2356,12 +2163,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-class
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for image-class!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for image-class!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2398,12 +2203,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-quality
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for image-quality!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for image-quality!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2440,12 +2243,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-loading
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for image-loading!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for image-loading!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2482,12 +2283,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/image-is_static
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for image-is_static!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for image-is_static!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2524,12 +2323,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-attributes
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for images-attributes!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for images-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2566,12 +2363,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for images-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for images-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2608,12 +2403,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-directory
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for images-directory!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for images-directory!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2650,12 +2443,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-width
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for images-width!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for images-width!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2692,12 +2483,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-height
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for images-height!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for images-height!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2734,12 +2523,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/images-is_static
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for images-is_static!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for images-is_static!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2776,12 +2563,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/json-attributes
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for json-attributes!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for json-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2818,12 +2603,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/json-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for json-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for json-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2860,12 +2643,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/json-file
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for json-file!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for json-file!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2902,12 +2683,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/json-template
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for json-template!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for json-template!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2944,12 +2723,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-attributes
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for plugin-attributes!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for plugin-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -2986,12 +2763,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for plugin-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for plugin-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3028,12 +2803,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-plugin
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for plugin-plugin!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for plugin-plugin!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3070,12 +2843,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-classes
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for plugin-classes!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for plugin-classes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3112,12 +2883,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-data
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for plugin-data!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for plugin-data!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3154,12 +2923,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/text-attributes
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for text-attributes!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for text-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3196,12 +2963,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/text-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for text-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for text-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3238,12 +3003,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/text-value
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for text-value!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for text-value!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3280,12 +3043,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-attributes
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for menu-attributes!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for menu-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3322,12 +3083,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for menu-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for menu-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3364,12 +3123,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-section
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for menu-section!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for menu-section!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3406,12 +3163,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-order
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for menu-order!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for menu-order!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3448,12 +3203,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-sort
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for menu-sort!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for menu-sort!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3490,12 +3243,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-active
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for menu-active!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for menu-active!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3532,12 +3283,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-item
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for menu-item!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for menu-item!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3574,12 +3323,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for menu-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for menu-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3616,12 +3363,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-attributes
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for api_render-attributes!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for api_render-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3658,12 +3403,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-enclose
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for api_render-enclose!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for api_render-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3700,12 +3443,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-endpoint
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for api_render-endpoint!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for api_render-endpoint!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3742,12 +3483,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-method
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for api_render-method!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for api_render-method!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3784,12 +3523,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-headers
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for api_render-headers!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for api_render-headers!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3826,12 +3563,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-body
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for api_render-body!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for api_render-body!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3868,12 +3603,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-template
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for api_render-template!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for api_render-template!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3910,12 +3643,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-istemplate
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for api_render-istemplate!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for api_render-istemplate!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3952,12 +3683,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-user
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for api_render-user!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for api_render-user!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -3994,12 +3723,10 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-pass
-    documentation_test.go:272: result and expected HTML differ:
-        result:
-        
-        expected:
-        <div>this test fails</div>
-    documentation_test.go:279: Test failed for api_render-pass!
+    documentation_source_test.go:443: result and expected html output does not match: result:
+         
+        expected:<div>this test fails</div>
+    documentation_source_test.go:451: Test failed for api_render-pass!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -4035,6 +3762,8 @@ output:
 expected:
 {}
 
+2025/01/15 00:04:17 Version: v0.1.0-alpha
+2025/01/15 00:04:17 Build Time: 2025-01-14T23:04:16Z
 --- FAIL: Test_TestAndDocumentationRender (0.02s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -4044,17 +3773,14 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/fragment-template (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-static (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-index (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_location (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_push_url (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_redirect (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_refresh (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_replace_url (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_reswap (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_retarget (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_reselect (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_trigger (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-response#01 (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-title#01 (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-route#01 (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-section#01 (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-enclose#01 (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-template#01 (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-static#01 (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-index#01 (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-@doc (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-title (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-route (0.00s)
@@ -4134,5 +3860,5 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/api_render-user (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/api_render-pass (0.00s)
 FAIL
-FAIL	command-line-arguments	0.246s
+FAIL	command-line-arguments	0.248s
 FAIL
