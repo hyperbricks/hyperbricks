@@ -297,7 +297,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	}
 
 	// Generate the static HTML file
-	go renderStaticFile(tmpl, data, "../../docs/hyperbricks-reference-"+Version+".html")
+	renderStaticFile(tmpl, data, "../../docs/hyperbricks-reference-"+Version+".html")
 
 	// // HTTP handler to serve the page dynamically
 	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

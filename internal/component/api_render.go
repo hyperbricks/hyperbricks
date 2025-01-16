@@ -22,14 +22,14 @@ import (
 // Basic config for ComponentRenderers
 type APIConfig struct {
 	shared.Component `mapstructure:",squash"`
-	Endpoint         string            `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-endpoint.hyperbricks}}"`
-	Method           string            `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE ect " example:"{!{api-method.hyperbricks}}"`
-	Headers          map[string]string `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-headers.hyperbricks}}"`
-	Body             string            `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-body.hyperbricks}}"`
-	Template         string            `mapstructure:"template" validate:"required" description:"Template used for rendering API output" example:"{!{api-template.hyperbricks}}"`
+	Endpoint         string            `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-endpoint.hyperbricks}}"`
+	Method           string            `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-method.hyperbricks}}"`
+	Headers          map[string]string `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-headers.hyperbricks}}"`
+	Body             string            `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-render-body.hyperbricks}}"`
+	Template         string            `mapstructure:"template" validate:"required" description:"Template used for rendering API output" example:"{!{api-render-template.hyperbricks}}"`
 	IsTemplate       bool              `mapstructure:"istemplate"`
-	User             string            `mapstructure:"user" description:"User for basic auth" example:"{!{api-user.hyperbricks}}"`
-	Pass             string            `mapstructure:"pass" description:"User for basic auth" example:"{!{api-pass.hyperbricks}}"`
+	User             string            `mapstructure:"user" description:"User for basic auth" example:"{!{api-render-user.hyperbricks}}"`
+	Pass             string            `mapstructure:"pass" description:"User for basic auth" example:"{!{api-render-pass.hyperbricks}}"`
 }
 
 /*

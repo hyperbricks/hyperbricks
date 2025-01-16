@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TyperBricks Documentation</title>
+    <title>HyperBricks Documentation</title>
     <!-- Bootswatch Slate theme CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/slate/bootstrap.min.css" rel="stylesheet">
 
@@ -136,7 +136,7 @@
   <!-- Navigation Bar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">TyperBricks Docs <span class="text-muted">{{.version}}</span></a>
+        <a class="navbar-brand" href="#">HyperBricks Docs <span class="text-muted">{{.version}}</span></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
             aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -182,9 +182,9 @@
 
         <!-- Documentation Content -->
         <main class="col-lg-9 main-content">
-            <h4>TyperBricks version {{.version}}</h4>
+            <h4>HyperBricks version {{.version}}</h4>
             <h5>{{.buildtime}}</h5>
-            <h3>TyperBricks types reference</h3>
+            <h3>HyperBricks types reference</h3>
             <div id="searchResults" class="search-results"></div>
             {{range $category, $types := .data}}
             <div class="category-section" id="category-{{$category}}">
@@ -214,7 +214,7 @@
                         <h4>Properties</h4>
                         {{range $fields}}
                             {{if ne .Name "MetaDocDescription"}}
-                                <a href="#{{$typeName}}-{{.Name}}">{{.Name}}</a>
+                                <a href="#{{$typeName}}-{{.Mapstructure}}">{{.Mapstructure}}</a>
                             {{end}}
                         {{end}}
                     </div>
@@ -222,14 +222,20 @@
                     <!-- Properties details -->
                     {{range $fields}}
                     {{if ne .Name "MetaDocDescription"}}
-                    <div class="property mb-3" id="{{$typeName}}-{{.Name}}">
-                        <strong>{{.Name}}</strong>
+                    <div class="property mb-3" id="{{$typeName}}-{{.Mapstructure}}">
+                        <strong>{{.Mapstructure}}</strong>
                         <p>{{.Description}}</p>
                         <h5>Example</h5>
                         <div class="position-relative">
                             <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 copy-btn">Copy</button>
                             <pre><code class="hljs language-properties properties">{{.Example}}</code></pre>
                         </div>
+                        {{if .Result}}
+                            <h5>Expected result</h5>
+                            <div class="position-relative">
+                                <pre><code class="hljs language-properties properties">{{.Result}}</code></pre>
+                            </div>
+                        {{end}}
                     </div>
                     {{end}}
                     {{end}}
