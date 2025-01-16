@@ -930,6 +930,18 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-bodytag
+2025/01/16 21:21:47 [invalid type for ConcurentRenderConfig type RENDER items are empty]
+    documentation_source_test.go:519: result and expected html output does not match: 
+        result:
+        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"></head><body id="main">HELLO WORLD!</body></html> 
+        expected:
+        <!DOCTYPE html>
+        <html>
+          <body id="main">
+            HELLO WORLD!
+          </body>
+        </html>
+        
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
     documentation_source_test.go:519: result and expected html output does not match: 
         result:
@@ -1371,7 +1383,7 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/hypermedia-css
-2025/01/16 21:02:32 [invalid type for ConcurentRenderConfig type RENDER items are empty]
+2025/01/16 21:21:47 [invalid type for ConcurentRenderConfig type RENDER items are empty]
     documentation_source_test.go:519: result and expected html output does not match: 
         result:
         <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="stylesheet" href="styles.css">
@@ -1403,7 +1415,7 @@ output:
   "Meta": null,
   "Doctype": "",
   "HtmlTag": "",
-  "Head": {},
+  "Head": null,
   "Css": [
     "styles.css",
     "xxxx"
@@ -4142,9 +4154,9 @@ output:
 expected:
 {}
 
-2025/01/16 21:02:32 Version: v0.1.0-alpha
-2025/01/16 21:02:32 Build Time: 2025-01-16T20:02:32Z
-2025/01/16 21:02:32 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
+2025/01/16 21:21:47 Version: v0.1.0-alpha
+2025/01/16 21:21:47 Build Time: 2025-01-16T20:21:46Z
+2025/01/16 21:21:47 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
 --- FAIL: Test_TestAndDocumentationRender (0.02s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -4169,7 +4181,7 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-title (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-route (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-section (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-bodytag (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/hypermedia-bodytag (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-enclose (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-favicon (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/hypermedia-template (0.00s)
@@ -4244,5 +4256,5 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/api_render-user (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/api_render-pass (0.00s)
 FAIL
-FAIL	command-line-arguments	0.250s
+FAIL	command-line-arguments	0.251s
 FAIL

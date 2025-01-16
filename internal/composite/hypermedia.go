@@ -38,10 +38,11 @@ func HyperMediaConfigGetName() string {
 }
 
 // Validate ensures that the page has valid data.
-func (page *HyperMediaConfig) Validate() []error {
-	if page.Doctype == "" {
-		page.Doctype = "<!DOCTYPE html>"
+func (hm *HyperMediaConfig) Validate() []error {
+	if hm.Doctype == "" {
+		hm.Doctype = "<!DOCTYPE html>"
 	}
+
 	var warnings []error
 	return warnings
 }
@@ -94,7 +95,10 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		// emty bodywrap fallback
 		config.BodyTag = "<body>|</body>"
 	}
-
+	// if no <HEAD> is defined create it
+	if config.Head == nil {
+		config.Head = make(map[string]interface{})
+	}
 	// If a main header config is present, render add it to the string builder
 	if config.Head != nil {
 		config.Head["@type"] = HeadConfigGetName()

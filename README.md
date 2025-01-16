@@ -1,7 +1,7 @@
 
 # HyperBricks
 **Version:** v0.1.0-alpha  
-**Build time:** 2025-01-16T20:02:32Z
+**Build time:** 2025-01-16T20:21:46Z
 
 Go direct to:
 
@@ -2190,6 +2190,9 @@ hypermedia.10.value = HELLO WORLD!
 ````html
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
   <body id="main">
     HELLO WORLD!
   </body>
@@ -2411,9 +2414,6 @@ CSS files associated with the hypermedia
 ````properties
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
-hypermedia.head {
-    
-}
 hypermedia.css = [styles.css,xxxx]
 hypermedia.10 = <HTML>
 hypermedia.10.value = <p>some HTML</p>
