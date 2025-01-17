@@ -20,7 +20,6 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/internal/typefactory"
-	"github.com/yosssi/gohtml"
 	"golang.org/x/net/html"
 )
 
@@ -111,22 +110,22 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory:  "composite",
 			Config:          composite.HeadConfig{},
 		},
-		// {
-		// 	Name:            "Template",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded:        map[string]string{},
-		// 	ConfigType:      "<TEMPLATE>",
-		// 	ConfigCategory:  "composite",
-		// 	Config:          composite.TemplateConfig{},
-		// },
-		// {
-		// 	Name:            "Tree",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded:        map[string]string{},
-		// 	ConfigType:      "<TREE>",
-		// 	ConfigCategory:  "composite",
-		// 	Config:          composite.TreeConfig{},
-		// },
+		{
+			Name:            "Template",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<TEMPLATE>",
+			ConfigCategory:  "composite",
+			Config:          composite.TemplateConfig{},
+		},
+		{
+			Name:            "Tree",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<TREE>",
+			ConfigCategory:  "composite",
+			Config:          composite.TreeConfig{},
+		},
 		// API is for version 2.0.0
 		// {
 		// 	Name:            "Api",
@@ -589,7 +588,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 					CategoryLink:    template.HTML(strings.ToLower(fmt.Sprintf("[%s](#%s-%s)", field.Tag.Get("mapstructure"), cfg.Name, field.Tag.Get("mapstructure")))),
 					CategoryAnchor:  template.HTML(strings.ToLower(fmt.Sprintf(`## %s %s`, cfg.Name, field.Tag.Get("mapstructure")))),
 					Example:         template.HTML(parsed.HyperbricksConfig),
-					Result:          template.HTML(gohtml.Format(result)),
+					Result:          "", //template.HTML(gohtml.Format(result)),
 					TypeDescription: cfg.TypeDescription,
 					FieldLink:       template.HTML(strings.ToLower(fmt.Sprintf("[%s](#%s-%s)", field.Tag.Get("mapstructure"), cfg.Name, field.Tag.Get("mapstructure")))),
 					FieldAnchor:     template.HTML(strings.ToLower(fmt.Sprintf(`## %s %s`, cfg.Name, field.Tag.Get("mapstructure")))),
@@ -671,7 +670,7 @@ func ParseContent(content string) (*ParsedContent, error) {
 	expectedJSONStr := sections["expected json"]
 	expectedOutput := sections["expected output"]
 
-	var moreDetails string = "???"
+	var moreDetails string = ""
 	val, ok := sections["more details"]
 	if ok {
 		moreDetails = val

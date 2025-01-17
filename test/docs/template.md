@@ -1,5 +1,5 @@
 {{define "main"}}
-# HyperBricks
+# HyperBricks Docs
 **Version:** {{.version}}  
 **Build time:** {{.buildtime}}
 
@@ -9,27 +9,30 @@ Go direct to:
 - [HyperBricks examples](#hyperbricks-examples)
 
 {{include "template_general.md"}}
----
 
-## HyperBricks type reference
+<h1><a id="hyperbricks-type-reference">HyperBricks type reference</a></h1>
+
+### Component categories:
  {{range $category, $types := .data}}
 
-### Category: **{{$category}}**
+### **{{$category}}**
 {{range $typeName, $fields := $types}}
 - [{{$typeName}}](#{{html $typeName}}) {{end}}
 {{end}}
 
 
 {{range $category, $types := .data}}
----
+
 ### Category: **{{$category}}**
 
 {{range $typeName, $fields := $types}}
-<a id="{{html $typeName}}">{{html $typeName}}</a>
+<h3><a id="{{$typeName}}">{{$typeName}}</a></h3>
 
-**Type Description**
+**{{$typeName}} Type Description**
+
 {{range $fields}}
 {{if eq .Name "MetaDocDescription"}}
+
 {{.Description}}
 
 **Main Example**
@@ -44,7 +47,6 @@ Go direct to:
 {{.Result}}
 ````
 
-
 {{end}}
 
 **more**
@@ -53,14 +55,14 @@ Go direct to:
 {{end}}
 {{end}}
 
----
+
 **Properties**
 {{range $fields}}
 {{if ne .Mapstructure "@doc"}}- {{.FieldLink}}{{end}}{{end}}
 {{range $fields}}
 
 {{if ne .Mapstructure "@doc"}}
----
+
 
 {{.FieldAnchor}}
 #### {{.Mapstructure}}
@@ -86,7 +88,7 @@ Go direct to:
 
 {{end}}
 {{end}}
----
+
 {{end}}
 {{end}}
 {{end}}

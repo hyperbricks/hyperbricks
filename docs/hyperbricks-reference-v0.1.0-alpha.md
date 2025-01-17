@@ -1,7 +1,7 @@
 
-# HyperBricks
+# HyperBricks Docs
 **Version:** v0.1.0-alpha  
-**Build time:** 2025-01-17T13:04:35Z
+**Build time:** 2025-01-17T14:47:49Z
 
 Go direct to:
 
@@ -50,37 +50,40 @@ fragment.content.value = <p>THIS IS HTML</p>
 
 
 
----
 
-## HyperBricks type reference
+<h1><a id="hyperbricks-type-reference">HyperBricks type reference</a></h1>
+
+### Component categories:
  
 
-### Category: **component**
+### **component**
 
 - [&lt;HTML&gt;](#<HTML>) 
 - [&lt;PLUGIN&gt;](#<PLUGIN>) 
 - [&lt;TEXT&gt;](#<TEXT>) 
 
 
-### Category: **composite**
+### **composite**
 
 - [&lt;FRAGMENT&gt;](#<FRAGMENT>) 
 - [&lt;HEAD&gt;](#<HEAD>) 
 - [&lt;HYPERMEDIA&gt;](#<HYPERMEDIA>) 
+- [&lt;TEMPLATE&gt;](#<TEMPLATE>) 
+- [&lt;TREE&gt;](#<TREE>) 
 
 
-### Category: **data**
+### **data**
 
 - [&lt;API_RENDER&gt;](#<API_RENDER>) 
 - [&lt;JSON&gt;](#<JSON>) 
 
 
-### Category: **menu**
+### **menu**
 
 - [&lt;MENU&gt;](#<MENU>) 
 
 
-### Category: **resources**
+### **resources**
 
 - [&lt;CSS&gt;](#<CSS>) 
 - [&lt;IMAGE&gt;](#<IMAGE>) 
@@ -90,15 +93,13 @@ fragment.content.value = <p>THIS IS HTML</p>
 
 
 
----
+
 ### Category: **component**
 
 
-<a id="<HTML>"><HTML></a>
+<h3><a id="&lt;HTML&gt;">&lt;HTML&gt;</a></h3>
 
-**Type Description**
-
-
+**&lt;HTML&gt; Type Description**
 
 
 
@@ -107,7 +108,10 @@ fragment.content.value = <p>THIS IS HTML</p>
 
 
 
----
+
+
+
+
 **Properties**
 
 - [attributes](#html-attributes)
@@ -117,7 +121,7 @@ fragment.content.value = <p>THIS IS HTML</p>
 
 
 
----
+
 
 ## html attributes
 #### attributes
@@ -135,14 +139,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## html enclose
 #### enclose
@@ -160,14 +164,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## html value
 #### value
@@ -185,14 +189,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## html trimspace
 #### trimspace
@@ -210,20 +214,16 @@ fragment {
 
 ````
 
-**more**
-???
-
-
-
----
-
-<a id="<PLUGIN>"><PLUGIN></a>
-
-**Type Description**
 
 
 
 
+
+
+
+<h3><a id="&lt;PLUGIN&gt;">&lt;PLUGIN&gt;</a></h3>
+
+**&lt;PLUGIN&gt; Type Description**
 
 
 
@@ -232,7 +232,12 @@ fragment {
 
 
 
----
+
+
+
+
+
+
 **Properties**
 
 - [attributes](#plugin-attributes)
@@ -243,7 +248,7 @@ fragment {
 
 
 
----
+
 
 ## plugin attributes
 #### attributes
@@ -261,14 +266,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## plugin enclose
 #### enclose
@@ -286,14 +291,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## plugin plugin
 #### plugin
@@ -311,14 +316,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## plugin classes
 #### classes
@@ -336,14 +341,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## plugin data
 #### data
@@ -361,16 +366,6 @@ fragment {
 
 ````
 
-**more**
-???
-
-
-
----
-
-<a id="<TEXT>"><TEXT></a>
-
-**Type Description**
 
 
 
@@ -378,8 +373,19 @@ fragment {
 
 
 
+<h3><a id="&lt;TEXT&gt;">&lt;TEXT&gt;</a></h3>
 
----
+**&lt;TEXT&gt; Type Description**
+
+
+
+
+
+
+
+
+
+
 **Properties**
 
 - [attributes](#text-attributes)
@@ -388,7 +394,7 @@ fragment {
 
 
 
----
+
 
 ## text attributes
 #### attributes
@@ -406,14 +412,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## text enclose
 #### enclose
@@ -431,14 +437,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## text value
 #### value
@@ -456,23 +462,21 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
----
 
 
----
+
+
+
+
 ### Category: **composite**
 
 
-<a id="<FRAGMENT>"><FRAGMENT></a>
+<h3><a id="&lt;FRAGMENT&gt;">&lt;FRAGMENT&gt;</a></h3>
 
-**Type Description**
-
-
+**&lt;FRAGMENT&gt; Type Description**
 
 
 
@@ -511,7 +515,10 @@ fragment {
 
 
 
----
+
+
+
+
 **Properties**
 
 - [response](#fragment-response)
@@ -536,7 +543,7 @@ fragment {
 
 
 
----
+
 
 ## fragment response
 #### response
@@ -554,14 +561,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment title
 #### title
@@ -579,14 +586,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment route
 #### route
@@ -604,14 +611,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment section
 #### section
@@ -629,14 +636,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment enclose
 #### enclose
@@ -654,14 +661,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment template
 #### template
@@ -679,14 +686,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment static
 #### static
@@ -704,14 +711,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment index
 #### index
@@ -729,14 +736,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment hx_location
 #### hx_location
@@ -756,14 +763,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment hx_push_url
 #### hx_push_url
@@ -781,14 +788,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment hx_redirect
 #### hx_redirect
@@ -806,14 +813,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment hx_refresh
 #### hx_refresh
@@ -831,14 +838,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment hx_replace_url
 #### hx_replace_url
@@ -856,14 +863,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment hx_reswap
 #### hx_reswap
@@ -881,14 +888,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment hx_retarget
 #### hx_retarget
@@ -906,14 +913,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment hx_reselect
 #### hx_reselect
@@ -931,14 +938,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment hx_trigger
 #### hx_trigger
@@ -956,14 +963,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment hx_trigger_after_settle
 #### hx_trigger_after_settle
@@ -981,14 +988,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## fragment hx_trigger_after_swap
 #### hx_trigger_after_swap
@@ -1006,16 +1013,6 @@ fragment {
 
 ````
 
-**more**
-???
-
-
-
----
-
-<a id="<HEAD>"><HEAD></a>
-
-**Type Description**
 
 
 
@@ -1023,8 +1020,19 @@ fragment {
 
 
 
+<h3><a id="&lt;HEAD&gt;">&lt;HEAD&gt;</a></h3>
 
----
+**&lt;HEAD&gt; Type Description**
+
+
+
+
+
+
+
+
+
+
 **Properties**
 
 - [meta](#head-meta)
@@ -1033,7 +1041,7 @@ fragment {
 
 
 
----
+
 
 ## head meta
 #### meta
@@ -1051,14 +1059,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## head css
 #### css
@@ -1076,14 +1084,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## head js
 #### js
@@ -1101,20 +1109,16 @@ fragment {
 
 ````
 
-**more**
-???
-
-
-
----
-
-<a id="<HYPERMEDIA>"><HYPERMEDIA></a>
-
-**Type Description**
 
 
 
 
+
+
+
+<h3><a id="&lt;HYPERMEDIA&gt;">&lt;HYPERMEDIA&gt;</a></h3>
+
+**&lt;HYPERMEDIA&gt; Type Description**
 
 
 
@@ -1141,7 +1145,12 @@ fragment {
 
 
 
----
+
+
+
+
+
+
 **Properties**
 
 
@@ -1164,7 +1173,7 @@ fragment {
 
 
 
----
+
 
 ## hypermedia title
 #### title
@@ -1182,14 +1191,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## hypermedia route
 #### route
@@ -1207,14 +1216,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## hypermedia section
 #### section
@@ -1232,14 +1241,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## hypermedia bodytag
 #### bodytag
@@ -1258,20 +1267,6 @@ hypermedia.10.value = HELLO WORLD!
 
 ````
 
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <body id="main">
-    HELLO WORLD!
-  </body>
-</html>
-````
-
-
-
-**more**
 
 
 
@@ -1279,7 +1274,8 @@ hypermedia.10.value = HELLO WORLD!
 
 
 
----
+
+
 
 ## hypermedia enclose
 #### enclose
@@ -1297,14 +1293,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## hypermedia favicon
 #### favicon
@@ -1322,14 +1318,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## hypermedia template
 #### template
@@ -1347,14 +1343,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## hypermedia isstatic
 #### isstatic
@@ -1372,14 +1368,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## hypermedia static
 #### static
@@ -1397,14 +1393,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## hypermedia index
 #### index
@@ -1422,14 +1418,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## hypermedia doctype
 #### doctype
@@ -1447,14 +1443,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## hypermedia htmltag
 #### htmltag
@@ -1472,14 +1468,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## hypermedia head
 #### head
@@ -1492,82 +1488,172 @@ See &lt;HEADER&gt; for details
 ````properties
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
-hypermedia.head = <HEAD>
-hypermedia.head {
-    css = [styles.css,xxxx]
-    js = [styles.css,xxxx]
 
-    meta {
-        a = b
-        b = c
-    }
-    999 = <HTML>
-    999.value = <!-- 999 overides default generator meta tag -->
+````
 
-    1001 = <CSS>
-    1001.inline = <<[
-        body {
-            pading:10px;
-        }
-    ]>>
 
-    20 = <HTML>
-    20.value = <meta name="generator" content="hyperbrickszzzz cms">
-     
+
+
+
+
+
+
+<h3><a id="&lt;TEMPLATE&gt;">&lt;TEMPLATE&gt;</a></h3>
+
+**&lt;TEMPLATE&gt; Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+**Properties**
+
+
+- [template](#template-template)
+- [istemplate](#template-istemplate)
+- [values](#template-values)
+
+
+
+
+
+
+
+
+## template template
+#### template
+
+**Description**  
+The template used for rendering
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
 }
-hypermedia.10 = <HTML>
-hypermedia.10.value = <p>some HTML</p>
 
 ````
 
-**Expected Result**
 
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbrickszzzz cms">
-    <!-- 999 overides default generator meta tag -->
-    <meta name="a" content="b">
-    <meta name="b" content="c">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="xxxx">
-    <script src="styles.css"></script>
-    <script src="xxxx"></script>
-    <style>
-      body {
-      pading:10px;
-      }
-    </style>
-  </head>
-  <body>
-    <p>
-      some HTML
-    </p>
-  </body>
-</html>
+
+
+
+
+
+
+
+
+## template istemplate
+#### istemplate
+
+**Description**  
+Determines if the field is a inline template or when not defined a reference to a template file
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
 ````
 
 
 
-**more**
-xxx
 
 
 
 
----
 
 
----
+
+## template values
+#### values
+
+**Description**  
+Key-value pairs for template rendering
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+<h3><a id="&lt;TREE&gt;">&lt;TREE&gt;</a></h3>
+
+**&lt;TREE&gt; Type Description**
+
+
+
+
+
+
+
+
+**Properties**
+
+
+- [enclose](#tree-enclose)
+
+
+
+
+
+
+
+
+## tree enclose
+#### enclose
+
+**Description**  
+Wrapping property for the tree
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
 ### Category: **data**
 
 
-<a id="<API_RENDER>"><API_RENDER></a>
+<h3><a id="&lt;API_RENDER&gt;">&lt;API_RENDER&gt;</a></h3>
 
-**Type Description**
-
-
+**&lt;API_RENDER&gt; Type Description**
 
 
 
@@ -1588,7 +1674,10 @@ xxx
 
 
 
----
+
+
+
+
 **Properties**
 
 - [attributes](#api_render-attributes)
@@ -1604,7 +1693,7 @@ xxx
 
 
 
----
+
 
 ## api_render attributes
 #### attributes
@@ -1622,14 +1711,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## api_render enclose
 #### enclose
@@ -1647,14 +1736,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## api_render endpoint
 #### endpoint
@@ -1672,14 +1761,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## api_render method
 #### method
@@ -1697,14 +1786,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## api_render headers
 #### headers
@@ -1722,14 +1811,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## api_render body
 #### body
@@ -1747,14 +1836,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## api_render template
 #### template
@@ -1772,14 +1861,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## api_render istemplate
 #### istemplate
@@ -1797,14 +1886,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## api_render user
 #### user
@@ -1822,14 +1911,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## api_render pass
 #### pass
@@ -1847,16 +1936,6 @@ fragment {
 
 ````
 
-**more**
-???
-
-
-
----
-
-<a id="<JSON>"><JSON></a>
-
-**Type Description**
 
 
 
@@ -1864,10 +1943,21 @@ fragment {
 
 
 
+<h3><a id="&lt;JSON&gt;">&lt;JSON&gt;</a></h3>
+
+**&lt;JSON&gt; Type Description**
 
 
 
----
+
+
+
+
+
+
+
+
+
 **Properties**
 
 - [attributes](#json-attributes)
@@ -1877,7 +1967,7 @@ fragment {
 
 
 
----
+
 
 ## json attributes
 #### attributes
@@ -1895,14 +1985,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## json enclose
 #### enclose
@@ -1920,14 +2010,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## json file
 #### file
@@ -1945,14 +2035,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## json template
 #### template
@@ -1970,23 +2060,21 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
----
 
 
----
+
+
+
+
 ### Category: **menu**
 
 
-<a id="<MENU>"><MENU></a>
+<h3><a id="&lt;MENU&gt;">&lt;MENU&gt;</a></h3>
 
-**Type Description**
-
-
+**&lt;MENU&gt; Type Description**
 
 
 
@@ -2003,7 +2091,10 @@ fragment {
 
 
 
----
+
+
+
+
 **Properties**
 
 - [attributes](#menu-attributes)
@@ -2017,7 +2108,7 @@ fragment {
 
 
 
----
+
 
 ## menu attributes
 #### attributes
@@ -2035,14 +2126,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## menu enclose
 #### enclose
@@ -2060,14 +2151,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## menu section
 #### section
@@ -2085,14 +2176,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## menu order
 #### order
@@ -2110,14 +2201,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## menu sort
 #### sort
@@ -2135,14 +2226,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## menu active
 #### active
@@ -2160,14 +2251,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## menu item
 #### item
@@ -2185,14 +2276,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## menu enclose
 #### enclose
@@ -2210,23 +2301,21 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
----
 
 
----
+
+
+
+
 ### Category: **resources**
 
 
-<a id="<CSS>"><CSS></a>
+<h3><a id="&lt;CSS&gt;">&lt;CSS&gt;</a></h3>
 
-**Type Description**
-
-
+**&lt;CSS&gt; Type Description**
 
 
 
@@ -2237,7 +2326,10 @@ fragment {
 
 
 
----
+
+
+
+
 **Properties**
 
 - [attributes](#css-attributes)
@@ -2248,7 +2340,7 @@ fragment {
 
 
 
----
+
 
 ## css attributes
 #### attributes
@@ -2266,14 +2358,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## css enclose
 #### enclose
@@ -2291,14 +2383,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## css inline
 #### inline
@@ -2316,14 +2408,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## css link
 #### link
@@ -2341,14 +2433,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## css file
 #### file
@@ -2366,20 +2458,16 @@ fragment {
 
 ````
 
-**more**
-???
-
-
-
----
-
-<a id="<IMAGE>"><IMAGE></a>
-
-**Type Description**
 
 
 
 
+
+
+
+<h3><a id="&lt;IMAGE&gt;">&lt;IMAGE&gt;</a></h3>
+
+**&lt;IMAGE&gt; Type Description**
 
 
 
@@ -2400,7 +2488,12 @@ fragment {
 
 
 
----
+
+
+
+
+
+
 **Properties**
 
 - [attributes](#image-attributes)
@@ -2417,7 +2510,7 @@ fragment {
 
 
 
----
+
 
 ## image attributes
 #### attributes
@@ -2435,14 +2528,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## image enclose
 #### enclose
@@ -2460,14 +2553,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## image src
 #### src
@@ -2485,14 +2578,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## image width
 #### width
@@ -2510,14 +2603,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## image height
 #### height
@@ -2535,14 +2628,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## image alt
 #### alt
@@ -2560,14 +2653,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## image title
 #### title
@@ -2585,14 +2678,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## image class
 #### class
@@ -2610,14 +2703,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## image quality
 #### quality
@@ -2635,14 +2728,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## image loading
 #### loading
@@ -2660,14 +2753,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## image is_static
 #### is_static
@@ -2685,20 +2778,16 @@ fragment {
 
 ````
 
-**more**
-???
-
-
-
----
-
-<a id="<IMAGES>"><IMAGES></a>
-
-**Type Description**
 
 
 
 
+
+
+
+<h3><a id="&lt;IMAGES&gt;">&lt;IMAGES&gt;</a></h3>
+
+**&lt;IMAGES&gt; Type Description**
 
 
 
@@ -2709,7 +2798,12 @@ fragment {
 
 
 
----
+
+
+
+
+
+
 **Properties**
 
 - [attributes](#images-attributes)
@@ -2721,7 +2815,7 @@ fragment {
 
 
 
----
+
 
 ## images attributes
 #### attributes
@@ -2739,14 +2833,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## images enclose
 #### enclose
@@ -2764,14 +2858,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## images directory
 #### directory
@@ -2789,14 +2883,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## images width
 #### width
@@ -2814,14 +2908,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## images height
 #### height
@@ -2839,14 +2933,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## images is_static
 #### is_static
@@ -2864,20 +2958,16 @@ fragment {
 
 ````
 
-**more**
-???
-
-
-
----
-
-<a id="<JS>"><JS></a>
-
-**Type Description**
 
 
 
 
+
+
+
+<h3><a id="&lt;JS&gt;">&lt;JS&gt;</a></h3>
+
+**&lt;JS&gt; Type Description**
 
 
 
@@ -2886,7 +2976,12 @@ fragment {
 
 
 
----
+
+
+
+
+
+
 **Properties**
 
 - [attributes](#js-attributes)
@@ -2897,7 +2992,7 @@ fragment {
 
 
 
----
+
 
 ## js attributes
 #### attributes
@@ -2915,14 +3010,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## js enclose
 #### enclose
@@ -2940,14 +3035,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## js inline
 #### inline
@@ -2965,14 +3060,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## js link
 #### link
@@ -2990,14 +3085,14 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
 
 
----
+
+
+
 
 ## js file
 #### file
@@ -3015,11 +3110,11 @@ fragment {
 
 ````
 
-**more**
-???
 
 
 
----
+
+
+
 
 
