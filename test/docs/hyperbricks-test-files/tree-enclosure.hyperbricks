@@ -4,11 +4,10 @@ fragment {
 	
 }
 ==== explainer ====
-The template used for rendering
+Wrapping property for the tree
 ==== expected json ====
 {
 	
 }
 ==== expected output ====
-
-==== more details ====
+<div>this test fails</div>

@@ -4,7 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-The template used for rendering
+TEMPLATE description
 ==== expected json ====
 {
 	

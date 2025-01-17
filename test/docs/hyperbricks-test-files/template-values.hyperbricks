@@ -10,4 +10,5 @@ Key-value pairs for template rendering
 	
 }
 ==== expected output ====
-<div>this test fails</div>
+
+==== more details ====

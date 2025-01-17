@@ -16,7 +16,7 @@ Go direct to:
 
 ### Category: **{{$category}}**
 {{range $typeName, $fields := $types}}
-- {{$typeName}}{{end}}
+- [{{$typeName}}](#{{html $typeName}}) {{end}}
 {{end}}
 
 
@@ -25,7 +25,7 @@ Go direct to:
 ### Category: **{{$category}}**
 
 {{range $typeName, $fields := $types}}
-#### {{$typeName}}
+<a id="{{html $typeName}}">{{html $typeName}}</a>
 
 **Type Description**
 {{range $fields}}
@@ -36,15 +36,30 @@ Go direct to:
 ````properties
 {{.Example}}
 ````
+
+{{if .Result}}
+**Expected Result**
+
+````html
+{{.Result}}
+````
+
+
+{{end}}
+
+**more**
+{{.MoreDetails}}
+
 {{end}}
 {{end}}
 
 ---
 **Properties**
 {{range $fields}}
-{{if ne .Name "MetaDocDescription"}}- {{.FieldLink}}{{end}}{{end}}
+{{if ne .Mapstructure "@doc"}}- {{.FieldLink}}{{end}}{{end}}
 {{range $fields}}
-{{if ne .Name "MetaDocDescription"}}
+
+{{if ne .Mapstructure "@doc"}}
 ---
 
 {{.FieldAnchor}}
@@ -63,7 +78,12 @@ Go direct to:
 ````html
 {{.Result}}
 ````
+
+
 {{end}}
+
+{{.MoreDetails}}
+
 {{end}}
 {{end}}
 ---

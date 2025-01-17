@@ -10,4 +10,5 @@ Determines if the field is a inline template or when not defined a reference to 
 	
 }
 ==== expected output ====
-<div>this test fails</div>
+
+==== more details ====

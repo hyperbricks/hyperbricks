@@ -1,7 +1,7 @@
 
 # HyperBricks
 **Version:** v0.1.0-alpha  
-**Build time:** 2025-01-16T23:40:41Z
+**Build time:** 2025-01-17T13:04:35Z
 
 Go direct to:
 
@@ -57,24 +57,35 @@ fragment.content.value = <p>THIS IS HTML</p>
 
 ### Category: **component**
 
-- &lt;API_RENDER&gt;
-- &lt;CSS&gt;
-- &lt;HTML&gt;
-- &lt;IMAGE&gt;
-- &lt;IMAGES&gt;
-- &lt;JS&gt;
-- &lt;JSON&gt;
-- &lt;MENU&gt;
-- &lt;PLUGIN&gt;
-- &lt;TEXT&gt;
+- [&lt;HTML&gt;](#<HTML>) 
+- [&lt;PLUGIN&gt;](#<PLUGIN>) 
+- [&lt;TEXT&gt;](#<TEXT>) 
 
 
 ### Category: **composite**
 
-- &lt;FRAGMENT&gt;
-- &lt;HEAD&gt;
-- &lt;HYPERMEDIA&gt;
-- &lt;TEMPLATE&gt;
+- [&lt;FRAGMENT&gt;](#<FRAGMENT>) 
+- [&lt;HEAD&gt;](#<HEAD>) 
+- [&lt;HYPERMEDIA&gt;](#<HYPERMEDIA>) 
+
+
+### Category: **data**
+
+- [&lt;API_RENDER&gt;](#<API_RENDER>) 
+- [&lt;JSON&gt;](#<JSON>) 
+
+
+### Category: **menu**
+
+- [&lt;MENU&gt;](#<MENU>) 
+
+
+### Category: **resources**
+
+- [&lt;CSS&gt;](#<CSS>) 
+- [&lt;IMAGE&gt;](#<IMAGE>) 
+- [&lt;IMAGES&gt;](#<IMAGES>) 
+- [&lt;JS&gt;](#<JS>) 
 
 
 
@@ -83,374 +94,7 @@ fragment.content.value = <p>THIS IS HTML</p>
 ### Category: **component**
 
 
-#### &lt;API_RENDER&gt;
-
-**Type Description**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----
-**Properties**
-
-- [attributes](#api_render-attributes)
-- [enclose](#api_render-enclose)
-- [endpoint](#api_render-endpoint)
-- [method](#api_render-method)
-- [headers](#api_render-headers)
-- [body](#api_render-body)
-- [template](#api_render-template)
-- [istemplate](#api_render-istemplate)
-- [user](#api_render-user)
-- [pass](#api_render-pass)
-
-
----
-
-## api_render attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## api_render enclose
-#### enclose
-
-**Description**  
-The wrapping HTML element for the header divided by |
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## api_render endpoint
-#### endpoint
-
-**Description**  
-The API endpoint
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## api_render method
-#### method
-
-**Description**  
-HTTP method to use for API calls, GET POST PUT DELETE etc... 
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## api_render headers
-#### headers
-
-**Description**  
-Optional HTTP headers for API requests
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## api_render body
-#### body
-
-**Description**  
-Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## api_render template
-#### template
-
-**Description**  
-Template used for rendering API output
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## api_render istemplate
-#### istemplate
-
-**Description**  
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## api_render user
-#### user
-
-**Description**  
-User for basic auth
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## api_render pass
-#### pass
-
-**Description**  
-User for basic auth
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
----
-
-#### &lt;CSS&gt;
-
-**Type Description**
-
-
-
-
-
-
-
-
-
-
-
-
----
-**Properties**
-
-- [attributes](#css-attributes)
-- [enclose](#css-enclose)
-- [inline](#css-inline)
-- [link](#css-link)
-- [file](#css-file)
-
-
----
-
-## css attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## css enclose
-#### enclose
-
-**Description**  
-The wrapping HTML element for the header divided by |
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## css inline
-#### inline
-
-**Description**  
-Use inline to define css in a multiline block &lt;&lt;[ /* css goes here */ ]&gt;&gt;
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## css link
-#### link
-
-**Description**  
-Use link for a link tag
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## css file
-#### file
-
-**Description**  
-file overrides link and inline, it loads contents of a file and renders it in a style tag.
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
----
-
-#### &lt;HTML&gt;
+<a id="<HTML>"><HTML></a>
 
 **Type Description**
 
@@ -472,6 +116,7 @@ fragment {
 - [trimspace](#html-trimspace)
 
 
+
 ---
 
 ## html attributes
@@ -479,6 +124,7 @@ fragment {
 
 **Description**  
 Extra attributes like id, data-role, data-action
+
 
 **Example**
 ````properties
@@ -488,6 +134,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -500,6 +150,7 @@ fragment {
 **Description**  
 The wrapping HTML element for the header divided by |
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -508,6 +159,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -520,6 +175,7 @@ fragment {
 **Description**  
 The raw HTML content
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -528,6 +184,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -540,69 +200,6 @@ fragment {
 **Description**  
 The raw HTML content
 
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
----
-
-#### &lt;IMAGE&gt;
-
-**Type Description**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----
-**Properties**
-
-- [attributes](#image-attributes)
-- [enclose](#image-enclose)
-- [src](#image-src)
-- [width](#image-width)
-- [height](#image-height)
-- [alt](#image-alt)
-- [title](#image-title)
-- [class](#image-class)
-- [quality](#image-quality)
-- [loading](#image-loading)
-- [is_static](#image-is_static)
-
-
----
-
-## image attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
 
 **Example**
 ````properties
@@ -613,784 +210,14 @@ fragment {
 
 ````
 
+**more**
+???
 
 
 
 ---
 
-## image enclose
-#### enclose
-
-**Description**  
-The wrapping HTML element for the header divided by |
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## image src
-#### src
-
-**Description**  
-The source URL of the image
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## image width
-#### width
-
-**Description**  
-The width of the image (can be a number or percentage)
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## image height
-#### height
-
-**Description**  
-The height of the image (can be a number or percentage)
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## image alt
-#### alt
-
-**Description**  
-Alternative text for the image
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## image title
-#### title
-
-**Description**  
-The title attribute of the image
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## image class
-#### class
-
-**Description**  
-CSS class for styling the image
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## image quality
-#### quality
-
-**Description**  
-Image quality for optimization
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## image loading
-#### loading
-
-**Description**  
-Lazy loading strategy (e.g., &#39;lazy&#39;, &#39;eager&#39;)
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## image is_static
-#### is_static
-
-**Description**  
-Flag indicating if the image is static
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
----
-
-#### &lt;IMAGES&gt;
-
-**Type Description**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----
-**Properties**
-
-- [attributes](#images-attributes)
-- [enclose](#images-enclose)
-- [directory](#images-directory)
-- [width](#images-width)
-- [height](#images-height)
-- [is_static](#images-is_static)
-
-
----
-
-## images attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## images enclose
-#### enclose
-
-**Description**  
-The wrapping HTML element for the header divided by |
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## images directory
-#### directory
-
-**Description**  
-The directory path containing the images
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## images width
-#### width
-
-**Description**  
-The width of the images (can be a number or percentage)
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## images height
-#### height
-
-**Description**  
-The height of the images (can be a number or percentage)
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## images is_static
-#### is_static
-
-**Description**  
-Flag indicating if the images are static
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
----
-
-#### &lt;JS&gt;
-
-**Type Description**
-
-
-
-
-
-
-
-
-
-
-
-
----
-**Properties**
-
-- [attributes](#js-attributes)
-- [enclose](#js-enclose)
-- [inline](#js-inline)
-- [link](#js-link)
-- [file](#js-file)
-
-
----
-
-## js attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## js enclose
-#### enclose
-
-**Description**  
-The wrapping HTML element for the header divided by |
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## js inline
-#### inline
-
-**Description**  
-Use inline to define JavaScript in a multiline block &lt;&lt;[ /* JavaScript goes here */ ]&gt;&gt;
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## js link
-#### link
-
-**Description**  
-Use link for a script tag with a src attribute
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## js file
-#### file
-
-**Description**  
-File overrides link and inline, it loads contents of a file and renders it in a script tag.
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
----
-
-#### &lt;JSON&gt;
-
-**Type Description**
-
-
-
-
-
-
-
-
-
-
----
-**Properties**
-
-- [attributes](#json-attributes)
-- [enclose](#json-enclose)
-- [file](#json-file)
-- [template](#json-template)
-
-
----
-
-## json attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## json enclose
-#### enclose
-
-**Description**  
-The wrapping HTML element for the header divided by |
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## json file
-#### file
-
-**Description**  
-Path to the local JSON file
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## json template
-#### template
-
-**Description**  
-Template for rendering output
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
----
-
-#### &lt;MENU&gt;
-
-**Type Description**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----
-**Properties**
-
-- [attributes](#menu-attributes)
-- [enclose](#menu-enclose)
-- [section](#menu-section)
-- [order](#menu-order)
-- [sort](#menu-sort)
-- [active](#menu-active)
-- [item](#menu-item)
-- [enclose](#menu-enclose)
-
-
----
-
-## menu attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## menu enclose
-#### enclose
-
-**Description**  
-The wrapping HTML element for the header divided by |
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## menu section
-#### section
-
-**Description**  
-The section of the menu to display.
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## menu order
-#### order
-
-**Description**  
-The order of items in the menu (&#39;asc&#39; or &#39;desc&#39;).
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## menu sort
-#### sort
-
-**Description**  
-The field to sort menu items by (&#39;title&#39;, &#39;route&#39;, or &#39;index&#39;).
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## menu active
-#### active
-
-**Description**  
-Template for the active menu item.
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## menu item
-#### item
-
-**Description**  
-Template for regular menu items.
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
----
-
-## menu enclose
-#### enclose
-
-**Description**  
-Template to wrap the menu items.
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
----
-
-#### &lt;PLUGIN&gt;
+<a id="<PLUGIN>"><PLUGIN></a>
 
 **Type Description**
 
@@ -1415,6 +242,7 @@ fragment {
 - [data](#plugin-data)
 
 
+
 ---
 
 ## plugin attributes
@@ -1422,6 +250,7 @@ fragment {
 
 **Description**  
 Extra attributes like id, data-role, data-action
+
 
 **Example**
 ````properties
@@ -1431,6 +260,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1443,6 +276,7 @@ fragment {
 **Description**  
 The wrapping HTML element for the header divided by |
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1451,6 +285,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1463,6 +301,7 @@ fragment {
 **Description**  
 
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1471,6 +310,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1483,6 +326,7 @@ fragment {
 **Description**  
 Optional CSS classes for the link
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1491,6 +335,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1503,6 +351,7 @@ fragment {
 **Description**  
 
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1512,11 +361,14 @@ fragment {
 
 ````
 
+**more**
+???
+
 
 
 ---
 
-#### &lt;TEXT&gt;
+<a id="<TEXT>"><TEXT></a>
 
 **Type Description**
 
@@ -1535,6 +387,7 @@ fragment {
 - [value](#text-value)
 
 
+
 ---
 
 ## text attributes
@@ -1542,6 +395,7 @@ fragment {
 
 **Description**  
 Extra attributes like id, data-role, data-action
+
 
 **Example**
 ````properties
@@ -1551,6 +405,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1563,6 +421,7 @@ fragment {
 **Description**  
 The wrapping HTML element for the header divided by |
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1571,6 +430,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1583,6 +446,7 @@ fragment {
 **Description**  
 The paragraph content
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1591,6 +455,9 @@ fragment {
 }
 
 ````
+
+**more**
+???
 
 
 
@@ -1601,7 +468,7 @@ fragment {
 ### Category: **composite**
 
 
-#### &lt;FRAGMENT&gt;
+<a id="<FRAGMENT>"><FRAGMENT></a>
 
 **Type Description**
 
@@ -1668,6 +535,7 @@ fragment {
 - [hx_trigger_after_swap](#fragment-hx_trigger_after_swap)
 
 
+
 ---
 
 ## fragment response
@@ -1675,6 +543,7 @@ fragment {
 
 **Description**  
 HTMX response header configuration.
+
 
 **Example**
 ````properties
@@ -1684,6 +553,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1696,6 +569,7 @@ fragment {
 **Description**  
 The title of the fragment
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1704,6 +578,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1716,6 +594,7 @@ fragment {
 **Description**  
 The route (URL-friendly identifier) for the fragment
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1724,6 +603,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1736,6 +619,7 @@ fragment {
 **Description**  
 The section the fragment belongs to
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1744,6 +628,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1756,6 +644,7 @@ fragment {
 **Description**  
 Wrapping property for the fragment rendered output
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1764,6 +653,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1776,6 +669,7 @@ fragment {
 **Description**  
 Template configurations for rendering the fragment
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1784,6 +678,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1796,6 +694,7 @@ fragment {
 **Description**  
 Static file path associated with the fragment
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1804,6 +703,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1816,6 +719,7 @@ fragment {
 **Description**  
 Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1824,6 +728,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1836,6 +744,7 @@ fragment {
 **Description**  
 allows you to do a client-side redirect that does not do a full page reload
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1846,6 +755,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1858,6 +771,7 @@ fragment {
 **Description**  
 pushes a new url into the history stack
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1866,6 +780,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1878,6 +796,7 @@ fragment {
 **Description**  
 can be used to do a client-side redirect to a new location
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1886,6 +805,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1898,6 +821,7 @@ fragment {
 **Description**  
 if set to &#39;true&#39; the client-side will do a full refresh of the page
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1906,6 +830,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1918,6 +846,7 @@ fragment {
 **Description**  
 replaces the current url in the location bar
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1926,6 +855,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1938,6 +871,7 @@ fragment {
 **Description**  
 allows you to specify how the response will be swapped
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1946,6 +880,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1958,6 +896,7 @@ fragment {
 **Description**  
 a css selector that updates the target of the content update
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1966,6 +905,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1978,6 +921,7 @@ fragment {
 **Description**  
 a css selector that allows you to choose which part of the response is used to be swapped in
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -1986,6 +930,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -1998,6 +946,7 @@ fragment {
 **Description**  
 allows you to trigger client-side events
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2006,6 +955,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2018,6 +971,7 @@ fragment {
 **Description**  
 allows you to trigger client-side events after the settle step
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2026,6 +980,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2038,6 +996,7 @@ fragment {
 **Description**  
 allows you to trigger client-side events after the swap step
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2047,11 +1006,14 @@ fragment {
 
 ````
 
+**more**
+???
+
 
 
 ---
 
-#### &lt;HEAD&gt;
+<a id="<HEAD>"><HEAD></a>
 
 **Type Description**
 
@@ -2070,6 +1032,7 @@ fragment {
 - [js](#head-js)
 
 
+
 ---
 
 ## head meta
@@ -2077,6 +1040,7 @@ fragment {
 
 **Description**  
 Metadata for the head section
+
 
 **Example**
 ````properties
@@ -2086,6 +1050,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2098,6 +1066,7 @@ fragment {
 **Description**  
 CSS files to include
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2106,6 +1075,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2118,6 +1091,7 @@ fragment {
 **Description**  
 JavaScript files to include
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2127,13 +1101,18 @@ fragment {
 
 ````
 
+**more**
+???
+
 
 
 ---
 
-#### &lt;HYPERMEDIA&gt;
+<a id="<HYPERMEDIA>"><HYPERMEDIA></a>
 
 **Type Description**
+
+
 
 
 
@@ -2165,6 +1144,7 @@ fragment {
 ---
 **Properties**
 
+
 - [title](#hypermedia-title)
 - [route](#hypermedia-route)
 - [section](#hypermedia-section)
@@ -2180,6 +1160,10 @@ fragment {
 - [head](#hypermedia-head)
 
 
+
+
+
+
 ---
 
 ## hypermedia title
@@ -2187,6 +1171,7 @@ fragment {
 
 **Description**  
 The title of the hypermedia site
+
 
 **Example**
 ````properties
@@ -2196,6 +1181,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2208,6 +1197,7 @@ fragment {
 **Description**  
 The route (URL-friendly identifier) for the hypermedia
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2216,6 +1206,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2228,6 +1222,7 @@ fragment {
 **Description**  
 The section the hypermedia belongs to. This can be used with the component &lt;MENU&gt; for example.
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2236,6 +1231,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2246,7 +1245,8 @@ fragment {
 #### bodytag
 
 **Description**  
-Special body wrap with use of |. Please note that this will not work when a &lt;HYPERMEDIA&gt;.template is configured. In that case, you have to add the bodytag in the template.
+Special body enclosure with use of a pipe symbol |. Please note that this will not work when a template is applied. In that case, you have to add the bodytag in the template.
+
 
 **Example**
 ````properties
@@ -2271,6 +1271,13 @@ hypermedia.10.value = HELLO WORLD!
 
 
 
+**more**
+
+
+
+
+
+
 
 ---
 
@@ -2280,6 +1287,7 @@ hypermedia.10.value = HELLO WORLD!
 **Description**  
 Enclosure of the property for the hypermedia
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2288,6 +1296,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2300,6 +1312,7 @@ fragment {
 **Description**  
 Path to the favicon for the hypermedia
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2308,6 +1321,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2320,6 +1337,7 @@ fragment {
 **Description**  
 Template configurations for rendering the hypermedia. See &lt;TEMPLATE&gt; for field descriptions.
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2328,6 +1346,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2340,6 +1362,7 @@ fragment {
 **Description**  
 
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2348,6 +1371,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2360,6 +1387,7 @@ fragment {
 **Description**  
 Static file path associated with the hypermedia, for rendering out the hypermedia to static files.
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2368,6 +1396,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2380,6 +1412,7 @@ fragment {
 **Description**  
 Index number is a sort order option for the hypermedia defined in the section field. See &lt;MENU&gt; for further explanation and field options
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2388,6 +1421,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2400,6 +1437,7 @@ fragment {
 **Description**  
 Alternative Doctype for the HTML document
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2408,6 +1446,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2420,6 +1462,7 @@ fragment {
 **Description**  
 The opening HTML tag with attributes
 
+
 **Example**
 ````properties
 fragment = <FRAGMENT>
@@ -2428,6 +1471,10 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
@@ -2438,7 +1485,8 @@ fragment {
 #### head
 
 **Description**  
-Configurations for the head section of the hypermedia
+See &lt;HEADER&gt; for details
+
 
 **Example**
 ````properties
@@ -2480,8 +1528,8 @@ hypermedia.10.value = <p>some HTML</p>
   <head>
     <meta name="generator" content="hyperbrickszzzz cms">
     <!-- 999 overides default generator meta tag -->
-    <meta name="b" content="c">
     <meta name="a" content="b">
+    <meta name="b" content="c">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="xxxx">
     <script src="styles.css"></script>
@@ -2502,11 +1550,36 @@ hypermedia.10.value = <p>some HTML</p>
 
 
 
+**more**
+xxx
+
+
+
+
 ---
 
-#### &lt;TEMPLATE&gt;
+
+---
+### Category: **data**
+
+
+<a id="<API_RENDER>"><API_RENDER></a>
 
 **Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2518,18 +1591,177 @@ hypermedia.10.value = <p>some HTML</p>
 ---
 **Properties**
 
-- [template](#template-template)
-- [istemplate](#template-istemplate)
-- [values](#template-values)
+- [attributes](#api_render-attributes)
+- [enclose](#api_render-enclose)
+- [endpoint](#api_render-endpoint)
+- [method](#api_render-method)
+- [headers](#api_render-headers)
+- [body](#api_render-body)
+- [template](#api_render-template)
+- [istemplate](#api_render-istemplate)
+- [user](#api_render-user)
+- [pass](#api_render-pass)
+
 
 
 ---
 
-## template template
+## api_render attributes
+#### attributes
+
+**Description**  
+Extra attributes like id, data-role, data-action
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## api_render enclose
+#### enclose
+
+**Description**  
+The wrapping HTML element for the header divided by |
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## api_render endpoint
+#### endpoint
+
+**Description**  
+The API endpoint
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## api_render method
+#### method
+
+**Description**  
+HTTP method to use for API calls, GET POST PUT DELETE etc... 
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## api_render headers
+#### headers
+
+**Description**  
+Optional HTTP headers for API requests
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## api_render body
+#### body
+
+**Description**  
+Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## api_render template
 #### template
 
 **Description**  
-The template used for rendering
+Template used for rendering API output
+
 
 **Example**
 ````properties
@@ -2540,16 +1772,21 @@ fragment {
 
 ````
 
+**more**
+???
+
+
 
 
 
 ---
 
-## template istemplate
+## api_render istemplate
 #### istemplate
 
 **Description**  
-Determines if the field is a template or reference
+
+
 
 **Example**
 ````properties
@@ -2559,17 +1796,22 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
 
 
 
 
 ---
 
-## template values
-#### values
+## api_render user
+#### user
 
 **Description**  
-Key-value pairs for template rendering
+User for basic auth
+
 
 **Example**
 ````properties
@@ -2579,6 +1821,1202 @@ fragment {
 }
 
 ````
+
+**more**
+???
+
+
+
+
+
+---
+
+## api_render pass
+#### pass
+
+**Description**  
+User for basic auth
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+---
+
+<a id="<JSON>"><JSON></a>
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+---
+**Properties**
+
+- [attributes](#json-attributes)
+- [enclose](#json-enclose)
+- [file](#json-file)
+- [template](#json-template)
+
+
+
+---
+
+## json attributes
+#### attributes
+
+**Description**  
+Extra attributes like id, data-role, data-action
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## json enclose
+#### enclose
+
+**Description**  
+The wrapping HTML element for the header divided by |
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## json file
+#### file
+
+**Description**  
+Path to the local JSON file
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## json template
+#### template
+
+**Description**  
+Template for rendering output
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+---
+
+
+---
+### Category: **menu**
+
+
+<a id="<MENU>"><MENU></a>
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+**Properties**
+
+- [attributes](#menu-attributes)
+- [enclose](#menu-enclose)
+- [section](#menu-section)
+- [order](#menu-order)
+- [sort](#menu-sort)
+- [active](#menu-active)
+- [item](#menu-item)
+- [enclose](#menu-enclose)
+
+
+
+---
+
+## menu attributes
+#### attributes
+
+**Description**  
+Extra attributes like id, data-role, data-action
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## menu enclose
+#### enclose
+
+**Description**  
+The wrapping HTML element for the header divided by |
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## menu section
+#### section
+
+**Description**  
+The section of the menu to display.
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## menu order
+#### order
+
+**Description**  
+The order of items in the menu (&#39;asc&#39; or &#39;desc&#39;).
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## menu sort
+#### sort
+
+**Description**  
+The field to sort menu items by (&#39;title&#39;, &#39;route&#39;, or &#39;index&#39;).
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## menu active
+#### active
+
+**Description**  
+Template for the active menu item.
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## menu item
+#### item
+
+**Description**  
+Template for regular menu items.
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## menu enclose
+#### enclose
+
+**Description**  
+Template to wrap the menu items.
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+---
+
+
+---
+### Category: **resources**
+
+
+<a id="<CSS>"><CSS></a>
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+---
+**Properties**
+
+- [attributes](#css-attributes)
+- [enclose](#css-enclose)
+- [inline](#css-inline)
+- [link](#css-link)
+- [file](#css-file)
+
+
+
+---
+
+## css attributes
+#### attributes
+
+**Description**  
+Extra attributes like id, data-role, data-action
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## css enclose
+#### enclose
+
+**Description**  
+The wrapping HTML element for the header divided by |
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## css inline
+#### inline
+
+**Description**  
+Use inline to define css in a multiline block &lt;&lt;[ /* css goes here */ ]&gt;&gt;
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## css link
+#### link
+
+**Description**  
+Use link for a link tag
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## css file
+#### file
+
+**Description**  
+file overrides link and inline, it loads contents of a file and renders it in a style tag.
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+---
+
+<a id="<IMAGE>"><IMAGE></a>
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+**Properties**
+
+- [attributes](#image-attributes)
+- [enclose](#image-enclose)
+- [src](#image-src)
+- [width](#image-width)
+- [height](#image-height)
+- [alt](#image-alt)
+- [title](#image-title)
+- [class](#image-class)
+- [quality](#image-quality)
+- [loading](#image-loading)
+- [is_static](#image-is_static)
+
+
+
+---
+
+## image attributes
+#### attributes
+
+**Description**  
+Extra attributes like id, data-role, data-action
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## image enclose
+#### enclose
+
+**Description**  
+The wrapping HTML element for the header divided by |
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## image src
+#### src
+
+**Description**  
+The source URL of the image
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## image width
+#### width
+
+**Description**  
+The width of the image (can be a number or percentage)
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## image height
+#### height
+
+**Description**  
+The height of the image (can be a number or percentage)
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## image alt
+#### alt
+
+**Description**  
+Alternative text for the image
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## image title
+#### title
+
+**Description**  
+The title attribute of the image
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## image class
+#### class
+
+**Description**  
+CSS class for styling the image
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## image quality
+#### quality
+
+**Description**  
+Image quality for optimization
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## image loading
+#### loading
+
+**Description**  
+Lazy loading strategy (e.g., &#39;lazy&#39;, &#39;eager&#39;)
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## image is_static
+#### is_static
+
+**Description**  
+Flag indicating if the image is static
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+---
+
+<a id="<IMAGES>"><IMAGES></a>
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+**Properties**
+
+- [attributes](#images-attributes)
+- [enclose](#images-enclose)
+- [directory](#images-directory)
+- [width](#images-width)
+- [height](#images-height)
+- [is_static](#images-is_static)
+
+
+
+---
+
+## images attributes
+#### attributes
+
+**Description**  
+Extra attributes like id, data-role, data-action
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## images enclose
+#### enclose
+
+**Description**  
+The wrapping HTML element for the header divided by |
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## images directory
+#### directory
+
+**Description**  
+The directory path containing the images
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## images width
+#### width
+
+**Description**  
+The width of the images (can be a number or percentage)
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## images height
+#### height
+
+**Description**  
+The height of the images (can be a number or percentage)
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## images is_static
+#### is_static
+
+**Description**  
+Flag indicating if the images are static
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+---
+
+<a id="<JS>"><JS></a>
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+---
+**Properties**
+
+- [attributes](#js-attributes)
+- [enclose](#js-enclose)
+- [inline](#js-inline)
+- [link](#js-link)
+- [file](#js-file)
+
+
+
+---
+
+## js attributes
+#### attributes
+
+**Description**  
+Extra attributes like id, data-role, data-action
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## js enclose
+#### enclose
+
+**Description**  
+The wrapping HTML element for the header divided by |
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## js inline
+#### inline
+
+**Description**  
+Use inline to define JavaScript in a multiline block &lt;&lt;[ /* JavaScript goes here */ ]&gt;&gt;
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## js link
+#### link
+
+**Description**  
+Use link for a script tag with a src attribute
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
+
+
+
+
+
+---
+
+## js file
+#### file
+
+**Description**  
+File overrides link and inline, it loads contents of a file and renders it in a script tag.
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+**more**
+???
 
 
 

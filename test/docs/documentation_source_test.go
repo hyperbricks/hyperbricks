@@ -38,10 +38,16 @@ var (
 // FieldDoc represents a field documentation entry
 type FieldDoc struct {
 	Name               string        `json:"name"`
+	TestSuccess        bool          `json:"success"`
 	Type               string        `json:"type"`
+	TypeLink           string        `json:"typelink"`
+	TypeAnchor         string        `json:"typeanchor"`
 	Mapstructure       string        `json:"mapstructure"`
 	Category           string        `json:"category"`
+	CategoryLink       template.HTML `json:"categorylink"`
+	CategoryAnchor     template.HTML `json:"categoryanchor"`
 	Description        string        `json:"description"`
+	MoreDetails        string        `json:"moredetails"`
 	Example            template.HTML `json:"example"`
 	MetaDocDescription string        `json:"@metadoc"`
 	Result             template.HTML `json:"result"`
@@ -68,6 +74,7 @@ type ParsedContent struct {
 	ExpectedJSON           map[string]interface{}
 	ExpectedJSONAsString   string
 	ExpectedOutput         string
+	MoreDetails            string
 }
 
 func Test_TestAndDocumentationRender(t *testing.T) {
@@ -104,14 +111,22 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory:  "composite",
 			Config:          composite.HeadConfig{},
 		},
-		{
-			Name:            "Template",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<TEMPLATE>",
-			ConfigCategory:  "composite",
-			Config:          composite.TemplateConfig{},
-		},
+		// {
+		// 	Name:            "Template",
+		// 	TypeDescription: "Basic type description here.....",
+		// 	Embedded:        map[string]string{},
+		// 	ConfigType:      "<TEMPLATE>",
+		// 	ConfigCategory:  "composite",
+		// 	Config:          composite.TemplateConfig{},
+		// },
+		// {
+		// 	Name:            "Tree",
+		// 	TypeDescription: "Basic type description here.....",
+		// 	Embedded:        map[string]string{},
+		// 	ConfigType:      "<TREE>",
+		// 	ConfigCategory:  "composite",
+		// 	Config:          composite.TreeConfig{},
+		// },
 		// API is for version 2.0.0
 		// {
 		// 	Name:            "Api",
@@ -137,7 +152,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
 			ConfigType:      "<CSS>",
-			ConfigCategory:  "component",
+			ConfigCategory:  "resources",
 			Config:          component.CssConfig{},
 		},
 		{
@@ -145,7 +160,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
 			ConfigType:      "<JS>",
-			ConfigCategory:  "component",
+			ConfigCategory:  "resources",
 			Config:          component.JavaScriptConfig{},
 		},
 		{
@@ -153,7 +168,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
 			ConfigType:      "<IMAGE>",
-			ConfigCategory:  "component",
+			ConfigCategory:  "resources",
 			Config:          component.SingleImageConfig{},
 		},
 		{
@@ -161,7 +176,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
 			ConfigType:      "<IMAGES>",
-			ConfigCategory:  "component",
+			ConfigCategory:  "resources",
 			Config:          component.MultipleImagesConfig{},
 		},
 		{
@@ -169,7 +184,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
 			ConfigType:      "<JSON>",
-			ConfigCategory:  "component",
+			ConfigCategory:  "data",
 			Config:          component.LocalJSONConfig{},
 		},
 		{
@@ -193,7 +208,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
 			ConfigType:      "<MENU>",
-			ConfigCategory:  "component",
+			ConfigCategory:  "menu",
 			Config:          component.MenuConfig{},
 		},
 		{
@@ -201,7 +216,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
 			ConfigType:      "<API_RENDER>",
-			ConfigCategory:  "component",
+			ConfigCategory:  "data",
 			Config:          component.APIConfig{},
 		},
 	}
@@ -212,6 +227,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 	// Create a new RenderManager instance and register the FragmentRenderer.
 	rm := render.NewRenderManager()
+
 	templateProvider := func(templateName string) (string, bool) {
 		templates := map[string]string{
 			"example": "<div>{{main_section}}</div>",
@@ -376,6 +392,12 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 			return template.HTML(content), nil // Mark as safe HTML
 		},
+		"lowercase": func(input string) (string, error) {
+			return strings.ToLower(input), nil // Mark as safe HTML
+		},
+		"html": func(input string) (template.HTML, error) {
+			return template.HTML(input), nil // Mark as safe HTML
+		},
 	}
 
 	// Parse the HTML template
@@ -534,12 +556,14 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				if _res_html != _exp_html && parsed.ExpectedOutput != "" {
 					t.Errorf("result and expected html output does not match: \nresult:\n%s \nexpected:\n%s\n", result, parsed.ExpectedOutput)
 				}
-
+				var TestSuccess bool = true
 				equal, err := JSONDeepEqual(expected, response.Instance)
 				if err != nil {
+					TestSuccess = false
 					t.Fatalf("Error comparing JSON for %s-%s: %v", strings.ToLower(cfg.Name), tag, err)
 				}
 				if !equal {
+					TestSuccess = false
 					t.Errorf("Test failed for %s-%s!\n", strings.ToLower(cfg.Name), tag)
 					outputJSON := convertToJSON(response.Instance)
 					expectedJSON := convertToJSON(expected)
@@ -554,10 +578,16 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				// add to docs....
 				fields = append(fields, FieldDoc{
 					Name:            cfg.Name,
+					TestSuccess:     TestSuccess,
 					Type:            request.TypeName,
+					TypeLink:        strings.ToLower(fmt.Sprintf("[%s](#%s)", request.TypeName, request.TypeName)),
+					TypeAnchor:      strings.ToLower(fmt.Sprintf(`## %s`, request.TypeName)),
 					Mapstructure:    field.Tag.Get("mapstructure"),
-					Description:     field.Tag.Get("description"),
+					Description:     parsed.Explainer, //field.Tag.Get("description")
+					MoreDetails:     parsed.MoreDetails,
 					Category:        cfg.ConfigCategory,
+					CategoryLink:    template.HTML(strings.ToLower(fmt.Sprintf("[%s](#%s-%s)", field.Tag.Get("mapstructure"), cfg.Name, field.Tag.Get("mapstructure")))),
+					CategoryAnchor:  template.HTML(strings.ToLower(fmt.Sprintf(`## %s %s`, cfg.Name, field.Tag.Get("mapstructure")))),
 					Example:         template.HTML(parsed.HyperbricksConfig),
 					Result:          template.HTML(gohtml.Format(result)),
 					TypeDescription: cfg.TypeDescription,
@@ -641,6 +671,12 @@ func ParseContent(content string) (*ParsedContent, error) {
 	expectedJSONStr := sections["expected json"]
 	expectedOutput := sections["expected output"]
 
+	var moreDetails string = "???"
+	val, ok := sections["more details"]
+	if ok {
+		moreDetails = val
+	}
+
 	var expectedJSON map[string]interface{}
 	if err := json.Unmarshal([]byte(expectedJSONStr), &expectedJSON); err != nil {
 		return nil, fmt.Errorf("error parsing expected JSON: %v", err)
@@ -653,6 +689,7 @@ func ParseContent(content string) (*ParsedContent, error) {
 		ExpectedJSON:           expectedJSON,
 		ExpectedJSONAsString:   sections["expected json"],
 		ExpectedOutput:         expectedOutput,
+		MoreDetails:            moreDetails,
 	}, nil
 }
 

@@ -1,4 +1,4 @@
-==== hyperbricks config {!{fragment}} ====
+==== hyperbricks config {!{hypermedia}} ====
 css = <HTML>
 css.value = <<[
     <style>
@@ -21,9 +21,11 @@ hypermedia.head {
     ]>>
 }
 ==== explainer ====
-
+This is the type description.....
 ==== expected json ====
 {
 	
 }
 ==== expected output ====
+
+==== more details ====
