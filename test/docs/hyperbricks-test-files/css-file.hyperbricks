@@ -1,13 +1,45 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.file = hyperbricks-test-files/assets/styles.css
+    10.attributes {
+        media = screen
+    }
 }
 ==== explainer ====
 file overrides link and inline, it loads contents of a file and renders it in a style tag.
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "10": {
+        "@type": "<CSS>",
+        "file": "hyperbricks-test-files/styles.css"
+      }
+    }
+  }
 ==== expected output ====
-<div>this test fails</div>
+<!DOCTYPE html><html><head><style media="screen">
+body {
+    background-color: red;
+}
+</style><meta name="generator" content="hyperbricks cms"></head><body></body></html> 

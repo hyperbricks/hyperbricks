@@ -79,7 +79,7 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/template-template
-2025/01/18 22:11:05 [error parsing template: template: template:1: function "TEMPLATE" not defined error parsing template: template: template:1: function "TEMPLATE" not defined]
+2025/01/18 23:39:09 [error parsing template: template: template:1: function "TEMPLATE" not defined error parsing template: template: template:1: function "TEMPLATE" not defined]
     documentation_source_test.go:582: result and expected html output does not match: 
         result:
         <div class="youtube_video"></div> 
@@ -516,138 +516,71 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/css-inline
-    documentation_source_test.go:582: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:592: Test failed for css-inline!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/css-link
-    documentation_source_test.go:582: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:592: Test failed for css-link!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/css-file
-    documentation_source_test.go:582: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
     documentation_source_test.go:592: Test failed for css-file!
 output:
 {
-  "ConfigType": "<FRAGMENT>",
+  "ConfigType": "<HYPERMEDIA>",
   "ConfigCategory": "",
   "Key": "",
   "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
+  "File": "",
   "MetaDocDescription": "",
-  "HxResponseWriter": null,
   "Title": "",
   "Route": "",
   "Section": "",
   "Items": null,
+  "BodyTag": "",
   "Enclose": "",
+  "Favicon": "",
   "Template": null,
-  "File": "",
   "IsStatic": false,
   "Static": "",
-  "Index": 0
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "10": {
+      "@type": "<CSS>",
+      "attributes": {
+        "media": "screen"
+      },
+      "file": "hyperbricks-test-files/assets/styles.css"
+    }
+  }
 }
 
 expected:
-{}
+{
+  "BodyTag": "",
+  "ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "Doctype": "",
+  "Enclose": "",
+  "Favicon": "",
+  "File": "",
+  "Head": {
+    "10": {
+      "@type": "<CSS>",
+      "file": "hyperbricks-test-files/styles.css"
+    }
+  },
+  "HtmlTag": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "Key": "",
+  "MetaDocDescription": "",
+  "Path": "",
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
 
-=== RUN   Test_TestAndDocumentationRender/js-attributes
+=== RUN   Test_TestAndDocumentationRender/javascript-attributes
     documentation_source_test.go:582: result and expected html output does not match: 
         result:
          
@@ -655,7 +588,7 @@ expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:592: Test failed for js-attributes!
+    documentation_source_test.go:592: Test failed for javascript-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -691,7 +624,7 @@ output:
 expected:
 {}
 
-=== RUN   Test_TestAndDocumentationRender/js-enclose
+=== RUN   Test_TestAndDocumentationRender/javascript-enclose
     documentation_source_test.go:582: result and expected html output does not match: 
         result:
          
@@ -699,7 +632,7 @@ expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:592: Test failed for js-enclose!
+    documentation_source_test.go:592: Test failed for javascript-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -735,138 +668,9 @@ output:
 expected:
 {}
 
-=== RUN   Test_TestAndDocumentationRender/js-inline
-    documentation_source_test.go:582: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:592: Test failed for js-inline!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
-=== RUN   Test_TestAndDocumentationRender/js-link
-    documentation_source_test.go:582: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:592: Test failed for js-link!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
-=== RUN   Test_TestAndDocumentationRender/js-file
-    documentation_source_test.go:582: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:592: Test failed for js-file!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
+=== RUN   Test_TestAndDocumentationRender/javascript-inline
+=== RUN   Test_TestAndDocumentationRender/javascript-link
+=== RUN   Test_TestAndDocumentationRender/javascript-file
 === RUN   Test_TestAndDocumentationRender/image-attributes
     documentation_source_test.go:582: result and expected html output does not match: 
         result:
@@ -2892,9 +2696,9 @@ output:
 expected:
 {}
 
-2025/01/18 22:11:05 Version: v0.1.0-alpha
-2025/01/18 22:11:05 Build Time: 2025-01-18T21:11:04Z
-2025/01/18 22:11:05 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
+2025/01/18 23:39:09 Version: v0.1.0-alpha
+2025/01/18 23:39:09 Build Time: 2025-01-18T22:39:08Z
+2025/01/18 23:39:09 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
 --- FAIL: Test_TestAndDocumentationRender (0.03s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -2945,14 +2749,14 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/html-trimspace (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/css-attributes (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/css-enclose (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/css-inline (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/css-link (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-inline (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-link (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/css-file (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/js-attributes (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/js-enclose (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/js-inline (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/js-link (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/js-file (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/javascript-attributes (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/javascript-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-inline (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-link (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-file (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/image-attributes (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/image-enclose (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/image-src (0.00s)
@@ -3001,5 +2805,5 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/api_render-user (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/api_render-pass (0.00s)
 FAIL
-FAIL	command-line-arguments	0.263s
+FAIL	command-line-arguments	0.251s
 FAIL

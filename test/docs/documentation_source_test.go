@@ -156,7 +156,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			Config:          component.CssConfig{},
 		},
 		{
-			Name:            "Js",
+			Name:            "Javascript",
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
 			ConfigType:      "<JS>",

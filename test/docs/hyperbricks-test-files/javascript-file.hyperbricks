@@ -1,13 +1,46 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.file = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
 }
 ==== explainer ====
 File overrides link and inline, it loads contents of a file and renders it in a script tag.
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "10": {
+        "@type": "<JAVASCRIPT>",
+        "attributes": {
+          "type": "text/javascript"
+        },
+        "file": "hyperbricks-test-files/assets/main.js"
+      }
+    }
+  }
 ==== expected output ====
-<div>this test fails</div>
+<!DOCTYPE html><html><head><script type="text/javascript">
+        console.log("Hello World!")
+        </script><meta name="generator" content="hyperbricks cms"></head><body></body></html> 

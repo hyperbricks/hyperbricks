@@ -1,13 +1,40 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    10 = <CSS>
+    10.link = styles.css
 }
 ==== explainer ====
-Use link for a link tag
+Use link for a link tag to a css file.
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "10": {
+        "@type": "<CSS>",
+        "link": "styles.css"
+      },
+      "@type": "<HEAD>"
+    }
+  }
 ==== expected output ====
-<div>this test fails</div>
+<!DOCTYPE html><html><head><link rel="stylesheet" href="styles.css"><meta name="generator" content="hyperbricks cms"></head><body></body></html>

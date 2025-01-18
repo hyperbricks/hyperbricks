@@ -1,7 +1,7 @@
 
 # HyperBricks Docs
 **Version:** v0.1.0-alpha  
-**Build time:** 2025-01-18T21:11:04Z
+**Build time:** 2025-01-18T22:39:08Z
 
 Go direct to:
 
@@ -2899,12 +2899,36 @@ Use inline to define css in a multiline block &lt;&lt;[ /* css goes here */ ]&gt
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.inline = <<[
+        body {
+            background-color: lightblue;
+        }
+    ]>>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+      background-color: lightblue;
+      }
+    </style>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -2919,17 +2943,34 @@ fragment {
 #### link
 
 **Description**  
-Use link for a link tag
+Use link for a link tag to a css file.
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    10 = <CSS>
+    10.link = styles.css
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="styles.css">
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -2949,12 +2990,35 @@ file overrides link and inline, it loads contents of a file and renders it in a 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.file = hyperbricks-test-files/assets/styles.css
+    10.attributes {
+        media = screen
+    }
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style media="screen">
+      body {
+      background-color: red;
+      }
+    </style>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -3482,17 +3546,17 @@ fragment {
 
 **Properties**
 
-- [attributes](#js-attributes)
-- [enclose](#js-enclose)
-- [inline](#js-inline)
-- [link](#js-link)
-- [file](#js-file)
+- [attributes](#javascript-attributes)
+- [enclose](#javascript-enclose)
+- [inline](#javascript-inline)
+- [link](#javascript-link)
+- [file](#javascript-file)
 
 
 
 
 
-## js attributes
+## javascript attributes
 #### attributes
 
 **Description**  
@@ -3517,7 +3581,7 @@ fragment {
 
 
 
-## js enclose
+## javascript enclose
 #### enclose
 
 **Description**  
@@ -3542,7 +3606,7 @@ fragment {
 
 
 
-## js inline
+## javascript inline
 #### inline
 
 **Description**  
@@ -3551,11 +3615,30 @@ Use inline to define JavaScript in a multiline block &lt;&lt;[ /* JavaScript goe
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.inline = console.log("Hello World!")
+    10.attributes {
+        type = text/javascript
+    }
 }
 
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+      console.log("Hello World!")
+    </script>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
 ````
 
 
@@ -3567,7 +3650,9 @@ fragment {
 
 
 
-## js link
+
+
+## javascript link
 #### link
 
 **Description**  
@@ -3576,11 +3661,28 @@ Use link for a script tag with a src attribute
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.link = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
 }
 
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="hyperbricks-test-files/assets/main.js"></script>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
 ````
 
 
@@ -3592,7 +3694,9 @@ fragment {
 
 
 
-## js file
+
+
+## javascript file
 #### file
 
 **Description**  
@@ -3601,12 +3705,33 @@ File overrides link and inline, it loads contents of a file and renders it in a 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.file = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+      console.log("Hello World!")
+    </script>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 

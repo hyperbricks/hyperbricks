@@ -1,13 +1,46 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.inline = console.log("Hello World!")
+    10.attributes {
+        type = text/javascript
+    }
 }
 ==== explainer ====
 Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here */ ]>>
 ==== expected json ====
 {
-	
+"ConfigType": "<HYPERMEDIA>",
+"ConfigCategory": "",
+"Key": "",
+"Path": "",
+"File": "",
+"MetaDocDescription": "",
+"Title": "",
+"Route": "",
+"Section": "",
+"Items": null,
+"BodyTag": "",
+"Enclose": "",
+"Favicon": "",
+"Template": null,
+"IsStatic": false,
+"Static": "",
+"Index": 0,
+"Doctype": "",
+"HtmlTag": "",
+"Head": {
+  "10": {
+    "@type": "<JAVASCRIPT>",
+    "attributes": {
+      "type": "text/javascript"
+    },
+    "inline": "console.log(\"Hello World!\")"
+  }
+}
 }
 ==== expected output ====
-<div>this test fails</div>
+<!DOCTYPE html><html><head><script type="text/javascript">
+console.log("Hello World!")
+</script><meta name="generator" content="hyperbricks cms"></head><body></body></html> 
