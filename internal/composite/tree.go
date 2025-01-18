@@ -27,7 +27,7 @@ func TreeRendererConfigGetName() string {
 // Ensure ContentRenderer implements RenderComponent with the concrete type `shared.ComponentError`.
 var _ shared.CompositeRenderer = (*TreeRenderer)(nil)
 
-// ConcurentRenderConfig represents the configuration for a RENDER (Container of Assets) type.
+// TreeConfig represents the configuration for a RENDER (Container of Assets) type.
 type TreeConfig struct {
 	shared.Composite   `mapstructure:",squash"`
 	MetaDocDescription string `mapstructure:"@doc" description:"TREE description" example:"{!{tree-@doc.hyperbricks}}"`

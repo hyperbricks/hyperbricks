@@ -1,13 +1,40 @@
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	
+	index = 1
 }
 ==== explainer ====
-Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation
+Index number is a sort order option for the <MENU> section. See <MENU> for further explanation
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "File": "",
+    "IsStatic": false,
+    "Static": "",
+    "Index": 1
+  }
 ==== expected output ====
-<div>this test fails</div>
+

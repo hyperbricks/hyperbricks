@@ -1,13 +1,41 @@
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_trigger_after_swap = myAfterSwapEvent
+    }
 }
 ==== explainer ====
 allows you to trigger client-side events after the swap step
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "myAfterSwapEvent",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "File": "",
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0
+    }
 ==== expected output ====
-<div>this test fails</div>

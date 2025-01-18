@@ -1,7 +1,7 @@
 
 # HyperBricks Docs
 **Version:** v0.1.0-alpha  
-**Build time:** 2025-01-17T14:47:49Z
+**Build time:** 2025-01-18T14:15:43Z
 
 Go direct to:
 
@@ -556,7 +556,9 @@ HTMX response header configuration.
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_trigger = trigger-element-id
+    }
 }
 
 ````
@@ -574,14 +576,14 @@ fragment {
 #### title
 
 **Description**  
-The title of the fragment
+The title of the fragment, only used in the context of the &lt;MENU&gt; component. For document title use &lt;HYPERMEDIA&gt; type.
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	title = Some Title
 }
 
 ````
@@ -606,7 +608,7 @@ The route (URL-friendly identifier) for the fragment
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	route = index
 }
 
 ````
@@ -624,14 +626,14 @@ fragment {
 #### section
 
 **Description**  
-The section the fragment belongs to
+The section the fragment belongs to. This can be used with the component &lt;MENU&gt; for example.
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	section = some_section
 }
 
 ````
@@ -649,14 +651,16 @@ fragment {
 #### enclose
 
 **Description**  
-Wrapping property for the fragment rendered output
+Enclosing property using the pipe symbol |
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	10 = <HTML>
+    10.value = <p>TEST HTML</p>
+    enclose = <div>|</div>
 }
 
 ````
@@ -674,14 +678,24 @@ fragment {
 #### template
 
 **Description**  
-Template configurations for rendering the fragment
+Template configurations for rendering the fragment. (This will disable rendering any content added to the alpha numeric items that are added to the fragment root object.) See &lt;TEMPLATE&gt; for more details using templates.
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	template {
+        template = <<[
+            <div>{{content}}</div>
+
+        ]>>
+        isTemplate = true
+        values {
+            content = <HTML>
+            content.value = <p>SOME HTML CONTENT</p>
+        }
+    }
 }
 
 ````
@@ -699,14 +713,14 @@ fragment {
 #### static
 
 **Description**  
-Static file path associated with the fragment
+Static file path associated with the fragment, this will only work for a hx-get (GET) request. 
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	static = some_static_file.extension
 }
 
 ````
@@ -724,14 +738,14 @@ fragment {
 #### index
 
 **Description**  
-Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation
+Index number is a sort order option for the &lt;MENU&gt; section. See &lt;MENU&gt; for further explanation
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	index = 1
 }
 
 ````
@@ -749,7 +763,7 @@ fragment {
 #### hx_location
 
 **Description**  
-allows you to do a client-side redirect that does not do a full page reload
+Allows you to do a client-side redirect that does not do a full page reload
 
 
 **Example**
@@ -776,14 +790,16 @@ fragment {
 #### hx_push_url
 
 **Description**  
-pushes a new url into the history stack
+Pushes a new url into the history stack
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_push_url = /some/url
+    }
 }
 
 ````
@@ -801,14 +817,16 @@ fragment {
 #### hx_redirect
 
 **Description**  
-can be used to do a client-side redirect to a new location
+Can be used to do a client-side redirect to a new location
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_redirect = /some/new/location
+    }
 }
 
 ````
@@ -826,14 +844,16 @@ fragment {
 #### hx_refresh
 
 **Description**  
-if set to &#39;true&#39; the client-side will do a full refresh of the page
+If set to &#39;true&#39; the client-side will do a full refresh of the page
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_refresh = true
+    }
 }
 
 ````
@@ -858,7 +878,9 @@ replaces the current url in the location bar
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_replace_url = /alternative/url
+    }
 }
 
 ````
@@ -876,14 +898,16 @@ fragment {
 #### hx_reswap
 
 **Description**  
-allows you to specify how the response will be swapped
+Allows you to specify how the response will be swapped. See hx-swap in the [HTMX documentation](https://htmx.org/).
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_reswap = innerHTML
+    }
 }
 
 ````
@@ -901,14 +925,16 @@ fragment {
 #### hx_retarget
 
 **Description**  
-a css selector that updates the target of the content update
+A css selector that updates the target of the content update
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_retarget = #someid
+    }
 }
 
 ````
@@ -926,14 +952,16 @@ fragment {
 #### hx_reselect
 
 **Description**  
-a css selector that allows you to choose which part of the response is used to be swapped in
+A css selector that allows you to choose which part of the response is used to be swapped in.
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_reselect = #someotherid
+    }
 }
 
 ````
@@ -958,7 +986,9 @@ allows you to trigger client-side events
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_trigger = myEvent
+    }
 }
 
 ````
@@ -983,7 +1013,9 @@ allows you to trigger client-side events after the settle step
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_trigger_after_settle = myAfterSettleEvent
+    }
 }
 
 ````
@@ -1008,7 +1040,9 @@ allows you to trigger client-side events after the swap step
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_trigger_after_swap = myAfterSwapEvent
+    }
 }
 
 ````
@@ -1033,11 +1067,69 @@ fragment {
 
 
 
+
+
+
+
 **Properties**
 
+- [title](#head-title)
+- [favicon](#head-favicon)
 - [meta](#head-meta)
 - [css](#head-css)
 - [js](#head-js)
+
+
+
+
+
+## head title
+#### title
+
+**Description**  
+The title of the hypermedia document
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    title = Home
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## head favicon
+#### favicon
+
+**Description**  
+Path to the favicon for the hypermedia document
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    favicon = /images/icon.ico
+}
+
+````
+
+
+
+
+
 
 
 
@@ -1052,9 +1144,13 @@ Metadata for the head section
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    meta {
+        a = b
+        b = c
+    }
 }
 
 ````
@@ -1077,9 +1173,10 @@ CSS files to include
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    css = [style.css,morestyles.css]
 }
 
 ````
@@ -1102,9 +1199,10 @@ JavaScript files to include
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    js = [main.js,helpers.js]
 }
 
 ````
@@ -1149,8 +1247,6 @@ fragment {
 
 
 
-
-
 **Properties**
 
 
@@ -1161,7 +1257,6 @@ fragment {
 - [enclose](#hypermedia-enclose)
 - [favicon](#hypermedia-favicon)
 - [template](#hypermedia-template)
-- [isstatic](#hypermedia-isstatic)
 - [static](#hypermedia-static)
 - [index](#hypermedia-index)
 - [doctype](#hypermedia-doctype)
@@ -1184,9 +1279,9 @@ The title of the hypermedia site
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    title = Home
 }
 
 ````
@@ -1209,9 +1304,9 @@ The route (URL-friendly identifier) for the hypermedia
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    route = index
 }
 
 ````
@@ -1234,9 +1329,9 @@ The section the hypermedia belongs to. This can be used with the component &lt;M
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    section = my_section
 }
 
 ````
@@ -1286,12 +1381,15 @@ Enclosure of the property for the hypermedia
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
 
 ````
+
 
 
 
@@ -1311,12 +1409,13 @@ Path to the favicon for the hypermedia
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    favicon = static/favicon.ico
 }
 
 ````
+
 
 
 
@@ -1336,34 +1435,19 @@ Template configurations for rendering the hypermedia. See &lt;TEMPLATE&gt; for f
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	template {
+        template = <<[
+            <div>{{content}}</div>
 
-````
-
-
-
-
-
-
-
-
-
-
-## hypermedia isstatic
-#### isstatic
-
-**Description**  
-
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
+        ]>>
+        isTemplate = true
+        values {
+            content = <HTML>
+            content.value = <p>SOME HTML CONTENT</p>
+        }
+    }
 }
 
 ````
@@ -1386,9 +1470,9 @@ Static file path associated with the hypermedia, for rendering out the hypermedi
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	static = index.html
 }
 
 ````
@@ -1411,9 +1495,9 @@ Index number is a sort order option for the hypermedia defined in the section fi
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	index = 1
 }
 
 ````
@@ -1436,10 +1520,9 @@ Alternative Doctype for the HTML document
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+hypermedia = <HYPERMEDIA>
+# this is just an example of an alternative doctype configuration
+hypermedia.doctype = <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 
 ````
 
@@ -1461,10 +1544,8 @@ The opening HTML tag with attributes
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+hypermedia = <HYPERMEDIA>
+hypermedia.htmltag = <html lang="en">
 
 ````
 
@@ -1481,13 +1562,38 @@ fragment {
 #### head
 
 **Description**  
-See &lt;HEADER&gt; for details
+Builds header content. See &lt;HEADER&gt; for details
 
 
 **Example**
 ````properties
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
+hypermedia.head = <HEAD>
+hypermedia.head {
+    css = [styles.css,xxxx]
+    js = [styles.css,xxxx]
+
+    meta {
+        a = b
+        b = c
+    }
+    999 = <HTML>
+    999.value = <!-- 999 overides default generator meta tag -->
+
+    1001 = <CSS>
+    1001.inline = <<[
+        body {
+            pading:10px;
+        }
+    ]>>
+
+    20 = <HTML>
+    20.value = <meta name="generator" content="hyperbricks cms">
+     
+}
+hypermedia.10 = <HTML>
+hypermedia.10.value = <p>some HTML</p>
 
 ````
 

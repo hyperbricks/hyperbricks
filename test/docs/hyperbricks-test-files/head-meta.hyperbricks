@@ -1,13 +1,48 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    meta {
+        a = b
+        b = c
+    }
 }
 ==== explainer ====
 Metadata for the head section
 ==== expected json ====
 {
-	
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "Key": "",
+  "Path": "",
+  "File": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "@type": "<HEAD>",
+    "meta": {
+      "a": "b",
+      "b": "c"
+    }
+  }
 }
 ==== expected output ====
-<div>this test fails</div>
+<!DOCTYPE html><html>
+<head>
+<meta name="generator" content="hyperbricks cms">
+<meta name="a" content="b">
+<meta name="b" content="c">
+</head>
+<body></body></html> 

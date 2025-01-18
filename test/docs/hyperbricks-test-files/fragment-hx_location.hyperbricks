@@ -6,7 +6,7 @@ fragment {
     }
 }
 ==== explainer ====
-allows you to do a client-side redirect that does not do a full page reload
+Allows you to do a client-side redirect that does not do a full page reload
 ==== expected json ====
 {
     "ConfigType": "<FRAGMENT>",

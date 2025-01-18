@@ -8,30 +8,27 @@ hypermedia.10.value = HELLO WORLD!
 Special body enclosure with use of a pipe symbol |. Please note that this will not work when a template is applied. In that case, you have to add the bodytag in the template.
 ==== expected json ====
 {
-    "ConfigType": "<HYPERMEDIA>",
-    "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
-    "MetaDocDescription": "",
-    "Title": "",
-    "Route": "index",
-    "Section": "",
-    "Items": null,
-    "BodyTag": "<body id=\"main\">|</body>",
-    "Enclose": "",
-    "Favicon": "",
-    "Template": null,
-    "IsStatic": false,
-    "Static": "",
-    "Index": 0,
-    "Meta": null,
-    "Doctype": "",
-    "HtmlTag": "",
-    "Head": null,
-    "Css": null,
-    "Js": null
-  }
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "Key": "",
+  "Path": "",
+  "File": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "<body id=\"main\">|</body>",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null
+}
 ==== expected output ====
 <!DOCTYPE html>
 <html>

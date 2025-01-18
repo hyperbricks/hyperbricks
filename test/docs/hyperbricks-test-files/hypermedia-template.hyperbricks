@@ -1,13 +1,51 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	template {
+        template = <<[
+            <div>{{content}}</div>
+
+        ]>>
+        isTemplate = true
+        values {
+            content = <HTML>
+            content.value = <p>SOME HTML CONTENT</p>
+        }
+    }
 }
 ==== explainer ====
 Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions.
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": {
+      "isTemplate": "true",
+      "template": "\n<div>{{content}}</div>\n\n        ",
+      "values": {
+        "content": {
+          "@type": "<HTML>",
+          "value": "<p>SOME HTML CONTENT</p>"
+        }
+      }
+    },
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
 ==== expected output ====
-<div>this test fails</div>
+<!DOCTYPE html><html><body><div><p>SOME HTML CONTENT</p></div></body></html> 

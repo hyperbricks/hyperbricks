@@ -1,13 +1,32 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    title = Home
 }
 ==== explainer ====
 The title of the hypermedia site
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "MetaDocDescription": "",
+    "Title": "Home",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
 ==== expected output ====
-<div>this test fails</div>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title></head><body></body></html> 

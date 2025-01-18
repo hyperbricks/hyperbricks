@@ -1,13 +1,41 @@
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	
+	response {
+        hx_trigger = myEvent
+    }
 }
 ==== explainer ====
 allows you to trigger client-side events
 ==== expected json ====
 {
-	
+"ConfigType": "<FRAGMENT>",
+"ConfigCategory": "",
+"Key": "",
+"Path": "",
+"HxTemplateResult": "",
+"HxLocation": "",
+"HxPushedUrl": "",
+"HxRedirect": "",
+"HxRefresh": "",
+"HxReplaceUrl": "",
+"HxReswap": "",
+"HxRetarget": "",
+"HxReselect": "",
+"HxTrigger": "myEvent",
+"HxTriggerafterSettle": "",
+"HxTriggerafterSwap": "",
+"MetaDocDescription": "",
+"HxResponseWriter": null,
+"Title": "",
+"Route": "",
+"Section": "",
+"Items": null,
+"Enclose": "",
+"Template": null,
+"File": "",
+"IsStatic": false,
+"Static": "",
+"Index": 0
 }
 ==== expected output ====
-<div>this test fails</div>

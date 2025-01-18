@@ -1,13 +1,30 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
-}
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.htmltag = <html lang="en">
 ==== explainer ====
 The opening HTML tag with attributes
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "<html lang=\"en\">",
+    "Head": null
+  }
 ==== expected output ====
-<div>this test fails</div>
+<!DOCTYPE html><html lang="en"><body></body></html> 

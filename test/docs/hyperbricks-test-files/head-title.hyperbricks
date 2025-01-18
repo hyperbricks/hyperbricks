@@ -1,10 +1,11 @@
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
-hypermedia {
-    favicon = static/favicon.ico
+hypermedia.head = <HEAD>
+hypermedia.head {
+    title = Home
 }
 ==== explainer ====
-Path to the favicon for the hypermedia
+The title of the hypermedia document
 ==== expected json ====
 {
     "ConfigType": "<HYPERMEDIA>",
@@ -19,15 +20,18 @@ Path to the favicon for the hypermedia
     "Items": null,
     "BodyTag": "",
     "Enclose": "",
-    "Favicon": "static/favicon.ico",
+    "Favicon": "",
     "Template": null,
     "IsStatic": false,
     "Static": "",
     "Index": 0,
     "Doctype": "",
     "HtmlTag": "",
-    "Head": null
+    "Head": {
+      "@type": "<HEAD>",
+      "title": "Home"
+    }
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="static/favicon.ico"></head><body></body></html> 
-==== more details ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title>
+        </head><body></body></html> 

@@ -21,7 +21,7 @@ type HyperMediaConfig struct {
 	Enclose            string                 `mapstructure:"enclose" description:"Enclosure of the property for the hypermedia" example:"{!{hypermedia-enclose.hyperbricks}}"`
 	Favicon            string                 `mapstructure:"favicon" description:"Path to the favicon for the hypermedia" example:"{!{hypermedia-favicon.hyperbricks}}"`
 	Template           map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions." example:"{!{hypermedia-template.hyperbricks}}"`
-	IsStatic           bool                   `mapstructure:"isstatic"`
+	IsStatic           bool                   `mapstructure:"isstatic" exclude:"true"`
 	Static             string                 `mapstructure:"static" description:"Static file path associated with the hypermedia, for rendering out the hypermedia to static files." example:"{!{hypermedia-static.hyperbricks}}"`
 	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options" example:"{!{hypermedia-index.hyperbricks}}"`
 	Doctype            string                 `mapstructure:"doctype" description:"Alternative Doctype for the HTML document" example:"{!{hypermedia-doctype.hyperbricks}}"`
@@ -38,6 +38,10 @@ func HyperMediaConfigGetName() string {
 func (hm *HyperMediaConfig) Validate() []error {
 	if hm.Doctype == "" {
 		hm.Doctype = "<!DOCTYPE html>"
+	}
+
+	if hm.HtmlTag == "" {
+		hm.HtmlTag = "<html>"
 	}
 
 	var warnings []error
@@ -75,7 +79,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		errors = append(errors, shared.ComponentError{
 			Key:      config.Key,
 			Path:     config.Path,
-			Err:      fmt.Errorf("invalid type for ConcurentRenderConfig").Error(),
+			Err:      fmt.Errorf("invalid type for HYPERMEDIA").Error(),
 			Rejected: true,
 		})
 	}
@@ -100,18 +104,24 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	//}
 
 	// If a main header config is present, render add it to the string builder
-	if config.Head != nil {
-		// head := make(map[string]interface{})
+	if config.Head != nil || config.Title != "" || config.Favicon != "" {
 
-		// head["css"] = config.Head.Css
-		// head["js"] = config.Head.Js
-		// head["meta"] = config.Head.MetaData
-		// head["items"] = config.Head.Items
+		if config.Head == nil {
+			config.Head = make(map[string]interface{})
+		}
 
 		//head := shared.StructToMap(config.Head)
 		config.Head["@type"] = HeadConfigGetName()
 		config.Head["path"] = config.File + ":" + config.Path
 		config.Head["file"] = config.File
+
+		if config.Title != "" {
+			config.Head["title"] = config.Title
+		}
+
+		if config.Favicon != "" {
+			config.Head["favicon"] = config.Favicon
+		}
 
 		result, errr := pr.RenderManager.Render(HeadConfigGetName(), config.Head)
 		errors = append(errors, errr...)
@@ -144,7 +154,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	headHtml := headbuilder.String()
 
 	// Wrap the content with the HTML structure
-	finalHTML := fmt.Sprintf("%s<html>%s%s</html>", config.Doctype, headHtml, shared.EncloseContent(config.BodyTag, outputHtml))
+	finalHTML := fmt.Sprintf("%s%s%s%s</html>", config.Doctype, config.HtmlTag, headHtml, shared.EncloseContent(config.BodyTag, outputHtml))
 
 	return finalHTML, errors
 }

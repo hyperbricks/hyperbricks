@@ -1,13 +1,32 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	static = index.html
 }
 ==== explainer ====
 Static file path associated with the hypermedia, for rendering out the hypermedia to static files.
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "index.html",
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
 ==== expected output ====
-<div>this test fails</div>
+<!DOCTYPE html><html><body></body></html> 

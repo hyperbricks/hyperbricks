@@ -2,6 +2,8 @@ package composite
 
 import (
 	"fmt"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
@@ -12,6 +14,8 @@ import (
 // HeadConfig represents the configuration for the head section.
 type HeadConfig struct {
 	shared.Composite `mapstructure:",squash"`
+	Title            string            `mapstructure:"title" description:"The title of the hypermedia document" example:"{!{head-title.hyperbricks}}"`
+	Favicon          string            `mapstructure:"favicon" description:"Path to the favicon for the hypermedia document" example:"{!{head-favicon.hyperbricks}}"`
 	MetaData         map[string]string `mapstructure:"meta" description:"Metadata for the head section" example:"{!{head-meta.hyperbricks}}"`
 	Css              []string          `mapstructure:"css" description:"CSS files to include" example:"{!{head-css.hyperbricks}}"`
 	Js               []string          `mapstructure:"js" description:"JavaScript files to include" example:"{!{head-js.hyperbricks}}"`
@@ -28,19 +32,12 @@ func (config *HeadConfig) Validate() []error {
 	// standard validation on struct metadata of APIConfig
 	warnings := shared.Validate(config)
 
-	if config.ConfigType != "HEAD" {
+	if config.ConfigType != "<HEAD>" {
 		warnings = append(warnings, shared.ComponentError{
 			Key:      config.Meta.Key,
 			Path:     config.Meta.Path,
-			Err:      fmt.Errorf("invalid type for ConcurentRenderConfig").Error(),
+			Err:      fmt.Errorf("invalid type for HEAD").Error(),
 			Rejected: true,
-		})
-	}
-	if len(config.Items) == 0 {
-		warnings = append(warnings, shared.ComponentError{
-			Key:  config.Meta.Key,
-			Path: config.Meta.Path,
-			Err:  fmt.Errorf("type RENDER items are empty").Error(),
 		})
 	}
 
@@ -77,8 +74,21 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 	// appending page validation errors
 	errors = append(errors, config.Validate()...)
 
+	// Generate favicon tag
+	if config.Favicon != "" {
+		headbuilder.WriteString(fmt.Sprintf(`<link rel="icon" type="image/x-icon" href="%s">`, config.Favicon))
+		headbuilder.WriteString("\n")
+	}
+
+	// Generate title tag
+	if config.Title != "" {
+		headbuilder.WriteString(fmt.Sprintf(`<title>%s</title>`, config.Title))
+		headbuilder.WriteString("\n")
+	}
+
 	// Generate meta tags
-	for metaName, metaContent := range config.MetaData {
+	meta := SortNumericAlphabetic(config.MetaData)
+	for metaName, metaContent := range meta {
 		headbuilder.WriteString(fmt.Sprintf(`<meta name="%s" content="%s">`, metaName, metaContent))
 		headbuilder.WriteString("\n")
 	}
@@ -122,4 +132,43 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 	errors = append(errors, errr...)
 
 	return result, errors
+}
+
+// SortNumericAlphabetic takes a map[string]string, sorts the keys
+// (numeric first ascending, then alphabetic), and returns a new map.
+func SortNumericAlphabetic(input map[string]string) map[string]string {
+	// Extract keys
+	keys := make([]string, 0, len(input))
+	for k := range input {
+		keys = append(keys, k)
+	}
+
+	// Sort keys with custom comparator
+	sort.Slice(keys, func(i, j int) bool {
+		ki, kj := keys[i], keys[j]
+		ni, erri := strconv.Atoi(ki)
+		nj, errj := strconv.Atoi(kj)
+
+		// Both are numeric
+		if erri == nil && errj == nil {
+			return ni < nj
+		}
+		// Only one is numeric -> numeric first
+		if erri == nil && errj != nil {
+			return true
+		}
+		if erri != nil && errj == nil {
+			return false
+		}
+		// Neither numeric -> lexicographical
+		return ki < kj
+	})
+
+	// Build a new map (order is not preserved on iteration!)
+	sortedMap := make(map[string]string, len(input))
+	for _, k := range keys {
+		sortedMap[k] = input[k]
+	}
+
+	return sortedMap
 }

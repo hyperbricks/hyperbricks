@@ -71,7 +71,7 @@ func initialisation(passedCtx context.Context, passedCancel context.CancelFunc) 
 	//InitStaticFileServer()
 	initStaticFileServer()
 
-	// Now everything is ready start the server
+	// Now everything is ready, start the server
 	StartServer(ctx)
 
 }
