@@ -1,14 +1,42 @@
 ==== hyperbricks config {!{fragment}} ====
+# Use the a TEMPLATE:filepath directive like this:
+template = {{TEMPLATE:partials/video.tmpl}}
+
+# Or use the inline notation:
+template = <<[
+    <p>INLINE TEMPLATE {{somevalue}}</p>
+]>>
+
+myComponent = <TEMPLATE>
+myComponent {
+    template = {{TEMPLATE:partials/video.tmpl}}
+    istemplate = true
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
 fragment = <FRAGMENT>
-fragment {
-	
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
 }
 ==== explainer ====
-The template used for rendering
+The template used for rendering.
 ==== expected json ====
 {
-	
+    
 }
 ==== expected output ====
-
+<div class="youtube_video">
+    <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+    <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
 ==== more details ====

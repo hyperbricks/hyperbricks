@@ -1,14 +1,65 @@
 ==== hyperbricks config {!{fragment}} ====
+myComponent = <TEMPLATE>
+myComponent {
+    template = <<[
+        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    ]>>
+    istemplate = true
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+myComponent.enclose = |
+
 fragment = <FRAGMENT>
-fragment {
-	
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
 }
 ==== explainer ====
 Determines if the field is a inline template or when not defined a reference to a template file
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "File": "",
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0
+  }
+  
 ==== expected output ====
-
+<div class="youtube_video">
+    <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+    <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
 ==== more details ====

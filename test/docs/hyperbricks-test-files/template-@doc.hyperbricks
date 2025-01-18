@@ -1,13 +1,18 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    head = <HEAD>
+    head {
+        title = Home
+    }
+    10 = <HTML>
+    10.value = <p>SOME HTML</p>
 }
 ==== explainer ====
 TEMPLATE description
 ==== expected json ====
 {
-	
+    
 }
 ==== expected output ====
 

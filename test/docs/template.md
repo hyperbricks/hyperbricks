@@ -42,11 +42,9 @@ Go direct to:
 
 {{if .Result}}
 **Expected Result**
-
 ````html
 {{.Result}}
 ````
-
 {{end}}
 
 **more**

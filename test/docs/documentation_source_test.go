@@ -20,6 +20,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/internal/typefactory"
+	"github.com/yosssi/gohtml"
 	"golang.org/x/net/html"
 )
 
@@ -229,8 +230,9 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 	templateProvider := func(templateName string) (string, bool) {
 		templates := map[string]string{
-			"example": "<div>{{main_section}}</div>",
-			"header":  "<h1>{{title}}</h1>",
+			"example":      "<div>{{main_section}}</div>",
+			"header":       "<h1>{{title}}</h1>",
+			"youtube.tmpl": `<iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>`,
 		}
 		content, exists := templates[templateName]
 		return content, exists
@@ -343,6 +345,30 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 	// COMPONENTS
 	rm.RegisterComponent(component.APIConfigGetName(), apiRenderer, reflect.TypeOf(component.APIConfig{}))
+
+	rm.GetRenderComponent(composite.TemplateConfigGetName()).(*composite.TemplateRenderer).TemplateProvider = templateProvider
+
+	temp := make(map[string][]composite.HyperMediaConfig)
+
+	// Add a slices for test....
+	temp["demo_main_menu"] = []composite.HyperMediaConfig{
+		{
+			Title:   "DOCUMENT_1",
+			Route:   "doc1",
+			Section: "demo_main_menu",
+		},
+		{
+			Title:   "DOCUMENT_2",
+			Route:   "doc2",
+			Section: "demo_main_menu",
+		},
+		{
+			Title:   "DOCUMENT_3",
+			Route:   "doc3",
+			Section: "demo_main_menu",
+		},
+	}
+	rm.GetRenderComponent(component.MenuConfigGetName()).(*component.MenuRenderer).HyperMediasBySection = temp
 
 	categorizedDocs := make(map[string]map[string][]FieldDoc)
 	for _, cfg := range types {
@@ -588,7 +614,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 					CategoryLink:    template.HTML(strings.ToLower(fmt.Sprintf("[%s](#%s-%s)", field.Tag.Get("mapstructure"), cfg.Name, field.Tag.Get("mapstructure")))),
 					CategoryAnchor:  template.HTML(strings.ToLower(fmt.Sprintf(`## %s %s`, cfg.Name, field.Tag.Get("mapstructure")))),
 					Example:         template.HTML(parsed.HyperbricksConfig),
-					Result:          "", //template.HTML(gohtml.Format(result)),
+					Result:          template.HTML(gohtml.Format(result)),
 					TypeDescription: cfg.TypeDescription,
 					FieldLink:       template.HTML(strings.ToLower(fmt.Sprintf("[%s](#%s-%s)", field.Tag.Get("mapstructure"), cfg.Name, field.Tag.Get("mapstructure")))),
 					FieldAnchor:     template.HTML(strings.ToLower(fmt.Sprintf(`## %s %s`, cfg.Name, field.Tag.Get("mapstructure")))),

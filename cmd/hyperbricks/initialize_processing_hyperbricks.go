@@ -278,6 +278,13 @@ func updateGlobalHyperMediasBySection(tempHyperMediasBySection map[string][]comp
 	hypermediasBySection = tempHyperMediasBySection
 }
 
+func GetGlobalHyperMediasBySection() map[string][]composite.HyperMediaConfig {
+	hypermediasMutex.Lock()
+	temp := hypermediasBySection // Copy the map for use outside the lock
+	hypermediasMutex.Unlock()
+	return temp
+}
+
 // resetHTMLCache clears the HTML cache.
 func resetHTMLCache() {
 	htmlCacheMutex.Lock()
