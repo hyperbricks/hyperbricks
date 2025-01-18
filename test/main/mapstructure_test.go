@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -332,7 +331,7 @@ func Test_BasicRenderChain(t *testing.T) {
 	expect := `<a href="LINK 10">somelink</a><!-- begin raw value -->stom<!-- end raw value --><a href="LINK 30">somelink</a><a href="LINK 40">somelink</a>`
 
 	fmt.Printf("result: %s\n\n\n", result)
-	if stripAllWhitespace(result) != stripAllWhitespace(expect) {
+	if _normalizeString(result) != _normalizeString(expect) {
 		t.Errorf("expected %s got %s", expect, result)
 	}
 
@@ -609,12 +608,6 @@ func Test_BasicPageWithTemplateRenderChain(t *testing.T) {
 		t.Errorf("expected %s got %s", expect, result)
 	}
 
-}
-
-// stripAllWhitespace removes all whitespace characters from the input string.
-func stripAllWhitespace(s string) string {
-	re := regexp.MustCompile(`\s+`)
-	return re.ReplaceAllString(s, "")
 }
 
 // normalizeString trims and removes excess whitespace for comparison purposes.

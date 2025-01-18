@@ -1092,9 +1092,10 @@ The title of the hypermedia document
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    title = Home
 }
 
 ````
@@ -1117,9 +1118,10 @@ Path to the favicon for the hypermedia document
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    favicon = /images/icon.ico
 }
 
 ````
@@ -1142,9 +1144,13 @@ Metadata for the head section
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    meta {
+        a = b
+        b = c
+    }
 }
 
 ````
@@ -1167,9 +1173,10 @@ CSS files to include
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    css = [style.css,morestyles.css]
 }
 
 ````
@@ -1192,9 +1199,10 @@ JavaScript files to include
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    js = [main.js,helpers.js]
 }
 
 ````
@@ -1239,8 +1247,6 @@ fragment {
 
 
 
-
-
 **Properties**
 
 
@@ -1251,7 +1257,6 @@ fragment {
 - [enclose](#hypermedia-enclose)
 - [favicon](#hypermedia-favicon)
 - [template](#hypermedia-template)
-- [isstatic](#hypermedia-isstatic)
 - [static](#hypermedia-static)
 - [index](#hypermedia-index)
 - [doctype](#hypermedia-doctype)
@@ -1430,34 +1435,19 @@ Template configurations for rendering the hypermedia. See &lt;TEMPLATE&gt; for f
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	template {
+        template = <<[
+            <div>{{content}}</div>
 
-````
-
-
-
-
-
-
-
-
-
-
-## hypermedia isstatic
-#### isstatic
-
-**Description**  
-
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
+        ]>>
+        isTemplate = true
+        values {
+            content = <HTML>
+            content.value = <p>SOME HTML CONTENT</p>
+        }
+    }
 }
 
 ````
@@ -1480,9 +1470,9 @@ Static file path associated with the hypermedia, for rendering out the hypermedi
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	static = index.html
 }
 
 ````
@@ -1505,9 +1495,9 @@ Index number is a sort order option for the hypermedia defined in the section fi
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	index = 1
 }
 
 ````
@@ -1530,10 +1520,9 @@ Alternative Doctype for the HTML document
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+hypermedia = <HYPERMEDIA>
+# this is just an example of an alternative doctype configuration
+hypermedia.doctype = <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 
 ````
 
@@ -1555,10 +1544,8 @@ The opening HTML tag with attributes
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+hypermedia = <HYPERMEDIA>
+hypermedia.htmltag = <html lang="en">
 
 ````
 
@@ -1575,13 +1562,38 @@ fragment {
 #### head
 
 **Description**  
-See &lt;HEADER&gt; for details
+Builds header content. See &lt;HEADER&gt; for details
 
 
 **Example**
 ````properties
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
+hypermedia.head = <HEAD>
+hypermedia.head {
+    css = [styles.css,xxxx]
+    js = [styles.css,xxxx]
+
+    meta {
+        a = b
+        b = c
+    }
+    999 = <HTML>
+    999.value = <!-- 999 overides default generator meta tag -->
+
+    1001 = <CSS>
+    1001.inline = <<[
+        body {
+            pading:10px;
+        }
+    ]>>
+
+    20 = <HTML>
+    20.value = <meta name="generator" content="hyperbricks cms">
+     
+}
+hypermedia.10 = <HTML>
+hypermedia.10.value = <p>some HTML</p>
 
 ````
 
