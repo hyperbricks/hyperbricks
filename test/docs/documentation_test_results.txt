@@ -2959,9 +2959,9 @@ output:
 expected:
 {}
 
-2025/01/18 15:15:44 Version: v0.1.0-alpha
-2025/01/18 15:15:44 Build Time: 2025-01-18T14:15:43Z
-2025/01/18 15:15:44 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
+2025/01/18 15:25:04 Version: v0.1.0-alpha
+2025/01/18 15:25:04 Build Time: 2025-01-18T14:25:03Z
+2025/01/18 15:25:04 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
 --- FAIL: Test_TestAndDocumentationRender (0.03s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)

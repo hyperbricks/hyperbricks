@@ -3,7 +3,6 @@ package composite
 import (
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
@@ -87,11 +86,8 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 	}
 
 	// Generate meta tags
-	meta := SortNumericAlphabetic(config.MetaData)
-	for metaName, metaContent := range meta {
-		headbuilder.WriteString(fmt.Sprintf(`<meta name="%s" content="%s">`, metaName, metaContent))
-		headbuilder.WriteString("\n")
-	}
+
+	headbuilder.WriteString(renderMeta(config.MetaData))
 
 	// Generate link tags for CSS files
 	for _, cssFile := range config.Css {
@@ -134,41 +130,23 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 	return result, errors
 }
 
-// SortNumericAlphabetic takes a map[string]string, sorts the keys
-// (numeric first ascending, then alphabetic), and returns a new map.
-func SortNumericAlphabetic(input map[string]string) map[string]string {
+func renderMeta(meta map[string]string) string {
 	// Extract keys
-	keys := make([]string, 0, len(input))
-	for k := range input {
+	keys := make([]string, 0, len(meta))
+	for k := range meta {
 		keys = append(keys, k)
 	}
 
-	// Sort keys with custom comparator
-	sort.Slice(keys, func(i, j int) bool {
-		ki, kj := keys[i], keys[j]
-		ni, erri := strconv.Atoi(ki)
-		nj, errj := strconv.Atoi(kj)
+	// Sort keys alphabetically
+	sort.Strings(keys)
 
-		// Both are numeric
-		if erri == nil && errj == nil {
-			return ni < nj
-		}
-		// Only one is numeric -> numeric first
-		if erri == nil && errj != nil {
-			return true
-		}
-		if erri != nil && errj == nil {
-			return false
-		}
-		// Neither numeric -> lexicographical
-		return ki < kj
-	})
-
-	// Build a new map (order is not preserved on iteration!)
-	sortedMap := make(map[string]string, len(input))
+	// Build the HTML
+	var sb strings.Builder
 	for _, k := range keys {
-		sortedMap[k] = input[k]
+		v := meta[k]
+		sb.WriteString(fmt.Sprintf(`<meta name="%s" content="%s">`, k, v))
+		sb.WriteString("\n")
 	}
 
-	return sortedMap
+	return sb.String()
 }
