@@ -111,8 +111,10 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 				Err:      fmt.Sprintf("key  '%s' value is not of any type. parsing as raw data", key),
 				Rejected: true,
 			})
-
-			outputs[idx] = "<!-- begin raw value -->" + config.Items[key].(string) + "<!-- end raw value -->"
+			val, _ok := config.Items[key].(string)
+			if _ok {
+				outputs[idx] = "<!-- begin raw value -->" + val + "<!-- end raw value -->"
+			}
 			continue
 		}
 

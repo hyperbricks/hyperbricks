@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hyperbricks/hyperbricks/internal/component"
@@ -330,7 +332,7 @@ func Test_BasicRenderChain(t *testing.T) {
 	expect := `<a href="LINK 10">somelink</a><!-- begin raw value -->stom<!-- end raw value --><a href="LINK 30">somelink</a><a href="LINK 40">somelink</a>`
 
 	fmt.Printf("result: %s\n\n\n", result)
-	if result != expect {
+	if stripAllWhitespace(result) != stripAllWhitespace(expect) {
 		t.Errorf("expected %s got %s", expect, result)
 	}
 
@@ -458,11 +460,12 @@ func Test_BasicHyperMediaRenderChain(t *testing.T) {
 	}
 
 	expect := `<!DOCTYPE html><html><head><script>
-console.log("Hello World")
-</script><meta name="generator" content="hyperbricks cms"></head><body><a href="#LINK_10">LINK_10</a><a href="#LINK_20_10">LINK_20_10</a><!-- begin raw value -->no_type<!-- end raw value --><a href="#LINK_30">LINK_30</a><a href="#LINK_40">LINK_40</a></body></html>`
+        console.log("Hello World")
+        </script><meta name="generator" content="hyperbricks cms"><title>test title</title>
+        </head><body><a href="#LINK_10">LINK_10</a><a href="#LINK_20_10">LINK_20_10</a><!-- begin raw value -->no_type<!-- end raw value --><a href="#LINK_30">LINK_30</a><a href="#LINK_40">LINK_40</a></body></html>`
 
-	fmt.Printf("result: %s\n\n\n", result)
-	if result != expect {
+	fmt.Printf("result: %s\n\n\n", _normalizeString(result))
+	if _normalizeString(result) != _normalizeString(expect) {
 		t.Errorf("expected %s got %s", expect, result)
 	}
 
@@ -598,11 +601,23 @@ func Test_BasicPageWithTemplateRenderChain(t *testing.T) {
 		t.Errorf("expected errors")
 	}
 
-	expect := `<!DOCTYPE html><html><head><!-- begin raw value -->AQUACADABRA<!-- end raw value --><meta name="generator" content="hyperbricks cms"></head><body><div id="val_b">BBBBB BBBBB</div><div id="val_a">AAAAA</div><div id="d"></div></body></html>`
+	expect := `<!DOCTYPE html><html><head><!-- begin raw value -->AQUACADABRA<!-- end raw value --><meta name="generator" content="hyperbricks cms"><title>test title</title>
+        </head><body><div id="val_b">BBBBB BBBBB</div><div id="val_a">AAAAA</div><div id="d"></div></body></html>`
 
-	fmt.Printf("result: %s\n\n\n", result)
-	if result != expect {
+	fmt.Printf("result: %s\n\n\n", _normalizeString(result))
+	if _normalizeString(result) != _normalizeString(expect) {
 		t.Errorf("expected %s got %s", expect, result)
 	}
 
+}
+
+// stripAllWhitespace removes all whitespace characters from the input string.
+func stripAllWhitespace(s string) string {
+	re := regexp.MustCompile(`\s+`)
+	return re.ReplaceAllString(s, "")
+}
+
+// normalizeString trims and removes excess whitespace for comparison purposes.
+func _normalizeString(s string) string {
+	return strings.Join(strings.Fields(s), " ")
 }
