@@ -479,8 +479,8 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 			// Recursively process embedded fields
 			par := val.Field(i)
 			fields = processFieldsWithSquash(par, cfg, t, rm, fields)
-
 		}
+
 		var example string
 		if tag != "" && tag != ",squash" && tag != ",remain" {
 			//out.WriteString(fmt.Sprintf("Field: %s ->%s\n", tag, field.Name))

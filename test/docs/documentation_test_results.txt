@@ -2428,9 +2428,9 @@ output:
 expected:
 {}
 
-2025/01/19 16:03:10 Version: v0.1.0-alpha
-2025/01/19 16:03:10 Build Time: 2025-01-19T15:03:09Z
-2025/01/19 16:03:10 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
+2025/01/19 16:21:42 Version: v0.1.0-alpha
+2025/01/19 16:21:42 Build Time: 2025-01-19T15:21:41Z
+2025/01/19 16:21:42 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
 --- FAIL: Test_TestAndDocumentationRender (0.03s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -2537,5 +2537,5 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/api_render-user (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/api_render-pass (0.00s)
 FAIL
-FAIL	command-line-arguments	0.270s
+FAIL	command-line-arguments	0.262s
 FAIL

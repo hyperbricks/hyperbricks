@@ -11,7 +11,7 @@ import (
 type HTMLConfig struct {
 	shared.Component `mapstructure:",squash"`
 	Value            string `mapstructure:"value" validate:"required" description:"The raw HTML content" example:"{!{html-value.hyperbricks}}"`
-	TrimSpace        bool   `mapstructure:"trimspace"  description:"The raw HTML content" example:"{!{html-value.hyperbricks}}"`
+	TrimSpace        bool   `mapstructure:"trimspace"  description:"The raw HTML content" example:"{!{html-trimspace.hyperbricks}}"`
 }
 
 // HTMLConfigGetName returns the HyperBricks type associated with the HTMLConfig.
