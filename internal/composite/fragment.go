@@ -14,26 +14,18 @@ import (
 type FragmentConfig struct {
 	shared.Composite   `mapstructure:",squash"`
 	HxResponse         `mapstructure:"response" description:"HTMX response header configuration." example:"{!{fragment-response.hyperbricks}}"`
-	MetaDocDescription string                 `mapstructure:"@doc" exclude:"true" description:"A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience." example:"{!{fragment.hyperbricks}}"`
+	MetaDocDescription string                 `mapstructure:"@doc" description:"A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience." example:"{!{fragment-@doc.hyperbricks}}"`
 	HxResponseWriter   http.ResponseWriter    `mapstructure:"hx_response" exclude:"true"`
 	Title              string                 `mapstructure:"title" description:"The title of the fragment" example:"{!{fragment-title.hyperbricks}}"`
 	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{fragment-route.hyperbricks}}"`
 	Section            string                 `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{fragment-section.hyperbricks}}"`
 	Items              map[string]interface{} `mapstructure:",remain"`
-	// BodyTag            string                 `mapstructure:"bodytag" description:"Special body wrap with use of |. Please note that this will not work when a fragment.template is configured. In that case, you have to add the bodytag in the template." example:"{!{fragment-bodywrap.hyperbricks}}"`
-	Enclose string `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{fragment-enclose.hyperbricks}}"`
-	// Favicon            string                 `mapstructure:"favicon" description:"Path to the favicon for the fragment" example:"{!{fragment-favicon.hyperbricks}}"`
-	Template map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks}}"`
-	File     string                 `mapstructure:"@file" exclude:"true"`
-	IsStatic bool                   `mapstructure:"isstatic" exclude:"true"`
-	Static   string                 `mapstructure:"static" description:"Static file path associated with the fragment" example:"{!{fragment-static.hyperbricks}}"`
-	Index    int                    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
-	// Meta               map[string]string      `mapstructure:"meta" description:"Metadata for the fragment, such as descriptions and keywords" example:"{!{fragment-meta.hyperbricks}}"`
-	// Doctype            string                 `mapstructure:"doctype" description:"Doctype for the HTML document" example:"{!{fragment-doctype.hyperbricks}}"`
-	// HtmlTag            string                 `mapstructure:"htmltag" description:"The opening HTML tag with attributes" example:"{!{fragment-htmltag.hyperbricks}}"`
-	// Head               map[string]interface{} `mapstructure:"head" description:"Configurations for the head section of the fragment" example:"{!{fragment-head.hyperbricks}}"`
-	// Css                []string               `mapstructure:"css" description:"CSS files associated with the fragment" example:"{!{fragment-css.hyperbricks}}"`
-	// Js                 []string               `mapstructure:"js" description:"JavaScript files associated with the fragment" example:"{!{fragment-js.hyperbricks}}"`
+	Enclose            string                 `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{fragment-enclose.hyperbricks}}"`
+	Template           map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks}}"`
+	File               string                 `mapstructure:"@file" exclude:"true"`
+	IsStatic           bool                   `mapstructure:"isstatic" exclude:"true"`
+	Static             string                 `mapstructure:"static" description:"Static file path associated with the fragment" example:"{!{fragment-static.hyperbricks}}"`
+	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
 }
 
 // FragmentConfigGetName returns the HyperBricks type associated with the FragmentConfig.
