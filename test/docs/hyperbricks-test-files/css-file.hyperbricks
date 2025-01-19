@@ -11,32 +11,35 @@ hypermedia.head {
 file overrides link and inline, it loads contents of a file and renders it in a style tag.
 ==== expected json ====
 {
-    "ConfigType": "<HYPERMEDIA>",
-    "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
-    "MetaDocDescription": "",
-    "Title": "",
-    "Route": "",
-    "Section": "",
-    "Items": null,
-    "BodyTag": "",
-    "Enclose": "",
-    "Favicon": "",
-    "Template": null,
-    "IsStatic": false,
-    "Static": "",
-    "Index": 0,
-    "Doctype": "",
-    "HtmlTag": "",
-    "Head": {
-      "10": {
-        "@type": "<CSS>",
-        "file": "hyperbricks-test-files/styles.css"
-      }
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "Key": "",
+  "Path": "",
+  "File": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "10": {
+      "@type": "<CSS>",
+      "attributes": {
+        "media": "screen"
+      },
+      "file": "hyperbricks-test-files/assets/styles.css"
     }
   }
+}
 ==== expected output ====
 <!DOCTYPE html><html><head><style media="screen">
 body {
