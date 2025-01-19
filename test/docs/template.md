@@ -7,8 +7,10 @@ Go direct to:
 
 - [HyperBricks type reference](#hyperbricks-type-reference)
 - [HyperBricks examples](#hyperbricks-examples)
+- [Installation](#installation)
 
 {{include "template_general.md"}}
+{{include "template_install.md"}}
 
 <h1><a id="hyperbricks-type-reference">HyperBricks type reference</a></h1>
 

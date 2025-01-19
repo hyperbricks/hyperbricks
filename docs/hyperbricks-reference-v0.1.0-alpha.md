@@ -1,16 +1,17 @@
 
 # HyperBricks Docs
 **Version:** v0.1.0-alpha  
-**Build time:** 2025-01-19T20:36:39Z
+**Build time:** 2025-01-19T20:58:13Z
 
 Go direct to:
 
 - [HyperBricks type reference](#hyperbricks-type-reference)
 - [HyperBricks examples](#hyperbricks-examples)
+- [Installation](#installation)
 
 ## HyperBricks Documentation
 
-HyperBricks aims to bridge front-end and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allow you to declare and describe the state of a document in a concise and structured manner.
+HyperBricks aims to bridge front and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allow you to declare and describe the state of a document in a concise and structured manner.
 
 ### Defining Hypermedia Documents and Fragments
 
@@ -179,6 +180,56 @@ fragment.content {
     10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
     enclose = <div class="youtube_video">|</div>
 }
+```
+### Installation
+
+To install HyperBricks, use the following command:
+
+```bash
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@<version>
+```
+
+This will download and install the HyperBricks CLI tool on your system.
+
+---
+
+### Initializing a Project
+
+To initialize a new HyperBricks project, use the `init` command:
+
+```bash
+hyperbricks init -m <name-of-hyperbricks-module>
+```
+
+without the -m and ```<name-of-hyperbricks-module>``` this will create a ```default``` folder.
+
+
+This will create a `package.hyperbricks` configuration file and set up the required directories for your project.
+
+---
+
+### Starting a Module
+
+Once your project is initialized, start the HyperBricks server using the `start` command:
+
+```bash
+hyperbricks start  -m <name-of-hyperbricks-module>
+```
+This will launch the server, allowing you to manage and serve hypermedia content on the ip of your machine.
+
+Or ```hyperbricks start``` for running the module named ```default```.
+
+### Additional Commands
+
+HyperBricks provides other useful commands:
+
+- **`completion`**: Generate shell autocompletion scripts for supported shells.
+- **`help`**: Display help information for any command.
+
+For detailed usage information about a specific command, run:
+
+```bash
+hyperbricks [command] --help
 ```
 
 <h1><a id="hyperbricks-type-reference">HyperBricks type reference</a></h1>
