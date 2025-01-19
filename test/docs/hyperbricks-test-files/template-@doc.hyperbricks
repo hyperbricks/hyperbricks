@@ -1,19 +1,72 @@
-==== hyperbricks config {!{hypermedia}} ====
-hypermedia = <HYPERMEDIA>
-hypermedia {
-    head = <HEAD>
-    head {
-        title = Home
+==== hyperbricks config {!{fragment}} ====
+# Use the a TEMPLATE:filepath (relative from templates folder defined in module's package.hyperbricks) directive like this:
+template = {{TEMPLATE:youtube.tmpl}}
+
+# Or use the inline notation:
+template = <<[
+    <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+]>>
+
+myComponent = <TEMPLATE>
+myComponent {
+    template = <<[
+        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    ]>>
+    istemplate = true
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
     }
-    10 = <HTML>
-    10.value = <p>SOME HTML</p>
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
 }
 ==== explainer ====
-TEMPLATE description
+<TEMPLATE> can be used nested in <FRAGMENT> or <HYPERMEDIA> types. It uses golang's standard html/template library.
 ==== expected json ====
 {
-    
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "Key": "",
+  "Path": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "File": "",
+  "IsStatic": false,
+  "Static": "",
+  "Index": 0
 }
 ==== expected output ====
-
+ <div class="youtube_video">
+        <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+            
+        <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+            </div> 
 ==== more details ====

@@ -665,6 +665,18 @@ fragment {
 
 ````
 
+**Expected Result**
+
+````html
+<div>
+  <p>
+    TEST HTML
+  </p>
+</div>
+````
+
+
+
 
 
 
@@ -699,6 +711,18 @@ fragment {
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div>
+  <p>
+    SOME HTML CONTENT
+  </p>
+</div>
+````
+
+
 
 
 
@@ -1100,6 +1124,23 @@ hypermedia.head {
 
 ````
 
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      Home
+    </title>
+  </head>
+  <body></body>
+</html>
+````
+
+
+
 
 
 
@@ -1125,6 +1166,21 @@ hypermedia.head {
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <link rel="icon" type="image/x-icon" href="/images/icon.ico">
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -1155,6 +1211,22 @@ hypermedia.head {
 
 ````
 
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <meta name="a" content="b">
+    <meta name="b" content="c">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
 
 
 
@@ -1181,6 +1253,22 @@ hypermedia.head {
 
 ````
 
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="morestyles.css">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
 
 
 
@@ -1206,6 +1294,22 @@ hypermedia.head {
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <script src="main.js"></script>
+    <script src="helpers.js"></script>
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -1286,6 +1390,23 @@ hypermedia {
 
 ````
 
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      Home
+    </title>
+  </head>
+  <body></body>
+</html>
+````
+
+
+
 
 
 
@@ -1310,6 +1431,17 @@ hypermedia {
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -1336,6 +1468,17 @@ hypermedia {
 
 ````
 
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body></body>
+</html>
+````
+
+
+
 
 
 
@@ -1361,6 +1504,19 @@ hypermedia.10 = <TEXT>
 hypermedia.10.value = HELLO WORLD!
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    HELLO WORLD!
+  </body>
+</html>
+````
+
+
 
 
 
@@ -1390,6 +1546,21 @@ hypermedia.enclose = <p>|</p>
 
 ````
 
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>
+      HELLO WORLD!
+    </p>
+  </body>
+</html>
+````
+
+
+
 
 
 
@@ -1415,6 +1586,21 @@ hypermedia {
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <link rel="icon" type="image/x-icon" href="static/favicon.ico">
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -1452,6 +1638,23 @@ hypermedia {
 
 ````
 
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body>
+    <div>
+      <p>
+        SOME HTML CONTENT
+      </p>
+    </div>
+  </body>
+</html>
+````
+
+
+
 
 
 
@@ -1476,6 +1679,17 @@ hypermedia {
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -1502,6 +1716,17 @@ hypermedia {
 
 ````
 
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body></body>
+</html>
+````
+
+
+
 
 
 
@@ -1526,6 +1751,17 @@ hypermedia.doctype = <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://w
 
 ````
 
+**Expected Result**
+
+````html
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+  <body></body>
+</html>
+````
+
+
+
 
 
 
@@ -1548,6 +1784,17 @@ hypermedia = <HYPERMEDIA>
 hypermedia.htmltag = <html lang="en">
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html lang="en">
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -1597,6 +1844,36 @@ hypermedia.10.value = <p>some HTML</p>
 
 ````
 
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <!-- 999 overides default generator meta tag -->
+    <meta name="a" content="b">
+    <meta name="b" content="c">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="xxxx">
+    <script src="styles.css"></script>
+    <script src="xxxx"></script>
+    <style>
+      body {
+      pading:10px;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      some HTML
+    </p>
+  </body>
+</html>
+````
+
+
+
 
 
 
@@ -1637,17 +1914,47 @@ hypermedia.10.value = <p>some HTML</p>
 #### template
 
 **Description**  
-The template used for rendering
+The template used for rendering.
 
 
 **Example**
 ````properties
+myComponent = <TEMPLATE>
+myComponent {
+    template = <<[
+        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    ]>>
+    istemplate = true
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
 fragment = <FRAGMENT>
-fragment {
-	
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="youtube_video">
+  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+````
+
+
 
 
 
@@ -1667,12 +1974,43 @@ Determines if the field is a inline template or when not defined a reference to 
 
 **Example**
 ````properties
+myComponent = <TEMPLATE>
+myComponent {
+    template = <<[
+        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    ]>>
+    istemplate = true
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+myComponent.enclose = |
+
 fragment = <FRAGMENT>
-fragment {
-	
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="youtube_video">
+  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+````
+
+
 
 
 
@@ -2350,12 +2688,63 @@ Template for the active menu item.
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
+
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
 
 
 
@@ -2507,12 +2896,36 @@ Use inline to define css in a multiline block &lt;&lt;[ /* css goes here */ ]&gt
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.inline = <<[
+        body {
+            background-color: lightblue;
+        }
+    ]>>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+      background-color: lightblue;
+      }
+    </style>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -2527,17 +2940,34 @@ fragment {
 #### link
 
 **Description**  
-Use link for a link tag
+Use link for a link tag to a css file.
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    10 = <CSS>
+    10.link = styles.css
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="styles.css">
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -2557,12 +2987,35 @@ file overrides link and inline, it loads contents of a file and renders it in a 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.file = hyperbricks-test-files/assets/styles.css
+    10.attributes {
+        media = screen
+    }
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style media="screen">
+      body {
+      background-color: red;
+      }
+    </style>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -3090,17 +3543,17 @@ fragment {
 
 **Properties**
 
-- [attributes](#js-attributes)
-- [enclose](#js-enclose)
-- [inline](#js-inline)
-- [link](#js-link)
-- [file](#js-file)
+- [attributes](#javascript-attributes)
+- [enclose](#javascript-enclose)
+- [inline](#javascript-inline)
+- [link](#javascript-link)
+- [file](#javascript-file)
 
 
 
 
 
-## js attributes
+## javascript attributes
 #### attributes
 
 **Description**  
@@ -3125,7 +3578,7 @@ fragment {
 
 
 
-## js enclose
+## javascript enclose
 #### enclose
 
 **Description**  
@@ -3150,7 +3603,7 @@ fragment {
 
 
 
-## js inline
+## javascript inline
 #### inline
 
 **Description**  
@@ -3159,11 +3612,30 @@ Use inline to define JavaScript in a multiline block &lt;&lt;[ /* JavaScript goe
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.inline = console.log("Hello World!")
+    10.attributes {
+        type = text/javascript
+    }
 }
 
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+      console.log("Hello World!")
+    </script>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
 ````
 
 
@@ -3175,7 +3647,9 @@ fragment {
 
 
 
-## js link
+
+
+## javascript link
 #### link
 
 **Description**  
@@ -3184,11 +3658,28 @@ Use link for a script tag with a src attribute
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.link = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
 }
 
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="hyperbricks-test-files/assets/main.js"></script>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
 ````
 
 
@@ -3200,7 +3691,9 @@ fragment {
 
 
 
-## js file
+
+
+## javascript file
 #### file
 
 **Description**  
@@ -3209,12 +3702,33 @@ File overrides link and inline, it loads contents of a file and renders it in a 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.file = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+      console.log("Hello World!")
+    </script>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 

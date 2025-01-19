@@ -223,8 +223,9 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 	// Initialize shared configuration settings.
 	shared.Init_configuration()
-	shared.GetHyperBricksConfiguration()
+	conf := shared.GetHyperBricksConfiguration()
 
+	fmt.Printf("%v", conf)
 	// Create a new RenderManager instance and register the FragmentRenderer.
 	rm := render.NewRenderManager()
 

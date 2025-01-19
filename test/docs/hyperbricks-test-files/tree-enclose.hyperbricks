@@ -1,28 +1,30 @@
 ==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	10 = <TREE>
+    10 {
+        10 = <TREE>
+        10 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 10-1</p>
 
-$test = hello world
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 10-2</p>
+        }
 
-myComponent = <TEMPLATE>
-myComponent {
-    template = <<[
-        <h1>{{header}}</h1>
-        <p>{{text}}</p>
-    ]>>
-    istemplate = true
-    values {
-        header = {{VAR:test}}!
-        text = some text
+        20 = <TREE>
+        20 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 20-1</p>
+            
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 20-2</p>
+        }
+        enclose = <div>|</div>
     }
 }
-
-fragment = <FRAGMENT>
-fragment.content = <TREE>
-fragment.content {
-    10 < myComponent
-    enclose = <div class="sometext">|</div>
-}
 ==== explainer ====
-Key-value pairs for template rendering
+Enclosing tag using the pipe symbol |
 ==== expected json ====
 {
     "ConfigType": "<FRAGMENT>",
@@ -55,8 +57,4 @@ Key-value pairs for template rendering
     "Index": 0
   }
 ==== expected output ====
-<div class="sometext">
-<h1>hello world!</h1>
-<p>some text</p>
-    </div> 
-==== more details ====
+<div><p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p></div> 

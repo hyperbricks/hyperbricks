@@ -1,7 +1,7 @@
 
 # HyperBricks Docs
 **Version:** v0.1.0-alpha  
-**Build time:** 2025-01-18T22:39:08Z
+**Build time:** 2025-01-19T15:01:13Z
 
 Go direct to:
 
@@ -1919,17 +1919,11 @@ The template used for rendering.
 
 **Example**
 ````properties
-# Use the a TEMPLATE:filepath directive like this:
-template = {{TEMPLATE:partials/video.tmpl}}
-
-# Or use the inline notation:
-template = <<[
-    <p>INLINE TEMPLATE {{somevalue}}</p>
-]>>
-
 myComponent = <TEMPLATE>
 myComponent {
-    template = {{TEMPLATE:partials/video.tmpl}}
+    template = <<[
+        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    ]>>
     istemplate = true
     values {
         width = 300
@@ -1954,7 +1948,10 @@ fragment.content {
 **Expected Result**
 
 ````html
-<div class="youtube_video"></div>
+<div class="youtube_video">
+  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
 ````
 
 
@@ -2033,12 +2030,45 @@ Key-value pairs for template rendering
 
 **Example**
 ````properties
+
+$test = hello world
+
+myComponent = <TEMPLATE>
+myComponent {
+    template = <<[
+        <h1>{{header}}</h1>
+        <p>{{text}}</p>
+    ]>>
+    istemplate = true
+    values {
+        header = {{VAR:test}}!
+        text = some text
+    }
+}
+
 fragment = <FRAGMENT>
-fragment {
-	
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    enclose = <div class="sometext">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="sometext">
+  <h1>
+    hello world!
+  </h1>
+  <p>
+    some text
+  </p>
+</div>
+````
+
+
 
 
 
@@ -2074,17 +2104,58 @@ fragment {
 #### enclose
 
 **Description**  
-Wrapping property for the tree
+Enclosing tag using the pipe symbol |
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	10 = <TREE>
+    10 {
+        10 = <TREE>
+        10 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 10-1</p>
+
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 10-2</p>
+        }
+
+        20 = <TREE>
+        20 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 20-1</p>
+            
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 20-2</p>
+        }
+        enclose = <div>|</div>
+    }
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div>
+  <p>
+    SOME NESTED HTML --- 10-1
+  </p>
+  <p>
+    SOME NESTED HTML --- 10-2
+  </p>
+  <p>
+    SOME NESTED HTML --- 20-1
+  </p>
+  <p>
+    SOME NESTED HTML --- 20-2
+  </p>
+</div>
+````
+
+
 
 
 

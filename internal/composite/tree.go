@@ -11,11 +11,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-// Define a specific implementation of RenderComponent with a concrete error type.
-// RENDER
-// TEMPLATE
-// PAGE
-// HEAD
 type TreeRenderer struct {
 	renderer.CompositeRenderer
 }
@@ -24,14 +19,13 @@ func TreeRendererConfigGetName() string {
 	return "<TREE>"
 }
 
-// Ensure ContentRenderer implements RenderComponent with the concrete type `shared.ComponentError`.
 var _ shared.CompositeRenderer = (*TreeRenderer)(nil)
 
-// TreeConfig represents the configuration for a RENDER (Container of Assets) type.
+// TreeConfig
 type TreeConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"TREE description" example:"{!{tree-@doc.hyperbricks}}"`
-	Enclose            string `mapstructure:"enclose" description:"Wrapping property for the tree" example:"{!{tree-enclosure.hyperbricks}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Tree composite element can render types in alphanumeric order. Tree elements can have nested types." example:"{!{tree-@doc.hyperbricks}}"`
+	Enclose            string `mapstructure:"enclose" description:"Wrapping property for the tree" example:"{!{tree-enclose.hyperbricks}}"`
 }
 
 func (r *TreeRenderer) Types() []string {
@@ -40,7 +34,6 @@ func (r *TreeRenderer) Types() []string {
 	}
 }
 
-// Validate ensures that the RENDER has valid data.
 func (config *TreeConfig) Validate() []error {
 	var validationErrors []error
 	if config.Meta.ConfigType != TreeRendererConfigGetName() {
@@ -62,7 +55,7 @@ func (config *TreeConfig) Validate() []error {
 	return validationErrors
 }
 
-// Concurrent and Recursive Renderer and returns the result and errors. See render.go.md.
+// Concurrent and Recursive Renderer and returns the result and errors.
 // This function is a blueprint function for all concurent rendering of pages, render and template objects
 func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 	var renderErrors []error
