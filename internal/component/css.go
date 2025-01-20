@@ -83,6 +83,8 @@ func (sr *CssRenderer) Render(instance interface{}) (string, []error) {
 
 		// Apply wrapping if specified
 		if config.Enclose != "" {
+			// Wrap the content in <style> tags with extra attributes
+			CssHtml = fmt.Sprintf("\n%s\n", string(config.Inline))
 			CssHtml = shared.EncloseContent(config.Enclose, CssHtml)
 		}
 	}

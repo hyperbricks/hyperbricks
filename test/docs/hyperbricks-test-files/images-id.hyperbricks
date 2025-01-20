@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Id of images with a index added to it
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>

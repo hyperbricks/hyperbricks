@@ -84,8 +84,10 @@ func (jsr *JavaScriptRenderer) Render(instance interface{}) (string, []error) {
 
 		// Apply wrapping if specified
 		if config.Enclose != "" {
+			scriptHTML = fmt.Sprintf("\n%s\n", string(config.Inline))
 			scriptHTML = shared.EncloseContent(config.Enclose, scriptHTML)
 		}
+
 	}
 
 	builder.WriteString(scriptHTML)

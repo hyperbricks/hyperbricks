@@ -15,6 +15,7 @@ type SingleImageConfig struct {
 	Height           int    `mapstructure:"height" validate:"min=1" description:"The height of the image (can be a number or percentage)" example:"{!{image-height.hyperbricks}}"`
 	Alt              string `mapstructure:"alt" description:"Alternative text for the image" example:"{!{image-alt.hyperbricks}}"`
 	Title            string `mapstructure:"title" description:"The title attribute of the image" example:"{!{image-title.hyperbricks}}"`
+	Id               string `mapstructure:"id" description:"Id of image" example:"{!{image-id.hyperbricks}}"`
 	Class            string `mapstructure:"class" description:"CSS class for styling the image" example:"{!{image-class.hyperbricks}}"`
 	Quality          int    `mapstructure:"quality" description:"Image quality for optimization" example:"{!{image-quality.hyperbricks}}"`
 	Loading          string `mapstructure:"loading" description:"Lazy loading strategy (e.g., 'lazy', 'eager')" example:"{!{image-loading.hyperbricks}}"`

@@ -1,13 +1,39 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{head}} ====
+head = <HEAD>
+head {
+    10 = <JAVASCRIPT>
+    10.file = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
+    10.enclose = <script defer></script>
 }
 ==== explainer ====
 The wrapping HTML element for the header divided by |
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<HEAD>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "Items": {
+      "10": {
+        "@type": "<JAVASCRIPT>",
+        "attributes": {
+          "type": "text/javascript"
+        },
+        "enclose": "<script defer></script>",
+        "file": "hyperbricks-test-files/assets/main.js"
+      }
+    },
+    "Title": "",
+    "Favicon": "",
+    "MetaData": null,
+    "Css": null,
+    "Js": null
+  }
 ==== expected output ====
-<div>this test fails</div>
+<head><script defer></script>
+        console.log("Hello World!")
+        </script defer></script><meta name="generator" content="hyperbricks cms"></head>

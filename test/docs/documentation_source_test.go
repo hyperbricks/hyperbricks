@@ -63,6 +63,7 @@ type DocumentationTypeStruct struct {
 	ConfigCategory  string
 	Fields          map[string]string
 	Embedded        map[string]string
+	ExcludeFields   []string
 	Config          any
 }
 
@@ -143,9 +144,12 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			Name:            "Html",
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
-			ConfigType:      "<HTML>",
-			ConfigCategory:  "component",
-			Config:          component.HTMLConfig{},
+			ExcludeFields: []string{
+				"attributes",
+			},
+			ConfigType:     "<HTML>",
+			ConfigCategory: "component",
+			Config:         component.HTMLConfig{},
 		},
 		{
 			Name:            "Css",
@@ -199,25 +203,34 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			Name:            "Text",
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
-			ConfigType:      "<TEXT>",
-			ConfigCategory:  "component",
-			Config:          component.TextConfig{},
+			ExcludeFields: []string{
+				"attributes",
+			},
+			ConfigType:     "<TEXT>",
+			ConfigCategory: "component",
+			Config:         component.TextConfig{},
 		},
 		{
 			Name:            "Menu",
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
-			ConfigType:      "<MENU>",
-			ConfigCategory:  "menu",
-			Config:          component.MenuConfig{},
+			ExcludeFields: []string{
+				"attributes",
+			},
+			ConfigType:     "<MENU>",
+			ConfigCategory: "menu",
+			Config:         component.MenuConfig{},
 		},
 		{
 			Name:            "Api_Render",
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
-			ConfigType:      "<API_RENDER>",
-			ConfigCategory:  "data",
-			Config:          component.APIConfig{},
+			ExcludeFields: []string{
+				"attributes",
+			},
+			ConfigType:     "<API_RENDER>",
+			ConfigCategory: "data",
+			Config:         component.APIConfig{},
 		},
 	}
 
@@ -475,6 +488,10 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 		}
 
 		tag := field.Tag.Get("mapstructure")
+		if isExcludedField(tag, cfg.ExcludeFields) {
+			continue
+		}
+
 		if tag == ",squash" {
 			// Recursively process embedded fields
 			par := val.Field(i)
@@ -493,6 +510,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				example = _checkAndReadFile("{!{"+file+".hyperbricks}}", field.Tag.Get("description"))
 				//out.WriteString(fmt.Sprintf("example: %s\n", example))
 			}
+
 			// PARSE HYPERSCRIPT
 			// RUN THE TEST (compare json with serialized output go object)
 			t.Run(strings.ToLower(cfg.Name)+"-"+tag, func(t *testing.T) {
@@ -625,6 +643,15 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 	}
 
 	return fields
+}
+
+func isExcludedField(tag string, excludeFields []string) bool {
+	for _, field := range excludeFields {
+		if field == tag {
+			return true
+		}
+	}
+	return false
 }
 
 func renderStaticFile(tmpl *template.Template, data interface{}, outputPath string) {

@@ -143,6 +143,10 @@ func (ir *ImageProcessor) processAndBuildImgTag(srcPath, destDir string, config 
 }
 
 func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleImageConfig) (string, error) {
+	if config.IsStatic {
+		return srcPath, nil
+	}
+
 	srcFile, err := os.Open(srcPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to open source image: %v", err)
@@ -243,15 +247,30 @@ func addOptionalAttributes(config SingleImageConfig, builder *strings.Builder) {
 		builder.WriteString(fmt.Sprintf(` class="%s"`, config.Class))
 	}
 
+	if config.Id != "" {
+		builder.WriteString(fmt.Sprintf(` id="%s"`, config.Id))
+	}
+
 	if config.Loading == "lazy" {
 		builder.WriteString(` loading="lazy"`)
 	}
 
-	// Define allowed extra attributes for the image component
-	allowedAttributes := []string{"id", "data-role", "data-action", "aria-label", "role", "style"}
+	// Define allowed attributes for the <style> tag
+	allowedAttributes := []string{
+		"loading",        // Lazy loading (e.g., "lazy", "eager")
+		"decoding",       // Decoding hint (e.g., "sync", "async")
+		"srcset",         // For responsive images
+		"sizes",          // Size of the image for responsive design
+		"crossorigin",    // For CORS settings (e.g., "anonymous", "use-credentials")
+		"usemap",         // For image maps
+		"longdesc",       // URL to a detailed description of the image
+		"referrerpolicy", // Referrer policy (e.g., "no-referrer", "origin")
+		"ismap",          // Indicates if the image is a server-side map
+	}
 
 	// Render extra attributes
 	extraAttributes := shared.RenderAllowedAttributes(config.ExtraAttributes, allowedAttributes)
+
 	builder.WriteString(extraAttributes)
 }
 

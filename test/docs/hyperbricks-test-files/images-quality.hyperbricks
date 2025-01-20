@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Image quality for optimization
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>

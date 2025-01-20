@@ -1,13 +1,23 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{html}} ====
+html = <HTML>
+html.value = <<[
+        <p>HTML TEST</p>    
+    ]>>
+html.enclose = <div>|</div>
 }
 ==== explainer ====
 The wrapping HTML element for the header divided by |
 ==== expected json ====
 {
-	
-}
+    "ConfigType": "<HTML>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "ExtraAttributes": null,
+    "Enclose": "<div>|</div>",
+    "Value": "\n<p>HTML TEST</p>    \n    ",
+    "TrimSpace": false
+  }
 ==== expected output ====
-<div>this test fails</div>
+<div><p>HTML TEST</p></div>

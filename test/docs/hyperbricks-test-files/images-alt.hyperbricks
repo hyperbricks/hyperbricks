@@ -4,7 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-Extra attributes like id, data-role, data-action
+Alternative text for the image
 ==== expected json ====
 {
 	

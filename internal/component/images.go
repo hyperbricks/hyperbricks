@@ -14,7 +14,12 @@ type MultipleImagesConfig struct {
 	Directory        string `mapstructure:"directory" validate:"required" description:"The directory path containing the images" example:"{!{images-directory.hyperbricks}}"`
 	Width            int    `mapstructure:"width" validate:"min=1" description:"The width of the images (can be a number or percentage)" example:"{!{images-width.hyperbricks}}"`
 	Height           int    `mapstructure:"height" validate:"min=1" description:"The height of the images (can be a number or percentage)" example:"{!{images-height.hyperbricks}}"`
+	Id               string `mapstructure:"id" description:"Id of images with a index added to it" example:"{!{images-id.hyperbricks}}"`
 	IsStatic         bool   `mapstructure:"is_static" description:"Flag indicating if the images are static" example:"{!{images-is_static.hyperbricks}}"`
+	Alt              string `mapstructure:"alt" description:"Alternative text for the image" example:"{!{images-alt.hyperbricks}}"`
+	Title            string `mapstructure:"title" description:"The title attribute of the image" example:"{!{images-title.hyperbricks}}"`
+	Quality          int    `mapstructure:"quality" description:"Image quality for optimization" example:"{!{images-quality.hyperbricks}}"`
+	Loading          string `mapstructure:"loading" description:"Lazy loading strategy (e.g., 'lazy', 'eager')" example:"{!{images-loading.hyperbricks}}"`
 }
 
 // MultipleImagesConfigGetName returns the HyperBricks type associated with the MultipleImagesConfig.
