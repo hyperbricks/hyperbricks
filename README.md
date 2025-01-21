@@ -209,7 +209,7 @@ fragment.content {
 To install HyperBricks, use the following command:
 
 ```bash
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
 
 # or 
 
