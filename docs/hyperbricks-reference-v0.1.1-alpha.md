@@ -2,9 +2,9 @@
 
 **Note:**  
 
-This project is currently incomplete and in the experimental phase. It is recommended to use the code only for exploration or from a developer's perspective at this stage. If you're curious, you can explore the components and composite renderers located in the `internal/component` and `internal/composite` directories.
+This project and it's documentation is currently incomplete and in the experimental phase. It is recommended to use the code only for exploration or from a developer's perspective at this stage. If you're interested, you can explore the components and composite renderers in the `internal/component` and `internal/composite` directories.
 
-The `<API>` type is currently undocumented because it is still evolving and likely to change. It's important to note that `<API>` and `<API_RENDER>` are distinct types. 
+The `<API>` type is currently undocumented because it is still evolving and likely to change. Note that `<API>` and `<API_RENDER>` are distinct types.". 
 
 - **`<API_RENDER>`**: Renders a template using data fetched from an external endpoint.  
 - **`<API>`**: Integrates with a `<MODEL>`, connects to a database, and simplifies common use cases (such as CRUD operations) with minimal configuration.
@@ -209,11 +209,14 @@ fragment.content {
 To install HyperBricks, use the following command:
 
 ```bash
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks
+
+# or 
+
 go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@<version>
 ```
 
-This will download and install the HyperBricks CLI tool on your system.
-
+This command downloads and installs the HyperBricks CLI tool on your system.
 ---
 
 ### Initializing a Project
