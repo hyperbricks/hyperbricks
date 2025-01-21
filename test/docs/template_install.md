@@ -3,11 +3,14 @@
 To install HyperBricks, use the following command:
 
 ```bash
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks
+
+# or 
+
 go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@<version>
 ```
 
-This will download and install the HyperBricks CLI tool on your system.
-
+This command downloads and installs the HyperBricks CLI tool on your system.
 ---
 
 ### Initializing a Project
