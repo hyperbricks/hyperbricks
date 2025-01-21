@@ -26,7 +26,7 @@ type MenuConfig struct {
 	Sort                 string `mapstructure:"sort" validate:"oneof=title route index" description:"The field to sort menu items by ('title', 'route', or 'index')." example:"{!{menu-sort.hyperbricks}}"`
 	Active               string `mapstructure:"active" validate:"required" description:"Template for the active menu item." example:"{!{menu-active.hyperbricks}}"`
 	Item                 string `mapstructure:"item" validate:"required" description:"Template for regular menu items." example:"{!{menu-item.hyperbricks}}"`
-	Enclose              string `mapstructure:"enclose" description:"Template to wrap the menu items." example:"{!{menu-enclose.hyperbricks}}"`
+	Enclose              string `mapstructure:"enclose" description:"Template to enclose the menu items." example:"{!{menu-enclose.hyperbricks}}"`
 	HyperMediasBySection map[string][]composite.HyperMediaConfig
 }
 

@@ -49,7 +49,7 @@ func (style *StyleConfig) Validate() []error {
 	return errors
 }
 
-// Render reads the CSS file content and outputs it wrapped in <style> tags with extra attributes.
+// Render reads the CSS file content and outputs it encloseped in <style> tags with extra attributes.
 func (sr *StyleRenderer) Render(instance interface{}) (string, []error) {
 	var errors []error
 	var builder strings.Builder

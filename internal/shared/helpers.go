@@ -109,15 +109,15 @@ func TrimWrap(content, html string) string {
 	return prefix + html[start+1:] + suffix
 }
 
-// EncloseContent wraps the given content with the specified wrap string.
-// The wrap string can be a single tag or a pair separated by '|'.
-func EncloseContent(wrap string, content string) string {
-	if wrap == "" {
+// EncloseContent encloses the given content with the specified enclose string.
+// The enclose string can be a single tag or a pair separated by '|'.
+func EncloseContent(enclose string, content string) string {
+	if enclose == "" {
 		return content
 	}
 
-	// Split the wrap string into two parts using the first occurrence of '|'
-	parts := strings.SplitN(wrap, "|", 2)
+	// Split the enclose string into two parts using the first occurrence of '|'
+	parts := strings.SplitN(enclose, "|", 2)
 
 	if len(parts) == 2 {
 		// Dual-Part Wrap: Use the first part as prefix and the second as suffix

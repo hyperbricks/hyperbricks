@@ -78,7 +78,7 @@ type LinkRendererConfig struct {
 	Text             string                 `mapstructure:"text" validate:"required" description:"Text to display for the link" example:"{!{link-text.hyperbricks}}"`
 	Target           string                 `mapstructure:"target" description:"Target attribute for the link (_blank, _self, etc.)" example:"{!{link-target.hyperbricks}}"`
 	Classes          []string               `mapstructure:"classes" description:"Optional CSS classes for the link" example:"{!{link-classes.hyperbricks}}"`
-	Wrap             string                 `mapstructure:"wrap" description:"The enclosing HTML element for the header divided by |" example:"{!{link-wrap.hyperbricks}}"`
+	Wrap             string                 `mapstructure:"enclose" description:"The enclosing HTML element for the header divided by |" example:"{!{link-enclose.hyperbricks}}"`
 	ExtraAttributes  map[string]interface{} `mapstructure:"attributes"  description:"Extra attributes like id, data-role, data-action" example:"{!{link-attributes.hyperbricks}}"`
 }
 

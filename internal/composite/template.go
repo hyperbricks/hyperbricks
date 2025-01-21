@@ -157,7 +157,7 @@ func preprocessTemplate(templateStr string) string {
 	return varRefRegex.ReplaceAllString(templateStr, `{{.$1}}`)
 }
 
-// flexibleDataWrapper is a wrapper to resolve both {{a}} and {{.a}}.
+// flexibleDataWrapper is a encloseper to resolve both {{a}} and {{.a}}.
 type flexibleDataWrapper struct {
 	data map[string]interface{}
 }

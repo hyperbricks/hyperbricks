@@ -54,7 +54,7 @@ func (r *JavaScriptRenderer) Types() []string {
 	}
 }
 
-// Render reads the JavaScript content and outputs it wrapped in <script> tags with appropriate attributes.
+// Render reads the JavaScript content and outputs it encloseped in <script> tags with appropriate attributes.
 func (jsr *JavaScriptRenderer) Render(instance interface{}) (string, []error) {
 	var errors []error
 	var builder strings.Builder

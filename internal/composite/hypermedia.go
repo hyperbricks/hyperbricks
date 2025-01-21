@@ -17,7 +17,7 @@ type HyperMediaConfig struct {
 	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the hypermedia" example:"{!{hypermedia-route.hyperbricks}}"`
 	Section            string                 `mapstructure:"section" description:"The section the hypermedia belongs to. This can be used with the component <MENU> for example." example:"{!{hypermedia-section.hyperbricks}}"`
 	Items              map[string]interface{} `mapstructure:",remain"`
-	BodyTag            string                 `mapstructure:"bodytag" description:"Special body wrap with use of |. Please note that this will not work when a <HYPERMEDIA>.template is configured. In that case, you have to add the bodytag in the template." example:"{!{hypermedia-bodytag.hyperbricks}}"`
+	BodyTag            string                 `mapstructure:"bodytag" description:"Special body enclose with use of |. Please note that this will not work when a <HYPERMEDIA>.template is configured. In that case, you have to add the bodytag in the template." example:"{!{hypermedia-bodytag.hyperbricks}}"`
 	Enclose            string                 `mapstructure:"enclose" description:"Enclosure of the property for the hypermedia" example:"{!{hypermedia-enclose.hyperbricks}}"`
 	Favicon            string                 `mapstructure:"favicon" description:"Path to the favicon for the hypermedia" example:"{!{hypermedia-favicon.hyperbricks}}"`
 	Template           map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions." example:"{!{hypermedia-template.hyperbricks}}"`
@@ -93,7 +93,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	var treebuilder strings.Builder
 
 	if config.BodyTag == "" {
-		// emty bodywrap fallback
+		// emty bodyenclose fallback
 		config.BodyTag = "<body>|</body>"
 	}
 

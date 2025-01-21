@@ -3,7 +3,7 @@
 **Note:**  
 <style>
   code {
-    white-space : pre-wrap !important;
+    white-space : pre-enclose !important;
     word-break: break-word;
   }
 </style>

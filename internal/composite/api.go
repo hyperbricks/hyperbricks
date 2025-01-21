@@ -27,7 +27,7 @@ type HxApiConfig struct {
 	HxResponseWriter http.ResponseWriter    `mapstructure:"hx"`
 	Template         map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering output" example:"{!{hxendopint-template.hyperbricks}}"`
 	Items            map[string]interface{} `mapstructure:",remain"`
-	Enclose          string                 `mapstructure:"enclose" description:"Wrapping property for the hxapi" example:"{!{hxapi-wrap.hyperbricks}}"`
+	Enclose          string                 `mapstructure:"enclose" description:"Wrapping property for the hxapi" example:"{!{hxapi-enclose.hyperbricks}}"`
 	IsStatic         bool                   `mapstructure:"isstatic"`
 	Static           string                 `mapstructure:"static" description:"Static file path associated with the hxapi" example:"{!{hxapi-static.hyperbricks}}"`
 }

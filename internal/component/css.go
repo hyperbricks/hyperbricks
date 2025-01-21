@@ -54,7 +54,7 @@ func (r *CssRenderer) Types() []string {
 	}
 }
 
-// Render reads the CSS file content and outputs it wrapped in <style> tags with extra attributes.
+// Render reads the CSS file content and outputs it encloseped in <style> tags with extra attributes.
 func (sr *CssRenderer) Render(instance interface{}) (string, []error) {
 	var errors []error
 	var builder strings.Builder
