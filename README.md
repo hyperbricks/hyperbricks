@@ -209,11 +209,8 @@ fragment.content {
 To install HyperBricks, use the following command:
 
 ```bash
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
-
-# or 
-
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@<version>
+#latest
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@6cda3de
 ```
 
 This command downloads and installs the HyperBricks CLI tool on your system.
