@@ -2,6 +2,7 @@
 
 HyperBricks aims to bridge front and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allow you to declare and describe the state of a document in a concise and structured manner.
 
+
 ### Defining Hypermedia Documents and Fragments
 
 Hypermedia documents or fragments can be declared using simple key-value properties:
@@ -171,9 +172,3 @@ fragment.content {
 }
 ```
 
-This document is incomplete. If you're curious, you can explore the components and composite renderers located in the `internal/component` and `internal/composite` directories.
-
-The `<API>` type is currently undocumented because it is still evolving and likely to change. It's important to note that `<API>` and `<API_RENDER>` are distinct types. 
-
-- **`<API_RENDER>`**: Renders a template using data fetched from an external endpoint.  
-- **`<API>`**: Integrates with a `<MODEL>`, connects to a database, and simplifies common use cases (such as CRUD operations) with minimal configuration.  

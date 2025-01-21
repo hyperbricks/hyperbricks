@@ -1,16 +1,13 @@
 
 
 **Note:**  
-<style>
-  code {
-    white-space : pre-enclose !important;
-    word-break: break-word;
-  }
-</style>
-````
-This project is currently in the experimental phase. It is recommended to use the code only for exploration or from a developer's perspective at this stage.
-````
 
+This project is currently incomplete and in the experimental phase. It is recommended to use the code only for exploration or from a developer's perspective at this stage. If you're curious, you can explore the components and composite renderers located in the `internal/component` and `internal/composite` directories.
+
+The `<API>` type is currently undocumented because it is still evolving and likely to change. It's important to note that `<API>` and `<API_RENDER>` are distinct types. 
+
+- **`<API_RENDER>`**: Renders a template using data fetched from an external endpoint.  
+- **`<API>`**: Integrates with a `<MODEL>`, connects to a database, and simplifies common use cases (such as CRUD operations) with minimal configuration.
 
 # HyperBricks
 **Licence:** MIT  
@@ -35,6 +32,7 @@ Go direct to:
 ## HyperBricks Documentation
 
 HyperBricks aims to bridge front and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allow you to declare and describe the state of a document in a concise and structured manner.
+
 
 ### Defining Hypermedia Documents and Fragments
 
@@ -205,12 +203,6 @@ fragment.content {
 }
 ```
 
-This document is incomplete. If you're curious, you can explore the components and composite renderers located in the `internal/component` and `internal/composite` directories.
-
-The `<API>` type is currently undocumented because it is still evolving and likely to change. It's important to note that `<API>` and `<API_RENDER>` are distinct types. 
-
-- **`<API_RENDER>`**: Renders a template using data fetched from an external endpoint.  
-- **`<API>`**: Integrates with a `<MODEL>`, connects to a database, and simplifies common use cases (such as CRUD operations) with minimal configuration.  
 
 ### Installation
 
@@ -271,7 +263,6 @@ hyperbricks [command] --help
 ### **component**
 
 - [&lt;HTML&gt;](#<HTML>) 
-- [&lt;PLUGIN&gt;](#<PLUGIN>) 
 - [&lt;TEXT&gt;](#<TEXT>) 
 
 
@@ -440,158 +431,6 @@ html.trimspace = true
 
 
 
-<h3><a id="&lt;PLUGIN&gt;">&lt;PLUGIN&gt;</a></h3>
-
-**&lt;PLUGIN&gt; Type Description**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-**Properties**
-
-- [attributes](#plugin-attributes)
-- [enclose](#plugin-enclose)
-- [plugin](#plugin-plugin)
-- [classes](#plugin-classes)
-- [data](#plugin-data)
-
-
-
-
-
-## plugin attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## plugin enclose
-#### enclose
-
-**Description**  
-The enclosing HTML element for the header divided by |
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## plugin plugin
-#### plugin
-
-**Description**  
-
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## plugin classes
-#### classes
-
-**Description**  
-Optional CSS classes for the link
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## plugin data
-#### data
-
-**Description**  
-
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
-
-
-
-
 <h3><a id="&lt;TEXT&gt;">&lt;TEXT&gt;</a></h3>
 
 **&lt;TEXT&gt; Type Description**
@@ -621,12 +460,23 @@ The enclosing HTML element for the header divided by |
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+text = <TEXT>
+text {
+	value = SOME VALUE
+    enclose = <span>|</span>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<span>
+  SOME VALUE
+</span>
+````
+
+
 
 
 
@@ -646,12 +496,23 @@ The paragraph content
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+text = <TEXT>
+text {
+	value = SOME VALUE
+    enclose = <span>|</span>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<span>
+  SOME VALUE
+</span>
+````
+
+
 
 
 
@@ -3509,12 +3370,62 @@ The enclosing HTML element for the header divided by |
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
 
 
 
@@ -3534,12 +3445,62 @@ The section of the menu to display.
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
 
 
 
@@ -3559,12 +3520,62 @@ The order of items in the menu (&#39;asc&#39; or &#39;desc&#39;).
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
 
 
 
@@ -3584,12 +3595,62 @@ The field to sort menu items by (&#39;title&#39;, &#39;route&#39;, or &#39;index
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
 
 
 
@@ -3685,12 +3746,62 @@ Template for regular menu items.
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
 
 
 
@@ -3710,12 +3821,62 @@ The enclosing HTML element for the header divided by |
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
 
 
 

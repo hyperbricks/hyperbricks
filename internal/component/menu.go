@@ -11,14 +11,12 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 )
 
-// HyperMediaConfig represents configuration for a single page in the menu.
 type HyperMediaConfig struct {
 	Title string `json:"title"`
 	Route string `json:"route"`
 	Index int    `json:"index"`
 }
 
-// MenuConfig represents configuration for the MENU component.
 type MenuConfig struct {
 	shared.Component     `mapstructure:",squash"`
 	Section              string `mapstructure:"section" validate:"required" description:"The section of the menu to display." example:"{!{menu-section.hyperbricks}}"`
@@ -30,19 +28,16 @@ type MenuConfig struct {
 	HyperMediasBySection map[string][]composite.HyperMediaConfig
 }
 
-// MenuConfigGetName returns the HyperBricks type associated with the MenuConfig.
 func MenuConfigGetName() string {
 	return "<MENU>"
 }
 
-// MenuRenderer handles rendering of MENU components.
 type MenuRenderer struct {
-	TemplateProvider     func(templateName string) (string, bool) // Function to retrieve templates
+	TemplateProvider     func(templateName string) (string, bool)
 	HyperMediasBySection map[string][]composite.HyperMediaConfig
-	CurrentRoute         string // Added to track the current page's route
+	CurrentRoute         string
 }
 
-// Ensure MenuRenderer implements shared.ComponentRenderer
 var _ shared.ComponentRenderer = (*MenuRenderer)(nil)
 
 func (r *MenuRenderer) Types() []string {
@@ -51,13 +46,11 @@ func (r *MenuRenderer) Types() []string {
 	}
 }
 
-// SortOptions defines the options for sorting pages.
 type SortOptions struct {
-	SortBy    string // "title", "route", or "index"
-	Ascending bool   // true for ascending order, false for descending
+	SortBy    string
+	Ascending bool
 }
 
-// Validate ensures the configuration is valid for rendering the MENU.
 func (mc *MenuConfig) Validate() []error {
 	errors := shared.Validate(mc)
 
@@ -78,7 +71,6 @@ func (mc *MenuConfig) Validate() []error {
 	return errors
 }
 
-// Render generates the MENU output based on the configuration and context.
 func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 	var errors []error
 	var builder strings.Builder
@@ -91,18 +83,16 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 		return "", errors
 	}
 
-	// appending validation errors
 	errors = append(errors, config.Validate()...)
 
 	config.HyperMediasBySection = mr.HyperMediasBySection
 
-	// Determine sorting and order options
 	sortValue := "title"
 	if config.Sort != "" {
 		sortValue = config.Sort
 	}
 
-	orderValue := true // ascending by default
+	orderValue := true
 	if strings.ToLower(config.Order) == "desc" {
 		orderValue = false
 	}
@@ -112,7 +102,6 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 		Ascending: orderValue,
 	}
 
-	// Sort pages by section
 	sortedHyperMedias, err := SortHyperMediasBySection(config.HyperMediasBySection, options)
 	if err != nil {
 		log.Printf("Error sorting pages: %v", err)
@@ -130,7 +119,6 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 		return builder.String(), errors
 	}
 
-	// Parse the templates
 	tmplActive, err := template.New("active").Parse(config.Active)
 	if err != nil {
 		errors = append(errors, fmt.Errorf("failed to parse 'active' template: %w", err))
@@ -143,9 +131,8 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 		return "", errors
 	}
 
-	// Build the menu items
 	var menuItems []string
-	currentRoute := mr.CurrentRoute // Use the current page's route
+	currentRoute := mr.CurrentRoute
 
 	for _, page := range pages {
 		var buf strings.Builder
@@ -166,10 +153,8 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 		menuItems = append(menuItems, buf.String())
 	}
 
-	// Combine the menu items
 	menuContent := strings.Join(menuItems, "\n")
 
-	// Apply enclosing with extra attributes if specified
 	if config.Enclose != "" {
 		menuContent = shared.EncloseContent(config.Enclose, menuContent)
 	}
@@ -179,25 +164,20 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 	return builder.String(), errors
 }
 
-// SortHyperMediasBySection creates a sorted copy of pagesBySection based on the provided options.
-// It returns the sorted copy and an error if the SortBy option is invalid.
 func SortHyperMediasBySection(pagesBySection map[string][]composite.HyperMediaConfig, options SortOptions) (map[string][]composite.HyperMediaConfig, error) {
-	// Define valid SortBy options
+
 	validSortBy := map[string]bool{"title": true, "route": true, "index": true}
 	if !validSortBy[options.SortBy] {
 		return nil, fmt.Errorf("invalid SortBy option: %s", options.SortBy)
 	}
 
-	// Initialize a new map to hold the sorted copy
 	sortedCopy := make(map[string][]composite.HyperMediaConfig, len(pagesBySection))
 
-	// Iterate over each section in the original map
 	for section, pages := range pagesBySection {
-		// Create a copy of the slice to avoid modifying the original
+
 		pagesCopy := make([]composite.HyperMediaConfig, len(pages))
 		copy(pagesCopy, pages)
 
-		// Sort the copied slice based on SortOptions
 		sort.Slice(pagesCopy, func(i, j int) bool {
 			var less bool
 			switch options.SortBy {
@@ -214,7 +194,6 @@ func SortHyperMediasBySection(pagesBySection map[string][]composite.HyperMediaCo
 			return less
 		})
 
-		// Assign the sorted copy to the new map
 		sortedCopy[section] = pagesCopy
 	}
 

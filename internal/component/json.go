@@ -11,7 +11,6 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 )
 
-// LocalJSONConfig represents configuration for fetching and rendering data from a local JSON file.
 type LocalJSONConfig struct {
 	shared.Component `mapstructure:",squash"`
 	FilePath         string `mapstructure:"file" validate:"required" description:"Path to the local JSON file" example:"{!{json-file.hyperbricks}}"`
@@ -20,17 +19,14 @@ type LocalJSONConfig struct {
 	Debug            bool   `mapstructure:"debug" description:"Debug the response data" example:"{!{json-debug.hyperbricks}}"`
 }
 
-// LocalJSONConfigGetName returns the HyperBricks type associated with the LocalJSONConfig.
 func LocalJSONConfigGetName() string {
 	return "<JSON_RENDER>"
 }
 
-// LocalJSONRenderer handles rendering of data from a local JSON file.
 type LocalJSONRenderer struct {
-	TemplateProvider func(templateName string) (string, bool) // Function to retrieve templates
+	TemplateProvider func(templateName string) (string, bool)
 }
 
-// Ensure LocalJSONRenderer implements shared.ComponentRenderer
 var _ shared.ComponentRenderer = (*LocalJSONRenderer)(nil)
 
 func (r *LocalJSONRenderer) Types() []string {
@@ -39,14 +35,12 @@ func (r *LocalJSONRenderer) Types() []string {
 	}
 }
 
-// Validate ensures the local JSON configuration is correct.
 func (config *LocalJSONConfig) Validate() []error {
 	errors := shared.Validate(config)
 
 	return errors
 }
 
-// Render processes local JSON data and outputs it according to the specified template.
 func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error) {
 	var errors []error
 	var builder strings.Builder
@@ -56,10 +50,9 @@ func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error
 		errors = append(errors, fmt.Errorf("invalid type for LocalJSONRenderer"))
 		return "", errors
 	}
-	// appending validation errors
+
 	errors = append(errors, config.Validate()...)
 
-	// Read and parse the JSON file
 	jsonData, err := readLocalJSON(config.FilePath)
 	if err != nil {
 		errors = append(errors, fmt.Errorf("failed to read local JSON file: %w", err))
@@ -95,13 +88,11 @@ func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error
 		}
 	}
 
-	// Apply the template
 	renderedOutput, tmplErrors := applyJsonTemplate(templateContent, jsonData)
 	if tmplErrors != nil {
 		errors = append(errors, tmplErrors...)
 	}
 
-	// Apply enclosing if specified
 	if config.Enclose != "" {
 		renderedOutput = shared.EncloseContent(config.Enclose, renderedOutput)
 	}
@@ -111,7 +102,6 @@ func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error
 	return builder.String(), errors
 }
 
-// readLocalJSON reads and parses a JSON file into a map[string]interface{}.
 func readLocalJSON(filePath string) (map[string]interface{}, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
@@ -126,7 +116,6 @@ func readLocalJSON(filePath string) (map[string]interface{}, error) {
 	return jsonData, nil
 }
 
-// applyTemplate generates output based on the provided template and JSON data.
 func applyJsonTemplate(templateStr string, data map[string]interface{}) (string, []error) {
 	var errors []error
 	var output strings.Builder

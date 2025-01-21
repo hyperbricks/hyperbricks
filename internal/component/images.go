@@ -8,7 +8,6 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 )
 
-// MultipleImagesConfig represents configuration for multiple images.
 type MultipleImagesConfig struct {
 	shared.Component `mapstructure:",squash"`
 	Directory        string `mapstructure:"directory" validate:"required" description:"The directory path containing the images" example:"{!{images-directory.hyperbricks}}"`
@@ -23,17 +22,14 @@ type MultipleImagesConfig struct {
 	Loading          string `mapstructure:"loading" description:"Lazy loading strategy (e.g., 'lazy', 'eager')" example:"{!{images-loading.hyperbricks}}"`
 }
 
-// MultipleImagesConfigGetName returns the HyperBricks type associated with the MultipleImagesConfig.
 func MultipleImagesConfigGetName() string {
 	return "<IMAGES>"
 }
 
-// MultipleImagesRenderer handles rendering for multiple images
 type MultipleImagesRenderer struct {
 	ImageProcessorInstance *ImageProcessor
 }
 
-// Ensure MultipleImagesRenderer implements shared.ComponentRenderer
 var _ shared.ComponentRenderer = (*MultipleImagesRenderer)(nil)
 
 func (r *MultipleImagesRenderer) Types() []string {
@@ -42,7 +38,6 @@ func (r *MultipleImagesRenderer) Types() []string {
 	}
 }
 
-// Validate ensures that the configuration is valid and complete
 func (config *MultipleImagesConfig) Validate() []error {
 	errors := shared.Validate(config)
 
@@ -55,7 +50,6 @@ func (config *MultipleImagesConfig) Validate() []error {
 	return errors
 }
 
-// Render processes the multiple images configuration and generates the output
 func (mir *MultipleImagesRenderer) Render(instance interface{}) (string, []error) {
 	var errors []error
 	var builder strings.Builder
@@ -68,11 +62,9 @@ func (mir *MultipleImagesRenderer) Render(instance interface{}) (string, []error
 		return "", errors
 	}
 
-	// appending validation errors
 	errors = append(errors, config.Validate()...)
 
-	// Process the images using ImageProcessor
-	processor := ImageProcessor{} // Assuming ImageProcessor is defined elsewhere
+	processor := ImageProcessor{}
 	result, err := processor.ProcessMultipleImages(config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
@@ -81,7 +73,6 @@ func (mir *MultipleImagesRenderer) Render(instance interface{}) (string, []error
 		return builder.String(), errors
 	}
 
-	// Wrap the result if specified
 	if config.Enclose != "" {
 		result = shared.EncloseContent(config.Enclose, result)
 	}

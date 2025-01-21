@@ -17,7 +17,6 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
-// SupportedExtensions contains the image formats supported for processing
 var SupportedExtensions = map[string]bool{
 	".jpg":  true,
 	".jpeg": true,
@@ -26,16 +25,13 @@ var SupportedExtensions = map[string]bool{
 	".svg":  true,
 }
 
-// ImageProcessor handles rendering and processing of images
 type ImageProcessor struct{}
 
-// RenderImageConfig represents the configuration for rendering a single or multiple images
 type RenderImageConfig struct {
 	Single   *SingleImageConfig    `mapstructure:"single"`
 	Multiple *MultipleImagesConfig `mapstructure:"multiple"`
 }
 
-// Render processes the image rendering based on the instance configuration
 func (ir *ImageProcessor) Render(instance interface{}) (string, error) {
 	config, ok := instance.(RenderImageConfig)
 	if !ok {
@@ -63,7 +59,6 @@ func (ir *ImageProcessor) Render(instance interface{}) (string, error) {
 	return builder.String(), nil
 }
 
-// ProcessSingleImage processes a single image and generates the HTML
 func (ir *ImageProcessor) ProcessSingleImage(config SingleImageConfig) (string, error) {
 	builder := &strings.Builder{}
 
@@ -82,7 +77,6 @@ func (ir *ImageProcessor) ProcessSingleImage(config SingleImageConfig) (string, 
 	return builder.String(), nil
 }
 
-// ProcessMultipleImages processes multiple images and adjusts their dimensions if width/height is specified
 func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (string, error) {
 	builder := &strings.Builder{}
 
@@ -242,7 +236,6 @@ func addDimensions(fileName string, builder *strings.Builder) {
 	}
 }
 
-// addOptionalAttributes adds optional and extra attributes to the image tag.
 func addOptionalAttributes(config SingleImageConfig, builder *strings.Builder) {
 	if config.Alt != "" {
 		builder.WriteString(fmt.Sprintf(` alt="%s"`, config.Alt))
@@ -264,20 +257,18 @@ func addOptionalAttributes(config SingleImageConfig, builder *strings.Builder) {
 		builder.WriteString(` loading="lazy"`)
 	}
 
-	// Define allowed attributes for the <style> tag
 	allowedAttributes := []string{
-		"loading",        // Lazy loading (e.g., "lazy", "eager")
-		"decoding",       // Decoding hint (e.g., "sync", "async")
-		"srcset",         // For responsive images
-		"sizes",          // Size of the image for responsive design
-		"crossorigin",    // For CORS settings (e.g., "anonymous", "use-credentials")
-		"usemap",         // For image maps
-		"longdesc",       // URL to a detailed description of the image
-		"referrerpolicy", // Referrer policy (e.g., "no-referrer", "origin")
-		"ismap",          // Indicates if the image is a server-side map
+		"loading",
+		"decoding",
+		"srcset",
+		"sizes",
+		"crossorigin",
+		"usemap",
+		"longdesc",
+		"referrerpolicy",
+		"ismap",
 	}
 
-	// Render extra attributes
 	extraAttributes := shared.RenderAllowedAttributes(config.ExtraAttributes, allowedAttributes)
 
 	builder.WriteString(extraAttributes)
