@@ -1,5 +1,3 @@
-
-
 **Note:**  
 
 This project and it's documentation is currently incomplete and in the experimental phase. It is recommended to use the code only for exploration or from a developer's perspective at this stage. If you're interested, you can explore the components and composite renderers in the `internal/component` and `internal/composite` directories.
@@ -5319,14 +5317,3 @@ hypermedia.head {
   <body></body>
 </html>
 ````
-
-
-
-
-
-
-
-
-
-
-
