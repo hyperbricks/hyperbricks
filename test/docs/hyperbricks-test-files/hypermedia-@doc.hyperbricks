@@ -1,0 +1,79 @@
+==== hyperbricks config {!{hypermedia}} ====
+css = <HTML>
+css.value = <<[
+    <style>
+        body {
+            padding:20px;
+        }
+    </style>
+]>>
+
+
+# index page
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    10 < css
+    20 = <CSS>
+    20.inline = <<[
+        .content {
+            color:green;
+        }
+    ]>>
+}
+hypermedia.10 = <TREE>
+hypermedia.10 {
+    1 = <HTML>
+    1.value = <p>SOME CONTENT</p>
+}
+
+==== explainer ====
+HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use <FRAGMENT> to utilize hx-[method] (GET,POST etc) requests.  
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "Key": "",
+  "Path": "",
+  "File": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "10": {
+      "@type": "<HTML>",
+      "value": "\n<style>\n    body {\n        padding:20px;\n    }\n</style>\n"
+    },
+    "20": {
+      "@type": "<CSS>",
+      "inline": "\n.content {\n    color:green;\n}\n    "
+    },
+    "@type": "<HEAD>"
+  }
+}
+==== expected output ====
+<!DOCTYPE html><html><head>
+<style>
+    body {
+        padding:20px;
+    }
+</style>
+<style>
+
+.content {
+    color:green;
+}
+    
+</style><meta name="generator" content="hyperbricks cms"></head><body><p>SOME CONTENT</p></body></html> 
+==== more details ====

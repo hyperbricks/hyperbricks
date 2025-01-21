@@ -15,10 +15,11 @@ import (
 
 // TemplateConfig represents the configuration for a TEMPLATE type.
 type TemplateConfig struct {
-	shared.CompositeRendererConfig `mapstructure:",squash"`
-	Template                       string                 `mapstructure:"template" description:"The template used for rendering" example:"{!{template-template.hyperbricks}}"`
-	IsTemplate                     bool                   `mapstructure:"istemplate" description:"Determines if the field is a template or reference" example:"{!{template-istemplate.hyperbricks}}"`
-	Values                         map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks}}"`
+	shared.Composite   `mapstructure:",squash"`
+	MetaDocDescription string                 `mapstructure:"@doc" description:"TEMPLATE description" example:"{!{template-@doc.hyperbricks}}"`
+	Template           string                 `mapstructure:"template" description:"The template used for rendering" example:"{!{template-template.hyperbricks}}"`
+	IsTemplate         bool                   `mapstructure:"istemplate" description:"Determines if the field is a template or reference" example:"{!{template-istemplate.hyperbricks}}"`
+	Values             map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks}}"`
 }
 
 type TemplateRenderer struct {
@@ -156,7 +157,7 @@ func preprocessTemplate(templateStr string) string {
 	return varRefRegex.ReplaceAllString(templateStr, `{{.$1}}`)
 }
 
-// flexibleDataWrapper is a wrapper to resolve both {{a}} and {{.a}}.
+// flexibleDataWrapper is a encloseper to resolve both {{a}} and {{.a}}.
 type flexibleDataWrapper struct {
 	data map[string]interface{}
 }

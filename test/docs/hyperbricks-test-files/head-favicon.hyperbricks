@@ -1,0 +1,37 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    favicon = /images/icon.ico
+}
+==== explainer ====
+Path to the favicon for the hypermedia document
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "@type": "<HEAD>",
+      "favicon": "/images/icon.ico"
+    }
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="/images/icon.ico">
+        </head><body></body></html> 

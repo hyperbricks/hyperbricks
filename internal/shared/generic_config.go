@@ -2,11 +2,11 @@ package shared
 
 // GENERIC CONFIG FIELDS
 type Meta struct {
-	ConfigType     string `mapstructure:"@type"`
+	ConfigType     string `mapstructure:"@type" exclude:"true" description:"Identification for renderer"`
 	ConfigCategory string
-	Key            string `mapstructure:"key"`
-	Path           string `mapstructure:"path"`
-	File           string `mapstructure:"file"`
+	Key            string `mapstructure:"key" exclude:"true"`
+	Path           string `mapstructure:"path" exclude:"true"`
+	File           string `mapstructure:"file" exclude:"true"`
 }
 
 type CompositeRendererConfig struct {
@@ -19,8 +19,8 @@ type Composite = CompositeRendererConfig
 // Basic config for ComponentRenderers
 type ComponentRendererConfig struct {
 	Meta            `mapstructure:",squash"` // Embedding RendererConfig
-	ExtraAttributes map[string]interface{}   `mapstructure:"attributes" description:"Extra attributes like id, data-role, data-action" example:"{!{link-attributes.hyperbricks}}"`
-	Enclose         string                   `mapstructure:"enclose" description:"The wrapping HTML element for the header divided by |" example:"{!{link-wrap.hyperbricks}}"`
+	ExtraAttributes map[string]interface{}   `mapstructure:"attributes" description:"Extra attributes like id, data-role, data-action"`
+	Enclose         string                   `mapstructure:"enclose" description:"The enclosing HTML element for the header divided by |"`
 }
 
 type Component = ComponentRendererConfig

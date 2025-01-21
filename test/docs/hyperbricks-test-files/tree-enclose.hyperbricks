@@ -1,0 +1,60 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	10 = <TREE>
+    10 {
+        10 = <TREE>
+        10 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 10-1</p>
+
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 10-2</p>
+        }
+
+        20 = <TREE>
+        20 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 20-1</p>
+            
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 20-2</p>
+        }
+        enclose = <div>|</div>
+    }
+}
+==== explainer ====
+Enclosing tag using the pipe symbol |
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "File": "",
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0
+  }
+==== expected output ====
+<div><p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p></div> 

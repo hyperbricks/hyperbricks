@@ -2,4 +2,4 @@ page = <HYPERMEDIA>
 page.route = index
 page.10 = <TEXT>    
 page.10.value = HELLO WORLD!
-page.10.wrap = <p>|</p>
+page.10.enclose = <p>|</p>
