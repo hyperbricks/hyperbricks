@@ -96,7 +96,7 @@ func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (st
 	if config.IsStatic {
 		destDir = hbConfig.Directories["render"] + "/images/"
 	}
-
+	imgcount := 0
 	for _, file := range files {
 		ext := strings.ToLower(filepath.Ext(file.Name()))
 		if !SupportedExtensions[ext] || ext == ".svg" {
@@ -110,17 +110,26 @@ func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (st
 				Meta: shared.Meta{
 					Path: srcFilePath,
 				},
+				ExtraAttributes: config.ExtraAttributes,
+				Enclose:         config.Enclose,
 			},
-			Width:    config.Width,
-			Height:   config.Height,
-			IsStatic: config.IsStatic,
+			Width:   config.Width,
+			Height:  config.Height,
+			Loading: config.Loading,
+			Alt:     config.Alt,
+			Title:   config.Title,
+			Id:      config.Id + fmt.Sprintf("%d", imgcount),
+			Class:   config.Class,
+			Quality: config.Quality,
 		}
+
 		logging.GetLogger().Debugf("Creating new image file", "source", srcFilePath, "destination", destDir)
 		err := ir.processAndBuildImgTag(srcFilePath, destDir, fileConfig, builder)
 		if err != nil {
 			logging.GetLogger().Errorw("Error processing image", "file", srcFilePath, "error", err)
 			continue
 		}
+		imgcount++
 	}
 
 	return builder.String(), nil

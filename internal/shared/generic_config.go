@@ -20,7 +20,7 @@ type Composite = CompositeRendererConfig
 type ComponentRendererConfig struct {
 	Meta            `mapstructure:",squash"` // Embedding RendererConfig
 	ExtraAttributes map[string]interface{}   `mapstructure:"attributes" description:"Extra attributes like id, data-role, data-action"`
-	Enclose         string                   `mapstructure:"enclose" description:"The wrapping HTML element for the header divided by |"`
+	Enclose         string                   `mapstructure:"enclose" description:"The enclosing HTML element for the header divided by |"`
 }
 
 type Component = ComponentRendererConfig

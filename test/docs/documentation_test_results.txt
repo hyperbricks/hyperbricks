@@ -72,681 +72,31 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/image-loading
 === RUN   Test_TestAndDocumentationRender/image-is_static
 === RUN   Test_TestAndDocumentationRender/images-attributes
-    documentation_source_test.go:611: Test failed for images-attributes!
-output:
-{
-  "ConfigType": "<IMAGES>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "File": "",
-  "ExtraAttributes": {
-    "loading": "lazy"
-  },
-  "Enclose": "",
-  "Directory": "hyperbricks-test-files/assets/",
-  "Width": 100,
-  "Height": 0,
-  "Id": "",
-  "IsStatic": false,
-  "Alt": "",
-  "Title": "",
-  "Quality": 0,
-  "Loading": ""
-}
-
-expected:
-{
-  "ConfigCategory": "",
-  "ConfigType": "<IMAGES>",
-  "Directory": "hyperbricks-test-files/assets/",
-  "Enclose": "",
-  "ExtraAttributes": {
-    "loading": "lazy"
-  },
-  "File": "",
-  "Height": 0,
-  "IsStatic": false,
-  "Key": "",
-  "Path": "",
-  "Width": 100
-}
-
 === RUN   Test_TestAndDocumentationRender/images-enclose
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-        <div id="#gallery"><img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" /></div> 
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for images-enclose!
-output:
-{
-  "ConfigType": "<IMAGE>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "File": "",
-  "ExtraAttributes": {
-    "loading": "lazy"
-  },
-  "Enclose": "<div id=\"#gallery\">|</div>",
-  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
-  "Width": 100,
-  "Height": 0,
-  "Alt": "",
-  "Title": "",
-  "Id": "",
-  "Class": "",
-  "Quality": 0,
-  "Loading": "",
-  "IsStatic": false
-}
-
-expected:
-{
-  "Alt": "",
-  "Class": "",
-  "ConfigCategory": "",
-  "ConfigType": "<IMAGE>",
-  "Enclose": "<div id=\"#gallery\">|</div>",
-  "ExtraAttributes": {
-    "loading": "lazy"
-  },
-  "File": "",
-  "Height": 0,
-  "IsStatic": false,
-  "Key": "",
-  "Loading": "",
-  "Path": "",
-  "Quality": 0,
-  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
-  "Title": "",
-  "Width": 100
-}
-
 === RUN   Test_TestAndDocumentationRender/images-directory
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for images-directory!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/images-width
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for images-width!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/images-height
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for images-height!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/images-id
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for images-id!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
-=== RUN   Test_TestAndDocumentationRender/images-is_static
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for images-is_static!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
+=== RUN   Test_TestAndDocumentationRender/images-class
 === RUN   Test_TestAndDocumentationRender/images-alt
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for images-alt!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/images-title
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for images-title!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/images-quality
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for images-quality!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/images-loading
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for images-loading!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/json-attributes
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for json-attributes!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/json-enclose
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for json-enclose!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/json-file
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for json-file!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/json-template
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for json-template!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
+=== RUN   Test_TestAndDocumentationRender/json-istemplate
+=== RUN   Test_TestAndDocumentationRender/json-debug
 === RUN   Test_TestAndDocumentationRender/plugin-attributes
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for plugin-attributes!
+    documentation_source_test.go:614: Test failed for plugin-attributes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -783,14 +133,14 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-enclose
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for plugin-enclose!
+    documentation_source_test.go:614: Test failed for plugin-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -827,14 +177,14 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-plugin
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for plugin-plugin!
+    documentation_source_test.go:614: Test failed for plugin-plugin!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -871,14 +221,14 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-classes
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for plugin-classes!
+    documentation_source_test.go:614: Test failed for plugin-classes!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -915,14 +265,14 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/plugin-data
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for plugin-data!
+    documentation_source_test.go:614: Test failed for plugin-data!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -959,14 +309,14 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/text-enclose
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for text-enclose!
+    documentation_source_test.go:614: Test failed for text-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1003,14 +353,14 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/text-value
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for text-value!
+    documentation_source_test.go:614: Test failed for text-value!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1047,14 +397,14 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-enclose
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for menu-enclose!
+    documentation_source_test.go:614: Test failed for menu-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1091,14 +441,14 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-section
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for menu-section!
+    documentation_source_test.go:614: Test failed for menu-section!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1135,14 +485,14 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-order
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for menu-order!
+    documentation_source_test.go:614: Test failed for menu-order!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1179,14 +529,14 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-sort
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for menu-sort!
+    documentation_source_test.go:614: Test failed for menu-sort!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1224,14 +574,14 @@ expected:
 
 === RUN   Test_TestAndDocumentationRender/menu-active
 === RUN   Test_TestAndDocumentationRender/menu-item
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for menu-item!
+    documentation_source_test.go:614: Test failed for menu-item!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1268,14 +618,14 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
-    documentation_source_test.go:601: result and expected html output does not match: 
+    documentation_source_test.go:604: result and expected html output does not match: 
         result:
          
         expected:
         <div>this test fails</div>
         
         
-    documentation_source_test.go:611: Test failed for menu-enclose!
+    documentation_source_test.go:614: Test failed for menu-enclose!
 output:
 {
   "ConfigType": "<FRAGMENT>",
@@ -1312,405 +662,19 @@ expected:
 {}
 
 === RUN   Test_TestAndDocumentationRender/api_render-enclose
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for api_render-enclose!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/api_render-endpoint
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for api_render-endpoint!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/api_render-method
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for api_render-method!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/api_render-headers
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for api_render-headers!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/api_render-body
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for api_render-body!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/api_render-template
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for api_render-template!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/api_render-istemplate
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for api_render-istemplate!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/api_render-user
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for api_render-user!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
 === RUN   Test_TestAndDocumentationRender/api_render-pass
-    documentation_source_test.go:601: result and expected html output does not match: 
-        result:
-         
-        expected:
-        <div>this test fails</div>
-        
-        
-    documentation_source_test.go:611: Test failed for api_render-pass!
-output:
-{
-  "ConfigType": "<FRAGMENT>",
-  "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "HxTemplateResult": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxReselect": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
-  "MetaDocDescription": "",
-  "HxResponseWriter": null,
-  "Title": "",
-  "Route": "",
-  "Section": "",
-  "Items": null,
-  "Enclose": "",
-  "Template": null,
-  "File": "",
-  "IsStatic": false,
-  "Static": "",
-  "Index": 0
-}
-
-expected:
-{}
-
-2025/01/20 14:48:21 Version: v0.1.0-alpha
-2025/01/20 14:48:21 Build Time: 2025-01-20T13:48:19Z
-2025/01/20 14:48:21 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
---- FAIL: Test_TestAndDocumentationRender (0.32s)
+=== RUN   Test_TestAndDocumentationRender/api_render-debug
+2025/01/21 10:16:33 Version: v0.1.0-alpha
+2025/01/21 10:16:33 Build Time: 2025-01-21T09:16:30Z
+2025/01/21 10:16:33 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.0-alpha.md
+--- FAIL: Test_TestAndDocumentationRender (1.71s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -1780,21 +744,23 @@ expected:
     --- PASS: Test_TestAndDocumentationRender/image-quality (0.02s)
     --- PASS: Test_TestAndDocumentationRender/image-loading (0.02s)
     --- PASS: Test_TestAndDocumentationRender/image-is_static (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/images-attributes (0.03s)
-    --- FAIL: Test_TestAndDocumentationRender/images-enclose (0.02s)
-    --- FAIL: Test_TestAndDocumentationRender/images-directory (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/images-width (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/images-height (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/images-id (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/images-is_static (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/images-alt (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/images-title (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/images-quality (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/images-loading (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/json-attributes (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/json-enclose (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/json-file (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/json-template (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/images-attributes (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-enclose (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/images-directory (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/images-width (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/images-height (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/images-id (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-class (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-alt (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-title (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-quality (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-loading (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/json-attributes (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-file (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-template (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-istemplate (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-debug (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/plugin-attributes (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/plugin-enclose (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/plugin-plugin (0.00s)
@@ -1809,15 +775,16 @@ expected:
     --- PASS: Test_TestAndDocumentationRender/menu-active (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/api_render-enclose (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/api_render-endpoint (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/api_render-method (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/api_render-headers (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/api_render-body (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/api_render-template (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/api_render-istemplate (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/api_render-user (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/api_render-pass (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.28s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-endpoint (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-method (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-headers (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-body (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-template (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-istemplate (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-user (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-pass (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.09s)
 FAIL
-FAIL	command-line-arguments	0.558s
+FAIL	command-line-arguments	1.936s
 FAIL

@@ -39,7 +39,7 @@ func (hc *HTMLConfig) Validate() []error {
 	return errors
 }
 
-// Render processes raw HTML data and outputs it, applying wrapping if specified.
+// Render processes raw HTML data and outputs it, applying enclosing if specified.
 func (hr *HTMLRenderer) Render(instance interface{}) (string, []error) {
 	var errors []error
 	var builder strings.Builder
@@ -53,7 +53,7 @@ func (hr *HTMLRenderer) Render(instance interface{}) (string, []error) {
 	// appending validation errors
 	errors = append(errors, config.Validate()...)
 
-	// Apply wrapping if specified
+	// Apply enclosing if specified
 	htmlContent := config.Value
 	if config.Enclose != "" {
 		htmlContent = shared.EncloseContent(config.Enclose, htmlContent)

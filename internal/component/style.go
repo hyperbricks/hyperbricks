@@ -79,7 +79,7 @@ func (sr *StyleRenderer) Render(instance interface{}) (string, []error) {
 	// Wrap the content in <style> tags with extra attributes
 	styleHTML := fmt.Sprintf("<style%s>\n%s\n</style>", extraAttributes, string(content))
 
-	// Apply wrapping if specified
+	// Apply enclosing if specified
 	if config.Enclose != "" {
 		styleHTML = shared.EncloseContent(config.Enclose, styleHTML)
 	}

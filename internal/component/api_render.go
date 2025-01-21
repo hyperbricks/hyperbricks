@@ -30,6 +30,7 @@ type APIConfig struct {
 	IsTemplate       bool              `mapstructure:"istemplate"`
 	User             string            `mapstructure:"user" description:"User for basic auth" example:"{!{api-render-user.hyperbricks}}"`
 	Pass             string            `mapstructure:"pass" description:"User for basic auth" example:"{!{api-render-pass.hyperbricks}}"`
+	Debug            bool              `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
 }
 
 /*
@@ -93,7 +94,6 @@ func (api *APIConfig) Validate() []error {
 func (r *APIRenderer) Types() []string {
 	return []string{
 		APIConfigGetName(),
-		"API_EXT",
 	}
 }
 
@@ -125,6 +125,16 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 		})
 	}
 
+	if config.Debug {
+		// Convert the struct to JSON
+		jsonBytes, err := json.MarshalIndent(responseData, "", "  ")
+		if err != nil {
+			fmt.Println("Error marshaling struct to JSON:", err)
+
+		}
+		builder.WriteString(fmt.Sprintf("<!-- API_RENDER.debug = true -->\n<!--  <![CDATA[ \n%s\n ]]> -->", string(jsonBytes)))
+	}
+
 	var templateContent string
 	if config.IsTemplate {
 		templateContent = config.Template
@@ -152,7 +162,13 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 		errors = append(errors, _errors...)
 	}
 
-	builder.WriteString(renderedOutput)
+	// Apply enlose if specified
+	apiContent := renderedOutput
+	if config.Enclose != "" {
+		apiContent = shared.EncloseContent(config.Enclose, apiContent)
+	}
+
+	builder.WriteString(apiContent)
 
 	return builder.String(), errors
 }
@@ -205,12 +221,12 @@ func fetchDataFromAPI(config APIConfig) (map[string]interface{}, error) {
 	}
 
 	// Step 4: Output cookies stored in the jar
-	fmt.Println("\nCookies stored in the jar:")
-	u, _ := url.Parse(config.Endpoint)
-	for _, cookie := range jar.Cookies(u) {
-		fmt.Printf("Cookie: %s = %s\n", cookie.Name, cookie.Value)
-		fmt.Printf("Path: %s, Domain: %s, Expires: %v\n", cookie.Path, cookie.Domain, cookie.Expires)
-	}
+	// fmt.Println("\nCookies stored in the jar:")
+	// u, _ := url.Parse(config.Endpoint)
+	// for _, cookie := range jar.Cookies(u) {
+	// 	fmt.Printf("Cookie: %s = %s\n", cookie.Name, cookie.Value)
+	// 	fmt.Printf("Path: %s, Domain: %s, Expires: %v\n", cookie.Path, cookie.Domain, cookie.Expires)
+	// }
 
 	return data, nil
 }

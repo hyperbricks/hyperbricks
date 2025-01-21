@@ -6,7 +6,7 @@ html.value = <<[
 html.enclose = <div>|</div>
 }
 ==== explainer ====
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 ==== expected json ====
 {
     "ConfigType": "<HTML>",

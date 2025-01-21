@@ -82,7 +82,7 @@ func (jsr *JavaScriptRenderer) Render(instance interface{}) (string, []error) {
 		// Wrap the content in <script> tags with extra attributes
 		scriptHTML = fmt.Sprintf("<script%s>\n%s\n</script>", extraAttributes, config.Inline)
 
-		// Apply wrapping if specified
+		// Apply enclosing if specified
 		if config.Enclose != "" {
 			scriptHTML = fmt.Sprintf("\n%s\n", string(config.Inline))
 			scriptHTML = shared.EncloseContent(config.Enclose, scriptHTML)

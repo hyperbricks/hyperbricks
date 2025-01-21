@@ -179,9 +179,12 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			Name:            "Images",
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
-			ConfigType:      "<IMAGES>",
-			ConfigCategory:  "resources",
-			Config:          component.MultipleImagesConfig{},
+			ExcludeFields: []string{
+				"is_static",
+			},
+			ConfigType:     "<IMAGES>",
+			ConfigCategory: "resources",
+			Config:         component.MultipleImagesConfig{},
 		},
 		{
 			Name:            "Json",

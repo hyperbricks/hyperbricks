@@ -336,7 +336,7 @@ hyperbricks [command] --help
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
@@ -498,7 +498,7 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
@@ -616,7 +616,7 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
@@ -2391,6 +2391,8 @@ fragment {
 
 
 
+
+
 **Properties**
 
 - [enclose](#api_render-enclose)
@@ -2402,6 +2404,7 @@ fragment {
 - [istemplate](#api_render-istemplate)
 - [user](#api_render-user)
 - [pass](#api_render-pass)
+- [debug](#api_render-debug)
 
 
 
@@ -2411,17 +2414,48 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	template = <<[
+		<ul id="{{index .id}}">
+			<li>{{index .firstName}} {{index .lastName}}</li>
+		<ul>
+	]>>
+	istemplate = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -2441,12 +2475,43 @@ The API endpoint
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	template = <<[
+		<ul id="{{index .id}}">
+			<li>{{index .firstName}} {{index .lastName}}</li>
+		<ul>
+	]>>
+	istemplate = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -2466,12 +2531,43 @@ HTTP method to use for API calls, GET POST PUT DELETE etc...
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	template = <<[
+		<ul id="{{index .id}}">
+			<li>{{index .firstName}} {{index .lastName}}</li>
+		<ul>
+	]>>
+	istemplate = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -2491,12 +2587,43 @@ Optional HTTP headers for API requests
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	template = <<[
+		<ul id="{{index .id}}">
+			<li>{{index .firstName}} {{index .lastName}}</li>
+		<ul>
+	]>>
+	istemplate = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -2516,12 +2643,43 @@ Use the string format of the example, do not use an nested object to define. The
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	template = <<[
+		<ul id="{{index .id}}">
+			<li>{{index .firstName}} {{index .lastName}}</li>
+		<ul>
+	]>>
+	istemplate = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -2541,12 +2699,43 @@ Template used for rendering API output
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	template = <<[
+		<ul id="{{index .id}}">
+			<li>{{index .firstName}} {{index .lastName}}</li>
+		<ul>
+	]>>
+	istemplate = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -2566,12 +2755,43 @@ fragment {
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	template = <<[
+		<ul id="{{index .id}}">
+			<li>{{index .firstName}} {{index .lastName}}</li>
+		<ul>
+	]>>
+	istemplate = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -2591,12 +2811,43 @@ User for basic auth
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	template = <<[
+		<ul id="{{index .id}}">
+			<li>{{index .firstName}} {{index .lastName}}</li>
+		<ul>
+	]>>
+	istemplate = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -2616,12 +2867,99 @@ User for basic auth
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	template = <<[
+		<ul id="{{index .id}}">
+			<li>{{index .firstName}} {{index .lastName}}</li>
+		<ul>
+	]>>
+	istemplate = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## api_render debug
+#### debug
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	template = <<[
+		<ul id="{{index .id}}">
+			<li>{{index .firstName}} {{index .lastName}}</li>
+		<ul>
+	]>>
+	istemplate = true
+	debug = false
+	enclose = <div class="userlist">|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -2645,12 +2983,18 @@ fragment {
 
 
 
+
+
+
+
 **Properties**
 
 - [attributes](#json-attributes)
 - [enclose](#json-enclose)
 - [file](#json-file)
 - [template](#json-template)
+- [istemplate](#json-istemplate)
+- [debug](#json-debug)
 
 
 
@@ -2665,12 +3009,64 @@ Extra attributes like id, data-role, data-action
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+	template = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+	istemplate = true
+    debug = false
 }
 
 ````
+
+**Expected Result**
+
+````html
+<h1>
+  Quotes
+</h1>
+<ul>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Your heart is the size of an ocean. Go find yourself in its hidden depths.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    Thinking is the capital, Enterprise is the way, Hard Work is the solution.
+  </li>
+  <li>
+    <strong>
+      Bill Gates:
+    </strong>
+    If You Can&#39;T Make It Good, At Least Make It Look Good.
+  </li>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.
+  </li>
+</ul>
+````
+
+
 
 
 
@@ -2685,17 +3081,69 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+	template = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+	istemplate = true
+    debug = false
 }
 
 ````
+
+**Expected Result**
+
+````html
+<h1>
+  Quotes
+</h1>
+<ul>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Your heart is the size of an ocean. Go find yourself in its hidden depths.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    Thinking is the capital, Enterprise is the way, Hard Work is the solution.
+  </li>
+  <li>
+    <strong>
+      Bill Gates:
+    </strong>
+    If You Can&#39;T Make It Good, At Least Make It Look Good.
+  </li>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.
+  </li>
+</ul>
+````
+
+
 
 
 
@@ -2715,12 +3163,64 @@ Path to the local JSON file
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+	template = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+	istemplate = true
+    debug = false
 }
 
 ````
+
+**Expected Result**
+
+````html
+<h1>
+  Quotes
+</h1>
+<ul>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Your heart is the size of an ocean. Go find yourself in its hidden depths.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    Thinking is the capital, Enterprise is the way, Hard Work is the solution.
+  </li>
+  <li>
+    <strong>
+      Bill Gates:
+    </strong>
+    If You Can&#39;T Make It Good, At Least Make It Look Good.
+  </li>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.
+  </li>
+</ul>
+````
+
+
 
 
 
@@ -2740,12 +3240,218 @@ Template for rendering output
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+	template = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+	istemplate = true
+    debug = false
 }
 
 ````
+
+**Expected Result**
+
+````html
+<h1>
+  Quotes
+</h1>
+<ul>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Your heart is the size of an ocean. Go find yourself in its hidden depths.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    Thinking is the capital, Enterprise is the way, Hard Work is the solution.
+  </li>
+  <li>
+    <strong>
+      Bill Gates:
+    </strong>
+    If You Can&#39;T Make It Good, At Least Make It Look Good.
+  </li>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.
+  </li>
+</ul>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## json istemplate
+#### istemplate
+
+**Description**  
+
+
+
+**Example**
+````properties
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+	template = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+	istemplate = true
+    debug = false
+}
+
+````
+
+**Expected Result**
+
+````html
+<h1>
+  Quotes
+</h1>
+<ul>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Your heart is the size of an ocean. Go find yourself in its hidden depths.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    Thinking is the capital, Enterprise is the way, Hard Work is the solution.
+  </li>
+  <li>
+    <strong>
+      Bill Gates:
+    </strong>
+    If You Can&#39;T Make It Good, At Least Make It Look Good.
+  </li>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.
+  </li>
+</ul>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## json debug
+#### debug
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+	template = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+	istemplate = true
+    debug = false
+}
+
+````
+
+**Expected Result**
+
+````html
+<h1>
+  Quotes
+</h1>
+<ul>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Your heart is the size of an ocean. Go find yourself in its hidden depths.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    Thinking is the capital, Enterprise is the way, Hard Work is the solution.
+  </li>
+  <li>
+    <strong>
+      Bill Gates:
+    </strong>
+    If You Can&#39;T Make It Good, At Least Make It Look Good.
+  </li>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.
+  </li>
+</ul>
+````
+
+
 
 
 
@@ -2798,7 +3504,7 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
@@ -2999,7 +3705,7 @@ fragment {
 #### enclose
 
 **Description**  
-Template to wrap the menu items.
+The enclosing HTML element for the header divided by |
 
 
 **Example**
@@ -3803,7 +4509,7 @@ image.is_static = true
 - [width](#images-width)
 - [height](#images-height)
 - [id](#images-id)
-- [is_static](#images-is_static)
+- [class](#images-class)
 - [alt](#images-alt)
 - [title](#images-title)
 - [quality](#images-quality)
@@ -3825,8 +4531,10 @@ Extra attributes like id, data-role, data-action
 images = <IMAGES>
 images.directory = hyperbricks-test-files/assets/
 images.width = 100
+images.loading = lazy
+images.id = #galleryimage_
 images.attributes {
-    loading = lazy
+    decoding = async 
 }
 
 ````
@@ -3834,8 +4542,8 @@ images.attributes {
 **Expected Result**
 
 ````html
-<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" />
-<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" />
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#galleryimage_0" loading="lazy" decoding="async" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#galleryimage_1" loading="lazy" decoding="async" />
 ````
 
 
@@ -3896,12 +4604,25 @@ The directory path containing the images
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.attributes {
+    loading = lazy
 }
+image.enclose = <div id="#gallery">|</div>
 
 ````
+
+**Expected Result**
+
+````html
+<div id="#gallery">
+  <img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" />
+</div>
+````
+
+
 
 
 
@@ -3921,12 +4642,19 @@ The width of the images (can be a number or percentage)
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 330
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w330_h330.jpg" width="330" height="330" />
+````
+
+
 
 
 
@@ -3946,12 +4674,19 @@ The height of the images (can be a number or percentage)
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.height = 100
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" />
+````
+
+
 
 
 
@@ -3971,11 +4706,22 @@ Id of images with a index added to it
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.attributes {
+    decoding = async 
 }
 
+````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" decoding="async" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" decoding="async" />
 ````
 
 
@@ -3987,21 +4733,38 @@ fragment {
 
 
 
-## images is_static
-#### is_static
+
+
+## images class
+#### class
 
 **Description**  
-Flag indicating if the images are static
+CSS class for styling the image
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.height = 10
+images.loading = lazy
+images.id = #galleryimage_
+images.class = galleryimage bordered
+images.attributes {
+    decoding = async 
 }
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h10.jpg" width="100" height="10" class="galleryimage bordered" id="#galleryimage_0" loading="lazy" decoding="async" />
+<img src="static/images/same_cute_cat_w100_h10.jpg" width="100" height="10" class="galleryimage bordered" id="#galleryimage_1" loading="lazy" decoding="async" />
+````
+
+
 
 
 
@@ -4021,12 +4784,25 @@ Alternative text for the image
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.height = 10
+images.loading = lazy
+images.id = #galleryimage_
+images.class = galleryimage bordered
+images.alt = gallery image
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h10.jpg" width="100" height="10" alt="gallery image" class="galleryimage bordered" id="#galleryimage_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h10.jpg" width="100" height="10" alt="gallery image" class="galleryimage bordered" id="#galleryimage_1" loading="lazy" />
+````
+
+
 
 
 
@@ -4046,12 +4822,23 @@ The title attribute of the image
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.title = sometitle
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="sometitle" id="#img_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" title="sometitle" id="#img_1" loading="lazy" />
+````
+
+
 
 
 
@@ -4071,12 +4858,23 @@ Image quality for optimization
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.quality = 1
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" />
+````
+
+
 
 
 
@@ -4096,12 +4894,23 @@ Lazy loading strategy (e.g., &#39;lazy&#39;, &#39;eager&#39;)
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.loading = lazy
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" />
+````
+
+
 
 
 
@@ -4185,7 +4994,7 @@ head {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**

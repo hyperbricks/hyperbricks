@@ -1,55 +1,267 @@
 
-# HyperBricks Docs
-**Version:** dev  
-**Build time:** undefined
+
+**Note:**  
+<style>
+  code {
+    white-space : pre-wrap !important;
+    word-break: break-word;
+  }
+</style>
+````
+This project is currently in the experimental phase. It is recommended to use the code only for exploration or from a developer's perspective at this stage.
+````
+
+
+# HyperBricks
+**Licence:** MIT  
+**Version:** v0.1.0-alpha   
+**Build time:** 2025-01-19T20:58:13Z   
 
 Go direct to:
 
 - [HyperBricks type reference](#hyperbricks-type-reference)
-- [HyperBricks examples](#hyperbricks-examples)
+- [Installation](#installation)
+
+- [Defining Hypermedia Documents and Fragments](#defining-hypermedia-documents-and-fragments)
+- [Adding Properties to Configurations](#adding-properties-to-configurations)
+- [Rendering Order and Property Rules](#rendering-order-and-property-rules)
+- [Example Configurations](#example-configurations)
+  - [Hypermedia Example](#hypermedia-example)
+  - [Fragment Example with HTMX Trigger](#fragment-example-with-htmx-trigger)
+- [Object Inheritance and Reusability](#object-inheritance-and-reusability)
+- [Importing Predefined HyperScripts](#importing-predefined-hyperscripts)
+
 
 ## HyperBricks Documentation
 
-HyperBricks is a powerful CMS that use nested declarative configuration files, enabling the rapid development of [htmx](https://htmx.org/) hypermedia-based applications.
+HyperBricks aims to bridge front and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allow you to declare and describe the state of a document in a concise and structured manner.
 
-This declarative configuration files (hyperbricks) allows to declare and describe state of a document.
+### Defining Hypermedia Documents and Fragments
 
-Hypermedia documents or fragments are declared with:
-&lt;HYPERMEDIA&gt; or &lt;FRAGMENT&gt;
-
-### basic example ###
-```properties
-fragment = <FRAGMENT>
-fragment.content = <TREE>
-fragment.content {
-    10 = <HTML>
-    10.value = <p>THIS IS HTML</p>
-
-    20 = <HTML>
-    20.value = <p>THIS IS HTML</p>
-}
-```
-
-A <HYPERMEDIA> or <FRAGMENT> configuration can be flat or a nested
+Hypermedia documents or fragments can be declared using simple key-value properties:
 
 ```properties
-fragment = <FRAGMENT>
-fragment.content = <TREE>
-fragment.content {
-    10 = <HTML>
-    10.value = <p>THIS IS HTML</p>
-}
+myHypermedia = <HYPERMEDIA>
+# Or
+myFragment = <FRAGMENT>
 ```
 
+### Adding Properties to Configurations
+
+You can add properties to hypermedia objects in either flat or nested formats:
+
+**Flat Configuration Example:**
 ```properties
 fragment = <FRAGMENT>
 fragment.content = <TREE>
 fragment.content.10 = <HTML>
-fragment.content.value = <p>THIS IS HTML</p>
+fragment.content.10.value = <p>THIS IS HTML</p>
 ```
 
+**Nested Configuration Example:**
+```properties
+fragment = <FRAGMENT>
+fragment {
+    content = <TREE>
+    content {
+        10 = <HTML>
+        10 {
+            value = <p>THIS IS HTML</p>
+        }
+    }
+}
+```
+
+### Rendering Order and Property Rules
+
+Properties are rendered in alphanumeric order. They are typeless, meaning quotes are not required because at parsing hyperbricks types like ```<IMAGE>```, ```<HTML>``` or ```<TEXT>``` will be typed automaticly.
+
+```properties
+hypermedia = <HYPERMEDIA>
+hypermedia.10 = <HTML>
+hypermedia.10.value = <p>some text</p>
+
+hypermedia.20 = <HTML>
+hypermedia.20.value = <p>some more text</p>
+
+hypermedia.1 = <HTML>
+hypermedia.1 {
+    value = <<[
+        <p>RENDERS FIRST</p>
+    ]>>
+}
+```
+
+### Example Configurations
+
+#### Hypermedia Example
+
+A basic `<HYPERMEDIA>` object with nested `<IMAGE>` and `<TEXT>` types in a `<TEMPLATE>`:
+
+```properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.head = <HEAD>
+hypermedia.head {
+    10 = <CSS>
+    10.inline = <<[
+        .content {
+            color: green;
+        }
+    ]>>
+
+    20 = <JAVASCRIPT>
+    20.inline = <<[
+        console.log("hello world");
+    ]>>
+    20.attributes {
+        type = text/javascript
+    }
+
+    30 = <HTML>
+    30.value = <<[
+        <link rel="stylesheet" href="styles.css">
+        <script src="main.js" type="text/javascript"></script>
+    ]>>
+}
+hypermedia.10 = <TREE>
+hypermedia.10 {
+    1 = <HTML>
+    1.value = <p>SOME CONTENT</p>
+}
+```
+
+#### Fragment Example with HTMX Trigger
+
+A `<FRAGMENT>` object using an [HTMX trigger](https://htmx.org/attributes/hx-trigger/) with nested `<IMAGE>` and `<TEXT>` types:
+
+```properties
+fragment = <FRAGMENT>
+fragment.response {
+    hx_trigger = myEvent
+    hx_target = #target-element-id
+}
+fragment.10 = <TEMPLATE>
+fragment.10 {
+    template = <<[
+        <h2>{{header}}</h2>
+        <p>{{text}}</p>
+        {{image}}
+    ]>>
+    istemplate = true
+    values {
+        header = SOME HEADER
+        text = <TEXT>
+        text.value = some text
+
+        image = <IMAGE>
+        image.src = hyperbricks-test-files/assets/cute_cat.jpg
+        image.width = 800
+    }
+}
+```
+
+### Object Inheritance and Reusability
+
+Properties can inherit from other objects. Here, `fragment.content.10` inherits from `myComponent`, with its `values.src` overridden:
+
+```properties
+myComponent = <TEMPLATE>
+myComponent {
+    template = <<[
+        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    ]>>
+    istemplate = true
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+    enclose = <div class="youtube_video">|</div>
+}
+```
+
+### Importing Predefined HyperScripts
+
+Predefined hyperscripts can be imported and reused:
+
+```properties
+#imports myComponent
+@import "path/my_component.hyperbricks"
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+    enclose = <div class="youtube_video">|</div>
+}
+```
+
+This document is incomplete. If you're curious, you can explore the components and composite renderers located in the `internal/component` and `internal/composite` directories.
+
+The `<API>` type is currently undocumented because it is still evolving and likely to change. It's important to note that `<API>` and `<API_RENDER>` are distinct types. 
+
+- **`<API_RENDER>`**: Renders a template using data fetched from an external endpoint.  
+- **`<API>`**: Integrates with a `<MODEL>`, connects to a database, and simplifies common use cases (such as CRUD operations) with minimal configuration.  
+
+### Installation
+
+To install HyperBricks, use the following command:
+
+```bash
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@<version>
+```
+
+This will download and install the HyperBricks CLI tool on your system.
+
+---
+
+### Initializing a Project
+
+To initialize a new HyperBricks project, use the `init` command:
+
+```bash
+hyperbricks init -m <name-of-hyperbricks-module>
+```
+
+without the -m and ```<name-of-hyperbricks-module>``` this will create a ```default``` folder.
 
 
+This will create a `package.hyperbricks` configuration file and set up the required directories for your project.
+
+---
+
+### Starting a Module
+
+Once your project is initialized, start the HyperBricks server using the `start` command:
+
+```bash
+hyperbricks start  -m <name-of-hyperbricks-module>
+```
+This will launch the server, allowing you to manage and serve hypermedia content on the ip of your machine.
+
+Or ```hyperbricks start``` for running the module named ```default```.
+
+### Additional Commands
+
+HyperBricks provides other useful commands:
+
+- **`completion`**: Generate shell autocompletion scripts for supported shells.
+- **`help`**: Display help information for any command.
+
+For detailed usage information about a specific command, run:
+
+```bash
+hyperbricks [command] --help
+```
 
 <h1><a id="hyperbricks-type-reference">HyperBricks type reference</a></h1>
 
@@ -110,39 +322,11 @@ fragment.content.value = <p>THIS IS HTML</p>
 
 
 
-
-
 **Properties**
 
-- [attributes](#html-attributes)
 - [enclose](#html-enclose)
 - [value](#html-value)
 - [trimspace](#html-trimspace)
-
-
-
-
-
-## html attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
-
 
 
 
@@ -152,17 +336,31 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+html = <HTML>
+html.value = <<[
+        <p>HTML TEST</p>    
+    ]>>
+html.enclose = <div>|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div>
+  <p>
+    HTML TEST
+  </p>
+</div>
+````
+
+
 
 
 
@@ -182,12 +380,21 @@ The raw HTML content
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+html = <HTML>
+html.value = <p>HTML TEST</p>    
 }
 
 ````
+
+**Expected Result**
+
+````html
+<p>
+  HTML TEST
+</p>
+````
+
+
 
 
 
@@ -202,17 +409,29 @@ fragment {
 #### trimspace
 
 **Description**  
-The raw HTML content
+Property trimspace filters (if set to true true),  all leading and trailing white space removed, as defined by Unicode.
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+html = <HTML>
+html.value = <<[
+        <p>HTML TEST</p>    
+    ]>>
+html.trimspace = true
 }
 
 ````
+
+**Expected Result**
+
+````html
+<p>
+  HTML TEST
+</p>
+````
+
+
 
 
 
@@ -279,7 +498,7 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
@@ -384,38 +603,10 @@ fragment {
 
 
 
-
-
 **Properties**
 
-- [attributes](#text-attributes)
 - [enclose](#text-enclose)
 - [value](#text-value)
-
-
-
-
-
-## text attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
-
 
 
 
@@ -425,7 +616,7 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
@@ -519,9 +710,12 @@ fragment {
 
 
 
+
+
 **Properties**
 
 - [response](#fragment-response)
+
 - [title](#fragment-title)
 - [route](#fragment-route)
 - [section](#fragment-section)
@@ -562,6 +756,9 @@ fragment {
 }
 
 ````
+
+
+
 
 
 
@@ -2030,12 +2227,45 @@ Key-value pairs for template rendering
 
 **Example**
 ````properties
+
+$test = hello world
+
+myComponent = <TEMPLATE>
+myComponent {
+    template = <<[
+        <h1>{{header}}</h1>
+        <p>{{text}}</p>
+    ]>>
+    istemplate = true
+    values {
+        header = {{VAR:test}}!
+        text = some text
+    }
+}
+
 fragment = <FRAGMENT>
-fragment {
-	
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    enclose = <div class="sometext">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="sometext">
+  <h1>
+    hello world!
+  </h1>
+  <p>
+    some text
+  </p>
+</div>
+````
+
+
 
 
 
@@ -2071,17 +2301,58 @@ fragment {
 #### enclose
 
 **Description**  
-Wrapping property for the tree
+Enclosing tag using the pipe symbol |
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
-	
+	10 = <TREE>
+    10 {
+        10 = <TREE>
+        10 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 10-1</p>
+
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 10-2</p>
+        }
+
+        20 = <TREE>
+        20 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 20-1</p>
+            
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 20-2</p>
+        }
+        enclose = <div>|</div>
+    }
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div>
+  <p>
+    SOME NESTED HTML --- 10-1
+  </p>
+  <p>
+    SOME NESTED HTML --- 10-2
+  </p>
+  <p>
+    SOME NESTED HTML --- 20-1
+  </p>
+  <p>
+    SOME NESTED HTML --- 20-2
+  </p>
+</div>
+````
+
+
 
 
 
@@ -2120,11 +2391,8 @@ fragment {
 
 
 
-
-
 **Properties**
 
-- [attributes](#api_render-attributes)
 - [enclose](#api_render-enclose)
 - [endpoint](#api_render-endpoint)
 - [method](#api_render-method)
@@ -2139,46 +2407,44 @@ fragment {
 
 
 
-## api_render attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
-
-
-
-
-
-
 ## api_render enclose
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	template = <<[
+		{{ (index .quotes 0).author }}:{{ (index .quotes 0).quote }}
+	]>>
+	istemplate = true
 }
 
 ````
+
+**Expected Result**
+
+````html
+error executing template: template: apiTemplate:2:6: executing "apiTemplate" at
+<index .quotes 0>
+: error calling index: index of untyped nil
+````
+
+
 
 
 
@@ -2442,7 +2708,7 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
@@ -2537,11 +2803,8 @@ fragment {
 
 
 
-
-
 **Properties**
 
-- [attributes](#menu-attributes)
 - [enclose](#menu-enclose)
 - [section](#menu-section)
 - [order](#menu-order)
@@ -2554,36 +2817,11 @@ fragment {
 
 
 
-## menu attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
-
-````
-
-
-
-
-
-
-
-
-
-
 ## menu enclose
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
@@ -2841,17 +3079,40 @@ fragment {
 #### attributes
 
 **Description**  
-Extra attributes like id, data-role, data-action
+Extra attributes like id, data-role, data-action, media
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.file = hyperbricks-test-files/assets/styles.css
+    10.attributes {
+        media = screen
+    }
 }
 
 ````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style media="screen">
+      body {
+      background-color: red;
+      }
+    </style>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
 
 
 
@@ -2866,17 +3127,37 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+A custom &lt;style&gt; tag definition |. Will override extraAttributes.
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+head = <HEAD>
+head {
+    10 = <CSS>
+    10.file = hyperbricks-test-files/assets/styles.css
+    10.attributes {
+        media = screen
+    }
+    10.enclose = <style media="print">|</style>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<head>
+  <style media="print">
+    body {
+    background-color: red;
+    }
+  </style>
+  <meta name="generator" content="hyperbricks cms">
+</head>
+````
+
+
 
 
 
@@ -3053,6 +3334,8 @@ hypermedia.head {
 
 
 
+
+
 **Properties**
 
 - [attributes](#image-attributes)
@@ -3062,6 +3345,7 @@ hypermedia.head {
 - [height](#image-height)
 - [alt](#image-alt)
 - [title](#image-title)
+- [id](#image-id)
 - [class](#image-class)
 - [quality](#image-quality)
 - [loading](#image-loading)
@@ -3075,17 +3359,27 @@ hypermedia.head {
 #### attributes
 
 **Description**  
-Extra attributes like id, data-role, data-action
+Extra attributes like loading, data-role, data-action etc
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.attributes {
+  usemap = #catmap 
 }
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" usemap="#catmap" />
+````
+
+
 
 
 
@@ -3100,17 +3394,30 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+Use the pipe symbol | to enclose the ````&lt;IMG&gt;```` tag.
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.attributes {
+    loading = lazy
 }
+image.enclose = <div id="#gallery">|</div>
 
 ````
+
+**Expected Result**
+
+````html
+<div id="#gallery">
+  <img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" />
+</div>
+````
+
+
 
 
 
@@ -3130,12 +3437,26 @@ The source URL of the image
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 300
+image.height = 300
+image.attributes {
+    loading = lazy
 }
+image.enclose = <div id="#logo">|</div>
 
 ````
+
+**Expected Result**
+
+````html
+<div id="#logo">
+  <img src="static/images/cute_cat_w300_h300.jpg" width="300" height="300" loading="lazy" />
+</div>
+````
+
+
 
 
 
@@ -3155,12 +3476,26 @@ The width of the image (can be a number or percentage)
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 300
+image.height = 300
+image.attributes {
+    loading = lazy
 }
+image.enclose = <div id="#logo">|</div>
 
 ````
+
+**Expected Result**
+
+````html
+<div id="#logo">
+  <img src="static/images/cute_cat_w300_h300.jpg" width="300" height="300" loading="lazy" />
+</div>
+````
+
+
 
 
 
@@ -3180,12 +3515,26 @@ The height of the image (can be a number or percentage)
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 310
+image.height = 310
+image.attributes {
+    loading = lazy
 }
+image.enclose = <div id="#logo">|</div>
 
 ````
+
+**Expected Result**
+
+````html
+<div id="#logo">
+  <img src="static/images/cute_cat_w310_h310.jpg" width="310" height="310" loading="lazy" />
+</div>
+````
+
+
 
 
 
@@ -3205,12 +3554,23 @@ Alternative text for the image
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.alt = Cute cat!
+image.enclose = <div id="#gallery">|</div>
 
 ````
+
+**Expected Result**
+
+````html
+<div id="#gallery">
+  <img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" alt="Cute cat!" />
+</div>
+````
+
+
 
 
 
@@ -3230,12 +3590,54 @@ The title attribute of the image
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.title = Some Cute Cat!
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="Some Cute Cat!" />
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## image id
+#### id
+
+**Description**  
+Id of image
+
+
+**Example**
+````properties
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 310
+image.height = 310
+image.id = #cat
+
+````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w310_h310.jpg" width="310" height="310" id="#cat" />
+````
+
+
 
 
 
@@ -3255,12 +3657,21 @@ CSS class for styling the image
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.title = Some Cute Cat!
+image.class = aclass bclass cclass
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="Some Cute Cat!" class="aclass bclass cclass" />
+````
+
+
 
 
 
@@ -3275,17 +3686,26 @@ fragment {
 #### quality
 
 **Description**  
-Image quality for optimization
+Image quality for optimization, bigger is better.
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 320
+image.height = 320
+image.quality = 1
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w320_h320.jpg" width="320" height="320" />
+````
+
+
 
 
 
@@ -3305,12 +3725,21 @@ Lazy loading strategy (e.g., &#39;lazy&#39;, &#39;eager&#39;)
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 320
+image.height = 320
+image.loading = lazy
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w320_h320.jpg" width="320" height="320" loading="lazy" />
+````
+
+
 
 
 
@@ -3325,17 +3754,33 @@ fragment {
 #### is_static
 
 **Description**  
-Flag indicating if the image is static
+Flag indicating if the image is static, if so the img will not be scaled and has to be present in the configured static image directory. See package.hyperbricks in the module for settings. 
+```
+#conveys this logic:
+destDir := hbConfig.Directories[&#34;static&#34;] &#43; &#34;/images/&#34;
+if config.IsStatic {
+    destDir = hbConfig.Directories[&#34;render&#34;] &#43; &#34;/images/&#34;
+}
+```
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+image = <IMAGE>
+image.src = cute_cat.jpg
+image.width = 310
+image.height = 310
+image.is_static = true
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat.jpg" />
+````
+
+
 
 
 
@@ -3363,6 +3808,16 @@ fragment {
 
 
 
+
+
+
+
+
+
+
+
+
+
 **Properties**
 
 - [attributes](#images-attributes)
@@ -3370,7 +3825,12 @@ fragment {
 - [directory](#images-directory)
 - [width](#images-width)
 - [height](#images-height)
-- [is_static](#images-is_static)
+- [id](#images-id)
+- [class](#images-class)
+- [alt](#images-alt)
+- [title](#images-title)
+- [quality](#images-quality)
+- [loading](#images-loading)
 
 
 
@@ -3385,12 +3845,25 @@ Extra attributes like id, data-role, data-action
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #galleryimage_
+images.attributes {
+    decoding = async 
 }
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#galleryimage_0" loading="lazy" decoding="async" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#galleryimage_1" loading="lazy" decoding="async" />
+````
+
+
 
 
 
@@ -3405,17 +3878,30 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+Use the pipe symbol | to enclose the ````&lt;IMG&gt;```` tag.
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.attributes {
+    loading = lazy
 }
+image.enclose = <div id="#gallery">|</div>
 
 ````
+
+**Expected Result**
+
+````html
+<div id="#gallery">
+  <img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" />
+</div>
+````
+
+
 
 
 
@@ -3435,12 +3921,25 @@ The directory path containing the images
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.attributes {
+    loading = lazy
 }
+image.enclose = <div id="#gallery">|</div>
 
 ````
+
+**Expected Result**
+
+````html
+<div id="#gallery">
+  <img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" />
+</div>
+````
+
+
 
 
 
@@ -3460,12 +3959,19 @@ The width of the images (can be a number or percentage)
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 330
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w330_h330.jpg" width="330" height="330" />
+````
+
+
 
 
 
@@ -3485,11 +3991,16 @@ The height of the images (can be a number or percentage)
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
-}
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.height = 100
 
+````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" />
 ````
 
 
@@ -3501,21 +4012,222 @@ fragment {
 
 
 
-## images is_static
-#### is_static
+
+
+## images id
+#### id
 
 **Description**  
-Flag indicating if the images are static
+Id of images with a index added to it
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.attributes {
+    decoding = async 
 }
 
 ````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" decoding="async" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" decoding="async" />
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## images class
+#### class
+
+**Description**  
+CSS class for styling the image
+
+
+**Example**
+````properties
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.height = 10
+images.loading = lazy
+images.id = #galleryimage_
+images.class = galleryimage bordered
+images.attributes {
+    decoding = async 
+}
+
+````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h10.jpg" width="100" height="10" class="galleryimage bordered" id="#galleryimage_0" loading="lazy" decoding="async" />
+<img src="static/images/same_cute_cat_w100_h10.jpg" width="100" height="10" class="galleryimage bordered" id="#galleryimage_1" loading="lazy" decoding="async" />
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## images alt
+#### alt
+
+**Description**  
+Alternative text for the image
+
+
+**Example**
+````properties
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.height = 10
+images.loading = lazy
+images.id = #galleryimage_
+images.class = galleryimage bordered
+images.alt = gallery image
+
+````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h10.jpg" width="100" height="10" alt="gallery image" class="galleryimage bordered" id="#galleryimage_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h10.jpg" width="100" height="10" alt="gallery image" class="galleryimage bordered" id="#galleryimage_1" loading="lazy" />
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## images title
+#### title
+
+**Description**  
+The title attribute of the image
+
+
+**Example**
+````properties
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.title = sometitle
+
+````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="sometitle" id="#img_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" title="sometitle" id="#img_1" loading="lazy" />
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## images quality
+#### quality
+
+**Description**  
+Image quality for optimization
+
+
+**Example**
+````properties
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.quality = 1
+
+````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" />
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## images loading
+#### loading
+
+**Description**  
+Lazy loading strategy (e.g., &#39;lazy&#39;, &#39;eager&#39;)
+
+
+**Example**
+````properties
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.loading = lazy
+
+````
+
+**Expected Result**
+
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" />
+````
+
+
 
 
 
@@ -3557,17 +4269,34 @@ fragment {
 #### attributes
 
 **Description**  
-Extra attributes like id, data-role, data-action
+Extra attributes like id, data-role, data-action, type
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+head = <HEAD>
+head {
+    10 = <JAVASCRIPT>
+    10.file = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
 }
 
 ````
+
+**Expected Result**
+
+````html
+<head>
+  <script type="text/javascript">
+    console.log("Hello World!")
+  </script>
+  <meta name="generator" content="hyperbricks cms">
+</head>
+````
+
+
 
 
 
@@ -3582,17 +4311,33 @@ fragment {
 #### enclose
 
 **Description**  
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+head = <HEAD>
+head {
+    10 = <JAVASCRIPT>
+    10.file = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
+    10.enclose = <script defer></script>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<head>
+<script defer></script>
+console.log("Hello World!")
+<meta name="generator" content="hyperbricks cms">
+````
+
+
 
 
 

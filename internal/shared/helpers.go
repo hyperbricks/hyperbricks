@@ -98,7 +98,7 @@ func SortedUniqueKeys(m map[string]interface{}) []string {
 	return sorted
 }
 
-// TrimWrap removes the wrapping content around the placeholder '|'.
+// TrimWrap removes the enclosing content around the placeholder '|'.
 func TrimWrap(content, html string) string {
 	start := strings.Index(html, "|")
 	if start == -1 {

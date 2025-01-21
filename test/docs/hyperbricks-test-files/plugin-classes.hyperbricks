@@ -4,7 +4,7 @@ fragment {
 	
 }
 ==== explainer ====
-Flag indicating if the images are static
+Optional CSS classes for the link
 ==== expected json ====
 {
 	

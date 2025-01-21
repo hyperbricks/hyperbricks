@@ -41,7 +41,7 @@ func (tc *TextConfig) Validate() []error {
 	return errors
 }
 
-// Render processes paragraph text and outputs it, applying wrapping if specified.
+// Render processes paragraph text and outputs it, applying enclosing if specified.
 func (tr *TextRenderer) Render(instance interface{}) (string, []error) {
 	var errors []error
 	var builder strings.Builder
@@ -54,7 +54,7 @@ func (tr *TextRenderer) Render(instance interface{}) (string, []error) {
 	// appending validation errors
 	errors = append(errors, config.Validate()...)
 
-	// Apply wrapping if specified
+	// Apply enclosing if specified
 	textHTML := config.Value
 	if config.Enclose != "" {
 		textHTML = shared.EncloseContent(config.Enclose, textHTML)

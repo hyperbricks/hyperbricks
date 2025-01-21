@@ -81,7 +81,7 @@ func (sr *CssRenderer) Render(instance interface{}) (string, []error) {
 		// Wrap the content in <style> tags with extra attributes
 		CssHtml = fmt.Sprintf("<style%s>\n%s\n</style>", extraAttributes, string(config.Inline))
 
-		// Apply wrapping if specified
+		// Apply enclosing if specified
 		if config.Enclose != "" {
 			// Wrap the content in <style> tags with extra attributes
 			CssHtml = fmt.Sprintf("\n%s\n", string(config.Inline))

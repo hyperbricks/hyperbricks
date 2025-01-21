@@ -14,7 +14,7 @@ local_json_test {
     debug = false
 }
 ==== explainer ====
-Path to the local JSON file
+Debug the response data
 ==== expected json ====
 {
     "ConfigType": "<JSON_RENDER>",

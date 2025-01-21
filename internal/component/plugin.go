@@ -23,7 +23,7 @@ var _ shared.ComponentRenderer = (*PluginRenderer)(nil)
 type PluginConfig struct {
 	shared.Component `mapstructure:",squash"`
 	PluginName       string                 `mapstructure:"plugin"`
-	Classes          []string               `mapstructure:"classes" description:"Optional CSS classes for the link" example:"{!{link-classes.hyperbricks}}"`
+	Classes          []string               `mapstructure:"classes" description:"Optional CSS classes for the link" example:"{!{plugin-classes.hyperbricks}}"`
 	Data             map[string]interface{} `mapstructure:"data"`
 }
 
@@ -89,7 +89,7 @@ func (r *PluginRenderer) Render(instance interface{}) (string, []error) {
 		renderedContent,
 	)
 
-	// Apply wrapping if specified
+	// Apply enclosing if specified
 	if config.Enclose != "" {
 		html = shared.EncloseContent(config.Enclose, html)
 	}
@@ -173,7 +173,7 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}) (string, []error) {
 		renderedContent,
 	)
 
-	// Apply wrapping if specified
+	// Apply enclosing if specified
 	if config.Enclose != "" {
 		html = shared.EncloseContent(config.Enclose, html)
 	}

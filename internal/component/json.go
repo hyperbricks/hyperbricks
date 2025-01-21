@@ -16,11 +16,13 @@ type LocalJSONConfig struct {
 	shared.Component `mapstructure:",squash"`
 	FilePath         string `mapstructure:"file" validate:"required" description:"Path to the local JSON file" example:"{!{json-file.hyperbricks}}"`
 	Template         string `mapstructure:"template" validate:"required" description:"Template for rendering output" example:"{!{json-template.hyperbricks}}"`
+	IsTemplate       bool   `mapstructure:"istemplate"`
+	Debug            bool   `mapstructure:"debug" description:"Debug the response data" example:"{!{json-debug.hyperbricks}}"`
 }
 
 // LocalJSONConfigGetName returns the HyperBricks type associated with the LocalJSONConfig.
 func LocalJSONConfigGetName() string {
-	return "<JSON>"
+	return "<JSON_RENDER>"
 }
 
 // LocalJSONRenderer handles rendering of data from a local JSON file.
@@ -64,13 +66,33 @@ func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error
 		return builder.String(), errors
 	}
 
-	// Fetch the template content
-	templateContent, found := renderer.TemplateProvider(config.Template)
-	if !found {
-		warnings := []error{fmt.Errorf("template '%s' not found", config.Template)}
-		builder.WriteString(fmt.Sprintf("<!-- Template '%s' not found -->", config.Template))
-		errors = append(errors, warnings...)
-		return builder.String(), errors
+	if config.Debug {
+		jsonBytes, err := json.MarshalIndent(jsonData, "", "  ")
+		if err != nil {
+			fmt.Println("Error marshaling struct to JSON:", err)
+
+		}
+		builder.WriteString(fmt.Sprintf("<!-- JSON_RENDER.debug = true -->\n<!--  <![CDATA[ \n%s\n ]]> -->", string(jsonBytes)))
+	}
+
+	var templateContent string
+	if config.IsTemplate {
+		templateContent = config.Template
+	} else {
+		tc, found := renderer.TemplateProvider(config.Template)
+		if !found {
+			warning := shared.ComponentError{
+				Path:     config.Path,
+				Key:      config.Key,
+				Err:      fmt.Errorf("template '%s' not found", config.Template).Error(),
+				Rejected: false,
+			}
+			builder.WriteString(fmt.Sprintf("<!-- Template '%s' not found -->", config.Template))
+			errors = append(errors, warning)
+			return builder.String(), errors
+		} else {
+			templateContent = tc
+		}
 	}
 
 	// Apply the template
@@ -79,7 +101,7 @@ func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error
 		errors = append(errors, tmplErrors...)
 	}
 
-	// Apply wrapping if specified
+	// Apply enclosing if specified
 	if config.Enclose != "" {
 		renderedOutput = shared.EncloseContent(config.Enclose, renderedOutput)
 	}

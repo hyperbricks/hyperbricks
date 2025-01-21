@@ -9,7 +9,7 @@ head {
     10.enclose = <script defer></script>
 }
 ==== explainer ====
-The wrapping HTML element for the header divided by |
+The enclosing HTML element for the header divided by |
 ==== expected json ====
 {
     "ConfigType": "<HEAD>",
