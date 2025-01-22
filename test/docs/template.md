@@ -4,8 +4,8 @@
 
 # HyperBricks
 **Licence:** MIT  
-**Version:** v0.1.0-alpha   
-**Build time:** 2025-01-19T20:58:13Z   
+**Version:** {{.version}}  
+**Build time:** {{.buildtime}}   
 
 Go direct to:
 

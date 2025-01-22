@@ -175,11 +175,17 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 					line := lines[*index]
 					*index++
 
-					if strings.HasSuffix(line, "]>>") {
-						// Remove the closing delimiter and stop collecting
-						multilineValue.WriteString(strings.TrimSuffix(line, "]>>"))
+					// Trim only the right side, so leading indentation (if you care about it) remains
+					trimmedLine := strings.TrimRight(line, " \t")
+
+					if strings.HasSuffix(trimmedLine, "]>>") {
+						// Remove "]>>" from the *trimmed* line
+						contentBeforeDelimiter := strings.TrimSuffix(trimmedLine, "]>>")
+						multilineValue.WriteString(contentBeforeDelimiter)
 						break
 					}
+
+					// Otherwise, append the line as is (plus a newline)
 					multilineValue.WriteString(line)
 					multilineValue.WriteString("\n")
 				}

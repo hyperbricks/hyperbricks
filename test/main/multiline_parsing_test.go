@@ -159,3 +159,37 @@ func TestMultilineParsing_004(t *testing.T) {
 		t.Errorf("Test failed!\nExpected:\n%#v\nGot:\n%#v", expected, parsedConfig)
 	}
 }
+
+func TestMultilineParsing_005(t *testing.T) {
+	// spaces after multiline close ]>>
+	hyperBricks := `header_test.header {
+	10 = <HTML>
+	10.value = <<[<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	]>>   
+
+}`
+
+	// Expected output should contain the HTML value after parsing
+	expected := map[string]interface{}{
+		"header_test": map[string]interface{}{
+			"header": map[string]interface{}{
+				"10": map[string]interface{}{
+					"@type": "<HTML>",
+					"value": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t",
+				},
+			},
+		},
+	}
+
+	// Call ParseHyperScript function with the HyperBricks
+	parser.KnownTypes["<HTML>"] = true
+	parsedConfig := parser.ParseHyperScript(hyperBricks)
+
+	// Inspect structure of parsed output for debugging
+	log.Printf("Parsed output structure: %v", parsedConfig)
+
+	// Compare the parsed config with the expected config using reflect.DeepEqual
+	if !reflect.DeepEqual(parsedConfig, expected) {
+		t.Errorf("Test failed!\nExpected:\n%#v\nGot:\n%#v", expected, parsedConfig)
+	}
+}

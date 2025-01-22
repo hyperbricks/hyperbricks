@@ -15,8 +15,8 @@ func RegisterSubcommands() {
 	// Add subcommands explicitly
 	RootCmd.AddCommand(NewInitCommand())
 	RootCmd.AddCommand(NewStartCommand())
-	//RootCmd.AddCommand(NewSelectCommand())
-	//RootCmd.AddCommand(NewGoodbyeCommand())
+	RootCmd.AddCommand(VersionCommand())
+	RootCmd.AddCommand(NewSelectCommand())
 }
 
 // Execute runs the root command

@@ -4,10 +4,10 @@ package commands
 import (
 	"fmt"
 	"io/ioutil"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +25,7 @@ func (i item) FilterValue() string { return i.title }
 func NewSelectCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "select",
-		Short: "Select a .hyperbricks config file",
+		Short: "Select a hyperbricks module",
 		Run: func(cmd *cobra.Command, args []string) {
 			// IMPORTANT: Use extendedInitialModel() instead of initialModel().
 			program := tea.NewProgram(extendedInitialModel())
@@ -46,23 +46,22 @@ type model struct {
 	quitting bool
 }
 
-// We’ll always return our extended model, which can handle the “enter” key.
 func extendedInitialModel() model {
 	var items []list.Item
 
-	// Read .hyperbricks files from the current directory
-	files, err := ioutil.ReadDir(".")
+	// Read subdirectories from the "modules" directory
+	files, err := ioutil.ReadDir("./modules")
 	if err != nil {
-		fmt.Println("Error reading directory:", err)
+		fmt.Println("Error reading ./modules directory:", err)
 		return model{}
 	}
 
 	for _, file := range files {
-		if !file.IsDir() && strings.HasSuffix(file.Name(), ".hyperbricks") {
-			name := strings.TrimSuffix(file.Name(), ".hyperbricks")
+		if file.IsDir() {
+			name := file.Name()
 			items = append(items, item{
 				title: name,
-				desc:  "Configuration: " + name,
+				desc:  "Module directory: " + name,
 			})
 		}
 	}
@@ -70,11 +69,39 @@ func extendedInitialModel() model {
 	const defaultWidth = 100
 	const listHeight = 14
 
-	l := list.New(items, list.NewDefaultDelegate(), defaultWidth, listHeight)
-	l.Title = "Select a .hyperbricks Configuration"
+	// Create a delegate from the default, then customize it
+	delegate := list.NewDefaultDelegate()
+
+	// Define the orange color for selected items (RGB #FFA500)
+	orange := lipgloss.Color("#FFA500")
+
+	// Customize the selected title’s style
+	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.
+		Foreground(orange).
+		Bold(true) // optional
+
+	// Customize the selected description’s style
+	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.
+		Foreground(orange)
+	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.BorderLeftForeground(orange)
+
+	// Optionally, you might also want to change the symbol/color prefix
+	// for the selected line:
+	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.
+		Foreground(orange)
+	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.
+		Foreground(orange)
+	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.BorderLeftForeground(orange)
+
+	// Finally, create the list with the custom delegate
+	l := list.New(items, delegate, defaultWidth, listHeight)
+
+	l.Title = "Select a module"
+	l.Styles.Title = l.Styles.Title.Background(orange)
+
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
-	l.SetShowHelp(false)
+	l.SetShowHelp(true)
 
 	return model{list: l}
 }
@@ -103,12 +130,12 @@ func (m model) ExtendedUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter":
-			fmt.Println("Enter key pressed!")
+
 			selected, ok := m.HandleSelection()
 			if ok {
 				// Here, parse the selected configuration and execute the start command
 				startCmd := NewStartCommand()
-				startCmd.Flags().Set("config", selected)
+				startCmd.Flags().Set("module", selected)
 
 				// Execute the command
 				if err := startCmd.Execute(); err != nil {
