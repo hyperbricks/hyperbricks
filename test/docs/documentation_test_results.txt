@@ -107,21 +107,12 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/api_render-user
 === RUN   Test_TestAndDocumentationRender/api_render-pass
 === RUN   Test_TestAndDocumentationRender/api_render-debug
-<<<<<<< HEAD
-2025/01/21 11:53:40 Version: v0.1.1-alpha
-2025/01/21 11:53:40 Build Time: 2025-01-21T10:53:38Z
-2025/01/21 11:53:40 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.1-alpha.md
---- PASS: Test_TestAndDocumentationRender (1.71s)
+2025/01/22 07:42:04 Version: v0.1.1-alpha
+2025/01/22 07:42:04 Build Time: 2025-01-22T06:42:01Z
+2025/01/22 07:42:04 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.1-alpha.md
+--- PASS: Test_TestAndDocumentationRender (1.72s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
-=======
-2025/01/21 12:27:51 Version: v0.1.1-alpha
-2025/01/21 12:27:51 Build Time: 2025-01-21T11:27:48Z
-2025/01/21 12:27:51 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.1-alpha.md
---- PASS: Test_TestAndDocumentationRender (1.70s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.04s)
->>>>>>> main
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-route (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-section (0.00s)
@@ -215,13 +206,9 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/menu-active (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
-<<<<<<< HEAD
     --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.31s)
-=======
-    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.30s)
->>>>>>> main
     --- PASS: Test_TestAndDocumentationRender/api_render-endpoint (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-method (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-method (0.10s)
     --- PASS: Test_TestAndDocumentationRender/api_render-headers (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-body (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-template (0.09s)
@@ -230,4 +217,4 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/api_render-pass (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.09s)
 PASS
-ok  	command-line-arguments	1.915s
+ok  	command-line-arguments	1.948s

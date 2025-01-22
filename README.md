@@ -1,3 +1,5 @@
+
+
 **Note:**  
 
 This project and it's documentation is currently incomplete and in the experimental phase. It is recommended to use the code only for exploration or from a developer's perspective at this stage. If you're interested, you can explore the components and composite renderers in the `internal/component` and `internal/composite` directories.
@@ -207,8 +209,11 @@ fragment.content {
 To install HyperBricks, use the following command:
 
 ```bash
-#latest
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@6cda3de
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks
+
+# or 
+
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@<version>
 ```
 
 This command downloads and installs the HyperBricks CLI tool on your system.
