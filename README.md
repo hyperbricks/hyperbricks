@@ -12,7 +12,7 @@ The `<API>` type is currently undocumented because it is still evolving and like
 # HyperBricks
 **Licence:** MIT  
 **Version:** v0.1.1-alpha  
-**Build time:** 2025-01-22T06:53:36Z   
+**Build time:** 2025-01-22T08:56:42Z   
 
 Go direct to:
 
@@ -203,16 +203,13 @@ fragment.content {
 }
 ```
 
+
 ### Installation
 
 To install HyperBricks, use the following command:
 
 ```bash
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks
-
-# or 
-
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@<version>
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
 ```
 
 This command downloads and installs the HyperBricks CLI tool on your system.
