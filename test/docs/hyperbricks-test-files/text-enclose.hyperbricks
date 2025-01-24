@@ -5,8 +5,7 @@ text {
     enclose = <span>|</span>
 }
 ==== explainer ====
-The enclosing HTML element for the header divided by |
-==== expected json ====
+The enclosing HTML element for the text divided by |
 ==== expected json ====
 {
     "ConfigType": "<TEXT>",
