@@ -11,8 +11,8 @@ The `<API>` type is currently undocumented because it is still evolving and like
 
 # HyperBricks
 **Licence:** MIT  
-**Version:** v0.1.1-alpha  
-**Build time:** 2025-01-22T06:53:36Z   
+**Version:** v0.1.2-alpha  
+**Build time:** 2025-01-24T20:36:15Z   
 
 Go direct to:
 
@@ -203,16 +203,13 @@ fragment.content {
 }
 ```
 
+
 ### Installation
 
 To install HyperBricks, use the following command:
 
 ```bash
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks
-
-# or 
-
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@<version>
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
 ```
 
 This command downloads and installs the HyperBricks CLI tool on your system.
@@ -457,7 +454,7 @@ html.trimspace = true
 #### enclose
 
 **Description**  
-The enclosing HTML element for the header divided by |
+The enclosing HTML element for the text divided by |
 
 
 **Example**
@@ -1956,12 +1953,15 @@ hypermedia.10.value = <p>some HTML</p>
 
 
 
+
+
 **Properties**
 
 
 - [template](#template-template)
 - [istemplate](#template-istemplate)
 - [values](#template-values)
+- [enclose](#template-enclose)
 
 
 
@@ -2125,6 +2125,51 @@ fragment.content {
   <p>
     some text
   </p>
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## template enclose
+#### enclose
+
+**Description**  
+Enclosing property for the template rendered output divided by |
+
+
+**Example**
+````properties
+myComponent = <TEMPLATE>
+myComponent {
+    template = <<[
+      <img src="{{src}}" alt="{{alt}}" width="{{width}}" height="{{height}}">
+    ]>>
+    istemplate = true
+    values {
+        width = 500
+        height = 600
+        alt = Girl in a jacket
+        src = img_girl.jpg
+    }
+    enclose = <div id="image-container">|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div id="image-container">
+  <img src="img_girl.jpg" alt="Girl in a jacket" width="500" height="600">
 </div>
 ````
 
