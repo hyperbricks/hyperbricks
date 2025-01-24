@@ -1,0 +1,38 @@
+==== hyperbricks config {!{myComponent}} ====
+myComponent = <TEMPLATE>
+myComponent {
+    template = <<[
+      <img src="{{src}}" alt="{{alt}}" width="{{width}}" height="{{height}}">
+    ]>>
+    istemplate = true
+    values {
+        width = 500
+        height = 600
+        alt = Girl in a jacket
+        src = img_girl.jpg
+    }
+    enclose = <div id="image-container">|</div>
+}
+==== explainer ====
+Enclosing property for the template rendered output divided by |
+==== expected json ====
+{
+    "ConfigType": "<TEMPLATE>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "Items": null,
+    "MetaDocDescription": "",
+    "Template": "\n<img src=\"{{src}}\" alt=\"{{alt}}\" width=\"{{width}}\" height=\"{{height}}\">\n    ",
+    "IsTemplate": true,
+    "Values": {
+      "alt": "Girl in a jacket",
+      "height": "600",
+      "src": "img_girl.jpg",
+      "width": "500"
+    },
+    "Enclose": "<div id=\"image-container\">|</div>"
+  }
+==== expected output ====
+<div id="image-container"><img src="img_girl.jpg" alt="Girl in a jacket" width="500" height="600"></div> 
