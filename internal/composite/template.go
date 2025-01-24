@@ -20,6 +20,7 @@ type TemplateConfig struct {
 	Template           string                 `mapstructure:"template" description:"The template used for rendering" example:"{!{template-template.hyperbricks}}"`
 	IsTemplate         bool                   `mapstructure:"istemplate" description:"Determines if the field is a template or reference" example:"{!{template-istemplate.hyperbricks}}"`
 	Values             map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks}}"`
+	Enclose            string                 `mapstructure:"enclose" description:"Enclosing property for the template rendered output" example:"{!{template-enclose.hyperbricks}}"`
 }
 
 type TemplateRenderer struct {
@@ -146,8 +147,13 @@ func applyTemplate(templateStr string, data map[string]interface{}, config Templ
 		return "", errors
 	}
 
+	htmlContent := output.String()
+	if config.Enclose != "" {
+		htmlContent = shared.EncloseContent(config.Enclose, htmlContent)
+	}
+
 	// Return the rendered output
-	return output.String(), errors
+	return htmlContent, errors
 }
 
 // preprocessTemplate converts {{a}} to {{.a}} for all variable references without a leading dot
