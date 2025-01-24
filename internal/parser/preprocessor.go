@@ -207,7 +207,7 @@ func PreprocessHyperScript(hyperBricks string, hyperbricksDir string, templateDi
 
 // processImports recursively processes @import directives to include external HyperBricks files.
 func processImports(hyperBricks, baseDir string, importedFiles map[string]bool) (string, error) {
-	importRegex := regexp.MustCompile(`@import\s+'([^']+)'`)
+	importRegex := regexp.MustCompile(`@import\s+['"]([^'"]+)['"]`)
 	matches := importRegex.FindAllStringSubmatch(hyperBricks, -1)
 
 	for _, match := range matches {
