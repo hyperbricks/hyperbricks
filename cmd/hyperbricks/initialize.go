@@ -18,6 +18,11 @@ func init() {
 	}
 
 	shared.Init_configuration()
+
+	if commands.Version {
+		return
+	}
+
 	shared.Module = fmt.Sprintf("modules/%s/package.hyperbricks", commands.StartModule)
 	hbConfig := getHyperBricksConfiguration()
 
@@ -37,7 +42,6 @@ func init() {
 	if commands.RenderStatic {
 		fmt.Println("RENDER STATIC")
 		basic_initialisation()
-
 		return
 	}
 

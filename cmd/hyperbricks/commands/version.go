@@ -7,6 +7,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	Version bool = false
+)
+
 func VersionCommand() *cobra.Command {
 	var version string
 
@@ -14,6 +18,7 @@ func VersionCommand() *cobra.Command {
 		Use:   "version",
 		Short: "Show version",
 		Run: func(cmd *cobra.Command, args []string) {
+			Version = true
 			fmt.Println(assets.VersionMD)
 		},
 	}
