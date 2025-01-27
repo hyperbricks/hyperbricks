@@ -87,6 +87,11 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 			logger.Errorw("Error creating destination directory", "directory", renderDir, "error", err)
 		}
 
+		err = makeStatic(tempConfigs, renderDir)
+		if err != nil {
+			logger.Errorw("Error creating static files", "error", err)
+		}
+
 		err = copy.Copy(staticDir, filepath.Join(renderDir, "static"))
 		if err != nil {
 			logger.Errorw("Error copying directory", "source", staticDir, "destination", filepath.Join(renderDir, "static"), "error", err)
@@ -94,10 +99,6 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 			logger.Infow("Directory copied successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
 		}
 
-		err = makeStatic(tempConfigs, renderDir)
-		if err != nil {
-			logger.Errorw("Error creating static files", "error", err)
-		}
 	}
 
 }
