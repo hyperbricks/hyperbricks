@@ -13,6 +13,47 @@ import (
 	"github.com/yosssi/gohtml"
 )
 
+func renderStaticContent(route string) string {
+	hbConfig := getHyperBricksConfiguration()
+
+	_config, found := getConfig(route)
+	if !found {
+		logging.GetLogger().Info("Config not found for route", "route", route)
+		return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route)
+	}
+
+	configCopy := make(map[string]interface{})
+	for key, value := range _config {
+		configCopy[key] = value
+	}
+
+	if configCopy["@type"].(string) == composite.HxApiConfigGetName() {
+		// Extract hxdata
+		hxdata := make(map[string]interface{})
+
+		// adding to mapstructure
+		configCopy["hx_form_data"] = hxdata
+		configCopy["hx_response"] = make(map[string]interface{})
+
+	}
+
+	if configCopy["@type"].(string) == composite.FragmentConfigGetName() {
+		configCopy["hx_response"] = make(map[string]interface{})
+	}
+
+	htmlContent, renderErrors := rm.Render(configCopy["@type"].(string), configCopy)
+
+	htmlContent = HandleRenderErrors(renderErrors) + htmlContent
+
+	if hbConfig.Server.Beautify {
+		htmlContent = gohtml.Format(htmlContent)
+	}
+
+	cacheTime := time.Now().Format(time.RFC3339)
+	htmlContent += fmt.Sprintf("\n<!-- Cached at: %s -->", cacheTime)
+	return htmlContent
+}
+
 func renderContent(w http.ResponseWriter, r *http.Request, route string) string {
 	hbConfig := getHyperBricksConfiguration()
 

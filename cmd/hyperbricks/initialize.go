@@ -17,13 +17,10 @@ func init() {
 		fmt.Println(err)
 	}
 
-	if !commands.StartMode {
-		return
-	}
-
 	shared.Init_configuration()
 	shared.Module = fmt.Sprintf("modules/%s/package.hyperbricks", commands.StartModule)
 	hbConfig := getHyperBricksConfiguration()
+
 	orangeTrueColor := "\033[38;2;255;165;0m"
 	reset := "\033[0m"
 	logo := `
@@ -36,6 +33,17 @@ func init() {
 
 `
 	logging.GetLogger().Info(orangeTrueColor, logo, reset)
+
+	if commands.RenderStatic {
+		fmt.Println("RENDER STATIC")
+		basic_initialisation()
+
+		return
+	}
+
+	if !commands.StartMode {
+		return
+	}
 
 	switch hbConfig.Mode {
 	case shared.DEBUG_MODE:
@@ -54,10 +62,23 @@ var (
 	cancel context.CancelFunc
 )
 
+// initialisation for server...
 func initialisation(passedCtx context.Context, passedCancel context.CancelFunc) {
 	ctx = passedCtx
 	cancel = passedCancel
 
+	basic_initialisation()
+
+	//InitStaticFileServer()
+	initStaticFileServer()
+
+	// Now everything is ready, start the server
+	StartServer(ctx)
+
+}
+
+// minimal initialisation (also for static rendering)
+func basic_initialisation() {
 	setWorkingDirectory()
 	applyHyperBricksConfigurations()
 
@@ -67,11 +88,5 @@ func initialisation(passedCtx context.Context, passedCancel context.CancelFunc) 
 
 	// now configure the registered renderers with acquired configurations
 	configureRenderers()
-
-	//InitStaticFileServer()
-	initStaticFileServer()
-
-	// Now everything is ready, start the server
-	StartServer(ctx)
 
 }

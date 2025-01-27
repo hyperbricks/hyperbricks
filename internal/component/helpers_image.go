@@ -87,6 +87,7 @@ func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (st
 	}
 	hbConfig := shared.GetHyperBricksConfiguration()
 	destDir := hbConfig.Directories["static"] + "/images/"
+
 	if config.IsStatic {
 		destDir = hbConfig.Directories["render"] + "/images/"
 	}

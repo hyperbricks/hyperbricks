@@ -17,6 +17,7 @@ func RegisterSubcommands() {
 	RootCmd.AddCommand(NewStartCommand())
 	RootCmd.AddCommand(VersionCommand())
 	RootCmd.AddCommand(NewSelectCommand())
+	RootCmd.AddCommand(NewMakeStaticCommand())
 }
 
 // Execute runs the root command

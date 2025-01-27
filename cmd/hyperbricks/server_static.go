@@ -1,17 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/otiai10/copy"
 )
-
-var staticMode = false
 
 func initStaticFileServer() {
 	hbConfig := getHyperBricksConfiguration()
@@ -50,19 +50,26 @@ func FileHandler(dirs map[string]string) http.HandlerFunc {
 	}
 }
 
-func PrepareForStaticRendering() {
+func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 
 	hbConfig := shared.GetHyperBricksConfiguration()
 	logger := logging.GetLogger()
 
-	if staticMode {
-		renderDir := "./rendered"
+	if commands.RenderStatic {
+
+		fmt.Println("\n\n\n\nSTATIC RENDERING...")
+		renderDir := ""
 		if tbrender, ok := hbConfig.Directories["render"]; ok {
 			renderDir = tbrender
 		}
-		staticDir := "./static"
+
+		staticDir := ""
 		if tbstatic, ok := hbConfig.Directories["static"]; ok {
 			staticDir = tbstatic
+		}
+
+		if renderDir == "" || staticDir == "" {
+			return
 		}
 
 		logger.Infow("Copying static directory", "source", staticDir, "destination", renderDir)
@@ -70,7 +77,6 @@ func PrepareForStaticRendering() {
 		if err := validatePath(renderDir); err != nil {
 			logger.Errorw("Path validation failed", "path", renderDir, "error", err)
 		}
-
 		err := os.RemoveAll(renderDir)
 		if err != nil {
 			logger.Errorw("Error removing destination directory", "directory", renderDir, "error", err)
@@ -88,10 +94,10 @@ func PrepareForStaticRendering() {
 			logger.Infow("Directory copied successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
 		}
 
-		// err = makeStatic(tempConfigs, renderDir)
-		// if err != nil {
-		// 	logger.Errorw("Error creating static files", "error", err)
-		// }
+		err = makeStatic(tempConfigs, renderDir)
+		if err != nil {
+			logger.Errorw("Error creating static files", "error", err)
+		}
 	}
 
 }

@@ -37,7 +37,7 @@ func PreProcessAndPopulateConfigs() error {
 	updateGlobalConfigs(tempConfigs)
 	updateGlobalHyperMediasBySection(tempHyperMediasBySection)
 
-	PrepareForStaticRendering()
+	PrepareForStaticRendering(tempConfigs)
 	resetHTMLCache()
 
 	logger.Infow("Hyperbricks configurations loaded", "count", len(configs))
@@ -129,7 +129,12 @@ func processScript(filename string, config map[string]interface{},
 
 			}
 			location := fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
-			logger.Info(blueTrueColor, fmt.Sprintf("route: [http://%s/%s] initialized:", location, hypermediaConfig.Route), reset)
+			if hypermediaConfig.Static == "" {
+				logger.Info(blueTrueColor, fmt.Sprintf("route: [http://%s/%s] initialized:", location, hypermediaConfig.Route), reset)
+			} else {
+				logger.Info(blueTrueColor, fmt.Sprintf("static file: %s", hypermediaConfig.Static), reset)
+			}
+
 			//
 			// Add metadata and store in tempConfigs
 			obj["file"] = filename

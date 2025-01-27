@@ -163,6 +163,7 @@ func loadHyperBricksConfiguration() *Config {
 
 	// Initialize with default values
 	var config = Config{
+
 		Mode: LIVE_MODE, // Default mode
 
 		Logger: LoggerConfig{

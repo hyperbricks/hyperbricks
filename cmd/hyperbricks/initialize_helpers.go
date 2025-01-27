@@ -90,35 +90,38 @@ page.10.value = HELLO WORLD!
 
 }
 
-// func makeStatic(config map[string]map[string]interface{}, renderDir string) error {
-// 	logger := logging.GetLogger()
-// 	for _, v := range config {
-// 		obj := v
+func makeStatic(config map[string]map[string]interface{}, renderDir string) error {
+	logger := logging.GetLogger()
+	for _, v := range config {
+		obj := v
 
-// 		renderPath, hasStatic := obj["static"].(string)
-// 		if hasStatic && strings.TrimSpace(renderPath) != "" {
-// 			htmlContent := helpers.RenderPageContent(obj, pagesBySection)
+		renderPath, hasStatic := obj["static"].(string)
+		if hasStatic && strings.TrimSpace(renderPath) != "" {
+			htmlContent := fmt.Sprintf("%v", v)
+			if v["route"] != "" {
+				htmlContent = renderStaticContent(v["static"].(string))
+			}
 
-// 			renderPath = fmt.Sprintf("%s/%s", renderDir, renderPath)
-// 			dir := filepath.Dir(renderPath)
-// 			logger.Debugw("Static file path", "directory", dir, "path", renderPath)
-// 			err := os.MkdirAll(dir, os.ModePerm)
-// 			if err != nil {
-// 				logger.Errorw("Error creating directories for path", "path", renderPath, "error", err)
-// 				continue
-// 			}
+			renderPath = fmt.Sprintf("%s/%s", renderDir, renderPath)
+			dir := filepath.Dir(renderPath)
+			logger.Debugw("Static file path", "directory", dir, "path", renderPath)
+			err := os.MkdirAll(dir, os.ModePerm)
+			if err != nil {
+				logger.Errorw("Error creating directories for path", "path", renderPath, "error", err)
+				continue
+			}
 
-// 			err = os.WriteFile(renderPath, []byte(htmlContent), 0644)
-// 			if err != nil {
-// 				logger.Errorw("Error writing static file", "path", renderPath, "error", err)
-// 				continue
-// 			}
+			err = os.WriteFile(renderPath, []byte(htmlContent), 0644)
+			if err != nil {
+				logger.Errorw("Error writing static file", "path", renderPath, "error", err)
+				continue
+			}
 
-// 			logger.Infow("Rendered and saved static file", "path", renderPath)
-// 		}
-// 	}
-// 	return nil
-// }
+			logger.Infow("Rendered and saved static file", "path", renderPath)
+		}
+	}
+	return nil
+}
 
 func watchDirectories(directories []string, reloadFunc func()) error {
 	logger := logging.GetLogger()
