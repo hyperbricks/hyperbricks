@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net/http"
 	"os"
@@ -77,17 +78,24 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 		if err := validatePath(renderDir); err != nil {
 			logger.Errorw("Path validation failed", "path", renderDir, "error", err)
 		}
-		err := os.RemoveAll(renderDir)
-		if err != nil {
-			logger.Errorw("Error removing destination directory", "directory", renderDir, "error", err)
+
+		// Prompt for confirmation before deleting
+		absPath, _ := filepath.Abs(renderDir)
+		if !confirmAction(fmt.Sprintf("\n\nDo you want to remove all files in %s before rendering the new files?", absPath)) {
+			fmt.Println("Leave render dir as it is... Continue rendering.")
+		} else {
+			err := os.RemoveAll(renderDir)
+			if err != nil {
+				logger.Errorw("Error removing destination directory", "directory", renderDir, "error", err)
+			}
+
+			err = os.MkdirAll(renderDir, 0755)
+			if err != nil {
+				logger.Errorw("Error creating destination directory", "directory", renderDir, "error", err)
+			}
 		}
 
-		err = os.MkdirAll(renderDir, 0755)
-		if err != nil {
-			logger.Errorw("Error creating destination directory", "directory", renderDir, "error", err)
-		}
-
-		err = makeStatic(tempConfigs, renderDir)
+		err := makeStatic(tempConfigs, renderDir)
 		if err != nil {
 			logger.Errorw("Error creating static files", "error", err)
 		}
@@ -96,9 +104,17 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 		if err != nil {
 			logger.Errorw("Error copying directory", "source", staticDir, "destination", filepath.Join(renderDir, "static"), "error", err)
 		} else {
-			logger.Infow("Directory copied successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
+			logger.Infow("Copied static file directory successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
 		}
-
 	}
 
+}
+
+// confirmAction prompts the user for confirmation before proceeding.
+func confirmAction(prompt string) bool {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Printf("%s (yes/no): ", prompt)
+	response, _ := reader.ReadString('\n')
+	response = strings.TrimSpace(strings.ToLower(response))
+	return response == "yes"
 }

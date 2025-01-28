@@ -35,9 +35,17 @@ This will launch the server, allowing you to manage and serve hypermedia content
 
 Or ```hyperbricks start``` for running the module named ```default```.
 
+### Rendering static files to render directory
+
+```bash
+hyperbricks static  -m <name-of-hyperbricks-module>
+```
+
 ### Additional Commands
 
 HyperBricks provides other useful commands:
+
+
 
 - **`completion`**: Generate shell autocompletion scripts for supported shells.
 - **`help`**: Display help information for any command.
