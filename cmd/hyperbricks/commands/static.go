@@ -42,7 +42,7 @@ func NewMakeStaticCommand() *cobra.Command {
 
 	// Add flags
 	cmd.Flags().BoolVarP(&static, "static", "s", true, "Render static content")
-	cmd.Flags().StringVarP(&StartModule, "module", "m", "default", "module in the modules dorectory")
+	cmd.Flags().StringVarP(&StartModule, "module", "m", "default", "module in the ./modules directory")
 
 	return cmd
 }
