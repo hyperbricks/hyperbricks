@@ -38,7 +38,7 @@ func renderStaticContent(route string) string {
 	}
 
 	if configCopy["@type"].(string) == composite.FragmentConfigGetName() {
-		configCopy["hx_response"] = make(map[string]interface{})
+		configCopy["hx_response"] = nil
 	}
 
 	htmlContent, renderErrors := rm.Render(configCopy["@type"].(string), configCopy)
