@@ -59,6 +59,9 @@ func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
 	var errors []error
 	var config FragmentConfig
 
+	var templatebuilder strings.Builder
+	var treebuilder strings.Builder
+
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
@@ -79,9 +82,6 @@ func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
 	errors = append(errors, config.Validate()...)
 
 	// HEAD?
-
-	var templatebuilder strings.Builder
-	var treebuilder strings.Builder
 
 	outputHtml := ""
 	// TEMPLATE?
