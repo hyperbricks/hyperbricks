@@ -11,8 +11,8 @@ The `<API>` type is currently undocumented because it is still evolving and like
 
 # HyperBricks
 **Licence:** MIT  
-**Version:** v0.1.4-alpha  
-**Build time:** 2025-01-28T08:46:10Z   
+**Version:** v0.1.41-alpha  
+**Build time:** 2025-01-28T14:00:48Z   
 
 Go direct to:
 
