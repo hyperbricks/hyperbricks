@@ -108,10 +108,10 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/api_render-user
 === RUN   Test_TestAndDocumentationRender/api_render-pass
 === RUN   Test_TestAndDocumentationRender/api_render-debug
-2025/01/28 09:38:51 Version: v0.1.4-alpha
-2025/01/28 09:38:51 Build Time: 2025-01-28T08:38:49Z
-2025/01/28 09:38:51 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.4-alpha.md
---- PASS: Test_TestAndDocumentationRender (1.67s)
+2025/01/28 09:46:13 Version: v0.1.4-alpha
+2025/01/28 09:46:13 Build Time: 2025-01-28T08:46:10Z
+2025/01/28 09:46:13 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.4-alpha.md
+--- PASS: Test_TestAndDocumentationRender (1.70s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -208,15 +208,15 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/menu-active (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.28s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-endpoint (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.30s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-endpoint (0.10s)
     --- PASS: Test_TestAndDocumentationRender/api_render-method (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-headers (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-body (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-body (0.10s)
     --- PASS: Test_TestAndDocumentationRender/api_render-template (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-istemplate (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-istemplate (0.10s)
     --- PASS: Test_TestAndDocumentationRender/api_render-user (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-pass (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.09s)
 PASS
-ok  	command-line-arguments	1.896s
+ok  	command-line-arguments	1.931s
