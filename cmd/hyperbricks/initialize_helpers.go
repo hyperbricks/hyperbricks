@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -13,23 +14,27 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
-func validatePath(dir string) error {
-	if strings.TrimSpace(dir) == "" {
+// validatePath ensures that the given path is within the ./modules directory.
+func validatePath(renderDir string) error {
+	if strings.TrimSpace(renderDir) == "" {
 		return fmt.Errorf("the path is empty")
 	}
 
-	absPath, err := filepath.Abs(dir)
+	// Get the absolute path of ./modules
+	allowedBasePath, err := filepath.Abs("./modules")
 	if err != nil {
-		return fmt.Errorf("failed to resolve absolute path for %s: %v", dir, err)
+		return errors.New("failed to resolve base path for ./modules")
 	}
 
-	cwd, err := os.Getwd()
+	// Get the absolute path of the renderDir
+	absRenderDir, err := filepath.Abs(renderDir)
 	if err != nil {
-		return fmt.Errorf("failed to get current working directory: %v", err)
+		return errors.New("failed to resolve absolute path for renderDir")
 	}
 
-	if !strings.HasPrefix(absPath, cwd) {
-		return fmt.Errorf("the path %s is outside the current working directory %s", absPath, cwd)
+	// Ensure the renderDir is within the allowed base path
+	if !strings.HasPrefix(absRenderDir, allowedBasePath) {
+		return errors.New("renderDir is outside the allowed ./modules directory")
 	}
 
 	return nil
