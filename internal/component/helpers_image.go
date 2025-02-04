@@ -268,6 +268,7 @@ func addOptionalAttributes(config SingleImageConfig, builder *strings.Builder) {
 		"longdesc",
 		"referrerpolicy",
 		"ismap",
+		"class",
 	}
 
 	extraAttributes := shared.RenderAllowedAttributes(config.ExtraAttributes, allowedAttributes)
