@@ -18,6 +18,7 @@ var (
 	StartMode   bool
 	StartModule string
 	Port        int32
+	Production  bool
 )
 
 // NewStartCommand creates the "start" subcommand
@@ -51,5 +52,6 @@ func NewStartCommand() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&StartModule, "module", "m", "default", "module in the modules dorectory")
 	cmd.Flags().Int32VarP(&Port, "port", "p", 8080, "port")
+	cmd.Flags().BoolVarP(&Production, "production", "P", false, "set production mode")
 	return cmd
 }

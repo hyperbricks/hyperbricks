@@ -6,9 +6,14 @@ import (
 	"os"
 
 	"github.com/eiannone/keyboard"
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 )
 
 func keyboardActions() {
+
+	if commands.Production {
+		return
+	}
 
 	hbConfig := getHyperBricksConfiguration()
 
