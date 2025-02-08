@@ -60,6 +60,11 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 	errors = append(errors, config.Validate()...)
 
 	var templateContent string
+
+	if !config.IsTemplate {
+		config.IsTemplate = checkString(config.Template)
+	}
+
 	if config.IsTemplate {
 		templateContent = config.Template
 	} else {
@@ -199,4 +204,12 @@ func replaceRemainingPlaceholders(template string) string {
 		start = strings.Index(template, "{{")
 	}
 	return template
+}
+
+// checkString checks if the input contains "{{" and "}}" but does not contain ".html" or ".tmpl"
+func checkString(s string) bool {
+	return strings.Contains(s, "{{") &&
+		strings.Contains(s, "}}") &&
+		!strings.Contains(s, ".html") &&
+		!strings.Contains(s, ".tmpl")
 }
