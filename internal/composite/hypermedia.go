@@ -140,7 +140,9 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		}
 
 		// Set 'head' inside 'values'
-		config.Template["values"].(map[string]interface{})["head"] = config.Head
+		if config.Head != nil {
+			config.Template["values"].(map[string]interface{})["head"] = config.Head
+		}
 
 		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template)
 		errors = append(errors, errr...)
