@@ -470,6 +470,7 @@ func Test_BasicHyperMediaRenderChain(t *testing.T) {
 
 }
 
+// ignores added content like 10, 20 etc because it has a template added. So document structure from template, with head value for passing head parts...
 func Test_BasicPageWithTemplateRenderChain(t *testing.T) {
 	input := `
    
@@ -520,7 +521,7 @@ func Test_BasicPageWithTemplateRenderChain(t *testing.T) {
 	templateProvider := func(templateName string) (string, bool) {
 		templates := map[string]string{
 			"api_test_template": `{{ (index .quotes 0).author }}:{{ (index .quotes 0).quote }}`,
-			"my_template":       `<div id="val_b">{{.b}} {{b}}</div><div id="val_a">{{a}}</div><div id="d">{{d}}</div>`,
+			"my_template":       `<!DOCTYPE html><html>{{head}}<body><div id="val_b">{{.b}} {{b}}</div><div id="val_a">{{a}}</div><div id="d">{{d}}</div></body></html>`,
 		}
 		content, exists := templates[templateName]
 		return content, exists
