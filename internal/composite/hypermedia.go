@@ -132,7 +132,18 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	if config.Template != nil {
 		config.Template["file"] = config.File
 		config.Template["path"] = config.File + ":" + config.Path
-		// TO-DO: INSERT HEAD to TEMPLATE VALUES....
+
+		// INSERT HEAD to TEMPLATE VALUES....
+		// Ensure 'values' exists inside Template
+		if _, exists := config.Template["values"]; !exists {
+			config.Template["values"] = make(map[string]interface{})
+		}
+
+		// Set 'head' inside 'values'
+		if config.Head != nil {
+			config.Template["values"].(map[string]interface{})["head"] = config.Head
+		}
+
 		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template)
 		errors = append(errors, errr...)
 		templatebuilder.WriteString(result)
@@ -150,11 +161,15 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		treebuilder.WriteString(result)
 		outputHtml = shared.EncloseContent(config.Enclose, treebuilder.String())
 	}
+	finalHTML := ""
+	if config.Template != nil {
+		finalHTML = outputHtml
+	} else {
+		headHtml := headbuilder.String()
+		// Wrap the content with the HTML structure
+		finalHTML = fmt.Sprintf("%s%s%s%s</html>", config.Doctype, config.HtmlTag, headHtml, shared.EncloseContent(config.BodyTag, outputHtml))
 
-	headHtml := headbuilder.String()
-
-	// Wrap the content with the HTML structure
-	finalHTML := fmt.Sprintf("%s%s%s%s</html>", config.Doctype, config.HtmlTag, headHtml, shared.EncloseContent(config.BodyTag, outputHtml))
+	}
 
 	return finalHTML, errors
 }
