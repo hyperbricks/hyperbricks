@@ -91,6 +91,15 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 		})
 	}
 
+	if config.Debug {
+		jsonBytes, err := json.MarshalIndent(responseData, "", "  ")
+		if err != nil {
+			fmt.Println("Error marshaling struct to JSON:", err)
+
+		}
+		builder.WriteString(fmt.Sprintf("<!-- API_RENDER.debug = true -->\n<!--  <![CDATA[ \n%s\n ]]> -->", string(jsonBytes)))
+	}
+
 	var templateContent string
 	if config.IsTemplate {
 		templateContent = config.Template
@@ -173,6 +182,7 @@ func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 				jsonArray[i][k] = v
 			}
 		}
+
 		return jsonArray, nil
 	}
 
