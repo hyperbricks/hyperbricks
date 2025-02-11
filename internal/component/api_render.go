@@ -21,15 +21,16 @@ import (
 
 type APIConfig struct {
 	shared.Component `mapstructure:",squash"`
-	Endpoint         string            `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-endpoint.hyperbricks}}"`
-	Method           string            `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-method.hyperbricks}}"`
-	Headers          map[string]string `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-headers.hyperbricks}}"`
-	Body             string            `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-render-body.hyperbricks}}"`
-	Template         string            `mapstructure:"template" validate:"required" description:"Template used for rendering API output" example:"{!{api-render-template.hyperbricks}}"`
-	IsTemplate       bool              `mapstructure:"istemplate"`
-	User             string            `mapstructure:"user" description:"User for basic auth" example:"{!{api-render-user.hyperbricks}}"`
-	Pass             string            `mapstructure:"pass" description:"User for basic auth" example:"{!{api-render-pass.hyperbricks}}"`
-	Debug            bool              `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
+	Endpoint         string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-endpoint.hyperbricks}}"`
+	Method           string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-method.hyperbricks}}"`
+	Headers          map[string]string      `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-headers.hyperbricks}}"`
+	Body             string                 `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-render-body.hyperbricks}}"`
+	Template         string                 `mapstructure:"template" validate:"required" description:"Template used for rendering API output" example:"{!{api-render-template.hyperbricks}}"`
+	IsTemplate       bool                   `mapstructure:"istemplate"`
+	Values           map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-values.hyperbricks}}"`
+	User             string                 `mapstructure:"user" description:"User for basic auth" example:"{!{api-render-user.hyperbricks}}"`
+	Pass             string                 `mapstructure:"pass" description:"User for basic auth" example:"{!{api-render-pass.hyperbricks}}"`
+	Debug            bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
 }
 
 func APIConfigGetName() string {
@@ -90,16 +91,6 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 		})
 	}
 
-	if config.Debug {
-
-		jsonBytes, err := json.MarshalIndent(responseData, "", "  ")
-		if err != nil {
-			fmt.Println("Error marshaling struct to JSON:", err)
-
-		}
-		builder.WriteString(fmt.Sprintf("<!-- API_RENDER.debug = true -->\n<!--  <![CDATA[ \n%s\n ]]> -->", string(jsonBytes)))
-	}
-
 	var templateContent string
 	if config.IsTemplate {
 		templateContent = config.Template
@@ -119,7 +110,7 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 		}
 
 	}
-
+	///Values
 	renderedOutput, _errors := applyTemplate(templateContent, responseData, config)
 
 	if _errors != nil {
@@ -136,7 +127,7 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	return builder.String(), errors
 }
 
-func fetchDataFromAPI(config APIConfig) (map[string]interface{}, error) {
+func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{Jar: jar}
 
@@ -174,15 +165,31 @@ func fetchDataFromAPI(config APIConfig) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	var data map[string]interface{}
-	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, fmt.Errorf("failed to parse JSON response: %w", err)
+	var jsonArray []map[string]interface{}
+	if err := json.Unmarshal(body, &jsonArray); err == nil {
+		// Merge values into each child map
+		for i := range jsonArray {
+			for k, v := range config.Values {
+				jsonArray[i][k] = v
+			}
+		}
+		return jsonArray, nil
 	}
 
-	return data, nil
+	// If it's not an array, try to unmarshal into a map
+	var jsonMap map[string]interface{}
+	if err := json.Unmarshal(body, &jsonMap); err == nil {
+		for k, v := range config.Values {
+			jsonMap[k] = v
+		}
+		return jsonMap, nil
+	}
+
+	// If both fail, return an error
+	return nil, fmt.Errorf("failed to parse JSON response: %s", string(body))
 }
 
-func applyTemplate(templateStr string, data map[string]interface{}, config APIConfig) (string, []error) {
+func applyTemplate(templateStr string, data interface{}, config APIConfig) (string, []error) {
 	var errors []error
 
 	tmpl, err := template.New("apiTemplate").Parse(templateStr)
@@ -190,24 +197,22 @@ func applyTemplate(templateStr string, data map[string]interface{}, config APICo
 		errors = append(errors, shared.ComponentError{
 			Path:     config.Path,
 			Key:      config.Key,
-			Err:      fmt.Errorf("error parsing template: %v", err).Error(),
+			Err:      fmt.Sprintf("error parsing template: %v", err),
 			Rejected: false,
 		})
-
 		return fmt.Sprintf("Error parsing template: %v", err), errors
 	}
 
 	var output bytes.Buffer
 	err = tmpl.Execute(&output, data)
 	if err != nil {
-
 		errors = append(errors, shared.ComponentError{
 			Path:     config.Path,
 			Key:      config.Key,
-			Err:      fmt.Errorf("error executing template: %v", err).Error(),
+			Err:      fmt.Sprintf("error executing template: %v", err),
 			Rejected: false,
 		})
-		return fmt.Sprintf("error executing template: %v", err), errors
+		return fmt.Sprintf("Error executing template: %v", err), errors
 	}
 
 	return output.String(), errors
