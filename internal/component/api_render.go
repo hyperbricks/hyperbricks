@@ -48,12 +48,12 @@ type APIRenderer struct {
 }
 
 var _ shared.ComponentRenderer = (*APIRenderer)(nil)
+var rangeRegex = regexp.MustCompile(`{{range\s+[^}]+}}`)
 
 func (api *APIConfig) Validate() []error {
 
 	warnings := shared.Validate(api)
 
-	rangeRegex := regexp.MustCompile(`{{range\s+[^}]+}}`)
 	input := api.Template
 	api.IsTemplate = rangeRegex.MatchString(input) || strings.Contains(input, "\n") || strings.Contains(input, "{{") || strings.Contains(input, "}}")
 
@@ -119,7 +119,7 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 		}
 
 	}
-	///Values
+
 	renderedOutput, _errors := applyTemplate(templateContent, responseData, config)
 
 	if _errors != nil {
@@ -136,7 +136,7 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	return builder.String(), errors
 }
 
-func fetchDataFromAPI(config APIConfig) (interface{}, error) {
+func fetchDataFromAPI_OldCode(config APIConfig) (interface{}, error) {
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{Jar: jar}
 
@@ -176,22 +176,12 @@ func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 
 	var jsonArray []map[string]interface{}
 	if err := json.Unmarshal(body, &jsonArray); err == nil {
-		// Merge values into each child map
-		for i := range jsonArray {
-			for k, v := range config.Values {
-				jsonArray[i][k] = v
-			}
-		}
-
 		return jsonArray, nil
 	}
 
 	// If it's not an array, try to unmarshal into a map
 	var jsonMap map[string]interface{}
 	if err := json.Unmarshal(body, &jsonMap); err == nil {
-		for k, v := range config.Values {
-			jsonMap[k] = v
-		}
 		return jsonMap, nil
 	}
 
@@ -199,8 +189,70 @@ func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 	return nil, fmt.Errorf("failed to parse JSON response: %s", string(body))
 }
 
+func fetchDataFromAPI(config APIConfig) (interface{}, error) {
+	// Create a new cookie jar (for production use, consider reusing an HTTP client)
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create cookie jar: %w", err)
+	}
+	client := &http.Client{Jar: jar}
+
+	// Parse the endpoint URL
+	endpoint, err := url.Parse(config.Endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("invalid endpoint URL: %w", err)
+	}
+
+	// Create the HTTP request, using strings.NewReader for the body
+	req, err := http.NewRequest(config.Method, endpoint.String(), strings.NewReader(config.Body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set request headers
+	for key, value := range config.Headers {
+		req.Header.Set(key, value)
+	}
+
+	// Set basic authentication if credentials are provided
+	if config.User != "" && config.Pass != "" {
+		req.SetBasicAuth(config.User, config.Pass)
+	}
+
+	// Execute the HTTP request
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error making HTTP request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check for a valid HTTP status code
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("unexpected HTTP status code: %d, response: %s", resp.StatusCode, string(body))
+	}
+
+	// Use a JSON decoder to stream decode the response directly
+	var result interface{}
+	dec := json.NewDecoder(resp.Body)
+	if err := dec.Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode JSON response: %w", err)
+	}
+
+	return result, nil
+}
+
 func applyTemplate(templateStr string, data interface{}, config APIConfig) (string, []error) {
 	var errors []error
+
+	// in case of an array or object, Values is always in root and use Data to access response data...
+	context := struct {
+		Data   interface{}
+		Values map[string]interface{}
+	}{
+		Data:   data,
+		Values: config.Values,
+	}
 
 	tmpl, err := template.New("apiTemplate").Parse(templateStr)
 	if err != nil {
@@ -214,7 +266,7 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 	}
 
 	var output bytes.Buffer
-	err = tmpl.Execute(&output, data)
+	err = tmpl.Execute(&output, context)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Path:     config.Path,
