@@ -136,7 +136,7 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	return builder.String(), errors
 }
 
-func fetchDataFromAPI(config APIConfig) (map[string]interface{}, error) {
+func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{Jar: jar}
 
@@ -174,15 +174,23 @@ func fetchDataFromAPI(config APIConfig) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	var data map[string]interface{}
-	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, fmt.Errorf("failed to parse JSON response: %w", err)
+	// First, try to unmarshal into an array
+	var jsonArray []map[string]interface{}
+	if err := json.Unmarshal(body, &jsonArray); err == nil {
+		return jsonArray, nil
 	}
 
-	return data, nil
+	// If it's not an array, try to unmarshal into a map
+	var jsonMap map[string]interface{}
+	if err := json.Unmarshal(body, &jsonMap); err == nil {
+		return jsonMap, nil
+	}
+
+	// If both fail, return an error
+	return nil, fmt.Errorf("failed to parse JSON response: %s", string(body))
 }
 
-func applyTemplate(templateStr string, data map[string]interface{}, config APIConfig) (string, []error) {
+func applyTemplate(templateStr string, data interface{}, config APIConfig) (string, []error) {
 	var errors []error
 
 	tmpl, err := template.New("apiTemplate").Parse(templateStr)
@@ -190,24 +198,22 @@ func applyTemplate(templateStr string, data map[string]interface{}, config APICo
 		errors = append(errors, shared.ComponentError{
 			Path:     config.Path,
 			Key:      config.Key,
-			Err:      fmt.Errorf("error parsing template: %v", err).Error(),
+			Err:      fmt.Sprintf("error parsing template: %v", err),
 			Rejected: false,
 		})
-
 		return fmt.Sprintf("Error parsing template: %v", err), errors
 	}
 
 	var output bytes.Buffer
 	err = tmpl.Execute(&output, data)
 	if err != nil {
-
 		errors = append(errors, shared.ComponentError{
 			Path:     config.Path,
 			Key:      config.Key,
-			Err:      fmt.Errorf("error executing template: %v", err).Error(),
+			Err:      fmt.Sprintf("error executing template: %v", err),
 			Rejected: false,
 		})
-		return fmt.Sprintf("error executing template: %v", err), errors
+		return fmt.Sprintf("Error executing template: %v", err), errors
 	}
 
 	return output.String(), errors
