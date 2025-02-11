@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -70,8 +71,8 @@ func ParseHyperScript(input string) map[string]interface{} {
 // Now includes variables map for substitution.
 func parseLines(lines []string, index *int, config map[string]interface{}, rootConfig map[string]interface{}, variables map[string]string) {
 	// Regex to identify variable placeholders like {{VAR:varname}}
+	envPattern := regexp.MustCompile(`{{ENV:([a-zA-Z0-9_]+)}}`)
 	varPattern := regexp.MustCompile(`{{VAR:([a-zA-Z0-9_]+)}}`)
-	//envPattern := regexp.MustCompile(`{{ENV:([a-zA-Z0-9_]+)}}`)
 	confPattern := regexp.MustCompile(`{{CONF:([a-zA-Z0-9_.]+)}}`)
 
 	for *index < len(lines) {
@@ -252,34 +253,28 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 						logger.Warnf("Undefined variable '%s'", varName)
 						return match // Return as-is
 					})
+					arrayElements[i] = envPattern.ReplaceAllStringFunc(elemStr, func(match string) string {
+						// Extract variable name
+						submatches := envPattern.FindStringSubmatch(match)
+						if len(submatches) != 2 {
+							logger.Warnf("Invalid variable placeholder: %s", match)
+							return match // Return as-is
+						}
+						varName := submatches[1]
+						// lookup....
+						value, exists := os.LookupEnv(varName)
+						if !exists {
+							fmt.Println("MY_ENV_VAR is not set")
+						} else {
+							fmt.Println("MY_ENV_VAR =", value)
+							return value
+						}
+
+						logger.Warnf("Undefined variable '%s'", varName)
+						return match // Return as-is
+					})
 				}
 			}
-
-			// parsing env variables
-			// for i, elem := range arrayElements {
-			// 	if elemStr, ok := elem.(string); ok {
-			// 		arrayElements[i] = envPattern.ReplaceAllStringFunc(elemStr, func(match string) string {
-			// 			// Extract variable name
-			// 			submatches := envPattern.FindStringSubmatch(match)
-			// 			if len(submatches) != 2 {
-			// 				logger.Warnf("Invalid variable placeholder: %s", match)
-			// 				return match // Return as-is
-			// 			}
-			// 			varName := submatches[1]
-			// 			// lookup....
-			// 			value, exists := os.LookupEnv(varName)
-			// 			if !exists {
-			// 				fmt.Println("MY_ENV_VAR is not set")
-			// 			} else {
-			// 				fmt.Println("MY_ENV_VAR =", value)
-			// 				return value
-			// 			}
-
-			// 			logger.Warnf("Undefined variable '%s'", varName)
-			// 			return match // Return as-is
-			// 		})
-			// 	}
-			// }
 
 			// // parsing config variables
 			// for i, elem := range arrayElements {
@@ -311,6 +306,26 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 			setNestedValue(config, keyParts, arrayElements)
 			continue
 		}
+		value = envPattern.ReplaceAllStringFunc(value, func(match string) string {
+			// Extract variable name
+			submatches := envPattern.FindStringSubmatch(match)
+			if len(submatches) != 2 {
+				logger.Warnf("Invalid variable placeholder: %s", match)
+				return match // Return as-is
+			}
+			varName := submatches[1]
+			// lookup....
+			value, exists := os.LookupEnv(varName)
+			if !exists {
+				fmt.Println("MY_ENV_VAR is not set")
+			} else {
+				fmt.Println("MY_ENV_VAR =", value)
+				return value
+			}
+
+			logger.Warnf("Undefined variable '%s'", varName)
+			return match // Return as-is
+		})
 
 		// Perform variable substitution in the value
 		value = varPattern.ReplaceAllStringFunc(value, func(match string) string {
