@@ -21,15 +21,16 @@ import (
 
 type APIConfig struct {
 	shared.Component `mapstructure:",squash"`
-	Endpoint         string            `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-endpoint.hyperbricks}}"`
-	Method           string            `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-method.hyperbricks}}"`
-	Headers          map[string]string `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-headers.hyperbricks}}"`
-	Body             string            `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-render-body.hyperbricks}}"`
-	Template         string            `mapstructure:"template" validate:"required" description:"Template used for rendering API output" example:"{!{api-render-template.hyperbricks}}"`
-	IsTemplate       bool              `mapstructure:"istemplate"`
-	User             string            `mapstructure:"user" description:"User for basic auth" example:"{!{api-render-user.hyperbricks}}"`
-	Pass             string            `mapstructure:"pass" description:"User for basic auth" example:"{!{api-render-pass.hyperbricks}}"`
-	Debug            bool              `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
+	Endpoint         string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-endpoint.hyperbricks}}"`
+	Method           string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-method.hyperbricks}}"`
+	Headers          map[string]string      `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-headers.hyperbricks}}"`
+	Body             string                 `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-render-body.hyperbricks}}"`
+	Template         string                 `mapstructure:"template" validate:"required" description:"Template used for rendering API output" example:"{!{api-render-template.hyperbricks}}"`
+	IsTemplate       bool                   `mapstructure:"istemplate"`
+	Values           map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-values.hyperbricks}}"`
+	User             string                 `mapstructure:"user" description:"User for basic auth" example:"{!{api-render-user.hyperbricks}}"`
+	Pass             string                 `mapstructure:"pass" description:"User for basic auth" example:"{!{api-render-pass.hyperbricks}}"`
+	Debug            bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
 }
 
 func APIConfigGetName() string {
@@ -90,16 +91,6 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 		})
 	}
 
-	if config.Debug {
-
-		jsonBytes, err := json.MarshalIndent(responseData, "", "  ")
-		if err != nil {
-			fmt.Println("Error marshaling struct to JSON:", err)
-
-		}
-		builder.WriteString(fmt.Sprintf("<!-- API_RENDER.debug = true -->\n<!--  <![CDATA[ \n%s\n ]]> -->", string(jsonBytes)))
-	}
-
 	var templateContent string
 	if config.IsTemplate {
 		templateContent = config.Template
@@ -119,7 +110,7 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 		}
 
 	}
-
+	///Values
 	renderedOutput, _errors := applyTemplate(templateContent, responseData, config)
 
 	if _errors != nil {
@@ -174,15 +165,23 @@ func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	// First, try to unmarshal into an array
 	var jsonArray []map[string]interface{}
 	if err := json.Unmarshal(body, &jsonArray); err == nil {
+		// Merge values into each child map
+		for i := range jsonArray {
+			for k, v := range config.Values {
+				jsonArray[i][k] = v
+			}
+		}
 		return jsonArray, nil
 	}
 
 	// If it's not an array, try to unmarshal into a map
 	var jsonMap map[string]interface{}
 	if err := json.Unmarshal(body, &jsonMap); err == nil {
+		for k, v := range config.Values {
+			jsonMap[k] = v
+		}
 		return jsonMap, nil
 	}
 
