@@ -1,24 +1,35 @@
 
 
-**Note:**  
+![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
 
-This project and it's documentation is currently incomplete and in the experimental phase. It is recommended to use the code only for exploration or from a developer's perspective at this stage. If you're interested, you can explore the components and composite renderers in the `internal/component` and `internal/composite` directories.
-
-The `<API>` type is currently undocumented because it is still evolving and likely to change. Note that `<API>` and `<API_RENDER>` are distinct types.". 
-
-- **`<API_RENDER>`**: Renders a template using data fetched from an external endpoint.  
-- **`<API>`**: Integrates with a `<MODEL>`, connects to a database, and simplifies common use cases (such as CRUD operations) with minimal configuration.
-
-# HyperBricks
 **Licence:** MIT  
-**Version:** v0.1.3-alpha  
-**Build time:** 2025-01-27T15:39:36Z   
+**Version:** v0.2.1-alpha  
+**Build time:** 2025-02-12T19:33:44Z
+
+## HyperBricks Documentation
+
+HyperBricks aims to bridge front and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allows to declare and describe the state of a document in a concise and structured manner.
+
+### Usage:
+$> hyperbricks [command]
+
+Available Commands:
+-  completion  [Generate the autocompletion script for the specified shell]
+-  help        [Help about any command]
+-  init        [Create package.hyperbricks and required directories]
+-  select      [Select a hyperbricks module]
+-  start       [Start server]
+-  static      [Render static content]
+-  version     [Show version]
+
+Flags:
+  -h, --help   help for hyperbricks
+
+Use "hyperbricks [command] --help" for more information about a command.
 
 Go direct to:
 
-- [HyperBricks type reference](#hyperbricks-type-reference)
 - [Installation](#installation)
-
 - [Defining Hypermedia Documents and Fragments](#defining-hypermedia-documents-and-fragments)
 - [Adding Properties to Configurations](#adding-properties-to-configurations)
 - [Rendering Order and Property Rules](#rendering-order-and-property-rules)
@@ -27,12 +38,7 @@ Go direct to:
   - [Fragment Example with HTMX Trigger](#fragment-example-with-htmx-trigger)
 - [Object Inheritance and Reusability](#object-inheritance-and-reusability)
 - [Importing Predefined HyperScripts](#importing-predefined-hyperscripts)
-
-
-## HyperBricks Documentation
-
-HyperBricks aims to bridge front and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allow you to declare and describe the state of a document in a concise and structured manner.
-
+- [HyperBricks type reference](#hyperbricks-type-reference)
 
 ### Defining Hypermedia Documents and Fragments
 
@@ -40,8 +46,11 @@ Hypermedia documents or fragments can be declared using simple key-value propert
 
 ```properties
 myHypermedia = <HYPERMEDIA>
+myHypermedia.route = index 
+
 # Or
 myFragment = <FRAGMENT>
+myFragment.route = somefragment
 ```
 
 ### Adding Properties to Configurations
@@ -51,6 +60,7 @@ You can add properties to hypermedia objects in either flat or nested formats:
 **Flat Configuration Example:**
 ```properties
 fragment = <FRAGMENT>
+fragment.route = myfragment
 fragment.content = <TREE>
 fragment.content.10 = <HTML>
 fragment.content.10.value = <p>THIS IS HTML</p>
@@ -59,6 +69,7 @@ fragment.content.10.value = <p>THIS IS HTML</p>
 **Nested Configuration Example:**
 ```properties
 fragment = <FRAGMENT>
+fragment.route = myfragment
 fragment {
     content = <TREE>
     content {
@@ -222,7 +233,6 @@ To initialize a new HyperBricks project, use the `init` command:
 ```bash
 hyperbricks init -m <name-of-hyperbricks-module>
 ```
-
 without the -m and ```<name-of-hyperbricks-module>``` this will create a ```default``` folder.
 
 
@@ -237,13 +247,26 @@ Once your project is initialized, start the HyperBricks server using the `start`
 ```bash
 hyperbricks start  -m <name-of-hyperbricks-module>
 ```
+
+Use the --production flag when adding system and service manager in linux or on a mac
+```bash
+hyperbricks start  -m <name-of-hyperbricks-module> --production
+```
 This will launch the server, allowing you to manage and serve hypermedia content on the ip of your machine.
 
 Or ```hyperbricks start``` for running the module named ```default```.
 
+### Rendering static files to render directory
+
+```bash
+hyperbricks static  -m <name-of-hyperbricks-module>
+```
+
 ### Additional Commands
 
 HyperBricks provides other useful commands:
+
+
 
 - **`completion`**: Generate shell autocompletion scripts for supported shells.
 - **`help`**: Display help information for any command.
@@ -301,7 +324,7 @@ hyperbricks [command] --help
 
 <h3><a id="&lt;HTML&gt;">&lt;HTML&gt;</a></h3>
 
-**&lt;HTML&gt; Type Description**
+**Type Description**
 
 
 
@@ -432,7 +455,7 @@ html.trimspace = true
 
 <h3><a id="&lt;TEXT&gt;">&lt;TEXT&gt;</a></h3>
 
-**&lt;TEXT&gt; Type Description**
+**Type Description**
 
 
 
@@ -461,7 +484,7 @@ The enclosing HTML element for the text divided by |
 ````properties
 text = <TEXT>
 text {
-	value = SOME VALUE
+	  value = SOME VALUE
     enclose = <span>|</span>
 }
 
@@ -527,9 +550,55 @@ text {
 
 <h3><a id="&lt;FRAGMENT&gt;">&lt;FRAGMENT&gt;</a></h3>
 
-**&lt;FRAGMENT&gt; Type Description**
+**Type Description**
 
 
+
+
+
+
+A FRAGMENT dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+
+
+**Main Example**
+````properties
+fragment = <FRAGMENT>
+fragment.response.hx_trigger = myEvent
+fragment.10 = <TEMPLATE>
+fragment.10 {
+    inline = <<[
+        <h2>{{header}}</h2>
+        <p>{{text}}</p>
+        {{image}}
+]>>
+    
+    values {
+        header = SOME HEADER
+        text = <TEXT>
+        text.value = some text
+
+        image = <IMAGE>
+        image.src = hyperbricks-test-files/assets/cute_cat.jpg
+        image.width = 800
+    }
+}
+
+````
+
+
+**Expected Result**
+````html
+<h2>
+  SOME HEADER
+</h2>
+<p>
+  some text
+</p>
+<img src="static/images/cute_cat_w800_h800.jpg" width="800" height="800" />
+````
+
+
+**more**
 
 
 
@@ -755,11 +824,12 @@ Template configurations for rendering the fragment. (This will disable rendering
 fragment = <FRAGMENT>
 fragment {
 	template {
-        template = <<[
+        # template = {{TEMPLATE:mytemplate.tmpl}}
+        inline = <<[
             <div>{{content}}</div>
 
         ]>>
-        isTemplate = true
+      
         values {
             content = <HTML>
             content.value = <p>SOME HTML CONTENT</p>
@@ -1137,7 +1207,7 @@ fragment {
 
 <h3><a id="&lt;HEAD&gt;">&lt;HEAD&gt;</a></h3>
 
-**&lt;HEAD&gt; Type Description**
+**Type Description**
 
 
 
@@ -1377,7 +1447,76 @@ hypermedia.head {
 
 <h3><a id="&lt;HYPERMEDIA&gt;">&lt;HYPERMEDIA&gt;</a></h3>
 
-**&lt;HYPERMEDIA&gt; Type Description**
+**Type Description**
+
+
+
+
+HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use &lt;FRAGMENT&gt; to utilize hx-[method] (GET,POST etc) requests.  
+
+
+**Main Example**
+````properties
+css = <HTML>
+css.value = <<[
+    <style>
+        body {
+            padding:20px;
+        }
+    </style>
+]>>
+
+
+# index page
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    10 < css
+    20 = <CSS>
+    20.inline = <<[
+        .content {
+            color:green;
+        }
+    ]>>
+}
+hypermedia.10 = <TREE>
+hypermedia.10 {
+    1 = <HTML>
+    1.value = <p>SOME CONTENT</p>
+}
+
+
+````
+
+
+**Expected Result**
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+      padding:20px;
+      }
+    </style>
+    <style>
+      .content {
+      color:green;
+      }
+    </style>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body>
+    <p>
+      SOME CONTENT
+    </p>
+  </body>
+</html>
+````
+
+
+**more**
+
 
 
 
@@ -1681,11 +1820,12 @@ Template configurations for rendering the hypermedia. See &lt;TEMPLATE&gt; for f
 hypermedia = <HYPERMEDIA>
 hypermedia {
 	template {
-        template = <<[
+        # template = {{TEMPLATE:mytemplate.tmpl}}
+        inline = <<[
             <div>{{content}}</div>
 
         ]>>
-        isTemplate = true
+
         values {
             content = <HTML>
             content.value = <p>SOME HTML CONTENT</p>
@@ -1698,16 +1838,11 @@ hypermedia {
 **Expected Result**
 
 ````html
-<!DOCTYPE html>
-<html>
-  <body>
-    <div>
-      <p>
-        SOME HTML CONTENT
-      </p>
-    </div>
-  </body>
-</html>
+<div>
+  <p>
+    SOME HTML CONTENT
+  </p>
+</div>
 ````
 
 
@@ -1940,7 +2075,60 @@ hypermedia.10.value = <p>some HTML</p>
 
 <h3><a id="&lt;TEMPLATE&gt;">&lt;TEMPLATE&gt;</a></h3>
 
-**&lt;TEMPLATE&gt; Type Description**
+**Type Description**
+
+
+
+
+&lt;TEMPLATE&gt; can be used nested in &lt;FRAGMENT&gt; or &lt;HYPERMEDIA&gt; types. It uses golang&#39;s standard html/template library.
+
+
+**Main Example**
+````properties
+# Use the a TEMPLATE:filepath (relative from templates folder defined in module's package.hyperbricks) directive like this:
+template = {{TEMPLATE:youtube.tmpl}}
+
+# Or use the inline notation:
+inline = <<[
+    <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+]>>
+
+myComponent = <TEMPLATE>
+myComponent {
+    inline = <<[
+        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    ]>>
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
+}
+
+````
+
+
+**Expected Result**
+````html
+<div class="youtube_video">
+  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+````
+
+
+**more**
 
 
 
@@ -1959,7 +2147,7 @@ hypermedia.10.value = <p>some HTML</p>
 
 
 - [template](#template-template)
-- [istemplate](#template-istemplate)
+- [inline](#template-inline)
 - [values](#template-values)
 - [enclose](#template-enclose)
 
@@ -1981,10 +2169,12 @@ The template used for rendering.
 ````properties
 myComponent = <TEMPLATE>
 myComponent {
-    template = <<[
+
+    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+    inline = <<[
         <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
     ]>>
-    istemplate = true
+  
     values {
         width = 300
         height = 400
@@ -2025,28 +2215,28 @@ fragment.content {
 
 
 
-## template istemplate
-#### istemplate
+## template inline
+#### inline
 
 **Description**  
-Determines if the field is a inline template or when not defined a reference to a template file
+The inline template used for rendering.
 
 
 **Example**
 ````properties
 myComponent = <TEMPLATE>
 myComponent {
-    template = <<[
+    
+    inline = <<[
         <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
     ]>>
-    istemplate = true
+  
     values {
         width = 300
         height = 400
         src = https://www.youtube.com/embed/tgbNymZ7vqY
     }
 }
-myComponent.enclose = |
 
 fragment = <FRAGMENT>
 fragment.content = <TREE>
@@ -2095,11 +2285,11 @@ $test = hello world
 
 myComponent = <TEMPLATE>
 myComponent {
-    template = <<[
+    inline = <<[
         <h1>{{header}}</h1>
         <p>{{text}}</p>
     ]>>
-    istemplate = true
+
     values {
         header = {{VAR:test}}!
         text = some text
@@ -2150,10 +2340,9 @@ Enclosing property for the template rendered output divided by |
 ````properties
 myComponent = <TEMPLATE>
 myComponent {
-    template = <<[
+    inline = <<[
       <img src="{{src}}" alt="{{alt}}" width="{{width}}" height="{{height}}">
     ]>>
-    istemplate = true
     values {
         width = 500
         height = 600
@@ -2184,7 +2373,61 @@ myComponent {
 
 <h3><a id="&lt;TREE&gt;">&lt;TREE&gt;</a></h3>
 
-**&lt;TREE&gt; Type Description**
+**Type Description**
+
+
+
+
+TREE description
+
+
+**Main Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	10 = <TREE>
+    10 {
+        10 = <TREE>
+        10 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 10-1</p>
+
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 10-2</p>
+        }
+
+        20 = <TREE>
+        20 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 20-1</p>
+            
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 20-2</p>
+        }
+    }
+}
+
+````
+
+
+**Expected Result**
+````html
+<p>
+  SOME NESTED HTML --- 10-1
+</p>
+<p>
+  SOME NESTED HTML --- 10-2
+</p>
+<p>
+  SOME NESTED HTML --- 20-1
+</p>
+<p>
+  SOME NESTED HTML --- 20-2
+</p>
+````
+
+
+**more**
 
 
 
@@ -2276,7 +2519,77 @@ fragment {
 
 <h3><a id="&lt;API_RENDER&gt;">&lt;API_RENDER&gt;</a></h3>
 
-**&lt;API_RENDER&gt; Type Description**
+**Type Description**
+
+
+
+
+
+
+The &lt;API_RENDER&gt; can be used to fetch data from json API like postgREST or another data json source.
+This data is parsed in by the template engine. For local files use the &lt;JSON&gt; component
+
+All data is passed into the .Data object, which can be of any type.
+The .Value object passes the values defined in the hyperbricks value field which is a map[string]interface{}
+````properties
+context := struct {
+    Data   interface{}
+    Values map[string]interface{}
+}{
+    Data:   data,
+    Values: config.Values,
+}
+````
+
+
+**Main Example**
+````properties
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+		<ul>
+	]>>
+    values {
+        someproperty = User
+    }
+	debug = false
+	enclose = <div class="userlist">|</div>
+}
+
+````
+
+
+**Expected Result**
+````html
+<div class="userlist">
+  <h1>
+    User
+  </h1>
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
+**more**
+
+
 
 
 
@@ -2304,12 +2617,14 @@ fragment {
 **Properties**
 
 - [enclose](#api_render-enclose)
+
 - [endpoint](#api_render-endpoint)
 - [method](#api_render-method)
 - [headers](#api_render-headers)
 - [body](#api_render-body)
 - [template](#api_render-template)
-- [istemplate](#api_render-istemplate)
+- [inline](#api_render-inline)
+- [values](#api_render-values)
 - [user](#api_render-user)
 - [pass](#api_render-pass)
 - [debug](#api_render-debug)
@@ -2339,12 +2654,11 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -2362,6 +2676,9 @@ api_test {
   <ul>
 </div>
 ````
+
+
+
 
 
 
@@ -2395,12 +2712,11 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -2451,12 +2767,11 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -2490,7 +2805,7 @@ api_test {
 #### headers
 
 **Description**  
-Optional HTTP headers for API requests
+Optional HTTP headers for API requests 
 
 
 **Example**
@@ -2507,12 +2822,11 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -2563,12 +2877,11 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -2619,12 +2932,11 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -2654,11 +2966,11 @@ api_test {
 
 
 
-## api_render istemplate
-#### istemplate
+## api_render inline
+#### inline
 
 **Description**  
-
+Use inline to define the template in a multiline block &lt;&lt;[ /* Template goes here */ ]&gt;&gt;
 
 
 **Example**
@@ -2675,12 +2987,11 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -2691,6 +3002,68 @@ api_test {
 
 ````html
 <div class="userlist">
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## api_render values
+#### values
+
+**Description**  
+Key-value pairs for template rendering
+
+
+**Example**
+````properties
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+		<ul>
+	]>>
+    values {
+        someproperty = User
+    }
+	debug = false
+	enclose = <div class="userlist">|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <h1>
+    User
+  </h1>
   <ul id="1">
   <li>
     Emily Johnson
@@ -2731,12 +3104,15 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
+    values {
+        someproperty = User
+    }
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -2747,6 +3123,9 @@ api_test {
 
 ````html
 <div class="userlist">
+  <h1>
+    User
+  </h1>
   <ul id="1">
   <li>
     Emily Johnson
@@ -2770,7 +3149,7 @@ api_test {
 #### pass
 
 **Description**  
-User for basic auth
+Password for basic auth
 
 
 **Example**
@@ -2787,12 +3166,15 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
+    values {
+        someproperty = User
+    }
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -2803,6 +3185,9 @@ api_test {
 
 ````html
 <div class="userlist">
+  <h1>
+    User
+  </h1>
   <ul id="1">
   <li>
     Emily Johnson
@@ -2826,7 +3211,7 @@ api_test {
 #### debug
 
 **Description**  
-Debug the response data
+Debug the response data (Do not use in production)
 
 
 **Example**
@@ -2843,12 +3228,15 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
+    values {
+        someproperty = User
+    }
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -2859,6 +3247,9 @@ api_test {
 
 ````html
 <div class="userlist">
+  <h1>
+    User
+  </h1>
   <ul id="1">
   <li>
     Emily Johnson
@@ -2878,7 +3269,9 @@ api_test {
 
 <h3><a id="&lt;JSON&gt;">&lt;JSON&gt;</a></h3>
 
-**&lt;JSON&gt; Type Description**
+**Type Description**
+
+
 
 
 
@@ -2901,7 +3294,8 @@ api_test {
 - [enclose](#json-enclose)
 - [file](#json-file)
 - [template](#json-template)
-- [istemplate](#json-istemplate)
+- [inline](#json-inline)
+- [values](#json-values)
 - [debug](#json-debug)
 
 
@@ -2920,15 +3314,14 @@ Extra attributes like id, data-role, data-action
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
-	template = <<[
+	inline = <<[
         <h1>Quotes</h1>
         <ul>
-            {{range .quotes}}
+            {{range .Data.quotes}}
                 <li><strong>{{.author}}:</strong> {{.quote}}</li>
             {{end}}
         </ul>
 	]>>
-	istemplate = true
     debug = false
 }
 
@@ -2997,15 +3390,14 @@ The enclosing HTML element for the header divided by |
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
-	template = <<[
+	inline = <<[
         <h1>Quotes</h1>
         <ul>
-            {{range .quotes}}
+            {{range .Data.quotes}}
                 <li><strong>{{.author}}:</strong> {{.quote}}</li>
             {{end}}
         </ul>
 	]>>
-	istemplate = true
     debug = false
 }
 
@@ -3074,15 +3466,14 @@ Path to the local JSON file
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
-	template = <<[
+	inline = <<[
         <h1>Quotes</h1>
         <ul>
-            {{range .quotes}}
+            {{range .Data.quotes}}
                 <li><strong>{{.author}}:</strong> {{.quote}}</li>
             {{end}}
         </ul>
 	]>>
-	istemplate = true
     debug = false
 }
 
@@ -3151,15 +3542,16 @@ Template for rendering output
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
-	template = <<[
+
+    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+	inline = <<[
         <h1>Quotes</h1>
         <ul>
-            {{range .quotes}}
+            {{range .Data.quotes}}
                 <li><strong>{{.author}}:</strong> {{.quote}}</li>
             {{end}}
         </ul>
 	]>>
-	istemplate = true
     debug = false
 }
 
@@ -3216,11 +3608,11 @@ local_json_test {
 
 
 
-## json istemplate
-#### istemplate
+## json inline
+#### inline
 
 **Description**  
-
+Use inline to define the template in a multiline block &lt;&lt;[ /* Template code goes here */ ]&gt;&gt;
 
 
 **Example**
@@ -3228,15 +3620,14 @@ local_json_test {
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
-	template = <<[
+	inline = <<[
         <h1>Quotes</h1>
         <ul>
-            {{range .quotes}}
+            {{range .Data.quotes}}
                 <li><strong>{{.author}}:</strong> {{.quote}}</li>
             {{end}}
         </ul>
 	]>>
-	istemplate = true
     debug = false
 }
 
@@ -3247,6 +3638,87 @@ local_json_test {
 ````html
 <h1>
   Quotes
+</h1>
+<ul>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Your heart is the size of an ocean. Go find yourself in its hidden depths.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    Thinking is the capital, Enterprise is the way, Hard Work is the solution.
+  </li>
+  <li>
+    <strong>
+      Bill Gates:
+    </strong>
+    If You Can&#39;T Make It Good, At Least Make It Look Good.
+  </li>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.
+  </li>
+</ul>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## json values
+#### values
+
+**Description**  
+Key-value pairs for template rendering
+
+
+**Example**
+````properties
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+
+    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+        <ul>
+            {{range .Data.quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+    values {
+        someproperty = Quotes!
+    }
+    debug = false
+}
+
+````
+
+**Expected Result**
+
+````html
+<h1>
+  Quotes!
 </h1>
 <ul>
   <li>
@@ -3305,15 +3777,19 @@ Debug the response data
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
-	template = <<[
-        <h1>Quotes</h1>
+
+    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
         <ul>
-            {{range .quotes}}
+            {{range .Data.quotes}}
                 <li><strong>{{.author}}:</strong> {{.quote}}</li>
             {{end}}
         </ul>
 	]>>
-	istemplate = true
+    values {
+        someproperty = Quotes!
+    }
     debug = false
 }
 
@@ -3323,7 +3799,7 @@ local_json_test {
 
 ````html
 <h1>
-  Quotes
+  Quotes!
 </h1>
 <ul>
   <li>
@@ -3375,7 +3851,7 @@ local_json_test {
 
 <h3><a id="&lt;MENU&gt;">&lt;MENU&gt;</a></h3>
 
-**&lt;MENU&gt; Type Description**
+**Type Description**
 
 
 
@@ -3939,7 +4415,7 @@ hm_3.title = DOCUMENT_3
 
 <h3><a id="&lt;CSS&gt;">&lt;CSS&gt;</a></h3>
 
-**&lt;CSS&gt; Type Description**
+**Type Description**
 
 
 
@@ -4198,7 +4674,7 @@ hypermedia.head {
 
 <h3><a id="&lt;IMAGE&gt;">&lt;IMAGE&gt;</a></h3>
 
-**&lt;IMAGE&gt; Type Description**
+**Type Description**
 
 
 
@@ -4682,7 +5158,7 @@ image.is_static = true
 
 <h3><a id="&lt;IMAGES&gt;">&lt;IMAGES&gt;</a></h3>
 
-**&lt;IMAGES&gt; Type Description**
+**Type Description**
 
 
 
@@ -5129,7 +5605,7 @@ images.loading = lazy
 
 <h3><a id="&lt;JS&gt;">&lt;JS&gt;</a></h3>
 
-**&lt;JS&gt; Type Description**
+**Type Description**
 
 
 
