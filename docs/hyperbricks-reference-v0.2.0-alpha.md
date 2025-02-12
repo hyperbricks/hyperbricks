@@ -1,11 +1,10 @@
 
 
-# HyperBricks
+![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
+
 **Licence:** MIT  
 **Version:** v0.2.0-alpha  
-**Build time:** 2025-02-12T18:07:38Z
-
-![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
+**Build time:** 2025-02-12T18:10:18Z
 
 ## HyperBricks Documentation
 
