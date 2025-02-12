@@ -32,6 +32,7 @@ Extra attributes like id, data-role, data-action
 	"Enclose": "<div class=\"userlist\">|</div>",
 	"Endpoint": "https://dummyjson.com/auth/login",
 	"Method": "POST",
+	"MetaDocDescription": "",
 	"Headers": {
 	  "Access-Control-Allow-Credentials": "true",
 	  "Content-Type": "application/json"

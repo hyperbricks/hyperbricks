@@ -25,6 +25,7 @@ Use inline to define the template in a multiline block <<[ /* Template goes here
 {
 	"ConfigType": "<API_RENDER>",
 	"ConfigCategory": "",
+	"MetaDocDescription": "",
 	"Key": "",
 	"Path": "",
 	"File": "",

@@ -25,6 +25,7 @@ The API endpoint
 {
 	"ConfigType": "<API_RENDER>",
 	"ConfigCategory": "",
+	"MetaDocDescription": "",
 	"Key": "",
 	"Path": "",
 	"File": "",

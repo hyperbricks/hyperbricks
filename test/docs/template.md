@@ -10,9 +10,7 @@
 
 Go direct to:
 
-- [HyperBricks type reference](#hyperbricks-type-reference)
 - [Installation](#installation)
-
 - [Defining Hypermedia Documents and Fragments](#defining-hypermedia-documents-and-fragments)
 - [Adding Properties to Configurations](#adding-properties-to-configurations)
 - [Rendering Order and Property Rules](#rendering-order-and-property-rules)
@@ -21,7 +19,7 @@ Go direct to:
   - [Fragment Example with HTMX Trigger](#fragment-example-with-htmx-trigger)
 - [Object Inheritance and Reusability](#object-inheritance-and-reusability)
 - [Importing Predefined HyperScripts](#importing-predefined-hyperscripts)
-
+- [HyperBricks type reference](#hyperbricks-type-reference)
 
 {{include "template_general.md"}}
 {{include "template_install.md"}}
@@ -44,10 +42,10 @@ Go direct to:
 {{range $typeName, $fields := $types}}
 <h3><a id="{{$typeName}}">{{$typeName}}</a></h3>
 
-**{{$typeName}} Type Description**
+**Type Description**
 
 {{range $fields}}
-{{if eq .Name "MetaDocDescription"}}
+{{if eq .Mapstructure "@doc"}}
 
 {{.Description}}
 

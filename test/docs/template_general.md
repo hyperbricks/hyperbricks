@@ -4,8 +4,11 @@ Hypermedia documents or fragments can be declared using simple key-value propert
 
 ```properties
 myHypermedia = <HYPERMEDIA>
+myHypermedia.route = index 
+
 # Or
 myFragment = <FRAGMENT>
+myFragment.route = somefragment
 ```
 
 ### Adding Properties to Configurations
@@ -15,6 +18,7 @@ You can add properties to hypermedia objects in either flat or nested formats:
 **Flat Configuration Example:**
 ```properties
 fragment = <FRAGMENT>
+fragment.route = myfragment
 fragment.content = <TREE>
 fragment.content.10 = <HTML>
 fragment.content.10.value = <p>THIS IS HTML</p>
@@ -23,6 +27,7 @@ fragment.content.10.value = <p>THIS IS HTML</p>
 **Nested Configuration Example:**
 ```properties
 fragment = <FRAGMENT>
+fragment.route = myfragment
 fragment {
     content = <TREE>
     content {
