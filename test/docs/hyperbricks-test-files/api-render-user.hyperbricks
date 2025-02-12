@@ -11,12 +11,15 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
+    values {
+        someproperty = User
+    }
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -24,28 +27,32 @@ api_test {
 User for basic auth
 ==== expected json ====
 {
-	"ConfigType": "<API_RENDER>",
-	"ConfigCategory": "",
-	"Key": "",
-	"Path": "",
-	"File": "",
-	"ExtraAttributes": null,
-	"Enclose": "<div class=\"userlist\">|</div>",
-	"Endpoint": "https://dummyjson.com/auth/login",
-	"Method": "POST",
-	"Headers": {
-	  "Access-Control-Allow-Credentials": "true",
-	  "Content-Type": "application/json"
-	},
-	"Body": "{\"username\":\"emilys\",\"password\":\"emilyspass\",\"expiresInMins\":30}",
-	"Template": "\n\t\t<ul id=\"{{index .id}}\">\n\t\t\t<li>{{index .firstName}} {{index .lastName}}</li>\n\t\t<ul>\n\t",
-	"IsTemplate": true,
-	"User": "emilys",
-	"Pass": "emilyspass",
-	"Debug": false
+    "ConfigType": "<API_RENDER>",
+    "ConfigCategory": "",
+    "Key": "",
+    "Path": "",
+    "File": "",
+    "ExtraAttributes": null,
+    "Enclose": "<div class=\"userlist\">|</div>",
+    "Endpoint": "https://dummyjson.com/auth/login",
+    "Method": "POST",
+    "Headers": {
+      "Access-Control-Allow-Credentials": "true",
+      "Content-Type": "application/json"
+    },
+    "Body": "{\"username\":\"emilys\",\"password\":\"emilyspass\",\"expiresInMins\":30}",
+    "Template": "",
+    "Inline": "\n        <h1>{{.Values.someproperty}}</h1>\n\t\t<ul id=\"{{index .Data.id}}\">\n\t\t\t<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>\n\t\t<ul>\n\t",
+    "Values": {
+      "someproperty": "User"
+    },
+    "User": "emilys",
+    "Pass": "emilyspass",
+    "Debug": false
   }
 ==== expected output ====
 <div class="userlist">
+        <h1>User</h1>
 	<ul id="1">
 		<li>Emily Johnson</li>
 	<ul>

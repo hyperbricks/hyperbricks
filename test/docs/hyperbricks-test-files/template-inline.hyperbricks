@@ -1,17 +1,17 @@
 ==== hyperbricks config {!{fragment}} ====
 myComponent = <TEMPLATE>
 myComponent {
-    template = <<[
+    
+    inline = <<[
         <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
     ]>>
-    istemplate = true
+  
     values {
         width = 300
         height = 400
         src = https://www.youtube.com/embed/tgbNymZ7vqY
     }
 }
-myComponent.enclose = |
 
 fragment = <FRAGMENT>
 fragment.content = <TREE>
@@ -24,7 +24,7 @@ fragment.content {
     enclose = <div class="youtube_video">|</div>
 }
 ==== explainer ====
-Determines if the field is a inline template or when not defined a reference to a template file
+The inline template used for rendering.
 ==== expected json ====
 {
     "ConfigType": "<FRAGMENT>",
@@ -56,7 +56,6 @@ Determines if the field is a inline template or when not defined a reference to 
     "Static": "",
     "Index": 0
   }
-  
 ==== expected output ====
 <div class="youtube_video">
     <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>

@@ -2,15 +2,14 @@
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
-	template = <<[
+	inline = <<[
         <h1>Quotes</h1>
         <ul>
-            {{range .quotes}}
+            {{range .Data.quotes}}
                 <li><strong>{{.author}}:</strong> {{.quote}}</li>
             {{end}}
         </ul>
 	]>>
-	istemplate = true
     debug = false
 }
 ==== explainer ====
@@ -25,8 +24,9 @@ The enclosing HTML element for the header divided by |
     "ExtraAttributes": null,
     "Enclose": "",
     "FilePath": "hyperbricks-test-files/assets/quotes.json",
-    "Template": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-    "IsTemplate": true,
+    "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+    "Template": "",
+    "Values": null,
     "Debug": false
   }
   

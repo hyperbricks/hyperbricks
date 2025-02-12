@@ -21,9 +21,7 @@ type TemplateConfig struct {
 	shared.Composite   `mapstructure:",squash"`
 	MetaDocDescription string `mapstructure:"@doc" description:"TEMPLATE description" example:"{!{template-@doc.hyperbricks}}"`
 	Template           string `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{template-template.hyperbricks}}"`
-	// IsTemplate         bool   `mapstructure:"istemplate"` // Deprecated as of v0.2.0-beta
-
-	Inline string `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* JavaScript goes here */ ]>>" example:"{!{template-inline.hyperbricks}}"`
+	Inline             string `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* TEmplate goes here */ ]>>" example:"{!{template-inline.hyperbricks}}"`
 
 	Values  map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks}}"`
 	Enclose string                 `mapstructure:"enclose" description:"Enclosing property for the template rendered output" example:"{!{template-enclose.hyperbricks}}"`
@@ -78,7 +76,7 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 			logging.GetLogger().Errorf("precached template '%s' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching", config.Template)
 			// MARKER_FOR_CODE:
 			// Attempt to load the file from disk and cache it.
-			fileContent, err := getTemplateFileContent(config.Template)
+			fileContent, err := GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
 					Err: fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
@@ -179,7 +177,7 @@ var (
 
 // getTemplateFileContent attempts to retrieve the template content from the cache.
 // If not found, it reads the file from disk, caches it, and returns the content.
-func getTemplateFileContent(templatePath string) (string, error) {
+func GetTemplateFileContent(templatePath string) (string, error) {
 	// First, check if the template content is already in the cache.
 	cacheMutex.RLock()
 	if content, exists := templateCache[templatePath]; exists {

@@ -544,7 +544,8 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				//fmt.Println("\nExpected Output:")
 				//fmt.Println(parsed.ExpectedOutput)
 				// Parse the combined configuration.
-				parsedConfig := parser.ParseHyperScript(parsed.HyperbricksConfig)
+				preprocesses, _ := parser.PreprocessHyperScript(parsed.HyperbricksConfig, "./", "./test/docs/modules/default/templates/")
+				parsedConfig := parser.ParseHyperScript(preprocesses)
 				//fmt.Printf("got obj from hyperscript:%v", parsedConfig)
 				// Convert the struct to JSON
 				// jsonBytes, err := json.MarshalIndent(parsedConfig[parsed.HyperbricksConfigScope], "", "  ")

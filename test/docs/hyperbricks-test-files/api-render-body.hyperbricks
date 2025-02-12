@@ -11,12 +11,11 @@ api_test {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
-	template = <<[
-		<ul id="{{index .id}}">
-			<li>{{index .firstName}} {{index .lastName}}</li>
+	inline = <<[
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -38,9 +37,10 @@ Use the string format of the example, do not use an nested object to define. The
 	  "Content-Type": "application/json"
 	},
 	"Body": "{\"username\":\"emilys\",\"password\":\"emilyspass\",\"expiresInMins\":30}",
-	"Template": "\n\t\t<ul id=\"{{index .id}}\">\n\t\t\t<li>{{index .firstName}} {{index .lastName}}</li>\n\t\t<ul>\n\t",
-	"IsTemplate": true,
+	"Inline": "\n\t\t<ul id=\"{{index .Data.id}}\">\n\t\t\t<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>\n\t\t<ul>\n\t",
+	"Template": "",
 	"User": "emilys",
+	"Values": null,
 	"Pass": "emilyspass",
 	"Debug": false
   }

@@ -1,10 +1,12 @@
 ==== hyperbricks config {!{fragment}} ====
 myComponent = <TEMPLATE>
 myComponent {
-    template = <<[
+
+    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+    inline = <<[
         <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
     ]>>
-    istemplate = true
+  
     values {
         width = 300
         height = 400

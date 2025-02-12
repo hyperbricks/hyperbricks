@@ -2,11 +2,12 @@
 fragment = <FRAGMENT>
 fragment {
 	template {
-        template = <<[
+        # template = {{TEMPLATE:mytemplate.tmpl}}
+        inline = <<[
             <div>{{content}}</div>
 
         ]>>
-        isTemplate = true
+      
         values {
             content = <HTML>
             content.value = <p>SOME HTML CONTENT</p>
@@ -41,8 +42,7 @@ Template configurations for rendering the fragment. (This will disable rendering
     "Items": null,
     "Enclose": "",
     "Template": {
-      "isTemplate": "true",
-      "template": "\n<div>{{content}}</div>\n\n        ",
+      "inline": "\n<div>{{content}}</div>\n\n        ",
       "values": {
         "content": {
           "@type": "<HTML>",

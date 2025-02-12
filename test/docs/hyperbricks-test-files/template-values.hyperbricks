@@ -4,11 +4,11 @@ $test = hello world
 
 myComponent = <TEMPLATE>
 myComponent {
-    template = <<[
+    inline = <<[
         <h1>{{header}}</h1>
         <p>{{text}}</p>
     ]>>
-    istemplate = true
+
     values {
         header = {{VAR:test}}!
         text = some text

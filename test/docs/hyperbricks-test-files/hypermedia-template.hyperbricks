@@ -2,11 +2,12 @@
 hypermedia = <HYPERMEDIA>
 hypermedia {
 	template {
-        template = <<[
+        # template = {{TEMPLATE:mytemplate.tmpl}}
+        inline = <<[
             <div>{{content}}</div>
 
         ]>>
-        isTemplate = true
+
         values {
             content = <HTML>
             content.value = <p>SOME HTML CONTENT</p>
@@ -31,8 +32,7 @@ Template configurations for rendering the hypermedia. See <TEMPLATE> for field d
     "Enclose": "",
     "Favicon": "",
     "Template": {
-      "isTemplate": "true",
-      "template": "\n<div>{{content}}</div>\n\n        ",
+      "inline": "\n<div>{{content}}</div>\n\n        ",
       "values": {
         "content": {
           "@type": "<HTML>",
@@ -48,4 +48,4 @@ Template configurations for rendering the hypermedia. See <TEMPLATE> for field d
     "Head": null
   }
 ==== expected output ====
-<!DOCTYPE html><html><body><div><p>SOME HTML CONTENT</p></div></body></html> 
+<div><p>SOME HTML CONTENT</p></div>

@@ -7,6 +7,7 @@ loading
 === RUN   Test_TestAndDocumentationRender/fragment-section
 === RUN   Test_TestAndDocumentationRender/fragment-enclose
 === RUN   Test_TestAndDocumentationRender/fragment-template
+12-02-2025 16:38	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/fragment-static
 === RUN   Test_TestAndDocumentationRender/fragment-index
 
@@ -30,6 +31,7 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
+12-02-2025 16:38	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
 === RUN   Test_TestAndDocumentationRender/hypermedia-index
 === RUN   Test_TestAndDocumentationRender/hypermedia-doctype
@@ -41,8 +43,10 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/head-css
 === RUN   Test_TestAndDocumentationRender/head-js
 === RUN   Test_TestAndDocumentationRender/template-@doc
+12-02-2025 16:38	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/template-template
-=== RUN   Test_TestAndDocumentationRender/template-istemplate
+12-02-2025 16:38	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+=== RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
 === RUN   Test_TestAndDocumentationRender/tree-@doc
@@ -87,8 +91,12 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-file
 === RUN   Test_TestAndDocumentationRender/json-template
-=== RUN   Test_TestAndDocumentationRender/json-istemplate
+12-02-2025 16:38	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+=== RUN   Test_TestAndDocumentationRender/json-inline
+=== RUN   Test_TestAndDocumentationRender/json-values
+12-02-2025 16:38	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
+12-02-2025 16:38	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
@@ -104,16 +112,17 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/api_render-headers
 === RUN   Test_TestAndDocumentationRender/api_render-body
 === RUN   Test_TestAndDocumentationRender/api_render-template
-=== RUN   Test_TestAndDocumentationRender/api_render-istemplate
+=== RUN   Test_TestAndDocumentationRender/api_render-inline
+=== RUN   Test_TestAndDocumentationRender/api_render-values
 === RUN   Test_TestAndDocumentationRender/api_render-user
 === RUN   Test_TestAndDocumentationRender/api_render-pass
 === RUN   Test_TestAndDocumentationRender/api_render-debug
-2025/01/28 15:00:51 Version: v0.1.41-alpha
-2025/01/28 15:00:51 Build Time: 2025-01-28T14:00:48Z
-2025/01/28 15:00:51 Static HTML file generated at ../../docs/hyperbricks-reference-v0.1.41-alpha.md
---- PASS: Test_TestAndDocumentationRender (1.73s)
+2025/02/12 16:38:08 Version: v0.2.0-alpha
+2025/02/12 16:38:08 Build Time: 2025-02-12T15:38:06Z
+2025/02/12 16:38:08 Static HTML file generated at ../../docs/hyperbricks-reference-v0.2.0-alpha.md
+--- PASS: Test_TestAndDocumentationRender (1.77s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.06s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-route (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-section (0.00s)
@@ -152,7 +161,7 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/head-js (0.00s)
     --- PASS: Test_TestAndDocumentationRender/template-@doc (0.00s)
     --- PASS: Test_TestAndDocumentationRender/template-template (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/template-istemplate (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-inline (0.00s)
     --- PASS: Test_TestAndDocumentationRender/template-values (0.00s)
     --- PASS: Test_TestAndDocumentationRender/template-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/tree-@doc (0.00s)
@@ -197,7 +206,8 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/json-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/json-file (0.00s)
     --- PASS: Test_TestAndDocumentationRender/json-template (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-istemplate (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-inline (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-values (0.00s)
     --- PASS: Test_TestAndDocumentationRender/json-debug (0.00s)
     --- PASS: Test_TestAndDocumentationRender/text-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/text-value (0.00s)
@@ -208,15 +218,16 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/menu-active (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.31s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-endpoint (0.10s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-method (0.10s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.28s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-endpoint (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-method (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-headers (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-body (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-template (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-istemplate (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-inline (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-values (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-user (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-pass (0.10s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-pass (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.09s)
 PASS
-ok  	command-line-arguments	1.953s
+ok  	command-line-arguments	1.991s

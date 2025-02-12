@@ -24,7 +24,7 @@ api_test {
 	enclose = <div class="userlist">|</div>
 }
 ==== explainer ====
-Debug the response data (Do not use in production)
+Key-value pairs for template rendering
 ==== expected json ====
 {
     "ConfigType": "<API_RENDER>",
