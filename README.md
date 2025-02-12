@@ -1,18 +1,32 @@
 
 
-**Note:**  
-
-This project and it's documentation is currently incomplete and in the experimental phase. It is recommended to use the code only for exploration or from a developer's perspective at this stage. If you're interested, you can explore the components and composite renderers in the `internal/component` and `internal/composite` directories.
-
-The `<API>` type is currently undocumented because it is still evolving and likely to change. Note that `<API>` and `<API_RENDER>` are distinct types.". 
-
-- **`<API_RENDER>`**: Renders a template using data fetched from an external endpoint.  
-- **`<API>`**: Integrates with a `<MODEL>`, connects to a database, and simplifies common use cases (such as CRUD operations) with minimal configuration.
-
 # HyperBricks
 **Licence:** MIT  
 **Version:** v0.2.0-alpha  
-**Build time:** 2025-02-12T17:29:52Z   
+**Build time:** 2025-02-12T17:51:00Z
+
+![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo.png)
+
+## HyperBricks Documentation
+
+HyperBricks aims to bridge front and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allows to declare and describe the state of a document in a concise and structured manner.
+
+### Usage:
+$> hyperbricks [command]
+
+Available Commands:
+-  completion  [Generate the autocompletion script for the specified shell]
+-  help        [Help about any command]
+-  init        [Create package.hyperbricks and required directories]
+-  select      [Select a hyperbricks module]
+-  start       [Start server]
+-  static      [Render static content]
+-  version     [Show version]
+
+Flags:
+  -h, --help   help for hyperbricks
+
+Use "hyperbricks [command] --help" for more information about a command.
 
 Go direct to:
 
@@ -27,11 +41,6 @@ Go direct to:
   - [Fragment Example with HTMX Trigger](#fragment-example-with-htmx-trigger)
 - [Object Inheritance and Reusability](#object-inheritance-and-reusability)
 - [Importing Predefined HyperScripts](#importing-predefined-hyperscripts)
-
-
-## HyperBricks Documentation
-
-HyperBricks aims to bridge front and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allow you to declare and describe the state of a document in a concise and structured manner.
 
 
 ### Defining Hypermedia Documents and Fragments
@@ -222,7 +231,6 @@ To initialize a new HyperBricks project, use the `init` command:
 ```bash
 hyperbricks init -m <name-of-hyperbricks-module>
 ```
-
 without the -m and ```<name-of-hyperbricks-module>``` this will create a ```default``` folder.
 
 
@@ -236,6 +244,11 @@ Once your project is initialized, start the HyperBricks server using the `start`
 
 ```bash
 hyperbricks start  -m <name-of-hyperbricks-module>
+```
+
+Use the --production flag when adding system and service manager in linux or on a mac
+```bash
+hyperbricks start  -m <name-of-hyperbricks-module> --production
 ```
 This will launch the server, allowing you to manage and serve hypermedia content on the ip of your machine.
 

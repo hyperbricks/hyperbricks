@@ -16,7 +16,6 @@ To initialize a new HyperBricks project, use the `init` command:
 ```bash
 hyperbricks init -m <name-of-hyperbricks-module>
 ```
-
 without the -m and ```<name-of-hyperbricks-module>``` this will create a ```default``` folder.
 
 
@@ -30,6 +29,11 @@ Once your project is initialized, start the HyperBricks server using the `start`
 
 ```bash
 hyperbricks start  -m <name-of-hyperbricks-module>
+```
+
+Use the --production flag when adding system and service manager in linux or on a mac
+```bash
+hyperbricks start  -m <name-of-hyperbricks-module> --production
 ```
 This will launch the server, allowing you to manage and serve hypermedia content on the ip of your machine.
 

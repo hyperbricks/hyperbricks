@@ -1,11 +1,13 @@
 {{define "main"}}
 
-{{include "template_note.md"}}
-
 # HyperBricks
 **Licence:** MIT  
 **Version:** {{.version}}  
-**Build time:** {{.buildtime}}   
+**Build time:** {{.buildtime}}
+
+![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo.png)
+
+{{include "template_note.md"}}
 
 Go direct to:
 
