@@ -7,7 +7,7 @@ myconf {
 # this is the main hyperbricks configuration object. Use hyperbricks, not other objects.
 hyperbricks {
     # live, development or debug mode
-    mode = live
+    mode = development
 
     # settings for debugging hyperbricks in go env
     debug {
