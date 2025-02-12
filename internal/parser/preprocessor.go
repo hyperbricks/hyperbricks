@@ -199,7 +199,7 @@ func PreprocessHyperScript(hyperBricks string, hyperbricksDir string, templateDi
 			return token
 		}
 
-		return string(content)
+		return " <<[" + string(content) + " ]>>"
 	})
 
 	return processed, nil

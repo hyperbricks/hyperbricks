@@ -2,19 +2,23 @@
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
-	template = <<[
-        <h1>Quotes</h1>
+
+    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
         <ul>
-            {{range .quotes}}
+            {{range .Data.quotes}}
                 <li><strong>{{.author}}:</strong> {{.quote}}</li>
             {{end}}
         </ul>
 	]>>
-	istemplate = true
+    values {
+        someproperty = Quotes!
+    }
     debug = false
 }
 ==== explainer ====
-
+Key-value pairs for template rendering
 ==== expected json ====
 {
     "ConfigType": "<JSON_RENDER>",
@@ -25,13 +29,16 @@ local_json_test {
     "ExtraAttributes": null,
     "Enclose": "",
     "FilePath": "hyperbricks-test-files/assets/quotes.json",
-    "Template": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-    "IsTemplate": true,
+    "Inline": "\n        <h1>{{.Values.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+    "Template": "",
+    "Values": {
+        "someproperty": "Quotes!"
+    },
     "Debug": false
   }
   
 ==== expected output ====
-<h1>Quotes</h1>
+<h1>Quotes!</h1>
 <ul>
     <li><strong>Rumi:</strong> Your heart is the size of an ocean. Go find yourself in its hidden depths.</li>
     <li><strong>Abdul Kalam:</strong> The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.</li>

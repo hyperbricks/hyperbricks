@@ -2,13 +2,30 @@ package composite
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/mitchellh/mapstructure"
 )
+
+type HxResponse struct {
+	HxTemplateResult     string // just for output of the parsed template
+	HxLocation           string `mapstructure:"hx_location" header:"HX-Location"  description:"allows you to do a client-side redirect that does not do a full page reload" `
+	HxPushedUrl          string `mapstructure:"hx_push_url" header:"HX-Pushed-Url" description:"pushes a new url into the history stack"`
+	HxRedirect           string `mapstructure:"hx_redirect" header:"HX-Redirect" description:"can be used to do a client-side redirect to a new location"`
+	HxRefresh            string `mapstructure:"hx_refresh" header:"HX-Refresh" description:"if set to 'true' the client-side will do a full refresh of the page"`
+	HxReplaceUrl         string `mapstructure:"hx_replace_url" header:"HX-Replace-Url" description:"replaces the current url in the location bar"`
+	HxReswap             string `mapstructure:"hx_reswap" header:"HX-Reswap" description:"allows you to specify how the response will be swapped"`
+	HxRetarget           string `mapstructure:"hx_retarget" header:"HX-Retarget" description:"a css selector that updates the target of the content update"`
+	HxReselect           string `mapstructure:"hx_reselect" header:"HX-Reselect" description:"a css selector that allows you to choose which part of the response is used to be swapped in"`
+	HxTrigger            string `mapstructure:"hx_trigger" header:"HX-Trigger" description:"allows you to trigger client-side events"`
+	HxTriggerafterSettle string `mapstructure:"hx_trigger_after_settle"  header:"HX-Trigger-After-Settle" description:"allows you to trigger client-side events after the settle step"`
+	HxTriggerafterSwap   string `mapstructure:"hx_trigger_after_swap"  header:"HX-Trigger-After-Swap" description:"allows you to trigger client-side events after the swap step"`
+}
 
 // FragmentConfig represents configuration for a single fragment.
 type FragmentConfig struct {
@@ -107,4 +124,38 @@ func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
 	}
 
 	return finalHTML, errors
+}
+
+func SetHeadersFromHxRequest(config *HxResponse, writer http.ResponseWriter) {
+	// Use reflection to access struct fields
+	v := reflect.ValueOf(*config)
+	t := reflect.TypeOf(*config)
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		fieldType := t.Field(i)
+
+		// Use the "header" tag to get the HTTP header name
+		headerName := fieldType.Tag.Get("header")
+		if headerName == "" || !field.IsValid() || (field.Kind() == reflect.String && field.String() == "") {
+			// Skip fields without a header tag or empty string fields
+			continue
+		}
+
+		// Convert the field value to a string
+		headerValue := ""
+		switch field.Kind() {
+		case reflect.String:
+			headerValue = field.String()
+		case reflect.Int, reflect.Int64, reflect.Float64, reflect.Bool:
+			headerValue = fmt.Sprintf("%v", field.Interface())
+		default:
+			// Skip unsupported types
+			continue
+		}
+
+		// Set the header using Go's default canonicalization
+		writer.Header().Set(headerName, headerValue)
+		log.Println(writer.Header())
+	}
 }

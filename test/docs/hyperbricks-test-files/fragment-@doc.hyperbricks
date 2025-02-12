@@ -3,12 +3,12 @@ fragment = <FRAGMENT>
 fragment.response.hx_trigger = myEvent
 fragment.10 = <TEMPLATE>
 fragment.10 {
-    template = <<[
+    inline = <<[
         <h2>{{header}}</h2>
         <p>{{text}}</p>
         {{image}}
 ]>>
-    istemplate = true
+    
     values {
         header = SOME HEADER
         text = <TEXT>

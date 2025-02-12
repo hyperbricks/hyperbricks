@@ -2,8 +2,6 @@
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
-
-    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
 	inline = <<[
         <h1>Quotes</h1>
         <ul>
@@ -15,7 +13,7 @@ local_json_test {
     debug = false
 }
 ==== explainer ====
-Template for rendering output
+Use inline to define the template in a multiline block <<[ /* Template code goes here */ ]>>
 ==== expected json ====
 {
     "ConfigType": "<JSON_RENDER>",

@@ -16,7 +16,6 @@ api_test {
 			<li>{{index .firstName}} {{index .lastName}}</li>
 		<ul>
 	]>>
-	istemplate = true
 	debug = false
 	enclose = <div class="userlist">|</div>
 }
@@ -39,7 +38,6 @@ Extra attributes like id, data-role, data-action
 	},
 	"Body": "{\"username\":\"emilys\",\"password\":\"emilyspass\",\"expiresInMins\":30}",
 	"Template": "\n\t\t<ul id=\"{{index .id}}\">\n\t\t\t<li>{{index .firstName}} {{index .lastName}}</li>\n\t\t<ul>\n\t",
-	"IsTemplate": true,
 	"User": "emilys",
 	"Pass": "emilyspass",
 	"Debug": false

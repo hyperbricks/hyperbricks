@@ -15,8 +15,10 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/hyperbricks/hyperbricks/internal/composite"
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
 type APIConfig struct {
@@ -25,8 +27,8 @@ type APIConfig struct {
 	Method           string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-method.hyperbricks}}"`
 	Headers          map[string]string      `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-headers.hyperbricks}}"`
 	Body             string                 `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-render-body.hyperbricks}}"`
-	Template         string                 `mapstructure:"template" validate:"required" description:"Template used for rendering API output" example:"{!{api-render-template.hyperbricks}}"`
-	IsTemplate       bool                   `mapstructure:"istemplate"`
+	Template         string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-template.hyperbricks}}"`
+	Inline           string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{api-render-inline.hyperbricks}}"`
 	Values           map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-values.hyperbricks}}"`
 	User             string                 `mapstructure:"user" description:"User for basic auth" example:"{!{api-render-user.hyperbricks}}"`
 	Pass             string                 `mapstructure:"pass" description:"User for basic auth" example:"{!{api-render-pass.hyperbricks}}"`
@@ -51,12 +53,7 @@ var _ shared.ComponentRenderer = (*APIRenderer)(nil)
 var rangeRegex = regexp.MustCompile(`{{range\s+[^}]+}}`)
 
 func (api *APIConfig) Validate() []error {
-
 	warnings := shared.Validate(api)
-
-	input := api.Template
-	api.IsTemplate = rangeRegex.MatchString(input) || strings.Contains(input, "\n") || strings.Contains(input, "{{") || strings.Contains(input, "}}")
-
 	return warnings
 }
 
@@ -101,23 +98,27 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	}
 
 	var templateContent string
-	if config.IsTemplate {
-		templateContent = config.Template
+
+	if config.Inline != "" {
+		templateContent = config.Inline
 	} else {
-
+		// Fetch the template content
 		tc, found := ar.TemplateProvider(config.Template)
-		if !found {
-			return "",
-				append(errors, shared.ComponentError{
-					Path:     config.Path,
-					Key:      config.Key,
-					Err:      fmt.Errorf("<!-- Template '%s' not found -->", config.Template).Error(),
-					Rejected: false,
-				})
-		} else {
+		if found {
 			templateContent = tc
+		} else {
+			logging.GetLogger().Errorf("precached template '%s' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching", config.Template)
+			// MARKER_FOR_CODE:
+			// Attempt to load the file from disk and cache it.
+			fileContent, err := composite.GetTemplateFileContent(config.Template)
+			if err != nil {
+				errors = append(errors, shared.ComponentError{
+					Err: fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
+				})
+			} else {
+				templateContent = fileContent
+			}
 		}
-
 	}
 
 	renderedOutput, _errors := applyTemplate(templateContent, responseData, config)

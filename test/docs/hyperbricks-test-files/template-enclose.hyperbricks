@@ -1,10 +1,9 @@
 ==== hyperbricks config {!{myComponent}} ====
 myComponent = <TEMPLATE>
 myComponent {
-    template = <<[
+    inline = <<[
       <img src="{{src}}" alt="{{alt}}" width="{{width}}" height="{{height}}">
     ]>>
-    istemplate = true
     values {
         width = 500
         height = 600
@@ -24,8 +23,8 @@ Enclosing property for the template rendered output divided by |
     "File": "",
     "Items": null,
     "MetaDocDescription": "",
-    "Template": "\n<img src=\"{{src}}\" alt=\"{{alt}}\" width=\"{{width}}\" height=\"{{height}}\">\n    ",
-    "IsTemplate": true,
+    "Template": "",
+    "Inline": "\n<img src=\"{{src}}\" alt=\"{{alt}}\" width=\"{{width}}\" height=\"{{height}}\">\n    ",
     "Values": {
       "alt": "Girl in a jacket",
       "height": "600",

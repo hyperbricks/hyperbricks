@@ -1,8 +1,3 @@
-## HyperBricks Documentation
-
-HyperBricks aims to bridge front and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allow you to declare and describe the state of a document in a concise and structured manner.
-
-
 ### Defining Hypermedia Documents and Fragments
 
 Hypermedia documents or fragments can be declared using simple key-value properties:

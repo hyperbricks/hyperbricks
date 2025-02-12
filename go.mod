@@ -41,6 +41,8 @@ require (
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/otiai10/mint v1.6.3 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/russross/blackfriday v1.6.0 // indirect
+	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sahilm/fuzzy v0.1.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.uber.org/multierr v1.10.0 // indirect

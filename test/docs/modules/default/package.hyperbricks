@@ -1,3 +1,6 @@
+# here you can set the current module
+$module = modules/default
+
 
 # use this sort of objects to set hyperbricks globals
 myconf {
@@ -6,6 +9,8 @@ myconf {
 
 # this is the main hyperbricks configuration object. Use hyperbricks, not other objects.
 hyperbricks {
+    static = true
+
     # live, development or debug mode
     mode = development
 

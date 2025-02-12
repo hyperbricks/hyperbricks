@@ -15,9 +15,10 @@ echo "Building plugins"
 
 # Build plugins
 go build -buildmode=plugin -o ./bin/plugins/LoremIpsumPlugin.so ./plugins/loremipsum/lorem_ipsum_plugin.go
-go build -buildmode=plugin -o ./bin/plugins/myplugin.so ./plugins/myplugin/my_plugin.go
+#go build -buildmode=plugin -o ./bin/plugins/myplugin.so ./plugins/myplugin/my_plugin.go
+go build -buildmode=plugin -o ./bin/plugins/MarkDownPlugin.so ./plugins/markdown/markdown_plugin.go
 
 # Build hyperbricks cms
-go build -v -o ./bin/hyperbricks ./cmd/hyperbricks
+#go build -v -o ./bin/hyperbricks ./cmd/hyperbricks
 
 echo "Build complete!\n\n"

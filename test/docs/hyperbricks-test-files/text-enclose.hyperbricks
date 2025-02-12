@@ -1,7 +1,7 @@
 ==== hyperbricks config {!{text}} ====
 text = <TEXT>
 text {
-	value = SOME VALUE
+	  value = SOME VALUE
     enclose = <span>|</span>
 }
 ==== explainer ====

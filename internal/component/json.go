@@ -8,15 +8,18 @@ import (
 
 	"strings"
 
+	"github.com/hyperbricks/hyperbricks/internal/composite"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
 type LocalJSONConfig struct {
 	shared.Component `mapstructure:",squash"`
-	FilePath         string `mapstructure:"file" validate:"required" description:"Path to the local JSON file" example:"{!{json-file.hyperbricks}}"`
-	Template         string `mapstructure:"template" validate:"required" description:"Template for rendering output" example:"{!{json-template.hyperbricks}}"`
-	IsTemplate       bool   `mapstructure:"istemplate"`
-	Debug            bool   `mapstructure:"debug" description:"Debug the response data" example:"{!{json-debug.hyperbricks}}"`
+	FilePath         string                 `mapstructure:"file" validate:"required" description:"Path to the local JSON file" example:"{!{json-file.hyperbricks}}"`
+	Template         string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{json-template.hyperbricks}}"`
+	Inline           string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template code goes here */ ]>>" example:"{!{json-inline.hyperbricks}}"`
+	Values           map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{json-values.hyperbricks}}"`
+	Debug            bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{json-debug.hyperbricks}}"`
 }
 
 func LocalJSONConfigGetName() string {
@@ -69,26 +72,30 @@ func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error
 	}
 
 	var templateContent string
-	if config.IsTemplate {
-		templateContent = config.Template
+
+	if config.Inline != "" {
+		templateContent = config.Inline
 	} else {
+		// Fetch the template content
 		tc, found := renderer.TemplateProvider(config.Template)
-		if !found {
-			warning := shared.ComponentError{
-				Path:     config.Path,
-				Key:      config.Key,
-				Err:      fmt.Errorf("template '%s' not found", config.Template).Error(),
-				Rejected: false,
-			}
-			builder.WriteString(fmt.Sprintf("<!-- Template '%s' not found -->", config.Template))
-			errors = append(errors, warning)
-			return builder.String(), errors
-		} else {
+		if found {
 			templateContent = tc
+		} else {
+			logging.GetLogger().Errorf("precached template '%s' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching", config.Template)
+			// MARKER_FOR_CODE:
+			// Attempt to load the file from disk and cache it.
+			fileContent, err := composite.GetTemplateFileContent(config.Template)
+			if err != nil {
+				errors = append(errors, shared.ComponentError{
+					Err: fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
+				})
+			} else {
+				templateContent = fileContent
+			}
 		}
 	}
 
-	renderedOutput, tmplErrors := applyJsonTemplate(templateContent, jsonData)
+	renderedOutput, tmplErrors := applyJsonTemplate(templateContent, jsonData, config)
 	if tmplErrors != nil {
 		errors = append(errors, tmplErrors...)
 	}
@@ -116,9 +123,20 @@ func readLocalJSON(filePath string) (map[string]interface{}, error) {
 	return jsonData, nil
 }
 
-func applyJsonTemplate(templateStr string, data map[string]interface{}) (string, []error) {
+func applyJsonTemplate(templateStr string, data map[string]interface{}, config LocalJSONConfig) (string, []error) {
+
 	var errors []error
 	var output strings.Builder
+
+	// in case of an array or object, Values is always in root and use Data to access response data...
+	context := struct {
+		Data   interface{}
+		Values map[string]interface{}
+	}{
+		Data:   data,
+		Values: config.Values,
+	}
+
 	tmpl, err := template.New("localJSONTemplate").Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
@@ -126,7 +144,7 @@ func applyJsonTemplate(templateStr string, data map[string]interface{}) (string,
 		})
 	}
 
-	err = tmpl.Execute(&output, data)
+	err = tmpl.Execute(&output, context)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Err: fmt.Sprintf("Error executing template: %v", err),

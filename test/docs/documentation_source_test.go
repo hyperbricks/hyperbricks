@@ -299,16 +299,6 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	rm.RegisterComponent(component.LocalJSONConfigGetName(), localJsonRenderer, reflect.TypeOf(component.LocalJSONConfig{}))
 
 	// TEMPLATE ....
-	endpointRenderer := &composite.HxApiRenderer{
-		CompositeRenderer: renderer.CompositeRenderer{
-			RenderManager:    rm,
-			TemplateProvider: templateProvider,
-		},
-	}
-
-	rm.RegisterComponent(composite.HxApiConfigGetName(), endpointRenderer, reflect.TypeOf(composite.HxApiConfig{}))
-
-	// TEMPLATE ....
 	fragmentRenderer := &composite.FragmentRenderer{
 		CompositeRenderer: renderer.CompositeRenderer{
 			RenderManager:    rm,
@@ -554,7 +544,8 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				//fmt.Println("\nExpected Output:")
 				//fmt.Println(parsed.ExpectedOutput)
 				// Parse the combined configuration.
-				parsedConfig := parser.ParseHyperScript(parsed.HyperbricksConfig)
+				preprocesses, _ := parser.PreprocessHyperScript(parsed.HyperbricksConfig, "./", "./test/docs/modules/default/templates/")
+				parsedConfig := parser.ParseHyperScript(preprocesses)
 				//fmt.Printf("got obj from hyperscript:%v", parsedConfig)
 				// Convert the struct to JSON
 				// jsonBytes, err := json.MarshalIndent(parsedConfig[parsed.HyperbricksConfigScope], "", "  ")

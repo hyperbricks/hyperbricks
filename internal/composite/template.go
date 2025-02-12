@@ -4,23 +4,27 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"os"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/mitchellh/mapstructure"
 
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
 // TemplateConfig represents the configuration for a TEMPLATE type.
 type TemplateConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	MetaDocDescription string                 `mapstructure:"@doc" description:"TEMPLATE description" example:"{!{template-@doc.hyperbricks}}"`
-	Template           string                 `mapstructure:"template" description:"The template used for rendering" example:"{!{template-template.hyperbricks}}"`
-	IsTemplate         bool                   `mapstructure:"istemplate" description:"Determines if the field is a template or reference" example:"{!{template-istemplate.hyperbricks}}"`
-	Values             map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks}}"`
-	Enclose            string                 `mapstructure:"enclose" description:"Enclosing property for the template rendered output" example:"{!{template-enclose.hyperbricks}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"TEMPLATE description" example:"{!{template-@doc.hyperbricks}}"`
+	Template           string `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{template-template.hyperbricks}}"`
+	Inline             string `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* TEmplate goes here */ ]>>" example:"{!{template-inline.hyperbricks}}"`
+
+	Values  map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks}}"`
+	Enclose string                 `mapstructure:"enclose" description:"Enclosing property for the template rendered output" example:"{!{template-enclose.hyperbricks}}"`
 }
 
 type TemplateRenderer struct {
@@ -61,19 +65,25 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 
 	var templateContent string
 
-	if !config.IsTemplate {
-		config.IsTemplate = checkString(config.Template)
-	}
-
-	if config.IsTemplate {
-		templateContent = config.Template
+	if config.Inline != "" {
+		templateContent = config.Inline
 	} else {
 		// Fetch the template content
 		tc, found := tr.TemplateProvider(config.Template)
-		if !found {
-			return fmt.Sprintf("<!-- Template '%s' not found -->", config.Template), nil
-		} else {
+		if found {
 			templateContent = tc
+		} else {
+			logging.GetLogger().Errorf("precached template '%s' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching", config.Template)
+			// MARKER_FOR_CODE:
+			// Attempt to load the file from disk and cache it.
+			fileContent, err := GetTemplateFileContent(config.Template)
+			if err != nil {
+				errors = append(errors, shared.ComponentError{
+					Err: fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
+				})
+			} else {
+				templateContent = fileContent
+			}
 		}
 	}
 
@@ -81,19 +91,10 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 	sortedKeys := shared.SortedUniqueKeys(config.Values)
 	var treeRenderOutPut = make(map[string]interface{})
 	for _, key := range sortedKeys {
-		//value := config.Values[key].(map[string]interface{})
 		if value, ok := config.Values[key].(map[string]interface{}); ok {
 
 			if componentType, ok := value["@type"].(string); ok {
-				// Now tree is a map[string]interface{}
-				result, render_errors := tr.RenderManager.Render(componentType, value) // als dit een platte value is ?
-
-				// if componentType == "<HTML>" {
-				// 	treeRenderOutPut[key] = template.HTML(result)
-				// } else {
-				// 	treeRenderOutPut[key] = result
-				// }
-
+				result, render_errors := tr.RenderManager.Render(componentType, value)
 				treeRenderOutPut[key] = template.HTML(result)
 				errors = append(errors, render_errors...)
 			} else {
@@ -104,7 +105,6 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 				treeRenderOutPut[key] = value
 			}
 		}
-
 	}
 
 	renderedOutput, _errors := applyTemplate(templateContent, treeRenderOutPut, config)
@@ -168,48 +168,81 @@ func preprocessTemplate(templateStr string) string {
 	return varRefRegex.ReplaceAllString(templateStr, `{{.$1}}`)
 }
 
-// flexibleDataWrapper is a encloseper to resolve both {{a}} and {{.a}}.
-type flexibleDataWrapper struct {
-	data map[string]interface{}
-}
+// Global concurrent cache variables.
+// Use sync.RWMutex for safe concurrent access.
+var (
+	templateCache = make(map[string]string)
+	cacheMutex    sync.RWMutex
+)
 
-// Implement template's "Field by Name" resolution
-func (fdw *flexibleDataWrapper) Lookup(field string) (interface{}, bool) {
-	if val, found := fdw.data[field]; found {
-		return val, true
+// getTemplateFileContent attempts to retrieve the template content from the cache.
+// If not found, it reads the file from disk, caches it, and returns the content.
+func GetTemplateFileContent(templatePath string) (string, error) {
+	// First, check if the template content is already in the cache.
+	cacheMutex.RLock()
+	if content, exists := templateCache[templatePath]; exists {
+		cacheMutex.RUnlock()
+		return content, nil
 	}
-	return nil, false
-}
+	cacheMutex.RUnlock()
 
-// Implement the template execution interface
-func (fdw *flexibleDataWrapper) Get(name string) interface{} {
-	if val, found := fdw.data[name]; found {
-		return val
+	// Not in cache: attempt to read the file from disk.
+	data, err := os.ReadFile(templatePath) // Uses os.ReadFile (Go 1.16+)
+	if err != nil {
+		return "", err
 	}
-	return "" // Return empty string if not found
+	content := string(data)
+
+	// Cache the content using a write lock.
+	cacheMutex.Lock()
+	templateCache[templatePath] = content
+	cacheMutex.Unlock()
+
+	return content, nil
 }
 
-// replaceRemainingPlaceholders replaces any unreplaced placeholders with empty strings.
-func replaceRemainingPlaceholders(template string) string {
-	// This is a simple implementation. For more complex templates, consider using regex.
-	start := strings.Index(template, "{{")
-	for start != -1 {
-		end := strings.Index(template[start:], "}}")
-		if end == -1 {
-			break
-		}
-		end += start
-		placeholder := template[start : end+2]
-		template = strings.Replace(template, placeholder, "", 1)
-		start = strings.Index(template, "{{")
-	}
-	return template
-}
+// // flexibleDataWrapper is a encloseper to resolve both {{a}} and {{.a}}.
+// type flexibleDataWrapper struct {
+// 	data map[string]interface{}
+// }
 
-// checkString checks if the input contains "{{" and "}}" but does not contain ".html" or ".tmpl"
-func checkString(s string) bool {
-	return strings.Contains(s, "{{") &&
-		strings.Contains(s, "}}") &&
-		!strings.Contains(s, ".html") &&
-		!strings.Contains(s, ".tmpl")
-}
+// // Implement template's "Field by Name" resolution
+// func (fdw *flexibleDataWrapper) Lookup(field string) (interface{}, bool) {
+// 	if val, found := fdw.data[field]; found {
+// 		return val, true
+// 	}
+// 	return nil, false
+// }
+
+// // Implement the template execution interface
+// func (fdw *flexibleDataWrapper) Get(name string) interface{} {
+// 	if val, found := fdw.data[name]; found {
+// 		return val
+// 	}
+// 	return "" // Return empty string if not found
+// }
+
+// // replaceRemainingPlaceholders replaces any unreplaced placeholders with empty strings.
+// func replaceRemainingPlaceholders(template string) string {
+// 	// This is a simple implementation. For more complex templates, consider using regex.
+// 	start := strings.Index(template, "{{")
+// 	for start != -1 {
+// 		end := strings.Index(template[start:], "}}")
+// 		if end == -1 {
+// 			break
+// 		}
+// 		end += start
+// 		placeholder := template[start : end+2]
+// 		template = strings.Replace(template, placeholder, "", 1)
+// 		start = strings.Index(template, "{{")
+// 	}
+// 	return template
+// }
+
+// // checkString checks if the input contains "{{" and "}}" but does not contain ".html" or ".tmpl"
+//  func checkString(s string) bool {
+// 	return strings.Contains(s, "{{") &&
+// 		strings.Contains(s, "}}") &&
+// 		!strings.Contains(s, ".html") &&
+// 		!strings.Contains(s, ".tmpl")
+// }
