@@ -7,6 +7,11 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 )
 
+// HOW TO USE THIS PLUGIN:
+// ipsum = <PLUGIN>
+// ipsum.plugin = LoremIpsumPlugin
+// ipsum.data.paragraphs = 10
+
 // The plugin field definition
 type Fields struct {
 	Paragraphs int `mapstructure:"paragraphs"`
