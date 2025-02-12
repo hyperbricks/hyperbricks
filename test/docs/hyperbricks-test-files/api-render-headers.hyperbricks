@@ -25,6 +25,7 @@ Optional HTTP headers for API requests
 {
 	"ConfigType": "<API_RENDER>",
 	"ConfigCategory": "",
+	"MetaDocDescription": "",
 	"Key": "",
 	"Path": "",
 	"File": "",

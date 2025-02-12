@@ -25,6 +25,7 @@ The enclosing HTML element for the header divided by |
 {
 	"ConfigType": "<API_RENDER>",
 	"ConfigCategory": "",
+	"MetaDocDescription": "",
 	"Key": "",
 	"Path": "",
 	"File": "",

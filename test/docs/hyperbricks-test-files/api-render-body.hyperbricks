@@ -25,6 +25,7 @@ Use the string format of the example, do not use an nested object to define. The
 {
 	"ConfigType": "<API_RENDER>",
 	"ConfigCategory": "",
+	"MetaDocDescription": "",
 	"Key": "",
 	"Path": "",
 	"File": "",

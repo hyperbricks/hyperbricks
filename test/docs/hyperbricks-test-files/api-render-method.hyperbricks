@@ -25,6 +25,7 @@ HTTP method to use for API calls, GET POST PUT DELETE etc...
 {
 	"ConfigType": "<API_RENDER>",
 	"ConfigCategory": "",
+	"MetaDocDescription": "",
 	"Key": "",
 	"Path": "",
 	"File": "",

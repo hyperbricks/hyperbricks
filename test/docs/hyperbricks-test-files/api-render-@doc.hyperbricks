@@ -24,7 +24,20 @@ api_test {
 	enclose = <div class="userlist">|</div>
 }
 ==== explainer ====
-Key-value pairs for template rendering
+The <API_RENDER> can be used to fetch data from json API like postgREST or another data json source.
+This data is parsed in by the template engine. For local files use the <JSON> component
+
+All data is passed into the .Data object, which can be of any type.
+The .Value object passes the values defined in the hyperbricks value field which is a map[string]interface{}
+````properties
+context := struct {
+    Data   interface{}
+    Values map[string]interface{}
+}{
+    Data:   data,
+    Values: config.Values,
+}
+````
 ==== expected json ====
 {
     "ConfigType": "<API_RENDER>",

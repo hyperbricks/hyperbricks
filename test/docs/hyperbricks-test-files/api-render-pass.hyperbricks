@@ -29,6 +29,7 @@ Password for basic auth
 {
     "ConfigType": "<API_RENDER>",
     "ConfigCategory": "",
+    "MetaDocDescription": "",
     "Key": "",
     "Path": "",
     "File": "",

@@ -4,7 +4,7 @@
 
 **Licence:** MIT  
 **Version:** v0.2.0-alpha  
-**Build time:** 2025-02-12T18:10:18Z
+**Build time:** 2025-02-12T19:30:39Z
 
 ## HyperBricks Documentation
 
@@ -29,9 +29,7 @@ Use "hyperbricks [command] --help" for more information about a command.
 
 Go direct to:
 
-- [HyperBricks type reference](#hyperbricks-type-reference)
 - [Installation](#installation)
-
 - [Defining Hypermedia Documents and Fragments](#defining-hypermedia-documents-and-fragments)
 - [Adding Properties to Configurations](#adding-properties-to-configurations)
 - [Rendering Order and Property Rules](#rendering-order-and-property-rules)
@@ -40,7 +38,7 @@ Go direct to:
   - [Fragment Example with HTMX Trigger](#fragment-example-with-htmx-trigger)
 - [Object Inheritance and Reusability](#object-inheritance-and-reusability)
 - [Importing Predefined HyperScripts](#importing-predefined-hyperscripts)
-
+- [HyperBricks type reference](#hyperbricks-type-reference)
 
 ### Defining Hypermedia Documents and Fragments
 
@@ -48,8 +46,11 @@ Hypermedia documents or fragments can be declared using simple key-value propert
 
 ```properties
 myHypermedia = <HYPERMEDIA>
+myHypermedia.route = index 
+
 # Or
 myFragment = <FRAGMENT>
+myFragment.route = somefragment
 ```
 
 ### Adding Properties to Configurations
@@ -59,6 +60,7 @@ You can add properties to hypermedia objects in either flat or nested formats:
 **Flat Configuration Example:**
 ```properties
 fragment = <FRAGMENT>
+fragment.route = myfragment
 fragment.content = <TREE>
 fragment.content.10 = <HTML>
 fragment.content.10.value = <p>THIS IS HTML</p>
@@ -67,6 +69,7 @@ fragment.content.10.value = <p>THIS IS HTML</p>
 **Nested Configuration Example:**
 ```properties
 fragment = <FRAGMENT>
+fragment.route = myfragment
 fragment {
     content = <TREE>
     content {
@@ -321,7 +324,7 @@ hyperbricks [command] --help
 
 <h3><a id="&lt;HTML&gt;">&lt;HTML&gt;</a></h3>
 
-**&lt;HTML&gt; Type Description**
+**Type Description**
 
 
 
@@ -452,7 +455,7 @@ html.trimspace = true
 
 <h3><a id="&lt;TEXT&gt;">&lt;TEXT&gt;</a></h3>
 
-**&lt;TEXT&gt; Type Description**
+**Type Description**
 
 
 
@@ -547,9 +550,55 @@ text {
 
 <h3><a id="&lt;FRAGMENT&gt;">&lt;FRAGMENT&gt;</a></h3>
 
-**&lt;FRAGMENT&gt; Type Description**
+**Type Description**
 
 
+
+
+
+
+A FRAGMENT dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+
+
+**Main Example**
+````properties
+fragment = <FRAGMENT>
+fragment.response.hx_trigger = myEvent
+fragment.10 = <TEMPLATE>
+fragment.10 {
+    inline = <<[
+        <h2>{{header}}</h2>
+        <p>{{text}}</p>
+        {{image}}
+]>>
+    
+    values {
+        header = SOME HEADER
+        text = <TEXT>
+        text.value = some text
+
+        image = <IMAGE>
+        image.src = hyperbricks-test-files/assets/cute_cat.jpg
+        image.width = 800
+    }
+}
+
+````
+
+
+**Expected Result**
+````html
+<h2>
+  SOME HEADER
+</h2>
+<p>
+  some text
+</p>
+<img src="static/images/cute_cat_w800_h800.jpg" width="800" height="800" />
+````
+
+
+**more**
 
 
 
@@ -1158,7 +1207,7 @@ fragment {
 
 <h3><a id="&lt;HEAD&gt;">&lt;HEAD&gt;</a></h3>
 
-**&lt;HEAD&gt; Type Description**
+**Type Description**
 
 
 
@@ -1398,7 +1447,76 @@ hypermedia.head {
 
 <h3><a id="&lt;HYPERMEDIA&gt;">&lt;HYPERMEDIA&gt;</a></h3>
 
-**&lt;HYPERMEDIA&gt; Type Description**
+**Type Description**
+
+
+
+
+HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use &lt;FRAGMENT&gt; to utilize hx-[method] (GET,POST etc) requests.  
+
+
+**Main Example**
+````properties
+css = <HTML>
+css.value = <<[
+    <style>
+        body {
+            padding:20px;
+        }
+    </style>
+]>>
+
+
+# index page
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    10 < css
+    20 = <CSS>
+    20.inline = <<[
+        .content {
+            color:green;
+        }
+    ]>>
+}
+hypermedia.10 = <TREE>
+hypermedia.10 {
+    1 = <HTML>
+    1.value = <p>SOME CONTENT</p>
+}
+
+
+````
+
+
+**Expected Result**
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+      padding:20px;
+      }
+    </style>
+    <style>
+      .content {
+      color:green;
+      }
+    </style>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body>
+    <p>
+      SOME CONTENT
+    </p>
+  </body>
+</html>
+````
+
+
+**more**
+
 
 
 
@@ -1957,7 +2075,60 @@ hypermedia.10.value = <p>some HTML</p>
 
 <h3><a id="&lt;TEMPLATE&gt;">&lt;TEMPLATE&gt;</a></h3>
 
-**&lt;TEMPLATE&gt; Type Description**
+**Type Description**
+
+
+
+
+&lt;TEMPLATE&gt; can be used nested in &lt;FRAGMENT&gt; or &lt;HYPERMEDIA&gt; types. It uses golang&#39;s standard html/template library.
+
+
+**Main Example**
+````properties
+# Use the a TEMPLATE:filepath (relative from templates folder defined in module's package.hyperbricks) directive like this:
+template = {{TEMPLATE:youtube.tmpl}}
+
+# Or use the inline notation:
+inline = <<[
+    <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+]>>
+
+myComponent = <TEMPLATE>
+myComponent {
+    inline = <<[
+        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    ]>>
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
+}
+
+````
+
+
+**Expected Result**
+````html
+<div class="youtube_video">
+  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+````
+
+
+**more**
 
 
 
@@ -2202,7 +2373,61 @@ myComponent {
 
 <h3><a id="&lt;TREE&gt;">&lt;TREE&gt;</a></h3>
 
-**&lt;TREE&gt; Type Description**
+**Type Description**
+
+
+
+
+TREE description
+
+
+**Main Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	10 = <TREE>
+    10 {
+        10 = <TREE>
+        10 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 10-1</p>
+
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 10-2</p>
+        }
+
+        20 = <TREE>
+        20 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 20-1</p>
+            
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 20-2</p>
+        }
+    }
+}
+
+````
+
+
+**Expected Result**
+````html
+<p>
+  SOME NESTED HTML --- 10-1
+</p>
+<p>
+  SOME NESTED HTML --- 10-2
+</p>
+<p>
+  SOME NESTED HTML --- 20-1
+</p>
+<p>
+  SOME NESTED HTML --- 20-2
+</p>
+````
+
+
+**more**
 
 
 
@@ -2294,7 +2519,75 @@ fragment {
 
 <h3><a id="&lt;API_RENDER&gt;">&lt;API_RENDER&gt;</a></h3>
 
-**&lt;API_RENDER&gt; Type Description**
+**Type Description**
+
+
+
+
+
+
+The &lt;API_RENDER&gt; can be used to fetch data from json API like postgREST or another data json source.
+This data is parsed in by the template engine. For local files use the &lt;JSON&gt; component
+
+All data is passed into the .Data object, which can be of any type.
+The .Value object passes the values defined in the hyperbricks value field which is a map[string]interface{}
+````properties
+context := struct {
+    Data   interface{}
+    Values map[string]interface{}
+}{
+    Data:   data,
+    Values: config.Values,
+}
+````
+
+
+**Main Example**
+````properties
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	user = emilys
+	pass = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+		<ul>
+	]>>
+    values {
+        someproperty = User
+    }
+	debug = false
+	enclose = <div class="userlist">|</div>
+}
+
+````
+
+
+**Expected Result**
+````html
+<div class="userlist">
+  <h1>
+    User
+  </h1>
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
+**more**
 
 
 
@@ -2324,6 +2617,7 @@ fragment {
 **Properties**
 
 - [enclose](#api_render-enclose)
+
 - [endpoint](#api_render-endpoint)
 - [method](#api_render-method)
 - [headers](#api_render-headers)
@@ -2382,6 +2676,9 @@ api_test {
   <ul>
 </div>
 ````
+
+
+
 
 
 
@@ -2972,7 +3269,7 @@ api_test {
 
 <h3><a id="&lt;JSON&gt;">&lt;JSON&gt;</a></h3>
 
-**&lt;JSON&gt; Type Description**
+**Type Description**
 
 
 
@@ -3554,7 +3851,7 @@ local_json_test {
 
 <h3><a id="&lt;MENU&gt;">&lt;MENU&gt;</a></h3>
 
-**&lt;MENU&gt; Type Description**
+**Type Description**
 
 
 
@@ -4118,7 +4415,7 @@ hm_3.title = DOCUMENT_3
 
 <h3><a id="&lt;CSS&gt;">&lt;CSS&gt;</a></h3>
 
-**&lt;CSS&gt; Type Description**
+**Type Description**
 
 
 
@@ -4377,7 +4674,7 @@ hypermedia.head {
 
 <h3><a id="&lt;IMAGE&gt;">&lt;IMAGE&gt;</a></h3>
 
-**&lt;IMAGE&gt; Type Description**
+**Type Description**
 
 
 
@@ -4861,7 +5158,7 @@ image.is_static = true
 
 <h3><a id="&lt;IMAGES&gt;">&lt;IMAGES&gt;</a></h3>
 
-**&lt;IMAGES&gt; Type Description**
+**Type Description**
 
 
 
@@ -5308,7 +5605,7 @@ images.loading = lazy
 
 <h3><a id="&lt;JS&gt;">&lt;JS&gt;</a></h3>
 
-**&lt;JS&gt; Type Description**
+**Type Description**
 
 
 
