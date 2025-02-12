@@ -27,16 +27,6 @@ func renderStaticContent(route string) string {
 		configCopy[key] = value
 	}
 
-	if configCopy["@type"].(string) == composite.HxApiConfigGetName() {
-		// Extract hxdata
-		hxdata := make(map[string]interface{})
-
-		// adding to mapstructure
-		configCopy["hx_form_data"] = hxdata
-		configCopy["hx_response"] = make(map[string]interface{})
-
-	}
-
 	if configCopy["@type"].(string) == composite.FragmentConfigGetName() {
 		configCopy["hx_response"] = nil
 	}
@@ -66,19 +56,6 @@ func renderContent(w http.ResponseWriter, r *http.Request, route string) string 
 	configCopy := make(map[string]interface{})
 	for key, value := range _config {
 		configCopy[key] = value
-	}
-
-	if configCopy["@type"].(string) == composite.HxApiConfigGetName() {
-		// Extract hxdata
-		hxdata, extractError := shared.ExtractHxData(r)
-		if extractError != nil {
-			logging.GetLogger().Error("Failed to extract hxdata:", extractError)
-		}
-
-		// adding to mapstructure
-		configCopy["hx_form_data"] = hxdata
-		configCopy["hx_response"] = w
-
 	}
 
 	if configCopy["@type"].(string) == composite.FragmentConfigGetName() {

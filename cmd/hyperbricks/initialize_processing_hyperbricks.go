@@ -141,22 +141,6 @@ func processScript(filename string, config map[string]interface{},
 			obj["key"] = key
 			tempConfigs[hypermediaConfig.Route] = obj
 
-		case composite.HxApiConfigGetName():
-			hxRouteConfig, err := decodeHxApiConfig(v.(map[string]interface{}))
-			if err != nil {
-				logger.Warnw("Error decoding HxEndPointConfig", "error", err)
-				continue
-			}
-
-			// this does not HAVE to be unique because it overlaps with POST/GET etc ...
-			hxRouteConfig.HxRoute = ensureUniqueEndPoint(hxRouteConfig.HxRoute, filename, tempConfigs)
-			handleStaticRoute(obj, &hxRouteConfig)
-
-			// Add metadata and store in tempConfigs
-			obj["@file"] = filename
-			obj["@key"] = key
-			tempConfigs[hxRouteConfig.HxRoute] = obj
-
 		default:
 			continue // Handle other types if necessary
 		}
@@ -182,16 +166,6 @@ func decodeFragmentConfig(v map[string]interface{}) (composite.FragmentConfig, e
 	}
 	err = decoder.Decode(v)
 	return fragmentConfig, err
-}
-
-func decodeHxApiConfig(v map[string]interface{}) (composite.HxApiConfig, error) {
-	var hxApiConfig composite.HxApiConfig
-	decoder, err := createDecoder(&hxApiConfig)
-	if err != nil {
-		return hxApiConfig, err
-	}
-	err = decoder.Decode(v)
-	return hxApiConfig, err
 }
 
 // createDecoder creates a mapstructure decoder with the necessary hooks.
@@ -258,9 +232,6 @@ func handleStaticRoute(obj map[string]interface{}, config interface{}) {
 		switch cfg := config.(type) {
 		case *composite.HyperMediaConfig:
 			cfg.Route = route
-			cfg.IsStatic = true
-		case *composite.HxApiConfig:
-			cfg.HxRoute = route
 			cfg.IsStatic = true
 		case *composite.FragmentConfig:
 			cfg.Route = route

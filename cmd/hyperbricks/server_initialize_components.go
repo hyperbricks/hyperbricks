@@ -83,16 +83,6 @@ func registerRenderers() {
 	rm.RegisterComponent(component.LocalJSONConfigGetName(), localJsonRenderer, reflect.TypeOf(component.LocalJSONConfig{}))
 
 	// TEMPLATE ....
-	endpointRenderer := &composite.HxApiRenderer{
-		CompositeRenderer: renderer.CompositeRenderer{
-			RenderManager:    rm,
-			TemplateProvider: templateProvider,
-		},
-	}
-
-	rm.RegisterComponent(composite.HxApiConfigGetName(), endpointRenderer, reflect.TypeOf(composite.HxApiConfig{}))
-
-	// TEMPLATE ....
 	fragmentRenderer := &composite.FragmentRenderer{
 		CompositeRenderer: renderer.CompositeRenderer{
 			RenderManager:    rm,
