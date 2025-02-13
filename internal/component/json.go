@@ -87,7 +87,11 @@ func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error
 			fileContent, err := composite.GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
-					Err: fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
+					Key:  config.Component.Meta.Key,
+					Path: config.Component.Meta.Path,
+					File: config.Component.Meta.File,
+					Type: LocalJSONConfigGetName(),
+					Err:  fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
 				})
 			} else {
 				templateContent = fileContent
@@ -140,14 +144,22 @@ func applyJsonTemplate(templateStr string, data map[string]interface{}, config L
 	tmpl, err := template.New("localJSONTemplate").Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Sprintf("Error parsing template: %v", err),
+			Key:  config.Component.Meta.Key,
+			Path: config.Component.Meta.Path,
+			File: config.Component.Meta.File,
+			Type: LocalJSONConfigGetName(),
+			Err:  fmt.Sprintf("Error parsing template: %v", err),
 		})
 	}
 
 	err = tmpl.Execute(&output, context)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Sprintf("Error executing template: %v", err),
+			Key:  config.Component.Meta.Key,
+			Path: config.Component.Meta.Path,
+			File: config.Component.Meta.File,
+			Type: LocalJSONConfigGetName(),
+			Err:  fmt.Sprintf("Error executing template: %v", err),
 		})
 	}
 

@@ -39,7 +39,11 @@ func (r *PluginRenderer) Render(instance interface{}) (string, []error) {
 	config, ok := instance.(PluginConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Errorf("invalid type for MenuRenderer").Error(),
+			Key:  config.Component.Meta.Key,
+			Path: config.Component.Meta.Path,
+			File: config.Component.Meta.File,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Errorf("invalid type for MenuRenderer").Error(),
 		})
 		return fmt.Errorf("<!-- invalid type for MenuRenderer -->").Error(), errors
 	}
@@ -47,7 +51,11 @@ func (r *PluginRenderer) Render(instance interface{}) (string, []error) {
 	pluginRenderer, pluginExists := r.RenderManager.Plugins[config.PluginName]
 	if !pluginExists {
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Errorf("plugin is not preloaded or found").Error(),
+			Key:  config.Component.Meta.Key,
+			Path: config.Component.Meta.Path,
+			File: config.Component.Meta.File,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Errorf("plugin is not preloaded or found").Error(),
 		})
 
 		renderedContent, renderErrs := r.LoadAndRender(instance)
@@ -98,7 +106,11 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}) (string, []error) {
 	config, ok := instance.(PluginConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Errorf("invalid type for MenuRenderer").Error(),
+			Key:  config.Component.Meta.Key,
+			Path: config.Component.Meta.Path,
+			File: config.Component.Meta.File,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Errorf("invalid type").Error(),
 		})
 		return "", errors
 	}
@@ -115,7 +127,11 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}) (string, []error) {
 	if err != nil {
 		builder.WriteString(fmt.Sprintf("<!-- Error loading plugin %v: %v -->\n", config.PluginName, err))
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Sprintf("Error loading plugin %v: %v\n", config.PluginName, err),
+			Key:  config.Component.Meta.Key,
+			Path: config.Component.Meta.Path,
+			File: config.Component.Meta.File,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Sprintf("Error loading plugin %v: %v\n", config.PluginName, err),
 		})
 		return builder.String(), errors
 	}

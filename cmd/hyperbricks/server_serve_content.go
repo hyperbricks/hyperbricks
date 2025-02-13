@@ -52,8 +52,14 @@ func renderContent(w http.ResponseWriter, r *http.Request, route string) string 
 
 	_config, found := getConfig(route)
 	if !found {
-		logging.GetLogger().Info("Config not found for route", "route", route)
-		return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route)
+		__config, _found := getConfig("404")
+		if _found {
+			logging.GetLogger().Info("Redirecting to 404", " from ", route)
+			_config = __config
+		} else {
+			logging.GetLogger().Info("Config not found for route", "route", route)
+			return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route)
+		}
 	}
 
 	configCopy := make(map[string]interface{})
@@ -99,19 +105,23 @@ type ComponentErrorTemplate struct {
 // errorTemplate is the embedded Go template as a string
 const errorTemplate = `{{if .HasErrors}}
 {{safe "<!--  Begin Frontend Errors [development.frontend_errors = true] in package.hyperbricks  -->"}}
+
 <style>
+
     .error-panel, .succes-panel {
+		opacity:0.5;
+		font-family: monospace;
+    	font-size: 12px;
         position: fixed;
         bottom: 10px;
 		right:10px;
 		margin:5px;
-        width: 300px;
+        width: 190px;
         display: flex;
         flex-direction: column;
         border-radius: 5px;
         box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-        font-family: Arial, sans-serif;
-        font-size: 14px;
+	
         z-index: 9999;
         overflow: hidden;
     }
@@ -152,23 +162,58 @@ const errorTemplate = `{{if .HasErrors}}
         margin: 0;
     }
 
-    .frontent_errors li {
-        padding: 8px;
-        border-bottom: 1px solid #ddd;
-    }
+	.frontent_errors li {
+		padding: 10px;
+		margin-bottom: 6px;
+		border-radius: 7px;
+		border-bottom: 1px solid #ddd;
+		background: rgb(255 255 255);
+	}
 
     .frontent_errors .error_message {
-        color: #b00;
+        color: #000000;
         font-weight: bold;
+		
     }
+	.error_mark {
+		background-color: #ffebeb;
+    	padding: 0px;
+	}
+	.error_type {color: #b00; overflow-wrap: break-word;}
+	.error_file {color: #b00; overflow-wrap: break-word;}
+	.error_path {color: #b00; overflow-wrap: break-word;}
+	.error_error {    
+		color: #0600ade8;
+    	overflow-wrap: break-word;
+    	padding-bottom: 15px;
+	}
+	.error_number {
+		background-color: #ffa8a9;
+   		color: #fff7f7;
+		position: relative;
+		border-radius: 50%; /* Makes it round */
+		padding: 0; /* Adjust padding to make it a proper circle */
+		display: inline-flex; /* Ensures proper alignment */
+		align-items: center; /* Centers text vertically */
+		justify-content: center; /* Centers text horizontally */
+		min-width: 24px;
+    	min-height: 24px;
+		
+	}
+	
 </style>
 <div class="error-panel">
-    <div class="error-header" onclick="toggleErrorPanel()">Hyperbricks Errors (click to toggle)</div>
+    <div class="error-header" onclick="toggleErrorPanel()"><span class="error_number">{{len .Errors}}</span> HyperBricks errors</div>
     <div class="error-content">
         <ul class="frontent_errors">
             {{range .Errors}}
-                <li><span class="error_message"> Error in type: {{.Type}} at file '{{.File}}' at {{.Path}}.{{.Key}} 
-                    {{.Err}}</span>
+                <li><span class="error_message">
+				<div class="error_error">{{.Err}}</div>
+				type <span class="error_type error_mark">{{.Type}}</span> at file
+				<span class="error_file error_mark">{{.File}}.hyperbricks</span> at 
+				<span class="error_path error_mark">{{.Path}}.{{.Key}}</span> 
+                    
+				</span>
                 </li>
             {{end}}
         </ul>
@@ -178,6 +223,9 @@ const errorTemplate = `{{if .HasErrors}}
     function toggleErrorPanel() {
         var content = document.querySelector('.error-content');
         content.style.display = (content.style.display === 'block') ? 'none' : 'block';
+		var pcontent = document.querySelector('.error-panel');
+		pcontent.style.width = (pcontent.style.width === '500px') ? '190px' : '500px';
+		pcontent.style.opacity = (pcontent.style.opacity === '1') ? '0.5' : '1';
     }
 </script>
 {{safe "<!--  End Frontend Errors [development.frontend_errors = true] in package.hyperbricks  -->"}}
