@@ -71,15 +71,21 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
-			Err: fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
+			Key:  config.Composite.Meta.Key,
+			Path: config.Composite.Meta.Path,
+			File: config.Composite.Meta.File,
+			Type: "<HYPERMEDIA>",
+			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
 		})
 	}
 
 	if config.ConfigType != "<HYPERMEDIA>" {
 		errors = append(errors, shared.ComponentError{
-			Key:      config.Key,
-			Path:     config.Path,
-			Err:      fmt.Errorf("invalid type for HYPERMEDIA").Error(),
+			Key:      config.Composite.Meta.Key,
+			Path:     config.Composite.Meta.Path,
+			File:     config.Composite.Meta.File,
+			Type:     "<HYPERMEDIA>",
+			Err:      fmt.Errorf("invalid type").Error(),
 			Rejected: true,
 		})
 	}
@@ -112,8 +118,8 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 
 		//head := shared.StructToMap(config.Head)
 		config.Head["@type"] = HeadConfigGetName()
-		config.Head["path"] = config.File + ":" + config.Path
-		config.Head["file"] = config.File
+		config.Head["file"] = config.Composite.Meta.File
+		config.Head["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key
 
 		if config.Title != "" {
 			config.Head["title"] = config.Title
@@ -130,8 +136,8 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	outputHtml := ""
 	// TEMPLATE?
 	if config.Template != nil {
-		config.Template["file"] = config.File
-		config.Template["path"] = config.File + ":" + config.Path
+		config.Template["file"] = config.Composite.Meta.File
+		config.Template["path"] = config.Composite.Meta.Key + ".template"
 
 		// INSERT HEAD to TEMPLATE VALUES....
 		// Ensure 'values' exists inside Template
@@ -152,8 +158,8 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 
 		// TREE
 		if config.Composite.Items != nil {
-			config.Composite.Items["file"] = config.File
-			config.Composite.Items["path"] = config.File + ":" + config.Path
+			config.Composite.Items["file"] = config.Composite.Meta.File
+			config.Composite.Items["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key
 		}
 
 		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items)

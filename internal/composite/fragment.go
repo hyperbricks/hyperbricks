@@ -39,10 +39,10 @@ type FragmentConfig struct {
 	Items              map[string]interface{} `mapstructure:",remain"`
 	Enclose            string                 `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{fragment-enclose.hyperbricks}}"`
 	Template           map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks}}"`
-	File               string                 `mapstructure:"@file" exclude:"true"`
-	IsStatic           bool                   `mapstructure:"isstatic" exclude:"true"`
-	Static             string                 `mapstructure:"static" description:"Static file path associated with the fragment" example:"{!{fragment-static.hyperbricks}}"`
-	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
+	//File               string                 `mapstructure:"@file" exclude:"true"`
+	IsStatic bool   `mapstructure:"isstatic" exclude:"true"`
+	Static   string `mapstructure:"static" description:"Static file path associated with the fragment" example:"{!{fragment-static.hyperbricks}}"`
+	Index    int    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
 }
 
 // FragmentConfigGetName returns the HyperBricks type associated with the FragmentConfig.
@@ -88,6 +88,7 @@ func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
 
 	if config.ConfigType != "<FRAGMENT>" {
 		errors = append(errors, shared.ComponentError{
+			File:     config.Composite.Meta.File,
 			Key:      config.Key,
 			Path:     config.Path,
 			Err:      fmt.Errorf("invalid type for Fragment").Error(),
@@ -104,13 +105,19 @@ func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
 	// TEMPLATE?
 	if config.Template != nil {
 		// TO-DO: INSERT HEAD to TEMPLATE VALUES....
+		config.Template["file"] = config.Composite.Meta.File
+		config.Template["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key + ".template"
 
 		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template)
 		errors = append(errors, errr...)
 		templatebuilder.WriteString(result)
 		outputHtml = shared.EncloseContent(config.Enclose, templatebuilder.String())
 	} else {
+
 		// TREE
+		config.Composite.Items["file"] = config.Composite.Meta.File
+		config.Composite.Items["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key
+
 		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items)
 		errors = append(errors, errr...)
 		treebuilder.WriteString(result)

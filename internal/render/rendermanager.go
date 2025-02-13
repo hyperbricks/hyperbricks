@@ -46,7 +46,7 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 	if err != nil {
 
 		errors = append(errors, shared.ComponentError{
-			Err:      err.Error(),
+			Err:      "Cannot create component instance...",
 			Rejected: true,
 		})
 		// When type is not registerd show tag with error...
@@ -67,24 +67,17 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 	renderer, exists := rm.renderers[rendererType]
 	rm.mu.RUnlock()
 
-	var html string
 	if exists {
-
-		// TURN OFF PRE VALIDATION SO IT CAN BE DONE BY THE COMPONENT
-		// If the config has a Validate method, call it
-		//if v, ok := response.Instance.(interface{ Validate() []string }); ok {
-		//	warnings = append(warnings, v.Validate()...)
-		//}
-
 		html, errs := renderer.Render(response.Instance)
 		errors = append(errors, errs...)
 		return html, errors
 
 	} else {
-		//return "", fmt.Errorf("no render component or plugin found for type: %s", contentType)
+		return "", append(errors, shared.ComponentError{
+			Err:      fmt.Errorf("invalid type for HYPERMEDIA").Error(),
+			Rejected: true,
+		})
 	}
-
-	return html, nil
 }
 
 // GetRenderComponent retrieves a RenderComponent by its content type.

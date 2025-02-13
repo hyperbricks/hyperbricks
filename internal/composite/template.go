@@ -57,7 +57,11 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
-			Err: fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
+			File: config.Composite.File,
+			Path: config.Composite.Path,
+			Key:  config.Composite.Key,
+			Type: "<TEMPLATE>",
+			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
 		})
 	}
 	// appending validation errors
@@ -79,7 +83,11 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 			fileContent, err := GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
-					Err: fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
+					File: config.Composite.File,
+					Path: config.Composite.Path,
+					Key:  config.Composite.Key,
+					Type: "<TEMPLATE>",
+					Err:  fmt.Errorf("failed to load template file '%s'|%v", config.Template, err).Error(),
 				})
 			} else {
 				templateContent = fileContent
@@ -98,7 +106,15 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 				treeRenderOutPut[key] = template.HTML(result)
 				errors = append(errors, render_errors...)
 			} else {
-				treeRenderOutPut[key] = value
+				errors = append(errors, shared.ComponentError{
+					File:     config.Composite.File,
+					Path:     config.Composite.Path + ".values",
+					Key:      key,
+					Type:     "<TEMPLATE>",
+					Err:      "no type defined at replacement marker '" + key + "' in template values",
+					Rejected: true,
+				})
+				treeRenderOutPut[key] = template.HTML("<!-- no type defined: " + fmt.Sprintf("%s", value) + "-->")
 			}
 		} else {
 			if value, ok := config.Values[key].(string); ok {

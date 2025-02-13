@@ -33,8 +33,9 @@ func (config *HeadConfig) Validate() []error {
 
 	if config.ConfigType != "<HEAD>" {
 		warnings = append(warnings, shared.ComponentError{
-			Key:      config.Meta.Key,
-			Path:     config.Meta.Path,
+			File:     config.Composite.File,
+			Key:      config.Composite.Meta.Key,
+			Path:     config.Composite.Meta.Path,
 			Err:      fmt.Errorf("invalid type for HEAD").Error(),
 			Rejected: true,
 		})
@@ -66,7 +67,10 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
-			Err: fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
+			File: config.Composite.File,
+			Key:  config.Composite.Meta.Key,
+			Path: config.Composite.Meta.Path,
+			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
 		})
 	}
 
@@ -121,6 +125,9 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 			"value": headbuilder.String(),
 		}
 	}
+	config.Items["key"] = config.Composite.Meta.Key
+	config.Items["file"] = config.Composite.Meta.File
+	config.Items["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key
 
 	config.Items["enclose"] = "<head>|</head>"
 

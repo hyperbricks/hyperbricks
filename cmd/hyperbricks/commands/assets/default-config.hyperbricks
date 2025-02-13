@@ -19,6 +19,9 @@ hyperbricks {
         # watches hyperbricks and templatedir (directories) 
         watch = true
         reload = true
+
+        # shows errors in the frontend output
+        frontend_errors = false
     }
 
     live {
@@ -48,11 +51,5 @@ hyperbricks {
 
         # folder that will be scanned for hyperbricks files
         hyperbricks = {{VAR:module}}/hyperbricks
-    }
-
-    # debug, info, error, fatal, disable
-    logger {
-        level = info
-        path = {{VAR:module}}/logs/hyperbricks_v2.log
     }
 }
