@@ -47,7 +47,7 @@ func renderStaticContent(route string) string {
 	return htmlContent
 }
 
-func renderContent(w http.ResponseWriter, r *http.Request, route string) string {
+func renderContent(w http.ResponseWriter, route string) string {
 	hbConfig := getHyperBricksConfiguration()
 
 	_config, found := getConfig(route)
@@ -321,9 +321,9 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 
 	var htmlContent strings.Builder
 	if hbConfig.Mode == shared.LIVE_MODE {
-		htmlContent.WriteString(handleLiveMode(w, r, route))
+		htmlContent.WriteString(handleLiveMode(w, route))
 	} else {
-		htmlContent.WriteString(handleDeveloperMode(w, r, route))
+		htmlContent.WriteString(handleDeveloperMode(w, route))
 	}
 
 	//w.Header().Set("HX-Trigger", "Deleted")
@@ -336,13 +336,13 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 }
 
 // RENDER WITHOUT CACHE
-func handleDeveloperMode(w http.ResponseWriter, r *http.Request, route string) string {
-	logging.GetLogger().Debugw("Developer mode active. Rendering fresh content.", "route", route)
-	return renderContent(w, r, route)
+func handleDeveloperMode(w http.ResponseWriter, route string) string {
+	logging.GetLogger().Debugw("Developer mode active. Rendering fresh content:", route)
+	return renderContent(w, route)
 }
 
 // RENDER WITH CACHE
-func handleLiveMode(w http.ResponseWriter, r *http.Request, route string) string {
+func handleLiveMode(w http.ResponseWriter, route string) string {
 
 	hbConfig := getHyperBricksConfiguration()
 	cacheDuration := hbConfig.Live.CacheTime
@@ -362,7 +362,7 @@ func handleLiveMode(w http.ResponseWriter, r *http.Request, route string) string
 		logging.GetLogger().Debugw("Cache miss for route. Rendering content. %v", "route", route)
 	}
 
-	htmlContent := renderContent(w, r, route)
+	htmlContent := renderContent(w, route)
 	if htmlContent != "" {
 		htmlCacheMutex.Lock()
 		htmlCache[route] = CacheEntry{

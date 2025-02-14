@@ -205,23 +205,23 @@ func ensureUniqueRoute(original, filename string, tempConfigs map[string]map[str
 }
 
 // ensureUniqueEndPoint ensures that the HxEndpoint is unique within tempConfigs.
-func ensureUniqueEndPoint(originalEndpoint, filename string, tempConfigs map[string]map[string]interface{}) string {
-	endpoint := strings.TrimSpace(originalEndpoint)
-	if endpoint == "" {
-		endpoint = strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))
-	}
+// func ensureUniqueEndPoint(originalEndpoint, filename string, tempConfigs map[string]map[string]interface{}) string {
+// 	endpoint := strings.TrimSpace(originalEndpoint)
+// 	if endpoint == "" {
+// 		endpoint = strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))
+// 	}
 
-	originalEndpoint = endpoint
-	counter := 1
-	for {
-		if _, exists := tempConfigs[endpoint]; !exists {
-			break
-		}
-		endpoint = fmt.Sprintf("%s_%d", originalEndpoint, counter)
-		counter++
-	}
-	return endpoint
-}
+// 	originalEndpoint = endpoint
+// 	counter := 1
+// 	for {
+// 		if _, exists := tempConfigs[endpoint]; !exists {
+// 			break
+// 		}
+// 		endpoint = fmt.Sprintf("%s_%d", originalEndpoint, counter)
+// 		counter++
+// 	}
+// 	return endpoint
+// }
 
 // handleStaticSlug updates the route and marks the config as static if a static route is provided.
 func handleStaticRoute(obj map[string]interface{}, config interface{}) {
