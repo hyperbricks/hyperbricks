@@ -37,14 +37,6 @@ func registerPlugins() {
 		pluginDir += "/debug"
 	}
 
-	// for key, value := range rm.HbConfig.Plugins {
-	// 	fmt.Printf("Key: %s, Value: %s\n", key, value)
-	// 	if value == "enabled" {
-	// 		logging.GetLogger().Infof("%s -> %s", pluginDir+"/"+key+".so", key)
-	// 		rm.RegisterAndLoadPlugin(pluginDir+"/"+key+".so", key)
-	// 	}
-	// }
-
 	for key, value := range rm.HbConfig.Plugins {
 		//fmt.Printf("Key: %s, Value: %s\n", key, value)
 
