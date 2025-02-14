@@ -56,8 +56,8 @@ func (mc *MenuConfig) Validate() []error {
 
 	if mc.Sort != "" && !(mc.Sort == "route" || mc.Sort == "index" || mc.Sort == "title") {
 		errors = append(errors, shared.ComponentError{
-			Key:  mc.Component.Meta.Key,
-			Path: mc.Component.Meta.Path,
+			Key:  mc.Component.Meta.HyperBricksKey,
+			Path: mc.Component.Meta.HyperBricksPath,
 			File: mc.Component.Meta.HyperBricksFile,
 			Type: MenuConfigGetName(),
 			Err:  fmt.Errorf("unknown 'sort' value '%s', defaulting to 'title'", mc.Sort).Error(),
@@ -67,8 +67,8 @@ func (mc *MenuConfig) Validate() []error {
 
 	if mc.Order != "" && !(mc.Order == "asc" || mc.Order == "desc") {
 		errors = append(errors, shared.ComponentError{
-			Key:  mc.Component.Meta.Key,
-			Path: mc.Component.Meta.Path,
+			Key:  mc.Component.Meta.HyperBricksKey,
+			Path: mc.Component.Meta.HyperBricksPath,
 			File: mc.Component.Meta.HyperBricksFile,
 			Type: MenuConfigGetName(),
 			Err:  fmt.Errorf("unknown 'order' value '%s', defaulting to 'asc'", mc.Order).Error(),
@@ -86,8 +86,8 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 	config, ok := instance.(MenuConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
-			Key:  config.Component.Meta.Key,
-			Path: config.Component.Meta.Path,
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,
 			Type: MenuConfigGetName(),
 			Err:  fmt.Errorf("invalid type for MenuRenderer").Error(),
@@ -119,8 +119,8 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 		log.Printf("Error sorting pages: %v", err)
 		builder.WriteString(fmt.Sprintf("<!-- Error sorting pages: %v -->\n", err))
 		errors = append(errors, shared.ComponentError{
-			Key:  config.Component.Meta.Key,
-			Path: config.Component.Meta.Path,
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,
 			Type: MenuConfigGetName(),
 			Err:  err.Error(),

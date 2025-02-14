@@ -58,8 +58,8 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
 			File: config.Composite.HyperBricksFile,
-			Path: config.Composite.Path,
-			Key:  config.Composite.Key,
+			Path: config.Composite.HyperBricksPath,
+			Key:  config.Composite.HyperBricksKey,
 			Type: "<TEMPLATE>",
 			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
 		})
@@ -84,8 +84,8 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
 					File: config.Composite.HyperBricksFile,
-					Path: config.Composite.Path,
-					Key:  config.Composite.Key,
+					Path: config.Composite.HyperBricksPath,
+					Key:  config.Composite.HyperBricksKey,
 					Type: "<TEMPLATE>",
 					Err:  fmt.Errorf("failed to load template file '%s'|%v", config.Template, err).Error(),
 				})
@@ -108,7 +108,7 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 			} else {
 				errors = append(errors, shared.ComponentError{
 					File:     config.Composite.HyperBricksFile,
-					Path:     config.Composite.Path + ".values",
+					Path:     config.Composite.HyperBricksPath + ".values",
 					Key:      key,
 					Type:     "<TEMPLATE>",
 					Err:      "no type defined at replacement marker '" + key + "' in template values",

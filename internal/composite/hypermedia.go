@@ -71,8 +71,8 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
-			Key:  config.Composite.Meta.Key,
-			Path: config.Composite.Meta.Path,
+			Key:  config.Composite.Meta.HyperBricksKey,
+			Path: config.Composite.Meta.HyperBricksPath,
 			File: config.Composite.Meta.HyperBricksFile,
 			Type: "<HYPERMEDIA>",
 			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
@@ -81,8 +81,8 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 
 	if config.ConfigType != "<HYPERMEDIA>" {
 		errors = append(errors, shared.ComponentError{
-			Key:      config.Composite.Meta.Key,
-			Path:     config.Composite.Meta.Path,
+			Key:      config.Composite.Meta.HyperBricksKey,
+			Path:     config.Composite.Meta.HyperBricksPath,
 			File:     config.Composite.Meta.HyperBricksFile,
 			Type:     "<HYPERMEDIA>",
 			Err:      fmt.Errorf("invalid type").Error(),
@@ -119,7 +119,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		//head := shared.StructToMap(config.Head)
 		config.Head["@type"] = HeadConfigGetName()
 		config.Head["file"] = config.Composite.Meta.HyperBricksFile
-		config.Head["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key
+		config.Head["path"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
 
 		if config.Title != "" {
 			config.Head["title"] = config.Title
@@ -137,7 +137,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	// TEMPLATE?
 	if config.Template != nil {
 		config.Template["file"] = config.Composite.Meta.HyperBricksFile
-		config.Template["path"] = config.Composite.Meta.Key + ".template"
+		config.Template["path"] = config.Composite.Meta.HyperBricksKey + ".template"
 
 		// INSERT HEAD to TEMPLATE VALUES....
 		// Ensure 'values' exists inside Template
@@ -159,7 +159,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		// TREE
 		if config.Composite.Items != nil {
 			config.Composite.Items["file"] = config.Composite.Meta.HyperBricksFile
-			config.Composite.Items["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key
+			config.Composite.Items["path"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
 		}
 
 		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items)

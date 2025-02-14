@@ -4,8 +4,8 @@ package shared
 type Meta struct {
 	ConfigType      string `mapstructure:"@type" exclude:"true" description:"Identification for renderer"`
 	ConfigCategory  string
-	Key             string `mapstructure:"key" exclude:"true"`
-	Path            string `mapstructure:"path" exclude:"true"`
+	HyperBricksKey  string `mapstructure:"hyperbrickskey" exclude:"true"`
+	HyperBricksPath string `mapstructure:"hyperbrickspath" exclude:"true"`
 	HyperBricksFile string `mapstructure:"hyperbricksfile" exclude:"true"`
 }
 

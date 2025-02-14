@@ -68,8 +68,8 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	config, ok := instance.(APIConfig)
 	if !ok {
 		return "", append(errors, shared.ComponentError{
-			Key:      config.Component.Meta.Key,
-			Path:     config.Component.Meta.Path,
+			Key:      config.Component.Meta.HyperBricksKey,
+			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
 			Type:     APIConfigGetName(),
 			Err:      fmt.Errorf("invalid type for APIRenderer").Error(),
