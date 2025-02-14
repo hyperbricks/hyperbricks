@@ -101,8 +101,8 @@ func processScript(filename string, config map[string]interface{},
 			handleStaticRoute(obj, &fragmentConfig)
 
 			// Add metadata and store in tempConfigs
-			obj["file"] = filename
-			obj["key"] = key
+			obj["hyperbricksfile"] = filename
+			obj["hyperbrickskey"] = key
 			tempConfigs[fragmentConfig.Route] = obj
 
 		case composite.HyperMediaConfigGetName():
@@ -135,8 +135,8 @@ func processScript(filename string, config map[string]interface{},
 
 			//
 			// Add metadata and store in tempConfigs
-			obj["file"] = filename
-			obj["key"] = key
+			obj["hyperbricksfile"] = filename
+			obj["hyperbrickskey"] = key
 			tempConfigs[hypermediaConfig.Route] = obj
 
 		default:

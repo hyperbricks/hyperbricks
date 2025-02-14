@@ -20,7 +20,7 @@ Extra attributes like id, data-role, data-action
     "ConfigCategory": "",
     "HyperBricksKey": "",
     "HyperBricksPath": "",
-    "File": "hyperbricks-test-files/assets/quotes.json",
+    "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "",
     "FilePath": "hyperbricks-test-files/assets/quotes.json",

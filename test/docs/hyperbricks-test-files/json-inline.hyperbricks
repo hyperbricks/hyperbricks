@@ -20,7 +20,7 @@ Use inline to define the template in a multiline block <<[ /* Template code goes
     "ConfigCategory": "",
     "HyperBricksKey": "",
     "HyperBricksPath": "",
-    "File": "hyperbricks-test-files/assets/quotes.json",
+    "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "",
     "FilePath": "hyperbricks-test-files/assets/quotes.json",

@@ -106,9 +106,11 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 				Type:     "<TREE>",
 				Rejected: true,
 			})
-			val, _ok := config.Items[key].(string)
+			val, _ok := config.Composite.Items[key].(string)
 			if _ok {
-				outputs[idx] = "<!-- begin raw value -->" + val + "<!-- end raw value -->"
+				if config.Composite.Items[key].(string) != "" {
+					outputs[idx] = "<!-- begin raw value -->" + val + "<!-- end raw value -->"
+				}
 			}
 			continue
 		}

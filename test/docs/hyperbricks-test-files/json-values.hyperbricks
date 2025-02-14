@@ -25,7 +25,7 @@ Key-value pairs for template rendering
     "ConfigCategory": "",
     "HyperBricksKey": "",
     "HyperBricksPath": "",
-    "File": "hyperbricks-test-files/assets/quotes.json",
+    "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "",
     "FilePath": "hyperbricks-test-files/assets/quotes.json",

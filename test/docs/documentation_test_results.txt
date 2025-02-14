@@ -7,7 +7,7 @@ loading
 === RUN   Test_TestAndDocumentationRender/fragment-section
 === RUN   Test_TestAndDocumentationRender/fragment-enclose
 === RUN   Test_TestAndDocumentationRender/fragment-template
-14-02-2025 18:57	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/fragment-static
 === RUN   Test_TestAndDocumentationRender/fragment-index
 
@@ -24,387 +24,64 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap
 === RUN   Test_TestAndDocumentationRender/hypermedia-@doc
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head>
-        <style>
-            body {
-                padding:20px;
-            }
-        </style>
-        <style>
-        
-        .content {
-            color:green;
-        }
-            
-        </style><meta name="generator" content="hyperbricks cms"><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body><p>SOME CONTENT</p><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value -->.10<!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></body></html> 
-        expected:
-        <!DOCTYPE html><html><head>
-        <style>
-            body {
-                padding:20px;
-            }
-        </style>
-        <style>
-        
-        .content {
-            color:green;
-        }
-            
-        </style><meta name="generator" content="hyperbricks cms"></head><body><p>SOME CONTENT</p></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/hypermedia-title
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title>
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title></head><body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/hypermedia-route
 === RUN   Test_TestAndDocumentationRender/hypermedia-section
 === RUN   Test_TestAndDocumentationRender/hypermedia-bodytag
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><body id="main">HELLO WORLD!<!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></body></html> 
-        expected:
-        <!DOCTYPE html>
-        <html>
-          <body id="main">
-            HELLO WORLD!
-          </body>
-        </html>
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><body id="main"><p>HELLO WORLD!<!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></p></body></html> 
-        expected:
-        <!DOCTYPE html>
-        <html>
-          <body id="main">
-            <p>HELLO WORLD!</p>
-          </body>
-        </html>
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="static/favicon.ico">
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="static/favicon.ico"></head><body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
-14-02-2025 18:57	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
 === RUN   Test_TestAndDocumentationRender/hypermedia-index
 === RUN   Test_TestAndDocumentationRender/hypermedia-doctype
 === RUN   Test_TestAndDocumentationRender/hypermedia-htmltag
 === RUN   Test_TestAndDocumentationRender/hypermedia-head
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><!-- 999 overides default generator meta tag --><meta name="a" content="b">
-        <meta name="b" content="c">
-        <link rel="stylesheet" href="styles.css">
-        <link rel="stylesheet" href="xxxx">
-        <script src="styles.css"></script>
-        <script src="xxxx"></script>
-        <style>
-        
-        body {
-            pading:10px;
-        }
-            
-        </style><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body><p>some HTML</p><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><!-- 999 overides default generator meta tag --><meta name="a" content="b">
-                <meta name="b" content="c">
-                <link rel="stylesheet" href="styles.css">
-                <link rel="stylesheet" href="xxxx">
-                <script src="styles.css"></script>
-                <script src="xxxx"></script>
-                <style>
-                
-                body {
-                    pading:10px;
-                }
-                    
-                </style></head><body><p>some HTML</p></body></html>
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/head-title
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title>
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title>
-                </head><body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/head-favicon
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="/images/icon.ico">
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="/images/icon.ico">
-                </head><body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/head-meta
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><meta name="a" content="b">
-        <meta name="b" content="c">
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html>
-        <head>
-        <meta name="generator" content="hyperbricks cms">
-        <meta name="a" content="b">
-        <meta name="b" content="c">
-        </head>
-        <body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/head-css
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="stylesheet" href="style.css">
-        <link rel="stylesheet" href="morestyles.css">
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="stylesheet" href="style.css">
-                <link rel="stylesheet" href="morestyles.css">
-                </head><body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/head-js
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><script src="main.js"></script>
-        <script src="helpers.js"></script>
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><script src="main.js"></script>
-        <script src="helpers.js"></script>
-        </head><body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/template-@doc
-14-02-2025 18:57	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <div class="youtube_video">
-        <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-            
-        <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-            <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value -->.content<!-- end raw value --></div> 
-        expected:
-         <div class="youtube_video">
-                <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-                    
-                <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-                    </div> 
-        
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/template-template
-14-02-2025 18:57	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <div class="youtube_video">
-        <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-            
-        <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-            <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value -->.content<!-- end raw value --></div> 
-        expected:
-        <div class="youtube_video">
-            <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-            <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-        </div>
-        
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/template-inline
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <div class="youtube_video">
-        <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-            
-        <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-            <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value -->.content<!-- end raw value --></div> 
-        expected:
-        <div class="youtube_video">
-            <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-            <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-        </div>
-        
 === RUN   Test_TestAndDocumentationRender/template-values
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <div class="sometext">
-        <h1>hello world!</h1>
-        <p>some text</p>
-            <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value -->.content<!-- end raw value --></div> 
-        expected:
-        <div class="sometext">
-        <h1>hello world!</h1>
-        <p>some text</p>
-            </div> 
-        
 === RUN   Test_TestAndDocumentationRender/template-enclose
 === RUN   Test_TestAndDocumentationRender/tree-@doc
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value -->.10<!-- end raw value --><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value -->.20<!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value -->.10<!-- end raw value --> 
-        expected:
-        <p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p>
-        
 === RUN   Test_TestAndDocumentationRender/tree-enclose
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <div><p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value -->.10<!-- end raw value --><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value -->.20<!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --><!-- begin raw value -->.10<!-- end raw value --></div> 
-        expected:
-        <div><p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p></div> 
-        
 === RUN   Test_TestAndDocumentationRender/html-enclose
 === RUN   Test_TestAndDocumentationRender/html-value
 === RUN   Test_TestAndDocumentationRender/html-trimspace
 === RUN   Test_TestAndDocumentationRender/css-attributes
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><style media="screen">
-        
-        </style><meta name="generator" content="hyperbricks cms"><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-          <!DOCTYPE html><html><head><style media="screen">
-          body {
-              background-color: red;
-          }
-          </style><meta name="generator" content="hyperbricks cms"></head><body></body></html>
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/css-enclose
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <head><style media="print">
-        
-        </style><meta name="generator" content="hyperbricks cms"></head> 
-        expected:
-        <head><style media="print">
-        body {
-            background-color: red;
-        }
-        </style><meta name="generator" content="hyperbricks cms"></head>
-        
 === RUN   Test_TestAndDocumentationRender/css-inline
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><style>
-        
-        body {
-            background-color: lightblue;
-        }
-            
-        </style><meta name="generator" content="hyperbricks cms"><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><style>
-        
-        body {
-            background-color: lightblue;
-        }
-            
-        </style><meta name="generator" content="hyperbricks cms"></head><body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/css-link
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><link rel="stylesheet" href="styles.css"><meta name="generator" content="hyperbricks cms"><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><link rel="stylesheet" href="styles.css"><meta name="generator" content="hyperbricks cms"></head><body></body></html>
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/css-file
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><style media="screen">
-        
-        </style><meta name="generator" content="hyperbricks cms"><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><style media="screen">
-        body {
-            background-color: red;
-        }
-        </style><meta name="generator" content="hyperbricks cms"></head><body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/javascript-attributes
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <head><script type="text/javascript">
-        
-        </script><meta name="generator" content="hyperbricks cms"></head> 
-        expected:
-        <head><script type="text/javascript">
-        console.log("Hello World!")
-        </script><meta name="generator" content="hyperbricks cms"></head>
-        
-        
 === RUN   Test_TestAndDocumentationRender/javascript-enclose
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <head><script defer></script>
-        
-        </script defer></script><meta name="generator" content="hyperbricks cms"></head> 
-        expected:
-        <head><script defer></script>
-                console.log("Hello World!")
-                </script defer></script><meta name="generator" content="hyperbricks cms"></head>
-        
 === RUN   Test_TestAndDocumentationRender/javascript-inline
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><script type="text/javascript">
-        console.log("Hello World!")
-        </script><meta name="generator" content="hyperbricks cms"><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><script type="text/javascript">
-        console.log("Hello World!")
-        </script><meta name="generator" content="hyperbricks cms"></head><body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/javascript-link
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><script src="hyperbricks-test-files/assets/main.js"></script><meta name="generator" content="hyperbricks cms"><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><script src="hyperbricks-test-files/assets/main.js"></script><meta name="generator" content="hyperbricks cms"></head><body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/javascript-file
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><script type="text/javascript">
-        
-        </script><meta name="generator" content="hyperbricks cms"><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><script type="text/javascript">
-                console.log("Hello World!")
-                </script><meta name="generator" content="hyperbricks cms"></head><body></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/image-attributes
 === RUN   Test_TestAndDocumentationRender/image-enclose
 === RUN   Test_TestAndDocumentationRender/image-src
@@ -429,354 +106,31 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/images-quality
 === RUN   Test_TestAndDocumentationRender/images-loading
 === RUN   Test_TestAndDocumentationRender/json-attributes
-    documentation_source_test.go:605: Test failed for json-attributes!
-output:
-{
-  "ConfigType": "<JSON_RENDER>",
-  "ConfigCategory": "",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "HyperBricksFile": "",
-  "ExtraAttributes": null,
-  "Enclose": "",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "Template": "",
-  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Values": null,
-  "Debug": false
-}
-
-expected:
-{
-  "ConfigCategory": "",
-  "ConfigType": "<JSON_RENDER>",
-  "Debug": false,
-  "Enclose": "",
-  "ExtraAttributes": null,
-  "File": "hyperbricks-test-files/assets/quotes.json",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Template": "",
-  "Values": null
-}
-
 === RUN   Test_TestAndDocumentationRender/json-enclose
-    documentation_source_test.go:605: Test failed for json-enclose!
-output:
-{
-  "ConfigType": "<JSON_RENDER>",
-  "ConfigCategory": "",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "HyperBricksFile": "",
-  "ExtraAttributes": null,
-  "Enclose": "",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "Template": "",
-  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Values": null,
-  "Debug": false
-}
-
-expected:
-{
-  "ConfigCategory": "",
-  "ConfigType": "<JSON_RENDER>",
-  "Debug": false,
-  "Enclose": "",
-  "ExtraAttributes": null,
-  "File": "hyperbricks-test-files/assets/quotes.json",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Template": "",
-  "Values": null
-}
-
 === RUN   Test_TestAndDocumentationRender/json-file
-    documentation_source_test.go:605: Test failed for json-file!
-output:
-{
-  "ConfigType": "<JSON_RENDER>",
-  "ConfigCategory": "",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "HyperBricksFile": "",
-  "ExtraAttributes": null,
-  "Enclose": "",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "Template": "",
-  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Values": null,
-  "Debug": false
-}
-
-expected:
-{
-  "ConfigCategory": "",
-  "ConfigType": "<JSON_RENDER>",
-  "Debug": false,
-  "Enclose": "",
-  "ExtraAttributes": null,
-  "File": "hyperbricks-test-files/assets/quotes.json",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Template": "",
-  "Values": null
-}
-
 === RUN   Test_TestAndDocumentationRender/json-template
-14-02-2025 18:57	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-    documentation_source_test.go:605: Test failed for json-template!
-output:
-{
-  "ConfigType": "<JSON_RENDER>",
-  "ConfigCategory": "",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "HyperBricksFile": "",
-  "ExtraAttributes": null,
-  "Enclose": "",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "Template": "",
-  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Values": null,
-  "Debug": false
-}
-
-expected:
-{
-  "ConfigCategory": "",
-  "ConfigType": "<JSON_RENDER>",
-  "Debug": false,
-  "Enclose": "",
-  "ExtraAttributes": null,
-  "File": "hyperbricks-test-files/assets/quotes.json",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Template": "",
-  "Values": null
-}
-
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-inline
-    documentation_source_test.go:605: Test failed for json-inline!
-output:
-{
-  "ConfigType": "<JSON_RENDER>",
-  "ConfigCategory": "",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "HyperBricksFile": "",
-  "ExtraAttributes": null,
-  "Enclose": "",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "Template": "",
-  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Values": null,
-  "Debug": false
-}
-
-expected:
-{
-  "ConfigCategory": "",
-  "ConfigType": "<JSON_RENDER>",
-  "Debug": false,
-  "Enclose": "",
-  "ExtraAttributes": null,
-  "File": "hyperbricks-test-files/assets/quotes.json",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Template": "",
-  "Values": null
-}
-
 === RUN   Test_TestAndDocumentationRender/json-values
-14-02-2025 18:57	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-    documentation_source_test.go:605: Test failed for json-values!
-output:
-{
-  "ConfigType": "<JSON_RENDER>",
-  "ConfigCategory": "",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "HyperBricksFile": "",
-  "ExtraAttributes": null,
-  "Enclose": "",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "Template": "",
-  "Inline": "\n        <h1>{{.Values.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Values": {
-    "someproperty": "Quotes!"
-  },
-  "Debug": false
-}
-
-expected:
-{
-  "ConfigCategory": "",
-  "ConfigType": "<JSON_RENDER>",
-  "Debug": false,
-  "Enclose": "",
-  "ExtraAttributes": null,
-  "File": "hyperbricks-test-files/assets/quotes.json",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "Inline": "\n        <h1>{{.Values.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Template": "",
-  "Values": {
-    "someproperty": "Quotes!"
-  }
-}
-
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
-14-02-2025 18:57	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-    documentation_source_test.go:605: Test failed for json-debug!
-output:
-{
-  "ConfigType": "<JSON_RENDER>",
-  "ConfigCategory": "",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "HyperBricksFile": "",
-  "ExtraAttributes": null,
-  "Enclose": "",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "Template": "",
-  "Inline": "\n        <h1>{{.Values.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Values": {
-    "someproperty": "Quotes!"
-  },
-  "Debug": false
-}
-
-expected:
-{
-  "ConfigCategory": "",
-  "ConfigType": "<JSON_RENDER>",
-  "Debug": false,
-  "Enclose": "",
-  "ExtraAttributes": null,
-  "File": "hyperbricks-test-files/assets/quotes.json",
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
-  "HyperBricksKey": "",
-  "HyperBricksPath": "",
-  "Inline": "\n        <h1>{{.Values.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-  "Template": "",
-  "Values": {
-    "someproperty": "Quotes!"
-  }
-}
-
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-section
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-order
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-sort
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-active
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-item
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
-2025/02/14 18:57:41 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
-    documentation_source_test.go:595: result and expected html output does not match: 
-        result:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        <!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav><!-- begin raw value --><!-- end raw value --><!-- begin raw value --><!-- end raw value --></body></html> 
-        expected:
-        <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
-        </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
-        <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> 
-        
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/api_render-enclose
 === RUN   Test_TestAndDocumentationRender/api_render-@doc
 === RUN   Test_TestAndDocumentationRender/api_render-endpoint
@@ -789,10 +143,10 @@ expected:
 === RUN   Test_TestAndDocumentationRender/api_render-user
 === RUN   Test_TestAndDocumentationRender/api_render-pass
 === RUN   Test_TestAndDocumentationRender/api_render-debug
-2025/02/14 18:57:43 Version: v0.2.2-alpha
-2025/02/14 18:57:43 Build Time: 2025-02-14T17:57:40Z
-2025/02/14 18:57:43 Static HTML file generated at ../../docs/hyperbricks-reference-v0.2.2-alpha.md
---- FAIL: Test_TestAndDocumentationRender (1.86s)
+2025/02/15 00:55:17 Version: v0.2.2-alpha
+2025/02/15 00:55:17 Build Time: 2025-02-14T23:55:14Z
+2025/02/15 00:55:17 Static HTML file generated at ../../docs/hyperbricks-reference-v0.2.2-alpha.md
+--- PASS: Test_TestAndDocumentationRender (1.89s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -813,44 +167,44 @@ expected:
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/hypermedia-@doc (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/hypermedia-title (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-@doc (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-title (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-route (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-section (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/hypermedia-bodytag (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/hypermedia-enclose (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/hypermedia-favicon (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-bodytag (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-favicon (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-template (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-static (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-index (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-doctype (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-htmltag (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/hypermedia-head (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/head-title (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/head-favicon (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/head-meta (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/head-css (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/head-js (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/template-@doc (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/template-template (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/template-inline (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/template-values (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-head (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/head-title (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/head-favicon (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/head-meta (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/head-css (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/head-js (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-@doc (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-template (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-inline (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-values (0.00s)
     --- PASS: Test_TestAndDocumentationRender/template-enclose (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/tree-@doc (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/tree-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/tree-@doc (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/tree-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/html-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/html-value (0.00s)
     --- PASS: Test_TestAndDocumentationRender/html-trimspace (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/css-attributes (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/css-enclose (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/css-inline (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/css-link (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/css-file (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/javascript-attributes (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/javascript-enclose (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/javascript-inline (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/javascript-link (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/javascript-file (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-attributes (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-inline (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-link (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-file (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-attributes (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-inline (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-link (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-file (0.00s)
     --- PASS: Test_TestAndDocumentationRender/image-attributes (0.02s)
     --- PASS: Test_TestAndDocumentationRender/image-enclose (0.02s)
     --- PASS: Test_TestAndDocumentationRender/image-src (0.02s)
@@ -874,23 +228,23 @@ expected:
     --- PASS: Test_TestAndDocumentationRender/images-title (0.03s)
     --- PASS: Test_TestAndDocumentationRender/images-quality (0.03s)
     --- PASS: Test_TestAndDocumentationRender/images-loading (0.03s)
-    --- FAIL: Test_TestAndDocumentationRender/json-attributes (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/json-enclose (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/json-file (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/json-template (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/json-inline (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/json-values (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/json-debug (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-attributes (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-file (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-template (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-inline (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-values (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-debug (0.00s)
     --- PASS: Test_TestAndDocumentationRender/text-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/text-value (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/menu-enclose (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/menu-section (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/menu-order (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/menu-sort (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/menu-active (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/menu-item (0.00s)
-    --- FAIL: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.28s)
+    --- PASS: Test_TestAndDocumentationRender/menu-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-section (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-order (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-sort (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-active (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.29s)
     --- PASS: Test_TestAndDocumentationRender/api_render-@doc (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-endpoint (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-method (0.09s)
@@ -902,6 +256,5 @@ expected:
     --- PASS: Test_TestAndDocumentationRender/api_render-user (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-pass (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.09s)
-FAIL
-FAIL	command-line-arguments	2.089s
-FAIL
+PASS
+ok  	command-line-arguments	2.115s
