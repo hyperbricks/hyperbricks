@@ -57,7 +57,10 @@ func renderContent(w http.ResponseWriter, r *http.Request, route string) string 
 			logging.GetLogger().Info("Redirecting to 404", " from ", route)
 			_config = __config
 		} else {
-			logging.GetLogger().Info("Config not found for route", "route", route)
+			if route == "favicon.ico" {
+				return ""
+			}
+			logging.GetLogger().Info("Config not found for route: ", route)
 			return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route)
 		}
 	}

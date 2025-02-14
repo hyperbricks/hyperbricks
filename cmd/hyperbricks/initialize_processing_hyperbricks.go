@@ -114,9 +114,7 @@ func processScript(filename string, config map[string]interface{},
 
 			hypermediaConfig.Route = ensureUniqueRoute(hypermediaConfig.Route, filename, tempConfigs)
 			handleStaticRoute(obj, &hypermediaConfig)
-			blueTrueColor := "\033[38;2;0;0;255m"
-			//orangeTrueColor := "\033[38;2;255;165;0m"
-			reset := "\033[0m"
+
 			tempHyperMediasBySection[hypermediaConfig.Section] = append(tempHyperMediasBySection[hypermediaConfig.Section], hypermediaConfig)
 
 			ips, err := getHostIPv4s()
@@ -130,9 +128,9 @@ func processScript(filename string, config map[string]interface{},
 			}
 			location := fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
 			if hypermediaConfig.Static == "" {
-				logger.Info(blueTrueColor, fmt.Sprintf("route: [http://%s/%s] initialized:", location, hypermediaConfig.Route), reset)
+				logger.Info(fmt.Sprintf("route: [http://%s/%s] initialized:", location, hypermediaConfig.Route))
 			} else {
-				logger.Info(blueTrueColor, fmt.Sprintf("static file: %s", hypermediaConfig.Static), reset)
+				logger.Info(fmt.Sprintf("static file: %s", hypermediaConfig.Static))
 			}
 
 			//

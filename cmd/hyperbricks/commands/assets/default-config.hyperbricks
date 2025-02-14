@@ -45,6 +45,9 @@ hyperbricks {
         # Directory for resources that need processing
         resources = {{VAR:module}}/resources
 
+        # plugins folder
+        plugins = bin/plugins/
+
         # Use this folder for templating with type TEMPLATE
         # Use {{TEMPLATE:path/template}} without .tmpl extension
         templates = {{VAR:module}}/templates

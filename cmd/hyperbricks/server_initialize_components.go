@@ -17,15 +17,15 @@ var (
 // Centralized component and plugin initialization
 func initializeComponents() {
 	rm = render.NewRenderManager()
-	registerPlugins()
 	registerRenderers()
+	registerPlugins()
 
 }
 
 func registerPlugins() {
 	// PRELOADING BASIC PLUGINS:
-	rm.RegisterAndLoadPlugin("./bin/plugins/myplugin.so", "MyPlugin")
-	rm.RegisterAndLoadPlugin("./bin/plugins/LoremIpsumV2Plugin.so", "LoremIpsumV2Plugin")
+	rm.RegisterAndLoadPlugin("./bin/plugins/MarkdownPlugin.so", "MarkdownPlugin")
+	rm.RegisterAndLoadPlugin("./bin/plugins/LoremIpsumPlugin.so", "LoremIpsumPlugin")
 }
 
 func registerRenderers() {

@@ -11,6 +11,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/parser"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/internal/typefactory"
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
 // RenderManager is the central coordinator integrating TypeFactory.
@@ -111,6 +112,8 @@ func (rm *RenderManager) InitializeRenderers() {
 
 // LoadPlugin loads a Go plugin dynamically and registers it.
 func (rm *RenderManager) RegisterAndLoadPlugin(path string, name string) error {
+	logger := logging.GetLogger()
+	var _err error = nil
 	// Load the plugin
 	pluginDir := "./bin/plugins"
 	if tbplugindir, ok := rm.HbConfig.Directories["plugins"]; ok {
@@ -118,34 +121,36 @@ func (rm *RenderManager) RegisterAndLoadPlugin(path string, name string) error {
 	}
 
 	pluginPath := filepath.Join(pluginDir, name+".so")
-	//log.Printf("pluginPath: %s", pluginPath)
+	logger.Infof("Preloading plugin: %s", name)
+
 	p, err := plugin.Open(pluginPath)
 	if err != nil {
-		return fmt.Errorf("<!-- error loading plugin %v: %v -->", name, err)
+		_err = fmt.Errorf("<!-- error loading plugin %v: %v -->", name, err)
 	}
 
 	// Lookup "Plugin" as a function
 	symbol, err := p.Lookup("Plugin")
 	if err != nil {
-		return fmt.Errorf("failed to lookup 'Plugin' symbol: %v", err)
+		_err = fmt.Errorf("failed to lookup 'Plugin' symbol: %v", err)
 	}
 
 	// Assert it is of the correct function type
 	pluginFactory, ok := symbol.(func() (shared.PluginRenderer, error))
 	if !ok {
-		return fmt.Errorf("plugin symbol is not of expected type 'func() (shared.Renderer, error)'")
+		_err = fmt.Errorf("plugin symbol is not of expected type 'func() (shared.Renderer, error)'")
 	}
 
 	// Create an instance of the plugin
 	renderer, err := pluginFactory()
 	if err != nil {
-		return fmt.Errorf("error initializing plugin: %v", err)
+		_err = fmt.Errorf("error initializing plugin: %v", err)
 	}
 
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
 	rm.Plugins[name] = renderer
-	return nil
+
+	return _err
 }
 
 // LoadPlugin loads a Go plugin dynamically and registers it.

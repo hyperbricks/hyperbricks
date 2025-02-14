@@ -263,10 +263,7 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 						varName := submatches[1]
 						// lookup....
 						value, exists := os.LookupEnv(varName)
-						if !exists {
-							fmt.Println("MY_ENV_VAR is not set")
-						} else {
-							fmt.Println("MY_ENV_VAR =", value)
+						if exists {
 							return value
 						}
 
@@ -316,13 +313,9 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 			varName := submatches[1]
 			// lookup....
 			value, exists := os.LookupEnv(varName)
-			if !exists {
-				fmt.Println("MY_ENV_VAR is not set")
-			} else {
-				fmt.Println("MY_ENV_VAR =", value)
+			if exists {
 				return value
 			}
-
 			logger.Warnf("Undefined variable '%s'", varName)
 			return match // Return as-is
 		})
