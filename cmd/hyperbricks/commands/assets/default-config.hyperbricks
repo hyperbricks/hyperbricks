@@ -26,7 +26,10 @@ hyperbricks {
 
     live {
         # settings for live mode
-        cache
+        # parses a duration string. 
+        # such as "300ms", "-1.5h" or "2h45m". 
+        # Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+        cache = 10s
     }
 
     server {
@@ -34,6 +37,16 @@ hyperbricks {
         port = 8080
         beautify = true
     }
+
+    plugins {
+        # propertyname must match the base filename without the .so extension
+        # value must be enabled, otherwise it will not preload
+        # to compile plugins run ./script/build.sh
+
+        #### uncomment to preload ####
+        # MarkdownPlugin = enabled
+        # LoremIpsumPlugin = enabled
+     }
 
     directories {
         # directory for rendered static html output

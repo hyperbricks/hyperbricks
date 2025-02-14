@@ -42,8 +42,6 @@ func renderStaticContent(route string) string {
 		htmlContent = gohtml.Format(htmlContent)
 	}
 
-	cacheTime := time.Now().Format(time.RFC3339)
-	htmlContent += fmt.Sprintf("\n<!-- Cached at: %s -->", cacheTime)
 	return htmlContent
 }
 
@@ -85,8 +83,6 @@ func renderContent(w http.ResponseWriter, route string) string {
 		output.WriteString(gohtml.Format(htmlContent.String()))
 	}
 
-	cacheTime := time.Now().Format(time.RFC3339)
-	output.WriteString(fmt.Sprintf("\n<!-- Cached at: %s -->", cacheTime))
 	if hbConfig.Development.FrontendErrors {
 		output.WriteString(FrontEndErrorRender(renderErrors))
 	} else {
@@ -357,17 +353,25 @@ func handleLiveMode(w http.ResponseWriter, route string) string {
 	}
 
 	if found {
-		logging.GetLogger().Infof("Cache expired for route. Re-rendering content. %v", "route", route)
+		logging.GetLogger().Infof("Cache expired for route %s. Re-rendering content.", route)
 	} else {
-		logging.GetLogger().Debugw("Cache miss for route. Rendering content. %v", "route", route)
+		logging.GetLogger().Debugf("Cache missing for route %s. Rendering content.", route)
 	}
 
 	htmlContent := renderContent(w, route)
+
+	//Calculate expiration time
+	var now = time.Now()
+	expirationTime := now.Add(cacheDuration.Duration).Format("2006-01-02 15:04:05 (-07:00)")
+	renderTime := time.Now().Format("2006-01-02 15:04:05 (-07:00)")
+
+	htmlContent += fmt.Sprintf("\n<!-- Rendered at: %s -->", renderTime)
+	htmlContent += fmt.Sprintf("\n<!-- Cache expires at: %s -->", expirationTime)
 	if htmlContent != "" {
 		htmlCacheMutex.Lock()
 		htmlCache[route] = CacheEntry{
 			Content:   htmlContent,
-			Timestamp: time.Now(),
+			Timestamp: now,
 		}
 		htmlCacheMutex.Unlock()
 		logging.GetLogger().Debugw("Updated cache for route", "route", route)

@@ -39,9 +39,9 @@ func (r *PluginRenderer) Render(instance interface{}) (string, []error) {
 	config, ok := instance.(PluginConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
-			Key:  config.Component.Meta.Key,
-			Path: config.Component.Meta.Path,
-			File: config.Component.Meta.File,
+			Key:  config.Key,
+			Path: config.Path,
+			File: config.File,
 			Type: PluginRenderGetName(),
 			Err:  fmt.Errorf("invalid type for MenuRenderer").Error(),
 		})
@@ -51,11 +51,11 @@ func (r *PluginRenderer) Render(instance interface{}) (string, []error) {
 	pluginRenderer, pluginExists := r.RenderManager.Plugins[config.PluginName]
 	if !pluginExists {
 		errors = append(errors, shared.ComponentError{
-			Key:  config.Component.Meta.Key,
-			Path: config.Component.Meta.Path,
-			File: config.Component.Meta.File,
+			Key:  config.Key,
+			Path: config.Path,
+			File: config.File,
 			Type: PluginRenderGetName(),
-			Err:  "plugin is not preloaded or found",
+			Err:  "plugin " + config.PluginName + " is not preloaded, make sure it is preloaded in production.",
 		})
 
 		renderedContent, renderErrs := r.LoadAndRender(instance)

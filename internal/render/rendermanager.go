@@ -3,7 +3,6 @@ package render
 
 import (
 	"fmt"
-	"path/filepath"
 	"plugin"
 	"reflect"
 	"sync"
@@ -114,16 +113,10 @@ func (rm *RenderManager) InitializeRenderers() {
 func (rm *RenderManager) RegisterAndLoadPlugin(path string, name string) error {
 	logger := logging.GetLogger()
 	var _err error = nil
-	// Load the plugin
-	pluginDir := "./bin/plugins"
-	if tbplugindir, ok := rm.HbConfig.Directories["plugins"]; ok {
-		pluginDir = tbplugindir
-	}
 
-	pluginPath := filepath.Join(pluginDir, name+".so")
-	logger.Infof("Preloading plugin: %s", name)
+	logger.Infof("Preloading plugin: %s", path)
 
-	p, err := plugin.Open(pluginPath)
+	p, err := plugin.Open(path)
 	if err != nil {
 		_err = fmt.Errorf("<!-- error loading plugin %v: %v -->", name, err)
 	}

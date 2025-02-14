@@ -97,6 +97,7 @@ type Config struct {
 	Debug       DebugConfig       `mapstructure:"debug"`
 	Live        LiveConfig        `mapstructure:"live"`
 	Directories map[string]string `mapstructure:"directories"`
+	Plugins     map[string]string `mapstructure:"plugins"`
 }
 
 type LiveConfig struct {
