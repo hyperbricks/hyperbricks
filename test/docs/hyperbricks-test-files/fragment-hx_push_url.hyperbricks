@@ -11,8 +11,8 @@ Pushes a new url into the history stack
 {
     "ConfigType": "<FRAGMENT>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
     "HxTemplateResult": "",
     "HxLocation": "",
     "HxPushedUrl": "/some/url",
@@ -33,7 +33,7 @@ Pushes a new url into the history stack
     "Items": null,
     "Enclose": "",
     "Template": null,
-    "File": "",
+    "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
     "Index": 0

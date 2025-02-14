@@ -11,8 +11,8 @@ Enclosing property using the pipe symbol |
 {
     "ConfigType": "<FRAGMENT>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
     "HxTemplateResult": "",
     "HxLocation": "",
     "HxPushedUrl": "",
@@ -33,7 +33,7 @@ Enclosing property using the pipe symbol |
     "Items": null,
     "Enclose": "<div>|</div>",
     "Template": null,
-    "File": "",
+    "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
     "Index": 0

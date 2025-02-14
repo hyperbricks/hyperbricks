@@ -13,9 +13,9 @@ Metadata for the head section
 {
   "ConfigType": "<HYPERMEDIA>",
   "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "File": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
   "MetaDocDescription": "",
   "Title": "",
   "Route": "",

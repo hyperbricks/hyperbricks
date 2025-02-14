@@ -9,8 +9,8 @@ The section the fragment belongs to. This can be used with the component <MENU> 
 {
     "ConfigType": "<FRAGMENT>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
     "HxTemplateResult": "",
     "HxLocation": "",
     "HxPushedUrl": "",
@@ -31,7 +31,7 @@ The section the fragment belongs to. This can be used with the component <MENU> 
     "Items": null,
     "Enclose": "",
     "Template": null,
-    "File": "",
+    "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
     "Index": 0

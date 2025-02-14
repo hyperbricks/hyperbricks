@@ -14,9 +14,9 @@ The enclosing HTML element for the header divided by |
 {
     "ConfigType": "<HEAD>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "Items": {
       "10": {
         "@type": "<JAVASCRIPT>",

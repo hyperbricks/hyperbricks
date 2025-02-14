@@ -7,9 +7,9 @@ The opening HTML tag with attributes
 {
     "ConfigType": "<HYPERMEDIA>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "MetaDocDescription": "",
     "Title": "",
     "Route": "",

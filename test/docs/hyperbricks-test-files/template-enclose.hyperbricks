@@ -18,9 +18,9 @@ Enclosing property for the template rendered output divided by |
 {
     "ConfigType": "<TEMPLATE>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "Items": null,
     "MetaDocDescription": "",
     "Template": "",

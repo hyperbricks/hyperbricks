@@ -11,8 +11,8 @@ If set to 'true' the client-side will do a full refresh of the page
 {
     "ConfigType": "<FRAGMENT>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
     "HxTemplateResult": "",
     "HxLocation": "",
     "HxPushedUrl": "",
@@ -33,7 +33,7 @@ If set to 'true' the client-side will do a full refresh of the page
     "Items": null,
     "Enclose": "",
     "Template": null,
-    "File": "",
+    "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
     "Index": 0

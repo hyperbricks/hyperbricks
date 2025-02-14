@@ -82,8 +82,8 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	responseData, err := fetchDataFromAPI(config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
-			Key:      config.Component.Meta.Key,
-			Path:     config.Component.Meta.Path,
+			Key:      config.Component.Meta.HyperBricksKey,
+			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
 			Type:     APIConfigGetName(),
 			Err:      fmt.Errorf("failed to fetch data from API: %w", err).Error(),
@@ -116,8 +116,8 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 			fileContent, err := composite.GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
-					Key:  config.Component.Meta.Key,
-					Path: config.Component.Meta.Path,
+					Key:  config.Component.Meta.HyperBricksKey,
+					Path: config.Component.Meta.HyperBricksPath,
 					File: config.Component.Meta.HyperBricksFile,
 					Type: APIConfigGetName(),
 					Err:  fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
@@ -265,8 +265,8 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 	tmpl, err := template.New("apiTemplate").Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
-			Key:      config.Component.Meta.Key,
-			Path:     config.Component.Meta.Path,
+			Key:      config.Component.Meta.HyperBricksKey,
+			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
 			Type:     APIConfigGetName(),
 			Err:      fmt.Sprintf("error parsing template: %v", err),
@@ -279,8 +279,8 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 	err = tmpl.Execute(&output, context)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
-			Key:      config.Component.Meta.Key,
-			Path:     config.Component.Meta.Path,
+			Key:      config.Component.Meta.HyperBricksKey,
+			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
 			Type:     APIConfigGetName(),
 			Err:      fmt.Sprintf("error executing template: %v", err),

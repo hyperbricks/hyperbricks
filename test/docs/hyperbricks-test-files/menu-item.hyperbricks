@@ -30,9 +30,9 @@ Template for regular menu items.
 {
     "ConfigType": "<HYPERMEDIA>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "MetaDocDescription": "",
     "Title": "DOCUMENT_3",
     "Route": "doc3",

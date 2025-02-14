@@ -35,8 +35,8 @@ fragment.content {
 {
   "ConfigType": "<FRAGMENT>",
   "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
   "HxTemplateResult": "",
   "HxLocation": "",
   "HxPushedUrl": "",
@@ -57,7 +57,7 @@ fragment.content {
   "Items": null,
   "Enclose": "",
   "Template": null,
-  "File": "",
+  "HyperBricksFile": "",
   "IsStatic": false,
   "Static": "",
   "Index": 0

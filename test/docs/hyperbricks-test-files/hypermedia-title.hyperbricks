@@ -9,9 +9,9 @@ The title of the hypermedia site
 {
     "ConfigType": "<HYPERMEDIA>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "MetaDocDescription": "",
     "Title": "Home",
     "Route": "",

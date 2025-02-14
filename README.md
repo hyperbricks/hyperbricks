@@ -4,7 +4,7 @@
 
 **Licence:** MIT  
 **Version:** v0.2.2-alpha  
-**Build time:** 2025-02-14T17:31:57Z
+**Build time:** 2025-02-14T17:57:40Z
 
 ## HyperBricks Documentation
 
@@ -595,8 +595,6 @@ fragment.10 {
   some text
 </p>
 <img src="static/images/cute_cat_w800_h800.jpg" width="800" height="800" />
-<!-- begin raw value -->
-<!-- end raw value -->
 ````
 
 
@@ -688,15 +686,6 @@ fragment {
 
 ````
 
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
-
 
 
 
@@ -725,15 +714,6 @@ fragment {
 
 ````
 
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
-
 
 
 
@@ -759,15 +739,6 @@ fragment {
 
 ````
 
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
-
 
 
 
@@ -792,15 +763,6 @@ fragment {
 }
 
 ````
-
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
 
 
 
@@ -836,8 +798,6 @@ fragment {
   <p>
     TEST HTML
   </p>
-  <!-- begin raw value -->
-  <!-- end raw value -->
 </div>
 ````
 
@@ -916,15 +876,6 @@ fragment {
 
 ````
 
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
-
 
 
 
@@ -949,15 +900,6 @@ fragment {
 }
 
 ````
-
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
 
 
 
@@ -986,15 +928,6 @@ fragment {
 
 ````
 
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
-
 
 
 
@@ -1021,15 +954,6 @@ fragment {
 }
 
 ````
-
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
 
 
 
@@ -1058,15 +982,6 @@ fragment {
 
 ````
 
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
-
 
 
 
@@ -1093,15 +1008,6 @@ fragment {
 }
 
 ````
-
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
 
 
 
@@ -1130,15 +1036,6 @@ fragment {
 
 ````
 
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
-
 
 
 
@@ -1165,15 +1062,6 @@ fragment {
 }
 
 ````
-
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
 
 
 
@@ -1202,15 +1090,6 @@ fragment {
 
 ````
 
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
-
 
 
 
@@ -1237,15 +1116,6 @@ fragment {
 }
 
 ````
-
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
 
 
 
@@ -1274,15 +1144,6 @@ fragment {
 
 ````
 
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
-
 
 
 
@@ -1310,15 +1171,6 @@ fragment {
 
 ````
 
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
-
 
 
 
@@ -1345,15 +1197,6 @@ fragment {
 }
 
 ````
-
-**Expected Result**
-
-````html
-<!-- begin raw value -->
-<!-- end raw value -->
-````
-
-
 
 
 
@@ -1420,6 +1263,8 @@ hypermedia.head {
     </title>
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body></body>
 </html>
@@ -1461,6 +1306,8 @@ hypermedia.head {
   <head>
     <meta name="generator" content="hyperbricks cms">
     <link rel="icon" type="image/x-icon" href="/images/icon.ico">
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </head>
@@ -1510,6 +1357,8 @@ hypermedia.head {
     <meta name="b" content="c">
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body></body>
 </html>
@@ -1554,6 +1403,8 @@ hypermedia.head {
     <link rel="stylesheet" href="morestyles.css">
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body></body>
 </html>
@@ -1596,6 +1447,8 @@ hypermedia.head {
     <meta name="generator" content="hyperbricks cms">
     <script src="main.js"></script>
     <script src="helpers.js"></script>
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </head>
@@ -1674,11 +1527,20 @@ hypermedia.10 {
     <meta name="generator" content="hyperbricks cms">
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body>
     <p>
       SOME CONTENT
     </p>
+    <!-- begin raw value -->
+    <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
+    <!-- begin raw value -->
+    .10
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
     <!-- begin raw value -->
@@ -1769,6 +1631,8 @@ hypermedia {
     <title>
       Home
     </title>
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </head>
@@ -1885,6 +1749,8 @@ hypermedia.10.value = HELLO WORLD!
     HELLO WORLD!
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </body>
 </html>
 ````
@@ -1929,6 +1795,8 @@ hypermedia.enclose = <p>|</p>
       HELLO WORLD!
       <!-- begin raw value -->
       <!-- end raw value -->
+      <!-- begin raw value -->
+      <!-- end raw value -->
     </p>
   </body>
 </html>
@@ -1970,6 +1838,8 @@ hypermedia {
   <head>
     <meta name="generator" content="hyperbricks cms">
     <link rel="icon" type="image/x-icon" href="static/favicon.ico">
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </head>
@@ -2238,11 +2108,15 @@ hypermedia.10.value = <p>some HTML</p>
     </style>
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body>
     <p>
       some HTML
     </p>
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </body>
@@ -2311,9 +2185,12 @@ fragment.content {
   <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
   <!-- begin raw value -->
   <!-- end raw value -->
+  <!-- begin raw value -->
+  <!-- end raw value -->
+  <!-- begin raw value -->
+  .content
+  <!-- end raw value -->
 </div>
-<!-- begin raw value -->
-<!-- end raw value -->
 ````
 
 
@@ -2392,9 +2269,12 @@ fragment.content {
   <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
   <!-- begin raw value -->
   <!-- end raw value -->
+  <!-- begin raw value -->
+  <!-- end raw value -->
+  <!-- begin raw value -->
+  .content
+  <!-- end raw value -->
 </div>
-<!-- begin raw value -->
-<!-- end raw value -->
 ````
 
 
@@ -2452,9 +2332,12 @@ fragment.content {
   <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
   <!-- begin raw value -->
   <!-- end raw value -->
+  <!-- begin raw value -->
+  <!-- end raw value -->
+  <!-- begin raw value -->
+  .content
+  <!-- end raw value -->
 </div>
-<!-- begin raw value -->
-<!-- end raw value -->
 ````
 
 
@@ -2514,9 +2397,12 @@ fragment.content {
   </p>
   <!-- begin raw value -->
   <!-- end raw value -->
+  <!-- begin raw value -->
+  <!-- end raw value -->
+  <!-- begin raw value -->
+  .content
+  <!-- end raw value -->
 </div>
-<!-- begin raw value -->
-<!-- end raw value -->
 ````
 
 
@@ -2621,6 +2507,11 @@ fragment {
 </p>
 <!-- begin raw value -->
 <!-- end raw value -->
+<!-- begin raw value -->
+<!-- end raw value -->
+<!-- begin raw value -->
+.10
+<!-- end raw value -->
 <p>
   SOME NESTED HTML --- 20-1
 </p>
@@ -2632,6 +2523,14 @@ fragment {
 <!-- begin raw value -->
 <!-- end raw value -->
 <!-- begin raw value -->
+.20
+<!-- end raw value -->
+<!-- begin raw value -->
+<!-- end raw value -->
+<!-- begin raw value -->
+<!-- end raw value -->
+<!-- begin raw value -->
+.10
 <!-- end raw value -->
 ````
 
@@ -2705,6 +2604,11 @@ fragment {
   </p>
   <!-- begin raw value -->
   <!-- end raw value -->
+  <!-- begin raw value -->
+  <!-- end raw value -->
+  <!-- begin raw value -->
+  .10
+  <!-- end raw value -->
   <p>
     SOME NESTED HTML --- 20-1
   </p>
@@ -2715,9 +2619,17 @@ fragment {
   <!-- end raw value -->
   <!-- begin raw value -->
   <!-- end raw value -->
+  <!-- begin raw value -->
+  .20
+  <!-- end raw value -->
+  <!-- begin raw value -->
+  <!-- end raw value -->
+  <!-- begin raw value -->
+  <!-- end raw value -->
+  <!-- begin raw value -->
+  .10
+  <!-- end raw value -->
 </div>
-<!-- begin raw value -->
-<!-- end raw value -->
 ````
 
 
@@ -4150,6 +4062,8 @@ hm_3.title = DOCUMENT_3
     </title>
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body>
     <nav class="nav nav-masthead justify-content-center float-md-end">
@@ -4163,6 +4077,8 @@ hm_3.title = DOCUMENT_3
         DOCUMENT_3
       </a>
     </nav>
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </body>
@@ -4229,6 +4145,8 @@ hm_3.title = DOCUMENT_3
     </title>
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body>
     <nav class="nav nav-masthead justify-content-center float-md-end">
@@ -4242,6 +4160,8 @@ hm_3.title = DOCUMENT_3
         DOCUMENT_3
       </a>
     </nav>
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </body>
@@ -4308,6 +4228,8 @@ hm_3.title = DOCUMENT_3
     </title>
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body>
     <nav class="nav nav-masthead justify-content-center float-md-end">
@@ -4321,6 +4243,8 @@ hm_3.title = DOCUMENT_3
         DOCUMENT_3
       </a>
     </nav>
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </body>
@@ -4387,6 +4311,8 @@ hm_3.title = DOCUMENT_3
     </title>
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body>
     <nav class="nav nav-masthead justify-content-center float-md-end">
@@ -4400,6 +4326,8 @@ hm_3.title = DOCUMENT_3
         DOCUMENT_3
       </a>
     </nav>
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </body>
@@ -4467,6 +4395,8 @@ hm_3.title = DOCUMENT_3
     </title>
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body>
     <nav class="nav nav-masthead justify-content-center float-md-end">
@@ -4480,6 +4410,8 @@ hm_3.title = DOCUMENT_3
         DOCUMENT_3
       </a>
     </nav>
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </body>
@@ -4546,6 +4478,8 @@ hm_3.title = DOCUMENT_3
     </title>
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body>
     <nav class="nav nav-masthead justify-content-center float-md-end">
@@ -4559,6 +4493,8 @@ hm_3.title = DOCUMENT_3
         DOCUMENT_3
       </a>
     </nav>
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </body>
@@ -4625,6 +4561,8 @@ hm_3.title = DOCUMENT_3
     </title>
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body>
     <nav class="nav nav-masthead justify-content-center float-md-end">
@@ -4638,6 +4576,8 @@ hm_3.title = DOCUMENT_3
         DOCUMENT_3
       </a>
     </nav>
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </body>
@@ -4717,6 +4657,8 @@ hypermedia.head {
     <meta name="generator" content="hyperbricks cms">
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body></body>
 </html>
@@ -4760,8 +4702,6 @@ head {
 <head>
   <style media="print"></style>
   <meta name="generator" content="hyperbricks cms">
-  <!-- begin raw value -->
-  <!-- end raw value -->
 </head>
 ````
 
@@ -4811,6 +4751,8 @@ hypermedia.head {
     <meta name="generator" content="hyperbricks cms">
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body></body>
 </html>
@@ -4853,6 +4795,8 @@ hypermedia.head {
   <head>
     <link rel="stylesheet" href="styles.css">
     <meta name="generator" content="hyperbricks cms">
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </head>
@@ -4899,6 +4843,8 @@ hypermedia.head {
   <head>
     <style media="screen"></style>
     <meta name="generator" content="hyperbricks cms">
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </head>
@@ -5901,8 +5847,6 @@ head {
 <head>
   <script type="text/javascript"></script>
   <meta name="generator" content="hyperbricks cms">
-  <!-- begin raw value -->
-  <!-- end raw value -->
 </head>
 ````
 
@@ -5944,8 +5888,6 @@ head {
 <head>
 <script defer></script>
 <meta name="generator" content="hyperbricks cms">
-<!-- begin raw value -->
-<!-- end raw value -->
 ````
 
 
@@ -5989,6 +5931,8 @@ hypermedia.head {
       console.log("Hello World!")
     </script>
     <meta name="generator" content="hyperbricks cms">
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </head>
@@ -6037,6 +5981,8 @@ hypermedia.head {
     <meta name="generator" content="hyperbricks cms">
     <!-- begin raw value -->
     <!-- end raw value -->
+    <!-- begin raw value -->
+    <!-- end raw value -->
   </head>
   <body></body>
 </html>
@@ -6081,6 +6027,8 @@ hypermedia.head {
   <head>
     <script type="text/javascript"></script>
     <meta name="generator" content="hyperbricks cms">
+    <!-- begin raw value -->
+    <!-- end raw value -->
     <!-- begin raw value -->
     <!-- end raw value -->
   </head>

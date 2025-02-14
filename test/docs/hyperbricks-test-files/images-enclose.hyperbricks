@@ -12,9 +12,9 @@ Use the pipe symbol | to enclose the ````<IMG>```` tag.
 {
   "ConfigType": "<IMAGE>",
   "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "File": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
   "ExtraAttributes": {
     "loading": "lazy"
   },

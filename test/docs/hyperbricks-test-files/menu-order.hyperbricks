@@ -30,9 +30,9 @@ The order of items in the menu ('asc' or 'desc').
 {
     "ConfigType": "<HYPERMEDIA>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "MetaDocDescription": "",
     "Title": "DOCUMENT_3",
     "Route": "doc3",

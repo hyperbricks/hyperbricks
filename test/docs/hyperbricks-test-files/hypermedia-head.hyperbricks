@@ -32,9 +32,9 @@ Builds header content. See <HEADER> for details
 {
   "ConfigType": "<HYPERMEDIA>",
   "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "File": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
   "MetaDocDescription": "",
   "Title": "",
   "Route": "index",

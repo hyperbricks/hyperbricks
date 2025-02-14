@@ -18,8 +18,8 @@ The enclosing HTML element for the header divided by |
 {
     "ConfigType": "<JSON_RENDER>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
     "File": "hyperbricks-test-files/assets/quotes.json",
     "ExtraAttributes": null,
     "Enclose": "",

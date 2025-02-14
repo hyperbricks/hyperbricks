@@ -11,8 +11,8 @@ HTMX response header configuration.
 {
     "ConfigType": "<FRAGMENT>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
     "HxTemplateResult": "",
     "HxLocation": "",
     "HxPushedUrl": "",
@@ -33,7 +33,7 @@ HTMX response header configuration.
     "Items": null,
     "Enclose": "",
     "Template": null,
-    "File": "",
+    "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
     "Index": 0

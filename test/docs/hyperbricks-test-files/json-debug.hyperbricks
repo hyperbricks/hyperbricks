@@ -23,8 +23,8 @@ Debug the response data
 {
     "ConfigType": "<JSON_RENDER>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
     "File": "hyperbricks-test-files/assets/quotes.json",
     "ExtraAttributes": null,
     "Enclose": "",

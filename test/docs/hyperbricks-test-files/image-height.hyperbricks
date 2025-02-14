@@ -13,9 +13,9 @@ The height of the image (can be a number or percentage)
 {
     "ConfigType": "<IMAGE>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "ExtraAttributes": {
       "loading": "lazy"
     },

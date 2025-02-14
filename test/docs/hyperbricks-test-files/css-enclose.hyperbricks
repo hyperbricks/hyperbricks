@@ -14,9 +14,9 @@ A custom <style> tag definition |. Will override extraAttributes.
 {
     "ConfigType": "<HEAD>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "Items": {
       "10": {
         "@type": "<CSS>",

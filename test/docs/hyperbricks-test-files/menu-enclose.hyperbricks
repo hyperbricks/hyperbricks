@@ -30,9 +30,9 @@ The enclosing HTML element for the header divided by |
 {
     "ConfigType": "<HYPERMEDIA>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "MetaDocDescription": "",
     "Title": "DOCUMENT_3",
     "Route": "doc3",

@@ -20,9 +20,9 @@ Template configurations for rendering the hypermedia. See <TEMPLATE> for field d
 {
     "ConfigType": "<HYPERMEDIA>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "MetaDocDescription": "",
     "Title": "",
     "Route": "",

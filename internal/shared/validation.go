@@ -19,8 +19,8 @@ type PathKeyer interface {
 	GetConfigType() string
 }
 
-func (c ComponentRendererConfig) GetPath() string       { return c.Path }
-func (c ComponentRendererConfig) GetKey() string        { return c.Key }
+func (c ComponentRendererConfig) GetPath() string       { return c.HyperBricksPath }
+func (c ComponentRendererConfig) GetKey() string        { return c.HyperBricksKey }
 func (c ComponentRendererConfig) GetConfigType() string { return c.ConfigType }
 
 func Validate(config interface{}) []error {

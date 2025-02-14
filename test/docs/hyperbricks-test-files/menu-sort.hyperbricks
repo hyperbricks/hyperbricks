@@ -30,9 +30,9 @@ The field to sort menu items by ('title', 'route', or 'index').
 {
     "ConfigType": "<HYPERMEDIA>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "MetaDocDescription": "",
     "Title": "DOCUMENT_3",
     "Route": "doc3",

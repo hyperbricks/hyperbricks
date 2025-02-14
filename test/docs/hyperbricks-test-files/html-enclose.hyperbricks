@@ -11,9 +11,9 @@ The enclosing HTML element for the header divided by |
 {
     "ConfigType": "<HTML>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "<div>|</div>",
     "Value": "\n<p>HTML TEST</p>    \n    ",

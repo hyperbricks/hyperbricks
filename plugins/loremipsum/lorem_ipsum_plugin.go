@@ -40,8 +40,8 @@ func (p *LoremIpsumPlugin) Render(instance interface{}) (string, []error) {
 	err := shared.DecodeWithBasicHooks(instance, &config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
-			Path:     config.Path,
-			Key:      config.Key,
+			Path:     config.HyperBricksPath,
+			Key:      config.HyperBricksKey,
 			Rejected: true,
 			Err:      fmt.Sprintf("Failed to decode plugin instance: %v", err),
 		})
