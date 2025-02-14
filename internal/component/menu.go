@@ -58,7 +58,7 @@ func (mc *MenuConfig) Validate() []error {
 		errors = append(errors, shared.ComponentError{
 			Key:  mc.Component.Meta.Key,
 			Path: mc.Component.Meta.Path,
-			File: mc.Component.Meta.File,
+			File: mc.Component.Meta.HyperBricksFile,
 			Type: MenuConfigGetName(),
 			Err:  fmt.Errorf("unknown 'sort' value '%s', defaulting to 'title'", mc.Sort).Error(),
 		})
@@ -69,7 +69,7 @@ func (mc *MenuConfig) Validate() []error {
 		errors = append(errors, shared.ComponentError{
 			Key:  mc.Component.Meta.Key,
 			Path: mc.Component.Meta.Path,
-			File: mc.Component.Meta.File,
+			File: mc.Component.Meta.HyperBricksFile,
 			Type: MenuConfigGetName(),
 			Err:  fmt.Errorf("unknown 'order' value '%s', defaulting to 'asc'", mc.Order).Error(),
 		})
@@ -88,7 +88,7 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 		errors = append(errors, shared.ComponentError{
 			Key:  config.Component.Meta.Key,
 			Path: config.Component.Meta.Path,
-			File: config.Component.Meta.File,
+			File: config.Component.Meta.HyperBricksFile,
 			Type: MenuConfigGetName(),
 			Err:  fmt.Errorf("invalid type for MenuRenderer").Error(),
 		})
@@ -121,7 +121,7 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 		errors = append(errors, shared.ComponentError{
 			Key:  config.Component.Meta.Key,
 			Path: config.Component.Meta.Path,
-			File: config.Component.Meta.File,
+			File: config.Component.Meta.HyperBricksFile,
 			Type: MenuConfigGetName(),
 			Err:  err.Error(),
 		})

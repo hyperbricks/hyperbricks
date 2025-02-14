@@ -89,7 +89,7 @@ func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error
 				errors = append(errors, shared.ComponentError{
 					Key:  config.Component.Meta.Key,
 					Path: config.Component.Meta.Path,
-					File: config.Component.Meta.File,
+					File: config.Component.Meta.HyperBricksFile,
 					Type: LocalJSONConfigGetName(),
 					Err:  fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
 				})
@@ -146,7 +146,7 @@ func applyJsonTemplate(templateStr string, data map[string]interface{}, config L
 		errors = append(errors, shared.ComponentError{
 			Key:  config.Component.Meta.Key,
 			Path: config.Component.Meta.Path,
-			File: config.Component.Meta.File,
+			File: config.Component.Meta.HyperBricksFile,
 			Type: LocalJSONConfigGetName(),
 			Err:  fmt.Sprintf("Error parsing template: %v", err),
 		})
@@ -157,7 +157,7 @@ func applyJsonTemplate(templateStr string, data map[string]interface{}, config L
 		errors = append(errors, shared.ComponentError{
 			Key:  config.Component.Meta.Key,
 			Path: config.Component.Meta.Path,
-			File: config.Component.Meta.File,
+			File: config.Component.Meta.HyperBricksFile,
 			Type: LocalJSONConfigGetName(),
 			Err:  fmt.Sprintf("Error executing template: %v", err),
 		})

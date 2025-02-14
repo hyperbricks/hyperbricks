@@ -41,7 +41,7 @@ func (r *PluginRenderer) Render(instance interface{}) (string, []error) {
 		errors = append(errors, shared.ComponentError{
 			Key:  config.Key,
 			Path: config.Path,
-			File: config.File,
+			File: config.HyperBricksFile,
 			Type: PluginRenderGetName(),
 			Err:  fmt.Errorf("invalid type for MenuRenderer").Error(),
 		})
@@ -53,7 +53,7 @@ func (r *PluginRenderer) Render(instance interface{}) (string, []error) {
 		errors = append(errors, shared.ComponentError{
 			Key:  config.Key,
 			Path: config.Path,
-			File: config.File,
+			File: config.HyperBricksFile,
 			Type: PluginRenderGetName(),
 			Err:  "plugin " + config.PluginName + " is not preloaded, make sure it is preloaded in production.",
 		})
@@ -107,7 +107,7 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}) (string, []error) {
 		errors = append(errors, shared.ComponentError{
 			Key:  config.Component.Meta.Key,
 			Path: config.Component.Meta.Path,
-			File: config.Component.Meta.File,
+			File: config.Component.Meta.HyperBricksFile,
 			Type: PluginRenderGetName(),
 			Err:  fmt.Errorf("invalid type").Error(),
 		})
@@ -128,7 +128,7 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}) (string, []error) {
 		errors = append(errors, shared.ComponentError{
 			Key:  config.Component.Meta.Key,
 			Path: config.Component.Meta.Path,
-			File: config.Component.Meta.File,
+			File: config.Component.Meta.HyperBricksFile,
 			Type: PluginRenderGetName(),
 			Err:  fmt.Sprintf("Error loading plugin %v: %v\n", config.PluginName, err),
 		})

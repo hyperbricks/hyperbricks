@@ -73,7 +73,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		return "", append(errors, shared.ComponentError{
 			Key:  config.Composite.Meta.Key,
 			Path: config.Composite.Meta.Path,
-			File: config.Composite.Meta.File,
+			File: config.Composite.Meta.HyperBricksFile,
 			Type: "<HYPERMEDIA>",
 			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
 		})
@@ -83,7 +83,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 		errors = append(errors, shared.ComponentError{
 			Key:      config.Composite.Meta.Key,
 			Path:     config.Composite.Meta.Path,
-			File:     config.Composite.Meta.File,
+			File:     config.Composite.Meta.HyperBricksFile,
 			Type:     "<HYPERMEDIA>",
 			Err:      fmt.Errorf("invalid type").Error(),
 			Rejected: true,
@@ -118,7 +118,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 
 		//head := shared.StructToMap(config.Head)
 		config.Head["@type"] = HeadConfigGetName()
-		config.Head["file"] = config.Composite.Meta.File
+		config.Head["file"] = config.Composite.Meta.HyperBricksFile
 		config.Head["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key
 
 		if config.Title != "" {
@@ -136,7 +136,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	outputHtml := ""
 	// TEMPLATE?
 	if config.Template != nil {
-		config.Template["file"] = config.Composite.Meta.File
+		config.Template["file"] = config.Composite.Meta.HyperBricksFile
 		config.Template["path"] = config.Composite.Meta.Key + ".template"
 
 		// INSERT HEAD to TEMPLATE VALUES....
@@ -158,7 +158,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 
 		// TREE
 		if config.Composite.Items != nil {
-			config.Composite.Items["file"] = config.Composite.Meta.File
+			config.Composite.Items["file"] = config.Composite.Meta.HyperBricksFile
 			config.Composite.Items["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key
 		}
 

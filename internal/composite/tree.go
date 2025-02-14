@@ -38,7 +38,7 @@ func (config *TreeConfig) Validate() []error {
 	var validationErrors []error
 	if config.Meta.ConfigType != TreeRendererConfigGetName() {
 		validationErrors = append(validationErrors, shared.ComponentError{
-			File:     config.Meta.File,
+			File:     config.Meta.HyperBricksFile,
 			Key:      config.Meta.Key,
 			Path:     config.Meta.Path,
 			Type:     "<TREE>",
@@ -48,7 +48,7 @@ func (config *TreeConfig) Validate() []error {
 	}
 	if len(config.Items) == 0 {
 		validationErrors = append(validationErrors, shared.ComponentError{
-			File: config.Meta.File,
+			File: config.Meta.HyperBricksFile,
 			Key:  config.Meta.Key,
 			Path: config.Meta.Path,
 			Type: "<TREE>",
@@ -99,7 +99,7 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 		component, ok := config.Items[key].(map[string]interface{})
 		if !ok {
 			renderErrors = append(renderErrors, shared.ComponentError{
-				File:     config.Composite.Meta.File,
+				File:     config.Composite.Meta.HyperBricksFile,
 				Key:      key,
 				Path:     config.Composite.Meta.Path,
 				Err:      "render problem, value is not of any type. parsing as raw data",
@@ -121,7 +121,7 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 
 		// Update componentConfig with path and key
 		localConfig["key"] = config.Composite.Key
-		localConfig["file"] = config.Composite.File
+		localConfig["file"] = config.Composite.HyperBricksFile
 		localConfig["path"] = fmt.Sprintf("%s.%s", config.Composite.Path, key)
 
 		componentType := ""
@@ -133,7 +133,7 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 				// @type exists but is not a string
 				renderErrors = append(renderErrors, shared.ComponentError{
 					Type:     "<TREE>",
-					File:     config.Composite.Meta.File,
+					File:     config.Composite.Meta.HyperBricksFile,
 					Path:     config.Composite.Path,
 					Key:      key,
 					Err:      "render Item has no valid @type, skipping",
@@ -144,7 +144,7 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 		} else {
 			// @type does not exist
 			renderErrors = append(renderErrors, shared.ComponentError{
-				File:     config.Composite.Meta.File,
+				File:     config.Composite.Meta.HyperBricksFile,
 				Path:     config.Composite.Path,
 				Key:      key,
 				Type:     "<TREE>",

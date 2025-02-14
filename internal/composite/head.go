@@ -33,7 +33,7 @@ func (config *HeadConfig) Validate() []error {
 
 	if config.ConfigType != "<HEAD>" {
 		warnings = append(warnings, shared.ComponentError{
-			File:     config.Composite.File,
+			File:     config.Composite.HyperBricksFile,
 			Key:      config.Composite.Meta.Key,
 			Path:     config.Composite.Meta.Path,
 			Err:      fmt.Errorf("invalid type for HEAD").Error(),
@@ -67,7 +67,7 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
-			File: config.Composite.File,
+			File: config.Composite.HyperBricksFile,
 			Key:  config.Composite.Meta.Key,
 			Path: config.Composite.Meta.Path,
 			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
@@ -126,7 +126,7 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 		}
 	}
 	config.Items["key"] = config.Composite.Meta.Key
-	config.Items["file"] = config.Composite.Meta.File
+	config.Items["file"] = config.Composite.Meta.HyperBricksFile
 	config.Items["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key
 
 	config.Items["enclose"] = "<head>|</head>"

@@ -88,7 +88,7 @@ func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
 
 	if config.ConfigType != "<FRAGMENT>" {
 		errors = append(errors, shared.ComponentError{
-			File:     config.Composite.Meta.File,
+			File:     config.Composite.Meta.HyperBricksFile,
 			Key:      config.Key,
 			Path:     config.Path,
 			Err:      fmt.Errorf("invalid type for Fragment").Error(),
@@ -105,7 +105,7 @@ func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
 	// TEMPLATE?
 	if config.Template != nil {
 		// TO-DO: INSERT HEAD to TEMPLATE VALUES....
-		config.Template["file"] = config.Composite.Meta.File
+		config.Template["file"] = config.Composite.Meta.HyperBricksFile
 		config.Template["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key + ".template"
 
 		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template)
@@ -114,8 +114,11 @@ func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
 		outputHtml = shared.EncloseContent(config.Enclose, templatebuilder.String())
 	} else {
 
+		if config.Composite.Items == nil {
+			config.Composite.Items = make(map[string]interface{})
+		}
 		// TREE
-		config.Composite.Items["file"] = config.Composite.Meta.File
+		config.Composite.Items["file"] = config.Composite.Meta.HyperBricksFile
 		config.Composite.Items["path"] = config.Composite.Meta.Path + config.Composite.Meta.Key
 
 		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items)

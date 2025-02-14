@@ -59,7 +59,7 @@ func (mir *MultipleImagesRenderer) Render(instance interface{}) (string, []error
 		errors = append(errors, shared.ComponentError{
 			Key:  config.Component.Meta.Key,
 			Path: config.Component.Meta.Path,
-			File: config.Component.Meta.File,
+			File: config.Component.Meta.HyperBricksFile,
 			Type: MultipleImagesConfigGetName(),
 			Err:  fmt.Errorf("invalid configuration type for MultipleImagesRenderer").Error(),
 		})
@@ -74,7 +74,7 @@ func (mir *MultipleImagesRenderer) Render(instance interface{}) (string, []error
 		errors = append(errors, shared.ComponentError{
 			Key:  config.Component.Meta.Key,
 			Path: config.Component.Meta.Path,
-			File: config.Component.Meta.File,
+			File: config.Component.Meta.HyperBricksFile,
 			Type: MultipleImagesConfigGetName(),
 			Err:  fmt.Errorf("failed to process multiple images: %w", err).Error(),
 		})

@@ -57,7 +57,7 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
-			File: config.Composite.File,
+			File: config.Composite.HyperBricksFile,
 			Path: config.Composite.Path,
 			Key:  config.Composite.Key,
 			Type: "<TEMPLATE>",
@@ -83,7 +83,7 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 			fileContent, err := GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
-					File: config.Composite.File,
+					File: config.Composite.HyperBricksFile,
 					Path: config.Composite.Path,
 					Key:  config.Composite.Key,
 					Type: "<TEMPLATE>",
@@ -107,7 +107,7 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 				errors = append(errors, render_errors...)
 			} else {
 				errors = append(errors, shared.ComponentError{
-					File:     config.Composite.File,
+					File:     config.Composite.HyperBricksFile,
 					Path:     config.Composite.Path + ".values",
 					Key:      key,
 					Type:     "<TEMPLATE>",
