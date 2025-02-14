@@ -120,9 +120,9 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 		}
 
 		// Update componentConfig with path and key
-		localConfig["key"] = config.Composite.HyperBricksKey
-		localConfig["file"] = config.Composite.HyperBricksFile
-		localConfig["path"] = fmt.Sprintf("%s.%s", config.Composite.HyperBricksPath, key)
+		localConfig["hyperbrickskey"] = config.Composite.HyperBricksKey
+		localConfig["hyperbricksfile"] = config.Composite.HyperBricksFile
+		localConfig["hyperbrickspath"] = fmt.Sprintf("%s.%s", config.Composite.HyperBricksPath, key)
 
 		componentType := ""
 		if rawType, ok := component["@type"]; ok {
