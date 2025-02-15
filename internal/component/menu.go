@@ -56,14 +56,22 @@ func (mc *MenuConfig) Validate() []error {
 
 	if mc.Sort != "" && !(mc.Sort == "route" || mc.Sort == "index" || mc.Sort == "title") {
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Errorf("unknown 'sort' value '%s', defaulting to 'title'", mc.Sort).Error(),
+			Key:  mc.Component.Meta.HyperBricksKey,
+			Path: mc.Component.Meta.HyperBricksPath,
+			File: mc.Component.Meta.HyperBricksFile,
+			Type: MenuConfigGetName(),
+			Err:  fmt.Errorf("unknown 'sort' value '%s', defaulting to 'title'", mc.Sort).Error(),
 		})
 		mc.Sort = "title"
 	}
 
 	if mc.Order != "" && !(mc.Order == "asc" || mc.Order == "desc") {
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Errorf("unknown 'order' value '%s', defaulting to 'asc'", mc.Order).Error(),
+			Key:  mc.Component.Meta.HyperBricksKey,
+			Path: mc.Component.Meta.HyperBricksPath,
+			File: mc.Component.Meta.HyperBricksFile,
+			Type: MenuConfigGetName(),
+			Err:  fmt.Errorf("unknown 'order' value '%s', defaulting to 'asc'", mc.Order).Error(),
 		})
 		mc.Order = "asc"
 	}
@@ -78,7 +86,11 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 	config, ok := instance.(MenuConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Errorf("invalid type for MenuRenderer").Error(),
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
+			File: config.Component.Meta.HyperBricksFile,
+			Type: MenuConfigGetName(),
+			Err:  fmt.Errorf("invalid type for MenuRenderer").Error(),
 		})
 		return "", errors
 	}
@@ -107,7 +119,11 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 		log.Printf("Error sorting pages: %v", err)
 		builder.WriteString(fmt.Sprintf("<!-- Error sorting pages: %v -->\n", err))
 		errors = append(errors, shared.ComponentError{
-			Err: err.Error(),
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
+			File: config.Component.Meta.HyperBricksFile,
+			Type: MenuConfigGetName(),
+			Err:  err.Error(),
 		})
 		return builder.String(), errors
 	}

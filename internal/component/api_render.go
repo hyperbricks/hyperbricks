@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"regexp"
 	"testing"
 
 	"net/http"
@@ -51,7 +50,6 @@ type APIRenderer struct {
 }
 
 var _ shared.ComponentRenderer = (*APIRenderer)(nil)
-var rangeRegex = regexp.MustCompile(`{{range\s+[^}]+}}`)
 
 func (api *APIConfig) Validate() []error {
 	warnings := shared.Validate(api)
@@ -70,8 +68,10 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	config, ok := instance.(APIConfig)
 	if !ok {
 		return "", append(errors, shared.ComponentError{
-			Path:     config.Path,
-			Key:      config.Key,
+			Key:      config.Component.Meta.HyperBricksKey,
+			Path:     config.Component.Meta.HyperBricksPath,
+			File:     config.Component.Meta.HyperBricksFile,
+			Type:     APIConfigGetName(),
 			Err:      fmt.Errorf("invalid type for APIRenderer").Error(),
 			Rejected: true,
 		})
@@ -82,8 +82,10 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	responseData, err := fetchDataFromAPI(config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
-			Path:     config.Path,
-			Key:      config.Key,
+			Key:      config.Component.Meta.HyperBricksKey,
+			Path:     config.Component.Meta.HyperBricksPath,
+			File:     config.Component.Meta.HyperBricksFile,
+			Type:     APIConfigGetName(),
 			Err:      fmt.Errorf("failed to fetch data from API: %w", err).Error(),
 			Rejected: false,
 		})
@@ -114,7 +116,11 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 			fileContent, err := composite.GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
-					Err: fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
+					Key:  config.Component.Meta.HyperBricksKey,
+					Path: config.Component.Meta.HyperBricksPath,
+					File: config.Component.Meta.HyperBricksFile,
+					Type: APIConfigGetName(),
+					Err:  fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
 				})
 			} else {
 				templateContent = fileContent
@@ -138,58 +144,58 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	return builder.String(), errors
 }
 
-func fetchDataFromAPI_OldCode(config APIConfig) (interface{}, error) {
-	jar, _ := cookiejar.New(nil)
-	client := &http.Client{Jar: jar}
+// func fetchDataFromAPI_OldCode(config APIConfig) (interface{}, error) {
+// 	jar, _ := cookiejar.New(nil)
+// 	client := &http.Client{Jar: jar}
 
-	endpoint, err := url.Parse(config.Endpoint)
-	if err != nil {
-		return nil, fmt.Errorf("invalid endpoint URL: %w", err)
-	}
+// 	endpoint, err := url.Parse(config.Endpoint)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("invalid endpoint URL: %w", err)
+// 	}
 
-	req, err := http.NewRequest(config.Method, endpoint.String(), bytes.NewBufferString(config.Body))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
+// 	req, err := http.NewRequest(config.Method, endpoint.String(), bytes.NewBufferString(config.Body))
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to create request: %w", err)
+// 	}
 
-	for key, value := range config.Headers {
-		req.Header.Set(key, value)
-	}
+// 	for key, value := range config.Headers {
+// 		req.Header.Set(key, value)
+// 	}
 
-	if config.User != "" && config.Pass != "" {
-		req.SetBasicAuth(config.User, config.Pass)
-	}
+// 	if config.User != "" && config.Pass != "" {
+// 		req.SetBasicAuth(config.User, config.Pass)
+// 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error making HTTP request: %w", err)
-	}
-	defer resp.Body.Close()
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("error making HTTP request: %w", err)
+// 	}
+// 	defer resp.Body.Close()
 
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("unexpected HTTP status code: %d, response: %s", resp.StatusCode, string(body))
-	}
+// 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+// 		body, _ := io.ReadAll(resp.Body)
+// 		return nil, fmt.Errorf("unexpected HTTP status code: %d, response: %s", resp.StatusCode, string(body))
+// 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
+// 	body, err := io.ReadAll(resp.Body)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to read response body: %w", err)
+// 	}
 
-	var jsonArray []map[string]interface{}
-	if err := json.Unmarshal(body, &jsonArray); err == nil {
-		return jsonArray, nil
-	}
+// 	var jsonArray []map[string]interface{}
+// 	if err := json.Unmarshal(body, &jsonArray); err == nil {
+// 		return jsonArray, nil
+// 	}
 
-	// If it's not an array, try to unmarshal into a map
-	var jsonMap map[string]interface{}
-	if err := json.Unmarshal(body, &jsonMap); err == nil {
-		return jsonMap, nil
-	}
+// 	// If it's not an array, try to unmarshal into a map
+// 	var jsonMap map[string]interface{}
+// 	if err := json.Unmarshal(body, &jsonMap); err == nil {
+// 		return jsonMap, nil
+// 	}
 
-	// If both fail, return an error
-	return nil, fmt.Errorf("failed to parse JSON response: %s", string(body))
-}
+// 	// If both fail, return an error
+// 	return nil, fmt.Errorf("failed to parse JSON response: %s", string(body))
+// }
 
 func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 	// Create a new cookie jar (for production use, consider reusing an HTTP client)
@@ -259,8 +265,10 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 	tmpl, err := template.New("apiTemplate").Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
-			Path:     config.Path,
-			Key:      config.Key,
+			Key:      config.Component.Meta.HyperBricksKey,
+			Path:     config.Component.Meta.HyperBricksPath,
+			File:     config.Component.Meta.HyperBricksFile,
+			Type:     APIConfigGetName(),
 			Err:      fmt.Sprintf("error parsing template: %v", err),
 			Rejected: false,
 		})
@@ -271,8 +279,10 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 	err = tmpl.Execute(&output, context)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
-			Path:     config.Path,
-			Key:      config.Key,
+			Key:      config.Component.Meta.HyperBricksKey,
+			Path:     config.Component.Meta.HyperBricksPath,
+			File:     config.Component.Meta.HyperBricksFile,
+			Type:     APIConfigGetName(),
 			Err:      fmt.Sprintf("error executing template: %v", err),
 			Rejected: false,
 		})

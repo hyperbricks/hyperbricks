@@ -10,9 +10,9 @@ Id of image
 {
     "ConfigType": "<IMAGE>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "",
     "Src": "hyperbricks-test-files/assets/cute_cat.jpg",

@@ -4,6 +4,8 @@ myconf {
     some = value
 }
 
+
+
 # this is the main hyperbricks configuration object. Use hyperbricks, not other objects.
 hyperbricks {
     # live, development or debug mode
@@ -19,11 +21,17 @@ hyperbricks {
         # watches hyperbricks and templatedir (directories) 
         watch = true
         reload = true
+
+        # shows errors in the frontend output
+        frontend_errors = false
     }
 
     live {
         # settings for live mode
-        cache
+        # parses a duration string. 
+        # such as "300ms", "-1.5h" or "2h45m". 
+        # Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+        cache = 10s
     }
 
     server {
@@ -31,6 +39,16 @@ hyperbricks {
         port = 8080
         beautify = true
     }
+
+    plugins {
+        # propertyname must match the base filename without the .so extension
+        # value must be enabled, otherwise it will not preload
+        # to compile plugins run ./script/build.sh
+
+        #### uncomment to preload ####
+        # MarkdownPlugin = enabled
+        # LoremIpsumPlugin = enabled
+     }
 
     directories {
         # directory for rendered static html output
@@ -42,17 +60,14 @@ hyperbricks {
         # Directory for resources that need processing
         resources = {{VAR:module}}/resources
 
+        # plugins folder
+        plugins = ./bin/plugins/
+
         # Use this folder for templating with type TEMPLATE
         # Use {{TEMPLATE:path/template}} without .tmpl extension
         templates = {{VAR:module}}/templates
 
         # folder that will be scanned for hyperbricks files
         hyperbricks = {{VAR:module}}/hyperbricks
-    }
-
-    # debug, info, error, fatal, disable
-    logger {
-        level = info
-        path = {{VAR:module}}/logs/hyperbricks_v2.log
     }
 }

@@ -17,9 +17,9 @@ if config.IsStatic {
 {
     "ConfigType": "<IMAGE>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "",
     "Src": "cute_cat.jpg",

@@ -148,6 +148,15 @@ func extractEmbeddedFiles(module string) {
 			return err
 		}
 
+		// Check if the target file already exists
+		if _, err := os.Stat(targetPath); err == nil {
+			fmt.Printf("Skipping existing file: %s\n", targetPath)
+			return nil // Skip writing if file already exists
+		} else if !os.IsNotExist(err) {
+			fmt.Printf("Error checking file existence %s: %v\n", targetPath, err)
+			return err // Return if there's another error
+		}
+
 		// Read the embedded file
 		data, err := embeddedFiles.ReadFile(path)
 		if err != nil {

@@ -33,9 +33,9 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
 {
   "ConfigType": "<HYPERMEDIA>",
   "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "File": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
   "MetaDocDescription": "",
   "Title": "",
   "Route": "",

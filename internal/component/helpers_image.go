@@ -70,7 +70,7 @@ func (ir *ImageProcessor) ProcessSingleImage(config SingleImageConfig) (string, 
 
 	err := ir.processAndBuildImgTag(config.Src, destDir, config, builder)
 	if err != nil {
-		logging.GetLogger().Errorw("Error processing image", "file", config.Path, "error", err)
+		logging.GetLogger().Errorw("Error processing image", "file", config.HyperBricksPath, "error", err)
 		return "", err
 	}
 
@@ -103,7 +103,7 @@ func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (st
 		fileConfig := SingleImageConfig{
 			Component: shared.Component{
 				Meta: shared.Meta{
-					Path: srcFilePath,
+					HyperBricksPath: srcFilePath,
 				},
 				ExtraAttributes: config.ExtraAttributes,
 				Enclose:         config.Enclose,

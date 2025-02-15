@@ -8,9 +8,9 @@ The raw HTML content
 {
     "ConfigType": "<HTML>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "",
     "Value": "<p>HTML TEST</p>",

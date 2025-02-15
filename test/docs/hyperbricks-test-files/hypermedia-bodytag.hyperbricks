@@ -10,9 +10,9 @@ Special body enclosure with use of a pipe symbol |. Please note that this will n
 {
   "ConfigType": "<HYPERMEDIA>",
   "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "File": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
   "MetaDocDescription": "",
   "Title": "",
   "Route": "index",

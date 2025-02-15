@@ -39,15 +39,23 @@ func (r *PluginRenderer) Render(instance interface{}) (string, []error) {
 	config, ok := instance.(PluginConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Errorf("invalid type for MenuRenderer").Error(),
+			Key:  config.HyperBricksKey,
+			Path: config.HyperBricksPath,
+			File: config.HyperBricksFile,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Errorf("invalid type for MenuRenderer").Error(),
 		})
 		return fmt.Errorf("<!-- invalid type for MenuRenderer -->").Error(), errors
 	}
-
+	// fmt.Printf("<!-- plugin %v ->\n\n", r.RenderManager.Plugins)
 	pluginRenderer, pluginExists := r.RenderManager.Plugins[config.PluginName]
 	if !pluginExists {
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Errorf("plugin is not preloaded or found").Error(),
+			Key:  config.HyperBricksKey,
+			Path: config.HyperBricksPath,
+			File: config.HyperBricksFile,
+			Type: PluginRenderGetName(),
+			Err:  "plugin " + config.PluginName + " is not preloaded, make sure it is preloaded in production.",
 		})
 
 		renderedContent, renderErrs := r.LoadAndRender(instance)
@@ -61,7 +69,6 @@ func (r *PluginRenderer) Render(instance interface{}) (string, []error) {
 
 	renderedContent, renderErrs := pluginRenderer.Render(instance)
 	if renderErrs != nil {
-
 		errors = append(errors, renderErrs...)
 	}
 
@@ -98,7 +105,11 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}) (string, []error) {
 	config, ok := instance.(PluginConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Errorf("invalid type for MenuRenderer").Error(),
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
+			File: config.Component.Meta.HyperBricksFile,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Errorf("invalid type").Error(),
 		})
 		return "", errors
 	}
@@ -115,7 +126,11 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}) (string, []error) {
 	if err != nil {
 		builder.WriteString(fmt.Sprintf("<!-- Error loading plugin %v: %v -->\n", config.PluginName, err))
 		errors = append(errors, shared.ComponentError{
-			Err: fmt.Sprintf("Error loading plugin %v: %v\n", config.PluginName, err),
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
+			File: config.Component.Meta.HyperBricksFile,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Sprintf("Error loading plugin %v: %v\n", config.PluginName, err),
 		})
 		return builder.String(), errors
 	}

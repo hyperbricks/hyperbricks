@@ -25,8 +25,8 @@ A FRAGMENT dynamically renders a part of an HTML page, allowing updates without 
 {
     "ConfigType": "<FRAGMENT>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
     "HxTemplateResult": "",
     "HxLocation": "",
     "HxPushedUrl": "",
@@ -47,7 +47,7 @@ A FRAGMENT dynamically renders a part of an HTML page, allowing updates without 
     "Items": null,
     "Enclose": "",
     "Template": null,
-    "File": "",
+    "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
     "Index": 0

@@ -13,9 +13,9 @@ Extra attributes like id, data-role, data-action
 {
     "ConfigType": "<IMAGES>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "ExtraAttributes": {
       "decoding": "async"
     },

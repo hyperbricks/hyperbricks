@@ -97,6 +97,7 @@ type Config struct {
 	Debug       DebugConfig       `mapstructure:"debug"`
 	Live        LiveConfig        `mapstructure:"live"`
 	Directories map[string]string `mapstructure:"directories"`
+	Plugins     map[string]string `mapstructure:"plugins"`
 }
 
 type LiveConfig struct {
@@ -108,8 +109,9 @@ type DebugConfig struct {
 }
 
 type DevelopmentConfig struct {
-	Watch  bool `mapstructure:"watch"`
-	Reload bool `mapstructure:"reload"`
+	FrontendErrors bool `mapstructure:"frontend_errors"`
+	Watch          bool `mapstructure:"watch"`
+	Reload         bool `mapstructure:"reload"`
 }
 
 // LoggerConfig with defaults.
@@ -184,8 +186,9 @@ func loadHyperBricksConfiguration() *Config {
 		},
 
 		Development: DevelopmentConfig{
-			Watch:  false,
-			Reload: false,
+			Watch:          false,
+			Reload:         false,
+			FrontendErrors: false,
 		},
 
 		Live: LiveConfig{

@@ -20,8 +20,8 @@ Template configurations for rendering the fragment. (This will disable rendering
 {
     "ConfigType": "<FRAGMENT>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
     "HxTemplateResult": "",
     "HxLocation": "",
     "HxPushedUrl": "",
@@ -50,7 +50,7 @@ Template configurations for rendering the fragment. (This will disable rendering
         }
       }
     },
-    "File": "",
+    "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
     "Index": 0

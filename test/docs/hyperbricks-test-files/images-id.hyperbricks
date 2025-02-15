@@ -13,9 +13,9 @@ Id of images with a index added to it
 {
     "ConfigType": "<IMAGES>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "ExtraAttributes": {
       "decoding": "async"
     },

@@ -11,9 +11,9 @@ The title attribute of the image
 {
     "ConfigType": "<IMAGES>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "",
     "Directory": "hyperbricks-test-files/assets/",

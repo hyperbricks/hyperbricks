@@ -158,10 +158,10 @@ func defaultEncoderConfig() zapcore.EncoderConfig {
 		enc.AppendString(t.Format("02-01-2006 15:04")) // yymmdd-hh:mm format
 	}
 	return zapcore.EncoderConfig{
-		TimeKey:       "ts",
-		LevelKey:      "level",
-		NameKey:       "logger",
-		CallerKey:     "caller",
+		TimeKey:  "ts",
+		LevelKey: "level",
+		NameKey:  "logger",
+		//CallerKey:     "caller",
 		MessageKey:    "msg",
 		StacktraceKey: "",
 		EncodeTime:    customTimeEncoder,

@@ -11,9 +11,9 @@ Property trimspace filters (if set to true true),  all leading and trailing whit
 {
     "ConfigType": "<HTML>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "",
     "Value": "\n<p>HTML TEST</p>    \n    ",

@@ -11,9 +11,9 @@ Lazy loading strategy (e.g., 'lazy', 'eager')
 {
     "ConfigType": "<IMAGES>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "",
     "Directory": "hyperbricks-test-files/assets/",

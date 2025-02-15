@@ -1,13 +1,13 @@
 === RUN   Test_TestAndDocumentationRender
 loading 
-&{live {info ./logs/hyperbricks.log} {0 false} {false false} {} {10m0s} map[hyperbricks:modules/default/hyperbricks render:modules/default/rendered resources:modules/default/resources static:modules/default/static templates:modules/default/templates]}=== RUN   Test_TestAndDocumentationRender/fragment-response
+&{live {info ./logs/hyperbricks.log} {0 false} {false false false} {} {10m0s} map[hyperbricks:modules/default/hyperbricks render:modules/default/rendered resources:modules/default/resources static:modules/default/static templates:modules/default/templates] map[]}=== RUN   Test_TestAndDocumentationRender/fragment-response
 === RUN   Test_TestAndDocumentationRender/fragment-@doc
 === RUN   Test_TestAndDocumentationRender/fragment-title
 === RUN   Test_TestAndDocumentationRender/fragment-route
 === RUN   Test_TestAndDocumentationRender/fragment-section
 === RUN   Test_TestAndDocumentationRender/fragment-enclose
 === RUN   Test_TestAndDocumentationRender/fragment-template
-12-02-2025 20:33	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/fragment-static
 === RUN   Test_TestAndDocumentationRender/fragment-index
 
@@ -24,28 +24,39 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap
 === RUN   Test_TestAndDocumentationRender/hypermedia-@doc
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/hypermedia-title
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/hypermedia-route
 === RUN   Test_TestAndDocumentationRender/hypermedia-section
 === RUN   Test_TestAndDocumentationRender/hypermedia-bodytag
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
-12-02-2025 20:33	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
 === RUN   Test_TestAndDocumentationRender/hypermedia-index
 === RUN   Test_TestAndDocumentationRender/hypermedia-doctype
 === RUN   Test_TestAndDocumentationRender/hypermedia-htmltag
 === RUN   Test_TestAndDocumentationRender/hypermedia-head
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/head-title
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/head-favicon
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/head-meta
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/head-css
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/head-js
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/template-@doc
-12-02-2025 20:33	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/template-template
-12-02-2025 20:33	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
@@ -55,15 +66,22 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/html-value
 === RUN   Test_TestAndDocumentationRender/html-trimspace
 === RUN   Test_TestAndDocumentationRender/css-attributes
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/css-enclose
 === RUN   Test_TestAndDocumentationRender/css-inline
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/css-link
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/css-file
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/javascript-attributes
 === RUN   Test_TestAndDocumentationRender/javascript-enclose
 === RUN   Test_TestAndDocumentationRender/javascript-inline
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/javascript-link
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/javascript-file
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/image-attributes
 === RUN   Test_TestAndDocumentationRender/image-enclose
 === RUN   Test_TestAndDocumentationRender/image-src
@@ -91,21 +109,28 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-file
 === RUN   Test_TestAndDocumentationRender/json-template
-12-02-2025 20:33	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-inline
 === RUN   Test_TestAndDocumentationRender/json-values
-12-02-2025 20:33	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
-12-02-2025 20:33	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+15-02-2025 00:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-section
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-order
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-sort
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-active
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-item
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
+2025/02/15 00:55:15 [render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data render problem, value is not of any type. parsing as raw data]
 === RUN   Test_TestAndDocumentationRender/api_render-enclose
 === RUN   Test_TestAndDocumentationRender/api_render-@doc
 === RUN   Test_TestAndDocumentationRender/api_render-endpoint
@@ -118,10 +143,10 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/api_render-user
 === RUN   Test_TestAndDocumentationRender/api_render-pass
 === RUN   Test_TestAndDocumentationRender/api_render-debug
-2025/02/12 20:33:47 Version: v0.2.1-alpha
-2025/02/12 20:33:47 Build Time: 2025-02-12T19:33:44Z
-2025/02/12 20:33:47 Static HTML file generated at ../../docs/hyperbricks-reference-v0.2.1-alpha.md
---- PASS: Test_TestAndDocumentationRender (1.86s)
+2025/02/15 00:55:17 Version: v0.2.2-alpha
+2025/02/15 00:55:17 Build Time: 2025-02-14T23:55:14Z
+2025/02/15 00:55:17 Static HTML file generated at ../../docs/hyperbricks-reference-v0.2.2-alpha.md
+--- PASS: Test_TestAndDocumentationRender (1.89s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -230,6 +255,6 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/api_render-values (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-user (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-pass (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.10s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.09s)
 PASS
-ok  	command-line-arguments	2.100s
+ok  	command-line-arguments	2.115s

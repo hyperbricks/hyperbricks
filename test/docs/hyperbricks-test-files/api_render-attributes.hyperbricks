@@ -25,9 +25,9 @@ Extra attributes like id, data-role, data-action
 {
 	"ConfigType": "<API_RENDER>",
 	"ConfigCategory": "",
-	"Key": "",
-	"Path": "",
-	"File": "",
+	  "HyperBricksKey": "",
+	  "HyperBricksPath": "",
+	  "HyperBricksFile": "",
 	"ExtraAttributes": null,
 	"Enclose": "<div class=\"userlist\">|</div>",
 	"Endpoint": "https://dummyjson.com/auth/login",

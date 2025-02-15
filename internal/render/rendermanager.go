@@ -3,7 +3,6 @@ package render
 
 import (
 	"fmt"
-	"path/filepath"
 	"plugin"
 	"reflect"
 	"sync"
@@ -11,6 +10,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/parser"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/internal/typefactory"
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
 // RenderManager is the central coordinator integrating TypeFactory.
@@ -46,7 +46,7 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 	if err != nil {
 
 		errors = append(errors, shared.ComponentError{
-			Err:      err.Error(),
+			Err:      "Cannot create component instance...",
 			Rejected: true,
 		})
 		// When type is not registerd show tag with error...
@@ -67,24 +67,17 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 	renderer, exists := rm.renderers[rendererType]
 	rm.mu.RUnlock()
 
-	var html string
 	if exists {
-
-		// TURN OFF PRE VALIDATION SO IT CAN BE DONE BY THE COMPONENT
-		// If the config has a Validate method, call it
-		//if v, ok := response.Instance.(interface{ Validate() []string }); ok {
-		//	warnings = append(warnings, v.Validate()...)
-		//}
-
 		html, errs := renderer.Render(response.Instance)
 		errors = append(errors, errs...)
 		return html, errors
 
 	} else {
-		//return "", fmt.Errorf("no render component or plugin found for type: %s", contentType)
+		return "", append(errors, shared.ComponentError{
+			Err:      fmt.Errorf("invalid type for HYPERMEDIA").Error(),
+			Rejected: true,
+		})
 	}
-
-	return html, nil
 }
 
 // GetRenderComponent retrieves a RenderComponent by its content type.
@@ -118,41 +111,39 @@ func (rm *RenderManager) InitializeRenderers() {
 
 // LoadPlugin loads a Go plugin dynamically and registers it.
 func (rm *RenderManager) RegisterAndLoadPlugin(path string, name string) error {
-	// Load the plugin
-	pluginDir := "./bin/plugins"
-	if tbplugindir, ok := rm.HbConfig.Directories["plugins"]; ok {
-		pluginDir = tbplugindir
-	}
+	logger := logging.GetLogger()
+	var _err error = nil
 
-	pluginPath := filepath.Join(pluginDir, name+".so")
-	//log.Printf("pluginPath: %s", pluginPath)
-	p, err := plugin.Open(pluginPath)
+	logger.Infof("Preloading plugin: %s", path)
+
+	p, err := plugin.Open(path)
 	if err != nil {
-		return fmt.Errorf("<!-- error loading plugin %v: %v -->", name, err)
+		_err = fmt.Errorf("<!-- error loading plugin %v: %v -->", name, err)
 	}
 
 	// Lookup "Plugin" as a function
 	symbol, err := p.Lookup("Plugin")
 	if err != nil {
-		return fmt.Errorf("failed to lookup 'Plugin' symbol: %v", err)
+		_err = fmt.Errorf("failed to lookup 'Plugin' symbol: %v", err)
 	}
 
 	// Assert it is of the correct function type
 	pluginFactory, ok := symbol.(func() (shared.PluginRenderer, error))
 	if !ok {
-		return fmt.Errorf("plugin symbol is not of expected type 'func() (shared.Renderer, error)'")
+		_err = fmt.Errorf("plugin symbol is not of expected type 'func() (shared.Renderer, error)'")
 	}
 
 	// Create an instance of the plugin
 	renderer, err := pluginFactory()
 	if err != nil {
-		return fmt.Errorf("error initializing plugin: %v", err)
+		_err = fmt.Errorf("error initializing plugin: %v", err)
 	}
 
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
 	rm.Plugins[name] = renderer
-	return nil
+
+	return _err
 }
 
 // LoadPlugin loads a Go plugin dynamically and registers it.

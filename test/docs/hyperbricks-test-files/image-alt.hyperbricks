@@ -10,9 +10,9 @@ Alternative text for the image
 {
     "ConfigType": "<IMAGE>",
     "ConfigCategory": "",
-    "Key": "",
-    "Path": "",
-    "File": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "<div id=\"#gallery\">|</div>",
     "Src": "hyperbricks-test-files/assets/cute_cat.jpg",

@@ -2,11 +2,11 @@ package shared
 
 // GENERIC CONFIG FIELDS
 type Meta struct {
-	ConfigType     string `mapstructure:"@type" exclude:"true" description:"Identification for renderer"`
-	ConfigCategory string
-	Key            string `mapstructure:"key" exclude:"true"`
-	Path           string `mapstructure:"path" exclude:"true"`
-	File           string `mapstructure:"file" exclude:"true"`
+	ConfigType      string `mapstructure:"@type" exclude:"true" description:"Identification for renderer"`
+	ConfigCategory  string
+	HyperBricksKey  string `mapstructure:"hyperbrickskey" exclude:"true"`
+	HyperBricksPath string `mapstructure:"hyperbrickspath" exclude:"true"`
+	HyperBricksFile string `mapstructure:"hyperbricksfile" exclude:"true"`
 }
 
 type CompositeRendererConfig struct {

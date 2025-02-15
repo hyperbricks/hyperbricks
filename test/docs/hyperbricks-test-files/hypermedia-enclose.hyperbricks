@@ -11,9 +11,9 @@ Enclosure of the property for the hypermedia
 {
   "ConfigType": "<HYPERMEDIA>",
   "ConfigCategory": "",
-  "Key": "",
-  "Path": "",
-  "File": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
   "MetaDocDescription": "",
   "Title": "",
   "Route": "index",

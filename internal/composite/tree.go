@@ -38,17 +38,21 @@ func (config *TreeConfig) Validate() []error {
 	var validationErrors []error
 	if config.Meta.ConfigType != TreeRendererConfigGetName() {
 		validationErrors = append(validationErrors, shared.ComponentError{
-			Key:      config.Meta.Key,
-			Path:     config.Meta.Path,
-			Err:      fmt.Errorf("invalid type for TREE").Error(),
+			File:     config.Meta.HyperBricksFile,
+			Key:      config.Meta.HyperBricksKey,
+			Path:     config.Meta.HyperBricksPath,
+			Type:     "<TREE>",
+			Err:      fmt.Errorf("invalid type").Error(),
 			Rejected: true,
 		})
 	}
 	if len(config.Items) == 0 {
 		validationErrors = append(validationErrors, shared.ComponentError{
-			Key:  config.Meta.Key,
-			Path: config.Meta.Path,
-			Err:  fmt.Errorf("type TREE has not items to render").Error(),
+			File: config.Meta.HyperBricksFile,
+			Key:  config.Meta.HyperBricksKey,
+			Path: config.Meta.HyperBricksPath,
+			Type: "<TREE>",
+			Err:  fmt.Errorf("no items to render").Error(),
 		})
 	}
 
@@ -94,19 +98,19 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 
 		component, ok := config.Items[key].(map[string]interface{})
 		if !ok {
-			path := ""
-			if config.Path == "" {
-				path = key
-			}
 			renderErrors = append(renderErrors, shared.ComponentError{
+				File:     config.Composite.Meta.HyperBricksFile,
 				Key:      key,
-				Path:     path,
-				Err:      fmt.Sprintf("key  '%s' value is not of any type. parsing as raw data", key),
+				Path:     config.Composite.Meta.HyperBricksPath,
+				Err:      "render problem, value is not of any type. parsing as raw data",
+				Type:     "<TREE>",
 				Rejected: true,
 			})
-			val, _ok := config.Items[key].(string)
+			val, _ok := config.Composite.Items[key].(string)
 			if _ok {
-				outputs[idx] = "<!-- begin raw value -->" + val + "<!-- end raw value -->"
+				if config.Composite.Items[key].(string) != "" {
+					outputs[idx] = "<!-- begin raw value -->" + val + "<!-- end raw value -->"
+				}
 			}
 			continue
 		}
@@ -118,12 +122,9 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 		}
 
 		// Update componentConfig with path and key
-		localConfig["key"] = key
-		if config.Path == "" {
-			localConfig["path"] = key
-		} else {
-			localConfig["path"] = fmt.Sprintf("%s.%s", config.Path, key)
-		}
+		localConfig["hyperbrickskey"] = config.Composite.HyperBricksKey
+		localConfig["hyperbricksfile"] = config.Composite.HyperBricksFile
+		localConfig["hyperbrickspath"] = fmt.Sprintf("%s.%s", config.Composite.HyperBricksPath, key)
 
 		componentType := ""
 		if rawType, ok := component["@type"]; ok {
@@ -133,9 +134,11 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 			} else {
 				// @type exists but is not a string
 				renderErrors = append(renderErrors, shared.ComponentError{
-					Path:     localConfig["path"].(string),
+					Type:     "<TREE>",
+					File:     config.Composite.Meta.HyperBricksFile,
+					Path:     config.Composite.HyperBricksPath,
 					Key:      key,
-					Err:      "Render Item has no valid @type, skipping",
+					Err:      "render Item has no valid @type, skipping",
 					Rejected: true,
 				})
 				continue
@@ -143,9 +146,11 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 		} else {
 			// @type does not exist
 			renderErrors = append(renderErrors, shared.ComponentError{
-				Path:     localConfig["path"].(string),
+				File:     config.Composite.Meta.HyperBricksFile,
+				Path:     config.Composite.HyperBricksPath,
 				Key:      key,
-				Err:      fmt.Sprintf("rendering problems at path %s, Render Item has no (or valid) TYPE, skipping item at key:%s", localConfig["path"].(string), key),
+				Type:     "<TREE>",
+				Err:      "render Item has no (or valid) TYPE, skipping item",
 				Rejected: true,
 			})
 			continue

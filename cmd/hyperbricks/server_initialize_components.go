@@ -1,13 +1,16 @@
 package main
 
 import (
+	"os"
 	"reflect"
 
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/internal/component"
 	"github.com/hyperbricks/hyperbricks/internal/composite"
 	"github.com/hyperbricks/hyperbricks/internal/parser"
 	"github.com/hyperbricks/hyperbricks/internal/render"
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
 var (
@@ -17,15 +20,38 @@ var (
 // Centralized component and plugin initialization
 func initializeComponents() {
 	rm = render.NewRenderManager()
-	registerPlugins()
 	registerRenderers()
+	registerPlugins()
 
 }
 
 func registerPlugins() {
-	// PRELOADING BASIC PLUGINS:
-	rm.RegisterAndLoadPlugin("./bin/plugins/myplugin.so", "MyPlugin")
-	rm.RegisterAndLoadPlugin("./bin/plugins/LoremIpsumV2Plugin.so", "LoremIpsumV2Plugin")
+
+	pluginDir := "./bin/plugins"
+	if tbplugindir, ok := rm.HbConfig.Directories["plugins"]; ok {
+		pluginDir = tbplugindir
+	}
+
+	if commands.Debug {
+		// PRELOADING BASIC PLUGINS FOR DEBUG:
+		pluginDir += "/debug"
+	}
+
+	for key, value := range rm.HbConfig.Plugins {
+		//fmt.Printf("Key: %s, Value: %s\n", key, value)
+
+		if value == "enabled" {
+			pluginPath := pluginDir + "/" + key + ".so"
+
+			// Check if the file exists
+			if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
+				logging.GetLogger().Warnf("Plugin file %s not found. Skipping preloading.", key)
+				continue // Skip loading this plugin
+			}
+
+			rm.RegisterAndLoadPlugin(pluginPath, key)
+		}
+	}
 }
 
 func registerRenderers() {
