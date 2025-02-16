@@ -118,8 +118,8 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 
 		//head := shared.StructToMap(config.Head)
 		config.Head["@type"] = HeadConfigGetName()
-		config.Head["hyperbicksfile"] = config.Composite.Meta.HyperBricksFile
-		config.Head["hyperbickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
+		config.Head["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
+		config.Head["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
 
 		if config.Title != "" {
 			config.Head["title"] = config.Title
@@ -136,8 +136,8 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 	outputHtml := ""
 	// TEMPLATE?
 	if config.Template != nil {
-		config.Template["hyperbicksfile"] = config.Composite.Meta.HyperBricksFile
-		config.Template["hyperbickspath"] = config.Composite.Meta.HyperBricksKey + ".template"
+		config.Template["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
+		config.Template["hyperbrickspath"] = config.Composite.Meta.HyperBricksKey + ".template"
 
 		// INSERT HEAD to TEMPLATE VALUES....
 		// Ensure 'values' exists inside Template
@@ -158,8 +158,8 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 
 		// TREE
 		if config.Composite.Items != nil {
-			config.Composite.Items["hyperbicksfile"] = config.Composite.Meta.HyperBricksFile
-			config.Composite.Items["hyperbickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
+			config.Composite.Items["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
+			config.Composite.Items["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
 		}
 
 		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items)

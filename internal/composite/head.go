@@ -33,7 +33,7 @@ func (config *HeadConfig) Validate() []error {
 
 	if config.ConfigType != "<HEAD>" {
 		warnings = append(warnings, shared.ComponentError{
-			File:     config.Composite.HyperBricksFile,
+			File:     config.Composite.Meta.HyperBricksFile,
 			Key:      config.Composite.Meta.HyperBricksKey,
 			Path:     config.Composite.Meta.HyperBricksPath,
 			Err:      fmt.Errorf("invalid type for HEAD").Error(),
@@ -67,7 +67,7 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
-			File: config.Composite.HyperBricksFile,
+			File: config.Composite.Meta.HyperBricksFile,
 			Key:  config.Composite.Meta.HyperBricksKey,
 			Path: config.Composite.Meta.HyperBricksPath,
 			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
