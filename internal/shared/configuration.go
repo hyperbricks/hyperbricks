@@ -216,7 +216,7 @@ func loadHyperBricksConfiguration() *Config {
 		GetLogger().Debug("Setting mode to debug mode")
 		GetLogger().Debugf("Final Configuration", "config", config)
 	} else {
-		GetLogger().Debugf("Invalid mode set in typebricks.conf %v", config.Mode)
+		GetLogger().Debugf("Invalid mode set in package.hyperbricks %v", config.Mode)
 
 		GetLogger().Warn("Setting mode not recognised, setting to live (production) mode")
 		config.Mode = LIVE_MODE
