@@ -88,11 +88,7 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 	for idx, key := range itemsSortedOnKeys {
 
 		switch key {
-		case "@type":
-			continue
-		case "@file":
-			continue
-		case "@key":
+		case "@type", "hyperbricksfile", "hyperbrickspath", "hyperbrickskey":
 			continue
 		}
 
@@ -111,6 +107,10 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 				if config.Composite.Items[key].(string) != "" {
 					outputs[idx] = "<!-- begin raw value -->" + val + "<!-- end raw value -->"
 				}
+				// this is left herefor debugging empty fields...
+				// else {
+				// 	outputs[idx] = "<!-- empty key-->" + key + "<!-- empty key -->"
+				// }
 			}
 			continue
 		}
@@ -122,9 +122,9 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 		}
 
 		// Update componentConfig with path and key
-		localConfig["hyperbrickskey"] = config.Composite.HyperBricksKey
-		localConfig["hyperbricksfile"] = config.Composite.HyperBricksFile
-		localConfig["hyperbrickspath"] = fmt.Sprintf("%s.%s", config.Composite.HyperBricksPath, key)
+		localConfig["hyperbrickskey"] = config.Composite.Meta.HyperBricksKey
+		localConfig["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
+		localConfig["hyperbrickspath"] = fmt.Sprintf("%s.%s", config.Composite.Meta.HyperBricksPath, key)
 
 		componentType := ""
 		if rawType, ok := component["@type"]; ok {
@@ -136,7 +136,7 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 				renderErrors = append(renderErrors, shared.ComponentError{
 					Type:     "<TREE>",
 					File:     config.Composite.Meta.HyperBricksFile,
-					Path:     config.Composite.HyperBricksPath,
+					Path:     config.Composite.Meta.HyperBricksPath,
 					Key:      key,
 					Err:      "render Item has no valid @type, skipping",
 					Rejected: true,
@@ -147,7 +147,7 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 			// @type does not exist
 			renderErrors = append(renderErrors, shared.ComponentError{
 				File:     config.Composite.Meta.HyperBricksFile,
-				Path:     config.Composite.HyperBricksPath,
+				Path:     config.Composite.Meta.HyperBricksPath,
 				Key:      key,
 				Type:     "<TREE>",
 				Err:      "render Item has no (or valid) TYPE, skipping item",
