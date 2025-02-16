@@ -104,9 +104,9 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 			})
 			val, _ok := config.Composite.Items[key].(string)
 			if _ok {
-				if config.Composite.Items[key].(string) != "" {
-					outputs[idx] = "<!-- begin raw value -->" + val + "<!-- end raw value -->"
-				}
+				//if config.Composite.Items[key].(string) != "" {
+				outputs[idx] = "<!-- begin raw value -->" + val + "<!-- end raw value -->"
+				//}
 				// this is left herefor debugging empty fields...
 				// else {
 				// 	outputs[idx] = "<!-- empty key-->" + key + "<!-- empty key -->"
