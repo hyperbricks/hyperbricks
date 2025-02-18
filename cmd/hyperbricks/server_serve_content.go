@@ -66,9 +66,9 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 		}
 	}
 
-	if val, ok := _config["nocache"].(string); ok {
+	if _, ok := _config["nocache"].(string); ok {
 		nocache = true
-		logging.GetLogger().Infof("NoCache is detected: %s from %s", val, route)
+		// logging.GetLogger().Debugf("NoCache = true: %s from %s", val, route)
 	}
 
 	configCopy := make(map[string]interface{})
