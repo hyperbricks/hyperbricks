@@ -60,6 +60,8 @@ fragment.content {
   "HyperBricksFile": "",
   "IsStatic": false,
   "Static": "",
+   "Cache": "",
+  "NoCache": false,
   "Index": 0
 }
 ==== expected output ====

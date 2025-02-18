@@ -49,6 +49,8 @@ The template used for rendering.
     "Title": "",
     "Route": "",
     "Section": "",
+    "Cache": "",
+    "NoCache": false,
     "Items": null,
     "Enclose": "",
     "Template": null,

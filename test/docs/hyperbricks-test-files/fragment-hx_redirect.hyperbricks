@@ -36,6 +36,8 @@ Can be used to do a client-side redirect to a new location
     "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0
   }
 ==== expected output ====

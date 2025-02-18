@@ -34,6 +34,8 @@ The section the fragment belongs to. This can be used with the component <MENU> 
     "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0
   }
 ==== expected output ====

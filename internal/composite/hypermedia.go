@@ -65,6 +65,123 @@ func (r *HyperMediaRenderer) Types() []string {
 	}
 }
 
+// errorTemplate is the embedded Go template as a string
+const errorPanelTemplate = `
+<style>
+
+    .error-panel, .succes-panel {
+		display: none;
+		opacity:0.5;
+		font-family: monospace;
+    	font-size: 12px;
+        position: fixed;
+		right:10px;
+		bottom:10px;
+		margin:5px;
+        width: 190px;
+        flex-direction: column;
+        border-radius: 5px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+		
+        z-index: 9999;
+        overflow: hidden;
+    }
+
+    .error-panel {
+        border: 1px solid rgb(255, 98, 98);
+        background: rgba(255, 230, 230, 0.9);
+    }
+
+    .succes-panel {
+        border: 1px solid  rgb(98, 255, 161);
+        background: rgba(230, 255, 230, 0.9);
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        color: green;
+    }
+
+    .error-header {
+        background:  rgb(255, 98, 98);
+        color: white;
+        padding: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .error-content {
+        display: none;
+        overflow-y: auto;
+        max-height: 300px;
+        padding: 10px;
+    }
+
+    .frontent_errors {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+	.frontent_errors li {
+		padding: 10px;
+		margin-bottom: 6px;
+		border-radius: 7px;
+		border-bottom: 1px solid #ddd;
+		background: rgb(255 255 255);
+	}
+
+    .frontent_errors .error_message {
+        color: #000000;
+        font-weight: bold;
+		
+    }
+	.error_mark {
+		background-color: #ffebeb;
+    	padding: 0px;
+	}
+	.error_type {color: #b00; overflow-wrap: break-word;}
+	.error_file {color: #b00; overflow-wrap: break-word;}
+	.error_path {color: #b00; overflow-wrap: break-word;}
+	.error_error {    
+		color: #0600ade8;
+    	overflow-wrap: break-word;
+    	padding-bottom: 15px;
+	}
+	.error_number {
+		background-color: #ffa8a9;
+   		color: #fff7f7;
+		position: relative;
+		border-radius: 50%; /* Makes it round */
+		padding: 0; /* Adjust padding to make it a proper circle */
+		display: inline-flex; /* Ensures proper alignment */
+		align-items: center; /* Centers text vertically */
+		justify-content: center; /* Centers text horizontally */
+		min-width: 24px;
+    	min-height: 24px;
+		
+	}
+	
+</style>
+<div id="error_panel" class="error-panel">
+    <div class="error-header" onclick="toggleErrorPanel()">HyperBricks errors</div>
+    <div class="error-content">
+        <ul id="error_list" class="frontent_errors">
+            
+        </ul>
+    </div>
+</div>
+<script>
+    function toggleErrorPanel() {
+        var content = document.querySelector('.error-content');
+        content.style.display = (content.style.display === 'block') ? 'none' : 'block';
+		var pcontent = document.querySelector('.error-panel');
+		pcontent.style.width = (pcontent.style.width === '500px') ? '190px' : '500px';
+		pcontent.style.opacity = (pcontent.style.opacity === '1') ? '0.5' : '1';
+    }
+</script>
+`
+
 // Render implements the RenderComponent interface.
 func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 
@@ -171,12 +288,19 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 		outputHtml = shared.EncloseContent(config.Enclose, treebuilder.String())
 	}
 	finalHTML := ""
+	errorPanelTemplateHtml := ""
+
+	if shared.GetHyperBricksConfiguration().Development.FrontendErrors {
+		errorPanelTemplateHtml = errorPanelTemplate
+	}
+
+	// errorPanelTemplate
 	if config.Template != nil {
-		finalHTML = outputHtml
+		finalHTML = outputHtml + errorPanelTemplateHtml
 	} else {
 		headHtml := headbuilder.String()
 		// Wrap the content with the HTML structure
-		finalHTML = fmt.Sprintf("%s%s%s%s</html>", config.Doctype, config.HtmlTag, headHtml, shared.EncloseContent(config.BodyTag, outputHtml))
+		finalHTML = fmt.Sprintf("%s%s%s%s%s</html>", config.Doctype, config.HtmlTag, headHtml, shared.EncloseContent(config.BodyTag, outputHtml), errorPanelTemplateHtml)
 
 	}
 

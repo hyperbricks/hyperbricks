@@ -24,6 +24,8 @@ Path to the favicon for the hypermedia document
     "Template": null,
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0,
     "Doctype": "",
     "HtmlTag": "",

@@ -53,6 +53,8 @@ Template configurations for rendering the fragment. (This will disable rendering
     "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0
   }
 ==== expected output ====

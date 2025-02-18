@@ -23,6 +23,8 @@ Static file path associated with the hypermedia, for rendering out the hypermedi
     "Template": null,
     "IsStatic": false,
     "Static": "index.html",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0,
     "Doctype": "",
     "HtmlTag": "",

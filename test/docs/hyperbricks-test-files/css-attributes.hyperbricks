@@ -27,6 +27,8 @@ Extra attributes like id, data-role, data-action, media
     "Template": null,
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0,
     "Doctype": "",
     "HtmlTag": "",

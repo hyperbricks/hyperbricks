@@ -46,6 +46,8 @@ Builds header content. See <HEADER> for details
   "Template": null,
   "IsStatic": false,
   "Static": "",
+  "Cache": "",
+  "NoCache": false,
   "Index": 0,
   "Doctype": "",
   "HtmlTag": "",

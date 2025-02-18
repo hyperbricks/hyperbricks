@@ -100,11 +100,12 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 	if hbConfig.Server.Beautify {
 		output.WriteString(gohtml.Format(htmlContent.String()))
 	}
-
-	if hbConfig.Development.FrontendErrors {
-		output.WriteString(FrontEndErrorRender(renderErrors))
-	} else {
-		output.WriteString(HandleRenderErrors(renderErrors))
+	if hbConfig.Mode != shared.LIVE_MODE {
+		if hbConfig.Development.FrontendErrors {
+			output.WriteString(FrontEndErrorRender(renderErrors))
+		} else {
+			output.WriteString(HandleRenderErrors(renderErrors))
+		}
 	}
 	return output.String(), nocache
 

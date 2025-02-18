@@ -1,12 +1,13 @@
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
+hypermedia.nocache = true
 hypermedia.bodytag = <body id="main">|</body>
 hypermedia.10 = <TEXT>
 hypermedia.10.value = HELLO WORLD!
 hypermedia.enclose = <p>|</p>
 ==== explainer ====
-Enclosure of the property for the hypermedia
+Explicitly disable cache
 ==== expected json ====
 {
   "ConfigType": "<HYPERMEDIA>",
@@ -26,7 +27,7 @@ Enclosure of the property for the hypermedia
   "IsStatic": false,
   "Static": "",
   "Cache": "",
-  "NoCache": false,
+  "NoCache": true,
   "Index": 0,
   "Doctype": "",
   "HtmlTag": "",

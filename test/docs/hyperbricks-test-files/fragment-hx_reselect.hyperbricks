@@ -36,6 +36,8 @@ A css selector that allows you to choose which part of the response is used to b
     "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0
   }
 ==== expected output ====

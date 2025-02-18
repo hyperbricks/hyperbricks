@@ -1,12 +1,13 @@
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
+hypermedia.cache = 10m
 hypermedia.bodytag = <body id="main">|</body>
 hypermedia.10 = <TEXT>
 hypermedia.10.value = HELLO WORLD!
 hypermedia.enclose = <p>|</p>
 ==== explainer ====
-Enclosure of the property for the hypermedia
+Cache expire string
 ==== expected json ====
 {
   "ConfigType": "<HYPERMEDIA>",
@@ -25,7 +26,7 @@ Enclosure of the property for the hypermedia
   "Template": null,
   "IsStatic": false,
   "Static": "",
-  "Cache": "",
+  "Cache": "10m",
   "NoCache": false,
   "Index": 0,
   "Doctype": "",

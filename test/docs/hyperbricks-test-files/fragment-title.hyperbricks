@@ -34,6 +34,8 @@ The title of the fragment, only used in the context of the <MENU> component. For
     "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0
   }
   

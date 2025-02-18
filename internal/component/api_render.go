@@ -67,8 +67,6 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	var errors []error
 	var builder strings.Builder
 
-	jwtToken, _ := ctx.Value(shared.JwtKey).(string)
-
 	config, ok := instance.(APIConfig)
 	if !ok {
 		return "", append(errors, shared.ComponentError{
@@ -142,7 +140,13 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	if config.Enclose != "" {
 		apiContent = shared.EncloseContent(config.Enclose, apiContent)
 	}
-	builder.WriteString(fmt.Sprintf("<!-- jwtToken:%s -->", jwtToken))
+
+	var jwtToken string = ""
+	if ctx != nil {
+		jwtToken, _ = ctx.Value(shared.JwtKey).(string)
+		builder.WriteString(fmt.Sprintf("<!-- jwtToken:%s -->", jwtToken))
+	}
+
 	builder.WriteString(apiContent)
 
 	return builder.String(), errors

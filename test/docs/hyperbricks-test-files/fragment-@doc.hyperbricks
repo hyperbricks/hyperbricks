@@ -50,6 +50,8 @@ A FRAGMENT dynamically renders a part of an HTML page, allowing updates without 
     "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0
   }
 ==== expected output ====
