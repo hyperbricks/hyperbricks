@@ -100,6 +100,8 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 	if hbConfig.Server.Beautify {
 		output.WriteString(gohtml.Format(htmlContent.String()))
 	}
+
+	// only render errors in debug or development mode...
 	if hbConfig.Mode != shared.LIVE_MODE {
 		if hbConfig.Development.FrontendErrors {
 			output.WriteString(FrontEndErrorRender(renderErrors))
@@ -121,134 +123,23 @@ type ComponentErrorTemplate struct {
 }
 
 // errorTemplate is the embedded Go template as a string
+// {{safe "<!--  Begin Frontend Errors [development.frontend_errors = true] in package.hyperbricks  -->"}}
+// {{safe "<!-- No Errors -->"}}{{end}}
 const errorTemplate = `{{if .HasErrors}}
-{{safe "<!--  Begin Frontend Errors [development.frontend_errors = true] in package.hyperbricks  -->"}}
-
-<style>
-
-    .error-panel, .succes-panel {
-		opacity:0.5;
-		font-family: monospace;
-    	font-size: 12px;
-        position: fixed;
-        bottom: 10px;
-		right:10px;
-		margin:5px;
-        width: 190px;
-        display: flex;
-        flex-direction: column;
-        border-radius: 5px;
-        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-	
-        z-index: 9999;
-        overflow: hidden;
-    }
-
-    .error-panel {
-        border: 1px solid rgb(255, 98, 98);
-        background: rgba(255, 230, 230, 0.9);
-    }
-
-    .succes-panel {
-        border: 1px solid  rgb(98, 255, 161);
-        background: rgba(230, 255, 230, 0.9);
-        padding: 10px;
-        text-align: center;
-        font-weight: bold;
-        color: green;
-    }
-
-    .error-header {
-        background:  rgb(255, 98, 98);
-        color: white;
-        padding: 10px;
-        cursor: pointer;
-        font-weight: bold;
-        text-align: center;
-    }
-
-    .error-content {
-        display: none;
-        overflow-y: auto;
-        max-height: 300px;
-        padding: 10px;
-    }
-
-    .frontent_errors {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-	.frontent_errors li {
-		padding: 10px;
-		margin-bottom: 6px;
-		border-radius: 7px;
-		border-bottom: 1px solid #ddd;
-		background: rgb(255 255 255);
-	}
-
-    .frontent_errors .error_message {
-        color: #000000;
-        font-weight: bold;
-		
-    }
-	.error_mark {
-		background-color: #ffebeb;
-    	padding: 0px;
-	}
-	.error_type {color: #b00; overflow-wrap: break-word;}
-	.error_file {color: #b00; overflow-wrap: break-word;}
-	.error_path {color: #b00; overflow-wrap: break-word;}
-	.error_error {    
-		color: #0600ade8;
-    	overflow-wrap: break-word;
-    	padding-bottom: 15px;
-	}
-	.error_number {
-		background-color: #ffa8a9;
-   		color: #fff7f7;
-		position: relative;
-		border-radius: 50%; /* Makes it round */
-		padding: 0; /* Adjust padding to make it a proper circle */
-		display: inline-flex; /* Ensures proper alignment */
-		align-items: center; /* Centers text vertically */
-		justify-content: center; /* Centers text horizontally */
-		min-width: 24px;
-    	min-height: 24px;
-		
-	}
-	
-</style>
-<div class="error-panel">
-    <div class="error-header" onclick="toggleErrorPanel()"><span class="error_number">{{len .Errors}}</span> HyperBricks errors</div>
-    <div class="error-content">
-        <ul class="frontent_errors">
-            {{range .Errors}}
-                <li><span class="error_message">
-				<div class="error_error">{{.Err}}</div>
-				type <span class="error_type error_mark">{{.Type}}</span> at file
-				<span class="error_file error_mark">{{.File}}.hyperbricks</span> at 
-				<span class="error_path error_mark">{{.Path}}.{{.Key}}</span> 
-                    
-				</span>
-                </li>
-            {{end}}
-        </ul>
-    </div>
-</div>
-<script>
-    function toggleErrorPanel() {
-        var content = document.querySelector('.error-content');
-        content.style.display = (content.style.display === 'block') ? 'none' : 'block';
-		var pcontent = document.querySelector('.error-panel');
-		pcontent.style.width = (pcontent.style.width === '500px') ? '190px' : '500px';
-		pcontent.style.opacity = (pcontent.style.opacity === '1') ? '0.5' : '1';
-    }
-</script>
-{{safe "<!--  End Frontend Errors [development.frontend_errors = true] in package.hyperbricks  -->"}}
-{{else}}{{safe "<!-- No Errors -->"}}{{end}}
-`
+	<script>
+	{{range .Errors}} document.getElementById("error_list").innerHTML += '<li><span class="error_message">\n' +
+				'	<div class="error_error">{{.Err}}</div>\n' +
+				'	type <span class="error_type error_mark"></span> at file\n' +
+				'	<span class="error_file error_mark">{{.File}}.hyperbricks</span> at \n' +
+				'	<span class="error_path error_mark">{{.Path}}.{{.Key}}</span> \n' +
+				'	</span>\n' +
+				'</li>\n';
+		{{end}}
+		document.getElementById("error_panel").style.display = "flex";
+	</script>
+{{else}}
+	{{safe "<!-- No Errors -->"}}
+{{end}}`
 
 // ErrorData holds the errors and a flag to determine if there are any
 type ErrorData struct {
