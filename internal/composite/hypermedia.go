@@ -290,7 +290,8 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 	finalHTML := ""
 	errorPanelTemplateHtml := ""
 
-	if shared.GetHyperBricksConfiguration().Development.FrontendErrors {
+	hbconfig := shared.GetHyperBricksConfiguration()
+	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE {
 		errorPanelTemplateHtml = errorPanelTemplate
 	}
 
