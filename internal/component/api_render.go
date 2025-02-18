@@ -66,6 +66,7 @@ func (r *APIRenderer) Types() []string {
 func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
+	hbConfig := shared.GetHyperBricksConfiguration()
 
 	config, ok := instance.(APIConfig)
 	if !ok {
@@ -93,12 +94,20 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 		})
 	}
 
-	if config.Debug {
+	if config.Debug && hbConfig.Mode != shared.LIVE_MODE {
 		jsonBytes, err := json.MarshalIndent(responseData, "", "  ")
 		if err != nil {
 			fmt.Println("Error marshaling struct to JSON:", err)
 
 		}
+		errors = append(errors, shared.ComponentError{
+			Key:      config.Component.Meta.HyperBricksKey,
+			Path:     config.Component.Meta.HyperBricksPath,
+			File:     config.Component.Meta.HyperBricksFile,
+			Type:     APIConfigGetName(),
+			Err:      "Debug in <API_RENDER> is enabled. Please disable in production",
+			Rejected: false,
+		})
 		builder.WriteString(fmt.Sprintf("<!-- API_RENDER.debug = true -->\n<!--  <![CDATA[ \n%s\n ]]> -->", string(jsonBytes)))
 	}
 
