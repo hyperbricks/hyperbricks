@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"reflect"
@@ -41,7 +42,7 @@ func (r *MyRenderer) Types() []string {
 	}
 }
 
-func (r *MyRenderer) Render(instance interface{}) (string, []error) {
+func (r *MyRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 
 	// Check if renderManager is of the type render.RenderManager
 	if reflect.TypeOf(&r.renderManager) == reflect.TypeOf(render.RenderManager{}) {
@@ -195,7 +196,7 @@ func Test_IfRendermanagerRendersAComponentRenderer(t *testing.T) {
 	parsedConfig := parser.ParseHyperScript(input)
 	c := parser.KnownTypes
 
-	result, errr := rm.Render(MyRendererConfigGetName(), parsedConfig["compositetest"].(map[string]interface{}))
+	result, errr := rm.Render(MyRendererConfigGetName(), parsedConfig["compositetest"].(map[string]interface{}), nil)
 	if errr != nil {
 		t.Errorf("Rendering problem %v", result)
 		log.Printf("%v", c)
@@ -310,7 +311,7 @@ func Test_BasicRenderChain(t *testing.T) {
 
 	// logic...
 	// if parsedConfig["compositetest"] type == "RENDER" then ....
-	result, errr := rm.Render(composite.TreeRendererConfigGetName(), parsedConfig["compositetest"].(map[string]interface{}))
+	result, errr := rm.Render(composite.TreeRendererConfigGetName(), parsedConfig["compositetest"].(map[string]interface{}), nil)
 	// this could in theory used for page too...
 	// page....
 	// 		HEAD
@@ -440,7 +441,7 @@ func Test_BasicHyperMediaRenderChain(t *testing.T) {
 	parsedConfig := parser.ParseHyperScript(input)
 	// logic...
 	// if parsedConfig["compositetest"] type == "RENDER" then ....
-	result, errr := rm.Render(composite.HyperMediaConfigGetName(), parsedConfig["hypermedia"].(map[string]interface{}))
+	result, errr := rm.Render(composite.HyperMediaConfigGetName(), parsedConfig["hypermedia"].(map[string]interface{}), nil)
 	// this could in theory used for page too...
 	// page....
 	// 		HEAD
@@ -583,7 +584,7 @@ func Test_BasicPageWithTemplateRenderChain(t *testing.T) {
 	parsedConfig := parser.ParseHyperScript(input)
 	// logic...
 	// if parsedConfig["compositetest"] type == "RENDER" then ....
-	result, errr := rm.Render(composite.HyperMediaConfigGetName(), parsedConfig["hypermedia"].(map[string]interface{}))
+	result, errr := rm.Render(composite.HyperMediaConfigGetName(), parsedConfig["hypermedia"].(map[string]interface{}), nil)
 	// this could in theory used for page too...
 	// page....
 	// 		HEAD

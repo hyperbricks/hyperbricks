@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -36,7 +37,7 @@ func (tc *TextConfig) Validate() []error {
 	return errors
 }
 
-func (tr *TextRenderer) Render(instance interface{}) (string, []error) {
+func (tr *TextRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 

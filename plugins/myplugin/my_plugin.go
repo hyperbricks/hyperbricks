@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hyperbricks/hyperbricks/internal/shared"
@@ -25,7 +26,7 @@ type MyPlugin struct{}
 var _ shared.PluginRenderer = (*MyPlugin)(nil)
 
 // Render is the function that will be called by the renderer.
-func (p *MyPlugin) Render(instance interface{}) (string, []error) {
+func (p *MyPlugin) Render(instance interface{}, ctx context.Context) (string, []error) {
 
 	var errors []error
 

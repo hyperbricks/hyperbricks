@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -34,7 +35,7 @@ func (hc *HTMLConfig) Validate() []error {
 	return errors
 }
 
-func (hr *HTMLRenderer) Render(instance interface{}) (string, []error) {
+func (hr *HTMLRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 

@@ -578,7 +578,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				}
 				//fmt.Printf("response object:%v", response)
 
-				result, errr := rm.Render(request.TypeName, scopeData)
+				result, errr := rm.Render(request.TypeName, scopeData, nil)
 				if errr != nil {
 					log.Printf("%v", errr)
 				}

@@ -1,6 +1,7 @@
 package composite
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -41,6 +42,8 @@ type FragmentConfig struct {
 	Template           map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks}}"`
 	IsStatic           bool                   `mapstructure:"isstatic" exclude:"true"`
 	Static             string                 `mapstructure:"static" description:"Static file path associated with the fragment" example:"{!{fragment-static.hyperbricks}}"`
+	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{fragment-cache.hyperbricks}}"`
+	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly deisable cache" example:"{!{fragment-nocache.hyperbricks}}"`
 	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
 }
 
@@ -70,7 +73,7 @@ func (r *FragmentRenderer) Types() []string {
 }
 
 // Render implements the RenderComponent interface.
-func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
+func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 
 	var errors []error
 	var config FragmentConfig
@@ -107,7 +110,7 @@ func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
 		config.Template["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
 		config.Template["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey + ".template"
 
-		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template)
+		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template, ctx)
 		errors = append(errors, errr...)
 		templatebuilder.WriteString(result)
 		outputHtml = shared.EncloseContent(config.Enclose, templatebuilder.String())
@@ -120,7 +123,7 @@ func (pr *FragmentRenderer) Render(instance interface{}) (string, []error) {
 		config.Composite.Items["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
 		config.Composite.Items["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
 
-		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items)
+		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items, ctx)
 		errors = append(errors, errr...)
 		treebuilder.WriteString(result)
 		outputHtml = shared.EncloseContent(config.Enclose, treebuilder.String())

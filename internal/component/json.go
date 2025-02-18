@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -44,7 +45,7 @@ func (config *LocalJSONConfig) Validate() []error {
 	return errors
 }
 
-func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error) {
+func (renderer *LocalJSONRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 

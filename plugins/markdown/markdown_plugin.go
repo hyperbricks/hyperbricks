@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hyperbricks/hyperbricks/internal/shared"
@@ -31,7 +32,7 @@ type MarkdownPlugin struct{}
 var _ shared.PluginRenderer = (*MarkdownPlugin)(nil)
 
 // Render converts the Markdown content to HTML.
-func (p *MarkdownPlugin) Render(instance interface{}) (string, []error) {
+func (p *MarkdownPlugin) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errs []error
 
 	var config MarkdownConfig

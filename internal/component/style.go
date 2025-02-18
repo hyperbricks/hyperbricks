@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -42,7 +43,7 @@ func (style *StyleConfig) Validate() []error {
 	return errors
 }
 
-func (sr *StyleRenderer) Render(instance interface{}) (string, []error) {
+func (sr *StyleRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 

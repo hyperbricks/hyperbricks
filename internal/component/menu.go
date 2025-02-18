@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"log"
@@ -79,7 +80,7 @@ func (mc *MenuConfig) Validate() []error {
 	return errors
 }
 
-func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
+func (mr *MenuRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 

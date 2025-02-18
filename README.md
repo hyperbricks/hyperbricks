@@ -3,8 +3,8 @@
 ![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
 
 **Licence:** MIT  
-**Version:** v0.2.2-alpha  
-**Build time:** 2025-02-16T10:17:38Z
+**Version:** v0.2.31-alpha  
+**Build time:** 2025-02-18T11:47:15Z
 
 ## HyperBricks Documentation
 

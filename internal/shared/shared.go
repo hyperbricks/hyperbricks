@@ -1,15 +1,22 @@
 package shared
 
+import "context"
+
+// Define a context key for the JWT token
+type contextKey string
+
+const JwtKey contextKey = "jwtToken"
+
 // PluginConfig is a generic configuration map for plugins.
 type PluginConfig map[string]interface{}
 
 // RenderPlugin defines the interface for dynamic plugins.
 type PluginRenderer interface {
-	Render(data interface{}) (string, []error)
+	Render(data interface{}, ctx context.Context) (string, []error)
 }
 
 type Renderer interface {
-	Render(instance interface{}) (string, []error)
+	Render(instance interface{}, ctx context.Context) (string, []error)
 	Types() []string
 }
 

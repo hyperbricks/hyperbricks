@@ -1,6 +1,7 @@
 package composite
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -61,7 +62,7 @@ func (config *TreeConfig) Validate() []error {
 
 // Concurrent and Recursive Renderer and returns the result and errors.
 // This function is a blueprint function for all concurent rendering of pages, render and template objects
-func (r *TreeRenderer) Render(data interface{}) (string, []error) {
+func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []error) {
 	var renderErrors []error
 
 	// Decode the instance into TemplateConfig without type assertion
@@ -161,7 +162,7 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 			defer wg.Done()
 
 			// Render the component
-			output, errors := r.RenderManager.Render(componentType, componentConfig)
+			output, errors := r.RenderManager.Render(componentType, componentConfig, ctx)
 
 			// Store results in preallocated slices
 			outputs[idx] = output

@@ -104,7 +104,7 @@ func makeStatic(config map[string]map[string]interface{}, renderDir string) erro
 		if hasStatic && strings.TrimSpace(renderPath) != "" {
 			htmlContent := fmt.Sprintf("%v", v)
 			if v["route"] != "" {
-				htmlContent = renderStaticContent(v["static"].(string))
+				htmlContent = renderStaticContent(v["static"].(string), nil)
 			}
 
 			renderPath = fmt.Sprintf("%s/%s", renderDir, renderPath)

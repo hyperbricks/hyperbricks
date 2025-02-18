@@ -2,6 +2,7 @@ package component
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"fmt"
@@ -62,9 +63,12 @@ func (r *APIRenderer) Types() []string {
 	}
 }
 
-func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
+func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
+
+	jwtToken, _ := ctx.Value(shared.JwtKey).(string)
+
 	config, ok := instance.(APIConfig)
 	if !ok {
 		return "", append(errors, shared.ComponentError{
@@ -138,7 +142,7 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	if config.Enclose != "" {
 		apiContent = shared.EncloseContent(config.Enclose, apiContent)
 	}
-
+	builder.WriteString(fmt.Sprintf("<!-- jwtToken:%s -->", jwtToken))
 	builder.WriteString(apiContent)
 
 	return builder.String(), errors

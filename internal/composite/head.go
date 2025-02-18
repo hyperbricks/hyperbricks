@@ -1,6 +1,7 @@
 package composite
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -59,7 +60,7 @@ func (r *HeadRenderer) Types() []string {
 }
 
 // Render implements the RenderComponent interface for COA.
-func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
+func (cr *HeadRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var headbuilder strings.Builder
 	var errors []error
 	var config HeadConfig
@@ -131,7 +132,7 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 
 	config.Items["enclose"] = "<head>|</head>"
 
-	result, errr := cr.RenderManager.Render(TreeRendererConfigGetName(), config.Items)
+	result, errr := cr.RenderManager.Render(TreeRendererConfigGetName(), config.Items, ctx)
 	errors = append(errors, errr...)
 
 	return result, errors

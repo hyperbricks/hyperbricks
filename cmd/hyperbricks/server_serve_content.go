@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"html/template"
 	"log"
@@ -16,7 +17,7 @@ import (
 	"github.com/yosssi/gohtml"
 )
 
-func renderStaticContent(route string) string {
+func renderStaticContent(route string, ctx context.Context) string {
 	hbConfig := getHyperBricksConfiguration()
 
 	_config, found := getConfig(route)
@@ -34,7 +35,7 @@ func renderStaticContent(route string) string {
 		configCopy["hx_response"] = nil
 	}
 
-	htmlContent, renderErrors := rm.Render(configCopy["@type"].(string), configCopy)
+	htmlContent, renderErrors := rm.Render(configCopy["@type"].(string), configCopy, ctx)
 
 	htmlContent = FrontEndErrorRender(renderErrors) + htmlContent
 
@@ -45,10 +46,12 @@ func renderStaticContent(route string) string {
 	return htmlContent
 }
 
-func renderContent(w http.ResponseWriter, route string) string {
+func renderContent(w http.ResponseWriter, route string, r *http.Request) (string, bool) {
 	hbConfig := getHyperBricksConfiguration()
+	nocache := false
 
 	_config, found := getConfig(route)
+
 	if !found {
 		__config, _found := getConfig("404")
 		if _found {
@@ -56,11 +59,16 @@ func renderContent(w http.ResponseWriter, route string) string {
 			_config = __config
 		} else {
 			if route == "favicon.ico" {
-				return ""
+				return "", false
 			}
 			logging.GetLogger().Info("Config not found for route: ", route)
-			return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route)
+			return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route), false
 		}
+	}
+
+	if val, ok := _config["nocache"].(string); ok {
+		nocache = true
+		logging.GetLogger().Infof("NoCache is detected: %s from %s", val, route)
 	}
 
 	configCopy := make(map[string]interface{})
@@ -72,9 +80,19 @@ func renderContent(w http.ResponseWriter, route string) string {
 		configCopy["hx_response"] = w
 	}
 
+	// Extract JWT token from the Authorization header for authentication if needed
+	authHeader := r.Header.Get("Authorization")
+	var jwtToken string
+	if strings.HasPrefix(authHeader, "Bearer ") {
+		jwtToken = strings.TrimPrefix(authHeader, "Bearer ")
+	}
+
+	// Store JWT token in request context
+	ctx := context.WithValue(r.Context(), shared.JwtKey, jwtToken)
+
 	var htmlContent strings.Builder
 
-	renderOutput, renderErrors := rm.Render(configCopy["@type"].(string), configCopy)
+	renderOutput, renderErrors := rm.Render(configCopy["@type"].(string), configCopy, ctx)
 
 	htmlContent.WriteString(renderOutput)
 	var output strings.Builder
@@ -88,7 +106,7 @@ func renderContent(w http.ResponseWriter, route string) string {
 	} else {
 		output.WriteString(HandleRenderErrors(renderErrors))
 	}
-	return output.String()
+	return output.String(), nocache
 
 }
 
@@ -317,9 +335,11 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 
 	var htmlContent strings.Builder
 	if hbConfig.Mode == shared.LIVE_MODE {
-		htmlContent.WriteString(handleLiveMode(w, route))
+		content := handleLiveMode(w, route, r)
+		htmlContent.WriteString(content)
 	} else {
-		htmlContent.WriteString(handleDeveloperMode(w, route))
+		content := handleDeveloperMode(w, route, r)
+		htmlContent.WriteString(content)
 	}
 
 	//w.Header().Set("HX-Trigger", "Deleted")
@@ -332,13 +352,14 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 }
 
 // RENDER WITHOUT CACHE
-func handleDeveloperMode(w http.ResponseWriter, route string) string {
+func handleDeveloperMode(w http.ResponseWriter, route string, r *http.Request) string {
 	logging.GetLogger().Debugw("Developer mode active. Rendering fresh content:", route)
-	return renderContent(w, route)
+	htmlContent, _ := renderContent(w, route, r)
+	return htmlContent
 }
 
 // RENDER WITH CACHE
-func handleLiveMode(w http.ResponseWriter, route string) string {
+func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) string {
 
 	hbConfig := getHyperBricksConfiguration()
 	cacheDuration := hbConfig.Live.CacheTime
@@ -358,24 +379,24 @@ func handleLiveMode(w http.ResponseWriter, route string) string {
 		logging.GetLogger().Debugf("Cache missing for route %s. Rendering content.", route)
 	}
 
-	htmlContent := renderContent(w, route)
+	htmlContent, nocache := renderContent(w, route, r)
+	if !nocache {
+		//Calculate expiration time
+		var now = time.Now()
+		expirationTime := now.Add(cacheDuration.Duration).Format("2006-01-02 15:04:05 (-07:00)")
+		renderTime := time.Now().Format("2006-01-02 15:04:05 (-07:00)")
 
-	//Calculate expiration time
-	var now = time.Now()
-	expirationTime := now.Add(cacheDuration.Duration).Format("2006-01-02 15:04:05 (-07:00)")
-	renderTime := time.Now().Format("2006-01-02 15:04:05 (-07:00)")
-
-	htmlContent += fmt.Sprintf("\n<!-- Rendered at: %s -->", renderTime)
-	htmlContent += fmt.Sprintf("\n<!-- Cache expires at: %s -->", expirationTime)
-	if htmlContent != "" {
-		htmlCacheMutex.Lock()
-		htmlCache[route] = CacheEntry{
-			Content:   htmlContent,
-			Timestamp: now,
+		htmlContent += fmt.Sprintf("\n<!-- Rendered at: %s -->", renderTime)
+		htmlContent += fmt.Sprintf("\n<!-- Cache expires at: %s -->", expirationTime)
+		if htmlContent != "" {
+			htmlCacheMutex.Lock()
+			htmlCache[route] = CacheEntry{
+				Content:   htmlContent,
+				Timestamp: now,
+			}
+			htmlCacheMutex.Unlock()
+			logging.GetLogger().Debugw("Updated cache for route", "route", route)
 		}
-		htmlCacheMutex.Unlock()
-		logging.GetLogger().Debugw("Updated cache for route", "route", route)
 	}
-
 	return htmlContent
 }

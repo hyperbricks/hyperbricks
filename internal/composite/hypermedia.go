@@ -1,6 +1,7 @@
 package composite
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -22,6 +23,8 @@ type HyperMediaConfig struct {
 	Favicon            string                 `mapstructure:"favicon" description:"Path to the favicon for the hypermedia" example:"{!{hypermedia-favicon.hyperbricks}}"`
 	Template           map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions." example:"{!{hypermedia-template.hyperbricks}}"`
 	IsStatic           bool                   `mapstructure:"isstatic" exclude:"true"`
+	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{hypermedia-cache.hyperbricks}}"`
+	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly deisable cache" example:"{!{hypermedia-nocache.hyperbricks}}"`
 	Static             string                 `mapstructure:"static" description:"Static file path associated with the hypermedia, for rendering out the hypermedia to static files." example:"{!{hypermedia-static.hyperbricks}}"`
 	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options" example:"{!{hypermedia-index.hyperbricks}}"`
 	Doctype            string                 `mapstructure:"doctype" description:"Alternative Doctype for the HTML document" example:"{!{hypermedia-doctype.hyperbricks}}"`
@@ -63,7 +66,7 @@ func (r *HyperMediaRenderer) Types() []string {
 }
 
 // Render implements the RenderComponent interface.
-func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
+func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 
 	var errors []error
 	var config HyperMediaConfig
@@ -129,7 +132,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 			config.Head["favicon"] = config.Favicon
 		}
 
-		result, errr := pr.RenderManager.Render(HeadConfigGetName(), config.Head)
+		result, errr := pr.RenderManager.Render(HeadConfigGetName(), config.Head, ctx)
 		errors = append(errors, errr...)
 		headbuilder.WriteString(result)
 	}
@@ -150,7 +153,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 			config.Template["values"].(map[string]interface{})["head"] = config.Head
 		}
 
-		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template)
+		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template, ctx)
 		errors = append(errors, errr...)
 		templatebuilder.WriteString(result)
 		outputHtml = shared.EncloseContent(config.Enclose, templatebuilder.String())
@@ -162,7 +165,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}) (string, []error) {
 			config.Composite.Items["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
 		}
 
-		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items)
+		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items, ctx)
 		errors = append(errors, errr...)
 		treebuilder.WriteString(result)
 		outputHtml = shared.EncloseContent(config.Enclose, treebuilder.String())

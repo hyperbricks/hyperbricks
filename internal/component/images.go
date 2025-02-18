@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -50,7 +51,7 @@ func (config *MultipleImagesConfig) Validate() []error {
 	return errors
 }
 
-func (mir *MultipleImagesRenderer) Render(instance interface{}) (string, []error) {
+func (mir *MultipleImagesRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 

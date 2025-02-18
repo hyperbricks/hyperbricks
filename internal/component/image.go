@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -47,7 +48,7 @@ func (config *SingleImageConfig) Validate() []error {
 	return errors
 }
 
-func (sir *SingleImageRenderer) Render(instance interface{}) (string, []error) {
+func (sir *SingleImageRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 
