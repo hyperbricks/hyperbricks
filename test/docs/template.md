@@ -50,7 +50,7 @@ Go direct to:
 {{.Description}}
 
 **Main Example**
-````yaml
+````properties
 {{.Example}}
 ````
 
@@ -83,7 +83,7 @@ Go direct to:
 {{.Description}}
 
 **Example**
-````yaml
+````properties
 {{.Example}}
 ````
 {{if .Result}}
