@@ -78,7 +78,7 @@ const errorPanelTemplate = `
 		right:10px;
 		bottom:10px;
 		margin:5px;
-        width: 190px;
+        width: 50%;
         flex-direction: column;
         border-radius: 5px;
         box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
@@ -176,7 +176,7 @@ const errorPanelTemplate = `
         var content = document.querySelector('.error-content');
         content.style.display = (content.style.display === 'block') ? 'none' : 'block';
 		var pcontent = document.querySelector('.error-panel');
-		pcontent.style.width = (pcontent.style.width === '500px') ? '190px' : '500px';
+		pcontent.style.width = (pcontent.style.width === '50%') ? '30%' : '50%';
 		pcontent.style.opacity = (pcontent.style.opacity === '1') ? '0.5' : '1';
     }
 </script>
