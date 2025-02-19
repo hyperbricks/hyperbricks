@@ -50,7 +50,7 @@ Go direct to:
 {{.Description}}
 
 **Main Example**
-````properties
+````jsx
 {{.Example}}
 ````
 

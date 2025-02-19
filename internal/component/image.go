@@ -67,7 +67,14 @@ func (sir *SingleImageRenderer) Render(instance interface{}, ctx context.Context
 
 	result, err := sir.ImageProcessorInstance.ProcessSingleImage(config)
 	if err != nil {
-		errors = append(errors, fmt.Errorf("failed to process image: %w", err))
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			File:     config.Component.Meta.HyperBricksFile,
+			Key:      config.HyperBricksKey,
+			Path:     config.HyperBricksPath,
+			Err:      fmt.Errorf("failed to process image: %w", err).Error(),
+			Rejected: true,
+		})
 		return builder.String(), errors
 	}
 

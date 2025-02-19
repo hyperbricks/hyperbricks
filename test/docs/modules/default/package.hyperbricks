@@ -12,7 +12,7 @@ hyperbricks {
     static = true
 
     # live, development or debug mode
-    mode = development
+    mode = live
 
     # settings for debugging hyperbricks in go env
     debug {

@@ -168,7 +168,7 @@ func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []
 
 			// Render the component
 			output, errors := r.RenderManager.Render(componentType, componentConfig, ctx)
-			output += fmt.Sprintf("<!-- %s -->", shared.GenerateHash())
+			// output += fmt.Sprintf("<!-- %s -->", shared.GenerateHash())
 			// Store results in preallocated slices
 			outputs[idx] = output
 			if errors != nil {

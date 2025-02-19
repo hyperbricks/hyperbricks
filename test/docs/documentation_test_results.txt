@@ -7,7 +7,7 @@ loading
 === RUN   Test_TestAndDocumentationRender/fragment-section
 === RUN   Test_TestAndDocumentationRender/fragment-enclose
 === RUN   Test_TestAndDocumentationRender/fragment-template
-18-02-2025 20:55	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+19-02-2025 22:59	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/fragment-static
 === RUN   Test_TestAndDocumentationRender/fragment-cache
 === RUN   Test_TestAndDocumentationRender/fragment-nocache
@@ -33,7 +33,7 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
-18-02-2025 20:55	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+19-02-2025 22:59	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/hypermedia-cache
 === RUN   Test_TestAndDocumentationRender/hypermedia-nocache
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
@@ -47,9 +47,9 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/head-css
 === RUN   Test_TestAndDocumentationRender/head-js
 === RUN   Test_TestAndDocumentationRender/template-@doc
-18-02-2025 20:55	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
+19-02-2025 22:59	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/template-template
-18-02-2025 20:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+19-02-2025 22:59	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
@@ -95,12 +95,12 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-file
 === RUN   Test_TestAndDocumentationRender/json-template
-18-02-2025 20:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+19-02-2025 22:59	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-inline
 === RUN   Test_TestAndDocumentationRender/json-values
-18-02-2025 20:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+19-02-2025 22:59	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
-18-02-2025 20:55	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+19-02-2025 22:59	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
@@ -122,12 +122,12 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/api_render-user
 === RUN   Test_TestAndDocumentationRender/api_render-pass
 === RUN   Test_TestAndDocumentationRender/api_render-debug
-2025/02/18 20:55:56 Version: v0.2.32-alpha
-2025/02/18 20:55:56 Build Time: 2025-02-18T19:55:53Z
-2025/02/18 20:55:56 Static HTML file generated at ../../docs/hyperbricks-reference-v0.2.32-alpha.md
---- PASS: Test_TestAndDocumentationRender (1.90s)
+2025/02/19 22:59:09 Version: v0.2.33-alpha
+2025/02/19 22:59:09 Build Time: 2025-02-19T21:59:06Z
+2025/02/19 22:59:09 Static HTML file generated at ../../docs/hyperbricks-reference-v0.2.33-alpha.md
+--- PASS: Test_TestAndDocumentationRender (1.91s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.04s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-route (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-section (0.00s)
@@ -205,7 +205,7 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/images-directory (0.02s)
     --- PASS: Test_TestAndDocumentationRender/images-width (0.02s)
     --- PASS: Test_TestAndDocumentationRender/images-height (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-id (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/images-id (0.03s)
     --- PASS: Test_TestAndDocumentationRender/images-class (0.03s)
     --- PASS: Test_TestAndDocumentationRender/images-alt (0.03s)
     --- PASS: Test_TestAndDocumentationRender/images-title (0.03s)
@@ -227,17 +227,17 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/menu-active (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.29s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.31s)
     --- PASS: Test_TestAndDocumentationRender/api_render-@doc (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-endpoint (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-method (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-headers (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-body (0.10s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-body (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-template (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-inline (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-values (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-user (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-pass (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.09s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.10s)
 PASS
-ok  	command-line-arguments	2.125s
+ok  	command-line-arguments	2.130s
