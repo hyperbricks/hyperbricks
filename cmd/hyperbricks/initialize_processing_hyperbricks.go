@@ -99,6 +99,12 @@ func processScript(filename string, config map[string]interface{},
 
 			fragmentConfig.Route = ensureUniqueRoute(fragmentConfig.Route, filename, tempConfigs)
 			handleStaticRoute(obj, &fragmentConfig)
+			hyperMediaConfig := composite.HyperMediaConfig{
+				Section: fragmentConfig.Section,
+				Title:   fragmentConfig.Title,
+				Route:   fragmentConfig.Route,
+			}
+			tempHyperMediasBySection[hyperMediaConfig.Section] = append(tempHyperMediasBySection[hyperMediaConfig.Section], hyperMediaConfig)
 
 			// Add metadata and store in tempConfigs
 			obj["hyperbricksfile"] = filename

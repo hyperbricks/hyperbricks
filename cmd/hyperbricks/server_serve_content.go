@@ -132,7 +132,7 @@ const errorTemplate = `{{if .HasErrors}}
 				'	<div class="error_error">{{.Err}}</div>\n' +
 				'	type <span class="error_type error_mark"></span> at file\n' +
 				'	<span class="error_file error_mark">{{.File}}.hyperbricks</span> at \n' +
-				'	<span class="error_path error_mark">[{{.Hash}}] {{.Path}}.{{.Key}}</span> \n' +
+				'	<span class="error_path error_mark"> {{.Path}}.{{.Key}}</span> \n' +
 				'	</span>\n' +
 				'</li>\n';
 		{{end}}
@@ -155,6 +155,7 @@ func FrontEndErrorRender(renderErrors []error) string {
 	for _, err := range renderErrors {
 		if componentError, ok := err.(shared.ComponentError); ok {
 			errorsList = append(errorsList, ComponentErrorTemplate{
+				Hash: componentError.Hash,
 				File: componentError.File,
 				Type: componentError.Type,
 				Path: componentError.Path,
