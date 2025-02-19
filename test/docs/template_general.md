@@ -2,7 +2,7 @@
 
 Hypermedia documents or fragments can be declared using simple key-value properties:
 
-```properties
+```yaml
 myHypermedia = <HYPERMEDIA>
 myHypermedia.route = index 
 
@@ -16,7 +16,7 @@ myFragment.route = somefragment
 You can add properties to hypermedia objects in either flat or nested formats:
 
 **Flat Configuration Example:**
-```properties
+```yaml
 fragment = <FRAGMENT>
 fragment.route = myfragment
 fragment.content = <TREE>
@@ -25,7 +25,7 @@ fragment.content.10.value = <p>THIS IS HTML</p>
 ```
 
 **Nested Configuration Example:**
-```properties
+```yaml
 fragment = <FRAGMENT>
 fragment.route = myfragment
 fragment {
@@ -43,7 +43,7 @@ fragment {
 
 Properties are rendered in alphanumeric order. They are typeless, meaning quotes are not required because at parsing hyperbricks types like ```<IMAGE>```, ```<HTML>``` or ```<TEXT>``` will be typed automaticly.
 
-```properties
+```yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.10 = <HTML>
 hypermedia.10.value = <p>some text</p>
@@ -65,7 +65,7 @@ hypermedia.1 {
 
 A basic `<HYPERMEDIA>` object with nested `<IMAGE>` and `<TEXT>` types in a `<TEMPLATE>`:
 
-```properties
+```yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
 hypermedia.head = <HEAD>
@@ -102,7 +102,7 @@ hypermedia.10 {
 
 A `<FRAGMENT>` object using an [HTMX trigger](https://htmx.org/attributes/hx-trigger/) with nested `<IMAGE>` and `<TEXT>` types:
 
-```properties
+```yaml
 fragment = <FRAGMENT>
 fragment.response {
     hx_trigger = myEvent
@@ -132,7 +132,7 @@ fragment.10 {
 
 Properties can inherit from other objects. Here, `fragment.content.10` inherits from `myComponent`, with its `values.src` overridden:
 
-```properties
+```yaml
 myComponent = <TEMPLATE>
 myComponent {
     template = <<[
@@ -159,7 +159,7 @@ fragment.content {
 
 Predefined hyperscripts can be imported and reused:
 
-```properties
+```yaml
 #imports myComponent
 @import "path/my_component.hyperbricks"
 

@@ -4,7 +4,7 @@
 
 **Licence:** MIT  
 **Version:** v0.2.33-alpha  
-**Build time:** 2025-02-19T21:59:06Z
+**Build time:** 2025-02-19T22:15:13Z
 
 ## HyperBricks Documentation
 
@@ -44,7 +44,7 @@ Go direct to:
 
 Hypermedia documents or fragments can be declared using simple key-value properties:
 
-```properties
+```yaml
 myHypermedia = <HYPERMEDIA>
 myHypermedia.route = index 
 
@@ -58,7 +58,7 @@ myFragment.route = somefragment
 You can add properties to hypermedia objects in either flat or nested formats:
 
 **Flat Configuration Example:**
-```properties
+```yaml
 fragment = <FRAGMENT>
 fragment.route = myfragment
 fragment.content = <TREE>
@@ -67,7 +67,7 @@ fragment.content.10.value = <p>THIS IS HTML</p>
 ```
 
 **Nested Configuration Example:**
-```properties
+```yaml
 fragment = <FRAGMENT>
 fragment.route = myfragment
 fragment {
@@ -85,7 +85,7 @@ fragment {
 
 Properties are rendered in alphanumeric order. They are typeless, meaning quotes are not required because at parsing hyperbricks types like ```<IMAGE>```, ```<HTML>``` or ```<TEXT>``` will be typed automaticly.
 
-```properties
+```yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.10 = <HTML>
 hypermedia.10.value = <p>some text</p>
@@ -107,7 +107,7 @@ hypermedia.1 {
 
 A basic `<HYPERMEDIA>` object with nested `<IMAGE>` and `<TEXT>` types in a `<TEMPLATE>`:
 
-```properties
+```yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
 hypermedia.head = <HEAD>
@@ -144,7 +144,7 @@ hypermedia.10 {
 
 A `<FRAGMENT>` object using an [HTMX trigger](https://htmx.org/attributes/hx-trigger/) with nested `<IMAGE>` and `<TEXT>` types:
 
-```properties
+```yaml
 fragment = <FRAGMENT>
 fragment.response {
     hx_trigger = myEvent
@@ -174,7 +174,7 @@ fragment.10 {
 
 Properties can inherit from other objects. Here, `fragment.content.10` inherits from `myComponent`, with its `values.src` overridden:
 
-```properties
+```yaml
 myComponent = <TEMPLATE>
 myComponent {
     template = <<[
@@ -201,7 +201,7 @@ fragment.content {
 
 Predefined hyperscripts can be imported and reused:
 
-```properties
+```yaml
 #imports myComponent
 @import "path/my_component.hyperbricks"
 
@@ -353,7 +353,7 @@ The enclosing HTML element for the header divided by |
 
 
 **Example**
-````properties
+````yaml
 html = <HTML>
 html.value = <<[
         <p>HTML TEST</p>    
@@ -392,7 +392,7 @@ The raw HTML content
 
 
 **Example**
-````properties
+````yaml
 html = <HTML>
 html.value = <p>HTML TEST</p>    
 }
@@ -426,7 +426,7 @@ Property trimspace filters (if set to true true),  all leading and trailing whit
 
 
 **Example**
-````properties
+````yaml
 html = <HTML>
 html.value = <<[
         <p>HTML TEST</p>    
@@ -481,7 +481,7 @@ The enclosing HTML element for the text divided by |
 
 
 **Example**
-````properties
+````yaml
 text = <TEXT>
 text {
 	  value = SOME VALUE
@@ -517,7 +517,7 @@ The paragraph content
 
 
 **Example**
-````properties
+````yaml
 text = <TEXT>
 text {
 	value = SOME VALUE
@@ -561,7 +561,7 @@ A FRAGMENT dynamically renders a part of an HTML page, allowing updates without 
 
 
 **Main Example**
-````jsx
+````yaml
 fragment = <FRAGMENT>
 fragment.response.hx_trigger = myEvent
 fragment.10 = <TEMPLATE>
@@ -682,7 +682,7 @@ HTMX response header configuration.
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -712,7 +712,7 @@ The title of the fragment, only used in the context of the &lt;MENU&gt; componen
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	title = Some Title
@@ -737,7 +737,7 @@ The route (URL-friendly identifier) for the fragment
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	route = index
@@ -762,7 +762,7 @@ The section the fragment belongs to. This can be used with the component &lt;MEN
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	section = some_section
@@ -787,7 +787,7 @@ Enclosing property using the pipe symbol |
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	10 = <HTML>
@@ -826,7 +826,7 @@ Template configurations for rendering the fragment. (This will disable rendering
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	template {
@@ -874,7 +874,7 @@ Static file path associated with the fragment, this will only work for a hx-get 
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	static = some_static_file.extension
@@ -899,7 +899,7 @@ Cache expire string
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
 hypermedia.cache = 10m
@@ -943,7 +943,7 @@ Explicitly disable cache
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
 hypermedia.nocache = true
@@ -987,7 +987,7 @@ Index number is a sort order option for the &lt;MENU&gt; section. See &lt;MENU&g
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	index = 1
@@ -1012,7 +1012,7 @@ Allows you to do a client-side redirect that does not do a full page reload
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -1039,7 +1039,7 @@ Pushes a new url into the history stack
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -1066,7 +1066,7 @@ Can be used to do a client-side redirect to a new location
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -1093,7 +1093,7 @@ If set to &#39;true&#39; the client-side will do a full refresh of the page
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -1120,7 +1120,7 @@ replaces the current url in the location bar
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -1147,7 +1147,7 @@ Allows you to specify how the response will be swapped. See hx-swap in the [HTMX
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -1174,7 +1174,7 @@ A css selector that updates the target of the content update
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -1201,7 +1201,7 @@ A css selector that allows you to choose which part of the response is used to b
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -1228,7 +1228,7 @@ allows you to trigger client-side events
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -1255,7 +1255,7 @@ allows you to trigger client-side events after the settle step
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -1282,7 +1282,7 @@ allows you to trigger client-side events after the swap step
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	response {
@@ -1336,7 +1336,7 @@ The title of the hypermedia document
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head = <HEAD>
 hypermedia.head {
@@ -1379,7 +1379,7 @@ Path to the favicon for the hypermedia document
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head = <HEAD>
 hypermedia.head {
@@ -1420,7 +1420,7 @@ Metadata for the head section
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head = <HEAD>
 hypermedia.head {
@@ -1465,7 +1465,7 @@ CSS files to include
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head = <HEAD>
 hypermedia.head {
@@ -1507,7 +1507,7 @@ JavaScript files to include
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head = <HEAD>
 hypermedia.head {
@@ -1550,7 +1550,7 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
 
 
 **Main Example**
-````jsx
+````yaml
 css = <HTML>
 css.value = <<[
     <style>
@@ -1678,7 +1678,7 @@ The title of the hypermedia site
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia {
     title = Home
@@ -1720,7 +1720,7 @@ The route (URL-friendly identifier) for the hypermedia
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia {
     route = index
@@ -1756,7 +1756,7 @@ The section the hypermedia belongs to. This can be used with the component &lt;M
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia {
     section = my_section
@@ -1792,7 +1792,7 @@ Special body enclosure with use of a pipe symbol |. Please note that this will n
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
 hypermedia.bodytag = <body id="main">|</body>
@@ -1832,7 +1832,7 @@ Enclosure of the property for the hypermedia
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
 hypermedia.bodytag = <body id="main">|</body>
@@ -1875,7 +1875,7 @@ Path to the favicon for the hypermedia
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia {
     favicon = static/favicon.ico
@@ -1916,7 +1916,7 @@ Template configurations for rendering the hypermedia. See &lt;TEMPLATE&gt; for f
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia {
 	template {
@@ -1964,7 +1964,7 @@ Cache expire string
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
 hypermedia.cache = 10m
@@ -2008,7 +2008,7 @@ Explicitly disable cache
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
 hypermedia.nocache = true
@@ -2052,7 +2052,7 @@ Static file path associated with the hypermedia, for rendering out the hypermedi
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia {
 	static = index.html
@@ -2088,7 +2088,7 @@ Index number is a sort order option for the hypermedia defined in the section fi
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia {
 	index = 1
@@ -2124,7 +2124,7 @@ Alternative Doctype for the HTML document
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 # this is just an example of an alternative doctype configuration
 hypermedia.doctype = <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -2159,7 +2159,7 @@ The opening HTML tag with attributes
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.htmltag = <html lang="en">
 
@@ -2193,7 +2193,7 @@ Builds header content. See &lt;HEADER&gt; for details
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
 hypermedia.head = <HEAD>
@@ -2272,7 +2272,7 @@ hypermedia.10.value = <p>some HTML</p>
 
 
 **Main Example**
-````jsx
+````yaml
 # Use the a TEMPLATE:filepath (relative from templates folder defined in module's package.hyperbricks) directive like this:
 template = {{TEMPLATE:youtube.tmpl}}
 
@@ -2354,7 +2354,7 @@ The template used for rendering.
 
 
 **Example**
-````properties
+````yaml
 myComponent = <TEMPLATE>
 myComponent {
 
@@ -2411,7 +2411,7 @@ The inline template used for rendering.
 
 
 **Example**
-````properties
+````yaml
 myComponent = <TEMPLATE>
 myComponent {
     
@@ -2467,7 +2467,7 @@ Key-value pairs for template rendering
 
 
 **Example**
-````properties
+````yaml
 
 $test = hello world
 
@@ -2525,7 +2525,7 @@ Enclosing property for the template rendered output divided by |
 
 
 **Example**
-````properties
+````yaml
 myComponent = <TEMPLATE>
 myComponent {
     inline = <<[
@@ -2570,7 +2570,7 @@ TREE description
 
 
 **Main Example**
-````jsx
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	10 = <TREE>
@@ -2644,7 +2644,7 @@ Enclosing tag using the pipe symbol |
 
 
 **Example**
-````properties
+````yaml
 fragment = <FRAGMENT>
 fragment {
 	10 = <TREE>
@@ -2731,7 +2731,7 @@ context := struct {
 
 
 **Main Example**
-````jsx
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -2829,7 +2829,7 @@ The enclosing HTML element for the header divided by |
 
 
 **Example**
-````properties
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -2887,7 +2887,7 @@ The API endpoint
 
 
 **Example**
-````properties
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -2942,7 +2942,7 @@ HTTP method to use for API calls, GET POST PUT DELETE etc...
 
 
 **Example**
-````properties
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -2997,7 +2997,7 @@ Optional HTTP headers for API requests
 
 
 **Example**
-````properties
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -3052,7 +3052,7 @@ Use the string format of the example, do not use an nested object to define. The
 
 
 **Example**
-````properties
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -3107,7 +3107,7 @@ Template used for rendering API output
 
 
 **Example**
-````properties
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -3162,7 +3162,7 @@ Use inline to define the template in a multiline block &lt;&lt;[ /* Template goe
 
 
 **Example**
-````properties
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -3217,7 +3217,7 @@ Key-value pairs for template rendering
 
 
 **Example**
-````properties
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -3279,7 +3279,7 @@ User for basic auth
 
 
 **Example**
-````properties
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -3341,7 +3341,7 @@ Password for basic auth
 
 
 **Example**
-````properties
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -3403,7 +3403,7 @@ Debug the response data (Do not use in production)
 
 
 **Example**
-````properties
+````yaml
 # use user and pass for cases with basic authentication
 api_test = <API_RENDER>
 api_test {
@@ -3498,7 +3498,7 @@ Extra attributes like id, data-role, data-action
 
 
 **Example**
-````properties
+````yaml
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
@@ -3574,7 +3574,7 @@ The enclosing HTML element for the header divided by |
 
 
 **Example**
-````properties
+````yaml
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
@@ -3650,7 +3650,7 @@ Path to the local JSON file
 
 
 **Example**
-````properties
+````yaml
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
@@ -3726,7 +3726,7 @@ Template for rendering output
 
 
 **Example**
-````properties
+````yaml
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
@@ -3804,7 +3804,7 @@ Use inline to define the template in a multiline block &lt;&lt;[ /* Template cod
 
 
 **Example**
-````properties
+````yaml
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
@@ -3880,7 +3880,7 @@ Key-value pairs for template rendering
 
 
 **Example**
-````properties
+````yaml
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
@@ -3961,7 +3961,7 @@ Debug the response data
 
 
 **Example**
-````properties
+````yaml
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
@@ -4080,7 +4080,7 @@ The enclosing HTML element for the header divided by |
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = doc
 hypermedia.title = DOCUMENT
@@ -4155,7 +4155,7 @@ The section of the menu to display.
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = doc
 hypermedia.title = DOCUMENT
@@ -4230,7 +4230,7 @@ The order of items in the menu (&#39;asc&#39; or &#39;desc&#39;).
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = doc
 hypermedia.title = DOCUMENT
@@ -4305,7 +4305,7 @@ The field to sort menu items by (&#39;title&#39;, &#39;route&#39;, or &#39;index
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = doc
 hypermedia.title = DOCUMENT
@@ -4380,7 +4380,7 @@ Template for the active menu item.
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = doc
 hypermedia.title = DOCUMENT
@@ -4456,7 +4456,7 @@ Template for regular menu items.
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = doc
 hypermedia.title = DOCUMENT
@@ -4531,7 +4531,7 @@ The enclosing HTML element for the header divided by |
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.route = doc
 hypermedia.title = DOCUMENT
@@ -4638,7 +4638,7 @@ Extra attributes like id, data-role, data-action, media
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head {
     10 = <CSS>
@@ -4686,7 +4686,7 @@ A custom &lt;style&gt; tag definition |. Will override extraAttributes.
 
 
 **Example**
-````properties
+````yaml
 head = <HEAD>
 head {
     10 = <CSS>
@@ -4731,7 +4731,7 @@ Use inline to define css in a multiline block &lt;&lt;[ /* css goes here */ ]&gt
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head {
     10 = <CSS>
@@ -4780,7 +4780,7 @@ Use link for a link tag to a css file.
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head = <HEAD>
 hypermedia.head {
@@ -4822,7 +4822,7 @@ file overrides link and inline, it loads contents of a file and renders it in a 
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head {
     10 = <CSS>
@@ -4918,7 +4918,7 @@ Extra attributes like loading, data-role, data-action etc
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
@@ -4953,7 +4953,7 @@ Use the pipe symbol | to enclose the ````&lt;IMG&gt;```` tag.
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
@@ -4991,7 +4991,7 @@ The source URL of the image
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 300
@@ -5030,7 +5030,7 @@ The width of the image (can be a number or percentage)
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 300
@@ -5069,7 +5069,7 @@ The height of the image (can be a number or percentage)
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 310
@@ -5108,7 +5108,7 @@ Alternative text for the image
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
@@ -5144,7 +5144,7 @@ The title attribute of the image
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
@@ -5177,7 +5177,7 @@ Id of image
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 310
@@ -5211,7 +5211,7 @@ CSS class for styling the image
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
@@ -5245,7 +5245,7 @@ Image quality for optimization, bigger is better.
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 320
@@ -5279,7 +5279,7 @@ Lazy loading strategy (e.g., &#39;lazy&#39;, &#39;eager&#39;)
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 320
@@ -5320,7 +5320,7 @@ if config.IsStatic {
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = cute_cat.jpg
 image.width = 310
@@ -5399,7 +5399,7 @@ Extra attributes like id, data-role, data-action
 
 
 **Example**
-````properties
+````yaml
 images = <IMAGES>
 images.directory = hyperbricks-test-files/assets/
 images.width = 100
@@ -5437,7 +5437,7 @@ Use the pipe symbol | to enclose the ````&lt;IMG&gt;```` tag.
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
@@ -5475,7 +5475,7 @@ The directory path containing the images
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
@@ -5513,7 +5513,7 @@ The width of the images (can be a number or percentage)
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 330
@@ -5545,7 +5545,7 @@ The height of the images (can be a number or percentage)
 
 
 **Example**
-````properties
+````yaml
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.height = 100
@@ -5577,7 +5577,7 @@ Id of images with a index added to it
 
 
 **Example**
-````properties
+````yaml
 images = <IMAGES>
 images.directory = hyperbricks-test-files/assets/
 images.width = 100
@@ -5615,7 +5615,7 @@ CSS class for styling the image
 
 
 **Example**
-````properties
+````yaml
 images = <IMAGES>
 images.directory = hyperbricks-test-files/assets/
 images.width = 100
@@ -5655,7 +5655,7 @@ Alternative text for the image
 
 
 **Example**
-````properties
+````yaml
 images = <IMAGES>
 images.directory = hyperbricks-test-files/assets/
 images.width = 100
@@ -5693,7 +5693,7 @@ The title attribute of the image
 
 
 **Example**
-````properties
+````yaml
 images = <IMAGES>
 images.directory = hyperbricks-test-files/assets/
 images.width = 100
@@ -5729,7 +5729,7 @@ Image quality for optimization
 
 
 **Example**
-````properties
+````yaml
 images = <IMAGES>
 images.directory = hyperbricks-test-files/assets/
 images.width = 100
@@ -5765,7 +5765,7 @@ Lazy loading strategy (e.g., &#39;lazy&#39;, &#39;eager&#39;)
 
 
 **Example**
-````properties
+````yaml
 images = <IMAGES>
 images.directory = hyperbricks-test-files/assets/
 images.width = 100
@@ -5828,7 +5828,7 @@ Extra attributes like id, data-role, data-action, type
 
 
 **Example**
-````properties
+````yaml
 head = <HEAD>
 head {
     10 = <JAVASCRIPT>
@@ -5870,7 +5870,7 @@ The enclosing HTML element for the header divided by |
 
 
 **Example**
-````properties
+````yaml
 head = <HEAD>
 head {
     10 = <JAVASCRIPT>
@@ -5911,7 +5911,7 @@ Use inline to define JavaScript in a multiline block &lt;&lt;[ /* JavaScript goe
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head {
     10 = <JAVASCRIPT>
@@ -5957,7 +5957,7 @@ Use link for a script tag with a src attribute
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head {
     10 = <JAVASCRIPT>
@@ -6001,7 +6001,7 @@ File overrides link and inline, it loads contents of a file and renders it in a 
 
 
 **Example**
-````properties
+````yaml
 hypermedia = <HYPERMEDIA>
 hypermedia.head {
     10 = <JAVASCRIPT>
