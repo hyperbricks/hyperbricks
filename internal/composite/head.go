@@ -34,6 +34,7 @@ func (config *HeadConfig) Validate() []error {
 
 	if config.ConfigType != "<HEAD>" {
 		warnings = append(warnings, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			File:     config.Composite.Meta.HyperBricksFile,
 			Key:      config.Composite.Meta.HyperBricksKey,
 			Path:     config.Composite.Meta.HyperBricksPath,

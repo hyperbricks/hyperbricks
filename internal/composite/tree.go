@@ -39,6 +39,7 @@ func (config *TreeConfig) Validate() []error {
 	var validationErrors []error
 	if config.Meta.ConfigType != TreeRendererConfigGetName() {
 		validationErrors = append(validationErrors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			File:     config.Meta.HyperBricksFile,
 			Key:      config.Meta.HyperBricksKey,
 			Path:     config.Meta.HyperBricksPath,
@@ -49,6 +50,7 @@ func (config *TreeConfig) Validate() []error {
 	}
 	if len(config.Items) == 0 {
 		validationErrors = append(validationErrors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			File: config.Meta.HyperBricksFile,
 			Key:  config.Meta.HyperBricksKey,
 			Path: config.Meta.HyperBricksPath,
@@ -96,6 +98,7 @@ func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []
 		component, ok := config.Items[key].(map[string]interface{})
 		if !ok {
 			renderErrors = append(renderErrors, shared.ComponentError{
+				Hash:     shared.GenerateHash(),
 				File:     config.Composite.Meta.HyperBricksFile,
 				Key:      key,
 				Path:     config.Composite.Meta.HyperBricksPath,
@@ -135,6 +138,7 @@ func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []
 			} else {
 				// @type exists but is not a string
 				renderErrors = append(renderErrors, shared.ComponentError{
+					Hash:     shared.GenerateHash(),
 					Type:     "<TREE>",
 					File:     config.Composite.Meta.HyperBricksFile,
 					Path:     config.Composite.Meta.HyperBricksPath,
@@ -147,6 +151,7 @@ func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []
 		} else {
 			// @type does not exist
 			renderErrors = append(renderErrors, shared.ComponentError{
+				Hash:     shared.GenerateHash(),
 				File:     config.Composite.Meta.HyperBricksFile,
 				Path:     config.Composite.Meta.HyperBricksPath,
 				Key:      key,

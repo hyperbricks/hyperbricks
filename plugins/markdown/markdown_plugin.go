@@ -39,6 +39,7 @@ func (p *MarkdownPlugin) Render(instance interface{}, ctx context.Context) (stri
 	err := shared.DecodeWithBasicHooks(instance, &config)
 	if err != nil {
 		errs = append(errs, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Path:     config.HyperBricksPath,
 			Key:      config.HyperBricksKey,
 			Rejected: true,

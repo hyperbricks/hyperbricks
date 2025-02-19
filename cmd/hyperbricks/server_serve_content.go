@@ -115,6 +115,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 
 // ComponentErrorTemplate represents the structure for rendering errors
 type ComponentErrorTemplate struct {
+	Hash string
 	Type string
 	File string
 	Path string
@@ -131,7 +132,7 @@ const errorTemplate = `{{if .HasErrors}}
 				'	<div class="error_error">{{.Err}}</div>\n' +
 				'	type <span class="error_type error_mark"></span> at file\n' +
 				'	<span class="error_file error_mark">{{.File}}.hyperbricks</span> at \n' +
-				'	<span class="error_path error_mark">{{.Path}}.{{.Key}}</span> \n' +
+				'	<span class="error_path error_mark">[{{.Hash}}] {{.Path}}.{{.Key}}</span> \n' +
 				'	</span>\n' +
 				'</li>\n';
 		{{end}}

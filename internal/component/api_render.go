@@ -71,6 +71,7 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	config, ok := instance.(APIConfig)
 	if !ok {
 		return "", append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Key:      config.Component.Meta.HyperBricksKey,
 			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
@@ -85,6 +86,7 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	responseData, err := fetchDataFromAPI(config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Key:      config.Component.Meta.HyperBricksKey,
 			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
@@ -101,6 +103,7 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 
 		}
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Key:      config.Component.Meta.HyperBricksKey,
 			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
@@ -127,6 +130,7 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 			fileContent, err := composite.GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
+					Hash: shared.GenerateHash(),
 					Key:  config.Component.Meta.HyperBricksKey,
 					Path: config.Component.Meta.HyperBricksPath,
 					File: config.Component.Meta.HyperBricksFile,
@@ -282,6 +286,7 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 	tmpl, err := template.New("apiTemplate").Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Key:      config.Component.Meta.HyperBricksKey,
 			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
@@ -296,6 +301,7 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 	err = tmpl.Execute(&output, context)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Key:      config.Component.Meta.HyperBricksKey,
 			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
