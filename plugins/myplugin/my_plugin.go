@@ -34,6 +34,7 @@ func (p *MyPlugin) Render(instance interface{}, ctx context.Context) (string, []
 	err := shared.DecodeWithBasicHooks(instance, &config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateCommentHash(),
 			Path:     config.HyperBricksPath,
 			Key:      config.HyperBricksKey,
 			Rejected: true,

@@ -2,6 +2,7 @@ package shared
 
 // ComponentError represents an error associated with a component.
 type ComponentError struct {
+	Hash     string // non-collision hash
 	File     string // Hyperbricks file
 	Err      string // A descriptive error message
 	Key      string // Current key of the component where the error occured

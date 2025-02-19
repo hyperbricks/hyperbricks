@@ -58,6 +58,7 @@ func (mir *MultipleImagesRenderer) Render(instance interface{}, ctx context.Cont
 	config, ok := instance.(MultipleImagesConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateCommentHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,
@@ -73,6 +74,7 @@ func (mir *MultipleImagesRenderer) Render(instance interface{}, ctx context.Cont
 	result, err := processor.ProcessMultipleImages(config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateCommentHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,

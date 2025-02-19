@@ -191,6 +191,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
+			Hash: shared.GenerateCommentHash(),
 			Key:  config.Composite.Meta.HyperBricksKey,
 			Path: config.Composite.Meta.HyperBricksPath,
 			File: config.Composite.Meta.HyperBricksFile,
@@ -201,6 +202,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 
 	if config.ConfigType != "<HYPERMEDIA>" {
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateCommentHash(),
 			Key:      config.Composite.Meta.HyperBricksKey,
 			Path:     config.Composite.Meta.HyperBricksPath,
 			File:     config.Composite.Meta.HyperBricksFile,

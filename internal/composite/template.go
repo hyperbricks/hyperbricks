@@ -58,6 +58,7 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
+			Hash: shared.GenerateCommentHash(),
 			File: config.Composite.Meta.HyperBricksFile,
 			Path: config.Composite.Meta.HyperBricksPath,
 			Key:  config.Composite.Meta.HyperBricksKey,
@@ -84,6 +85,7 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 			fileContent, err := GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
+					Hash: shared.GenerateCommentHash(),
 					File: config.Composite.Meta.HyperBricksFile,
 					Path: config.Composite.Meta.HyperBricksPath,
 					Key:  config.Composite.Meta.HyperBricksKey,
@@ -108,6 +110,7 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 				errors = append(errors, render_errors...)
 			} else {
 				errors = append(errors, shared.ComponentError{
+					Hash:     shared.GenerateCommentHash(),
 					File:     config.Composite.Meta.HyperBricksFile,
 					Path:     config.Composite.Meta.HyperBricksPath + ".values",
 					Key:      key,
