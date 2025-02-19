@@ -88,7 +88,7 @@ func (renderer *LocalJSONRenderer) Render(instance interface{}, ctx context.Cont
 			fileContent, err := composite.GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
-					Hash: shared.GenerateCommentHash(),
+					Hash: shared.GenerateHash(),
 					Key:  config.Component.Meta.HyperBricksKey,
 					Path: config.Component.Meta.HyperBricksPath,
 					File: config.Component.Meta.HyperBricksFile,
@@ -146,7 +146,7 @@ func applyJsonTemplate(templateStr string, data map[string]interface{}, config L
 	tmpl, err := template.New("localJSONTemplate").Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
-			Hash: shared.GenerateCommentHash(),
+			Hash: shared.GenerateHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,
@@ -158,7 +158,7 @@ func applyJsonTemplate(templateStr string, data map[string]interface{}, config L
 	err = tmpl.Execute(&output, context)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
-			Hash: shared.GenerateCommentHash(),
+			Hash: shared.GenerateHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,

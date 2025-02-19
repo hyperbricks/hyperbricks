@@ -84,14 +84,14 @@ func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (s
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
-			Hash: shared.GenerateCommentHash(),
+			Hash: shared.GenerateHash(),
 			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
 		})
 	}
 
 	if config.ConfigType != "<FRAGMENT>" {
 		errors = append(errors, shared.ComponentError{
-			Hash:     shared.GenerateCommentHash(),
+			Hash:     shared.GenerateHash(),
 			File:     config.Composite.Meta.HyperBricksFile,
 			Key:      config.HyperBricksKey,
 			Path:     config.HyperBricksPath,

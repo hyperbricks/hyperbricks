@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"math/big"
 	"time"
 )
@@ -38,8 +37,8 @@ func GenerateTimestampRandomHash(length int) string {
 	return fullHex[:length]
 }
 
-func GenerateCommentHash() string {
-	return fmt.Sprintf("\n<!- %s ->\n", GenerateTimestampRandomHash(12))
+func GenerateHash() string {
+	return GenerateTimestampRandomHash(12)
 }
 
 // GenerateShortHash returns a short base62-encoded hash of the input string.

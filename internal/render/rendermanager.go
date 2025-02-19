@@ -47,7 +47,7 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 	if err != nil {
 
 		errors = append(errors, shared.ComponentError{
-			Hash:     shared.GenerateCommentHash(),
+			Hash:     shared.GenerateHash(),
 			Err:      "Cannot create component instance...",
 			Rejected: true,
 		})
@@ -59,7 +59,7 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 
 	for _, s := range response.Warnings {
 		errors = append(errors, shared.ComponentError{
-			Hash:     shared.GenerateCommentHash(),
+			Hash:     shared.GenerateHash(),
 			Err:      s,
 			Rejected: false,
 		})
@@ -77,7 +77,7 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 
 	} else {
 		return "", append(errors, shared.ComponentError{
-			Hash:     shared.GenerateCommentHash(),
+			Hash:     shared.GenerateHash(),
 			Err:      fmt.Errorf("invalid type for HYPERMEDIA").Error(),
 			Rejected: true,
 		})

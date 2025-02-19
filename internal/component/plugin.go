@@ -40,7 +40,7 @@ func (r *PluginRenderer) Render(instance interface{}, ctx context.Context) (stri
 	config, ok := instance.(PluginConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
-			Hash: shared.GenerateCommentHash(),
+			Hash: shared.GenerateHash(),
 			Key:  config.HyperBricksKey,
 			Path: config.HyperBricksPath,
 			File: config.HyperBricksFile,
@@ -53,7 +53,7 @@ func (r *PluginRenderer) Render(instance interface{}, ctx context.Context) (stri
 	pluginRenderer, pluginExists := r.RenderManager.Plugins[config.PluginName]
 	if !pluginExists {
 		errors = append(errors, shared.ComponentError{
-			Hash: shared.GenerateCommentHash(),
+			Hash: shared.GenerateHash(),
 			Key:  config.HyperBricksKey,
 			Path: config.HyperBricksPath,
 			File: config.HyperBricksFile,
@@ -108,7 +108,7 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 	config, ok := instance.(PluginConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
-			Hash: shared.GenerateCommentHash(),
+			Hash: shared.GenerateHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,
@@ -130,7 +130,7 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 	if err != nil {
 		builder.WriteString(fmt.Sprintf("<!-- Error loading plugin %v: %v -->\n", config.PluginName, err))
 		errors = append(errors, shared.ComponentError{
-			Hash: shared.GenerateCommentHash(),
+			Hash: shared.GenerateHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,

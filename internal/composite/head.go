@@ -68,7 +68,7 @@ func (cr *HeadRenderer) Render(instance interface{}, ctx context.Context) (strin
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
-			Hash: shared.GenerateCommentHash(),
+			Hash: shared.GenerateHash(),
 			File: config.Composite.Meta.HyperBricksFile,
 			Key:  config.Composite.Meta.HyperBricksKey,
 			Path: config.Composite.Meta.HyperBricksPath,
