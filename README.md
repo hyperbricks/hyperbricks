@@ -1,34 +1,20 @@
 
 
-![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
-
 **Licence:** MIT  
 **Version:** v0.2.33-alpha  
-**Build time:** 2025-02-19T22:17:38Z
+**Build time:** 2025-02-21T08:06:13Z
+
+
+![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
 
 ## HyperBricks Documentation
 
 HyperBricks aims to bridge front and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allows to declare and describe the state of a document in a concise and structured manner.
 
-### Usage:
-$> hyperbricks [command]
-
-Available Commands:
--  completion  [Generate the autocompletion script for the specified shell]
--  help        [Help about any command]
--  init        [Create package.hyperbricks and required directories]
--  select      [Select a hyperbricks module]
--  start       [Start server]
--  static      [Render static content]
--  version     [Show version]
-
-Flags:
-  -h, --help   help for hyperbricks
-
-Use "hyperbricks [command] --help" for more information about a command.
+* The project is still in alpha stage, but the features documented here are tested and will work.
 
 Go direct to:
-
+- [Quickstart](#quickstart)
 - [Installation](#installation)
 - [Defining Hypermedia Documents and Fragments](#defining-hypermedia-documents-and-fragments)
 - [Adding Properties to Configurations](#adding-properties-to-configurations)
@@ -42,11 +28,11 @@ Go direct to:
 
 ### Defining Hypermedia Documents and Fragments
 
-Hypermedia documents or fragments can be declared using simple key-value properties:
+Hypermedia documents or fragments can be declared using simple key-value properties. This next example creates two locations ons site root (index) and /somefragment
 
 ```properties
 myHypermedia = <HYPERMEDIA>
-myHypermedia.route = index 
+myHypermedia.route = index
 
 # Or
 myFragment = <FRAGMENT>
@@ -55,7 +41,7 @@ myFragment.route = somefragment
 
 ### Adding Properties to Configurations
 
-You can add properties to hypermedia objects in either flat or nested formats:
+Add properties to hypermedia objects in either flat or nested formats
 
 **Flat Configuration Example:**
 ```properties
@@ -215,7 +201,49 @@ fragment.content {
 ```
 
 
+
+### Quickstart
+Follow these steps to get started
+#### 1. [Installation](#installation)
+#### 2.	Initialize a new project:
+```bash
+hyperbricks init -m someproject
+```
+
+This creates a folder <someproject> in the modules directory in the root. Always run the hyperbricks cli commands the root (parent of modules directory), otherwise it will not find the module given by the -m parameter.
+
+In the folder someproject you find this directory structure:
+```
+.
+├── hyperbricks
+├────── hello_world.hyperbricks
+├── rendered
+├── resources
+├── static
+├── template
+└─ package.hyperbricks
+```
+
+#### 3.	Start the project:
+```bash
+hyperbricks start -m someproject 
+```
+
+HyperBricks will scan the hyperbricks root folder (not subfolders) and look for package.hyperbricks for global configurations.
+
+for start options type:
+```bash
+hyperbricks start --help 
+```
+
+#### 3.	Access the project in the browser:
+Open the web browser and navigate to http://localhost:8080 to view running hyperbricks.
+
 ### Installation
+
+Requirements:
+
+- Go version 1.23.2 or higher
 
 To install HyperBricks, use the following command:
 
@@ -223,8 +251,26 @@ To install HyperBricks, use the following command:
 go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
 ```
 
-This command downloads and installs the HyperBricks CLI tool on your system.
----
+This command downloads and installs the HyperBricks CLI tool
+
+### Usage:
+```
+hyperbricks [command]
+```
+```
+Available Commands:
+-  completion  [Generate the autocompletion script for the specified shell]
+-  help        [Help about any command]
+-  init        [Create package.hyperbricks and required directories]
+-  select      [Select a hyperbricks module]
+-  start       [Start server]
+-  static      [Render static content]
+-  version     [Show version]
+
+Flags:
+  -h, --help   help for hyperbricks
+```
+Use "hyperbricks [command] --help" for more information about a command.
 
 ### Initializing a Project
 
@@ -236,13 +282,13 @@ hyperbricks init -m <name-of-hyperbricks-module>
 without the -m and ```<name-of-hyperbricks-module>``` this will create a ```default``` folder.
 
 
-This will create a `package.hyperbricks` configuration file and set up the required directories for your project.
+This will create a `package.hyperbricks` configuration file and set up the required directories for the project.
 
 ---
 
 ### Starting a Module
 
-Once your project is initialized, start the HyperBricks server using the `start` command:
+Once the project is initialized, start the HyperBricks server using the `start` command:
 
 ```bash
 hyperbricks start  -m <name-of-hyperbricks-module>
@@ -252,7 +298,7 @@ Use the --production flag when adding system and service manager in linux or on 
 ```bash
 hyperbricks start  -m <name-of-hyperbricks-module> --production
 ```
-This will launch the server, allowing you to manage and serve hypermedia content on the ip of your machine.
+This will launch the server, allowing you to manage and serve hypermedia content on the ip of the machine.
 
 Or ```hyperbricks start``` for running the module named ```default```.
 

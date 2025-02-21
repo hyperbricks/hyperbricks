@@ -1,15 +1,16 @@
 {{define "main"}}
 
-![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
-
 **Licence:** MIT  
-**Version:** {{.version}}  
-**Build time:** {{.buildtime}}
+**Version:** v0.2.33-alpha  
+**Build time:** 2025-02-21T08:06:13Z
+
+
+![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
 
 {{include "template_note.md"}}
 
 Go direct to:
-
+- [Quickstart](#quickstart)
 - [Installation](#installation)
 - [Defining Hypermedia Documents and Fragments](#defining-hypermedia-documents-and-fragments)
 - [Adding Properties to Configurations](#adding-properties-to-configurations)

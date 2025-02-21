@@ -1,4 +1,46 @@
+
+### Quickstart
+Follow these steps to get started
+#### 1. [Installation](#installation)
+#### 2.	Initialize a new project:
+```bash
+hyperbricks init -m someproject
+```
+
+This creates a folder <someproject> in the modules directory in the root. Always run the hyperbricks cli commands the root (parent of modules directory), otherwise it will not find the module given by the -m parameter.
+
+In the folder someproject you find this directory structure:
+```
+.
+├── hyperbricks
+├────── hello_world.hyperbricks
+├── rendered
+├── resources
+├── static
+├── template
+└─ package.hyperbricks
+```
+
+#### 3.	Start the project:
+```bash
+hyperbricks start -m someproject 
+```
+
+HyperBricks will scan the hyperbricks root folder (not subfolders) and look for package.hyperbricks for global configurations.
+
+for start options type:
+```bash
+hyperbricks start --help 
+```
+
+#### 3.	Access the project in the browser:
+Open the web browser and navigate to http://localhost:8080 to view running hyperbricks.
+
 ### Installation
+
+Requirements:
+
+- Go version 1.23.2 or higher
 
 To install HyperBricks, use the following command:
 
@@ -6,8 +48,26 @@ To install HyperBricks, use the following command:
 go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
 ```
 
-This command downloads and installs the HyperBricks CLI tool on your system.
----
+This command downloads and installs the HyperBricks CLI tool
+
+### Usage:
+```
+hyperbricks [command]
+```
+```
+Available Commands:
+-  completion  [Generate the autocompletion script for the specified shell]
+-  help        [Help about any command]
+-  init        [Create package.hyperbricks and required directories]
+-  select      [Select a hyperbricks module]
+-  start       [Start server]
+-  static      [Render static content]
+-  version     [Show version]
+
+Flags:
+  -h, --help   help for hyperbricks
+```
+Use "hyperbricks [command] --help" for more information about a command.
 
 ### Initializing a Project
 
@@ -19,13 +79,13 @@ hyperbricks init -m <name-of-hyperbricks-module>
 without the -m and ```<name-of-hyperbricks-module>``` this will create a ```default``` folder.
 
 
-This will create a `package.hyperbricks` configuration file and set up the required directories for your project.
+This will create a `package.hyperbricks` configuration file and set up the required directories for the project.
 
 ---
 
 ### Starting a Module
 
-Once your project is initialized, start the HyperBricks server using the `start` command:
+Once the project is initialized, start the HyperBricks server using the `start` command:
 
 ```bash
 hyperbricks start  -m <name-of-hyperbricks-module>
@@ -35,7 +95,7 @@ Use the --production flag when adding system and service manager in linux or on 
 ```bash
 hyperbricks start  -m <name-of-hyperbricks-module> --production
 ```
-This will launch the server, allowing you to manage and serve hypermedia content on the ip of your machine.
+This will launch the server, allowing you to manage and serve hypermedia content on the ip of the machine.
 
 Or ```hyperbricks start``` for running the module named ```default```.
 
