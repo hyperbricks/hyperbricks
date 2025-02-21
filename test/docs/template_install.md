@@ -26,7 +26,7 @@ In the folder someproject you find this directory structure:
 hyperbricks start -m someproject 
 ```
 
-HyperBricks will scan the hyperbricks root folder (not subfolders) and look for package.hyperbricks for global configurations.
+HyperBricks will scan the hyperbricks root folder for files with the .hyperbricks extensions (not subfolders) and look for package.hyperbricks in the root of the module for global configurations.
 
 for start options type:
 ```bash
