@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -49,7 +50,7 @@ func (r *CssRenderer) Types() []string {
 	}
 }
 
-func (sr *CssRenderer) Render(instance interface{}) (string, []error) {
+func (sr *CssRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 

@@ -21,6 +21,8 @@ The opening HTML tag with attributes
     "Template": null,
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0,
     "Doctype": "",
     "HtmlTag": "<html lang=\"en\">",

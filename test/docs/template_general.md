@@ -1,10 +1,10 @@
 ### Defining Hypermedia Documents and Fragments
 
-Hypermedia documents or fragments can be declared using simple key-value properties:
+Hypermedia documents or fragments can be declared using simple key-value properties. This next example creates two locations ons site root (index) and /somefragment
 
 ```properties
 myHypermedia = <HYPERMEDIA>
-myHypermedia.route = index 
+myHypermedia.route = index
 
 # Or
 myFragment = <FRAGMENT>
@@ -13,7 +13,7 @@ myFragment.route = somefragment
 
 ### Adding Properties to Configurations
 
-You can add properties to hypermedia objects in either flat or nested formats:
+Add properties to hypermedia objects in either flat or nested formats
 
 **Flat Configuration Example:**
 ```properties

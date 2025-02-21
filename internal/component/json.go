@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -44,7 +45,7 @@ func (config *LocalJSONConfig) Validate() []error {
 	return errors
 }
 
-func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error) {
+func (renderer *LocalJSONRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 
@@ -87,6 +88,7 @@ func (renderer *LocalJSONRenderer) Render(instance interface{}) (string, []error
 			fileContent, err := composite.GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
+					Hash: shared.GenerateHash(),
 					Key:  config.Component.Meta.HyperBricksKey,
 					Path: config.Component.Meta.HyperBricksPath,
 					File: config.Component.Meta.HyperBricksFile,
@@ -144,6 +146,7 @@ func applyJsonTemplate(templateStr string, data map[string]interface{}, config L
 	tmpl, err := template.New("localJSONTemplate").Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,
@@ -155,6 +158,7 @@ func applyJsonTemplate(templateStr string, data map[string]interface{}, config L
 	err = tmpl.Execute(&output, context)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,

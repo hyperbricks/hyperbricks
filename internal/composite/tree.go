@@ -1,6 +1,7 @@
 package composite
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -38,6 +39,7 @@ func (config *TreeConfig) Validate() []error {
 	var validationErrors []error
 	if config.Meta.ConfigType != TreeRendererConfigGetName() {
 		validationErrors = append(validationErrors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			File:     config.Meta.HyperBricksFile,
 			Key:      config.Meta.HyperBricksKey,
 			Path:     config.Meta.HyperBricksPath,
@@ -48,6 +50,7 @@ func (config *TreeConfig) Validate() []error {
 	}
 	if len(config.Items) == 0 {
 		validationErrors = append(validationErrors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			File: config.Meta.HyperBricksFile,
 			Key:  config.Meta.HyperBricksKey,
 			Path: config.Meta.HyperBricksPath,
@@ -61,7 +64,7 @@ func (config *TreeConfig) Validate() []error {
 
 // Concurrent and Recursive Renderer and returns the result and errors.
 // This function is a blueprint function for all concurent rendering of pages, render and template objects
-func (r *TreeRenderer) Render(data interface{}) (string, []error) {
+func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []error) {
 	var renderErrors []error
 
 	// Decode the instance into TemplateConfig without type assertion
@@ -95,6 +98,7 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 		component, ok := config.Items[key].(map[string]interface{})
 		if !ok {
 			renderErrors = append(renderErrors, shared.ComponentError{
+				Hash:     shared.GenerateHash(),
 				File:     config.Composite.Meta.HyperBricksFile,
 				Key:      key,
 				Path:     config.Composite.Meta.HyperBricksPath,
@@ -134,6 +138,7 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 			} else {
 				// @type exists but is not a string
 				renderErrors = append(renderErrors, shared.ComponentError{
+					Hash:     shared.GenerateHash(),
 					Type:     "<TREE>",
 					File:     config.Composite.Meta.HyperBricksFile,
 					Path:     config.Composite.Meta.HyperBricksPath,
@@ -146,6 +151,7 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 		} else {
 			// @type does not exist
 			renderErrors = append(renderErrors, shared.ComponentError{
+				Hash:     shared.GenerateHash(),
 				File:     config.Composite.Meta.HyperBricksFile,
 				Path:     config.Composite.Meta.HyperBricksPath,
 				Key:      key,
@@ -161,8 +167,8 @@ func (r *TreeRenderer) Render(data interface{}) (string, []error) {
 			defer wg.Done()
 
 			// Render the component
-			output, errors := r.RenderManager.Render(componentType, componentConfig)
-
+			output, errors := r.RenderManager.Render(componentType, componentConfig, ctx)
+			// output += fmt.Sprintf("<!-- %s -->", shared.GenerateHash())
 			// Store results in preallocated slices
 			outputs[idx] = output
 			if errors != nil {

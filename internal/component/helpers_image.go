@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"fmt"
 
 	"image"
@@ -32,7 +33,7 @@ type RenderImageConfig struct {
 	Multiple *MultipleImagesConfig `mapstructure:"multiple"`
 }
 
-func (ir *ImageProcessor) Render(instance interface{}) (string, error) {
+func (ir *ImageProcessor) Render(instance interface{}, ctx context.Context) (string, error) {
 	config, ok := instance.(RenderImageConfig)
 	if !ok {
 		return "", fmt.Errorf("invalid configuration type for ImageProcessor")

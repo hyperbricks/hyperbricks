@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"log"
@@ -56,6 +57,7 @@ func (mc *MenuConfig) Validate() []error {
 
 	if mc.Sort != "" && !(mc.Sort == "route" || mc.Sort == "index" || mc.Sort == "title") {
 		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			Key:  mc.Component.Meta.HyperBricksKey,
 			Path: mc.Component.Meta.HyperBricksPath,
 			File: mc.Component.Meta.HyperBricksFile,
@@ -67,6 +69,7 @@ func (mc *MenuConfig) Validate() []error {
 
 	if mc.Order != "" && !(mc.Order == "asc" || mc.Order == "desc") {
 		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			Key:  mc.Component.Meta.HyperBricksKey,
 			Path: mc.Component.Meta.HyperBricksPath,
 			File: mc.Component.Meta.HyperBricksFile,
@@ -79,13 +82,14 @@ func (mc *MenuConfig) Validate() []error {
 	return errors
 }
 
-func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
+func (mr *MenuRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 
 	config, ok := instance.(MenuConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,
@@ -119,6 +123,7 @@ func (mr *MenuRenderer) Render(instance interface{}) (string, []error) {
 		log.Printf("Error sorting pages: %v", err)
 		builder.WriteString(fmt.Sprintf("<!-- Error sorting pages: %v -->\n", err))
 		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,

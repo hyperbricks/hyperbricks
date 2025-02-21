@@ -36,6 +36,8 @@ replaces the current url in the location bar
     "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0
   }
 ==== expected output ====

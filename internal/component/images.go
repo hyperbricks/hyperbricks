@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -50,13 +51,14 @@ func (config *MultipleImagesConfig) Validate() []error {
 	return errors
 }
 
-func (mir *MultipleImagesRenderer) Render(instance interface{}) (string, []error) {
+func (mir *MultipleImagesRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 
 	config, ok := instance.(MultipleImagesConfig)
 	if !ok {
 		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,
@@ -72,6 +74,7 @@ func (mir *MultipleImagesRenderer) Render(instance interface{}) (string, []error
 	result, err := processor.ProcessMultipleImages(config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,

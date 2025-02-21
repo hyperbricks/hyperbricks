@@ -24,6 +24,8 @@ Special body enclosure with use of a pipe symbol |. Please note that this will n
   "Template": null,
   "IsStatic": false,
   "Static": "",
+  "Cache": "",
+  "NoCache": false,
   "Index": 0,
   "Doctype": "",
   "HtmlTag": "",

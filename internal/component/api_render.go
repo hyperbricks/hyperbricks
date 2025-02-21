@@ -2,6 +2,7 @@ package component
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"fmt"
@@ -62,12 +63,15 @@ func (r *APIRenderer) Types() []string {
 	}
 }
 
-func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
+func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
+	hbConfig := shared.GetHyperBricksConfiguration()
+
 	config, ok := instance.(APIConfig)
 	if !ok {
 		return "", append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Key:      config.Component.Meta.HyperBricksKey,
 			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
@@ -82,6 +86,7 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	responseData, err := fetchDataFromAPI(config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Key:      config.Component.Meta.HyperBricksKey,
 			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
@@ -91,12 +96,21 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 		})
 	}
 
-	if config.Debug {
+	if config.Debug && hbConfig.Mode != shared.LIVE_MODE {
 		jsonBytes, err := json.MarshalIndent(responseData, "", "  ")
 		if err != nil {
 			fmt.Println("Error marshaling struct to JSON:", err)
 
 		}
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      config.Component.Meta.HyperBricksKey,
+			Path:     config.Component.Meta.HyperBricksPath,
+			File:     config.Component.Meta.HyperBricksFile,
+			Type:     APIConfigGetName(),
+			Err:      "Debug in <API_RENDER> is enabled. Please disable in production",
+			Rejected: false,
+		})
 		builder.WriteString(fmt.Sprintf("<!-- API_RENDER.debug = true -->\n<!--  <![CDATA[ \n%s\n ]]> -->", string(jsonBytes)))
 	}
 
@@ -116,6 +130,7 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 			fileContent, err := composite.GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
+					Hash: shared.GenerateHash(),
 					Key:  config.Component.Meta.HyperBricksKey,
 					Path: config.Component.Meta.HyperBricksPath,
 					File: config.Component.Meta.HyperBricksFile,
@@ -137,6 +152,12 @@ func (ar *APIRenderer) Render(instance interface{}) (string, []error) {
 	apiContent := renderedOutput
 	if config.Enclose != "" {
 		apiContent = shared.EncloseContent(config.Enclose, apiContent)
+	}
+
+	var jwtToken string = ""
+	if ctx != nil {
+		jwtToken, _ = ctx.Value(shared.JwtKey).(string)
+		builder.WriteString(fmt.Sprintf("<!-- jwtToken:%s -->", jwtToken))
 	}
 
 	builder.WriteString(apiContent)
@@ -265,6 +286,7 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 	tmpl, err := template.New("apiTemplate").Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Key:      config.Component.Meta.HyperBricksKey,
 			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,
@@ -279,6 +301,7 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 	err = tmpl.Execute(&output, context)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Key:      config.Component.Meta.HyperBricksKey,
 			Path:     config.Component.Meta.HyperBricksPath,
 			File:     config.Component.Meta.HyperBricksFile,

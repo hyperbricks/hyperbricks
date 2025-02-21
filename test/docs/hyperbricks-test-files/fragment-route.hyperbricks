@@ -34,6 +34,8 @@ The route (URL-friendly identifier) for the fragment
     "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0
   }
 ==== expected output ====

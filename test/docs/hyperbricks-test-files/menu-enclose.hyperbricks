@@ -44,6 +44,8 @@ The enclosing HTML element for the header divided by |
     "Template": null,
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0,
     "Doctype": "",
     "HtmlTag": "",

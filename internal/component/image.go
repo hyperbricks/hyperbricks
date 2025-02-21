@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -47,7 +48,7 @@ func (config *SingleImageConfig) Validate() []error {
 	return errors
 }
 
-func (sir *SingleImageRenderer) Render(instance interface{}) (string, []error) {
+func (sir *SingleImageRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	var builder strings.Builder
 
@@ -66,7 +67,14 @@ func (sir *SingleImageRenderer) Render(instance interface{}) (string, []error) {
 
 	result, err := sir.ImageProcessorInstance.ProcessSingleImage(config)
 	if err != nil {
-		errors = append(errors, fmt.Errorf("failed to process image: %w", err))
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			File:     config.Component.Meta.HyperBricksFile,
+			Key:      config.HyperBricksKey,
+			Path:     config.HyperBricksPath,
+			Err:      fmt.Errorf("failed to process image: %w", err).Error(),
+			Rejected: true,
+		})
 		return builder.String(), errors
 	}
 

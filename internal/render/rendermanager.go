@@ -2,6 +2,7 @@
 package render
 
 import (
+	"context"
 	"fmt"
 	"plugin"
 	"reflect"
@@ -33,7 +34,7 @@ func NewRenderManager() *RenderManager {
 }
 
 // Render renders content based on its type using registered components or plugins.
-func (rm *RenderManager) Render(rendererType string, data map[string]interface{}) (string, []error) {
+func (rm *RenderManager) Render(rendererType string, data map[string]interface{}, ctx context.Context) (string, []error) {
 	var errors []error
 	// Create a TypeRequest for the TypeFactory
 	request := typefactory.TypeRequest{
@@ -46,6 +47,7 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 	if err != nil {
 
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Err:      "Cannot create component instance...",
 			Rejected: true,
 		})
@@ -57,6 +59,7 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 
 	for _, s := range response.Warnings {
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Err:      s,
 			Rejected: false,
 		})
@@ -68,12 +71,13 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 	rm.mu.RUnlock()
 
 	if exists {
-		html, errs := renderer.Render(response.Instance)
+		html, errs := renderer.Render(response.Instance, ctx)
 		errors = append(errors, errs...)
 		return html, errors
 
 	} else {
 		return "", append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Err:      fmt.Errorf("invalid type for HYPERMEDIA").Error(),
 			Rejected: true,
 		})

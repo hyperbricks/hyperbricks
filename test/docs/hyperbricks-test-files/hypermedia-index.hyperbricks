@@ -23,6 +23,8 @@ Index number is a sort order option for the hypermedia defined in the section fi
     "Template": null,
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 1,
     "Doctype": "",
     "HtmlTag": "",

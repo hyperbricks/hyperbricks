@@ -36,6 +36,8 @@ Allows you to do a client-side redirect that does not do a full page reload
     "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0
   }
 ==== expected output ====

@@ -44,6 +44,8 @@ The field to sort menu items by ('title', 'route', or 'index').
     "Template": null,
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0,
     "Doctype": "",
     "HtmlTag": "",

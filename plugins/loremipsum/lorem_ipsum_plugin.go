@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	lorem "github.com/drhodes/golorem"
@@ -31,7 +32,7 @@ type LoremIpsumPlugin struct{}
 var _ shared.PluginRenderer = (*LoremIpsumPlugin)(nil)
 
 // Render is the function that will be called by the renderer.
-func (p *LoremIpsumPlugin) Render(instance interface{}) (string, []error) {
+func (p *LoremIpsumPlugin) Render(instance interface{}, ctx context.Context) (string, []error) {
 
 	var errors []error
 
@@ -40,6 +41,7 @@ func (p *LoremIpsumPlugin) Render(instance interface{}) (string, []error) {
 	err := shared.DecodeWithBasicHooks(instance, &config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			Path:     config.HyperBricksPath,
 			Key:      config.HyperBricksKey,
 			Rejected: true,

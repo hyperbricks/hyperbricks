@@ -34,6 +34,8 @@ Index number is a sort order option for the <MENU> section. See <MENU> for furth
     "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 1
   }
 ==== expected output ====

@@ -23,6 +23,8 @@ The title of the hypermedia site
     "Template": null,
     "IsStatic": false,
     "Static": "",
+    "Cache": "",
+    "NoCache": false,
     "Index": 0,
     "Doctype": "",
     "HtmlTag": "",

@@ -1,6 +1,7 @@
 package composite
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -33,6 +34,7 @@ func (config *HeadConfig) Validate() []error {
 
 	if config.ConfigType != "<HEAD>" {
 		warnings = append(warnings, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
 			File:     config.Composite.Meta.HyperBricksFile,
 			Key:      config.Composite.Meta.HyperBricksKey,
 			Path:     config.Composite.Meta.HyperBricksPath,
@@ -59,7 +61,7 @@ func (r *HeadRenderer) Types() []string {
 }
 
 // Render implements the RenderComponent interface for COA.
-func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
+func (cr *HeadRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var headbuilder strings.Builder
 	var errors []error
 	var config HeadConfig
@@ -67,6 +69,7 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			File: config.Composite.Meta.HyperBricksFile,
 			Key:  config.Composite.Meta.HyperBricksKey,
 			Path: config.Composite.Meta.HyperBricksPath,
@@ -131,7 +134,7 @@ func (cr *HeadRenderer) Render(instance interface{}) (string, []error) {
 
 	config.Items["enclose"] = "<head>|</head>"
 
-	result, errr := cr.RenderManager.Render(TreeRendererConfigGetName(), config.Items)
+	result, errr := cr.RenderManager.Render(TreeRendererConfigGetName(), config.Items, ctx)
 	errors = append(errors, errr...)
 
 	return result, errors

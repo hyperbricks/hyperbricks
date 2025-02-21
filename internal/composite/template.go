@@ -2,6 +2,7 @@ package composite
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"html/template"
 	"os"
@@ -48,7 +49,7 @@ func (head *TemplateConfig) Validate() []error {
 	return warnings
 }
 
-func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
+func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var templatebuilder strings.Builder
 	var errors []error
 
@@ -57,6 +58,7 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 	err := mapstructure.Decode(instance, &config)
 	if err != nil {
 		return "", append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
 			File: config.Composite.Meta.HyperBricksFile,
 			Path: config.Composite.Meta.HyperBricksPath,
 			Key:  config.Composite.Meta.HyperBricksKey,
@@ -83,6 +85,7 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 			fileContent, err := GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
+					Hash: shared.GenerateHash(),
 					File: config.Composite.Meta.HyperBricksFile,
 					Path: config.Composite.Meta.HyperBricksPath,
 					Key:  config.Composite.Meta.HyperBricksKey,
@@ -102,11 +105,12 @@ func (tr *TemplateRenderer) Render(instance interface{}) (string, []error) {
 		if value, ok := config.Values[key].(map[string]interface{}); ok {
 
 			if componentType, ok := value["@type"].(string); ok {
-				result, render_errors := tr.RenderManager.Render(componentType, value)
+				result, render_errors := tr.RenderManager.Render(componentType, value, ctx)
 				treeRenderOutPut[key] = template.HTML(result)
 				errors = append(errors, render_errors...)
 			} else {
 				errors = append(errors, shared.ComponentError{
+					Hash:     shared.GenerateHash(),
 					File:     config.Composite.Meta.HyperBricksFile,
 					Path:     config.Composite.Meta.HyperBricksPath + ".values",
 					Key:      key,
