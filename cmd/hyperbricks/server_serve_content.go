@@ -82,6 +82,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 
 	// Extract JWT token from the Authorization header for authentication if needed
 	authHeader := r.Header.Get("Authorization")
+
 	var jwtToken string
 	if strings.HasPrefix(authHeader, "Bearer ") {
 		jwtToken = strings.TrimPrefix(authHeader, "Bearer ")
@@ -89,6 +90,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 
 	// Store JWT token in request context
 	ctx := context.WithValue(r.Context(), shared.JwtKey, jwtToken)
+	ctx = context.WithValue(ctx, shared.RequestBody, r.Body)
 
 	var htmlContent strings.Builder
 

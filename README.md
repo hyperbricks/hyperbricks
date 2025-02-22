@@ -7,6 +7,13 @@
 
 ![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
 
+<<<<<<< Updated upstream
+=======
+**Licence:** MIT  
+**Version:** v0.2.1-alpha  
+**Build time:** 2025-02-14T20:42:08Z
+
+>>>>>>> Stashed changes
 ## HyperBricks Documentation
 
 HyperBricks aims to bridge front and back-end development of [htmx](https://htmx.org/) powered hypermedia applications using nested declarative configuration files. These configuration files (referred to as "hyperbricks") allows to declare and describe the state of a document in a concise and structured manner.

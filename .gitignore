@@ -16,6 +16,9 @@
 # Ignore Mac OS DS_Store files everywhere
 **/.DS_Store
 
+
+
 TO_DO.md
 JWT_STRATEGY.md
+PostgREST HyperBricks API_RENDER.png
 CHANGES

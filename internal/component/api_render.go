@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"time"
 
 	"fmt"
 	"html/template"
@@ -12,9 +13,11 @@ import (
 
 	"net/http"
 	"net/http/cookiejar"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/hyperbricks/hyperbricks/internal/composite"
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
@@ -31,9 +34,11 @@ type APIConfig struct {
 	Template           string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-template.hyperbricks}}"`
 	Inline             string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{api-render-inline.hyperbricks}}"`
 	Values             map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-values.hyperbricks}}"`
-	User               string                 `mapstructure:"user" description:"User for basic auth" example:"{!{api-render-user.hyperbricks}}"`
-	Pass               string                 `mapstructure:"pass" description:"User for basic auth" example:"{!{api-render-pass.hyperbricks}}"`
-	Debug              bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
+
+	Username  string `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-username.hyperbricks}}"`
+	Password  string `mapstructure:"passpass" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks}}"`
+	JwtSecret string `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for  Bearer Token Authentication. When false it uses basic auth via http.Request" example:"{!{api-render-bearer.hyperbricks}}"`
+	Debug     bool   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
 }
 
 func APIConfigGetName() string {
@@ -82,7 +87,8 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	}
 
 	errors = append(errors, config.Validate()...)
-
+	// Call function to process the request body
+	config.Body = processRequest(ctx, config.Body)
 	responseData, err := fetchDataFromAPI(config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
@@ -153,11 +159,12 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	if config.Enclose != "" {
 		apiContent = shared.EncloseContent(config.Enclose, apiContent)
 	}
-
-	var jwtToken string = ""
-	if ctx != nil {
-		jwtToken, _ = ctx.Value(shared.JwtKey).(string)
-		builder.WriteString(fmt.Sprintf("<!-- jwtToken:%s -->", jwtToken))
+	if config.JwtSecret == "" {
+		var jwtToken string = ""
+		if ctx != nil {
+			jwtToken, _ = ctx.Value(shared.JwtKey).(string)
+			builder.WriteString(fmt.Sprintf("<!-- jwtToken:%s -->", jwtToken))
+		}
 	}
 
 	builder.WriteString(apiContent)
@@ -165,60 +172,129 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	return builder.String(), errors
 }
 
-// func fetchDataFromAPI_OldCode(config APIConfig) (interface{}, error) {
-// 	jar, _ := cookiejar.New(nil)
-// 	client := &http.Client{Jar: jar}
+func processRequest(ctx context.Context, bodyMap string) string {
+	// Retrieve body from context
+	body, ok := ctx.Value(shared.RequestBody).(io.ReadCloser)
+	if !ok {
+		fmt.Println("Failed to retrieve request body from context")
+		return bodyMap
+	}
+	defer body.Close()
 
-// 	endpoint, err := url.Parse(config.Endpoint)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("invalid endpoint URL: %w", err)
-// 	}
+	// Read the body
+	bodyBytes, err := io.ReadAll(body)
+	if err != nil {
+		fmt.Println("Failed to read request body")
+		return bodyMap
+	}
 
-// 	req, err := http.NewRequest(config.Method, endpoint.String(), bytes.NewBufferString(config.Body))
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to create request: %w", err)
-// 	}
+	// Parse JSON into a map
+	var data map[string]interface{}
+	err = json.Unmarshal(bodyBytes, &data)
+	if err != nil {
+		fmt.Println("Invalid JSON payload")
+		return bodyMap
+	}
 
-// 	for key, value := range config.Headers {
-// 		req.Header.Set(key, value)
-// 	}
+	// Replace placeholders dynamically
+	for key, value := range data {
+		placeholder := fmt.Sprintf("$%s", key) // e.g., $username
+		strValue := fmt.Sprintf("%v", value)   // Convert value to string
+		bodyMap = strings.ReplaceAll(bodyMap, placeholder, strValue)
+	}
 
-// 	if config.User != "" && config.Pass != "" {
-// 		req.SetBasicAuth(config.User, config.Pass)
-// 	}
-
-// 	resp, err := client.Do(req)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error making HTTP request: %w", err)
-// 	}
-// 	defer resp.Body.Close()
-
-// 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-// 		body, _ := io.ReadAll(resp.Body)
-// 		return nil, fmt.Errorf("unexpected HTTP status code: %d, response: %s", resp.StatusCode, string(body))
-// 	}
-
-// 	body, err := io.ReadAll(resp.Body)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to read response body: %w", err)
-// 	}
-
-// 	var jsonArray []map[string]interface{}
-// 	if err := json.Unmarshal(body, &jsonArray); err == nil {
-// 		return jsonArray, nil
-// 	}
-
-// 	// If it's not an array, try to unmarshal into a map
-// 	var jsonMap map[string]interface{}
-// 	if err := json.Unmarshal(body, &jsonMap); err == nil {
-// 		return jsonMap, nil
-// 	}
-
-// 	// If both fail, return an error
-// 	return nil, fmt.Errorf("failed to parse JSON response: %s", string(body))
-// }
+	// Output the updated bodyMap string
+	fmt.Printf("Updated body map string: %s\n", bodyMap)
+	return bodyMap
+}
 
 func fetchDataFromAPI(config APIConfig) (interface{}, error) {
+	// Create a new cookie jar
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create cookie jar: %w", err)
+	}
+	client := &http.Client{Jar: jar}
+
+	// Parse the endpoint URL
+	endpoint, err := url.Parse(config.Endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("invalid endpoint URL: %w", err)
+	}
+
+	fmt.Printf("config.Body:%s\n", config.Body)
+
+	// Pass unstructured body directly
+	req, err := http.NewRequest(config.Method, endpoint.String(), strings.NewReader(config.Body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set custom headers
+	for key, value := range config.Headers {
+		req.Header.Set(key, value)
+	}
+
+	// Handle JWT if secret is provided
+	if config.JwtSecret != "" {
+		claims := jwt.MapClaims{
+			"sub":  "superuser_id",
+			"role": "postgres",
+			"exp":  time.Now().Add(time.Hour * 1).Unix(),
+		}
+
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		tokenString, err := token.SignedString([]byte(config.JwtSecret))
+		if err != nil {
+			return nil, fmt.Errorf("failed to sign JWT token: %w", err)
+		}
+
+		fmt.Printf("JWT Token: %s\n", tokenString)
+
+		// Always set the Content-Type for JSON payload
+		//req.Header.Set("Content-Type", "application/json")
+		// Include the JWT token in the Authorization header
+		req.Header.Set("Authorization", "Bearer "+tokenString)
+
+	} else {
+		// Set basic authentication if credentials are provided
+		if config.Username != "" && config.Password != "" {
+			req.SetBasicAuth(config.Username, config.Password)
+		}
+	}
+
+	// 🛠 Debugging: Print the full request before sending it
+	dump, err := httputil.DumpRequestOut(req, true)
+	if err == nil {
+		fmt.Printf("HTTP Request:\n%s\n", string(dump))
+	} else {
+		fmt.Printf("Failed to dump request: %v\n", err)
+	}
+
+	// Execute the HTTP request
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error making HTTP request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check for a valid HTTP status code
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("unexpected HTTP status code: %d, response: %s", resp.StatusCode, string(body))
+	}
+
+	// Decode JSON response
+	var result interface{}
+	dec := json.NewDecoder(resp.Body)
+	if err := dec.Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode JSON response: %w", err)
+	}
+
+	return result, nil
+}
+
+func fetchDataFromAPIOld(config APIConfig) (interface{}, error) {
 	// Create a new cookie jar (for production use, consider reusing an HTTP client)
 	jar, err := cookiejar.New(nil)
 	if err != nil {
@@ -243,9 +319,33 @@ func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 		req.Header.Set(key, value)
 	}
 
-	// Set basic authentication if credentials are provided
-	if config.User != "" && config.Pass != "" {
-		req.SetBasicAuth(config.User, config.Pass)
+	if config.JwtSecret != "" {
+		// Create token claims for the superuser role.
+		claims := jwt.MapClaims{
+			"sub":  "superuser_id",
+			"role": "postgres",
+			"exp":  time.Now().Add(time.Hour * 1).Unix(),
+		}
+
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		tokenString, err := token.SignedString([]byte(config.JwtSecret)) // Convert secret to []byte
+
+		if err != nil {
+			fmt.Printf("error signing token: %v\n", err)
+			return nil, fmt.Errorf("failed to sign JWT token: %w", err)
+		}
+
+		fmt.Printf("JWT JwtSecret:%s\n", config.JwtSecret)
+		fmt.Printf("JWT Token:%s\n", tokenString)
+
+		req.Header.Set("Content-Type", "application/json")
+		// Include the JWT token in the Authorization header.
+		req.Header.Set("Authorization", "Bearer "+tokenString)
+	} else {
+		// Set basic authentication if credentials are provided
+		if config.Username != "" && config.Password != "" {
+			req.SetBasicAuth(config.Username, config.Password)
+		}
 	}
 
 	// Execute the HTTP request

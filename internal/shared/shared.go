@@ -6,6 +6,7 @@ import "context"
 type contextKey string
 
 const JwtKey contextKey = "jwtToken"
+const RequestBody contextKey = "requestBody"
 
 // PluginConfig is a generic configuration map for plugins.
 type PluginConfig map[string]interface{}

@@ -7,7 +7,11 @@ loading
 === RUN   Test_TestAndDocumentationRender/fragment-section
 === RUN   Test_TestAndDocumentationRender/fragment-enclose
 === RUN   Test_TestAndDocumentationRender/fragment-template
+<<<<<<< Updated upstream
 21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+=======
+14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+>>>>>>> Stashed changes
 === RUN   Test_TestAndDocumentationRender/fragment-static
 === RUN   Test_TestAndDocumentationRender/fragment-cache
 === RUN   Test_TestAndDocumentationRender/fragment-nocache
@@ -33,9 +37,13 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
+<<<<<<< Updated upstream
 21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/hypermedia-cache
 === RUN   Test_TestAndDocumentationRender/hypermedia-nocache
+=======
+14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+>>>>>>> Stashed changes
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
 === RUN   Test_TestAndDocumentationRender/hypermedia-index
 === RUN   Test_TestAndDocumentationRender/hypermedia-doctype
@@ -47,9 +55,15 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/head-css
 === RUN   Test_TestAndDocumentationRender/head-js
 === RUN   Test_TestAndDocumentationRender/template-@doc
+<<<<<<< Updated upstream
 21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/template-template
 21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+=======
+14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
+=== RUN   Test_TestAndDocumentationRender/template-template
+14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+>>>>>>> Stashed changes
 === RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
@@ -95,12 +109,21 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-file
 === RUN   Test_TestAndDocumentationRender/json-template
+<<<<<<< Updated upstream
 21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-inline
 === RUN   Test_TestAndDocumentationRender/json-values
 21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
 21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+=======
+14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+=== RUN   Test_TestAndDocumentationRender/json-inline
+=== RUN   Test_TestAndDocumentationRender/json-values
+14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+=== RUN   Test_TestAndDocumentationRender/json-debug
+14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+>>>>>>> Stashed changes
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
@@ -122,10 +145,17 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/api_render-user
 === RUN   Test_TestAndDocumentationRender/api_render-pass
 === RUN   Test_TestAndDocumentationRender/api_render-debug
+<<<<<<< Updated upstream
 2025/02/21 10:15:57 Version: v0.2.33-alpha
 2025/02/21 10:15:57 Build Time: 2025-02-21T09:15:54Z
 2025/02/21 10:15:57 Static HTML file generated at ../../docs/hyperbricks-reference-v0.2.33-alpha.md
 --- PASS: Test_TestAndDocumentationRender (1.91s)
+=======
+2025/02/14 21:42:11 Version: v0.2.1-alpha
+2025/02/14 21:42:11 Build Time: 2025-02-14T20:42:08Z
+2025/02/14 21:42:11 Static HTML file generated at ../../docs/hyperbricks-reference-v0.2.1-alpha.md
+--- PASS: Test_TestAndDocumentationRender (1.86s)
+>>>>>>> Stashed changes
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.04s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -238,6 +268,10 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/api_render-values (0.10s)
     --- PASS: Test_TestAndDocumentationRender/api_render-user (0.09s)
     --- PASS: Test_TestAndDocumentationRender/api_render-pass (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.10s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.09s)
 PASS
+<<<<<<< Updated upstream
 ok  	command-line-arguments	2.132s
+=======
+ok  	command-line-arguments	2.086s
+>>>>>>> Stashed changes
