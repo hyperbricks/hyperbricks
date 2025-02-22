@@ -172,39 +172,71 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	return builder.String(), errors
 }
 
+func flattenFormData(formData url.Values) map[string]interface{} {
+	flattened := make(map[string]interface{})
+
+	for key, values := range formData {
+		if len(values) == 1 {
+			flattened[key] = values[0] // Single value → string
+		} else {
+			flattened[key] = values // Multiple values → []string
+		}
+	}
+
+	return flattened
+}
+
 func processRequest(ctx context.Context, bodyMap string) string {
+	mergedData := make(map[string]interface{})
+
+	// Retrieve form data from context (correct type)
+	formData, formOk := ctx.Value(shared.FormData).(url.Values)
+	if formOk {
+		// fmt.Printf("formData:%v", formData)
+		flattenedForm := flattenFormData(formData)
+		// fmt.Printf("flattenedForm:%v", flattenedForm)
+		for key, value := range flattenedForm {
+			mergedData[key] = value
+		}
+	}
+
 	// Retrieve body from context
-	body, ok := ctx.Value(shared.RequestBody).(io.ReadCloser)
-	if !ok {
-		fmt.Println("Failed to retrieve request body from context")
-		return bodyMap
-	}
-	defer body.Close()
+	body, bodyOk := ctx.Value(shared.RequestBody).(io.ReadCloser)
+	if bodyOk {
+		defer body.Close()
 
-	// Read the body
-	bodyBytes, err := io.ReadAll(body)
-	if err != nil {
-		fmt.Println("Failed to read request body")
-		return bodyMap
-	}
+		bodyBytes, err := io.ReadAll(body)
+		if err != nil {
+			fmt.Println("Failed to read request body")
+			//return bodyMap
+		}
 
-	// Parse JSON into a map
-	var data map[string]interface{}
-	err = json.Unmarshal(bodyBytes, &data)
-	if err != nil {
-		fmt.Println("Invalid JSON payload")
-		return bodyMap
+		// Parse JSON body into a map
+		var bodyData map[string]interface{}
+		err = json.Unmarshal(bodyBytes, &bodyData)
+		if err != nil {
+			fmt.Println("Invalid JSON payload")
+			//return bodyMap
+		}
+
+		// Merge body data with conflicts resolved
+		for key, value := range bodyData {
+			if _, exists := mergedData[key]; exists {
+				mergedData["body_"+key] = value
+			} else {
+				mergedData[key] = value
+			}
+		}
 	}
 
 	// Replace placeholders dynamically
-	for key, value := range data {
-		placeholder := fmt.Sprintf("$%s", key) // e.g., $username
-		strValue := fmt.Sprintf("%v", value)   // Convert value to string
+	for key, value := range mergedData {
+		placeholder := fmt.Sprintf("$%s", key)
+		strValue := fmt.Sprintf("%v", value)
 		bodyMap = strings.ReplaceAll(bodyMap, placeholder, strValue)
 	}
 
-	// Output the updated bodyMap string
-	fmt.Printf("Updated body map string: %s\n", bodyMap)
+	//fmt.Printf("Updated body map string: %s\n", bodyMap)
 	return bodyMap
 }
 
@@ -222,7 +254,7 @@ func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 		return nil, fmt.Errorf("invalid endpoint URL: %w", err)
 	}
 
-	fmt.Printf("config.Body:%s\n", config.Body)
+	///fmt.Printf("config.Body:%s\n", config.Body)
 
 	// Pass unstructured body directly
 	req, err := http.NewRequest(config.Method, endpoint.String(), strings.NewReader(config.Body))
@@ -249,11 +281,8 @@ func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 			return nil, fmt.Errorf("failed to sign JWT token: %w", err)
 		}
 
-		fmt.Printf("JWT Token: %s\n", tokenString)
+		// fmt.Printf("JWT Token: %s\n", tokenString)
 
-		// Always set the Content-Type for JSON payload
-		//req.Header.Set("Content-Type", "application/json")
-		// Include the JWT token in the Authorization header
 		req.Header.Set("Authorization", "Bearer "+tokenString)
 
 	} else {

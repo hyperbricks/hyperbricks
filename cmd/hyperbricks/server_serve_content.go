@@ -88,9 +88,15 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 		jwtToken = strings.TrimPrefix(authHeader, "Bearer ")
 	}
 
+	// Parse form data before using r.Form
+	if err := r.ParseForm(); err != nil {
+		fmt.Println("Failed to parse form data:", err)
+	}
+
 	// Store JWT token in request context
 	ctx := context.WithValue(r.Context(), shared.JwtKey, jwtToken)
-	ctx = context.WithValue(ctx, shared.RequestBody, r.Body)
+	ctx = context.WithValue(ctx, shared.RequestBody, r.Body) // Store body data in context
+	ctx = context.WithValue(ctx, shared.FormData, r.Form)    // Store form data in context
 
 	var htmlContent strings.Builder
 
