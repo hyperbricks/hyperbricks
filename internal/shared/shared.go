@@ -8,6 +8,7 @@ type contextKey string
 const JwtKey contextKey = "jwtToken"
 const RequestBody contextKey = "requestBody"
 const FormData contextKey = "formData"
+const ResponseWriter contextKey = "ResponseWriter"
 
 // PluginConfig is a generic configuration map for plugins.
 type PluginConfig map[string]interface{}

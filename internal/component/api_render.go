@@ -22,10 +22,12 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type APIConfig struct {
-	shared.Component   `mapstructure:",squash"`
+	shared.Component `mapstructure:",squash"`
+	//HxResponseWriter   http.ResponseWriter    `mapstructure:"hx_response" exclude:"true"`
 	MetaDocDescription string                 `mapstructure:"@doc" description:"<API_RENDER> description" example:"{!{api-render-@doc.hyperbricks}}"`
 	Endpoint           string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-endpoint.hyperbricks}}"`
 	Method             string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-method.hyperbricks}}"`
@@ -37,6 +39,8 @@ type APIConfig struct {
 
 	Username  string `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-username.hyperbricks}}"`
 	Password  string `mapstructure:"passpass" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks}}"`
+	SetCookie string `mapstructure:"setcookie" description:"Set cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
+
 	JwtSecret string `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for  Bearer Token Authentication. When false it uses basic auth via http.Request" example:"{!{api-render-bearer.hyperbricks}}"`
 	Debug     bool   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
 }
@@ -101,7 +105,6 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 			Rejected: false,
 		})
 	}
-
 	if config.Debug && hbConfig.Mode != shared.LIVE_MODE {
 		jsonBytes, err := json.MarshalIndent(responseData, "", "  ")
 		if err != nil {
@@ -164,6 +167,32 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 		if ctx != nil {
 			jwtToken, _ = ctx.Value(shared.JwtKey).(string)
 			builder.WriteString(fmt.Sprintf("<!-- jwtToken:%s -->", jwtToken))
+		}
+	}
+
+	writer := ctx.Value(shared.ResponseWriter).(http.ResponseWriter)
+	if config.SetCookie != "" {
+		// fmt.Printf("SetCookie ---1: %s\n", config.SetCookie)
+		// fmt.Printf("writer ---2: %v\n", writer)
+		// // Replace placeholders dynamically
+		// for key, value := range mergedData {
+		// 	placeholder := fmt.Sprintf("$%s", key)
+		// 	strValue := fmt.Sprintf("%v", value)
+		// 	config.SetCookie = strings.ReplaceAll(config.SetCookie, placeholder, strValue)
+		// }
+
+		tmplItem, err := template.New("item").Parse(config.SetCookie)
+		if err != nil {
+			errors = append(errors, fmt.Errorf("failed to parse 'item' template: %w", err))
+		}
+
+		var buf strings.Builder
+		err = tmplItem.Execute(&buf, responseData)
+		if err != nil {
+			errors = append(errors, fmt.Errorf("failed to execute template: %w", err))
+		}
+		if writer != nil {
+			writer.Header().Set("Set-Cookie", buf.String())
 		}
 	}
 
@@ -323,6 +352,12 @@ func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 	return result, nil
 }
 
+// compareStrings compares a bcrypt-hashed password with a plaintext password.
+func compareStrings(hashedPassword, plainPassword string) bool {
+	// CompareHashAndPassword returns nil if the password matches
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword)) == nil
+}
+
 func applyTemplate(templateStr string, data interface{}, config APIConfig) (string, []error) {
 	var errors []error
 
@@ -335,7 +370,9 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 		Values: config.Values,
 	}
 
-	tmpl, err := template.New("apiTemplate").Parse(templateStr)
+	tmpl, err := template.New("apiTemplate").Funcs(template.FuncMap{
+		"comparePasswords": compareStrings, // Add the custom function here
+	}).Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),

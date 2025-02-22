@@ -97,6 +97,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 	ctx := context.WithValue(r.Context(), shared.JwtKey, jwtToken)
 	ctx = context.WithValue(ctx, shared.RequestBody, r.Body) // Store body data in context
 	ctx = context.WithValue(ctx, shared.FormData, r.Form)    // Store form data in context
+	ctx = context.WithValue(ctx, shared.ResponseWriter, w)
 
 	var htmlContent strings.Builder
 
