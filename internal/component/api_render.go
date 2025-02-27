@@ -22,7 +22,6 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/composite"
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
-	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
 type APIConfig struct {
@@ -133,7 +132,7 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 		if found {
 			templateContent = tc
 		} else {
-			logging.GetLogger().Errorf("precached template '%s' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching", config.Template)
+			//logging.GetLogger().Errorf("precached template '%s' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching", config.Template)
 			// MARKER_FOR_CODE:
 			// Attempt to load the file from disk and cache it.
 			fileContent, err := composite.GetTemplateFileContent(config.Template)
@@ -173,18 +172,25 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	writer := ctx.Value(shared.ResponseWriter).(http.ResponseWriter)
 	if config.SetCookie != "" && status == 200 {
 
-		tmplItem, err := template.New("item").Parse(config.SetCookie)
-		if err != nil {
-			errors = append(errors, fmt.Errorf("failed to parse 'item' template: %w", err))
-		}
+		// tmplItem, err := template.New("item").Parse(config.SetCookie)
+		// if err != nil {
+		// 	errors = append(errors, fmt.Errorf("failed to parse 'item' template: %w", err))
+		// }
 
-		var buf strings.Builder
-		err = tmplItem.Execute(&buf, responseData)
-		if err != nil {
-			errors = append(errors, fmt.Errorf("failed to execute template: %w", err))
-		}
-		if writer != nil {
-			writer.Header().Set("Set-Cookie", buf.String())
+		// var buf strings.Builder
+		// err = tmplItem.Execute(&buf, responseData)
+		// if err != nil {
+		// 	errors = append(errors, fmt.Errorf("failed to execute template: %w", err))
+		// }
+
+		cookie, _errors := applyTemplate(config.SetCookie, responseData, config)
+		config.SetCookie = cookie
+		if _errors != nil {
+			errors = append(errors, _errors...)
+		} else {
+			if writer != nil {
+				writer.Header().Set("Set-Cookie", cookie)
+			}
 		}
 	}
 
@@ -282,19 +288,14 @@ func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, 
 
 	// Specify the allowed keys.
 	allowed := []string{"id", "name"}
-	filtered := url.Values{}
 	// Pass the client's "token" cookie to the outgoing request if it exists.
 	if clientReq, ok := ctx.Value(shared.Request).(*http.Request); ok {
-
 		// Get a filtered copy of the query parameters.
-
-		filtered = FilterAllowedQueryParams(clientReq, allowed)
-
+		filtered := FilterAllowedQueryParams(clientReq, allowed)
+		endpoint.RawQuery = filtered.Encode()
 	} else {
 		return nil, 400, fmt.Errorf("failed to extract request %w", err)
 	}
-
-	filtered.Encode()
 
 	// Pass unstructured body directly
 	req, err := http.NewRequest(config.Method, endpoint.String(), strings.NewReader(config.Body))
@@ -310,10 +311,7 @@ func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, 
 	// Pass the client's "token" cookie to the outgoing request if it exists.
 	if clientReq, ok := ctx.Value(shared.Request).(*http.Request); ok {
 		if tokenCookie, err := clientReq.Cookie("token"); err == nil {
-			//req.AddCookie(tokenCookie)
 			req.Header.Set("Authorization", "Bearer "+tokenCookie.Value)
-		} else {
-			return nil, 400, fmt.Errorf("failed to create tokenCookie: %w", err)
 		}
 	}
 
@@ -375,11 +373,30 @@ func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, 
 	}
 	defer resp.Body.Close()
 
-	// Decode JSON response
 	var result interface{}
-	dec := json.NewDecoder(resp.Body)
-	if err := dec.Decode(&result); err != nil {
-		return nil, 400, fmt.Errorf("failed to decode JSON response: %w", err)
+	if resp.Body != nil {
+		defer resp.Body.Close() // Ensure the body is closed
+
+		// Read first byte to check if body is empty
+		buf := make([]byte, 1)
+		n, err := resp.Body.Read(buf)
+
+		if err != nil && err != io.EOF {
+			return nil, 500, fmt.Errorf("failed to read response body: %w", err)
+		}
+
+		if n == 0 { // No data in the body
+			return nil, resp.StatusCode, nil
+		}
+
+		// Reset the body reader (since we already read one byte)
+		resp.Body = io.NopCloser(io.MultiReader(bytes.NewReader(buf[:n]), resp.Body))
+
+		// Decode JSON response
+		dec := json.NewDecoder(resp.Body)
+		if err := dec.Decode(&result); err != nil {
+			return nil, 400, fmt.Errorf("failed to decode JSON response: %w", err)
+		}
 	}
 
 	return result, resp.StatusCode, nil
