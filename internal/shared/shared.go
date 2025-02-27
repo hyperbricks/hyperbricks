@@ -7,6 +7,7 @@ type contextKey string
 
 const JwtKey contextKey = "jwtToken"
 const RequestBody contextKey = "requestBody"
+const Request contextKey = "request"
 const FormData contextKey = "formData"
 const ResponseWriter contextKey = "ResponseWriter"
 

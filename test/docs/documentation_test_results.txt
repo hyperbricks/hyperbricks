@@ -1,34 +1,1493 @@
 === RUN   Test_TestAndDocumentationRender
 loading 
 &{live {info ./logs/hyperbricks.log} {0 false} {false false false} {} {10m0s} map[hyperbricks:modules/default/hyperbricks render:modules/default/rendered resources:modules/default/resources static:modules/default/static templates:modules/default/templates] map[]}=== RUN   Test_TestAndDocumentationRender/fragment-response
+    documentation_source_test.go:605: Test failed for fragment-response!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "trigger-element-id",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "trigger-element-id",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-@doc
+    documentation_source_test.go:605: Test failed for fragment-@doc!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "myEvent",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "myEvent",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-title
+    documentation_source_test.go:605: Test failed for fragment-title!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "Some Title",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": "Some Title"
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-route
+    documentation_source_test.go:605: Test failed for fragment-route!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "index",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-section
+    documentation_source_test.go:605: Test failed for fragment-section!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "some_section",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "some_section",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-enclose
+    documentation_source_test.go:605: Test failed for fragment-enclose!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "<div>|</div>",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "<div>|</div>",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-template
-<<<<<<< Updated upstream
-21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
-=======
-14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
->>>>>>> Stashed changes
+26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+    documentation_source_test.go:605: Test failed for fragment-template!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": {
+    "inline": "\n<div>{{content}}</div>\n\n        ",
+    "values": {
+      "content": {
+        "@type": "<HTML>",
+        "value": "<p>SOME HTML CONTENT</p>"
+      }
+    }
+  },
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": {
+    "inline": "\n<div>{{content}}</div>\n\n        ",
+    "values": {
+      "content": {
+        "@type": "<HTML>",
+        "value": "<p>SOME HTML CONTENT</p>"
+      }
+    }
+  },
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-static
+    documentation_source_test.go:605: Test failed for fragment-static!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "some_static_file.extension",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "some_static_file.extension",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-cache
 === RUN   Test_TestAndDocumentationRender/fragment-nocache
 === RUN   Test_TestAndDocumentationRender/fragment-index
+    documentation_source_test.go:605: Test failed for fragment-index!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 1
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 1,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 
 Embedded Field: HxResponse (mapped as: response)
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_setcookie
+    documentation_source_test.go:595: result and expected html output does not match: 
+        result:
+         
+        expected:
+        <div>this test fails</div>
+        
+        
+    documentation_source_test.go:605: Test failed for fragment-hx_setcookie!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{}
+
 === RUN   Test_TestAndDocumentationRender/fragment-hx_location
+    documentation_source_test.go:605: Test failed for fragment-hx_location!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "someurl",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "someurl",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-hx_push_url
+    documentation_source_test.go:605: Test failed for fragment-hx_push_url!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "/some/url",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "/some/url",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-hx_redirect
+    documentation_source_test.go:605: Test failed for fragment-hx_redirect!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "/some/new/location",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "/some/new/location",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-hx_refresh
+    documentation_source_test.go:605: Test failed for fragment-hx_refresh!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "true",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "true",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-hx_replace_url
+    documentation_source_test.go:605: Test failed for fragment-hx_replace_url!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "/alternative/url",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "/alternative/url",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-hx_reswap
+    documentation_source_test.go:605: Test failed for fragment-hx_reswap!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "innerHTML",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "innerHTML",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-hx_retarget
+    documentation_source_test.go:605: Test failed for fragment-hx_retarget!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "#someid",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "#someid",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-hx_reselect
+    documentation_source_test.go:605: Test failed for fragment-hx_reselect!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "#someotherid",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "#someotherid",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger
+    documentation_source_test.go:605: Test failed for fragment-hx_trigger!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "myEvent",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "myEvent",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle
+    documentation_source_test.go:605: Test failed for fragment-hx_trigger_after_settle!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "myAfterSettleEvent",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "myAfterSettleEvent",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap
+    documentation_source_test.go:605: Test failed for fragment-hx_trigger_after_swap!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "myAfterSwapEvent",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "myAfterSwapEvent",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/hypermedia-@doc
 === RUN   Test_TestAndDocumentationRender/hypermedia-title
 === RUN   Test_TestAndDocumentationRender/hypermedia-route
@@ -37,13 +1496,9 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
-<<<<<<< Updated upstream
-21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/hypermedia-cache
 === RUN   Test_TestAndDocumentationRender/hypermedia-nocache
-=======
-14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
->>>>>>> Stashed changes
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
 === RUN   Test_TestAndDocumentationRender/hypermedia-index
 === RUN   Test_TestAndDocumentationRender/hypermedia-doctype
@@ -55,20 +1510,434 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/head-css
 === RUN   Test_TestAndDocumentationRender/head-js
 === RUN   Test_TestAndDocumentationRender/template-@doc
-<<<<<<< Updated upstream
-21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
+26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
+    documentation_source_test.go:605: Test failed for template-@doc!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/template-template
-21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-=======
-14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
-=== RUN   Test_TestAndDocumentationRender/template-template
-14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
->>>>>>> Stashed changes
+26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+    documentation_source_test.go:605: Test failed for template-template!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/template-inline
+    documentation_source_test.go:605: Test failed for template-inline!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/template-values
+    documentation_source_test.go:605: Test failed for template-values!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/template-enclose
 === RUN   Test_TestAndDocumentationRender/tree-@doc
+    documentation_source_test.go:605: Test failed for tree-@doc!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/tree-enclose
+    documentation_source_test.go:605: Test failed for tree-enclose!
+output:
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "SetCookie": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+
+expected:
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "IsStatic": false,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
 === RUN   Test_TestAndDocumentationRender/html-enclose
 === RUN   Test_TestAndDocumentationRender/html-value
 === RUN   Test_TestAndDocumentationRender/html-trimspace
@@ -109,21 +1978,12 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-file
 === RUN   Test_TestAndDocumentationRender/json-template
-<<<<<<< Updated upstream
-21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-inline
 === RUN   Test_TestAndDocumentationRender/json-values
-21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
-21-02-2025 10:15	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-=======
-14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-=== RUN   Test_TestAndDocumentationRender/json-inline
-=== RUN   Test_TestAndDocumentationRender/json-values
-14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-=== RUN   Test_TestAndDocumentationRender/json-debug
-14-02-2025 21:42	ERROR	parser/preprocessor.go:176	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
->>>>>>> Stashed changes
+26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
@@ -134,50 +1994,30 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/menu-item
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
 === RUN   Test_TestAndDocumentationRender/api_render-enclose
-=== RUN   Test_TestAndDocumentationRender/api_render-@doc
-=== RUN   Test_TestAndDocumentationRender/api_render-endpoint
-=== RUN   Test_TestAndDocumentationRender/api_render-method
-=== RUN   Test_TestAndDocumentationRender/api_render-headers
-=== RUN   Test_TestAndDocumentationRender/api_render-body
-=== RUN   Test_TestAndDocumentationRender/api_render-template
-=== RUN   Test_TestAndDocumentationRender/api_render-inline
-=== RUN   Test_TestAndDocumentationRender/api_render-values
-=== RUN   Test_TestAndDocumentationRender/api_render-user
-=== RUN   Test_TestAndDocumentationRender/api_render-pass
-=== RUN   Test_TestAndDocumentationRender/api_render-debug
-<<<<<<< Updated upstream
-2025/02/21 10:15:57 Version: v0.2.33-alpha
-2025/02/21 10:15:57 Build Time: 2025-02-21T09:15:54Z
-2025/02/21 10:15:57 Static HTML file generated at ../../docs/hyperbricks-reference-v0.2.33-alpha.md
---- PASS: Test_TestAndDocumentationRender (1.91s)
-=======
-2025/02/14 21:42:11 Version: v0.2.1-alpha
-2025/02/14 21:42:11 Build Time: 2025-02-14T20:42:08Z
-2025/02/14 21:42:11 Static HTML file generated at ../../docs/hyperbricks-reference-v0.2.1-alpha.md
---- PASS: Test_TestAndDocumentationRender (1.86s)
->>>>>>> Stashed changes
-    --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.04s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-route (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-section (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-template (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-static (0.00s)
+--- FAIL: Test_TestAndDocumentationRender (0.56s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-response (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-title (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-route (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-section (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-enclose (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-template (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-static (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-cache (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-nocache (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-index (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_location (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_push_url (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_redirect (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_refresh (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_replace_url (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_reswap (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_retarget (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_reselect (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-index (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_setcookie (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_location (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_push_url (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_redirect (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_refresh (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_replace_url (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_reswap (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_retarget (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_reselect (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_trigger (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-@doc (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-title (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-route (0.00s)
@@ -198,13 +2038,13 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/head-meta (0.00s)
     --- PASS: Test_TestAndDocumentationRender/head-css (0.00s)
     --- PASS: Test_TestAndDocumentationRender/head-js (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/template-@doc (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/template-template (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/template-inline (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/template-values (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/template-@doc (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/template-template (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/template-inline (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/template-values (0.00s)
     --- PASS: Test_TestAndDocumentationRender/template-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/tree-@doc (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/tree-enclose (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/tree-@doc (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/tree-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/html-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/html-value (0.00s)
     --- PASS: Test_TestAndDocumentationRender/html-trimspace (0.00s)
@@ -257,21 +2097,29 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/menu-active (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.31s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-@doc (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-endpoint (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-method (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-headers (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-body (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-template (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-inline (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-values (0.10s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-user (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-pass (0.09s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.09s)
-PASS
-<<<<<<< Updated upstream
-ok  	command-line-arguments	2.132s
-=======
-ok  	command-line-arguments	2.086s
->>>>>>> Stashed changes
+    --- FAIL: Test_TestAndDocumentationRender/api_render-enclose (0.00s)
+panic: runtime error: invalid memory address or nil pointer dereference [recovered]
+	panic: runtime error: invalid memory address or nil pointer dereference
+[signal SIGSEGV: segmentation violation code=0x2 addr=0x30 pc=0x1013fa560]
+
+goroutine 635 [running]:
+testing.tRunner.func1.2({0x1015ae4c0, 0x101a24ec0})
+	/usr/local/go/src/testing/testing.go:1632 +0x1bc
+testing.tRunner.func1()
+	/usr/local/go/src/testing/testing.go:1635 +0x334
+panic({0x1015ae4c0?, 0x101a24ec0?})
+	/usr/local/go/src/runtime/panic.go:785 +0x124
+github.com/hyperbricks/hyperbricks/internal/component.processRequest({0x0, 0x0}, {0x14000130f40, 0x40})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/component/api_render.go:212 +0x80
+github.com/hyperbricks/hyperbricks/internal/component.(*APIRenderer).Render(0x14000126368, {0x101639380, 0x140002ea780}, {0x0, 0x0})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/component/api_render.go:93 +0x1d8
+github.com/hyperbricks/hyperbricks/internal/render.(*RenderManager).Render(0x14000135480, {0x14000de4e60, 0xc}, 0x14000e2bc80?, {0x0, 0x0})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/render/rendermanager.go:74 +0x384
+command-line-arguments.processFieldsWithSquash.func1(0x140005821a0)
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/test/docs/documentation_source_test.go:581 +0x3e0
+testing.tRunner(0x140005821a0, 0x140002c5440)
+	/usr/local/go/src/testing/testing.go:1690 +0xe4
+created by testing.(*T).Run in goroutine 20
+	/usr/local/go/src/testing/testing.go:1743 +0x314
+FAIL	command-line-arguments	0.789s
+FAIL

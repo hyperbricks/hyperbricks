@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"strconv"
 	"time"
 
 	"fmt"
@@ -22,12 +23,10 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/renderer"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type APIConfig struct {
-	shared.Component `mapstructure:",squash"`
-	//HxResponseWriter   http.ResponseWriter    `mapstructure:"hx_response" exclude:"true"`
+	shared.Component   `mapstructure:",squash"`
 	MetaDocDescription string                 `mapstructure:"@doc" description:"<API_RENDER> description" example:"{!{api-render-@doc.hyperbricks}}"`
 	Endpoint           string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-endpoint.hyperbricks}}"`
 	Method             string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-method.hyperbricks}}"`
@@ -36,13 +35,13 @@ type APIConfig struct {
 	Template           string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-template.hyperbricks}}"`
 	Inline             string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{api-render-inline.hyperbricks}}"`
 	Values             map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-values.hyperbricks}}"`
-
-	Username  string `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-username.hyperbricks}}"`
-	Password  string `mapstructure:"passpass" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks}}"`
-	SetCookie string `mapstructure:"setcookie" description:"Set cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
-
-	JwtSecret string `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for  Bearer Token Authentication. When false it uses basic auth via http.Request" example:"{!{api-render-bearer.hyperbricks}}"`
-	Debug     bool   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
+	Username           string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-username.hyperbricks}}"`
+	Password           string                 `mapstructure:"passpass" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks}}"`
+	Status             int                    `mapstructure:"status"` // This adds {{.Status}} to the root level of the template data
+	SetCookie          string                 `mapstructure:"setcookie" description:"Set cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
+	JwtSecret          string                 `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-bearer.hyperbricks}}"`
+	JwtClaims          map[string]string      `mapstructure:"jwtclaims" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-jwt-claims.hyperbricks}}"`
+	Debug              bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
 }
 
 func APIConfigGetName() string {
@@ -93,7 +92,7 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	errors = append(errors, config.Validate()...)
 	// Call function to process the request body
 	config.Body = processRequest(ctx, config.Body)
-	responseData, err := fetchDataFromAPI(config)
+	responseData, status, err := fetchDataFromAPI(config, ctx)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
@@ -105,6 +104,7 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 			Rejected: false,
 		})
 	}
+
 	if config.Debug && hbConfig.Mode != shared.LIVE_MODE {
 		jsonBytes, err := json.MarshalIndent(responseData, "", "  ")
 		if err != nil {
@@ -151,7 +151,7 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 			}
 		}
 	}
-
+	config.Status = status
 	renderedOutput, _errors := applyTemplate(templateContent, responseData, config)
 
 	if _errors != nil {
@@ -171,15 +171,7 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	}
 
 	writer := ctx.Value(shared.ResponseWriter).(http.ResponseWriter)
-	if config.SetCookie != "" {
-		// fmt.Printf("SetCookie ---1: %s\n", config.SetCookie)
-		// fmt.Printf("writer ---2: %v\n", writer)
-		// // Replace placeholders dynamically
-		// for key, value := range mergedData {
-		// 	placeholder := fmt.Sprintf("$%s", key)
-		// 	strValue := fmt.Sprintf("%v", value)
-		// 	config.SetCookie = strings.ReplaceAll(config.SetCookie, placeholder, strValue)
-		// }
+	if config.SetCookie != "" && status == 200 {
 
 		tmplItem, err := template.New("item").Parse(config.SetCookie)
 		if err != nil {
@@ -269,26 +261,45 @@ func processRequest(ctx context.Context, bodyMap string) string {
 	return bodyMap
 }
 
-func fetchDataFromAPI(config APIConfig) (interface{}, error) {
+func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, error) {
 	// Create a new cookie jar
 	jar, err := cookiejar.New(nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create cookie jar: %w", err)
+		return nil, 400, fmt.Errorf("failed to create cookie jar: %w", err)
 	}
-	client := &http.Client{Jar: jar}
 
+	client := &http.Client{
+		Jar:     jar,
+		Timeout: 10 * time.Second, // Add a timeout
+	}
 	// Parse the endpoint URL
 	endpoint, err := url.Parse(config.Endpoint)
 	if err != nil {
-		return nil, fmt.Errorf("invalid endpoint URL: %w", err)
+		return nil, 400, fmt.Errorf("invalid endpoint URL: %w", err)
 	}
 
 	///fmt.Printf("config.Body:%s\n", config.Body)
 
+	// Specify the allowed keys.
+	allowed := []string{"id", "name"}
+	filtered := url.Values{}
+	// Pass the client's "token" cookie to the outgoing request if it exists.
+	if clientReq, ok := ctx.Value(shared.Request).(*http.Request); ok {
+
+		// Get a filtered copy of the query parameters.
+
+		filtered = FilterAllowedQueryParams(clientReq, allowed)
+
+	} else {
+		return nil, 400, fmt.Errorf("failed to extract request %w", err)
+	}
+
+	filtered.Encode()
+
 	// Pass unstructured body directly
 	req, err := http.NewRequest(config.Method, endpoint.String(), strings.NewReader(config.Body))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, 400, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	// Set custom headers
@@ -296,18 +307,45 @@ func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 		req.Header.Set(key, value)
 	}
 
+	// Pass the client's "token" cookie to the outgoing request if it exists.
+	if clientReq, ok := ctx.Value(shared.Request).(*http.Request); ok {
+		if tokenCookie, err := clientReq.Cookie("token"); err == nil {
+			//req.AddCookie(tokenCookie)
+			req.Header.Set("Authorization", "Bearer "+tokenCookie.Value)
+		} else {
+			return nil, 400, fmt.Errorf("failed to create tokenCookie: %w", err)
+		}
+	}
+
 	// Handle JWT if secret is provided
 	if config.JwtSecret != "" {
-		claims := jwt.MapClaims{
-			"sub":  "superuser_id",
-			"role": "postgres",
-			"exp":  time.Now().Add(time.Hour * 1).Unix(),
+
+		claims := jwt.MapClaims{}
+		// Add all claims dynamically from map
+		for key, value := range config.JwtClaims {
+			claims[key] = value
+		}
+
+		// Ensure mandatory claims are set
+		if _, exists := claims["sub"]; !exists {
+			claims["sub"] = "default_user"
+		}
+		if expStr, exists := config.JwtClaims["exp"]; exists {
+			expInt, err := strconv.ParseInt(expStr, 10, 64)
+			if err == nil {
+				claims["exp"] = time.Now().Unix() + expInt // Correct: Add to current time
+			} else {
+				fmt.Println("Invalid exp value, using default (1 hour)")
+				claims["exp"] = time.Now().Add(time.Hour).Unix()
+			}
+		} else {
+			claims["exp"] = time.Now().Add(time.Hour).Unix() // Default: 1-hour expiration
 		}
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		tokenString, err := token.SignedString([]byte(config.JwtSecret))
 		if err != nil {
-			return nil, fmt.Errorf("failed to sign JWT token: %w", err)
+			return nil, 401, fmt.Errorf("failed to sign JWT token: %w", err)
 		}
 
 		// fmt.Printf("JWT Token: %s\n", tokenString)
@@ -320,42 +358,31 @@ func fetchDataFromAPI(config APIConfig) (interface{}, error) {
 			req.SetBasicAuth(config.Username, config.Password)
 		}
 	}
-
-	// 🛠 Debugging: Print the full request before sending it
-	dump, err := httputil.DumpRequestOut(req, true)
-	if err == nil {
-		fmt.Printf("HTTP Request:\n%s\n", string(dump))
-	} else {
-		fmt.Printf("Failed to dump request: %v\n", err)
+	if config.Debug {
+		// 🛠 Debugging: Print the full request before sending it
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			fmt.Printf("HTTP Request:\n%s\n", string(dump))
+		} else {
+			fmt.Printf("Failed to dump request: %v\n", err)
+		}
 	}
 
 	// Execute the HTTP request
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error making HTTP request: %w", err)
+		return nil, 400, fmt.Errorf("error making HTTP request: %w", err)
 	}
 	defer resp.Body.Close()
-
-	// Check for a valid HTTP status code
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("unexpected HTTP status code: %d, response: %s", resp.StatusCode, string(body))
-	}
 
 	// Decode JSON response
 	var result interface{}
 	dec := json.NewDecoder(resp.Body)
 	if err := dec.Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode JSON response: %w", err)
+		return nil, 400, fmt.Errorf("failed to decode JSON response: %w", err)
 	}
 
-	return result, nil
-}
-
-// compareStrings compares a bcrypt-hashed password with a plaintext password.
-func compareStrings(hashedPassword, plainPassword string) bool {
-	// CompareHashAndPassword returns nil if the password matches
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword)) == nil
+	return result, resp.StatusCode, nil
 }
 
 func applyTemplate(templateStr string, data interface{}, config APIConfig) (string, []error) {
@@ -365,14 +392,14 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 	context := struct {
 		Data   interface{}
 		Values map[string]interface{}
+		Status int
 	}{
 		Data:   data,
 		Values: config.Values,
+		Status: config.Status,
 	}
 
-	tmpl, err := template.New("apiTemplate").Funcs(template.FuncMap{
-		"comparePasswords": compareStrings, // Add the custom function here
-	}).Parse(templateStr)
+	tmpl, err := template.New("apiTemplate").Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
@@ -402,4 +429,28 @@ func applyTemplate(templateStr string, data interface{}, config APIConfig) (stri
 	}
 
 	return output.String(), errors
+}
+
+// FilterAllowedQueryParams returns a copy of the request's query parameters,
+// but only includes the keys specified in allowedKeys.
+func FilterAllowedQueryParams(req *http.Request, allowedKeys []string) url.Values {
+	// Create a set of allowed keys for quick lookup.
+	allowedSet := make(map[string]struct{})
+	for _, key := range allowedKeys {
+		allowedSet[key] = struct{}{}
+	}
+
+	// Get the original query parameters.
+	originalQuery := req.URL.Query()
+	// Create a new url.Values to hold the filtered query.
+	filteredQuery := url.Values{}
+
+	// Iterate over the original query parameters.
+	for key, values := range originalQuery {
+		if _, allowed := allowedSet[key]; allowed {
+			// Copy the slice of values (an "array" of strings) for this key.
+			filteredQuery[key] = append([]string(nil), values...)
+		}
+	}
+	return filteredQuery
 }
