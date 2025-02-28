@@ -2,11 +2,14 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"html/template"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"reflect"
 	"regexp"
@@ -576,9 +579,9 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 					t.Errorf("Error creating instance: %v", err)
 					return
 				}
-				//fmt.Printf("response object:%v", response)
 
-				result, errr := rm.Render(request.TypeName, scopeData, nil)
+				ctx := createMockContext()
+				result, errr := rm.Render(request.TypeName, scopeData, ctx)
 				if errr != nil {
 					log.Printf("%v", errr)
 				}
@@ -978,4 +981,29 @@ func JSONDeepEqual(a, b interface{}) (bool, error) {
 
 	// Use DeepEqual on the normalized data
 	return reflect.DeepEqual(aJSON, bJSON), nil
+}
+
+func createMockContext() context.Context {
+	// Mock JWT token
+	mockJwtToken := "fake-jwt-token"
+
+	// Create a fake HTTP request
+	req := httptest.NewRequest(http.MethodPost, "/test-endpoint", bytes.NewBufferString(`{"key": "value"}`))
+	req.Header.Set("Content-Type", "application/json")
+	req.Form = map[string][]string{
+		"example": {"testValue"},
+	}
+
+	// Create a fake ResponseWriter
+	w := httptest.NewRecorder()
+
+	// Create a base context
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, shared.JwtKey, mockJwtToken)
+	ctx = context.WithValue(ctx, shared.RequestBody, req.Body)
+	ctx = context.WithValue(ctx, shared.FormData, req.Form)
+	ctx = context.WithValue(ctx, shared.Request, req)
+	ctx = context.WithValue(ctx, shared.ResponseWriter, w)
+
+	return ctx
 }
