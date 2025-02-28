@@ -427,7 +427,7 @@ expected:
 }
 
 === RUN   Test_TestAndDocumentationRender/fragment-template
-26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+28-02-2025 15:53	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
     documentation_source_test.go:605: Test failed for fragment-template!
 output:
 {
@@ -1496,7 +1496,7 @@ expected:
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
-26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+28-02-2025 15:53	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/hypermedia-cache
 === RUN   Test_TestAndDocumentationRender/hypermedia-nocache
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
@@ -1510,7 +1510,7 @@ expected:
 === RUN   Test_TestAndDocumentationRender/head-css
 === RUN   Test_TestAndDocumentationRender/head-js
 === RUN   Test_TestAndDocumentationRender/template-@doc
-26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
+28-02-2025 15:53	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
     documentation_source_test.go:605: Test failed for template-@doc!
 output:
 {
@@ -1582,7 +1582,7 @@ expected:
 }
 
 === RUN   Test_TestAndDocumentationRender/template-template
-26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+28-02-2025 15:53	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
     documentation_source_test.go:605: Test failed for template-template!
 output:
 {
@@ -1978,12 +1978,12 @@ expected:
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-file
 === RUN   Test_TestAndDocumentationRender/json-template
-26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+28-02-2025 15:53	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-inline
 === RUN   Test_TestAndDocumentationRender/json-values
-26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+28-02-2025 15:53	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
-26-02-2025 20:05	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+28-02-2025 15:53	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
@@ -1994,7 +1994,7 @@ expected:
 === RUN   Test_TestAndDocumentationRender/menu-item
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
 === RUN   Test_TestAndDocumentationRender/api_render-enclose
---- FAIL: Test_TestAndDocumentationRender (0.56s)
+--- FAIL: Test_TestAndDocumentationRender (0.55s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- FAIL: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -2063,7 +2063,7 @@ expected:
     --- PASS: Test_TestAndDocumentationRender/image-src (0.02s)
     --- PASS: Test_TestAndDocumentationRender/image-width (0.02s)
     --- PASS: Test_TestAndDocumentationRender/image-height (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-alt (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-alt (0.01s)
     --- PASS: Test_TestAndDocumentationRender/image-title (0.02s)
     --- PASS: Test_TestAndDocumentationRender/image-id (0.02s)
     --- PASS: Test_TestAndDocumentationRender/image-class (0.02s)
@@ -2100,26 +2100,26 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/api_render-enclose (0.00s)
 panic: runtime error: invalid memory address or nil pointer dereference [recovered]
 	panic: runtime error: invalid memory address or nil pointer dereference
-[signal SIGSEGV: segmentation violation code=0x2 addr=0x30 pc=0x1013fa560]
+[signal SIGSEGV: segmentation violation code=0x2 addr=0x30 pc=0x102cd55e0]
 
-goroutine 635 [running]:
-testing.tRunner.func1.2({0x1015ae4c0, 0x101a24ec0})
+goroutine 720 [running]:
+testing.tRunner.func1.2({0x102e8a4c0, 0x103300ec0})
 	/usr/local/go/src/testing/testing.go:1632 +0x1bc
 testing.tRunner.func1()
 	/usr/local/go/src/testing/testing.go:1635 +0x334
-panic({0x1015ae4c0?, 0x101a24ec0?})
+panic({0x102e8a4c0?, 0x103300ec0?})
 	/usr/local/go/src/runtime/panic.go:785 +0x124
-github.com/hyperbricks/hyperbricks/internal/component.processRequest({0x0, 0x0}, {0x14000130f40, 0x40})
-	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/component/api_render.go:212 +0x80
-github.com/hyperbricks/hyperbricks/internal/component.(*APIRenderer).Render(0x14000126368, {0x101639380, 0x140002ea780}, {0x0, 0x0})
-	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/component/api_render.go:93 +0x1d8
-github.com/hyperbricks/hyperbricks/internal/render.(*RenderManager).Render(0x14000135480, {0x14000de4e60, 0xc}, 0x14000e2bc80?, {0x0, 0x0})
+github.com/hyperbricks/hyperbricks/internal/component.processRequest({0x0, 0x0}, {0x1400003e580, 0x40})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/component/api_render.go:221 +0x80
+github.com/hyperbricks/hyperbricks/internal/component.(*APIRenderer).Render(0x1400007c368, {0x102f18360, 0x14000198b00}, {0x0, 0x0})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/component/api_render.go:94 +0x1d8
+github.com/hyperbricks/hyperbricks/internal/render.(*RenderManager).Render(0x140000574c0, {0x140005d0090, 0xc}, 0x14000712000?, {0x0, 0x0})
 	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/render/rendermanager.go:74 +0x384
-command-line-arguments.processFieldsWithSquash.func1(0x140005821a0)
+command-line-arguments.processFieldsWithSquash.func1(0x140000c1d40)
 	/Users/robbertstreng/Documents/GitHub/hyperbricks/test/docs/documentation_source_test.go:581 +0x3e0
-testing.tRunner(0x140005821a0, 0x140002c5440)
+testing.tRunner(0x140000c1d40, 0x140006e9200)
 	/usr/local/go/src/testing/testing.go:1690 +0xe4
-created by testing.(*T).Run in goroutine 20
+created by testing.(*T).Run in goroutine 4
 	/usr/local/go/src/testing/testing.go:1743 +0x314
-FAIL	command-line-arguments	0.789s
+FAIL	command-line-arguments	0.774s
 FAIL

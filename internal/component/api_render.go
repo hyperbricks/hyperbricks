@@ -38,8 +38,9 @@ type APIConfig struct {
 	Password           string                 `mapstructure:"passpass" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks}}"`
 	Status             int                    `mapstructure:"status"` // This adds {{.Status}} to the root level of the template data
 	SetCookie          string                 `mapstructure:"setcookie" description:"Set cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
+	AllowedQueryKeys   []string               `mapstructure:"querykeys" description:"Set cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
 	JwtSecret          string                 `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-bearer.hyperbricks}}"`
-	JwtClaims          map[string]string      `mapstructure:"jwtclaims" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-jwt-claims.hyperbricks}}"`
+	JwtClaims          map[string]string      `mapstructure:"jwtclaims" description:"jwt claim map" example:"{!{api-render-jwt-claims.hyperbricks}}"`
 	Debug              bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
 }
 
@@ -287,7 +288,11 @@ func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, 
 	///fmt.Printf("config.Body:%s\n", config.Body)
 
 	// Specify the allowed keys.
-	allowed := []string{"id", "name"}
+	allowed := []string{"id", "name", "order"}
+	// Specify the allowed keys.
+	if config.AllowedQueryKeys != nil {
+		allowed = config.AllowedQueryKeys
+	}
 	// Pass the client's "token" cookie to the outgoing request if it exists.
 	if clientReq, ok := ctx.Value(shared.Request).(*http.Request); ok {
 		// Get a filtered copy of the query parameters.
@@ -323,11 +328,12 @@ func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, 
 		for key, value := range config.JwtClaims {
 			claims[key] = value
 		}
-
+		fmt.Printf("onfig.JwtClaims:%v", config.JwtClaims)
 		// Ensure mandatory claims are set
 		if _, exists := claims["sub"]; !exists {
 			claims["sub"] = "default_user"
 		}
+
 		if expStr, exists := config.JwtClaims["exp"]; exists {
 			expInt, err := strconv.ParseInt(expStr, 10, 64)
 			if err == nil {
@@ -339,7 +345,7 @@ func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, 
 		} else {
 			claims["exp"] = time.Now().Add(time.Hour).Unix() // Default: 1-hour expiration
 		}
-
+		fmt.Printf("claims:%v", claims)
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		tokenString, err := token.SignedString([]byte(config.JwtSecret))
 		if err != nil {
