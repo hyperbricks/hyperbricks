@@ -5,8 +5,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
@@ -41,8 +41,8 @@ api_test {
 	"Body": "{\"username\":\"emilys\",\"password\":\"emilyspass\",\"expiresInMins\":30}",
 	"Template": "\n\t\t<ul id=\"{{index .id}}\">\n\t\t\t<li>{{index .firstName}} {{index .lastName}}</li>\n\t\t<ul>\n\t",
 	"IsTemplate": true,
-	"User": "emilys",
-	"Pass": "emilyspass",
+	"Username": "emilys",
+	"Password": "emilyspass",
 	"Debug": false
   }
 ==== expected output ====

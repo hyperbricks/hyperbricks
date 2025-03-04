@@ -5,8 +5,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
@@ -60,8 +60,8 @@ context := struct {
     "Values": {
       "someproperty": "User"
     },
-    "User": "emilys",
-    "Pass": "emilyspass",
+    "Username": "emilys",
+    "Password": "emilyspass",
     "Status": 0,
     "SetCookie": "",
     "AllowedQueryKeys": null,

@@ -2782,8 +2782,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
@@ -2866,7 +2866,7 @@ api_test {
 - [inline](#api_render-inline)
 - [values](#api_render-values)
 - [username](#api_render-username)
-- [passpass](#api_render-passpass)
+- [password](#api_render-password)
 - [setcookie](#api_render-setcookie)
 - [querykeys](#api_render-querykeys)
 - [jwtsecret](#api_render-jwtsecret)
@@ -2892,8 +2892,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
@@ -2950,8 +2950,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
@@ -3005,8 +3005,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
@@ -3060,8 +3060,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
@@ -3115,8 +3115,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
@@ -3170,8 +3170,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
@@ -3225,8 +3225,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
@@ -3280,8 +3280,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
@@ -3336,11 +3336,46 @@ Username for basic auth
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	username = emilys
+	password = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+		<ul>
+	]>>
+    values {
+        someproperty = User
+    }
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
+````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <h1>
+    User
+  </h1>
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
 ````
 
 
@@ -3352,8 +3387,10 @@ fragment {
 
 
 
-## api_render passpass
-#### passpass
+
+
+## api_render password
+#### password
 
 **Description**  
 Password for basic auth
@@ -3361,12 +3398,49 @@ Password for basic auth
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	username = emilys
+	password = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+		<ul>
+	]>>
+    values {
+        someproperty = User
+    }
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <h1>
+    User
+  </h1>
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -3386,12 +3460,50 @@ Set cookie
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	username = emilys
+	password = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+		<ul>
+	]>>
+    values {
+        someproperty = User
+    }
+    setCookie = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <h1>
+    User
+  </h1>
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -3406,17 +3518,62 @@ fragment {
 #### querykeys
 
 **Description**  
-Set cookie
+Set allowed proxy query keys
 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	username = emilys
+	password = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+		<ul>
+	]>>
+    values {
+        someproperty = User
+    }
+    jwtclaims {
+        user = superuser
+        sub = superuser_id
+    }
+    
+    jwtsecret = some-super-secret-jwt
+    querykeys = [id, sort]
+    setCookie = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <h1>
+    User
+  </h1>
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -3436,12 +3593,57 @@ When not empty it uses jwtsecret for Bearer Token Authentication. When empty it 
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	username = emilys
+	password = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+		<ul>
+	]>>
+    values {
+        someproperty = User
+    }
+    jwtclaims {
+        user = superuser
+        sub = superuser_id
+    }
+    
+    jwtsecret = some-super-secret-jwt
+    querykeys = [id, sort]
+    setCookie = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <h1>
+    User
+  </h1>
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -3461,12 +3663,57 @@ jwt claim map
 
 **Example**
 ````properties
-fragment = <FRAGMENT>
-fragment {
-	
+# use user and pass for cases with basic authentication
+api_test = <API_RENDER>
+api_test {
+	endpoint = https://dummyjson.com/auth/login
+	method = POST
+	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	username = emilys
+	password = emilyspass
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+		<ul id="{{index .Data.id}}">
+			<li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+		<ul>
+	]>>
+    values {
+        someproperty = User
+    }
+    jwtclaims {
+        user = superuser
+        sub = superuser_id
+    }
+    
+    jwtsecret = some-super-secret-jwt
+    querykeys = [id, sort]
+    setCookie = true
+	debug = false
+	enclose = <div class="userlist">|</div>
 }
 
 ````
+
+**Expected Result**
+
+````html
+<div class="userlist">
+  <h1>
+    User
+  </h1>
+  <ul id="1">
+  <li>
+    Emily Johnson
+  </li>
+  <ul>
+</div>
+````
+
+
 
 
 
@@ -3492,8 +3739,8 @@ api_test {
 	endpoint = https://dummyjson.com/auth/login
 	method = POST
 	body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
-	user = emilys
-	pass = emilyspass
+	username = emilys
+	password = emilyspass
 	headers {
 		Access-Control-Allow-Credentials = true
 		Content-Type = application/json

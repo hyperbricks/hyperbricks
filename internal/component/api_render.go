@@ -35,11 +35,11 @@ type APIConfig struct {
 	Inline             string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{api-render-inline.hyperbricks}}"`
 	Values             map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-values.hyperbricks}}"`
 	Username           string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-username.hyperbricks}}"`
-	Password           string                 `mapstructure:"passpass" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks}}"`
+	Password           string                 `mapstructure:"password" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks}}"`
 	Status             int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
-	SetCookie          string                 `mapstructure:"setcookie" description:"Set cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
-	AllowedQueryKeys   []string               `mapstructure:"querykeys" description:"Set cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
-	JwtSecret          string                 `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-bearer.hyperbricks}}"`
+	SetCookie          string                 `mapstructure:"setcookie" description:"Set template for cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
+	AllowedQueryKeys   []string               `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-querykeys.hyperbricks}}"`
+	JwtSecret          string                 `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-jwt-secret.hyperbricks}}"`
 	JwtClaims          map[string]string      `mapstructure:"jwtclaims" description:"jwt claim map" example:"{!{api-render-jwt-claims.hyperbricks}}"`
 	Debug              bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
 }
