@@ -43,6 +43,11 @@ Template used for rendering API output
 	"User": "emilys",
 	"Values": null,
 	"Pass": "emilyspass",
+	"Status": 0,
+	"SetCookie": "",
+	"AllowedQueryKeys": null,
+	"JwtSecret": "",
+	"JwtClaims": null,
 	"Debug": false
   }
 ==== expected output ====

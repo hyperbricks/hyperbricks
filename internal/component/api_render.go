@@ -36,7 +36,7 @@ type APIConfig struct {
 	Values             map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-values.hyperbricks}}"`
 	Username           string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-username.hyperbricks}}"`
 	Password           string                 `mapstructure:"passpass" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks}}"`
-	Status             int                    `mapstructure:"status"` // This adds {{.Status}} to the root level of the template data
+	Status             int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
 	SetCookie          string                 `mapstructure:"setcookie" description:"Set cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
 	AllowedQueryKeys   []string               `mapstructure:"querykeys" description:"Set cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
 	JwtSecret          string                 `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-bearer.hyperbricks}}"`
@@ -162,13 +162,13 @@ func (ar *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	if config.Enclose != "" {
 		apiContent = shared.EncloseContent(config.Enclose, apiContent)
 	}
-	if config.JwtSecret == "" {
-		var jwtToken string = ""
-		if ctx != nil {
-			jwtToken, _ = ctx.Value(shared.JwtKey).(string)
-			builder.WriteString(fmt.Sprintf("<!-- jwtToken:%s -->", jwtToken))
-		}
-	}
+	// if config.JwtSecret == "" {
+	// 	var jwtToken string = ""
+	// 	if ctx != nil {
+	// 		jwtToken, _ = ctx.Value(shared.JwtKey).(string)
+	// 		//builder.WriteString(fmt.Sprintf("<!-- jwtToken:%s -->", jwtToken))
+	// 	}
+	// }
 
 	writer := ctx.Value(shared.ResponseWriter).(http.ResponseWriter)
 	if config.SetCookie != "" && status == 200 {

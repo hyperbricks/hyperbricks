@@ -43,6 +43,11 @@ The enclosing HTML element for the header divided by |
 	"Values": null,
 	"User": "emilys",
 	"Pass": "emilyspass",
+	"Status": 0,
+	"SetCookie": "",
+	"AllowedQueryKeys": null,
+	"JwtSecret": "",
+	"JwtClaims": null,
 	"Debug": false
   }
 ==== expected output ====

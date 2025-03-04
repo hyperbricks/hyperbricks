@@ -14,7 +14,6 @@ import (
 )
 
 type HxResponse struct {
-	SetCookie            string `mapstructure:"hx_setcookie" header:"Set-Cookie"  description:"Set Cookies in <FRAGMENT>" `
 	HxTemplateResult     string // just for output of the parsed template
 	HxLocation           string `mapstructure:"hx_location" header:"HX-Location"  description:"allows you to do a client-side redirect that does not do a full page reload" `
 	HxPushedUrl          string `mapstructure:"hx_push_url" header:"HX-Pushed-Url" description:"pushes a new url into the history stack"`

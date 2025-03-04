@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Username for basic auth
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>

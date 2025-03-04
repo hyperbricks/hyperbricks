@@ -49,6 +49,11 @@ Debug the response data (Do not use in production)
     },
     "User": "emilys",
     "Pass": "emilyspass",
+    "Status": 0,
+    "SetCookie": "",
+    "AllowedQueryKeys": null,
+    "JwtSecret": "",
+    "JwtClaims": null,
     "Debug": false
   }
 ==== expected output ====
