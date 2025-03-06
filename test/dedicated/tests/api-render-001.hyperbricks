@@ -1,0 +1,58 @@
+==== hyperbricks config {!{api_login_user}} ====
+api_login_user = <API_RENDER>
+api_login_user {
+	endpoint = {{ENV:POSTGREST_URL}}rpc/login_with_user_data
+	method = POST
+	body = {"p_password": "x","p_username":"robbert"}
+
+    inline = <<[
+        {{.Status }}
+        {{.Data }}
+         {{ if eq .Status 401 }}
+            {{.Data.message}}
+        {{ else if eq .Status 200 }}
+            <script>window.location = "tasks" </script>
+        {{ end }}
+    ]>>
+   
+    debug = true
+	#enclose = <div class="userlist">|</div>
+    setcookie =  <<[token={{.Data.token}}]>>
+}
+
+user_login = <FRAGMENT>
+user_login.route = login_user
+user_login.nocache = true
+user_login.10 < api_login_user
+==== expected json ====
+{
+  "ConfigType": "<API_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Endpoint": "http://localhost:3000/rpc/login_with_user_data",
+  "Method": "POST",
+  "Headers": null,
+  "Body": "{\"p_password\": \"$password\",\"p_username\":\"$username\"}",
+  "Template": "",
+  "Inline": "\n {{ if eq .Status 400 }}\n    {{.Data.message}}\n{{ else if eq .Status 200 }}\n    <script>window.location = \"tasks\" </script>\n{{ end }}\n    ",
+  "Values": null,
+  "Username": "",
+  "Password": "",
+  "Status": 0,
+  "SetCookie": "token={{.Data.token}}",
+  "AllowedQueryKeys": null,
+  "JwtSecret": "",
+  "JwtClaims": null,
+  "Debug": false
+}
+==== expected output ====
+<div class="userlist">
+	<ul id="1">
+		<li>Emily Johnson</li>
+	<ul>
+</div>

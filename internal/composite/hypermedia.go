@@ -66,7 +66,7 @@ func (r *HyperMediaRenderer) Types() []string {
 }
 
 // errorTemplate is the embedded Go template as a string
-const errorPanelTemplate = `
+const ErrorPanelTemplate = `
 <style>
 
     .error-panel, .succes-panel {
@@ -294,7 +294,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 
 	hbconfig := shared.GetHyperBricksConfiguration()
 	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE {
-		errorPanelTemplateHtml = errorPanelTemplate
+		errorPanelTemplateHtml = ErrorPanelTemplate
 	}
 
 	// errorPanelTemplate

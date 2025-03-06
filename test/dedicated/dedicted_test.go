@@ -200,8 +200,8 @@ func Test_All_Dedicated_Tests(t *testing.T) {
 			}
 
 			// TODO: Process `content` for this file separately
-			fmt.Printf("Processing file: %s\n", path)
-			fmt.Println(content) // Replace this with your processing logic
+			//fmt.Printf("Processing file: %s\n", path)
+			//fmt.Println(content) // Replace this with your processing logic
 
 			// PARSE HYPERSCRIPT
 			// RUN THE TEST (compare json with serialized output go object)

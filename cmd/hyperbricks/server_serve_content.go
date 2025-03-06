@@ -76,10 +76,19 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 		configCopy[key] = value
 	}
 
+	// TO DO: Clean this  up if possible use context (see ctx definition)
 	if configCopy["@type"].(string) == composite.FragmentConfigGetName() {
 		configCopy["hx_response"] = w
 	}
 
+	if configCopy["@type"].(string) == composite.ApiFragmentRenderConfigGetName() {
+		configCopy["hx_response"] = w
+
+		// No Caching!!! This is very important because of secret user-specific tokens
+		nocache = true
+	}
+
+	// ============ START OF API CONTEXT AND TOKEN CAPTURE ============
 	// Extract JWT token from the Authorization header for authentication if needed
 	authHeader := r.Header.Get("Authorization")
 
@@ -98,8 +107,10 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 	ctx = context.WithValue(ctx, shared.RequestBody, r.Body) // Store body data in context
 	ctx = context.WithValue(ctx, shared.FormData, r.Form)    // Store form data in context
 	ctx = context.WithValue(ctx, shared.Request, r)
-	// ok this is 'not done', but because it stays within the HTTP lifecycle it is a practical solution for passing the ResponseWriter around
+
+	//TO-DO: I know this is 'not how to do this', but because it stays within the concurrent proof HTTP lifecycle it is a practical solution for passing the ResponseWriter around
 	ctx = context.WithValue(ctx, shared.ResponseWriter, w)
+	// ============ END OF API CONTEXT AND TOKEN CAPTURE ============
 
 	var htmlContent strings.Builder
 

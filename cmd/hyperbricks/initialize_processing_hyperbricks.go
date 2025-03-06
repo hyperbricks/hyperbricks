@@ -90,7 +90,7 @@ func processScript(filename string, config map[string]interface{},
 
 		switch typeValue {
 
-		case composite.FragmentConfigGetName():
+		case composite.FragmentConfigGetName(), composite.ApiFragmentRenderConfigGetName():
 			fragmentConfig, err := decodeFragmentConfig(v.(map[string]interface{}))
 			if err != nil {
 				logger.Warnw("Error decoding HyperMediaConfig", "error", err)
