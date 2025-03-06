@@ -61,8 +61,56 @@ func ApiFragmentRenderConfigGetName() string {
 }
 
 // Validate ensures that the fragment has valid data.
-func (apiFragmentRenderConfig *ApiFragmentRenderConfig) Validate() []error {
-	errors := shared.Validate(apiFragmentRenderConfig)
+func (conf *ApiFragmentRenderConfig) Validate() []error {
+	var errors []error
+	// = shared.Validate(conf)
+
+	if conf.Endpoint == "" {
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      conf.Composite.Meta.HyperBricksKey,
+			Path:     conf.Composite.Meta.HyperBricksPath,
+			File:     conf.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
+			Err:      "[field 'endpoint' is required]",
+			Rejected: false,
+		})
+	}
+
+	if conf.Method == "" {
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      conf.Composite.Meta.HyperBricksKey,
+			Path:     conf.Composite.Meta.HyperBricksPath,
+			File:     conf.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
+			Err:      "[field 'method' is required]",
+			Rejected: false,
+		})
+	}
+	if conf.Route == "" {
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      conf.Composite.Meta.HyperBricksKey,
+			Path:     conf.Composite.Meta.HyperBricksPath,
+			File:     conf.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
+			Err:      "[field 'Route' is required]",
+			Rejected: false,
+		})
+	}
+
+	if conf.Route == "" {
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      conf.Composite.Meta.HyperBricksKey,
+			Path:     conf.Composite.Meta.HyperBricksPath,
+			File:     conf.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
+			Err:      "[field 'Route' is required]",
+			Rejected: false,
+		})
+	}
 	return errors
 }
 
@@ -105,6 +153,10 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 
 	validateErrors := config.Validate()
 	errors = append(errors, validateErrors...)
+
+	if len(validateErrors) > 0 {
+		return "[validation errors]", errors
+	}
 
 	// Call function to process the request body
 	status_override := false
@@ -427,7 +479,7 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 			fmt.Printf("Failed to dump Response: %v\n\n\n", err)
 		}
 		// 🛠 Debugging: Print the full request before sending it
-		dump, err := httputil.DumpRequestOut(req, true)
+		dump, err := httputil.DumpRequestOut(req, false)
 		if err == nil {
 			fmt.Printf("HTTP Request:\n%s\n\n\n", string(dump))
 		} else {
