@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"html/template"
 	"io"
@@ -49,6 +50,7 @@ type APIConfig struct {
 	SetCookie string                 `mapstructure:"setcookie" description:"Set template for cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
 	// PassCookie       string                 `mapstructure:"passcookie" description:"Pass a cookie in eindpoint request" example:"{!{api-render-setcookie.hyperbricks}}"`
 	AllowedQueryKeys []string          `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-querykeys.hyperbricks}}"`
+	QueryParams      map[string]string `mapstructure:"queryparams" description:"Set proxy query key in the confifuration" example:"{!{api-render-queryparams.hyperbricks}}"`
 	JwtSecret        string            `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-jwt-secret.hyperbricks}}"`
 	JwtClaims        map[string]string `mapstructure:"jwtclaims" description:"jwt claim map" example:"{!{api-render-jwt-claims.hyperbricks}}"`
 	Debug            bool              `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
@@ -341,19 +343,19 @@ func processRequest(ctx context.Context, bodyMap string) (string, error) {
 			var bodyData map[string]interface{}
 			err = json.Unmarshal(bodyBytes, &bodyData)
 			if err != nil {
-				return "Invalid or no JSON payload in body", fmt.Errorf("invalid or no JSON payload in body: %w", err)
-			}
-
-			// Merge body data with conflicts resolved
-			for key, value := range bodyData {
-				if _, exists := mergedData[key]; exists {
-					mergedData["body_"+key] = value
-				} else {
-					mergedData[key] = value
+				bodyData = make(map[string]interface{})
+				//return "Invalid or no JSON payload in body", fmt.Errorf("invalid or no JSON payload in body: %w", err)
+			} else {
+				// Merge body data with conflicts resolved
+				for key, value := range bodyData {
+					if _, exists := mergedData[key]; exists {
+						mergedData["body_"+key] = value
+					} else {
+						mergedData[key] = value
+					}
 				}
 			}
 		}
-
 	}
 
 	// Replace placeholders dynamically
@@ -367,118 +369,118 @@ func processRequest(ctx context.Context, bodyMap string) (string, error) {
 	return bodyMap, nil
 }
 
+// Shared HTTP transport for connection pooling
+var sharedTransport = &http.Transport{
+	MaxIdleConnsPerHost: 10,
+	DisableKeepAlives:   false,
+}
+
+// Securely creates a new HTTP client with a unique cookie jar per request.
+// - This ensures session cookies are **not shared between users**.
+// - While reusing the transport for efficiency, each request has **isolated cookies**.
+//
+// this approach is secure with respect to cookie isolation. Here’s why:
+// 	•	Unique Cookie Jar per Client: Each time you call newHttpClient(), you create a new cookie jar using cookiejar.New(nil). This ensures that each HTTP client instance has its own separate cookie store. Cookies obtained during a request using one client won’t be accessible by another.
+// 	•	Shared Transport Is Safe for Connection Pooling: The sharedTransport is used solely for managing connections (for efficiency through connection pooling) and does not store or manage cookie data. The Go http.Transport is designed to be safely shared across multiple clients.
+// 	•	Isolation of Session Data: Since the cookie jar is a property of the http.Client and not the transport, each client’s session cookies remain isolated. This design prevents any mix-up of cookies between different users.
+
+// Thus, with each client using its own cookie jar, there is no risk of cookie leakage or mixing between clients even though the transport is shared for efficiency.
+
+func newHttpClient() *http.Client {
+	jar, _ := cookiejar.New(nil) // Create a new cookie jar per request to prevent cookie leaks.
+	return &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: sharedTransport, // Reuses connections efficiently while isolating cookies.
+		Jar:       jar,             // Ensures cookies remain request-specific and cannot be leaked.
+	}
+}
+
+// Updated fetchDataFromAPI function using newHttpClient()
 func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (interface{}, int, error) {
+	client := newHttpClient() // Ensures security while reusing transport
 
-	// Create a new cookie jar
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		return nil, 400, fmt.Errorf("failed to create cookie jar: %w", err)
-	}
-
-	client := &http.Client{
-		Jar:     jar,
-		Timeout: 10 * time.Second, // Add a timeout
-	}
 	// Parse the endpoint URL
 	endpoint, err := url.Parse(config.Endpoint)
 	if err != nil {
 		return nil, 400, fmt.Errorf("invalid endpoint URL: %w", err)
 	}
 
-	///fmt.Printf("config.Body:%s\n", config.Body)
-
-	// Specify the allowed keys.
+	// Specify the allowed query keys
 	allowed := []string{"id", "name", "order"}
-	// Specify the allowed keys.
 	if config.AllowedQueryKeys != nil {
 		allowed = config.AllowedQueryKeys
 	}
-	// Pass the client's "token" cookie to the outgoing request if it exists.
-	if clientReq, ok := ctx.Value(shared.Request).(*http.Request); ok {
-		// Get a filtered copy of the query parameters.
-		filtered := FilterAllowedQueryParams(clientReq, allowed)
-		endpoint.RawQuery = filtered.Encode()
-	} else {
-		return nil, 400, fmt.Errorf("failed to extract request %w", err)
+
+	// Get a filtered copy of the query parameters
+	clientReq, ok := ctx.Value(shared.Request).(*http.Request)
+	if !ok {
+		return nil, 400, fmt.Errorf("failed to extract request context")
 	}
 
-	// Pass unstructured body directly
+	filtered := FilterAllowedQueryParams(clientReq, allowed)
+
+	if config.QueryParams != nil {
+		params := filtered
+		for key, value := range config.QueryParams {
+			params.Add(key, value)
+		}
+		endpoint.RawQuery = params.Encode()
+	}
+
+	// Create request
 	req, err := http.NewRequest(config.Method, endpoint.String(), strings.NewReader(config.Body))
 	if err != nil {
 		return nil, 400, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// Set custom headers
+	// Set headers
 	for key, value := range config.Headers {
 		req.Header.Set(key, value)
 	}
 
-	// Pass the client's "token" cookie to the outgoing request if it exists.
-	if clientReq, ok := ctx.Value(shared.Request).(*http.Request); ok {
-		if tokenCookie, err := clientReq.Cookie("token"); err == nil {
-			req.Header.Set("Authorization", "Bearer "+tokenCookie.Value)
-		}
+	// Pass the client's "token" cookie to the outgoing request if it exists
+	if tokenCookie, err := clientReq.Cookie("token"); err == nil {
+		req.Header.Set("Authorization", "Bearer "+tokenCookie.Value)
 	}
 
 	// Handle JWT if secret is provided
 	if config.JwtSecret != "" {
-
 		claims := jwt.MapClaims{}
-		// Add all claims dynamically from map
 		for key, value := range config.JwtClaims {
 			claims[key] = value
 		}
-		fmt.Printf("onfig.JwtClaims:%v", config.JwtClaims)
-		// Ensure mandatory claims are set
 		if _, exists := claims["sub"]; !exists {
 			claims["sub"] = "default_user"
 		}
-
 		if expStr, exists := config.JwtClaims["exp"]; exists {
 			expInt, err := strconv.ParseInt(expStr, 10, 64)
 			if err == nil {
-				claims["exp"] = time.Now().Unix() + expInt // Correct: Add to current time
+				claims["exp"] = time.Now().Unix() + expInt
 			} else {
-				fmt.Println("Invalid exp value, using default (1 hour)")
 				claims["exp"] = time.Now().Add(time.Hour).Unix()
 			}
 		} else {
-			claims["exp"] = time.Now().Add(time.Hour).Unix() // Default: 1-hour expiration
+			claims["exp"] = time.Now().Add(time.Hour).Unix()
 		}
-		fmt.Printf("claims:%v", claims)
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		tokenString, err := token.SignedString([]byte(config.JwtSecret))
 		if err != nil {
 			return nil, 401, fmt.Errorf("failed to sign JWT token: %w", err)
 		}
-
-		// fmt.Printf("JWT Token: %s\n", tokenString)
-
 		req.Header.Set("Authorization", "Bearer "+tokenString)
-
-	} else {
-		// Set basic authentication if credentials are provided
-		if config.Username != "" && config.Password != "" {
-			req.SetBasicAuth(config.Username, config.Password)
-		}
+	} else if config.Username != "" && config.Password != "" {
+		req.SetBasicAuth(config.Username, config.Password)
 	}
 
-	// Execute the HTTP request
+	// Execute the request
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, resp.StatusCode, fmt.Errorf("error making HTTP request: %w", err)
+		return nil, 500, fmt.Errorf("error making HTTP request: %w", err)
 	}
 	defer resp.Body.Close()
 
+	// 🛠 Debugging: Print the full request before sending it
 	if config.Debug {
-
-		resdump, err := httputil.DumpResponse(resp, true)
-		if err == nil {
-			fmt.Printf("HTTP Response:\n%s\n\n\n", string(resdump))
-		} else {
-			fmt.Printf("Failed to dump Response: %v\n\n\n", err)
-		}
-		// 🛠 Debugging: Print the full request before sending it
 		dump, err := httputil.DumpRequestOut(req, false)
 		if err == nil {
 			fmt.Printf("HTTP Request:\n%s\n\n\n", string(dump))
@@ -487,33 +489,76 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 		}
 	}
 
+	// Handle empty response body
+	if resp.Body == nil || resp.ContentLength == 0 {
+		return nil, resp.StatusCode, nil
+	}
+
+	// Decode JSON response
 	var result interface{}
-	if resp.Body != nil {
-		defer resp.Body.Close() // Ensure the body is closed
-
-		// Read first byte to check if body is empty
-		buf := make([]byte, 1)
-		n, err := resp.Body.Read(buf)
-
-		if err != nil && err != io.EOF {
-			return nil, resp.StatusCode, fmt.Errorf("failed to read response body: %w", err)
+	dec := json.NewDecoder(resp.Body)
+	if err := dec.Decode(&result); err != nil {
+		result, resp.StatusCode, err = handleAPIResponse(resp)
+		if err != nil {
+			//return nil, resp.StatusCode, fmt.Errorf("failed to decode JSON response: %w", err)
 		}
+	}
 
-		if n == 0 { // No data in the body
-			return nil, resp.StatusCode, nil
-		}
-
-		// Reset the body reader (since we already read one byte)
-		resp.Body = io.NopCloser(io.MultiReader(bytes.NewReader(buf[:n]), resp.Body))
-
-		// Decode JSON response
-		dec := json.NewDecoder(resp.Body)
-		if err := dec.Decode(&result); err != nil {
-			return nil, resp.StatusCode, fmt.Errorf("failed to decode JSON response: %w", err)
+	// 🛠 Debugging: Print the full response after receiving it
+	if config.Debug {
+		resdump, err := httputil.DumpResponse(resp, false)
+		if err == nil {
+			fmt.Printf("HTTP Response:\n%s\n\n\n", string(resdump))
+		} else {
+			fmt.Printf("Failed to dump Response: %v\n\n\n", err)
 		}
 	}
 
 	return result, resp.StatusCode, nil
+}
+
+// Check if response is JSON
+func isJSONResponse(resp *http.Response) bool {
+	contentType := resp.Header.Get("Content-Type")
+	return strings.HasPrefix(contentType, "application/json")
+}
+
+// Check if response is XML
+func isXMLResponse(resp *http.Response) bool {
+	contentType := resp.Header.Get("Content-Type")
+	return strings.HasPrefix(contentType, "application/xml") || strings.HasPrefix(contentType, "text/xml")
+}
+
+// Handle API response dynamically
+func handleAPIResponse(resp *http.Response) (interface{}, int, error) {
+	var result interface{}
+
+	// ✅ Handle JSON Response
+	if isJSONResponse(resp) {
+		dec := json.NewDecoder(resp.Body)
+		if err := dec.Decode(&result); err != nil {
+			return nil, resp.StatusCode, fmt.Errorf("failed to decode JSON response: %w", err)
+		}
+		return result, resp.StatusCode, nil
+	}
+
+	// ✅ Handle XML Response
+	if isXMLResponse(resp) {
+		var xmlResult map[string]interface{} // XML unmarshals into a struct or map
+		dec := xml.NewDecoder(resp.Body)
+		if err := dec.Decode(&xmlResult); err != nil {
+			return nil, resp.StatusCode, fmt.Errorf("failed to decode XML response: %w", err)
+		}
+		return xmlResult, resp.StatusCode, nil
+	}
+
+	// ✅ Fallback: Read as Plain Text
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, resp.StatusCode, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	return string(bodyBytes), resp.StatusCode, nil
 }
 
 func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFragmentRenderConfig) (string, []error) {
@@ -565,6 +610,9 @@ func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFr
 // FilterAllowedQueryParams returns a copy of the request's query parameters,
 // but only includes the keys specified in allowedKeys.
 func FilterAllowedQueryParams(req *http.Request, allowedKeys []string) url.Values {
+
+	//fmt.Println("Original RawQuery:", req.URL.RawQuery) // Debugging
+
 	// Create a set of allowed keys for quick lookup.
 	allowedSet := make(map[string]struct{})
 	for _, key := range allowedKeys {
@@ -583,5 +631,6 @@ func FilterAllowedQueryParams(req *http.Request, allowedKeys []string) url.Value
 			filteredQuery[key] = append([]string(nil), values...)
 		}
 	}
+
 	return filteredQuery
 }

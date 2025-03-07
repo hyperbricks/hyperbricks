@@ -109,6 +109,13 @@ func Test_All_Dedicated_Tests(t *testing.T) {
 
 	rm.RegisterComponent(composite.FragmentConfigGetName(), fragmentRenderer, reflect.TypeOf(composite.FragmentConfig{}))
 
+	apiFragmentRenderer := &composite.ApiFragmentRenderer{
+		CompositeRenderer: renderer.CompositeRenderer{
+			RenderManager: rm,
+		},
+	}
+	rm.RegisterComponent(composite.ApiFragmentRenderConfigGetName(), apiFragmentRenderer, reflect.TypeOf(composite.ApiFragmentRenderConfig{}))
+
 	// TEMPLATE ....
 	hypermediaRenderer := &composite.HyperMediaRenderer{
 		CompositeRenderer: renderer.CompositeRenderer{
@@ -294,23 +301,27 @@ func Test_All_Dedicated_Tests(t *testing.T) {
 					t.Errorf("result and expected html output does not match: \nresult:\n%s \nexpected:\n%s\n", result, parsed.ExpectedOutput)
 				}
 
-				equal, err := JSONDeepEqual(expected, response.Instance)
-				if err != nil {
+				if parsed.ExpectedJSONAsString != "" {
 
-					t.Fatalf("Error comparing JSON for %s: %v", strings.ToLower(path), err)
+					equal, err := JSONDeepEqual(expected, response.Instance)
+					if err != nil {
+
+						t.Fatalf("Error comparing JSON for %s: %v", strings.ToLower(path), err)
+					}
+					if !equal {
+
+						t.Errorf("Test failed for %s!\n", strings.ToLower(path))
+						outputJSON := convertToJSON(response.Instance)
+						expectedJSON := convertToJSON(expected)
+
+						fmt.Printf("output:\n%s\n", outputJSON)
+						fmt.Printf("expected:\n%s\n", expectedJSON)
+
+					} else {
+
+					}
 				}
-				if !equal {
 
-					t.Errorf("Test failed for %s!\n", strings.ToLower(path))
-					outputJSON := convertToJSON(response.Instance)
-					expectedJSON := convertToJSON(expected)
-
-					fmt.Printf("output:\n%s\n", outputJSON)
-					fmt.Printf("expected:\n%s\n", expectedJSON)
-
-				} else {
-
-				}
 			})
 
 		}
@@ -459,10 +470,11 @@ func ParseContent(content string) (*ParsedContent, error) {
 	if ok {
 		moreDetails = val
 	}
-
 	var expectedJSON map[string]interface{}
-	if err := json.Unmarshal([]byte(expectedJSONStr), &expectedJSON); err != nil {
-		return nil, fmt.Errorf("error parsing expected JSON: %v", err)
+	if expectedJSONStr != "" {
+		if err := json.Unmarshal([]byte(expectedJSONStr), &expectedJSON); err != nil {
+			return nil, fmt.Errorf("error parsing expected JSON: %v", err)
+		}
 	}
 
 	return &ParsedContent{

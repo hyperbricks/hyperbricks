@@ -1,0 +1,25 @@
+==== hyperbricks config {!{status_code_test}} ====
+# this forces the endpoint into a status code
+status_code_test = <API_FRAGMENT_RENDER>
+status_code_test {
+    route = status_code_test
+    endpoint = https://authenticationtest.com/statusCode
+    method = GET
+   
+    # allowed query parameters from url
+    querykeys = [code]
+
+    # this overrides and adds query parameters
+    queryparams = {
+        code = 400
+    }
+
+	inline = <<[
+        Status:{{.Status}}
+	]>>
+
+	debug = false 
+}
+==== expected json ====
+==== expected output ====
+Status:400
