@@ -260,6 +260,7 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 
 	//w.Header().Set("HX-Trigger", "Deleted")
 	w.Header().Set("Content-Type", "text/html")
+
 	if _, err := fmt.Fprint(w, htmlContent.String()); err != nil {
 		logging.GetLogger().Errorw("Error writing response", "route", route, "error", err)
 	} else {

@@ -1,4 +1,5 @@
 ==== hyperbricks config {!{api_me_render}} ====
+# This test should produce a rejection
 api_me_render = <API_FRAGMENT_RENDER>
 api_me_render {
     route = me
@@ -33,7 +34,7 @@ api_me_render {
 
     #setcookie =  <<[={{.Data.accessToken}}]>>
     #debugpanel = false
-	debug = true
+	#debug = true
 	enclose = <div class="userlist">|</div>
 }
 ==== expected json ====

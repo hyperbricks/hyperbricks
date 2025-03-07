@@ -1,0 +1,34 @@
+==== hyperbricks config {!{user_add_task}} ====
+$API_URL= http://localhost:3000/
+# ===========================
+# POST A TASK
+# ===========================
+user_add_task = <API_FRAGMENT_RENDER>
+user_add_task {
+    route = index
+	endpoint = {{VAR:API_URL}}tasks
+	method = POST
+	body = {"title":"Dit is een test"}
+	querykeys = [id]
+	inline = <<[
+         {{ if eq .Status 201 }}
+            created
+        {{ else }}
+			failed
+        {{ end }}
+    ]>>
+	headers {
+        Access-Control-Allow-Credentials = true
+        Authorization = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiIDogIjEiLCAicm9sZSIgOiAiYXV0aGVudGljYXRlZCJ9.AW7K8SMa3KpCXMpOte1H82-iM0OGTJhB2MH2-0ADdnA
+		Content-Type = application/json
+	}
+	debug = true
+	
+    response {
+        hx_trigger = update_list
+    }
+}
+
+==== expected json ====
+==== expected output ====
+created

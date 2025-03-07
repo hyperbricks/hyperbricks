@@ -1,0 +1,29 @@
+==== hyperbricks config {!{api_login_user}} ====
+$API_URL= http://localhost:3000
+api_login_user = <API_RENDER>
+api_login_user {
+    # CONFIGURATION
+    route = index
+	endpoint = {{VAR:API_URL}}/rpc/login_user
+	method = POST
+	body = {"p_password": "securepassword","p_username":"testuser1"}
+    headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+        Accept = application/json
+	}
+    inline = <<[
+         {{ if eq .Status 400 }}
+            FAIL
+        {{ else if eq .Status 200 }}
+            OK
+        {{ end }}
+    ]>>
+   
+    debug = true
+	#enclose = <div class="userlist">|</div>
+    setcookie =  <<[token={{.Data}}]>>
+}
+==== expected json ====
+==== expected output ====
+OK

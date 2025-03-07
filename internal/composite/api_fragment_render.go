@@ -290,6 +290,19 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 		}
 	}
 
+	// 🛠 Debugging
+	if config.Debug {
+		// Convert map to pretty JSON
+		prettyJSON, err := json.MarshalIndent(writer, "", "  ")
+		if err != nil {
+			fmt.Println("Error formatting JSON:", err)
+
+		}
+
+		// Print formatted JSON
+		fmt.Printf("🔍 HyperBricks Response:\n%s\n", string(prettyJSON))
+	}
+
 	builder.WriteString(apiContent)
 
 	return builder.String(), errors
@@ -483,9 +496,9 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 	if config.Debug {
 		dump, err := httputil.DumpRequestOut(req, false)
 		if err == nil {
-			fmt.Printf("HTTP Request:\n%s\n\n\n", string(dump))
+			fmt.Printf("HTTP Request:\n%s\n", string(dump))
 		} else {
-			fmt.Printf("Failed to dump request: %v\n\n\n", err)
+			fmt.Printf("Failed to dump request: %v\n", err)
 		}
 	}
 
@@ -508,9 +521,9 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 	if config.Debug {
 		resdump, err := httputil.DumpResponse(resp, false)
 		if err == nil {
-			fmt.Printf("HTTP Response:\n%s\n\n\n", string(resdump))
+			fmt.Printf("HTTP Response:\n%s\n", string(resdump))
 		} else {
-			fmt.Printf("Failed to dump Response: %v\n\n\n", err)
+			fmt.Printf("Failed to dump Response: %v\n", err)
 		}
 	}
 

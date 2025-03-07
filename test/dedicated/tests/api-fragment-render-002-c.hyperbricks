@@ -1,4 +1,5 @@
 ==== hyperbricks config {!{api_me_render}} ====
+# This test should produce a good result
 api_me_render = <API_FRAGMENT_RENDER>
 api_me_render {
     route = me
@@ -7,7 +8,7 @@ api_me_render {
     body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
 	headers {
 		Access-Control-Allow-Credentials = true
-        Authorization = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJlbWlseXMiLCJlbWFpbCI6ImVtaWx5LmpvaG5zb25AeC5kdW1teWpzb24uY29tIiwiZmlyc3ROYW1lIjoiRW1pbHkiLCJsYXN0TmFtZSI6IkpvaG5zb24iLCJnZW5kZXIiOiJmZW1hbGUiLCJpbWFnZSI6Imh0dHBzOi8vZHVtbXlqc29uLmNvbS9pY29uL2VtaWx5cy8xMjgiLCJpYXQiOjE3NDEzNDMyNDgsImV4cCI6MTc0MTM0NTA0OH0.k0Uv1AJhLF-I7pRLnswd-U8HLPf2-1Rgmasht4Kcujk
+        Authorization = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJlbWlseXMiLCJlbWFpbCI6ImVtaWx5LmpvaG5zb25AeC5kdW1teWpzb24uY29tIiwiZmlyc3ROYW1lIjoiRW1pbHkiLCJsYXN0TmFtZSI6IkpvaG5zb24iLCJnZW5kZXIiOiJmZW1hbGUiLCJpbWFnZSI6Imh0dHBzOi8vZHVtbXlqc29uLmNvbS9pY29uL2VtaWx5cy8xMjgiLCJpYXQiOjE3NDEzNTA4NjEsImV4cCI6MTc0MTM1MjY2MX0.Qvro1CbzRQlcIydey-1rZSBT8i5p4UwBr5Y3K2o27XY
 		Accept = application/json
 		Content-Type = application/json
         credentials= include
@@ -33,18 +34,9 @@ api_me_render {
 
     #setcookie =  <<[={{.Data.accessToken}}]>>
     #debugpanel = false
-	debug = true
+	#debug = true
 	enclose = <div class="userlist">|</div>
 }
 ==== expected json ====
 ==== expected output ====
-<div class="userlist">
-                
-<h1>API_FRAGMENT_RENDER demo</h1>
-<ul id="1">gender
-    <li>Emily Johnson</li>
-    <li>gender: female </li>
-    <li>Bank CardNumber: 9289760655481815 </li>
-<img src="https://dummyjson.com/icon/emilys/128">
-<ul>
-</div> 
+<div class="userlist">Token Expired!</div>

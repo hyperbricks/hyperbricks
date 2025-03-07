@@ -1,4 +1,5 @@
 ==== hyperbricks config {!{api_login}} ====
+# Login with basic auth via body json
 api_login = <API_FRAGMENT_RENDER>
 api_login {
     route = index
@@ -33,7 +34,7 @@ api_login {
 
     setcookie =  <<[token={{.Data.accessToken}}]>>
     #debugpanel = false
-	debug = true
+	#debug = true
 	#enclose = <div class="userlist">|</div>
 }
 ==== expected json ====
