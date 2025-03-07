@@ -1,0 +1,50 @@
+==== hyperbricks config {!{api_me_render}} ====
+api_me_render = <API_FRAGMENT_RENDER>
+api_me_render {
+    route = me
+    endpoint = https://dummyjson.com/auth/me
+	method = GET
+    body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	headers {
+		Access-Control-Allow-Credentials = true
+        Authorization = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJlbWlseXMiLCJlbWFpbCI6ImVtaWx5LmpvaG5zb25AeC5kdW1teWpzb24uY29tIiwiZmlyc3ROYW1lIjoiRW1pbHkiLCJsYXN0TmFtZSI6IkpvaG5zb24iLCJnZW5kZXIiOiJmZW1hbGUiLCJpbWFnZSI6Imh0dHBzOi8vZHVtbXlqc29uLmNvbS9pY29uL2VtaWx5cy8xMjgiLCJpYXQiOjE3NDEzNDMyNDgsImV4cCI6MTc0MTM0NTA0OH0.k0Uv1AJhLF-I7pRLnswd-U8HLPf2-1Rgmasht4Kcujk
+		Accept = application/json
+		Content-Type = application/json
+        credentials= include
+	}
+	 inline = <<[
+        {{ if eq .Status 200 }}
+            <h1>{{.Values.someproperty}}</h1>
+            <ul id="{{index .Data.id}}">gender
+                <li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+                <li>gender: {{index .Data.gender}} </li>
+                <li>Bank CardNumber: {{index .Data.bank.cardNumber}} </li>
+            <img src="{{index .Data.image}}">
+            <ul>
+
+            {{ else }} 
+                {{.Data.message}}
+        {{ end }}
+        
+	 ]>>
+     values {
+         someproperty = API_FRAGMENT_RENDER demo
+     }
+
+    #setcookie =  <<[={{.Data.accessToken}}]>>
+    #debugpanel = false
+	debug = true
+	enclose = <div class="userlist">|</div>
+}
+==== expected json ====
+==== expected output ====
+<div class="userlist">
+                
+<h1>API_FRAGMENT_RENDER demo</h1>
+<ul id="1">gender
+    <li>Emily Johnson</li>
+    <li>gender: female </li>
+    <li>Bank CardNumber: 9289760655481815 </li>
+<img src="https://dummyjson.com/icon/emilys/128">
+<ul>
+</div> 

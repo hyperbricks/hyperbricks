@@ -10,16 +10,20 @@ status_code_test {
     querykeys = [code]
 
     # this overrides and adds query parameters
-    queryparams = {
-        code = 400
+    queryparams  {
+        code = 201
     }
 
 	inline = <<[
         Status:{{.Status}}
 	]>>
 
-	debug = false 
+	debug = true 
+
+    response {
+        hx_target = target-element-id
+    }
 }
 ==== expected json ====
 ==== expected output ====
-Status:400
+Status:201

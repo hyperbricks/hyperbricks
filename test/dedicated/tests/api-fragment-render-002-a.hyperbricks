@@ -1,0 +1,45 @@
+==== hyperbricks config {!{api_login}} ====
+api_login = <API_FRAGMENT_RENDER>
+api_login {
+    route = index
+    endpoint = https://dummyjson.com/auth/login
+	method = POST
+	# use body...
+    body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+
+    # https://dummyjson.com does not have basic auth option
+	#username = emilys
+	#password = emilyspass
+	headers {
+        
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	 inline = <<[
+        {{ if eq .Status 200 }}
+            <h1>{{.Values.someproperty}}</h1>
+            <ul id="{{index .Data.id}}">
+                <li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+            <img src="{{index .Data.image}}">
+            <ul>
+
+            {{ else }} 
+                {{.Data.message}}
+        {{ end }}
+	 ]>>
+     values {
+         someproperty = API_FRAGMENT_RENDER demo
+     }
+
+    setcookie =  <<[token={{.Data.accessToken}}]>>
+    #debugpanel = false
+	debug = true
+	#enclose = <div class="userlist">|</div>
+}
+==== expected json ====
+==== expected output ====
+<h1>API_FRAGMENT_RENDER demo</h1>
+<ul id="1">
+    <li>Emily Johnson</li>
+<img src="https://dummyjson.com/icon/emilys/128">
+<ul>
