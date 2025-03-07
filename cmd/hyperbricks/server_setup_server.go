@@ -6,6 +6,7 @@ import (
 
 	"net/http"
 
+	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
@@ -35,12 +36,12 @@ func StartServer(ctx context.Context) {
 			logging.GetLogger().Errorw("No IPv4 addresses found for the host")
 			return
 		}
-		location := fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
+		shared.Location = fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
 
 		orangeTrueColor := "\033[38;2;255;165;0m"
 		reset := "\033[0m"
 
-		logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf("Server is listening at http://%s", location), reset)
+		logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf("Server is listening at http://%s", shared.Location), reset)
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logging.GetLogger().Fatalw("Server failed to start", "error", err)

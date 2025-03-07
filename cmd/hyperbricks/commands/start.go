@@ -22,6 +22,10 @@ var (
 	Debug       bool
 )
 
+func GetModule() string {
+	return StartModule
+}
+
 // NewStartCommand creates the "start" subcommand
 func NewStartCommand() *cobra.Command {
 	cmd := &cobra.Command{

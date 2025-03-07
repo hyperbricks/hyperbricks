@@ -30,3 +30,5 @@ type ExtendedRendererConfig struct {
 	Meta  // Embedding RendererConfig
 	Value string
 }
+
+var Location string

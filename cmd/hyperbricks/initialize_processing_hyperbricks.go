@@ -132,9 +132,9 @@ func processScript(filename string, config map[string]interface{},
 				logging.GetLogger().Errorw("No IPv4 addresses found for the host")
 
 			}
-			location := fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
+			shared.Location = fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
 			if hypermediaConfig.Static == "" {
-				logger.Info(fmt.Sprintf("route: [http://%s/%s] initialized:", location, hypermediaConfig.Route))
+				logger.Info(fmt.Sprintf("route: [http://%s/%s] initialized:", shared.Location, hypermediaConfig.Route))
 			} else {
 				logger.Info(fmt.Sprintf("static file: %s", hypermediaConfig.Static))
 			}
