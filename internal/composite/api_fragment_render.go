@@ -300,10 +300,13 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 		}
 
 		// Print formatted JSON
-		fmt.Printf("🔍 HyperBricks Response:\n%s\n", string(prettyJSON))
+		fmt.Printf("HyperBricks Response:\n%s\n", string(prettyJSON))
 	}
 
 	builder.WriteString(apiContent)
+	if config.HxResponseWriter != nil {
+		SetHeadersFromHxRequest(&config.HxResponse, writer)
+	}
 
 	return builder.String(), errors
 }

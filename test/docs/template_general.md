@@ -38,6 +38,46 @@ fragment {
     }
 }
 ```
+`<FRAGMENT>` and `<API_FRAGMENT_RENDER>` declarations can contain response object keys. These are conform the HTMX documented headers.
+
+**response header example:**
+
+```properties
+fragment = <FRAGMENT>
+fragment.route = myfragment
+fragment {
+    content = <TREE>
+    content {
+        10 = <HTML>
+        10 {
+            value = <p>THIS IS HTML</p>
+        }
+    }
+    response {
+        hx_target = target-element-id
+    }
+}
+```
+
+[See HTMX response header documentation](https://htmx.org/reference/#response_headers)
+
+## HTMX Response Headers
+
+This document provides an overview of the HTML headers used in the `HxResponse` struct, their corresponding mapstructure keys, and their descriptions.
+
+| Hyperbricks Key              | HTMX Header                 | Description |
+|-------------------------------|-----------------------------|-------------|
+| hx_location                   | HX-Location                 | Allows you to do a client-side redirect that does not do a full page reload |
+| hx_push_url                   | HX-Pushed-Url               | Pushes a new URL into the history stack |
+| hx_redirect                   | HX-Redirect                 | Can be used to do a client-side redirect to a new location |
+| hx_refresh                    | HX-Refresh                  | If set to 'true' the client-side will do a full refresh of the page |
+| hx_replace_url                | HX-Replace-Url              | Replaces the current URL in the location bar |
+| hx_reswap                     | HX-Reswap                   | Allows you to specify how the response will be swapped |
+| hx_retarget                   | HX-Retarget                 | A CSS selector that updates the target of the content update |
+| hx_reselect                   | HX-Reselect                 | A CSS selector that allows you to choose which part of the response is used to be swapped in |
+| hx_trigger                    | HX-Trigger                  | Allows you to trigger client-side events |
+| hx_trigger_after_settle        | HX-Trigger-After-Settle     | Allows you to trigger client-side events after the settle step |
+| hx_trigger_after_swap          | HX-Trigger-After-Swap       | Allows you to trigger client-side events after the swap step |
 
 ### Rendering Order and Property Rules
 

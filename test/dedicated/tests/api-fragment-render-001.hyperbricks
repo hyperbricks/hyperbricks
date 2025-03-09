@@ -18,7 +18,7 @@ status_code_test {
         Status:{{.Status}}
 	]>>
 
-	#debug = true 
+	debug = true 
 
     response {
         hx_target = target-element-id
