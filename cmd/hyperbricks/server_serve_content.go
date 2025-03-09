@@ -270,6 +270,7 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 
 // RENDER WITHOUT CACHE
 func handleDeveloperMode(w http.ResponseWriter, route string, r *http.Request) string {
+
 	logging.GetLogger().Debugw("Developer mode active. Rendering fresh content:", route)
 	htmlContent, _ := renderContent(w, route, r)
 	return htmlContent

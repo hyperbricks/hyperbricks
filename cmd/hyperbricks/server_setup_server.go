@@ -41,6 +41,10 @@ func StartServer(ctx context.Context) {
 		orangeTrueColor := "\033[38;2;255;165;0m"
 		reset := "\033[0m"
 
+		if hbConfig.Mode == shared.DEVELOPMENT_MODE {
+			logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf("Dashboard running at http://%s/dashboard", shared.Location), reset)
+		}
+
 		logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf("Server is listening at http://%s", shared.Location), reset)
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
