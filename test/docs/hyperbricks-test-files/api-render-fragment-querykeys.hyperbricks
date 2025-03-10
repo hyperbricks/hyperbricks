@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Set allowed proxy query keys
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>

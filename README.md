@@ -64,6 +64,107 @@ fragment {
     }
 }
 ```
+`<FRAGMENT>` and `<API_FRAGMENT_RENDER>` declarations can contain response object keys. These are conform the HTMX documented headers.
+
+**response header example:**
+
+```properties
+fragment = <FRAGMENT>
+fragment.route = myfragment
+fragment {
+    content = <TREE>
+    content {
+        10 = <HTML>
+        10 {
+            value = <p>THIS IS HTML</p>
+        }
+    }
+    response {
+        hx_target = target-element-id
+    }
+}
+```
+
+[See HTMX response header documentation](https://htmx.org/reference/#response_headers)
+
+## HTMX Response Headers
+
+This document provides an overview of the HTML headers used in the `HxResponse` struct, their corresponding mapstructure keys, and their descriptions.
+
+| Hyperbricks Key              | HTMX Header                 | Description |
+|-------------------------------|-----------------------------|-------------|
+| hx_location                   | HX-Location                 | Allows you to do a client-side redirect that does not do a full page reload |
+| hx_push_url                   | HX-Pushed-Url               | Pushes a new URL into the history stack |
+| hx_redirect                   | HX-Redirect                 | Can be used to do a client-side redirect to a new location |
+| hx_refresh                    | HX-Refresh                  | If set to 'true' the client-side will do a full refresh of the page |
+| hx_replace_url                | HX-Replace-Url              | Replaces the current URL in the location bar |
+| hx_reswap                     | HX-Reswap                   | Allows you to specify how the response will be swapped |
+| hx_retarget                   | HX-Retarget                 | A CSS selector that updates the target of the content update |
+| hx_reselect                   | HX-Reselect                 | A CSS selector that allows you to choose which part of the response is used to be swapped in |
+| hx_trigger                    | HX-Trigger                  | Allows you to trigger client-side events |
+| hx_trigger_after_settle        | HX-Trigger-After-Settle     | Allows you to trigger client-side events after the settle step |
+| hx_trigger_after_swap          | HX-Trigger-After-Swap       | Allows you to trigger client-side events after the swap step |
+
+
+### **3. API Serverside Render (`<API_RENDER>` & `<API_FRAGMENT_RENDER>`)**
+
+### `<API_FRAGMENT_RENDER>`
+
+  - Renders API Fetched Data to HTMX fragments
+  - Acts like bi-directional PROXY
+  - Validates headers and filters query params
+  - Maps Client Body data to Body of API request
+  - Handles JWT-based and Basic authentication
+  - Includes `jwtsecret` and `jwtclaims` options
+  - Uses cookies for session-based auth if needed
+  - Can respond with HTMX response headers
+  - Custom headers
+
+### `<API_RENDER>`
+  - Renders Fetched Data to HTMX output, based on config values.
+  - Is Cached, depending on Hypermedia's configuration
+  - Passes API requests through, modifies headers, filters query params.
+  - Handles JWT-based and Basic authentication before making API requests.
+  - Uses cookies for session-based auth if needed.
+
+### **Key Differences Between `<API_RENDER>` and `<API_FRAGMENT_RENDER>` Mode**
+| Feature              | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
+|----------------------|-----------------------------|-----------------------------|
+| **Cache** | ✅ Yes (optional)| ❌ No (explicit)|
+| **API Request** | ✅ Yes | ✅ Yes |
+| **Query Param Filtering (`querykeys`)** | ✅ Yes | ✅ Yes |
+| **Custom Headers** | ✅ Yes | ✅ Yes |
+| **Request Body Modification** | ✅ Yes | ✅ Yes |
+| **Transforms Response (`inline`/`template`)** | ✅ Yes | ✅ Yes |
+| **Debugging (`debug = true`)** | ✅ Yes | ✅ Yes |
+
+### **Client->Server Interaction**
+`<API_RENDER>` does not handle specific user auth. That makes this component only suited for fetching and rendering public data that can be cached on a interval. This can be set in the root composite component.
+
+`<API_FRAGMENT_RENDER>` Can handle Client auth requests based on login forms and tokens that will be passed thrue bi-directional.
+| `Client->Server` | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
+|----------------------|-----------------------------|-----------------------------|
+| **Client->Server: JWT Authentication (`jwtsecret`)** | ❌ No | ✅ Yes |
+| **Client->Server: Session-Based Auth (Cookies)** | ❌ No | ✅ Yes |
+| **Client->Server: Basic Auth username and password** |❌ No  | ✅ Yes |
+| **Client->Server: Generates JWT with Claims (`jwtclaims`)** | ❌ No | ✅ Yes |
+
+### **Server->API Interaction**
+Both components can aply authentication on API requests. So for example a Weather Service that requires a 
+API key can be set by adding a header or by creating a JWT claim based on a secret
+| `Server->API` | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
+|----------------------|-----------------------------|-----------------------------|
+| **Server->API: JWT Authentication (`jwtsecret`)** |✅ Yes  | ✅ Yes |
+| **Server->API: Session-Based Auth (Cookies)** | ✅ Yes  | ✅ Yes |
+| **Server->API: Basic Auth username and password** |✅ Yes   | ✅ Yes |
+| **Server->API: Generates JWT with Claims (`jwtclaims`)** | ✅ Yes  | ✅ Yes |
+
+
+### **Other Interactions**
+| `Server->API` | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
+|----------------------|-----------------------------|-----------------------------|
+| **API->Server: Proxy Cookies (`setcookie`)** | ❌ No | ✅ (acts like proxy) |
+| **Server->Client: Sets Cookies (`setcookie`)** | ❌ No | ✅ Yes |
 
 ### Rendering Order and Property Rules
 
@@ -334,6 +435,7 @@ hyperbricks [command] --help
 
 ### **composite**
 
+- [&lt;API_FRAGMENT_RENDER&gt;](#<API_FRAGMENT_RENDER>) 
 - [&lt;FRAGMENT&gt;](#<FRAGMENT>) 
 - [&lt;HEAD&gt;](#<HEAD>) 
 - [&lt;HYPERMEDIA&gt;](#<HYPERMEDIA>) 
@@ -590,6 +692,687 @@ text {
 
 
 ### Category: **composite**
+
+
+<h3><a id="&lt;API_FRAGMENT_RENDER&gt;">&lt;API_FRAGMENT_RENDER&gt;</a></h3>
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A &lt;FRAGMENT&gt; dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+
+
+**Main Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+**more**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Properties**
+
+- [endpoint](#apifragmentrender-endpoint)
+- [method](#apifragmentrender-method)
+- [headers](#apifragmentrender-headers)
+- [body](#apifragmentrender-body)
+- [template](#apifragmentrender-template)
+- [inline](#apifragmentrender-inline)
+- [values](#apifragmentrender-values)
+- [username](#apifragmentrender-username)
+- [password](#apifragmentrender-password)
+- [setcookie](#apifragmentrender-setcookie)
+- [querykeys](#apifragmentrender-querykeys)
+- [queryparams](#apifragmentrender-queryparams)
+- [jwtsecret](#apifragmentrender-jwtsecret)
+- [jwtclaims](#apifragmentrender-jwtclaims)
+- [debug](#apifragmentrender-debug)
+- [debugpanel](#apifragmentrender-debugpanel)
+- [response](#apifragmentrender-response)
+
+- [title](#apifragmentrender-title)
+- [route](#apifragmentrender-route)
+- [section](#apifragmentrender-section)
+- [enclose](#apifragmentrender-enclose)
+- [nocache](#apifragmentrender-nocache)
+- [index](#apifragmentrender-index)
+
+
+
+
+
+## apifragmentrender endpoint
+#### endpoint
+
+**Description**  
+The API endpoint
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender method
+#### method
+
+**Description**  
+HTTP method to use for API calls, GET POST PUT DELETE etc... 
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender headers
+#### headers
+
+**Description**  
+Optional HTTP headers for API requests
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender body
+#### body
+
+**Description**  
+Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender template
+#### template
+
+**Description**  
+Loads contents of a template file in the modules template directory
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender inline
+#### inline
+
+**Description**  
+Use inline to define the template in a multiline block &lt;&lt;[ /* Template goes here */ ]&gt;&gt;
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender values
+#### values
+
+**Description**  
+Key-value pairs for template rendering
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender username
+#### username
+
+**Description**  
+Username for basic auth
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender password
+#### password
+
+**Description**  
+Password for basic auth
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender setcookie
+#### setcookie
+
+**Description**  
+Set template for cookie
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender querykeys
+#### querykeys
+
+**Description**  
+Set allowed proxy query keys
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender queryparams
+#### queryparams
+
+**Description**  
+Set proxy query key in the confifuration
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender jwtsecret
+#### jwtsecret
+
+**Description**  
+When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender jwtclaims
+#### jwtclaims
+
+**Description**  
+jwt claim map
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender debug
+#### debug
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender debugpanel
+#### debugpanel
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender response
+#### response
+
+**Description**  
+HTMX response header configuration.
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender title
+#### title
+
+**Description**  
+The title of the fragment
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender route
+#### route
+
+**Description**  
+The route (URL-friendly identifier) for the fragment
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender section
+#### section
+
+**Description**  
+The section the fragment belongs to
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender enclose
+#### enclose
+
+**Description**  
+Wrapping property for the fragment rendered output
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender nocache
+#### nocache
+
+**Description**  
+Explicitly deisable cache
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+## apifragmentrender index
+#### index
+
+**Description**  
+Index number is a sort order option for the &lt;MENU&gt; section. See &lt;MENU&gt; for further explanation
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	index = 1
+}
+
+````
+
+
+
+
+
+
 
 
 <h3><a id="&lt;FRAGMENT&gt;">&lt;FRAGMENT&gt;</a></h3>

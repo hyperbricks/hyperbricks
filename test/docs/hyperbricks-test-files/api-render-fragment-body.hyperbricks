@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>
