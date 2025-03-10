@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"os/exec"
+	"runtime"
 
 	"net/http"
 
@@ -43,6 +45,11 @@ func StartServer(ctx context.Context) {
 
 		if hbConfig.Mode == shared.DEVELOPMENT_MODE {
 			logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf("Dashboard running at http://%s/dashboard", shared.Location), reset)
+			url := fmt.Sprintf("http://%s/dashboard", shared.Location)
+			err := openBrowser(url)
+			if err != nil {
+				fmt.Println("Error opening browser:", err)
+			}
 		}
 
 		logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf("Server is listening at http://%s", shared.Location), reset)
@@ -51,4 +58,23 @@ func StartServer(ctx context.Context) {
 			logging.GetLogger().Fatalw("Server failed to start", "error", err)
 		}
 	}()
+}
+
+func openBrowser(url string) error {
+	var cmd string
+	var args []string
+
+	switch runtime.GOOS {
+	case "windows":
+		cmd = "rundll32"
+		args = []string{"url.dll,FileProtocolHandler", url}
+	case "darwin":
+		cmd = "open"
+		args = []string{url}
+	default: // Linux, BSD, etc.
+		cmd = "xdg-open"
+		args = []string{url}
+	}
+
+	return exec.Command(cmd, args...).Start()
 }

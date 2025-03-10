@@ -27,14 +27,20 @@ var htmlJsonTemplate string = `<!DOCTYPE html>
     <style>
         body {
             color: #387d98; 
-            background-color: black;
+            background-color:rgb(8, 8, 8); 
             animation: cycleColor 20s linear infinite;
             font-family: monospace;
         }
 
         .border-glow {
-            border: 2px solid currentColor;
-            box-shadow: 0px 0px 2px currentColor;
+            background-color:rgb(8, 8, 8); 
+            border-left: 1px solid rgb(15, 35, 42); 
+            border-right: 1px solid rgb(15, 35, 42); 
+            border-top: 1px solid rgb(15, 35, 42); 
+            border-bottom: 4px solid #183540; 
+
+            border: 4px solid #183540; 
+           
         }
 
         .labels {
@@ -109,7 +115,7 @@ var htmlJsonTemplate string = `<!DOCTYPE html>
 </head>
 
 <body class="m-2 mt-5 p-0">
-    <div class="max-w-4xl mx-auto p-4 ">
+    <div class="max-w-3xl mx-auto p-2 ">
             <h1 class="text-center text-2xl font-bold"><span class="labels">&lt;HyperBricks&gt;</span> Dashboard</h1>
             <div class="border-glow p-2 mt-4 text-center flex items-center justify-center gap-2">
                 Location: <span><a class="labels" href="{{.Location}}">{{.Location}}</a></span>

@@ -100,6 +100,14 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			Config:         composite.FragmentConfig{},
 		},
 		{
+			Name:            "ApiFragmentRender",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<API_FRAGMENT_RENDER>",
+			ConfigCategory:  "composite",
+			Config:          composite.ApiFragmentRenderConfig{},
+		},
+		{
 			Name:            "Hypermedia",
 			TypeDescription: "Basic type description here.....",
 			Embedded:        map[string]string{},
