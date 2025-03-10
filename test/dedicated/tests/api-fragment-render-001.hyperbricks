@@ -5,7 +5,7 @@ status_code_test {
     route = status_code_test
     endpoint = https://authenticationtest.com/statusCode
     method = GET
-   
+
     # allowed query parameters from url
     querykeys = [code]
 
