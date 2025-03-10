@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -347,12 +348,24 @@ func createMockContext() context.Context {
 	// Mock JWT token
 	mockJwtToken := "fake-jwt-token"
 
+	// Add query parameters
+	queryParams := url.Values{}
+	queryParams.Add("example", "testValue")
+	queryParams.Add("otherexample", "otherTestValue") // You can add more if needed
+
 	// Create a fake HTTP request
-	req := httptest.NewRequest(http.MethodPost, "/test-endpoint", bytes.NewBufferString(`{"key": "value"}`))
+	// Mock JSON body
+	jsonBody := []byte(`{"user_password": "mysupersecretpassword"}`)
+	req := httptest.NewRequest(http.MethodPost, "/test-endpoint?"+queryParams.Encode(), bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
 	req.Form = map[string][]string{
 		"example": {"testValue"},
 	}
+
+	// Assign query parameters to request
+	req.URL.RawQuery = queryParams.Encode()
+
+	fmt.Println("RawQuery:", req.URL.RawQuery)
 
 	// Create a fake ResponseWriter
 	w := httptest.NewRecorder()

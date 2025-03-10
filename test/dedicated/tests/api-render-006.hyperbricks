@@ -1,0 +1,32 @@
+==== hyperbricks config {!{echo_jwt_fail}} ====
+$API_URL= http://localhost:8090
+$JWT_SECRET = a-string-secret-at-least-256-bits-longXXX
+# creates claim on 'false' token so test succeeds with FAIL
+echo_jwt_fail = <API_RENDER>
+echo_jwt_fail {
+    route = index
+	endpoint = {{VAR:API_URL}}/echo/token/validate
+
+    # we need a secret to create claim
+    jwtsecret = {{VAR:JWT_SECRET}}
+    jwtclaims {
+        sub = user
+    }
+	method = POST
+
+	inline = <<[
+        {{if .Data.valid}}
+            GOOD
+        {{ else }}
+            FAIL
+        {{ end }}
+	]>>
+    values {
+        someproperty = User
+    }
+	debug = true
+	
+}
+==== expected json ====
+==== expected output ====
+FAIL

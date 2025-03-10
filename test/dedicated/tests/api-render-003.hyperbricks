@@ -1,0 +1,16 @@
+==== hyperbricks config {!{status_code_test}} ====
+# this forces the endpoint into a status code
+status_code_test = <API_RENDER>
+status_code_test {
+    route = status_code_test
+    endpoint = http://localhost:8090/echo/data
+    method = POST
+    body = {"password":"$user_password"}
+	inline = <<[
+        {{.Data.password}}
+	]>>
+    debug = true
+}
+==== expected json ====
+==== expected output ====
+mysupersecretpassword

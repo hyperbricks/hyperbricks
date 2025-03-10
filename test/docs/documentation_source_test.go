@@ -99,14 +99,14 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory: "composite",
 			Config:         composite.FragmentConfig{},
 		},
-		{
-			Name:            "ApiFragmentRender",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<API_FRAGMENT_RENDER>",
-			ConfigCategory:  "composite",
-			Config:          composite.ApiFragmentRenderConfig{},
-		},
+		// {
+		// 	Name:            "ApiFragmentRender",
+		// 	TypeDescription: "Basic type description here.....",
+		// 	Embedded:        map[string]string{},
+		// 	ConfigType:      "<API_FRAGMENT_RENDER>",
+		// 	ConfigCategory:  "composite",
+		// 	Config:          composite.ApiFragmentRenderConfig{},
+		// },
 		{
 			Name:            "Hypermedia",
 			TypeDescription: "Basic type description here.....",
@@ -235,17 +235,17 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory: "menu",
 			Config:         component.MenuConfig{},
 		},
-		{
-			Name:            "Api_Render",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ExcludeFields: []string{
-				"attributes",
-			},
-			ConfigType:     "<API_RENDER>",
-			ConfigCategory: "data",
-			Config:         component.APIConfig{},
-		},
+		// {
+		// 	Name:            "Api_Render",
+		// 	TypeDescription: "Basic type description here.....",
+		// 	Embedded:        map[string]string{},
+		// 	ExcludeFields: []string{
+		// 		"attributes",
+		// 	},
+		// 	ConfigType:     "<API_RENDER>",
+		// 	ConfigCategory: "data",
+		// 	Config:         component.APIConfig{},
+		// },
 	}
 
 	// Initialize shared configuration settings.

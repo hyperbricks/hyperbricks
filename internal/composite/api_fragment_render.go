@@ -344,32 +344,30 @@ func processRequest(ctx context.Context, bodyMap string) (string, error) {
 	if bodyOk {
 		defer body.Close()
 
-		buf := make([]byte, 1) // Read 1 byte to check if the body is empty
-		n, err := body.Read(buf)
+		// Read entire body
+		bodyBytes, err := io.ReadAll(body)
+		if err != nil {
+			return "Failed to read request body", fmt.Errorf("failed to read request body: %w", err)
+		}
 
-		if err == io.EOF || n == 0 {
-			// empty so fo nothing....
-		} else {
-			bodyBytes, err := io.ReadAll(body)
-			if err != nil {
-				return "Failed to read request body", fmt.Errorf("failed to read request body: %w", err)
-			}
+		if len(bodyBytes) == 0 {
+			// Empty body, do nothing
+			return "", nil
+		}
 
-			// Parse JSON body into a map
-			var bodyData map[string]interface{}
-			err = json.Unmarshal(bodyBytes, &bodyData)
-			if err != nil {
-				bodyData = make(map[string]interface{})
-				//return "Invalid or no JSON payload in body", fmt.Errorf("invalid or no JSON payload in body: %w", err)
+		// Parse JSON body into a map
+		var bodyData map[string]interface{}
+		err = json.Unmarshal(bodyBytes, &bodyData)
+		if err != nil {
+			bodyData = make(map[string]interface{}) // Default empty map on error
+		}
+
+		// Merge body data with conflict resolution
+		for key, value := range bodyData {
+			if _, exists := mergedData[key]; exists {
+				mergedData["body_"+key] = value // Prefix duplicate keys
 			} else {
-				// Merge body data with conflicts resolved
-				for key, value := range bodyData {
-					if _, exists := mergedData[key]; exists {
-						mergedData["body_"+key] = value
-					} else {
-						mergedData[key] = value
-					}
-				}
+				mergedData[key] = value
 			}
 		}
 	}
@@ -381,7 +379,7 @@ func processRequest(ctx context.Context, bodyMap string) (string, error) {
 		bodyMap = strings.ReplaceAll(bodyMap, placeholder, strValue)
 	}
 
-	//fmt.Printf("Updated body map string: %s\n", bodyMap)
+	fmt.Printf("Updated body map string: %s\n", bodyMap)
 	return bodyMap, nil
 }
 
@@ -435,10 +433,15 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 
 	filtered := FilterAllowedQueryParams(clientReq, allowed)
 
-	if config.QueryParams != nil {
+	if len(filtered) == 0 && config.QueryParams == nil {
+		// Ensure endpoint.RawQuery remains empty
+		endpoint.RawQuery = ""
+	} else {
 		params := filtered
-		for key, value := range config.QueryParams {
-			params.Add(key, value)
+		if config.QueryParams != nil {
+			for key, value := range config.QueryParams {
+				params.Add(key, value)
+			}
 		}
 		endpoint.RawQuery = params.Encode()
 	}
@@ -623,11 +626,13 @@ func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFr
 	return output.String(), errors
 }
 
-// FilterAllowedQueryParams returns a copy of the request's query parameters,
-// but only includes the keys specified in allowedKeys.
+// FilterAllowedQueryParams returns only the query parameters whose keys are in allowedKeys.
+// If allowedKeys is empty, it returns an empty url.Values (no parameters).
 func FilterAllowedQueryParams(req *http.Request, allowedKeys []string) url.Values {
-
-	//fmt.Println("Original RawQuery:", req.URL.RawQuery) // Debugging
+	// If allowedKeys is empty, return an empty url.Values (no params allowed).
+	if len(allowedKeys) == 0 {
+		return url.Values{}
+	}
 
 	// Create a set of allowed keys for quick lookup.
 	allowedSet := make(map[string]struct{})
@@ -635,15 +640,12 @@ func FilterAllowedQueryParams(req *http.Request, allowedKeys []string) url.Value
 		allowedSet[key] = struct{}{}
 	}
 
-	// Get the original query parameters.
 	originalQuery := req.URL.Query()
-	// Create a new url.Values to hold the filtered query.
 	filteredQuery := url.Values{}
 
-	// Iterate over the original query parameters.
 	for key, values := range originalQuery {
 		if _, allowed := allowedSet[key]; allowed {
-			// Copy the slice of values (an "array" of strings) for this key.
+			// Copy values to avoid modifying the original slice.
 			filteredQuery[key] = append([]string(nil), values...)
 		}
 	}

@@ -1,0 +1,29 @@
+==== hyperbricks config {!{overwrite_query_test}} ====
+# This test overrides the mockup request query param 'example'
+overwrite_query_test = <API_RENDER>
+overwrite_query_test {
+    route = status_code_test
+    endpoint = http://localhost:8090/echo/query
+    method = GET
+
+    # allowed query parameters from url
+    querykeys = [example]
+
+    # # this overrides and adds query parameters
+    queryparams  {
+        otherexample = TEST_OVERWRITTEN
+    }
+
+	inline = <<[
+        {{.Data.queryParams.otherexample}}
+	]>>
+
+	debug = true 
+
+    response {
+        hx_target = target-element-id
+    }
+}
+==== expected json ====
+==== expected output ====
+TEST_OVERWRITTEN
