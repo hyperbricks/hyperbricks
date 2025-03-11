@@ -1,0 +1,4358 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.file = hyperbricks-test-files/assets/styles.css
+    10.attributes {
+        media = screen
+    }
+}
+==== explainer ====
+Extra attributes like id, data-role, data-action, media
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "10": {
+        "@type": "<CSS>",
+        "attributes": {
+          "media": "screen"
+        },
+        "file": "hyperbricks-test-files/assets/styles.css"
+      }
+    }
+  }
+==== expected output ====
+  <!DOCTYPE html><html><head><style media="screen">
+  body {
+      background-color: red;
+  }
+  </style><meta name="generator" content="hyperbricks cms"></head><body></body></html>==== hyperbricks config {!{head}} ====
+head = <HEAD>
+head {
+    10 = <CSS>
+    10.file = hyperbricks-test-files/assets/styles.css
+    10.attributes {
+        media = screen
+    }
+    10.enclose = <style media="print">|</style>
+}
+==== explainer ====
+A custom <style> tag definition |. Will override extraAttributes.
+==== expected json ====
+{
+    "ConfigType": "<HEAD>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "Items": {
+      "10": {
+        "@type": "<CSS>",
+        "attributes": {
+          "media": "screen"
+        },
+        "enclose": "<style media=\"print\">|</style>",
+        "file": "hyperbricks-test-files/assets/styles.css"
+      }
+    },
+    "Title": "",
+    "Favicon": "",
+    "MetaData": null,
+    "Css": null,
+    "Js": null
+  }
+==== expected output ====
+<head><style media="print">
+body {
+    background-color: red;
+}
+</style><meta name="generator" content="hyperbricks cms"></head>==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.file = hyperbricks-test-files/assets/styles.css
+    10.attributes {
+        media = screen
+    }
+}
+==== explainer ====
+file overrides link and inline, it loads contents of a file and renders it in a style tag.
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "10": {
+      "@type": "<CSS>",
+      "attributes": {
+        "media": "screen"
+      },
+      "file": "hyperbricks-test-files/assets/styles.css"
+    }
+  }
+}
+==== expected output ====
+<!DOCTYPE html><html><head><style media="screen">
+body {
+    background-color: red;
+}
+</style><meta name="generator" content="hyperbricks cms"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.inline = <<[
+        body {
+            background-color: lightblue;
+        }
+    ]>>
+}
+==== explainer ====
+Use inline to define css in a multiline block <<[ /* css goes here */ ]>>
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "10": {
+        "@type": "<CSS>",
+        "inline": "\nbody {\n    background-color: lightblue;\n}\n    "
+      }
+    }
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><style>
+
+body {
+    background-color: lightblue;
+}
+    
+</style><meta name="generator" content="hyperbricks cms"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    10 = <CSS>
+    10.link = styles.css
+}
+==== explainer ====
+Use link for a link tag to a css file.
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "10": {
+        "@type": "<CSS>",
+        "link": "styles.css"
+      },
+      "@type": "<HEAD>"
+    }
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><link rel="stylesheet" href="styles.css"><meta name="generator" content="hyperbricks cms"></head><body></body></html>==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment.response.hx_trigger = myEvent
+fragment.10 = <TEMPLATE>
+fragment.10 {
+    inline = <<[
+        <h2>{{header}}</h2>
+        <p>{{text}}</p>
+        {{image}}
+]>>
+    
+    values {
+        header = SOME HEADER
+        text = <TEXT>
+        text.value = some text
+
+        image = <IMAGE>
+        image.src = hyperbricks-test-files/assets/cute_cat.jpg
+        image.width = 800
+    }
+}
+==== explainer ====
+A FRAGMENT dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "myEvent",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+<h2>SOME HEADER</h2>
+<p>some text</p>
+<img src="static/images/cute_cat_w800_h800.jpg" width="800" height="800" />
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.cache = 10m
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
+==== explainer ====
+Cache expire string
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "<body id=\"main\">|</body>",
+  "Enclose": "<p>|</p>",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "10m",
+  "NoCache": false,
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null
+}
+==== expected output ====
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>HELLO WORLD!</p>
+  </body>
+</html>
+==== more details ====
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	10 = <HTML>
+    10.value = <p>TEST HTML</p>
+    enclose = <div>|</div>
+}
+==== explainer ====
+Enclosing property using the pipe symbol |
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "<div>|</div>",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+<div><p>TEST HTML</p></div> 
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_location = someurl
+    }
+}
+==== explainer ====
+Allows you to do a client-side redirect that does not do a full page reload
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "someurl",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_push_url = /some/url
+    }
+}
+==== explainer ====
+Pushes a new url into the history stack
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "/some/url",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_redirect = /some/new/location
+    }
+}
+==== explainer ====
+Can be used to do a client-side redirect to a new location
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "/some/new/location",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_refresh = true
+    }
+}
+==== explainer ====
+If set to 'true' the client-side will do a full refresh of the page
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "true",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_replace_url = /alternative/url
+    }
+}
+==== explainer ====
+replaces the current url in the location bar
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "/alternative/url",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ======== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_reselect = #someotherid
+    }
+}
+==== explainer ====
+A css selector that allows you to choose which part of the response is used to be swapped in.
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "#someotherid",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ======== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_reswap = innerHTML
+    }
+}
+==== explainer ====
+Allows you to specify how the response will be swapped. See hx-swap in the [HTMX documentation](https://htmx.org/).
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "innerHTML",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ======== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_retarget = #someid
+    }
+}
+==== explainer ====
+A css selector that updates the target of the content update
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "#someid",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Set Cookies in <FRAGMENT>
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_trigger = myEvent
+    }
+}
+==== explainer ====
+allows you to trigger client-side events
+==== expected json ====
+{
+"ConfigType": "<FRAGMENT>",
+"ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+"HxTemplateResult": "",
+"HxLocation": "",
+"HxPushedUrl": "",
+"HxRedirect": "",
+"HxRefresh": "",
+"HxReplaceUrl": "",
+"HxReswap": "",
+"HxRetarget": "",
+"HxReselect": "",
+"HxTrigger": "myEvent",
+"HxTriggerafterSettle": "",
+"HxTriggerafterSwap": "",
+"MetaDocDescription": "",
+"HxResponseWriter": null,
+"Title": "",
+"Route": "",
+"Section": "",
+"Items": null,
+"Enclose": "",
+"Template": null,
+  "HyperBricksFile": "",
+"IsStatic": false,
+"Static": "",
+"Cache": "",
+"NoCache": false,
+"Index": 0
+}
+==== expected output ======== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_trigger_after_settle = myAfterSettleEvent
+    }
+}
+==== explainer ====
+allows you to trigger client-side events after the settle step
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "myAfterSettleEvent",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+    }
+==== expected output ======== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_trigger_after_swap = myAfterSwapEvent
+    }
+}
+==== explainer ====
+allows you to trigger client-side events after the swap step
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "myAfterSwapEvent",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+    }
+==== expected output ======== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	index = 1
+}
+==== explainer ====
+Index number is a sort order option for the <MENU> section. See <MENU> for further explanation
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 1
+  }
+==== expected output ====
+
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.nocache = true
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
+==== explainer ====
+Explicitly disable cache
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "<body id=\"main\">|</body>",
+  "Enclose": "<p>|</p>",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": true,
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null
+}
+==== expected output ====
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>HELLO WORLD!</p>
+  </body>
+</html>
+==== more details ====
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_trigger = trigger-element-id
+    }
+}
+==== explainer ====
+HTMX response header configuration.
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "trigger-element-id",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+==== more details ====
+[See HTMX response header documentation](https://htmx.org/reference/#response_headers)
+
+## HTMX Response Headers
+
+This document provides an overview of the HTML headers used in the `HxResponse` struct, their corresponding mapstructure keys, and their descriptions.
+
+| Hyperbricks Key              | HTMX Header                 | Description |
+|-------------------------------|-----------------------------|-------------|
+| hx_location                   | HX-Location                 | Allows you to do a client-side redirect that does not do a full page reload |
+| hx_push_url                   | HX-Pushed-Url               | Pushes a new URL into the history stack |
+| hx_redirect                   | HX-Redirect                 | Can be used to do a client-side redirect to a new location |
+| hx_refresh                    | HX-Refresh                  | If set to 'true' the client-side will do a full refresh of the page |
+| hx_replace_url                | HX-Replace-Url              | Replaces the current URL in the location bar |
+| hx_reswap                     | HX-Reswap                   | Allows you to specify how the response will be swapped |
+| hx_retarget                   | HX-Retarget                 | A CSS selector that updates the target of the content update |
+| hx_reselect                   | HX-Reselect                 | A CSS selector that allows you to choose which part of the response is used to be swapped in |
+| hx_trigger                    | HX-Trigger                  | Allows you to trigger client-side events |
+| hx_trigger_after_settle        | HX-Trigger-After-Settle     | Allows you to trigger client-side events after the settle step |
+| hx_trigger_after_swap          | HX-Trigger-After-Swap       | Allows you to trigger client-side events after the swap step |==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	route = index
+}
+==== explainer ====
+The route (URL-friendly identifier) for the fragment
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "index",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	section = some_section
+}
+==== explainer ====
+The section the fragment belongs to. This can be used with the component <MENU> for example.
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "some_section",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	static = some_static_file.extension
+}
+==== explainer ====
+Static file path associated with the fragment, this will only work for a hx-get (GET) request. 
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "some_static_file.extension",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	template {
+        # template = {{TEMPLATE:mytemplate.tmpl}}
+        inline = <<[
+            <div>{{content}}</div>
+
+        ]>>
+      
+        values {
+            content = <HTML>
+            content.value = <p>SOME HTML CONTENT</p>
+        }
+    }
+}
+==== explainer ====
+Template configurations for rendering the fragment. (This will disable rendering any content added to the alpha numeric items that are added to the fragment root object.) See <TEMPLATE> for more details using templates.
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": {
+      "inline": "\n<div>{{content}}</div>\n\n        ",
+      "values": {
+        "content": {
+          "@type": "<HTML>",
+          "value": "<p>SOME HTML CONTENT</p>"
+        }
+      }
+    },
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+<div><p>SOME HTML CONTENT</p></div>
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	title = Some Title
+}
+==== explainer ====
+The title of the fragment, only used in the context of the <MENU> component. For document title use <HYPERMEDIA> type.
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "Some Title",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+  
+==== expected output ====
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    css = [style.css,morestyles.css]
+}
+==== explainer ====
+CSS files to include
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "@type": "<HEAD>",
+      "css": [
+        "style.css",
+        "morestyles.css"
+      ]
+    }
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="morestyles.css">
+        </head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    favicon = /images/icon.ico
+}
+==== explainer ====
+Path to the favicon for the hypermedia document
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "@type": "<HEAD>",
+      "favicon": "/images/icon.ico"
+    }
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="/images/icon.ico">
+        </head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    js = [main.js,helpers.js]
+}
+==== explainer ====
+JavaScript files to include
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "@type": "<HEAD>",
+      "js": [
+        "main.js",
+        "helpers.js"
+      ]
+    }
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><script src="main.js"></script>
+<script src="helpers.js"></script>
+</head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    meta {
+        a = b
+        b = c
+    }
+}
+==== explainer ====
+Metadata for the head section
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "@type": "<HEAD>",
+    "meta": {
+      "a": "b",
+      "b": "c"
+    }
+  }
+}
+==== expected output ====
+<!DOCTYPE html><html>
+<head>
+<meta name="generator" content="hyperbricks cms">
+<meta name="a" content="b">
+<meta name="b" content="c">
+</head>
+<body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    title = Home
+}
+==== explainer ====
+The title of the hypermedia document
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "@type": "<HEAD>",
+      "title": "Home"
+    }
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title>
+        </head><body></body></html> ==== hyperbricks config {!{html}} ====
+html = <HTML>
+html.value = <<[
+        <p>HTML TEST</p>    
+    ]>>
+html.enclose = <div>|</div>
+}
+==== explainer ====
+The enclosing HTML element for the header divided by |
+==== expected json ====
+{
+    "ConfigType": "<HTML>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "<div>|</div>",
+    "Value": "\n<p>HTML TEST</p>    \n    ",
+    "TrimSpace": false
+  }
+==== expected output ====
+<div><p>HTML TEST</p></div>==== hyperbricks config {!{html}} ====
+html = <HTML>
+html.value = <<[
+        <p>HTML TEST</p>    
+    ]>>
+html.trimspace = true
+}
+==== explainer ====
+Property trimspace filters (if set to true true),  all leading and trailing white space removed, as defined by Unicode.
+==== expected json ====
+{
+    "ConfigType": "<HTML>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Value": "\n<p>HTML TEST</p>    \n    ",
+    "TrimSpace": true
+  }
+==== expected output ====
+<p>HTML TEST</p>==== hyperbricks config {!{html}} ====
+html = <HTML>
+html.value = <p>HTML TEST</p>    
+}
+==== explainer ====
+The raw HTML content
+==== expected json ====
+{
+    "ConfigType": "<HTML>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Value": "<p>HTML TEST</p>",
+    "TrimSpace": false
+  }
+==== expected output ====
+<p>HTML TEST</p>==== hyperbricks config {!{hypermedia}} ====
+css = <HTML>
+css.value = <<[
+    <style>
+        body {
+            padding:20px;
+        }
+    </style>
+]>>
+
+
+# index page
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    10 < css
+    20 = <CSS>
+    20.inline = <<[
+        .content {
+            color:green;
+        }
+    ]>>
+}
+hypermedia.10 = <TREE>
+hypermedia.10 {
+    1 = <HTML>
+    1.value = <p>SOME CONTENT</p>
+}
+
+==== explainer ====
+HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use <FRAGMENT> to utilize hx-[method] (GET,POST etc) requests.  
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "10": {
+      "@type": "<HTML>",
+      "value": "\n<style>\n    body {\n        padding:20px;\n    }\n</style>\n"
+    },
+    "20": {
+      "@type": "<CSS>",
+      "inline": "\n.content {\n    color:green;\n}\n    "
+    },
+    "@type": "<HEAD>"
+  }
+}
+==== expected output ====
+<!DOCTYPE html><html><head>
+<style>
+    body {
+        padding:20px;
+    }
+</style>
+<style>
+
+.content {
+    color:green;
+}
+    
+</style><meta name="generator" content="hyperbricks cms"></head><body><p>SOME CONTENT</p></body></html> 
+==== more details ====
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+==== explainer ====
+Special body enclosure with use of a pipe symbol |. Please note that this will not work when a template is applied. In that case, you have to add the bodytag in the template.
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "<body id=\"main\">|</body>",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null
+}
+==== expected output ====
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    HELLO WORLD!
+  </body>
+</html>
+==== more details ====
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.cache = 10m
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
+==== explainer ====
+Cache expire string
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "<body id=\"main\">|</body>",
+  "Enclose": "<p>|</p>",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "10m",
+  "NoCache": false,
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null
+}
+==== expected output ====
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>HELLO WORLD!</p>
+  </body>
+</html>
+==== more details ====
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+# this is just an example of an alternative doctype configuration
+hypermedia.doctype = <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+==== explainer ====
+Alternative Doctype for the HTML document
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">",
+    "HtmlTag": "",
+    "Head": null
+  }
+  
+==== expected output ====
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html><body></body></html> 
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
+==== explainer ====
+Enclosure of the property for the hypermedia
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "<body id=\"main\">|</body>",
+  "Enclose": "<p>|</p>",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null
+}
+==== expected output ====
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>HELLO WORLD!</p>
+  </body>
+</html>
+==== more details ====
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    favicon = static/favicon.ico
+}
+==== explainer ====
+Path to the favicon for the hypermedia
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "static/favicon.ico",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="static/favicon.ico"></head><body></body></html> 
+==== more details ====
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.head = <HEAD>
+hypermedia.head {
+    css = [styles.css,xxxx]
+    js = [styles.css,xxxx]
+
+    meta {
+        a = b
+        b = c
+    }
+    999 = <HTML>
+    999.value = <!-- 999 overides default generator meta tag -->
+
+    1001 = <CSS>
+    1001.inline = <<[
+        body {
+            pading:10px;
+        }
+    ]>>
+
+    20 = <HTML>
+    20.value = <meta name="generator" content="hyperbricks cms">
+     
+}
+hypermedia.10 = <HTML>
+hypermedia.10.value = <p>some HTML</p>
+==== explainer ====
+Builds header content. See <HEADER> for details
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "1001": {
+      "@type": "<CSS>",
+      "inline": "\nbody {\n    pading:10px;\n}\n    "
+    },
+    "20": {
+      "@type": "<HTML>",
+      "value": "<meta name=\"generator\" content=\"hyperbricks cms\">"
+    },
+    "999": {
+      "@type": "<HTML>",
+      "value": "<!-- 999 overides default generator meta tag -->"
+    },
+    "@type": "<HEAD>",
+    "css": [
+      "styles.css",
+      "xxxx"
+    ],
+    "js": [
+      "styles.css",
+      "xxxx"
+    ],
+    "meta": {
+      "a": "b",
+      "b": "c"
+    }
+  }
+}
+
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><!-- 999 overides default generator meta tag --><meta name="a" content="b">
+        <meta name="b" content="c">
+        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="xxxx">
+        <script src="styles.css"></script>
+        <script src="xxxx"></script>
+        <style>
+        
+        body {
+            pading:10px;
+        }
+            
+        </style></head><body><p>some HTML</p></body></html>==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.htmltag = <html lang="en">
+==== explainer ====
+The opening HTML tag with attributes
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "<html lang=\"en\">",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html lang="en"><body></body></html> 
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	index = 1
+}
+==== explainer ====
+Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 1,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  } 
+==== expected output ====
+<!DOCTYPE html><html><body></body></html> 
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.nocache = true
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
+==== explainer ====
+Explicitly disable cache
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "<body id=\"main\">|</body>",
+  "Enclose": "<p>|</p>",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": true,
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null
+}
+==== expected output ====
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>HELLO WORLD!</p>
+  </body>
+</html>
+==== more details ====
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    route = index
+}
+==== explainer ====
+The route (URL-friendly identifier) for the hypermedia
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "index",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    section = my_section
+}
+==== explainer ====
+The section the hypermedia belongs to. This can be used with the component <MENU> for example.
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "my_section",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	static = index.html
+}
+==== explainer ====
+Static file path associated with the hypermedia, for rendering out the hypermedia to static files.
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "index.html",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	template {
+        # template = {{TEMPLATE:mytemplate.tmpl}}
+        inline = <<[
+            <div>{{content}}</div>
+
+        ]>>
+
+        values {
+            content = <HTML>
+            content.value = <p>SOME HTML CONTENT</p>
+        }
+    }
+}
+==== explainer ====
+Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions.
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": {
+      "inline": "\n<div>{{content}}</div>\n\n        ",
+      "values": {
+        "content": {
+          "@type": "<HTML>",
+          "value": "<p>SOME HTML CONTENT</p>"
+        }
+      }
+    },
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<div><p>SOME HTML CONTENT</p></div>==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    title = Home
+}
+==== explainer ====
+The title of the hypermedia site
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "Home",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title></head><body></body></html> ==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.alt = Cute cat!
+image.enclose = <div id="#gallery">|</div>
+==== explainer ====
+Alternative text for the image
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "<div id=\"#gallery\">|</div>",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 100,
+    "Height": 0,
+    "Alt": "Cute cat!",
+    "Title": "",
+    "Class": "",
+    "Id": "",
+    "Quality": 0,
+    "Loading": "",
+    "IsStatic": false
+  }
+==== expected output ====
+<div id="#gallery"><img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" alt="Cute cat!" /></div> ==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.attributes {
+  usemap = #catmap 
+}
+==== explainer ====
+Extra attributes like loading, data-role, data-action etc
+==== expected json ====
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "usemap": "#catmap"
+  },
+  "Enclose": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 100,
+  "Height": 0,
+  "Alt": "",
+  "Title": "",
+  "Class": "",
+  "Id": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+==== expected output ====
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" usemap="#catmap" /> ==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.title = Some Cute Cat!
+image.class = aclass bclass cclass
+==== explainer ====
+CSS class for styling the image
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 100,
+    "Height": 0,
+    "Alt": "",
+    "Title": "Some Cute Cat!",
+    "Class": "aclass bclass cclass",
+    "Id": "",
+    "Quality": 0,
+    "Loading": "",
+    "IsStatic": false
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="Some Cute Cat!" class="aclass bclass cclass" /> ==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.attributes {
+    loading = lazy
+}
+image.enclose = <div id="#gallery">|</div>
+==== explainer ====
+Use the pipe symbol | to enclose the ````<IMG>```` tag.
+==== expected json ====
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Enclose": "<div id=\"#gallery\">|</div>",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 100,
+  "Height": 0,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+==== expected output ====
+<div id="#gallery"><img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" /></div> ==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 310
+image.height = 310
+image.attributes {
+    loading = lazy
+}
+image.enclose = <div id="#logo">|</div>
+==== explainer ====
+The height of the image (can be a number or percentage)
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": {
+      "loading": "lazy"
+    },
+    "Enclose": "<div id=\"#logo\">|</div>",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 310,
+    "Height": 310,
+    "Alt": "",
+    "Title": "",
+    "Class": "",
+    "Id": "",
+    "Quality": 0,
+    "Loading": "",
+    "IsStatic": false
+  }
+==== expected output ====
+<div id="#logo"><img src="static/images/cute_cat_w310_h310.jpg" width="310" height="310" loading="lazy" /></div> ==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 310
+image.height = 310
+image.id = #cat
+==== explainer ====
+Id of image
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 310,
+    "Height": 310,
+    "Alt": "",
+    "Title": "",
+    "Id": "#cat",
+    "Class": "",
+    "Quality": 0,
+    "Loading": "",
+    "IsStatic": false
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w310_h310.jpg" width="310" height="310" id="#cat" /> ==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = cute_cat.jpg
+image.width = 310
+image.height = 310
+image.is_static = true
+==== explainer ====
+Flag indicating if the image is static, if so the img will not be scaled and has to be present in the configured static image directory. See package.hyperbricks in the module for settings. 
+```
+#conveys this logic:
+destDir := hbConfig.Directories["static"] + "/images/"
+if config.IsStatic {
+    destDir = hbConfig.Directories["render"] + "/images/"
+}
+```
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Src": "cute_cat.jpg",
+    "Width": 310,
+    "Height": 310,
+    "Alt": "",
+    "Title": "",
+    "Class": "",
+    "Id": "",
+    "Quality": 0,
+    "Loading": "",
+    "IsStatic": true
+  }
+==== expected output ====
+<img src="static/images/cute_cat.jpg" /> ==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 320
+image.height = 320
+image.loading = lazy
+==== explainer ====
+Lazy loading strategy (e.g., 'lazy', 'eager')
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 320,
+    "Height": 320,
+    "Alt": "",
+    "Title": "",
+    "Class": "",
+    "Id": "",
+    "Quality": 0,
+    "Loading": "lazy",
+    "IsStatic": false
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w320_h320.jpg" width="320" height="320" loading="lazy" /> 
+==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 320
+image.height = 320
+image.quality = 1
+==== explainer ====
+Image quality for optimization, bigger is better.
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 320,
+    "Height": 320,
+    "Alt": "",
+    "Title": "",
+    "Class": "",
+    "Id": "",
+    "Quality": 1,
+    "Loading": "",
+    "IsStatic": false
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w320_h320.jpg" width="320" height="320" /> ==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 300
+image.height = 300
+image.attributes {
+    loading = lazy
+}
+image.enclose = <div id="#logo">|</div>
+==== explainer ====
+The source URL of the image
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": {
+      "loading": "lazy"
+    },
+    "Enclose": "<div id=\"#logo\">|</div>",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 300,
+    "Height": 300,
+    "Alt": "",
+    "Title": "",
+    "Class": "",
+    "Id": "",
+    "Quality": 0,
+    "Loading": "",
+    "IsStatic": false
+  }
+==== expected output ====
+<div id="#logo"><img src="static/images/cute_cat_w300_h300.jpg" width="300" height="300" loading="lazy" /></div> 
+==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.title = Some Cute Cat!
+==== explainer ====
+The title attribute of the image
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 100,
+    "Height": 0,
+    "Alt": "",
+    "Title": "Some Cute Cat!",
+    "Class": "",
+    "Id": "",
+    "Quality": 0,
+    "Loading": "",
+    "IsStatic": false
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="Some Cute Cat!" /> 
+==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 300
+image.height = 300
+image.attributes {
+    loading = lazy
+}
+image.enclose = <div id="#logo">|</div>
+==== explainer ====
+The width of the image (can be a number or percentage)
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": {
+      "loading": "lazy"
+    },
+    "Enclose": "<div id=\"#logo\">|</div>",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 300,
+    "Height": 300,
+    "Alt": "",
+    "Title": "",
+    "Class": "",
+    "Id": "",
+    "Quality": 0,
+    "Loading": "",
+    "IsStatic": false
+  }
+==== expected output ====
+<div id="#logo"><img src="static/images/cute_cat_w300_h300.jpg" width="300" height="300" loading="lazy" /></div> 
+==== hyperbricks config {!{images}} ====
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.height = 10
+images.loading = lazy
+images.id = #galleryimage_
+images.class = galleryimage bordered
+images.alt = gallery image
+==== explainer ====
+Alternative text for the image
+==== expected json ====
+{
+    "ConfigType": "<IMAGES>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Directory": "hyperbricks-test-files/assets/",
+    "Width": 100,
+    "Height": 10,
+    "Id": "#galleryimage_",
+    "Class": "galleryimage bordered",
+    "IsStatic": false,
+    "Alt": "gallery image",
+    "Title": "",
+    "Quality": 0,
+    "Loading": "lazy"
+  }
+  
+==== expected output ====
+<img src="static/images/cute_cat_w100_h10.jpg" width="100" height="10" alt="gallery image" class="galleryimage bordered" id="#galleryimage_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h10.jpg" width="100" height="10" alt="gallery image" class="galleryimage bordered" id="#galleryimage_1" loading="lazy" /> 
+==== hyperbricks config {!{images}} ====
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #galleryimage_
+images.attributes {
+    decoding = async 
+}
+==== explainer ====
+Extra attributes like id, data-role, data-action
+==== expected json ====
+{
+    "ConfigType": "<IMAGES>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": {
+      "decoding": "async"
+    },
+    "Enclose": "",
+    "Directory": "hyperbricks-test-files/assets/",
+    "Width": 100,
+    "Height": 0,
+    "Id": "#galleryimage_",
+    "Class": "",
+    "IsStatic": false,
+    "Alt": "",
+    "Title": "",
+    "Quality": 0,
+    "Loading": "lazy"
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#galleryimage_0" loading="lazy" decoding="async" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#galleryimage_1" loading="lazy" decoding="async" /> ==== hyperbricks config {!{images}} ====
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.height = 10
+images.loading = lazy
+images.id = #galleryimage_
+images.class = galleryimage bordered
+images.attributes {
+    decoding = async 
+}
+==== explainer ====
+CSS class for styling the image
+==== expected json ====
+{
+    "ConfigType": "<IMAGES>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": {
+      "decoding": "async"
+    },
+    "Enclose": "",
+    "Directory": "hyperbricks-test-files/assets/",
+    "Width": 100,
+    "Height": 10,
+    "Id": "#galleryimage_",
+    "Class": "galleryimage bordered",
+    "IsStatic": false,
+    "Alt": "",
+    "Title": "",
+    "Quality": 0,
+    "Loading": "lazy"
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w100_h10.jpg" width="100" height="10" class="galleryimage bordered" id="#galleryimage_0" loading="lazy" decoding="async" />
+<img src="static/images/same_cute_cat_w100_h10.jpg" width="100" height="10" class="galleryimage bordered" id="#galleryimage_1" loading="lazy" decoding="async" /> ==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.attributes {
+    loading = lazy
+}
+image.enclose = <div id="#gallery">|</div>
+==== explainer ====
+The directory path containing the images
+==== expected json ====
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Enclose": "<div id=\"#gallery\">|</div>",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 100,
+  "Height": 0,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+==== expected output ====
+<div id="#gallery"><img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" /></div> 
+==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+image.attributes {
+    loading = lazy
+}
+image.enclose = <div id="#gallery">|</div>
+==== explainer ====
+Use the pipe symbol | to enclose the ````<IMG>```` tag.
+==== expected json ====
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Enclose": "<div id=\"#gallery\">|</div>",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 100,
+  "Height": 0,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+==== expected output ====
+<div id="#gallery"><img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" /></div> 
+==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.height = 100
+==== explainer ====
+The height of the images (can be a number or percentage)
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 0,
+    "Height": 100,
+    "Alt": "",
+    "Title": "",
+    "Id": "",
+    "Class": "",
+    "Quality": 0,
+    "Loading": "",
+    "IsStatic": false
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" /> ==== hyperbricks config {!{images}} ====
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.attributes {
+    decoding = async 
+}
+==== explainer ====
+Id of images with a index added to it
+==== expected json ====
+{
+    "ConfigType": "<IMAGES>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": {
+      "decoding": "async"
+    },
+    "Enclose": "",
+    "Directory": "hyperbricks-test-files/assets/",
+    "Width": 100,
+    "Height": 0,
+    "Id": "#img_",
+    "Class": "",
+    "IsStatic": false,
+    "Alt": "",
+    "Title": "",
+    "Quality": 0,
+    "Loading": "lazy"
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" decoding="async" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" decoding="async" /> ==== hyperbricks config {!{images}} ====
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.loading = lazy
+==== explainer ====
+Lazy loading strategy (e.g., 'lazy', 'eager')
+==== expected json ====
+{
+    "ConfigType": "<IMAGES>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Directory": "hyperbricks-test-files/assets/",
+    "Width": 100,
+    "Height": 0,
+    "Id": "#img_",
+    "Class": "",
+    "IsStatic": false,
+    "Alt": "",
+    "Title": "",
+    "Quality": 0,
+    "Loading": "lazy"
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" /> ==== hyperbricks config {!{images}} ====
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.quality = 1
+==== explainer ====
+Image quality for optimization
+==== expected json ====
+{
+    "ConfigType": "<IMAGES>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Directory": "hyperbricks-test-files/assets/",
+    "Width": 100,
+    "Height": 0,
+    "Id": "#img_",
+    "Class": "",
+    "IsStatic": false,
+    "Alt": "",
+    "Title": "",
+    "Quality": 1,
+    "Loading": "lazy"
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" /> ==== hyperbricks config {!{images}} ====
+images = <IMAGES>
+images.directory = hyperbricks-test-files/assets/
+images.width = 100
+images.loading = lazy
+images.id = #img_
+images.title = sometitle
+==== explainer ====
+The title attribute of the image
+==== expected json ====
+{
+    "ConfigType": "<IMAGES>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Directory": "hyperbricks-test-files/assets/",
+    "Width": 100,
+    "Height": 0,
+    "Id": "#img_",
+    "Class": "",
+    "IsStatic": false,
+    "Alt": "",
+    "Title": "sometitle",
+    "Quality": 0,
+    "Loading": "lazy"
+  }
+  
+==== expected output ====
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="sometitle" id="#img_0" loading="lazy" />
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" title="sometitle" id="#img_1" loading="lazy" /> 
+==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 330
+==== explainer ====
+The width of the images (can be a number or percentage)
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 330,
+    "Height": 0,
+    "Alt": "",
+    "Title": "",
+    "Id": "",
+    "Class": "",
+    "Quality": 0,
+    "Loading": "",
+    "IsStatic": false
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w330_h330.jpg" width="330" height="330" /> ==== hyperbricks config {!{head}} ====
+head = <HEAD>
+head {
+    10 = <JAVASCRIPT>
+    10.file = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
+}
+==== explainer ====
+Extra attributes like id, data-role, data-action, type
+==== expected json ====
+{
+    "ConfigType": "<HEAD>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "Items": {
+      "10": {
+        "@type": "<JAVASCRIPT>",
+        "attributes": {
+          "type": "text/javascript"
+        },
+        "file": "hyperbricks-test-files/assets/main.js"
+      }
+    },
+    "Title": "",
+    "Favicon": "",
+    "MetaData": null,
+    "Css": null,
+    "Js": null
+  }
+==== expected output ====
+<head><script type="text/javascript">
+console.log("Hello World!")
+</script><meta name="generator" content="hyperbricks cms"></head>
+==== hyperbricks config {!{head}} ====
+head = <HEAD>
+head {
+    10 = <JAVASCRIPT>
+    10.file = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
+    10.enclose = <script defer></script>
+}
+==== explainer ====
+The enclosing HTML element for the header divided by |
+==== expected json ====
+{
+    "ConfigType": "<HEAD>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "Items": {
+      "10": {
+        "@type": "<JAVASCRIPT>",
+        "attributes": {
+          "type": "text/javascript"
+        },
+        "enclose": "<script defer></script>",
+        "file": "hyperbricks-test-files/assets/main.js"
+      }
+    },
+    "Title": "",
+    "Favicon": "",
+    "MetaData": null,
+    "Css": null,
+    "Js": null
+  }
+==== expected output ====
+<head><script defer></script>
+        console.log("Hello World!")
+        </script defer></script><meta name="generator" content="hyperbricks cms"></head>==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.file = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
+}
+==== explainer ====
+File overrides link and inline, it loads contents of a file and renders it in a script tag.
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "10": {
+        "@type": "<JAVASCRIPT>",
+        "attributes": {
+          "type": "text/javascript"
+        },
+        "file": "hyperbricks-test-files/assets/main.js"
+      }
+    }
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><script type="text/javascript">
+        console.log("Hello World!")
+        </script><meta name="generator" content="hyperbricks cms"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.inline = console.log("Hello World!")
+    10.attributes {
+        type = text/javascript
+    }
+}
+==== explainer ====
+Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here */ ]>>
+==== expected json ====
+{
+"ConfigType": "<HYPERMEDIA>",
+"ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+"MetaDocDescription": "",
+"Title": "",
+"Route": "",
+"Section": "",
+"Items": null,
+"BodyTag": "",
+"Enclose": "",
+"Favicon": "",
+"Template": null,
+"IsStatic": false,
+"Static": "",
+"Cache": "",
+"NoCache": false,
+"Index": 0,
+"Doctype": "",
+"HtmlTag": "",
+"Head": {
+  "10": {
+    "@type": "<JAVASCRIPT>",
+    "attributes": {
+      "type": "text/javascript"
+    },
+    "inline": "console.log(\"Hello World!\")"
+  }
+}
+}
+==== expected output ====
+<!DOCTYPE html><html><head><script type="text/javascript">
+console.log("Hello World!")
+</script><meta name="generator" content="hyperbricks cms"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.link = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
+}
+==== explainer ====
+Use link for a script tag with a src attribute
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "10": {
+        "@type": "<JAVASCRIPT>",
+        "attributes": {
+          "type": "text/javascript"
+        },
+        "link": "hyperbricks-test-files/assets/main.js"
+      }
+    }
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><script src="hyperbricks-test-files/assets/main.js"></script><meta name="generator" content="hyperbricks cms"></head><body></body></html> ==== hyperbricks config {!{local_json_test}} ====
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+	inline = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .Data.quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+    debug = false
+}
+==== explainer ====
+Extra attributes like id, data-role, data-action
+==== expected json ====
+{
+    "ConfigType": "<JSON_RENDER>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "FilePath": "hyperbricks-test-files/assets/quotes.json",
+    "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+    "Debug": false,
+    "Values": null,
+    "Template": ""
+  }
+  
+==== expected output ====
+<h1>Quotes</h1>
+<ul>
+    <li><strong>Rumi:</strong> Your heart is the size of an ocean. Go find yourself in its hidden depths.</li>
+    <li><strong>Abdul Kalam:</strong> The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.</li>
+    <li><strong>Abdul Kalam:</strong> Thinking is the capital, Enterprise is the way, Hard Work is the solution.</li>
+    <li><strong>Bill Gates:</strong> If You Can&#39;T Make It Good, At Least Make It Look Good.</li>
+    <li><strong>Rumi:</strong> Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.</li>
+</ul>==== hyperbricks config {!{local_json_test}} ====
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+
+    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+        <ul>
+            {{range .Data.quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+    values {
+        someproperty = Quotes!
+    }
+    debug = false
+}
+==== explainer ====
+Debug the response data
+==== expected json ====
+{
+    "ConfigType": "<JSON_RENDER>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "FilePath": "hyperbricks-test-files/assets/quotes.json",
+    "Inline": "\n        <h1>{{.Values.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+    "Template": "",
+    "Values": {
+        "someproperty": "Quotes!"
+    },
+    "Debug": false
+  }
+  
+==== expected output ====
+<h1>Quotes!</h1>
+<ul>
+    <li><strong>Rumi:</strong> Your heart is the size of an ocean. Go find yourself in its hidden depths.</li>
+    <li><strong>Abdul Kalam:</strong> The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.</li>
+    <li><strong>Abdul Kalam:</strong> Thinking is the capital, Enterprise is the way, Hard Work is the solution.</li>
+    <li><strong>Bill Gates:</strong> If You Can&#39;T Make It Good, At Least Make It Look Good.</li>
+    <li><strong>Rumi:</strong> Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.</li>
+</ul>==== hyperbricks config {!{local_json_test}} ====
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+	inline = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .Data.quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+    debug = false
+}
+==== explainer ====
+The enclosing HTML element for the header divided by |
+==== expected json ====
+{
+    "ConfigType": "<JSON_RENDER>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "FilePath": "hyperbricks-test-files/assets/quotes.json",
+    "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+    "Template": "",
+    "Values": null,
+    "Debug": false
+  }
+  
+==== expected output ====
+<h1>Quotes</h1>
+<ul>
+    <li><strong>Rumi:</strong> Your heart is the size of an ocean. Go find yourself in its hidden depths.</li>
+    <li><strong>Abdul Kalam:</strong> The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.</li>
+    <li><strong>Abdul Kalam:</strong> Thinking is the capital, Enterprise is the way, Hard Work is the solution.</li>
+    <li><strong>Bill Gates:</strong> If You Can&#39;T Make It Good, At Least Make It Look Good.</li>
+    <li><strong>Rumi:</strong> Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.</li>
+</ul>==== hyperbricks config {!{local_json_test}} ====
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+	inline = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .Data.quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+    debug = false
+}
+==== explainer ====
+Path to the local JSON file
+==== expected json ====
+{
+    "ConfigType": "<JSON_RENDER>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "FilePath": "hyperbricks-test-files/assets/quotes.json",
+    "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+    "Template": "",
+    "Values": null,
+    "Debug": false
+  }
+  
+==== expected output ====
+<h1>Quotes</h1>
+<ul>
+    <li><strong>Rumi:</strong> Your heart is the size of an ocean. Go find yourself in its hidden depths.</li>
+    <li><strong>Abdul Kalam:</strong> The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.</li>
+    <li><strong>Abdul Kalam:</strong> Thinking is the capital, Enterprise is the way, Hard Work is the solution.</li>
+    <li><strong>Bill Gates:</strong> If You Can&#39;T Make It Good, At Least Make It Look Good.</li>
+    <li><strong>Rumi:</strong> Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.</li>
+</ul>==== hyperbricks config {!{local_json_test}} ====
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+	inline = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .Data.quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+    debug = false
+}
+==== explainer ====
+Use inline to define the template in a multiline block <<[ /* Template code goes here */ ]>>
+==== expected json ====
+{
+    "ConfigType": "<JSON_RENDER>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "FilePath": "hyperbricks-test-files/assets/quotes.json",
+    "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+    "Template": "",
+    "Values": null,
+    "Debug": false
+  }
+  
+==== expected output ====
+<h1>Quotes</h1>
+<ul>
+    <li><strong>Rumi:</strong> Your heart is the size of an ocean. Go find yourself in its hidden depths.</li>
+    <li><strong>Abdul Kalam:</strong> The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.</li>
+    <li><strong>Abdul Kalam:</strong> Thinking is the capital, Enterprise is the way, Hard Work is the solution.</li>
+    <li><strong>Bill Gates:</strong> If You Can&#39;T Make It Good, At Least Make It Look Good.</li>
+    <li><strong>Rumi:</strong> Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.</li>
+</ul>==== hyperbricks config {!{local_json_test}} ====
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+
+    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+	inline = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .Data.quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+    debug = false
+}
+==== explainer ====
+Template for rendering output
+==== expected json ====
+{
+    "ConfigType": "<JSON_RENDER>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "FilePath": "hyperbricks-test-files/assets/quotes.json",
+    "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+    "Template": "",
+    "Values": null,
+    "Debug": false
+  }
+  
+==== expected output ====
+<h1>Quotes</h1>
+<ul>
+    <li><strong>Rumi:</strong> Your heart is the size of an ocean. Go find yourself in its hidden depths.</li>
+    <li><strong>Abdul Kalam:</strong> The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.</li>
+    <li><strong>Abdul Kalam:</strong> Thinking is the capital, Enterprise is the way, Hard Work is the solution.</li>
+    <li><strong>Bill Gates:</strong> If You Can&#39;T Make It Good, At Least Make It Look Good.</li>
+    <li><strong>Rumi:</strong> Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.</li>
+</ul>==== hyperbricks config {!{local_json_test}} ====
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+
+    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+	inline = <<[
+        <h1>{{.Values.someproperty}}</h1>
+        <ul>
+            {{range .Data.quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+    values {
+        someproperty = Quotes!
+    }
+    debug = false
+}
+==== explainer ====
+Key-value pairs for template rendering
+==== expected json ====
+{
+    "ConfigType": "<JSON_RENDER>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "FilePath": "hyperbricks-test-files/assets/quotes.json",
+    "Inline": "\n        <h1>{{.Values.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+    "Template": "",
+    "Values": {
+        "someproperty": "Quotes!"
+    },
+    "Debug": false
+  }
+  
+==== expected output ====
+<h1>Quotes!</h1>
+<ul>
+    <li><strong>Rumi:</strong> Your heart is the size of an ocean. Go find yourself in its hidden depths.</li>
+    <li><strong>Abdul Kalam:</strong> The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.</li>
+    <li><strong>Abdul Kalam:</strong> Thinking is the capital, Enterprise is the way, Hard Work is the solution.</li>
+    <li><strong>Bill Gates:</strong> If You Can&#39;T Make It Good, At Least Make It Look Good.</li>
+    <li><strong>Rumi:</strong> Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.</li>
+</ul>==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Optional CSS classes for the link
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>
+==== hyperbricks config {!{hm_3}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
+==== explainer ====
+Template for the active menu item.
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "DOCUMENT_3",
+    "Route": "doc3",
+    "Section": "demo_main_menu",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+</head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+==== explainer ====
+Extra attributes like id, data-role, data-action
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "DOCUMENT_3",
+    "Route": "doc3",
+    "Section": "demo_main_menu",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+</head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+==== explainer ====
+The enclosing HTML element for the header divided by |
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "DOCUMENT_3",
+    "Route": "doc3",
+    "Section": "demo_main_menu",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+</head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+==== explainer ====
+Template for regular menu items.
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "DOCUMENT_3",
+    "Route": "doc3",
+    "Section": "demo_main_menu",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+</head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+==== explainer ====
+The order of items in the menu ('asc' or 'desc').
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "DOCUMENT_3",
+    "Route": "doc3",
+    "Section": "demo_main_menu",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+</head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+==== explainer ====
+The section of the menu to display.
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "DOCUMENT_3",
+    "Route": "doc3",
+    "Section": "demo_main_menu",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+</head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+==== explainer ====
+The field to sort menu items by ('title', 'route', or 'index').
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "DOCUMENT_3",
+    "Route": "doc3",
+    "Section": "demo_main_menu",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+</head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
+<a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Extra attributes like id, data-role, data-action
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Optional CSS classes for the link
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+The enclosing HTML element for the header divided by |
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>
+==== hyperbricks config {!{fragment}} ====
+# Use the a TEMPLATE:filepath (relative from templates folder defined in module's package.hyperbricks) directive like this:
+template = {{TEMPLATE:youtube.tmpl}}
+
+# Or use the inline notation:
+inline = <<[
+    <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+]>>
+
+myComponent = <TEMPLATE>
+myComponent {
+    inline = <<[
+        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    ]>>
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
+}
+==== explainer ====
+<TEMPLATE> can be used nested in <FRAGMENT> or <HYPERMEDIA> types. It uses golang's standard html/template library.
+==== expected json ====
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "HyperBricksFile": "",
+  "IsStatic": false,
+  "Static": "",
+   "Cache": "",
+  "NoCache": false,
+  "Index": 0
+}
+==== expected output ====
+ <div class="youtube_video">
+        <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+            
+        <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+            </div> 
+==== more details ======== hyperbricks config {!{myComponent}} ====
+myComponent = <TEMPLATE>
+myComponent {
+    inline = <<[
+      <img src="{{src}}" alt="{{alt}}" width="{{width}}" height="{{height}}">
+    ]>>
+    values {
+        width = 500
+        height = 600
+        alt = Girl in a jacket
+        src = img_girl.jpg
+    }
+    enclose = <div id="image-container">|</div>
+}
+==== explainer ====
+Enclosing property for the template rendered output divided by |
+==== expected json ====
+{
+    "ConfigType": "<TEMPLATE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "Items": null,
+    "MetaDocDescription": "",
+    "Template": "",
+    "Inline": "\n<img src=\"{{src}}\" alt=\"{{alt}}\" width=\"{{width}}\" height=\"{{height}}\">\n    ",
+    "Values": {
+      "alt": "Girl in a jacket",
+      "height": "600",
+      "src": "img_girl.jpg",
+      "width": "500"
+    },
+    "Enclose": "<div id=\"image-container\">|</div>"
+  }
+==== expected output ====
+<div id="image-container"><img src="img_girl.jpg" alt="Girl in a jacket" width="500" height="600"></div> 
+==== hyperbricks config {!{fragment}} ====
+myComponent = <TEMPLATE>
+myComponent {
+    
+    inline = <<[
+        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    ]>>
+  
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
+}
+==== explainer ====
+The inline template used for rendering.
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+<div class="youtube_video">
+    <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+    <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+==== more details ======== hyperbricks config {!{fragment}} ====
+myComponent = <TEMPLATE>
+myComponent {
+
+    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+    inline = <<[
+        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    ]>>
+  
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
+}
+==== explainer ====
+The template used for rendering.
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Cache": "",
+    "NoCache": false,
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Index": 0
+  }
+==== expected output ====
+<div class="youtube_video">
+    <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+    <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+==== more details ======== hyperbricks config {!{fragment}} ====
+
+$test = hello world
+
+myComponent = <TEMPLATE>
+myComponent {
+    inline = <<[
+        <h1>{{header}}</h1>
+        <p>{{text}}</p>
+    ]>>
+
+    values {
+        header = {{VAR:test}}!
+        text = some text
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    enclose = <div class="sometext">|</div>
+}
+==== explainer ====
+Key-value pairs for template rendering
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+<div class="sometext">
+<h1>hello world!</h1>
+<p>some text</p>
+    </div> 
+==== more details ======== hyperbricks config {!{text}} ====
+text = <TEXT>
+text {
+	  value = SOME VALUE
+    enclose = <span>|</span>
+}
+==== explainer ====
+The enclosing HTML element for the text divided by |
+==== expected json ====
+{
+    "ConfigType": "<TEXT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "<span>|</span>",
+    "Value": "SOME VALUE"
+  }
+==== expected output ====
+<span>SOME VALUE</span> ==== hyperbricks config {!{text}} ====
+text = <TEXT>
+text {
+	value = SOME VALUE
+    enclose = <span>|</span>
+}
+==== explainer ====
+The paragraph content
+==== expected json ====
+{
+    "ConfigType": "<TEXT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "<span>|</span>",
+    "Value": "SOME VALUE"
+  }
+==== expected output ====
+<span>SOME VALUE</span> ==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	10 = <TREE>
+    10 {
+        10 = <TREE>
+        10 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 10-1</p>
+
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 10-2</p>
+        }
+
+        20 = <TREE>
+        20 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 20-1</p>
+            
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 20-2</p>
+        }
+    }
+}
+==== explainer ====
+TREE description
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+<p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p>==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	10 = <TREE>
+    10 {
+        10 = <TREE>
+        10 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 10-1</p>
+
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 10-2</p>
+        }
+
+        20 = <TREE>
+        20 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 20-1</p>
+            
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 20-2</p>
+        }
+        enclose = <div>|</div>
+    }
+}
+==== explainer ====
+Enclosing tag using the pipe symbol |
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0
+  }
+==== expected output ====
+<div><p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p></div> 

@@ -101,13 +101,39 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 	// Retrieve sorted keys using the utility function
 	sortedKeys := shared.SortedUniqueKeys(config.Values)
 	var treeRenderOutPut = make(map[string]interface{})
-	for _, key := range sortedKeys {
-		if value, ok := config.Values[key].(map[string]interface{}); ok {
+	// for _, key := range sortedKeys {
+	// 	if value, ok := config.Values[key].(map[string]interface{}); ok {
+	// 		if componentType, ok := value["@type"].(string); ok {
+	// 			result, render_errors := tr.RenderManager.Render(componentType, value, ctx)
+	// 			treeRenderOutPut[key] = template.HTML(result)
+	// 			errors = append(errors, render_errors...)
+	// 		} else {
+	// 			errors = append(errors, shared.ComponentError{
+	// 				Hash:     shared.GenerateHash(),
+	// 				File:     config.Composite.Meta.HyperBricksFile,
+	// 				Path:     config.Composite.Meta.HyperBricksPath + ".values",
+	// 				Key:      key,
+	// 				Type:     "<TEMPLATE>",
+	// 				Err:      "no type defined at replacement marker '" + key + "' in template values",
+	// 				Rejected: true,
+	// 			})
+	// 			treeRenderOutPut[key] = template.HTML("<!-- no type defined: " + fmt.Sprintf("%s", value) + "-->")
+	// 		}
+	// 	} else {
+	// 		if value, ok := config.Values[key].(string); ok {
+	// 			treeRenderOutPut[key] = value
+	// 		}
+	// 	}
+	// }
 
+	for _, key := range sortedKeys {
+		switch value := config.Values[key].(type) {
+		case map[string]interface{}:
+			// Check if "@type" exists and is a string.
 			if componentType, ok := value["@type"].(string); ok {
-				result, render_errors := tr.RenderManager.Render(componentType, value, ctx)
+				result, renderErrors := tr.RenderManager.Render(componentType, value, ctx)
 				treeRenderOutPut[key] = template.HTML(result)
-				errors = append(errors, render_errors...)
+				errors = append(errors, renderErrors...)
 			} else {
 				errors = append(errors, shared.ComponentError{
 					Hash:     shared.GenerateHash(),
@@ -120,10 +146,19 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 				})
 				treeRenderOutPut[key] = template.HTML("<!-- no type defined: " + fmt.Sprintf("%s", value) + "-->")
 			}
-		} else {
-			if value, ok := config.Values[key].(string); ok {
-				treeRenderOutPut[key] = value
+		case string:
+			treeRenderOutPut[key] = value
+		case []interface{}:
+			// Convert to a slice of strings
+			strSlice := make([]string, 0, len(value))
+			for _, elem := range value {
+				if s, ok := elem.(string); ok {
+					strSlice = append(strSlice, s)
+				}
 			}
+			treeRenderOutPut[key] = strSlice // Make sure it stays a slice!
+		default:
+			// Optionally handle unexpected types
 		}
 	}
 
@@ -181,11 +216,36 @@ func applyTemplate(templateStr string, data map[string]interface{}, config Templ
 	return htmlContent, errors
 }
 
-// preprocessTemplate converts {{a}} to {{.a}} for all variable references without a leading dot
+// preprocessTemplate converts {{a}} to {{.a}} for variable references
+// while preserving reserved template keywords.
 func preprocessTemplate(templateStr string) string {
-	// This regex matches {{key}} where 'key' is one or more word characters and does not already have a leading dot
-	var varRefRegex = regexp.MustCompile(`\{\{\s*([A-Za-z0-9_]+)\s*\}\}`)
-	return varRefRegex.ReplaceAllString(templateStr, `{{.$1}}`)
+	// Define reserved keywords that should not be prefixed with a dot.
+	reserved := map[string]bool{
+		"range": true,
+		"end":   true,
+		"if":    true,
+		"else":  true,
+		"with":  true,
+		// Add more reserved keywords as needed.
+	}
+
+	// This regex matches {{ key }} where 'key' is one or more alphanumeric or underscore characters.
+	varRefRegex := regexp.MustCompile(`\{\{\s*([A-Za-z0-9_]+)\s*\}\}`)
+
+	// Replace using a function so we can decide on each match.
+	return varRefRegex.ReplaceAllStringFunc(templateStr, func(match string) string {
+		submatches := varRefRegex.FindStringSubmatch(match)
+		if len(submatches) > 1 {
+			key := submatches[1]
+			// If the key is reserved, return the match as-is.
+			if reserved[key] {
+				return match
+			}
+			// Otherwise, prepend a dot.
+			return "{{." + key + "}}"
+		}
+		return match
+	})
 }
 
 // Global concurrent cache variables.

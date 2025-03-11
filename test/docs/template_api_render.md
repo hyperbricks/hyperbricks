@@ -1,4 +1,4 @@
-### API Serverside Render (`<API_RENDER>` & `<API_FRAGMENT_RENDER>`)**
+### API Serverside Render (`<API_RENDER>` & `<API_FRAGMENT_RENDER>`)
 
 ### `<API_FRAGMENT_RENDER>`
 

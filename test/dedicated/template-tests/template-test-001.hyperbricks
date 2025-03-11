@@ -1,0 +1,23 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment.route = warning-lights.html
+fragment.template {
+        inline = <<[
+            <div class="flex space-x-2">
+                <ul>
+
+                {{.warningLights}}
+                {{ range .warningLights }}
+                <li>{{ . }}</li>
+            {{ end }}
+                </ul>
+            </div>
+            ]>>
+        values {
+            warningLights = [Check Engine, Low Fuel,Brake System]
+        }
+    }
+
+==== expected json ====
+==== expected output ====
+xxx

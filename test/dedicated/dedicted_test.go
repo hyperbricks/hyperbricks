@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -37,6 +38,13 @@ type ParsedContent struct {
 	MoreDetails            string
 }
 
+var directory = flag.String("directory", "./tests/", "Directory to use")
+
+// TestMain is the entry point for testing; it must call flag.Parse()
+func TestMain(m *testing.M) {
+	flag.Parse()
+	os.Exit(m.Run())
+}
 func Test_All_Dedicated_Tests(t *testing.T) {
 
 	// Initialize shared configuration settings.
@@ -186,9 +194,8 @@ func Test_All_Dedicated_Tests(t *testing.T) {
 	}
 	rm.GetRenderComponent(component.MenuConfigGetName()).(*component.MenuRenderer).HyperMediasBySection = temp
 
-	directory := "./tests/" // Change this to your target directory
-	fmt.Printf("Processing directory: %s\n", directory)
-	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
+	fmt.Printf("Processing directory: %s\n", *directory)
+	err := filepath.Walk(*directory, func(path string, info os.FileInfo, err error) error {
 
 		if err != nil {
 			return err
