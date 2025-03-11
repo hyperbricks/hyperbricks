@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"os"
-	"regexp"
 	"strings"
 	"sync"
 
@@ -177,7 +176,9 @@ func applyTemplate(templateStr string, data map[string]interface{}, config Templ
 	var errors []error
 
 	// Preprocess the template string to ensure variables can be referenced without a leading dot
-	templateStr = preprocessTemplate(templateStr)
+
+	// removed this, it is dangerous because it breaks other template functionality
+	// templateStr = preprocessTemplate(templateStr)
 
 	// Debug: Print the preprocessed template string
 	//fmt.Printf("Debug: Preprocessed Template string: %s\n", templateStr)
@@ -218,35 +219,35 @@ func applyTemplate(templateStr string, data map[string]interface{}, config Templ
 
 // preprocessTemplate converts {{a}} to {{.a}} for variable references
 // while preserving reserved template keywords.
-func preprocessTemplate(templateStr string) string {
-	// Define reserved keywords that should not be prefixed with a dot.
-	reserved := map[string]bool{
-		"range": true,
-		"end":   true,
-		"if":    true,
-		"else":  true,
-		"with":  true,
-		// Add more reserved keywords as needed.
-	}
+// func preprocessTemplate(templateStr string) string {
+// 	// Define reserved keywords that should not be prefixed with a dot.
+// 	reserved := map[string]bool{
+// 		"range": true,
+// 		"end":   true,
+// 		"if":    true,
+// 		"else":  true,
+// 		"with":  true,
+// 		// Add more reserved keywords as needed.
+// 	}
 
-	// This regex matches {{ key }} where 'key' is one or more alphanumeric or underscore characters.
-	varRefRegex := regexp.MustCompile(`\{\{\s*([A-Za-z0-9_]+)\s*\}\}`)
+// 	// This regex matches {{ key }} where 'key' is one or more alphanumeric or underscore characters.
+// 	varRefRegex := regexp.MustCompile(`\{\{\s*([A-Za-z0-9_]+)\s*\}\}`)
 
-	// Replace using a function so we can decide on each match.
-	return varRefRegex.ReplaceAllStringFunc(templateStr, func(match string) string {
-		submatches := varRefRegex.FindStringSubmatch(match)
-		if len(submatches) > 1 {
-			key := submatches[1]
-			// If the key is reserved, return the match as-is.
-			if reserved[key] {
-				return match
-			}
-			// Otherwise, prepend a dot.
-			return "{{." + key + "}}"
-		}
-		return match
-	})
-}
+// 	// Replace using a function so we can decide on each match.
+// 	return varRefRegex.ReplaceAllStringFunc(templateStr, func(match string) string {
+// 		submatches := varRefRegex.FindStringSubmatch(match)
+// 		if len(submatches) > 1 {
+// 			key := submatches[1]
+// 			// If the key is reserved, return the match as-is.
+// 			if reserved[key] {
+// 				return match
+// 			}
+// 			// Otherwise, prepend a dot.
+// 			return "{{." + key + "}}"
+// 		}
+// 		return match
+// 	})
+// }
 
 // Global concurrent cache variables.
 // Use sync.RWMutex for safe concurrent access.
