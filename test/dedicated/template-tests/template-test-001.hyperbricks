@@ -5,11 +5,9 @@ fragment.template {
         inline = <<[
             <div class="flex space-x-2">
                 <ul>
-
-                {{.warningLights}}
                 {{ range .warningLights }}
-                <li>{{ . }}</li>
-            {{ end }}
+                         <li>{{ . }}</li>
+                 {{ end }}
                 </ul>
             </div>
             ]>>
@@ -20,4 +18,10 @@ fragment.template {
 
 ==== expected json ====
 ==== expected output ====
-xxx
+<div class="flex space-x-2">
+<ul>
+    <li>Check Engine</li>
+    <li>Low Fuel</li>
+    <li>Brake System</li>
+</ul>
+</div>
