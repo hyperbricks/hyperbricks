@@ -4,7 +4,7 @@ fragment {
 	template {
         # template = {{TEMPLATE:mytemplate.tmpl}}
         inline = <<[
-            <div>{{content}}</div>
+            <div>{{.content}}</div>
 
         ]>>
       
@@ -42,7 +42,7 @@ Template configurations for rendering the fragment. (This will disable rendering
     "Items": null,
     "Enclose": "",
     "Template": {
-      "inline": "\n<div>{{content}}</div>\n\n        ",
+      "inline": "\n<div>{{.content}}</div>\n\n        ",
       "values": {
         "content": {
           "@type": "<HTML>",

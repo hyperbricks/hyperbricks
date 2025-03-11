@@ -2,7 +2,7 @@
 myComponent = <TEMPLATE>
 myComponent {
     inline = <<[
-      <img src="{{src}}" alt="{{alt}}" width="{{width}}" height="{{height}}">
+      <img src="{{.src}}" alt="{{.alt}}" width="{{.width}}" height="{{.height}}">
     ]>>
     values {
         width = 500
@@ -24,7 +24,7 @@ Enclosing property for the template rendered output divided by |
     "Items": null,
     "MetaDocDescription": "",
     "Template": "",
-    "Inline": "\n<img src=\"{{src}}\" alt=\"{{alt}}\" width=\"{{width}}\" height=\"{{height}}\">\n    ",
+    "Inline": "\n<img src=\"{{.src}}\" alt=\"{{.alt}}\" width=\"{{.width}}\" height=\"{{.height}}\">\n    ",
     "Values": {
       "alt": "Girl in a jacket",
       "height": "600",

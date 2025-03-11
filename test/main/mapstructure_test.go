@@ -522,7 +522,7 @@ func Test_BasicPageWithTemplateRenderChain(t *testing.T) {
 	templateProvider := func(templateName string) (string, bool) {
 		templates := map[string]string{
 			"api_test_template": `{{ (index .quotes 0).author }}:{{ (index .quotes 0).quote }}`,
-			"my_template":       `<!DOCTYPE html><html>{{head}}<body><div id="val_b">{{.b}} {{b}}</div><div id="val_a">{{a}}</div><div id="d">{{d}}</div></body></html>`,
+			"my_template":       `<!DOCTYPE html><html>{{.head}}<body><div id="val_b">{{.b}}</div><div id="val_a">{{.a}}</div><div id="d">{{.d}}</div></body></html>`,
 		}
 		content, exists := templates[templateName]
 		return content, exists
@@ -602,8 +602,7 @@ func Test_BasicPageWithTemplateRenderChain(t *testing.T) {
 		t.Errorf("expected errors")
 	}
 
-	expect := `<!DOCTYPE html><html><head><!-- begin raw value -->AQUACADABRA<!-- end raw value --><meta name="generator" content="hyperbricks cms"><title>test title</title>
-        </head><body><div id="val_b">BBBBB BBBBB</div><div id="val_a">AAAAA</div><div id="d"></div></body></html>`
+	expect := `<!DOCTYPE html><html><head><!-- begin raw value -->AQUACADABRA<!-- end raw value --><meta name="generator" content="hyperbricks cms"><title>test title</title> </head><body><div id="val_b">BBBBB</div><div id="val_a">AAAAA</div><div id="d"></div></body></html>`
 
 	fmt.Printf("result: %s\n\n\n", _normalizeString(result))
 	if _normalizeString(result) != _normalizeString(expect) {

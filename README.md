@@ -628,9 +628,9 @@ fragment.response.hx_trigger = myEvent
 fragment.10 = <TEMPLATE>
 fragment.10 {
     inline = <<[
-        <h2>{{header}}</h2>
-        <p>{{text}}</p>
-        {{image}}
+        <h2>{{.header}}</h2>
+        <p>{{.text}}</p>
+        {{.image}}
 ]>>
     
     values {
@@ -912,7 +912,7 @@ fragment {
 	template {
         # template = {{TEMPLATE:mytemplate.tmpl}}
         inline = <<[
-            <div>{{content}}</div>
+            <div>{{.content}}</div>
 
         ]>>
       
@@ -2002,8 +2002,7 @@ hypermedia {
 	template {
         # template = {{TEMPLATE:mytemplate.tmpl}}
         inline = <<[
-            <div>{{content}}</div>
-
+            <div>{{.content}}</div>
         ]>>
 
         values {
@@ -2358,13 +2357,13 @@ template = {{TEMPLATE:youtube.tmpl}}
 
 # Or use the inline notation:
 inline = <<[
-    <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
 ]>>
 
 myComponent = <TEMPLATE>
 myComponent {
     inline = <<[
-        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
     ]>>
     values {
         width = 300
@@ -2440,7 +2439,7 @@ myComponent {
 
     # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
     inline = <<[
-        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
     ]>>
   
     values {
@@ -2496,7 +2495,7 @@ myComponent = <TEMPLATE>
 myComponent {
     
     inline = <<[
-        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
     ]>>
   
     values {
@@ -2554,8 +2553,8 @@ $test = hello world
 myComponent = <TEMPLATE>
 myComponent {
     inline = <<[
-        <h1>{{header}}</h1>
-        <p>{{text}}</p>
+        <h1>{{.header}}</h1>
+        <p>{{.text}}</p>
     ]>>
 
     values {
@@ -2609,7 +2608,7 @@ Enclosing property for the template rendered output divided by |
 myComponent = <TEMPLATE>
 myComponent {
     inline = <<[
-      <img src="{{src}}" alt="{{alt}}" width="{{width}}" height="{{height}}">
+      <img src="{{.src}}" alt="{{.alt}}" width="{{.width}}" height="{{.height}}">
     ]>>
     values {
         width = 500

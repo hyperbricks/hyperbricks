@@ -57,9 +57,9 @@ func Test_All_Dedicated_Tests(t *testing.T) {
 
 	templateProvider := func(templateName string) (string, bool) {
 		templates := map[string]string{
-			"example":      "<div>{{main_section}}</div>",
-			"header":       "<h1>{{title}}</h1>",
-			"youtube.tmpl": `<iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>`,
+			"example":      "<div>.main_section}}</div>",
+			"header":       "<h1>{{.title}}</h1>",
+			"youtube.tmpl": `<iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>`,
 		}
 		content, exists := templates[templateName]
 		return content, exists

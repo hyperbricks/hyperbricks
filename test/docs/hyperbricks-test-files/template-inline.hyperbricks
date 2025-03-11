@@ -3,7 +3,7 @@ myComponent = <TEMPLATE>
 myComponent {
     
     inline = <<[
-        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
     ]>>
   
     values {

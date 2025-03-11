@@ -5,8 +5,8 @@ $test = hello world
 myComponent = <TEMPLATE>
 myComponent {
     inline = <<[
-        <h1>{{header}}</h1>
-        <p>{{text}}</p>
+        <h1>{{.header}}</h1>
+        <p>{{.text}}</p>
     ]>>
 
     values {

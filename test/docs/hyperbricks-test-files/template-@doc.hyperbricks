@@ -4,13 +4,13 @@ template = {{TEMPLATE:youtube.tmpl}}
 
 # Or use the inline notation:
 inline = <<[
-    <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+    <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
 ]>>
 
 myComponent = <TEMPLATE>
 myComponent {
     inline = <<[
-        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
     ]>>
     values {
         width = 300

@@ -4,7 +4,7 @@ myComponent {
 
     # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
     inline = <<[
-        <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
     ]>>
   
     values {
