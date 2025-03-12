@@ -1,6 +1,50 @@
 ### Defining Hypermedia Documents and Fragments
 
-Hypermedia documents or fragments can be declared using simple key-value properties. This next example creates two locations ons site root (index) and /somefragment
+### Configuration Hierarchy and Key Concepts
+##### Configuration Types and Hierarchy
+HyperBricks organizes configuration files using a clear hierarchy:
+
+Example of a nested hierarchy
+```html
+<FRAGMENT>
+├── route = somefragment
+├── response
+│   ├── hx_trigger = myEvent
+│   └── hx_target = #target-element-id
+└── 10 = <TEMPLATE>
+    ├──── inline = 
+    │      <h2>{{header}}</h2>
+    │       <p>{{text}}</p>
+    │          {{image}}
+    ├── istemplate = true
+    └── values
+         ├── header = SOME HEADER AS STRING
+         ├── text = <TEXT>
+         │   └── value = some text
+         └── image <IMAGE>
+             ├── src = hyperbricks-test-files/assets/cute_cat.jpg
+             └── width = 800  
+```
+
+
+
+
+`<HYPERMEDIA>`
+HYPERMEDIA type is the main initiator of a htmx document. This is the main configuration type for your full-page documents. It controls the document’s head, body and route location.  Its location is defined by the route property.
+
+`<TREE>`
+
+`<FRAGMENT>`
+
+Use fragments to define portions of a page that can be dynamically updated via HTMX without reloading the entire page. Also use &lt;FRAGMENT&gt; to utilize (GET,POST etc) requests and hx response headers.
+
+`<TEMPLATE>`
+
+Templates allow you to define reusable layout structures, which can be included in both hypermedia documents and fragments.
+
+---
+
+Hypermedia documents or fragments can be declared using simple key-value properties. This next example creates two locations on site root (index) and /somefragment
 
 ```properties
 myHypermedia = <HYPERMEDIA>
@@ -59,7 +103,7 @@ fragment {
 }
 ```
 
-Properties are rendered in alphanumeric order. They are typeless, meaning quotes are not required because at parsing hyperbricks types like ```<IMAGE>```, ```<HTML>``` or ```<TEXT>``` will be typed automaticly.
+Properties are rendered in alphanumeric order. They are typeless, meaning quotes are not required because at parsing hyperbricks types like ```<IMAGE>```, ```<HTML>``` or ```<TEXT>``` will be typed automatically.
 
 ```properties
 hypermedia = <HYPERMEDIA>

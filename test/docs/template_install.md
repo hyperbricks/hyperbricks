@@ -1,7 +1,7 @@
 
 ### Quickstart
 Follow these steps to get started
-#### 1. [Installation](#installation)
+#### 1. [Installation Instructions for HyperBricks](#installation-instructions-for-hyperbricks)
 #### 2.	Initialize a new project:
 ```bash
 hyperbricks init -m someproject
@@ -11,14 +11,14 @@ This creates a folder <someproject> in the modules directory in the root. Always
 
 In the folder someproject you find this directory structure:
 ```
-.
-├── hyperbricks
-├────── hello_world.hyperbricks
-├── rendered
-├── resources
-├── static
-├── template
-└─ package.hyperbricks
+your_module_name/
+  ├── hyperbricks
+  ├────── hello_world.hyperbricks
+  ├── rendered
+  ├── resources
+  ├── static
+  ├── template
+  └─ package.hyperbricks
 ```
 
 #### 3.	Start the project:
@@ -36,7 +36,7 @@ hyperbricks start --help
 #### 3.	Access the project in the browser:
 Open the web browser and navigate to http://localhost:8080 to view running hyperbricks.
 
-### Installation
+### Installation Instructions for HyperBricks
 
 Requirements:
 

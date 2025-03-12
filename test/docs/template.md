@@ -11,7 +11,7 @@
 
 Go direct to:
 - [Quickstart](#quickstart)
-- [Installation](#installation)
+- [Installation Instructions for HyperBricks](#installation-instructions-for-hyperbricks)
 - [Defining Hypermedia Documents and Fragments](#defining-hypermedia-documents-and-fragments)
 - [Adding Properties to Configurations](#adding-properties-to-configurations)
 - [Rendering Order and Property Rules](#rendering-order-and-property-rules)

@@ -25,6 +25,6 @@ go build  -buildmode=plugin -o ./bin/plugins/MarkDownPlugin.so ./plugins/markdow
 
 
 # Build hyperbricks cms
-#go build -v -o ./bin/hyperbricks ./cmd/hyperbricks
+go install -ldflags="-s -w" ./cmd/hyperbricks
 
 echo "Build complete!\n\n"
