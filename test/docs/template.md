@@ -1,8 +1,8 @@
 {{define "main"}}
 
 **Licence:** MIT  
-**Version:** v0.2.33-alpha  
-**Build time:** 2025-02-21T08:06:13Z
+**Version:** {{.version}}  
+**Build time:** {{.buildtime}}
 
 
 ![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
