@@ -38,7 +38,7 @@ type ParsedContent struct {
 	MoreDetails            string
 }
 
-var directory = flag.String("directory", "./tests/", "Directory to use")
+var directory = flag.String("directory", "./api-tests/", "Directory to use")
 
 // TestMain is the entry point for testing; it must call flag.Parse()
 func TestMain(m *testing.M) {

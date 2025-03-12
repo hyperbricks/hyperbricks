@@ -21,6 +21,7 @@ Go direct to:
 - [Object Inheritance and Reusability](#object-inheritance-and-reusability)
 - [Importing Predefined HyperScripts](#importing-predefined-hyperscripts)
 - [HyperBricks type reference](#hyperbricks-type-reference)
+- [API Serverside Render](#api-serverside-render)
 
 {{include "template_general.md"}}
 {{include "template_install.md"}}
@@ -41,6 +42,11 @@ Go direct to:
 ### Category: **{{$category}}**
 
 {{range $typeName, $fields := $types}}
+
+{{ if eq $typeName "<FRAGMENT>" }}
+   {{include "template_api_fragment_render.md"}}
+{{end}}
+
 <h3><a id="{{$typeName}}">{{$typeName}}</a></h3>
 
 **Type Description**

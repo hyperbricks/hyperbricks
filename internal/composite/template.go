@@ -133,8 +133,14 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 		errors = append(errors, _errors...)
 	}
 
-	templatebuilder.WriteString(shared.EncloseContent(config.Enclose, renderedOutput))
-	return templatebuilder.String(), errors
+	templatebuilder.WriteString(renderedOutput)
+
+	htmlContent := templatebuilder.String()
+	if config.Enclose != "" {
+		htmlContent = shared.EncloseContent(config.Enclose, htmlContent)
+	}
+
+	return htmlContent, errors
 }
 
 // applyTemplate generates output based on the provided template and API data.
@@ -166,13 +172,8 @@ func applyTemplate(templateStr string, data map[string]interface{}, config Templ
 		return "", errors
 	}
 
-	htmlContent := output.String()
-	if config.Enclose != "" {
-		htmlContent = shared.EncloseContent(config.Enclose, htmlContent)
-	}
-
 	// Return the rendered output
-	return htmlContent, errors
+	return output.String(), errors
 }
 
 // Global concurrent cache variables.
