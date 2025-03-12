@@ -147,18 +147,8 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 func applyTemplate(templateStr string, data map[string]interface{}, config TemplateConfig) (string, []error) {
 	var errors []error
 
-	// Create a FuncMap with a custom function
-	funcMap := template.FuncMap{
-		"valueOrEmpty": func(value interface{}) string {
-			if value == nil {
-				return ""
-			}
-			return fmt.Sprintf("%v", value)
-		},
-	}
-
 	// Parse the template string
-	tmpl, err := template.New("template").Funcs(funcMap).Parse(templateStr)
+	tmpl, err := template.New("template").Funcs(shared.FuncMap).Parse(templateStr)
 	if err != nil {
 		errors = append(errors, fmt.Errorf("error parsing template: %v", err))
 		return "", errors

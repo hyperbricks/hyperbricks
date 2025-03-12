@@ -492,7 +492,7 @@ func applyApiTemplate(templateStr string, data interface{}, config APIConfig) (s
 		Status: config.Status,
 	}
 
-	tmpl, err := template.New("apiTemplate").Parse(templateStr)
+	tmpl, err := template.New("apiTemplate").Funcs(shared.FuncMap).Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),

@@ -143,7 +143,7 @@ func applyJsonTemplate(templateStr string, data map[string]interface{}, config L
 		Values: config.Values,
 	}
 
-	tmpl, err := template.New("localJSONTemplate").Parse(templateStr)
+	tmpl, err := template.New("localJSONTemplate").Funcs(shared.FuncMap).Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash: shared.GenerateHash(),
