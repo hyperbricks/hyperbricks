@@ -1,0 +1,105 @@
+==== hyperbricks config {!{hypermedia}} ====
+# Define the main Hypermedia document
+hypermedia = <HYPERMEDIA>
+
+# The route determines the URL path for this Hypermedia document (e.g., "/index")
+hypermedia.route = index
+
+# Title of the page (used in the document title and as a variable in the template)
+hypermedia.title = Structured Page
+
+# Defines the <body> tag attributes, such as a background color and padding
+# The "|" character separates the opening and closing tag
+hypermedia.bodytag = <body class="bg-gray-100 p-4">|</body>
+
+# The <HEAD> section of the document, automatically available in <HYPERMEDIA>
+# This can contain meta tags, stylesheets, and scripts
+hypermedia.head {
+    # Assigning priority 100 to ensure this block loads properly
+    100 = <HTML>
+    
+    100.value = <<[
+        <!-- Meta tags for character encoding and viewport settings -->
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- Internal CSS for basic styling -->
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            header, footer { background: #333; color: white; padding: 10px; text-align: center; }
+            main { padding: 20px; }
+        </style>
+
+        <!-- External CSS: TailwindCSS for modern utility-based styling -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+
+        <!-- External JavaScript: HTMX for handling dynamic updates without full-page reloads -->
+        <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    ]>>
+}
+
+# The template is already predefined in <HYPERMEDIA>
+# It determines the full structure of the HTML document and dynamically injects content
+hypermedia.template {
+    inline = <<[
+        <!DOCTYPE html>
+        <html lang="en">
+        
+        <!-- The head section is injected dynamically by hyperbricks using {{.head}}, 
+             which pulls from hypermedia.head (not values) -->
+        {{.head}}
+
+        <body>
+            <header>
+                <!-- Injects the title dynamically from hypermedia.template.values.title -->
+                <h1>{{.title}}</h1>
+            </header>
+            <main>
+                <!-- Injects dynamic content from hypermedia.values.content -->
+                <p>{{.content}}</p>
+            </main>
+            <footer>
+                <p>&copy; 2025 My Website</p>
+            </footer>
+        </body>
+        </html>
+    ]>>
+
+    # Predefined values injected into the template
+    values {
+        # This is referenced in the template with {{.title}}
+        title = Structured Page
+          
+        # Used in {{.content}}
+        content = This is a Hypermedia document with a full HTML structure.  
+    }
+}
+
+==== expected json ====
+==== expected output ====
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    header, footer { background: #333; color: white; padding: 10px; text-align: center; }
+    main { padding: 20px; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <meta name="generator" content="hyperbricks cms"><title>Structured Page</title>
+</head>
+<body>
+    <header>
+        <h1>Structured Page</h1>
+    </header>
+    <main>
+        <p>This is a Hypermedia document with a full HTML structure.</p>
+    </main>
+    <footer>
+        <p>&copy; 2025 My Website</p>
+    </footer>
+</body>
+</html>
