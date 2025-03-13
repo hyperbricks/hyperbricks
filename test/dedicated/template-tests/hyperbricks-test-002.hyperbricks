@@ -80,22 +80,32 @@ hypermedia.template {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Meta tags for character encoding and viewport settings -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Internal CSS for basic styling -->
 <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     header, footer { background: #333; color: white; padding: 10px; text-align: center; }
     main { padding: 20px; }
 </style>
+
+<!-- External CSS: TailwindCSS for modern utility-based styling -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+
+<!-- External JavaScript: HTMX for handling dynamic updates without full-page reloads -->
 <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <meta name="generator" content="hyperbricks cms"><title>Structured Page</title>
 </head>
+
 <body>
     <header>
+        
         <h1>Structured Page</h1>
     </header>
     <main>
+        
         <p>This is a Hypermedia document with a full HTML structure.</p>
     </main>
     <footer>
