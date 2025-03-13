@@ -248,8 +248,8 @@ func processRequest(ctx context.Context, bodyMap string) (string, error) {
 		}
 
 		if len(bodyBytes) == 0 {
-			// Empty body, do nothing
-			return "", nil
+			// Empty body, return the unmapped body
+			return bodyMap, nil
 		}
 
 		// Parse JSON body into a map
@@ -480,18 +480,17 @@ func handleAPIResponse(resp *http.Response) (interface{}, int, error) {
 func applyApiTemplate(templateStr string, data interface{}, config APIConfig) (string, []error) {
 	var errors []error
 
-	// in case of an array or object, Values is always in root and use Data to access response data...
-	context := struct {
-		Data   interface{}
-		Values map[string]interface{}
-		Status int
-	}{
-		Data:   data,
-		Values: config.Values,
-		Status: config.Status,
+	context := map[string]interface{}{
+		"Data":   data, // Ensure Data is explicitly typed as interface{}
+		"Status": config.Status,
 	}
 
-	tmpl, err := shared.GenericTemplate.Parse(templateStr)
+	// Merge config.Values into the root
+	for k, v := range config.Values {
+		context[k] = v
+	}
+
+	tmpl, err := shared.GenericTemplate().Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),

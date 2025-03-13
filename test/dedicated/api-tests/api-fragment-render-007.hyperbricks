@@ -7,7 +7,7 @@ api_test {
 	endpoint = {{VAR:API_URL}}tasks
 	method = GET
 	inline = <<[
-        {{ $values := .Values }}
+        
         {{if gt (len .Data) 0}}
             <p>Tasklist has item(s)</p> 
         {{else}}

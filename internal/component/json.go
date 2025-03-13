@@ -133,16 +133,16 @@ func applyJsonTemplate(templateStr string, data map[string]interface{}, config L
 	var errors []error
 	var output strings.Builder
 
-	// in case of an array or object, Values is always in root and use Data to access response data...
-	context := struct {
-		Data   interface{}
-		Values map[string]interface{}
-	}{
-		Data:   data,
-		Values: config.Values,
+	context := map[string]interface{}{
+		"Data": data, // Ensure Data is explicitly typed as interface{}
 	}
 
-	tmpl, err := shared.GenericTemplate.Parse(templateStr)
+	// Merge config.Values into the root
+	for k, v := range config.Values {
+		context[k] = v
+	}
+
+	tmpl, err := shared.GenericTemplate().Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash: shared.GenerateHash(),

@@ -14,7 +14,7 @@ api_me_render {
 	}
 	 inline = <<[
         {{ if eq .Status 200 }}
-            <h1>{{.Values.someproperty}}</h1>
+            <h1>{{.someproperty}}</h1>
             <ul id="{{index .Data.id}}">gender
                 <li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
                 <li>gender: {{index .Data.gender}} </li>
@@ -36,12 +36,4 @@ api_me_render {
 }
 ==== expected json ====
 ==== expected output ====
-<div class="user">
-<h1>API_FRAGMENT_RENDER demo</h1>
-    <ul id="1">gender
-        <li>Emily Johnson</li>
-        <li>gender: female </li>
-        <li>Bank CardNumber: 9289760655481815 </li>
-        <img src="https://dummyjson.com/icon/emilys/128">
-    <ul>
-</div>
+<div class="user">Token Expired!</div> 

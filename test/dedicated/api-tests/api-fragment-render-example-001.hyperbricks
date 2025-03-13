@@ -20,7 +20,7 @@ api_login {
 	}
 	 inline = <<[
         {{ if eq .Status 200 }}
-            <h1>{{.Values.someproperty}}</h1>
+            <h1>{{.someproperty}}</h1>
             <ul id="{{index .Data.id}}">
                 <li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
                 <img src="{{index .Data.image}}">
