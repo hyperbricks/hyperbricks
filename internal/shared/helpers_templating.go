@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"text/template"
 	"time"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 // applyTemplate generates output based on the provided template and API data.
@@ -14,7 +16,7 @@ func ApplyTemplate(templateStr string, data map[string]interface{}) (string, []e
 	var errors []error
 
 	// Parse the template string
-	tmpl, err := template.New("apiTemplate").Funcs(FuncMap).Parse(templateStr)
+	tmpl, err := template.New("apiTemplate").Funcs(FuncMap).Funcs(SprigFuncMap).Parse(templateStr)
 	if err != nil {
 		errors = append(errors, ComponentError{
 			Err:      fmt.Errorf("error parsing template: %v", err).Error(),
@@ -98,3 +100,5 @@ var FuncMap = template.FuncMap{
 		return fmt.Sprintf("%v", value)
 	},
 }
+
+var SprigFuncMap = sprig.FuncMap()
