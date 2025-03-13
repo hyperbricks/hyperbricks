@@ -2,7 +2,7 @@
 
 **Licence:** MIT  
 **Version:** v0.4.0-alpha  
-**Build time:** 2025-03-13T17:42:38Z
+**Build time:** 2025-03-13T22:20:19Z
 
 
 ![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
@@ -15,7 +15,7 @@ This is done by creating configuration files (referred to as "hyperbricks") that
 
 ### Key Features:
 #### Declarative Configurations:
-Write your web page structure and behavior in easy-to-read configuration files.
+Write your web page structure, hierarchy and behavior in easy-to-read configuration files.
 #### Dynamic Rendering: 
 Use HTMX to dynamically update parts of your page without a full reload.
 #### Modular and Reusable:
@@ -41,39 +41,16 @@ Go direct to:
 ##### Configuration Types and Hierarchy
 HyperBricks organizes configuration files using a clear hierarchy:
 
-Example of a nested hierarchy
-```html
-<FRAGMENT>
-├── route = somefragment
-├── response
-│   ├── hx_trigger = myEvent
-│   └── hx_target = #target-element-id
-└── 10 = <TEMPLATE>
-    ├──── inline = 
-    │      <h2>{{header}}</h2>
-    │       <p>{{text}}</p>
-    │          {{image}}
-    ├── istemplate = true
-    └── values
-         ├── header = SOME HEADER AS STRING
-         ├── text = <TEXT>
-         │   └── value = some text
-         └── image <IMAGE>
-             ├── src = hyperbricks-test-files/assets/cute_cat.jpg
-             └── width = 800  
-```
-
-
-
 
 `<HYPERMEDIA>`
 HYPERMEDIA type is the main initiator of a htmx document. This is the main configuration type for your full-page documents. It controls the document’s head, body and route location.  Its location is defined by the route property.
 
 `<TREE>`
+TREE type can nest items recursively, but the need HYPERMEDIA or FRAGMENT as root composite component
 
 `<FRAGMENT>`
 
-Use fragments to define portions of a page that can be dynamically updated via HTMX without reloading the entire page. Also use &lt;FRAGMENT&gt; to utilize (GET,POST etc) requests and hx response headers.
+Use FRAGMENT to define portions of a page that can be dynamically updated via HTMX without reloading the entire page. Also use &lt;FRAGMENT&gt; to utilize (GET,POST etc) requests and hx response headers.
 
 `<TEMPLATE>`
 

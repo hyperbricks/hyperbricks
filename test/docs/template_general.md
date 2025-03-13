@@ -4,39 +4,16 @@
 ##### Configuration Types and Hierarchy
 HyperBricks organizes configuration files using a clear hierarchy:
 
-Example of a nested hierarchy
-```html
-<FRAGMENT>
-├── route = somefragment
-├── response
-│   ├── hx_trigger = myEvent
-│   └── hx_target = #target-element-id
-└── 10 = <TEMPLATE>
-    ├──── inline = 
-    │      <h2>{{header}}</h2>
-    │       <p>{{text}}</p>
-    │          {{image}}
-    ├── istemplate = true
-    └── values
-         ├── header = SOME HEADER AS STRING
-         ├── text = <TEXT>
-         │   └── value = some text
-         └── image <IMAGE>
-             ├── src = hyperbricks-test-files/assets/cute_cat.jpg
-             └── width = 800  
-```
-
-
-
 
 `<HYPERMEDIA>`
 HYPERMEDIA type is the main initiator of a htmx document. This is the main configuration type for your full-page documents. It controls the document’s head, body and route location.  Its location is defined by the route property.
 
 `<TREE>`
+TREE type can nest items recursively, but the need HYPERMEDIA or FRAGMENT as root composite component
 
 `<FRAGMENT>`
 
-Use fragments to define portions of a page that can be dynamically updated via HTMX without reloading the entire page. Also use &lt;FRAGMENT&gt; to utilize (GET,POST etc) requests and hx response headers.
+Use FRAGMENT to define portions of a page that can be dynamically updated via HTMX without reloading the entire page. Also use &lt;FRAGMENT&gt; to utilize (GET,POST etc) requests and hx response headers.
 
 `<TEMPLATE>`
 

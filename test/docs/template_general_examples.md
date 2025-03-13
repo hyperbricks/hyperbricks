@@ -1,7 +1,3 @@
-Here are some clear and usable HyperBricks examples:
-
----
-
 ### **Fragment Example with Response Headers**
 ```properties
 fragment = <FRAGMENT>

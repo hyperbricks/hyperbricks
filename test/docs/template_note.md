@@ -6,7 +6,7 @@ This is done by creating configuration files (referred to as "hyperbricks") that
 
 ### Key Features:
 #### Declarative Configurations:
-Write your web page structure and behavior in easy-to-read configuration files.
+Write your web page structure, hierarchy and behavior in easy-to-read configuration files.
 #### Dynamic Rendering: 
 Use HTMX to dynamically update parts of your page without a full reload.
 #### Modular and Reusable:
