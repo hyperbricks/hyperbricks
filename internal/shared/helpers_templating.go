@@ -114,6 +114,14 @@ func GetGenericFuncMap() template.FuncMap {
 
 	return funcMap
 }
+
+var baseTemplate = template.New("hyperbricks-generic-template").Funcs(GetGenericFuncMap())
+
+// // Why use clone ?
+// Prevents concurrent modification: Clone() creates a separate instance per goroutine, avoiding map modification issues.
+// Better performance: Reusing a base template reduces overhead compared to creating a new one every time.
+// Cleaner & safer: No need for sync.Mutex, and avoids unnecessary allocations.
 func GenericTemplate() *template.Template {
-	return template.New("hyperbricks-generic-template").Funcs(GetGenericFuncMap())
+	tmpl, _ := baseTemplate.Clone() // Clone ensures thread safety
+	return tmpl
 }

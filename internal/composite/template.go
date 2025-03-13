@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"html/template"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
@@ -19,9 +20,11 @@ import (
 // TemplateConfig represents the configuration for a TEMPLATE type.
 type TemplateConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"TEMPLATE description" example:"{!{template-@doc.hyperbricks}}"`
-	Template           string `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{template-template.hyperbricks}}"`
-	Inline             string `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* TEmplate goes here */ ]>>" example:"{!{template-inline.hyperbricks}}"`
+	MetaDocDescription string            `mapstructure:"@doc" description:"TEMPLATE description" example:"{!{template-@doc.hyperbricks}}"`
+	Template           string            `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{template-template.hyperbricks}}"`
+	Inline             string            `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* TEmplate goes here */ ]>>" example:"{!{template-inline.hyperbricks}}"`
+	AllowedQueryKeys   []string          `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{template-querykeys.hyperbricks}}"`
+	QueryParams        map[string]string `mapstructure:"queryparams" description:"Set proxy query key in the confifuration" example:"{!{template-queryparams.hyperbricks}}"`
 
 	Values  map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks}}"`
 	Enclose string                 `mapstructure:"enclose" description:"Enclosing property for the template rendered output" example:"{!{template-enclose.hyperbricks}}"`
@@ -93,6 +96,33 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 				})
 			} else {
 				templateContent = fileContent
+			}
+		}
+	}
+
+	// Attempt to get the params of current request from the context and add it to the template values...
+	if ctx != nil {
+		req, ok := ctx.Value(shared.Request).(*http.Request)
+		if ok && req != nil && req.URL != nil {
+
+			allowed := []string{"id", "name", "order"}
+			if config.AllowedQueryKeys != nil {
+				allowed = config.AllowedQueryKeys
+			}
+			filtered := FilterAllowedQueryParams(req, allowed)
+			// Ensure config.Values exists and has a valid "Params" map
+			if config.Values != nil {
+				config.Values["Params"] = make(map[string]interface{})
+				if params, ok := config.Values["Params"].(map[string]interface{}); ok && params != nil {
+					for key, values := range filtered {
+						if len(values) == 1 {
+							params[key] = values[0] // Store as a string if only one value
+						} else {
+							params[key] = values // Store as a []string otherwise
+						}
+					}
+
+				}
 			}
 		}
 	}

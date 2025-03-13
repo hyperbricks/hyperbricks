@@ -5,7 +5,7 @@ local_json_test {
 
     # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
 	inline = <<[
-        <h1>{{.Values.someproperty}}</h1>
+        <h1>{{.someproperty}}</h1>
         <ul>
             {{range .Data.quotes}}
                 <li><strong>{{.author}}:</strong> {{.quote}}</li>
@@ -29,7 +29,7 @@ Debug the response data
     "ExtraAttributes": null,
     "Enclose": "",
     "FilePath": "hyperbricks-test-files/assets/quotes.json",
-    "Inline": "\n        <h1>{{.Values.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+    "Inline": "\n        <h1>{{.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
     "Template": "",
     "Values": {
         "someproperty": "Quotes!"

@@ -18,7 +18,7 @@ api_add_user {
 	method = POST
 	body = {"p_username":"testuser1","p_email": "testuser1@example.com","p_password": "securepassword"}
 	headers {
-		#Access-Control-Allow-Credentials = true
+		Access-Control-Allow-Credentials = true
 		Content-Type = application/json
 	}
     
