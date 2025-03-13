@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"html/template"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
@@ -594,7 +593,7 @@ func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFr
 		Status: config.Status,
 	}
 
-	tmpl, err := template.New("apiTemplate").Funcs(shared.GetGenericFuncMap()).Parse(templateStr)
+	tmpl, err := shared.GenericTemplate.Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),

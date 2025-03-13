@@ -140,13 +140,13 @@ func (mr *MenuRenderer) Render(instance interface{}, ctx context.Context) (strin
 		return builder.String(), errors
 	}
 
-	tmplActive, err := template.New("active").Funcs(shared.GetGenericFuncMap()).Parse(config.Active)
+	tmplActive, err := shared.GenericTemplate.Parse(config.Active)
 	if err != nil {
 		errors = append(errors, fmt.Errorf("failed to parse 'active' template: %w", err))
 		return "", errors
 	}
 
-	tmplItem, err := template.New("item").Funcs(shared.GetGenericFuncMap()).Parse(config.Item)
+	tmplItem, err := shared.GenericTemplate.Parse(config.Item)
 	if err != nil {
 		errors = append(errors, fmt.Errorf("failed to parse 'item' template: %w", err))
 		return "", errors

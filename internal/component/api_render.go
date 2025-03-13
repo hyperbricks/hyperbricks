@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"fmt"
-	"html/template"
 	"io"
 	"testing"
 
@@ -492,7 +491,7 @@ func applyApiTemplate(templateStr string, data interface{}, config APIConfig) (s
 		Status: config.Status,
 	}
 
-	tmpl, err := template.New("apiTemplate").Funcs(shared.GetGenericFuncMap()).Parse(templateStr)
+	tmpl, err := shared.GenericTemplate.Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),

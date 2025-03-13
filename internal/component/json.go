@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"os"
 
 	"strings"
@@ -143,7 +142,7 @@ func applyJsonTemplate(templateStr string, data map[string]interface{}, config L
 		Values: config.Values,
 	}
 
-	tmpl, err := template.New("localJSONTemplate").Funcs(shared.GetGenericFuncMap()).Parse(templateStr)
+	tmpl, err := shared.GenericTemplate.Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash: shared.GenerateHash(),

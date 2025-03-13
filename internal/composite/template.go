@@ -148,7 +148,7 @@ func applyTemplate(templateStr string, data map[string]interface{}, config Templ
 	var errors []error
 
 	// Parse the template string
-	tmpl, err := template.New("template").Funcs(shared.GetGenericFuncMap()).Parse(templateStr)
+	tmpl, err := shared.GenericTemplate.Parse(templateStr)
 	if err != nil {
 		errors = append(errors, fmt.Errorf("error parsing template: %v", err))
 		return "", errors

@@ -16,7 +16,7 @@ func ApplyTemplate(templateStr string, data map[string]interface{}) (string, []e
 	var errors []error
 
 	// Parse the template string
-	tmpl, err := template.New("apiTemplate").Funcs(GetGenericFuncMap()).Parse(templateStr)
+	tmpl, err := GenericTemplate.Parse(templateStr)
 	if err != nil {
 		errors = append(errors, ComponentError{
 			Err:      fmt.Errorf("error parsing template: %v", err).Error(),
@@ -114,3 +114,5 @@ func GetGenericFuncMap() template.FuncMap {
 
 	return funcMap
 }
+
+var GenericTemplate = template.New("hyperbricks-generic-template").Funcs(GetGenericFuncMap())
