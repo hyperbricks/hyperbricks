@@ -11,13 +11,17 @@ This creates a folder <someproject> in the modules directory in the root. Always
 
 In the folder someproject you find this directory structure:
 ```
-your_module_name/
+someproject/
   ├── hyperbricks
   ├────── hello_world.hyperbricks
+  ├────── quote-generator.hyperbricks
   ├── rendered
   ├── resources
   ├── static
-  ├── template
+  ├────── main.js
+  ├── templates
+  ├────── head.html
+  ├────── template.html
   └─ package.hyperbricks
 ```
 
