@@ -594,7 +594,7 @@ func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFr
 		Status: config.Status,
 	}
 
-	tmpl, err := template.New("apiTemplate").Funcs(shared.FuncMap).Funcs(shared.SprigFuncMap).Parse(templateStr)
+	tmpl, err := template.New("apiTemplate").Funcs(shared.FuncMap).Funcs(shared.Gomplate).Parse(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),

@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"math/rand"
 	"reflect"
+	"strings"
 	"text/template"
 	"time"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/hairyhenderson/gomplate/v3"
 )
 
 // applyTemplate generates output based on the provided template and API data.
@@ -16,7 +18,7 @@ func ApplyTemplate(templateStr string, data map[string]interface{}) (string, []e
 	var errors []error
 
 	// Parse the template string
-	tmpl, err := template.New("apiTemplate").Funcs(FuncMap).Funcs(SprigFuncMap).Parse(templateStr)
+	tmpl, err := template.New("apiTemplate").Funcs(GetGenericFuncMap()).Parse(templateStr)
 	if err != nil {
 		errors = append(errors, ComponentError{
 			Err:      fmt.Errorf("error parsing template: %v", err).Error(),
@@ -92,7 +94,7 @@ func Random(args ...interface{}) interface{} {
 
 // Create a FuncMap with a custom function
 var FuncMap = template.FuncMap{
-	"random": Random,
+	"random_num": Random,
 	"valueOrEmpty": func(value interface{}) string {
 		if value == nil {
 			return ""
@@ -102,3 +104,43 @@ var FuncMap = template.FuncMap{
 }
 
 var SprigFuncMap = sprig.FuncMap()
+var Gomplate = gomplate.CreateFuncs(nil, nil)
+
+// Define individual function maps
+var baseFuncs = template.FuncMap{
+	"upper": func(s string) string { return strings.ToUpper(s) },
+}
+
+var sprigFuncs = template.FuncMap{
+	"lower": func(s string) string { return strings.ToLower(s) }, // Replace with actual Sprig function
+}
+
+var gomplateFuncs = template.FuncMap{
+	"reverse": func(s string) string {
+		runes := []rune(s)
+		for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+			runes[i], runes[j] = runes[j], runes[i]
+		}
+		return string(runes)
+	}, // Replace with actual Gomplate function
+}
+
+// Lazy load function map based on context
+func GetGenericFuncMap() template.FuncMap {
+	funcMap := make(template.FuncMap)
+
+	// Always load base functions
+	for k, v := range FuncMap {
+		funcMap[k] = v
+	}
+
+	for k, v := range sprigFuncs {
+		funcMap[k] = v
+	}
+
+	for k, v := range gomplateFuncs {
+		funcMap[k] = v
+	}
+
+	return funcMap
+}
