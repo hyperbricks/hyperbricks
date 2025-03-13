@@ -49,17 +49,6 @@ fragment {
         values {
             quotes < quotes
             quote_author < quote_author
-
-            title = Quote
-            someJson = <<[
-                {"name":"John", "age":30, "car":null}
-            ]>>
-            #  {{$user := fromJson .someJson}}  {{$user.name}}  {{$user.age}}
-
-            otherJSON = <JSON>
-            otherJSON.value = <<[
-                {"name":"John", "age":30, "car":null}
-            ]>>
         }
     }
 }
