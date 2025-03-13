@@ -1,0 +1,14 @@
+<div id="container" class="fade-in-background h-screen flex items-center justify-center flex-col bg-center ">
+    <h1 class="bg-white-50 w-screen bg-black  text-2xl text-white text-center p-2 ">HyperBricks Random Quote Generator</h1>
+    <div class="h-screen w-screen flex items-center justify-center flex-col bg-black" style="background-color: rgb(0, 0, 0,0.44);">
+        <div class="p-10 rounded-lg text-center w-80 sm:w-96">
+            <div id="quote-box" class=" mt-2 font-bold text-white flex gap-2 justify-center flex-col h-36 p-4 rounded"></div>
+            <button class="mt-20 bg-white cursor-pointer px-6 py-3 text-black rounded " hx-trigger="click"
+                hx-on:click="myCustomEvent()">
+                Get New Quote
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="static/main.js"></script>
