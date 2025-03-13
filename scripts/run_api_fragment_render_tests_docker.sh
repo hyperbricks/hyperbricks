@@ -9,9 +9,9 @@ docker-compose -f ./test/dedicated/docker/docker-compose.yml up -d
 sleep 10
 
 # Run the Go test
-echo "Running test..."
-go test ./test/dedicated/dedicted_test.go -v
+echo "Running docker API_RENDER and API_FRAGENT_RENDER test..."
+go test -v ./test/dedicated/dedicted_test.go -args -directory="./api-tests/"
 
 # Stop the server after the test
-docker-compose -f ./test/dedicated/docker/docker-compose.yml down -v
+docker-compose -f ./test/dedicated/docker/docker-compose.yml down
 pkill -f "/exe/main"

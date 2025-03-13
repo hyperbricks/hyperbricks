@@ -7,7 +7,7 @@ loading
 === RUN   Test_TestAndDocumentationRender/fragment-section
 === RUN   Test_TestAndDocumentationRender/fragment-enclose
 === RUN   Test_TestAndDocumentationRender/fragment-template
-12-03-2025 19:41	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+13-03-2025 13:52	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/fragment-static
 === RUN   Test_TestAndDocumentationRender/fragment-cache
 === RUN   Test_TestAndDocumentationRender/fragment-nocache
@@ -33,7 +33,7 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
-12-03-2025 19:41	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+13-03-2025 13:52	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/hypermedia-cache
 === RUN   Test_TestAndDocumentationRender/hypermedia-nocache
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
@@ -47,173 +47,107 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/head-css
 === RUN   Test_TestAndDocumentationRender/head-js
 === RUN   Test_TestAndDocumentationRender/template-@doc
-12-03-2025 19:41	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
-=== RUN   Test_TestAndDocumentationRender/template-template
-12-03-2025 19:41	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-=== RUN   Test_TestAndDocumentationRender/template-inline
-=== RUN   Test_TestAndDocumentationRender/template-values
-=== RUN   Test_TestAndDocumentationRender/template-enclose
-=== RUN   Test_TestAndDocumentationRender/tree-@doc
-=== RUN   Test_TestAndDocumentationRender/tree-enclose
-=== RUN   Test_TestAndDocumentationRender/html-enclose
-=== RUN   Test_TestAndDocumentationRender/html-value
-=== RUN   Test_TestAndDocumentationRender/html-trimspace
-=== RUN   Test_TestAndDocumentationRender/css-attributes
-=== RUN   Test_TestAndDocumentationRender/css-enclose
-=== RUN   Test_TestAndDocumentationRender/css-inline
-=== RUN   Test_TestAndDocumentationRender/css-link
-=== RUN   Test_TestAndDocumentationRender/css-file
-=== RUN   Test_TestAndDocumentationRender/javascript-attributes
-=== RUN   Test_TestAndDocumentationRender/javascript-enclose
-=== RUN   Test_TestAndDocumentationRender/javascript-inline
-=== RUN   Test_TestAndDocumentationRender/javascript-link
-=== RUN   Test_TestAndDocumentationRender/javascript-file
-=== RUN   Test_TestAndDocumentationRender/image-attributes
-=== RUN   Test_TestAndDocumentationRender/image-enclose
-=== RUN   Test_TestAndDocumentationRender/image-src
-=== RUN   Test_TestAndDocumentationRender/image-width
-=== RUN   Test_TestAndDocumentationRender/image-height
-=== RUN   Test_TestAndDocumentationRender/image-alt
-=== RUN   Test_TestAndDocumentationRender/image-title
-=== RUN   Test_TestAndDocumentationRender/image-id
-=== RUN   Test_TestAndDocumentationRender/image-class
-=== RUN   Test_TestAndDocumentationRender/image-quality
-=== RUN   Test_TestAndDocumentationRender/image-loading
-=== RUN   Test_TestAndDocumentationRender/image-is_static
-=== RUN   Test_TestAndDocumentationRender/images-attributes
-=== RUN   Test_TestAndDocumentationRender/images-enclose
-=== RUN   Test_TestAndDocumentationRender/images-directory
-=== RUN   Test_TestAndDocumentationRender/images-width
-=== RUN   Test_TestAndDocumentationRender/images-height
-=== RUN   Test_TestAndDocumentationRender/images-id
-=== RUN   Test_TestAndDocumentationRender/images-class
-=== RUN   Test_TestAndDocumentationRender/images-alt
-=== RUN   Test_TestAndDocumentationRender/images-title
-=== RUN   Test_TestAndDocumentationRender/images-quality
-=== RUN   Test_TestAndDocumentationRender/images-loading
-=== RUN   Test_TestAndDocumentationRender/json-attributes
-=== RUN   Test_TestAndDocumentationRender/json-enclose
-=== RUN   Test_TestAndDocumentationRender/json-file
-=== RUN   Test_TestAndDocumentationRender/json-template
-12-03-2025 19:41	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-=== RUN   Test_TestAndDocumentationRender/json-inline
-=== RUN   Test_TestAndDocumentationRender/json-values
-12-03-2025 19:41	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-=== RUN   Test_TestAndDocumentationRender/json-debug
-12-03-2025 19:41	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
-=== RUN   Test_TestAndDocumentationRender/text-enclose
-=== RUN   Test_TestAndDocumentationRender/text-value
-=== RUN   Test_TestAndDocumentationRender/menu-enclose
-=== RUN   Test_TestAndDocumentationRender/menu-section
-=== RUN   Test_TestAndDocumentationRender/menu-order
-=== RUN   Test_TestAndDocumentationRender/menu-sort
-=== RUN   Test_TestAndDocumentationRender/menu-active
-=== RUN   Test_TestAndDocumentationRender/menu-item
-=== RUN   Test_TestAndDocumentationRender/menu-enclose#01
-2025/03/12 19:41:11 Version: v0.3.00-alpha
-2025/03/12 19:41:11 Build Time: 2025-03-12T18:41:10Z
-2025/03/12 19:41:11 Static HTML file generated at ../../docs/hyperbricks-reference-v0.3.00-alpha.md
---- PASS: Test_TestAndDocumentationRender (0.55s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-route (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-section (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-template (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-static (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-cache (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-nocache (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-index (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_location (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_push_url (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_redirect (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_refresh (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_replace_url (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_reswap (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_retarget (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_reselect (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-@doc (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-title (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-route (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-section (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-bodytag (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-favicon (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-template (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-cache (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-nocache (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-static (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-index (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-doctype (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-htmltag (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/hypermedia-head (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/head-title (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/head-favicon (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/head-meta (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/head-css (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/head-js (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/template-@doc (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/template-template (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/template-inline (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/template-values (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/template-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/tree-@doc (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/tree-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/html-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/html-value (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/html-trimspace (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/css-attributes (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/css-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/css-inline (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/css-link (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/css-file (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/javascript-attributes (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/javascript-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/javascript-inline (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/javascript-link (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/javascript-file (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/image-attributes (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-enclose (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-src (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-width (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-height (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-alt (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-title (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-id (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-class (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-quality (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-loading (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-is_static (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/images-attributes (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-enclose (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-directory (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-width (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-height (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-id (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-class (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-alt (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-title (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-quality (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-loading (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/json-attributes (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-file (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-template (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-inline (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-values (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-debug (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/text-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/text-value (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/menu-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/menu-section (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/menu-order (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/menu-sort (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/menu-active (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
-PASS
-ok  	command-line-arguments	0.779s
+13-03-2025 13:52	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
+fatal error: concurrent map iteration and map write
+
+goroutine 149 [running]:
+text/template.addValueFuncs(0x14000587a70, 0x10027cf6c?)
+	/usr/local/go/src/text/template/funcs.go:88 +0x60
+text/template.(*Template).Funcs(0x14000444cc0, 0x140002b7b30)
+	/usr/local/go/src/text/template/template.go:181 +0x14c
+html/template.(*Template).Funcs(...)
+	/usr/local/go/src/html/template/template.go:339
+github.com/hyperbricks/hyperbricks/internal/shared.GenericTemplate()
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/shared/helpers_templating.go:118 +0xf4
+github.com/hyperbricks/hyperbricks/internal/composite.applyTemplate({0x140002205a0, 0x4e}, 0x14000587890, {{{{0x14000e7ad30, 0xa}, {0x0, 0x0}, {0x0, 0x0}, {0x14000e7b420, ...}, ...}, ...}, ...})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/template.go:151 +0x2c
+github.com/hyperbricks/hyperbricks/internal/composite.(*TemplateRenderer).Render(0x14000199d40, {0x10080e780, 0x14000489d60}, {0x100850c90, 0x14000587380})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/template.go:131 +0x864
+github.com/hyperbricks/hyperbricks/internal/render.(*RenderManager).Render(0x140001af9c0, {0x14000e7ad30, 0xa}, 0x14000273000?, {0x100850c90, 0x14000587380})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/render/rendermanager.go:74 +0x384
+github.com/hyperbricks/hyperbricks/internal/composite.(*TreeRenderer).Render.func1(0x1, {0x1000aeeb8?, 0x0?}, {0x14000e7ad30?, 0x1400043a020?}, 0x14000077fb0?)
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/tree.go:170 +0x9c
+created by github.com/hyperbricks/hyperbricks/internal/composite.(*TreeRenderer).Render in goroutine 147
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/tree.go:166 +0xb50
+
+goroutine 1 [chan receive]:
+testing.(*T).Run(0x140001b4d00, {0x1006090da?, 0x1400024bb48?}, 0x100842550)
+	/usr/local/go/src/testing/testing.go:1751 +0x328
+testing.runTests.func1(0x140001b4d00)
+	/usr/local/go/src/testing/testing.go:2168 +0x40
+testing.tRunner(0x140001b4d00, 0x1400024bc68)
+	/usr/local/go/src/testing/testing.go:1690 +0xe4
+testing.runTests(0x140001b2c48, {0x100c572c0, 0x1, 0x1}, {0x1500000000000000?, 0x15b2eb52626930c1?, 0x100d07480?})
+	/usr/local/go/src/testing/testing.go:2166 +0x3ac
+testing.(*M).Run(0x140002dc460)
+	/usr/local/go/src/testing/testing.go:2034 +0x588
+main.main()
+	_testmain.go:45 +0x90
+
+goroutine 36 [chan receive]:
+testing.(*T).Run(0x140001b4ea0, {0x14000e7a5a0?, 0x1007b616a?}, 0x1400013aa20)
+	/usr/local/go/src/testing/testing.go:1751 +0x328
+command-line-arguments.processFieldsWithSquash({0x10080e780?, 0x140002dc500?, 0x0?}, {{0x1005f4c40, 0x8}, {0x100609dd2, 0x20}, {0x1005f6d95, 0xa}, {0x1005f5e8f, ...}, ...}, ...)
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/test/docs/documentation_source_test.go:520 +0x67c
+command-line-arguments.Test_TestAndDocumentationRender(0x140001b4ea0)
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/test/docs/documentation_source_test.go:397 +0x1360
+testing.tRunner(0x140001b4ea0, 0x100842550)
+	/usr/local/go/src/testing/testing.go:1690 +0xe4
+created by testing.(*T).Run in goroutine 1
+	/usr/local/go/src/testing/testing.go:1743 +0x314
+
+goroutine 148 [runnable]:
+text/template.addValueFuncs(0x14000509290, 0x10027cf6c?)
+	/usr/local/go/src/text/template/funcs.go:88 +0x60
+text/template.(*Template).Funcs(0x14000056540, 0x140002b7b30)
+	/usr/local/go/src/text/template/template.go:181 +0x14c
+html/template.(*Template).Funcs(...)
+	/usr/local/go/src/html/template/template.go:339
+github.com/hyperbricks/hyperbricks/internal/shared.GenericTemplate()
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/shared/helpers_templating.go:118 +0xf4
+github.com/hyperbricks/hyperbricks/internal/composite.applyTemplate({0x140002205a0, 0x4e}, 0x140005090b0, {{{{0x14000e7ad30, 0xa}, {0x0, 0x0}, {0x0, 0x0}, {0x14000e7b410, ...}, ...}, ...}, ...})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/template.go:151 +0x2c
+github.com/hyperbricks/hyperbricks/internal/composite.(*TemplateRenderer).Render(0x14000199d40, {0x10080e780, 0x140002dd7c0}, {0x100850c90, 0x14000587380})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/template.go:131 +0x864
+github.com/hyperbricks/hyperbricks/internal/render.(*RenderManager).Render(0x140001af9c0, {0x14000e7ad30, 0xa}, 0x100181334?, {0x100850c90, 0x14000587380})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/render/rendermanager.go:74 +0x384
+github.com/hyperbricks/hyperbricks/internal/composite.(*TreeRenderer).Render.func1(0x0, {0x0?, 0x0?}, {0x14000e7ad30?, 0x1400059a1a0?}, 0x1400013aa20?)
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/tree.go:170 +0x9c
+created by github.com/hyperbricks/hyperbricks/internal/composite.(*TreeRenderer).Render in goroutine 147
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/tree.go:166 +0xb50
+
+goroutine 146 [semacquire]:
+sync.runtime_Semacquire(0x14000003c00?)
+	/usr/local/go/src/runtime/sema.go:71 +0x2c
+sync.(*WaitGroup).Wait(0x14000e7b380)
+	/usr/local/go/src/sync/waitgroup.go:118 +0x74
+github.com/hyperbricks/hyperbricks/internal/composite.(*TreeRenderer).Render(0x14000199d20, {0x1007e3c60, 0x1400041d980}, {0x100850c90, 0x14000587380})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/tree.go:188 +0x578
+github.com/hyperbricks/hyperbricks/internal/render.(*RenderManager).Render(0x140001af9c0, {0x1005ef541, 0x6}, 0xf?, {0x100850c90, 0x14000587380})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/render/rendermanager.go:74 +0x384
+github.com/hyperbricks/hyperbricks/internal/composite.(*FragmentRenderer).Render(0x14000199ce0, {0x1008299c0, 0x14000187180}, {0x100850c90, 0x14000587380})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/fragment.go:128 +0x4b4
+github.com/hyperbricks/hyperbricks/internal/render.(*RenderManager).Render(0x140001af9c0, {0x14000e7b010, 0xa}, 0x14000586e70?, {0x100850c90, 0x14000587380})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/render/rendermanager.go:74 +0x384
+command-line-arguments.processFieldsWithSquash.func1(0x1400059a1a0)
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/test/docs/documentation_source_test.go:592 +0x3e4
+testing.tRunner(0x1400059a1a0, 0x1400013aa20)
+	/usr/local/go/src/testing/testing.go:1690 +0xe4
+created by testing.(*T).Run in goroutine 36
+	/usr/local/go/src/testing/testing.go:1743 +0x314
+
+goroutine 147 [semacquire]:
+sync.runtime_Semacquire(0x14000682540?)
+	/usr/local/go/src/runtime/sema.go:71 +0x2c
+sync.(*WaitGroup).Wait(0x14000e7b400)
+	/usr/local/go/src/sync/waitgroup.go:118 +0x74
+github.com/hyperbricks/hyperbricks/internal/composite.(*TreeRenderer).Render(0x14000199d20, {0x1007e3c60, 0x1400041dc00}, {0x100850c90, 0x14000587380})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/tree.go:188 +0x578
+github.com/hyperbricks/hyperbricks/internal/render.(*RenderManager).Render(0x140001af9c0, {0x14000e7b078, 0x6}, 0x100181334?, {0x100850c90, 0x14000587380})
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/render/rendermanager.go:74 +0x384
+github.com/hyperbricks/hyperbricks/internal/composite.(*TreeRenderer).Render.func1(0x0, {0x0?, 0x0?}, {0x14000e7b078?, 0x1400059a1a0?}, 0x1400013aa20?)
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/tree.go:170 +0x9c
+created by github.com/hyperbricks/hyperbricks/internal/composite.(*TreeRenderer).Render in goroutine 146
+	/Users/robbertstreng/Documents/GitHub/hyperbricks/internal/composite/tree.go:166 +0xb50
+FAIL	command-line-arguments	0.306s
+FAIL
