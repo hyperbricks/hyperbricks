@@ -2,7 +2,7 @@
 
 **Licence:** MIT  
 **Version:** v0.4.1-alpha  
-**Build time:** 2025-03-13T22:25:14Z
+**Build time:** 2025-03-14T10:41:36Z
 
 
 ![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
@@ -37,24 +37,190 @@ Go direct to:
 
 ### Defining Hypermedia Documents and Fragments
 
-### Configuration Hierarchy and Key Concepts
-##### Configuration Types and Hierarchy
+##### Main Composite Configuration Types
 HyperBricks organizes configuration files using a clear hierarchy:
 
-
 `<HYPERMEDIA>`
-HYPERMEDIA type is the main initiator of a htmx document. This is the main configuration type for your full-page documents. It controls the document’s head, body and route location.  Its location is defined by the route property.
+
+Represents the primary configuration component for full-page documents in HyperBricks. It orchestrates page structure, including <head> and <body> sections, route handling, and overall document rendering.
+
 
 `<TREE>`
-TREE type can nest items recursively, but the need HYPERMEDIA or FRAGMENT as root composite component
+
+The <TREE> type can nest items recursively, but it requires a <HYPERMEDIA> or <FRAGMENT> component as the root composite component.
 
 `<FRAGMENT>`
 
-Use FRAGMENT to define portions of a page that can be dynamically updated via HTMX without reloading the entire page. Also use &lt;FRAGMENT&gt; to utilize (GET,POST etc) requests and hx response headers.
+Defines dynamically updateable sections of your pages, utilizing HTMX for efficient content updates without full-page reloads. Ideal for partial page rendering and interactivity. A `<FRAGMENT>` dynamically updates parts of an HTML page using HTMX, improving performance by avoiding full page reloads."
+
+`<API_RENDER>`
+
+Used for fetching and rendering external API data. Optimized for caching and public data consumption, typically nested within `<HYPERMEDIA>` or `<FRAGMENT>` components.
+
+`<API_FRAGMENT_RENDER>`
+
+Acts as a bi-directional proxy for API requests and responses, enabling secure and dynamic rendering of authenticated API data directly into HTMX fragments, managing authentication, JWT tokens, and session cookies.
+
+`<TREE>`
+
+Allows hierarchical nesting of components to structure complex content arrangements. Must be rooted within either a `<HYPERMEDIA>` or `<FRAGMENT>`.
 
 `<TEMPLATE>`
 
-Templates allow you to define reusable layout structures, which can be included in both hypermedia documents and fragments.
+Enables reusable HTML structures through Golang templates, promoting consistency and reducing redundancy across pages and fragments.
+
+
+Certainly! Here are some concise and clear documentation examples illustrating how HyperBricks uses the standard Go `html/template` library extended with Sprig functions:
+
+---
+
+### HyperBricks Templates: Using Go html/template with Sprig
+
+HyperBricks leverages the standard Go [html/template](https://pkg.go.dev/html/template) library, enriched by the powerful functions provided by [Sprig](https://masterminds.github.io/sprig/). This combination enables developers to write dynamic, reusable, and expressive templates for rendering HTML content within HyperBricks configurations.
+
+---
+
+## Simple Template Example
+
+A basic template rendering dynamic data:
+
+**Configuration:**
+```properties
+myTemplate = <TEMPLATE>
+myTemplate {
+    inline = <<[
+        <h1>{{.title}}</h1>
+        <p>{{.message}}</p>
+    ]>>
+    values {
+        title = Hello World
+        message = Welcome to HyperBricks!
+    }
+}
+```
+
+**Expected Result**
+```html
+<h1>Hello World</h1>
+<p>Welcome to HyperBricks!</p>
+```
+
+---
+
+### Iterating Data (Arrays)
+
+Templates can iterate over data arrays easily:
+
+```properties
+fragment = <FRAGMENT>
+fragment.route = get-users
+
+fragment.10 = <TEMPLATE>
+fragment.10 {
+    inline = <<[
+        <ul>
+            {{$users := fromJson .users}}
+            {{ range $users }}
+                <li>{{.name}} ({{.email}})</li>
+            {{ end }}
+        </ul>
+    ]>>
+    values {
+        # multiline string users
+        users = <<[ 
+            
+            [
+                { "name": "Alice", "email": "alice@example.com" },
+                { "name": "Bob", "email": "bob@example.com" }
+            ]
+
+        ]>>
+    }
+}
+```
+
+**Expected Result**
+```html
+<ul>
+    <li>Alice (alice@example.com)</li>
+    <li>Bob (bob@example.com)</li>
+</ul>
+```
+
+---
+
+## Advanced Example: Using Sprig Functions
+
+Sprig functions greatly expand the capabilities of templates. Here's how to leverage some useful Sprig functions within HyperBricks:
+
+### Example with Sprig's `upper` and `date` Functions:
+
+```properties
+postTemplate = <TEMPLATE>
+postTemplate {
+    inline = <<[
+        <article>
+            <h2>{{ .title | upper }}</h2>
+            <p>{{ .content }}</p>
+            <footer>Published on {{ now | date "Jan 2, 2006" }}</footer>
+        </article>
+    ]>>
+    values {
+        title = Getting started
+        content = HyperBricks makes it easy to build web applications with HTMX.
+    }
+}
+```
+
+**Expected Result**
+```html
+<article>
+    <h2>GETTING STARTED</h2>
+    <p> HyperBricks makes it easy to build web applications with HTMX.</p>
+    <footer>Published on March 14, 2025</footer>
+</article>
+```
+
+---
+
+### Advanced Example with Sprig `default` and Conditional Logic
+
+Template utilizing conditional logic and Sprig’s `default` function for robust rendering:
+
+```properties
+profileTemplate = <TEMPLATE>
+profileTemplate {
+    inline = <<[
+        <div>
+            <h3>{{ .username | default "Anonymous" }}</h2>
+            {{ if .bio }}
+                <p>{{ .bio }}</p>
+            {{ else }}
+                <p>No bio provided.</p>
+            {{ end }}
+        </div>
+    ]>>
+    values {
+        title = Profile
+        bio = 
+    }
+}
+```
+
+**Expected Result**
+```html
+<div>
+    <h3>Anonymous</h2> 
+    <p>No bio provided.</p>
+</div>
+```
+
+---
+
+### Helpful Resources:
+
+- [Go html/template Official Documentation](https://pkg.go.dev/html/template)
+- [Sprig Function Reference](https://masterminds.github.io/sprig/)
 
 ---
 
@@ -117,7 +283,7 @@ fragment {
 }
 ```
 
-Properties are rendered in alphanumeric order. They are typeless, meaning quotes are not required because at parsing hyperbricks types like ```<IMAGE>```, ```<HTML>``` or ```<TEXT>``` will be typed automatically.
+Properties are rendered in alphanumeric order. Property values are typeless, so quotes are not required. Types such as ```<IMAGE>```, ```<HTML>```, or ```<TEXT>``` are identified automatically during parsing.
 
 ```properties
 hypermedia = <HYPERMEDIA>
@@ -247,6 +413,237 @@ fragment.content {
     enclose = <div class="youtube_video">|</div>
 }
 ```
+### **Fragment Example with Response Headers**
+```properties
+fragment = <FRAGMENT>
+fragment.route = fragment_response
+fragment {
+    content = <TREE>
+    content {
+        10 = <HTML>
+        10.value = <p>This is a fragment with response headers.</p>
+    }
+    response {
+        hx_trigger = customEvent
+        hx_target = #response-container
+    }
+}
+```
+This fragment is triggered on the client side by `customEvent`, updating the content in the DOM element with the ID `#response-container`.
+---
+
+### **Hypermedia with Template**
+```properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = template_page
+hypermedia.title = Template Example
+hypermedia.10 = <TEMPLATE>
+hypermedia.10 {
+    inline = <<[
+        <h1>{{title}}</h1>
+        <p>{{content}}</p>
+    ]>>
+    values {
+        title = Welcome!
+        content = This is a template-driven hypermedia page.
+    }
+}
+```
+This Hypermedia uses a template to structure its content dynamically.
+
+---
+
+### **Hypermedia with Multiple Ordered Items**
+```properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = ordered_content
+hypermedia.title = Ordered Items
+hypermedia.10 = <HTML>
+hypermedia.10.value = <p>Item 10</p>
+
+hypermedia.20 = <HTML>
+hypermedia.20.value = <p>Item 20</p>
+
+hypermedia.30 = <HTML>
+hypermedia.30.value = <p>Item 30</p>
+```
+Content is ordered numerically and renders in that sequence.
+
+---
+
+### **API Render Example**
+```properties
+api_render = <API_RENDER>
+api_render.route = api_example
+api_render.url = https://api.example.com/data
+api_render.method = GET
+api_render.inline = <<[
+    <h1>{{.title}}</h1>
+    <p>{{.description}}</p>
+]>>
+```
+Fetches data from an API and renders it using a template.
+
+---
+
+### **API Fragment Render Example**
+```properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment.route = api_fragment_example
+api_fragment.url = https://api.example.com/fragment
+api_fragment.method = POST
+api_fragment.inline = <<[
+    <div>{{.content}}</div>
+]>>
+api_fragment.response {
+    hx_target = #fragment-container
+    hx_trigger = newData
+}
+```
+This API fragment fetches data and dynamically updates `#fragment-container`.
+
+---
+
+### **Image Example**
+```properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = image_example
+hypermedia.title = Image Display
+hypermedia.10 = <IMAGE>
+hypermedia.10 {
+    src = https://picsum.photos/400
+    width = 400
+    height = 300
+    alt = Random Image
+}
+```
+Loads a placeholder image dynamically.
+
+
+
+```properties
+# Define the main Hypermedia document
+hypermedia = <HYPERMEDIA>
+
+# The route determines the URL path for this Hypermedia document (e.g., "/index")
+hypermedia.route = index
+
+# Title of the page (used in the document title and as a variable in the template)
+hypermedia.title = Structured Page
+
+# Defines the <body> tag attributes, such as a background color and padding
+# The "|" character separates the opening and closing tag
+hypermedia.bodytag = <body class="bg-gray-100 p-4">|</body>
+
+# The <HEAD> section of the document, automatically available in <HYPERMEDIA>
+# This can contain meta tags, stylesheets, and scripts
+hypermedia.head {
+    # Assigning priority 100 to ensure this block loads properly
+    100 = <HTML>
+    100.value = <<[
+        <!-- Meta tags for character encoding and viewport settings -->
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- Internal CSS for basic styling -->
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            header, footer { background: #333; color: white; padding: 10px; text-align: center; }
+            main { padding: 20px; }
+        </style>
+
+        <!-- External CSS: TailwindCSS for modern utility-based styling -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+
+        <!-- External JavaScript: HTMX for handling dynamic updates without full-page reloads -->
+        <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    ]>>
+}
+
+# The template is already predefined in <HYPERMEDIA>
+# It determines the full structure of the HTML document and dynamically injects content
+hypermedia.template {
+    inline = <<[
+        <!DOCTYPE html>
+        <html lang="en">
+        
+        <!-- The head section is injected dynamically by hyperbricks using the head marker, 
+             which pulls from hypermedia.head (not from values object) -->
+
+        {{.head}}
+
+        <body>
+            <header>
+                <!-- Injects the title dynamically from hypermedia.template.values.title -->
+                <h1>{{.title}}</h1>
+            </header>
+            <main>
+                <!-- Injects dynamic content from hypermedia.values.content -->
+                <p>{{.content}}</p>
+            </main>
+            <footer>
+                <p>&copy; 2025 My Website</p>
+            </footer>
+        </body>
+        </html>
+    ]>>
+
+    # Predefined values injected into the template
+    values {
+        # This is referenced in the template with {{.title}}
+        title = Structured Page
+          
+        # Used in {{.content}}
+        content = This is a Hypermedia document with a full HTML structure.  
+    }
+}
+```
+html result:
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        header,
+        footer {
+            background: #333;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        main {
+            padding: 20px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <meta name="generator" content="hyperbricks cms">
+    <title>Structured Page</title>
+</head>
+
+<body>
+    <header>
+        <h1>Structured Page</h1>
+    </header>
+    <main>
+        <p>This is a Hypermedia document with a full HTML structure.</p>
+    </main>
+    <footer>
+        <p>&copy; 2025 My Website</p>
+    </footer>
+</body>
+
+</html>
+```
 
 ### Quickstart
 Follow these steps to get started
@@ -286,7 +683,7 @@ for start options type:
 hyperbricks start --help 
 ```
 
-#### 3.	Access the project in the browser:
+#### 4.	Access the project in the browser:
 Open the web browser and navigate to http://localhost:8080 to view running hyperbricks.
 
 ### Installation Instructions for HyperBricks
@@ -655,7 +1052,7 @@ text {
 
 ### API Serverside Render
 
-The API components acts like a bi-directional PROXY that renders the response data into a HTMX respons with in the case of `<API_FRAGMENT_RENDER>` hx response headers.
+The API components acts like a bi-directional PROXY that renders response data into HTMX-compatible responses, including HTMX response headers when using <API_FRAGMENT_RENDER>.
 
 API call with json body
 ```properties
@@ -723,7 +1120,7 @@ The data can be mapped from form or body POST data. Use $ symbol to map the spec
 ### **Client->Server Interaction**
 `<API_RENDER>` does not handle specific user auth. That makes this component only suited for fetching and rendering public data that can be cached on a interval. This can be set in the root composite component.
 
-`<API_FRAGMENT_RENDER>` Can handle Client auth requests based on login forms and tokens that will be passed thrue bi-directional.
+`<API_FRAGMENT_RENDER>` Can handle Client auth requests based on login forms and tokens that will be passed through bi-directional.
 | `Client->Server` | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
 |----------------------|-----------------------------|-----------------------------|
 | **Client->Server: JWT Authentication (`jwtsecret`)** | ❌ No | ✅ Yes |
@@ -733,7 +1130,7 @@ The data can be mapped from form or body POST data. Use $ symbol to map the spec
 | **Client->Server: Body and formdata mapping** | ✅ Yes (for public API, non-cached) | ✅ Yes |
 
 ### **Server->API Interaction**
-Both components can aply authentication on API requests. So for example a Weather Service that requires a 
+Both components can apply authentication on API requests. So for example a Weather Service that requires a 
 API key can be set by adding a header or by creating a JWT claim based on a secret
 | `Server->API` | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
 |----------------------|-----------------------------|-----------------------------|
@@ -759,10 +1156,10 @@ This document provides an overview of the HTML headers used in the `HxResponse` 
 | Hyperbricks Key              | HTMX Header                 | Description |
 |-------------------------------|-----------------------------|-------------|
 | hx_location                   | HX-Location                 | Allows you to do a client-side redirect that does not do a full page reload |
-| hx_push_url                   | HX-Pushed-Url               | Pushes a new URL into the history stack |
+| hx_push_url                   | HX-Push-Url               | Pushes a new URL into the history stack |
 | hx_redirect                   | HX-Redirect                 | Can be used to do a client-side redirect to a new location |
 | hx_refresh                    | HX-Refresh                  | If set to &#39;true&#39; the client-side will do a full refresh of the page |
-| hx_replace_url                | HX-Replace-Url              | Replaces the current URL in the location bar |
+| hx_replace_url                | HX-Replace-URL              | Replaces the current URL in the location bar |
 | hx_reswap                     | HX-Reswap                   | Allows you to specify how the response will be swapped |
 | hx_retarget                   | HX-Retarget                 | A CSS selector that updates the target of the content update |
 | hx_reselect                   | HX-Reselect                 | A CSS selector that allows you to choose which part of the response is used to be swapped in |
@@ -816,8 +1213,7 @@ api_login {
    
     # this is the template for setting the token (accessToken)
     setcookie =  <<[token={{.Data.accessToken}}]>>
-    # response data is alway found in .Data
-
+    # response data is always found in .Data
 }
 ```
 
@@ -1041,10 +1437,10 @@ This document provides an overview of the HTML headers used in the `HxResponse` 
 | Hyperbricks Key              | HTMX Header                 | Description |
 |-------------------------------|-----------------------------|-------------|
 | hx_location                   | HX-Location                 | Allows you to do a client-side redirect that does not do a full page reload |
-| hx_push_url                   | HX-Pushed-Url               | Pushes a new URL into the history stack |
+| hx_push_url                   | HX-Push-Url               | Pushes a new URL into the history stack |
 | hx_redirect                   | HX-Redirect                 | Can be used to do a client-side redirect to a new location |
 | hx_refresh                    | HX-Refresh                  | If set to &#39;true&#39; the client-side will do a full refresh of the page |
-| hx_replace_url                | HX-Replace-Url              | Replaces the current URL in the location bar |
+| hx_replace_url                | HX-Replace-URL              | Replaces the current URL in the location bar |
 | hx_reswap                     | HX-Reswap                   | Allows you to specify how the response will be swapped |
 | hx_retarget                   | HX-Retarget                 | A CSS selector that updates the target of the content update |
 | hx_reselect                   | HX-Reselect                 | A CSS selector that allows you to choose which part of the response is used to be swapped in |
@@ -2569,12 +2965,12 @@ hypermedia.head {
         b = c
     }
     999 = <HTML>
-    999.value = <!-- 999 overides default generator meta tag -->
+    999.value = <!-- 999 overrides default generator meta tag -->
 
     1001 = <CSS>
     1001.inline = <<[
         body {
-            pading:10px;
+          padding:10px;
         }
     ]>>
 
@@ -2594,7 +2990,7 @@ hypermedia.10.value = <p>some HTML</p>
 <html>
   <head>
     <meta name="generator" content="hyperbricks cms">
-    <!-- 999 overides default generator meta tag -->
+    <!-- 999 overrides default generator meta tag -->
     <meta name="a" content="b">
     <meta name="b" content="c">
     <link rel="stylesheet" href="styles.css">
@@ -2603,7 +2999,7 @@ hypermedia.10.value = <p>some HTML</p>
     <script src="xxxx"></script>
     <style>
       body {
-      pading:10px;
+      padding:10px;
       }
     </style>
   </head>

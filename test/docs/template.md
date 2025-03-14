@@ -24,6 +24,7 @@ Go direct to:
 - [API Serverside Render](#api-serverside-render)
 
 {{include "template_general.md"}}
+{{include "template_general_examples.md"}}
 {{include "template_install.md"}}
 
 <h1><a id="hyperbricks-type-reference">HyperBricks type reference</a></h1>

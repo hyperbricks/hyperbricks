@@ -14,8 +14,7 @@ fragment {
     }
 }
 ```
-This fragment is triggered by `customEvent` and targets `#response-container` for content updates.
-
+This fragment is triggered on the client side by `customEvent`, updating the content in the DOM element with the ID `#response-container`.
 ---
 
 ### **Hypermedia with Template**
@@ -153,8 +152,9 @@ hypermedia.template {
         <!DOCTYPE html>
         <html lang="en">
         
-        <!-- The head section is injected dynamically by hyperbricks using {{.head}}, 
-             which pulls from hypermedia.head (not values) -->
+        <!-- The head section is injected dynamically by hyperbricks using the head marker, 
+             which pulls from hypermedia.head (not from values object) -->
+
         {{.head}}
 
         <body>
@@ -183,7 +183,7 @@ hypermedia.template {
     }
 }
 ```
-This result in this html
+html result:
 ```html
 <!DOCTYPE html>
 <html lang="en">

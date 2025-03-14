@@ -1,0 +1,23 @@
+==== hyperbricks config {!{profileTemplate}} ====
+profileTemplate = <TEMPLATE>
+profileTemplate {
+    inline = <<[
+        <div>
+            <h3>{{ .username | default "Anonymous" }}</h2>
+            {{ if .bio }}
+                <p>{{ .bio }}</p>
+            {{ else }}
+                <p>No bio provided.</p>
+            {{ end }}
+        </div>
+    ]>>
+    values {
+        title = Profile
+        bio = 
+    }
+}
+==== expected output ====
+<div>
+    <h3>Anonymous</h2> 
+    <p>No bio provided.</p>
+</div>

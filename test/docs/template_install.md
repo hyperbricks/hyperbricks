@@ -37,7 +37,7 @@ for start options type:
 hyperbricks start --help 
 ```
 
-#### 3.	Access the project in the browser:
+#### 4.	Access the project in the browser:
 Open the web browser and navigate to http://localhost:8080 to view running hyperbricks.
 
 ### Installation Instructions for HyperBricks

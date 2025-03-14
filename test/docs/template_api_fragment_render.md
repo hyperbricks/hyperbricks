@@ -2,7 +2,7 @@
 
 ### API Serverside Render
 
-The API components acts like a bi-directional PROXY that renders the response data into a HTMX respons with in the case of `<API_FRAGMENT_RENDER>` hx response headers.
+The API components acts like a bi-directional PROXY that renders response data into HTMX-compatible responses, including HTMX response headers when using <API_FRAGMENT_RENDER>.
 
 API call with json body
 ```properties
@@ -70,7 +70,7 @@ The data can be mapped from form or body POST data. Use $ symbol to map the spec
 ### **Client->Server Interaction**
 `<API_RENDER>` does not handle specific user auth. That makes this component only suited for fetching and rendering public data that can be cached on a interval. This can be set in the root composite component.
 
-`<API_FRAGMENT_RENDER>` Can handle Client auth requests based on login forms and tokens that will be passed thrue bi-directional.
+`<API_FRAGMENT_RENDER>` Can handle Client auth requests based on login forms and tokens that will be passed through bi-directional.
 | `Client->Server` | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
 |----------------------|-----------------------------|-----------------------------|
 | **Client->Server: JWT Authentication (`jwtsecret`)** | ❌ No | ✅ Yes |
@@ -80,7 +80,7 @@ The data can be mapped from form or body POST data. Use $ symbol to map the spec
 | **Client->Server: Body and formdata mapping** | ✅ Yes (for public API, non-cached) | ✅ Yes |
 
 ### **Server->API Interaction**
-Both components can aply authentication on API requests. So for example a Weather Service that requires a 
+Both components can apply authentication on API requests. So for example a Weather Service that requires a 
 API key can be set by adding a header or by creating a JWT claim based on a secret
 | `Server->API` | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
 |----------------------|-----------------------------|-----------------------------|
@@ -106,10 +106,10 @@ This document provides an overview of the HTML headers used in the `HxResponse` 
 | Hyperbricks Key              | HTMX Header                 | Description |
 |-------------------------------|-----------------------------|-------------|
 | hx_location                   | HX-Location                 | Allows you to do a client-side redirect that does not do a full page reload |
-| hx_push_url                   | HX-Pushed-Url               | Pushes a new URL into the history stack |
+| hx_push_url                   | HX-Push-Url               | Pushes a new URL into the history stack |
 | hx_redirect                   | HX-Redirect                 | Can be used to do a client-side redirect to a new location |
 | hx_refresh                    | HX-Refresh                  | If set to &#39;true&#39; the client-side will do a full refresh of the page |
-| hx_replace_url                | HX-Replace-Url              | Replaces the current URL in the location bar |
+| hx_replace_url                | HX-Replace-URL              | Replaces the current URL in the location bar |
 | hx_reswap                     | HX-Reswap                   | Allows you to specify how the response will be swapped |
 | hx_retarget                   | HX-Retarget                 | A CSS selector that updates the target of the content update |
 | hx_reselect                   | HX-Reselect                 | A CSS selector that allows you to choose which part of the response is used to be swapped in |
@@ -163,8 +163,7 @@ api_login {
    
     # this is the template for setting the token (accessToken)
     setcookie =  <<[token={{.Data.accessToken}}]>>
-    # response data is alway found in .Data
-
+    # response data is always found in .Data
 }
 ```
 

@@ -1,23 +1,189 @@
 ### Defining Hypermedia Documents and Fragments
 
-### Configuration Hierarchy and Key Concepts
-##### Configuration Types and Hierarchy
+##### Main Composite Configuration Types
 HyperBricks organizes configuration files using a clear hierarchy:
 
-
 `<HYPERMEDIA>`
-HYPERMEDIA type is the main initiator of a htmx document. This is the main configuration type for your full-page documents. It controls the document’s head, body and route location.  Its location is defined by the route property.
+
+Represents the primary configuration component for full-page documents in HyperBricks. It orchestrates page structure, including <head> and <body> sections, route handling, and overall document rendering.
+
 
 `<TREE>`
-TREE type can nest items recursively, but the need HYPERMEDIA or FRAGMENT as root composite component
+
+The <TREE> type can nest items recursively, but it requires a <HYPERMEDIA> or <FRAGMENT> component as the root composite component.
 
 `<FRAGMENT>`
 
-Use FRAGMENT to define portions of a page that can be dynamically updated via HTMX without reloading the entire page. Also use &lt;FRAGMENT&gt; to utilize (GET,POST etc) requests and hx response headers.
+Defines dynamically updateable sections of your pages, utilizing HTMX for efficient content updates without full-page reloads. Ideal for partial page rendering and interactivity. A `<FRAGMENT>` dynamically updates parts of an HTML page using HTMX, improving performance by avoiding full page reloads."
+
+`<API_RENDER>`
+
+Used for fetching and rendering external API data. Optimized for caching and public data consumption, typically nested within `<HYPERMEDIA>` or `<FRAGMENT>` components.
+
+`<API_FRAGMENT_RENDER>`
+
+Acts as a bi-directional proxy for API requests and responses, enabling secure and dynamic rendering of authenticated API data directly into HTMX fragments, managing authentication, JWT tokens, and session cookies.
+
+`<TREE>`
+
+Allows hierarchical nesting of components to structure complex content arrangements. Must be rooted within either a `<HYPERMEDIA>` or `<FRAGMENT>`.
 
 `<TEMPLATE>`
 
-Templates allow you to define reusable layout structures, which can be included in both hypermedia documents and fragments.
+Enables reusable HTML structures through Golang templates, promoting consistency and reducing redundancy across pages and fragments.
+
+
+Certainly! Here are some concise and clear documentation examples illustrating how HyperBricks uses the standard Go `html/template` library extended with Sprig functions:
+
+---
+
+### HyperBricks Templates: Using Go html/template with Sprig
+
+HyperBricks leverages the standard Go [html/template](https://pkg.go.dev/html/template) library, enriched by the powerful functions provided by [Sprig](https://masterminds.github.io/sprig/). This combination enables developers to write dynamic, reusable, and expressive templates for rendering HTML content within HyperBricks configurations.
+
+---
+
+## Simple Template Example
+
+A basic template rendering dynamic data:
+
+**Configuration:**
+```properties
+myTemplate = <TEMPLATE>
+myTemplate {
+    inline = <<[
+        <h1>{{.title}}</h1>
+        <p>{{.message}}</p>
+    ]>>
+    values {
+        title = Hello World
+        message = Welcome to HyperBricks!
+    }
+}
+```
+
+**Expected Result**
+```html
+<h1>Hello World</h1>
+<p>Welcome to HyperBricks!</p>
+```
+
+---
+
+### Iterating Data (Arrays)
+
+Templates can iterate over data arrays easily:
+
+```properties
+fragment = <FRAGMENT>
+fragment.route = get-users
+
+fragment.10 = <TEMPLATE>
+fragment.10 {
+    inline = <<[
+        <ul>
+            {{$users := fromJson .users}}
+            {{ range $users }}
+                <li>{{.name}} ({{.email}})</li>
+            {{ end }}
+        </ul>
+    ]>>
+    values {
+        # multiline string users
+        users = <<[ 
+            
+            [
+                { "name": "Alice", "email": "alice@example.com" },
+                { "name": "Bob", "email": "bob@example.com" }
+            ]
+
+        ]>>
+    }
+}
+```
+
+**Expected Result**
+```html
+<ul>
+    <li>Alice (alice@example.com)</li>
+    <li>Bob (bob@example.com)</li>
+</ul>
+```
+
+---
+
+## Advanced Example: Using Sprig Functions
+
+Sprig functions greatly expand the capabilities of templates. Here's how to leverage some useful Sprig functions within HyperBricks:
+
+### Example with Sprig's `upper` and `date` Functions:
+
+```properties
+postTemplate = <TEMPLATE>
+postTemplate {
+    inline = <<[
+        <article>
+            <h2>{{ .title | upper }}</h2>
+            <p>{{ .content }}</p>
+            <footer>Published on {{ now | date "Jan 2, 2006" }}</footer>
+        </article>
+    ]>>
+    values {
+        title = Getting started
+        content = HyperBricks makes it easy to build web applications with HTMX.
+    }
+}
+```
+
+**Expected Result**
+```html
+<article>
+    <h2>GETTING STARTED</h2>
+    <p> HyperBricks makes it easy to build web applications with HTMX.</p>
+    <footer>Published on March 14, 2025</footer>
+</article>
+```
+
+---
+
+### Advanced Example with Sprig `default` and Conditional Logic
+
+Template utilizing conditional logic and Sprig’s `default` function for robust rendering:
+
+```properties
+profileTemplate = <TEMPLATE>
+profileTemplate {
+    inline = <<[
+        <div>
+            <h3>{{ .username | default "Anonymous" }}</h2>
+            {{ if .bio }}
+                <p>{{ .bio }}</p>
+            {{ else }}
+                <p>No bio provided.</p>
+            {{ end }}
+        </div>
+    ]>>
+    values {
+        title = Profile
+        bio = 
+    }
+}
+```
+
+**Expected Result**
+```html
+<div>
+    <h3>Anonymous</h2> 
+    <p>No bio provided.</p>
+</div>
+```
+
+---
+
+### Helpful Resources:
+
+- [Go html/template Official Documentation](https://pkg.go.dev/html/template)
+- [Sprig Function Reference](https://masterminds.github.io/sprig/)
 
 ---
 
@@ -80,7 +246,7 @@ fragment {
 }
 ```
 
-Properties are rendered in alphanumeric order. They are typeless, meaning quotes are not required because at parsing hyperbricks types like ```<IMAGE>```, ```<HTML>``` or ```<TEXT>``` will be typed automatically.
+Properties are rendered in alphanumeric order. Property values are typeless, so quotes are not required. Types such as ```<IMAGE>```, ```<HTML>```, or ```<TEXT>``` are identified automatically during parsing.
 
 ```properties
 hypermedia = <HYPERMEDIA>
