@@ -20,7 +20,7 @@ var _ shared.ComponentRenderer = (*PluginRenderer)(nil)
 
 type PluginConfig struct {
 	shared.Component `mapstructure:",squash"`
-	PluginName       string                 `mapstructure:"plugin"`
+	PluginName       string                 `mapstructure:"plugin"  description:"Name of the plugin for lookup"`
 	Classes          []string               `mapstructure:"classes" description:"Optional CSS classes for the link" example:"{!{plugin-classes.hyperbricks}}"`
 	Data             map[string]interface{} `mapstructure:"data"`
 }

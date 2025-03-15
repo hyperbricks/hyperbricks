@@ -161,7 +161,7 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 
 	// Call function to process the request body
 	status_override := false
-	body, _error := processRequest(ctx, config.Body)
+	body, _error := processRequest(ctx, config)
 	if _error == nil {
 		config.Body = body
 	} else {
@@ -324,8 +324,24 @@ func flattenFormData(formData url.Values) map[string]interface{} {
 	return flattened
 }
 
-func processRequest(ctx context.Context, bodyMap string) (string, error) {
+func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string, error) {
 	mergedData := make(map[string]interface{})
+
+	// Specify the allowed query keys
+	allowed := []string{"id", "name", "order"}
+	if config.AllowedQueryKeys != nil {
+		allowed = config.AllowedQueryKeys
+	}
+	var filtered = url.Values{}
+
+	// Get a filtered copy of the query parameters
+	clientReq, ok := ctx.Value(shared.Request).(*http.Request)
+	if ok {
+		filtered = FilterAllowedQueryParams(clientReq, allowed)
+		for key, value := range filtered {
+			mergedData[key] = value
+		}
+	}
 
 	// Retrieve form data from context (correct type)
 	formData, formOk := ctx.Value(shared.FormData).(url.Values)
@@ -351,7 +367,7 @@ func processRequest(ctx context.Context, bodyMap string) (string, error) {
 
 		if len(bodyBytes) == 0 {
 			// Empty body, return the unmapped body
-			return bodyMap, nil
+			return config.Body, nil
 		}
 
 		// Parse JSON body into a map
@@ -370,18 +386,18 @@ func processRequest(ctx context.Context, bodyMap string) (string, error) {
 			}
 		}
 	} else {
-		fmt.Printf("No body provided with post...: %s\n", bodyMap)
+		fmt.Printf("No body provided with post...: %s\n", config.Body)
 	}
 
 	// Replace placeholders dynamically
 	for key, value := range mergedData {
 		placeholder := fmt.Sprintf("$%s", key)
 		strValue := fmt.Sprintf("%v", value)
-		bodyMap = strings.ReplaceAll(bodyMap, placeholder, strValue)
+		config.Body = strings.ReplaceAll(config.Body, placeholder, strValue)
 	}
 
-	fmt.Printf("Updated body map string: %s\n", bodyMap)
-	return bodyMap, nil
+	fmt.Printf("Updated body map string: %s\n", config.Body)
+	return config.Body, nil
 }
 
 // Shared HTTP transport for connection pooling
