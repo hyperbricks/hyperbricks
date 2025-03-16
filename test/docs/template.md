@@ -5,8 +5,6 @@
 **Build time:** {{.buildtime}}
 
 
-![HyperBricks Logo](https://raw.githubusercontent.com/hyperbricks/hyperbricks/refs/heads/main/docs/hyperbricks_logo_ibm.png)
-
 {{include "template_note.md"}}
 
 Go direct to:
