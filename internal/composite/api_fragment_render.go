@@ -365,26 +365,24 @@ func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string
 			return "Failed to read request body", fmt.Errorf("failed to read request body: %w", err)
 		}
 
-		if len(bodyBytes) == 0 {
-			// Empty body, return the unmapped body
-			return config.Body, nil
-		}
+		if len(bodyBytes) > 0 {
+			// Parse JSON body into a map
+			var bodyData map[string]interface{}
+			err = json.Unmarshal(bodyBytes, &bodyData)
+			if err != nil {
+				bodyData = make(map[string]interface{}) // Default empty map on error
+			}
 
-		// Parse JSON body into a map
-		var bodyData map[string]interface{}
-		err = json.Unmarshal(bodyBytes, &bodyData)
-		if err != nil {
-			bodyData = make(map[string]interface{}) // Default empty map on error
-		}
-
-		// Merge body data with conflict resolution
-		for key, value := range bodyData {
-			if _, exists := mergedData[key]; exists {
-				mergedData["body_"+key] = value // Prefix duplicate keys
-			} else {
-				mergedData[key] = value
+			// Merge body data with conflict resolution
+			for key, value := range bodyData {
+				if _, exists := mergedData[key]; exists {
+					mergedData["body_"+key] = value // Prefix duplicate keys
+				} else {
+					mergedData[key] = value
+				}
 			}
 		}
+
 	} else {
 		fmt.Printf("No body provided with post...: %s\n", config.Body)
 	}

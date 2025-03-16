@@ -7,7 +7,7 @@ loading
 === RUN   Test_TestAndDocumentationRender/fragment-section
 === RUN   Test_TestAndDocumentationRender/fragment-enclose
 === RUN   Test_TestAndDocumentationRender/fragment-template
-14-03-2025 11:45	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+16-03-2025 00:08	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/fragment-static
 === RUN   Test_TestAndDocumentationRender/fragment-cache
 === RUN   Test_TestAndDocumentationRender/fragment-nocache
@@ -33,7 +33,7 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
-14-03-2025 11:45	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+16-03-2025 00:08	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/hypermedia-cache
 === RUN   Test_TestAndDocumentationRender/hypermedia-nocache
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
@@ -47,16 +47,16 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/head-css
 === RUN   Test_TestAndDocumentationRender/head-js
 === RUN   Test_TestAndDocumentationRender/template-@doc
-14-03-2025 11:45	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
+16-03-2025 00:08	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
 === RUN   Test_TestAndDocumentationRender/template-template
-14-03-2025 11:45	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+16-03-2025 00:08	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-14-03-2025 11:45	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
-2025/03/14 11:45:46 [failed to load template file ''|open : no such file or directory]
+16-03-2025 00:08	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/03/16 00:08:11 [failed to load template file ''|open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-14-03-2025 11:45	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
-2025/03/14 11:45:46 [failed to load template file ''|open : no such file or directory]
+16-03-2025 00:08	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/03/16 00:08:11 [failed to load template file ''|open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
 === RUN   Test_TestAndDocumentationRender/tree-@doc
@@ -101,12 +101,12 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-file
 === RUN   Test_TestAndDocumentationRender/json-template
-14-03-2025 11:45	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+16-03-2025 00:08	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-inline
 === RUN   Test_TestAndDocumentationRender/json-values
-14-03-2025 11:45	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+16-03-2025 00:08	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
-14-03-2025 11:45	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+16-03-2025 00:08	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
@@ -116,9 +116,9 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/menu-active
 === RUN   Test_TestAndDocumentationRender/menu-item
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
-2025/03/14 11:45:47 Version: v0.4.1-alpha
-2025/03/14 11:45:47 Build Time: 2025-03-14T10:45:45Z
-2025/03/14 11:45:47 Static HTML file generated at ../../docs/hyperbricks-reference-v0.4.1-alpha.md
+2025/03/16 00:08:12 Version: v0.4.1-alpha
+2025/03/16 00:08:12 Build Time: 2025-03-15T23:08:10Z
+2025/03/16 00:08:12 Static HTML file generated at ../../docs/hyperbricks-reference-v0.4.1-alpha.md
 --- PASS: Test_TestAndDocumentationRender (0.58s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
@@ -224,4 +224,4 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
 PASS
-ok  	command-line-arguments	0.814s
+ok  	command-line-arguments	0.812s
