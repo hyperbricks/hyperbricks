@@ -29,6 +29,10 @@ page {
 }
 
 fragment = <FRAGMENT>
+fragment.response {
+    hx_reswap = innerHTML
+    hx_retarget = #quote-box
+}
 fragment {
 
     route = get-quote

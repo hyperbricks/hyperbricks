@@ -22,8 +22,11 @@ hyperbricks {
         watch = true
         reload = true
 
-        # shows errors in the frontend output
+        # shows errors in the frontend output in development mode
         frontend_errors = false
+
+         # shows dashboard in development mode
+        dashboard = false
     }
 
     live {

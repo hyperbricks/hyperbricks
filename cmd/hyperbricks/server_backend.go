@@ -322,6 +322,11 @@ func bToMb(b uint64) uint64 {
 
 // statusServer registers the HTTP handler for the dashboard.
 func statusServer() {
+	hbConfig := getHyperBricksConfiguration()
+	if !hbConfig.Development.Dashboard {
+		return
+	}
+
 	http.HandleFunc("/dashboard", func(w http.ResponseWriter, r *http.Request) {
 		var data SysData
 

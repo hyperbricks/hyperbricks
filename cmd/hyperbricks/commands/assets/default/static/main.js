@@ -1,6 +1,7 @@
 let lastIndex = null;
 let activeBackground = 1;
-let isTransitioning = false; // Prevents triggering during fade
+let isTransitioning = false;
+let backgroundTimeout = null; // Prevent timeout stacking
 
 function getNextRandomIndex(range) {
     let i;
@@ -13,18 +14,22 @@ function getNextRandomIndex(range) {
 }
 
 function refreshBackground(callback) {
-    if (isTransitioning) return; // Prevents re-triggering
+    if (isTransitioning) return;
 
-    isTransitioning = true; // Block new triggers
-
+    isTransitioning = true;
     const bg1 = document.getElementById('background1');
     const bg2 = document.getElementById('background2');
+    const button = document.getElementById('quote-button');
 
-    if (!bg1 || !bg2) {
-        console.error("Background elements not found!");
+    if (!bg1 || !bg2 || !button) {
+        console.error("Background elements or button not found!");
         isTransitioning = false;
         return;
     }
+
+    // Change button color immediately on click
+    button.classList.replace("bg-black", "bg-white");
+    button.classList.replace("text-white", "text-black");
 
     const current = activeBackground === 1 ? bg1 : bg2;
     const next = activeBackground === 1 ? bg2 : bg1;
@@ -35,29 +40,40 @@ function refreshBackground(callback) {
 
     img.onload = () => {
         next.style.backgroundImage = `url('${newUrl}')`;
-
         next.style.opacity = "1";
         current.style.opacity = "0";
 
-        // Wait for fade-out to complete (2s) before allowing new triggers
-        setTimeout(() => {
+        // Clear any existing timeout before setting a new one
+        if (backgroundTimeout) clearTimeout(backgroundTimeout);
+
+        backgroundTimeout = setTimeout(() => {
             current.style.backgroundImage = "";
-            isTransitioning = false; // Allow new triggers
-            if (callback) callback(); // Execute callback after transition
+            isTransitioning = false;
+
+            // Smooth fade back to black
+            button.classList.replace("bg-white", "bg-black");
+            button.classList.replace("text-black", "text-white");
+
+            if (callback) callback();
         }, 2000);
+
+        // Cleanup image object to prevent memory leak
+        img.onload = null;
     };
 
     activeBackground = activeBackground === 1 ? 2 : 1;
 }
 
-function myCustomEvent() {
+function myCustomEvent(range = 5) {
     if (isTransitioning) return;
-    const i = getNextRandomIndex(range = 5);
-        htmx.ajax('GET', `/get-quote?id=${i}`, {
-            target: "#quote-box",
-            swap: "innerHTML"
-        });
+
+    const quoteBox = document.getElementById("quote-box");
+    quoteBox.classList.add("opacity-0");
+
     refreshBackground(() => {
-        
+        quoteBox.classList.replace("opacity-0", "opacity-100");
     });
+
+    const i = getNextRandomIndex(range);
+    htmx.ajax('GET', `/get-quote?id=${i}`);
 }

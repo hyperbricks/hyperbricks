@@ -3,7 +3,6 @@ package composite
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"reflect"
 	"strings"
@@ -170,6 +169,7 @@ func SetHeadersFromHxRequest(config *HxResponse, writer http.ResponseWriter) {
 
 		// Set the header using Go's default canonicalization
 		writer.Header().Set(headerName, headerValue)
-		log.Println(writer.Header())
+		// log.Printf("htmx response headers:%v", writer.Header())
+
 	}
 }

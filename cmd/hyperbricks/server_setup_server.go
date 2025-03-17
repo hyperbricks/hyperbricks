@@ -43,7 +43,7 @@ func StartServer(ctx context.Context) {
 		orangeTrueColor := "\033[38;2;255;165;0m"
 		reset := "\033[0m"
 
-		if hbConfig.Mode == shared.DEVELOPMENT_MODE {
+		if hbConfig.Mode == shared.DEVELOPMENT_MODE && hbConfig.Development.Dashboard {
 			logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf("Dashboard running at http://%s/dashboard", shared.Location), reset)
 			url := fmt.Sprintf("http://%s/dashboard", shared.Location)
 			err := openBrowser(url)

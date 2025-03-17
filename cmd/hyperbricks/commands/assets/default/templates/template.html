@@ -7,17 +7,17 @@
 <h1 class="bg-white-50 w-screen bg-black text-white text-center p-3">
     HyperBricks Random Quote Generator
 </h1>
-
+ 
 <div class="flex items-center justify-center justify-items-stretch flex-col h-screen w-screen gradient-bg p-10 text-4xl">
 
     <div class="mt-20 h-1/6"></div>
     <div class="mt-20 h-1/6 cursor-pointertext-black flex items-center justify-center flex-col ">
-        <div id="quote-box" class=" text-white text-center rounded satisfy-regular">
+        <div id="quote-box" class="opacity-0 text-white text-center rounded satisfy-regular">
             <!-- Quotes will be inserted here -->
         </div>
     </div>
     <div class="mt-20 h-2/3 h-full cursor-pointertext-black flex justify-center flex-col ">
-        <button class="bg-black cursor-pointer text-lg text-white p-3 text-center rounded" hx-trigger="click"
+        <button id="quote-button" class=" bg-black hover:text-black hover:bg-white cursor-pointer text-lg text-white p-3 text-center rounded" hx-trigger="click"
             hx-on:click="myCustomEvent()">
             New Quote
         </button>

@@ -51,8 +51,8 @@ func keyboardActions() {
 				rPressed <- true
 			}
 
-			// Optional: Exit on ESC key
-			if char == 'q' || char == 'Q' || key == keyboard.KeyEsc {
+			// Optional: Exit on q - Q - ESC key and KeyCtrlC
+			if char == 'q' || char == 'Q' || key == keyboard.KeyEsc || key == keyboard.KeyCtrlC {
 				done <- true
 				return
 			}
