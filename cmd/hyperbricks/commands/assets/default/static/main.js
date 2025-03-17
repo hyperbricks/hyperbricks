@@ -68,12 +68,15 @@ function myCustomEvent(range = 5) {
     if (isTransitioning) return;
 
     const quoteBox = document.getElementById("quote-box");
-    quoteBox.classList.add("opacity-0");
-
-    refreshBackground(() => {
-        quoteBox.classList.replace("opacity-0", "opacity-100");
-    });
-
-    const i = getNextRandomIndex(range);
-    htmx.ajax('GET', `/get-quote?id=${i}`);
+    quoteBox.classList.remove("opacity-100", "transition-opacity", "duration-500");
+    quoteBox.classList.add("opacity-0", "transition-opacity", "duration-500");
+    backgroundTimeout = setTimeout(() => {
+        const i = getNextRandomIndex(range);
+        htmx.ajax('GET', `/get-quote?id=${i}`).then(() => {
+            refreshBackground(() => {
+                quoteBox.classList.remove("opacity-0", "transition-opacity", "duration-500");
+                quoteBox.classList.add("opacity-100", "transition-opacity", "duration-500");
+            });
+        })
+    }, 500);
 }
