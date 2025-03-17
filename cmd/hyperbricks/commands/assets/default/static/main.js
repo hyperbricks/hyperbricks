@@ -2,7 +2,6 @@ let lastIndex = null;
 let activeBackground = 1;
 let isTransitioning = false;
 let backgroundTimeout = null; // Prevent timeout stacking
-
 function getNextRandomIndex(range) {
     let i;
     do {
@@ -51,6 +50,7 @@ function refreshBackground(callback) {
             isTransitioning = false;
 
             // Smooth fade back to black
+            const button = document.getElementById('quote-button');
             button.classList.replace("bg-white", "bg-black");
             button.classList.replace("text-black", "text-white");
 
@@ -70,10 +70,19 @@ function myCustomEvent(range = 5) {
     const quoteBox = document.getElementById("quote-box");
     quoteBox.classList.remove("opacity-100", "transition-opacity", "duration-500");
     quoteBox.classList.add("opacity-0", "transition-opacity", "duration-500");
+   
+    // Change button color immediately on click
+    const button = document.getElementById('quote-button');
+    button.classList.replace("bg-black", "bg-white");
+    button.classList.replace("text-white", "text-black");
+
     backgroundTimeout = setTimeout(() => {
         const i = getNextRandomIndex(range);
+                    
         htmx.ajax('GET', `/get-quote?id=${i}`).then(() => {
             refreshBackground(() => {
+               
+
                 quoteBox.classList.remove("opacity-0", "transition-opacity", "duration-500");
                 quoteBox.classList.add("opacity-100", "transition-opacity", "duration-500");
             });
