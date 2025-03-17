@@ -2,6 +2,16 @@ let lastIndex = null;
 let activeBackground = 1;
 let isTransitioning = false;
 let backgroundTimeout = null; // Prevent timeout stacking
+
+htmx.config.timeout = 5000;
+
+document.addEventListener("htmx:sendError", function (event) {
+   const quoteBox = document.getElementById("quote-box");
+   quoteBox.classList.remove("opacity-0", "transition-opacity", "duration-500");
+   quoteBox.classList.add("opacity-100", "transition-opacity", "duration-500");
+   quoteBox.innerHTML = "Connection lost..."
+});
+
 function getNextRandomIndex(range) {
     let i;
     do {
@@ -81,8 +91,6 @@ function myCustomEvent(range = 5) {
                     
         htmx.ajax('GET', `/get-quote?id=${i}`).then(() => {
             refreshBackground(() => {
-               
-
                 quoteBox.classList.remove("opacity-0", "transition-opacity", "duration-500");
                 quoteBox.classList.add("opacity-100", "transition-opacity", "duration-500");
             });
