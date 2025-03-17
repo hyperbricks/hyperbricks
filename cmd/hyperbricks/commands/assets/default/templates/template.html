@@ -1,14 +1,35 @@
-<div id="container" class="fade-in-background h-screen flex items-center justify-center flex-col bg-center ">
-    <h1 class="bg-white-50 w-screen bg-black  text-2xl text-white text-center p-2 ">HyperBricks Random Quote Generator</h1>
-    <div class="h-screen w-screen flex items-center justify-center flex-col bg-black" style="background-color: rgb(0, 0, 0,0.44);">
-        <div class="p-10 rounded-lg text-center w-80 sm:w-96">
-            <div id="quote-box" class=" mt-2 font-bold text-white flex gap-2 justify-center flex-col h-36 p-4 rounded"></div>
-            <button class="mt-20 bg-white cursor-pointer px-6 py-3 text-black rounded " hx-trigger="click"
-                hx-on:click="myCustomEvent()">
-                Get New Quote
-            </button>
-        </div>
-    </div>
+<div id="background-container">
+    <div class="background" id="background1"
+        style="opacity: 1; background-image: url('https://picsum.photos/1920/1080?random=1');"></div>
+    <div class="background" id="background2" style="opacity: 0;"></div>
 </div>
 
+<h1 class="bg-white-50 w-screen bg-black text-white text-center p-3">
+    HyperBricks Random Quote Generator
+</h1>
+
+<div class="flex items-center justify-center justify-items-stretch flex-col h-screen w-screen gradient-bg p-10 text-4xl">
+
+    <div class="mt-20 h-1/6"></div>
+    <div class="mt-20 h-1/6 cursor-pointertext-black flex items-center justify-center flex-col ">
+        <div id="quote-box" class=" text-white text-center rounded satisfy-regular">
+            <!-- Quotes will be inserted here -->
+        </div>
+    </div>
+    <div class="mt-20 h-2/3 h-full cursor-pointertext-black flex justify-center flex-col ">
+        <button class="bg-black cursor-pointer text-lg text-white p-3 text-center rounded" hx-trigger="click"
+            hx-on:click="myCustomEvent()">
+            New Quote
+        </button>
+    </div>
+
+</div>
+<div class="fixed bottom-4 left-10 -translate-x-1/2 px-4 py-2 text-white font-bold bg-black/60 rounded-lg">
+    <span class="block sm:hidden">XS</span>
+    <span class="hidden sm:block md:hidden">SM</span>
+    <span class="hidden md:block lg:hidden">MD</span>
+    <span class="hidden lg:block xl:hidden">LG</span>
+    <span class="hidden xl:block 2xl:hidden">XL</span>
+    <span class="hidden 2xl:block">2XL</span>
+</div>
 <script src="static/main.js"></script>
