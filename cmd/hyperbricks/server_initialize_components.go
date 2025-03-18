@@ -25,6 +25,41 @@ func initializeComponents() {
 
 }
 
+// Config structure with default values.
+type Plugin struct {
+	Name string
+	Key  string
+	Path string
+}
+
+// func GetPlugins(config *shared.Config) []Plugin {
+// 	var plugins []Plugin
+// 	pluginDir := "./bin/plugins"
+// 	if tbplugindir, ok := config.Directories["plugins"]; ok {
+// 		pluginDir = tbplugindir
+// 	}
+
+// 	for key, value := range config.Plugins {
+// 		//fmt.Printf("Key: %s, Value: %s\n", key, value)
+
+// 		if value == "enabled" {
+// 			pluginPath := pluginDir + "/" + key + ".so"
+
+// 			// Check if the file exists
+// 			if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
+// 				logging.GetLogger().Warnf("Plugin file %s not found. Skipping preloading.", key)
+// 				continue // Skip loading this plugin
+// 			}
+// 			plugins = append(plugins, Plugin{
+// 				Name: value,
+// 				Key:  key,
+// 				Path: pluginPath,
+// 			})
+// 		}
+// 	}
+// 	return plugins
+// }
+
 func registerPlugins() {
 
 	pluginDir := "./bin/plugins"

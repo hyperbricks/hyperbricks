@@ -41,15 +41,40 @@ func (c *ChannelCore) Check(entry zapcore.Entry, ce *zapcore.CheckedEntry) *zapc
 }
 
 // Write writes the log entry to the channel
+// func (c *ChannelCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
+// 	logMsg := LogMessage{
+// 		Level:   entry.Level,
+// 		Message: entry.Message,
+// 		Time:    entry.Time,
+// 	}
+// 	select {
+// 	case c.output <- logMsg:
+// 	default: // Channel full; drop log or handle as needed
+// 	}
+// 	return nil
+// }
+
+// Write writes the log entry to the rotating buffer
 func (c *ChannelCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
+
 	logMsg := LogMessage{
 		Level:   entry.Level,
 		Message: entry.Message,
 		Time:    entry.Time,
 	}
+
+	ls := GetInstance()
+	ls.mu.Lock()
+	if len(ls.logBuffer) >= 10 {
+		// Remove the oldest log (FIFO)
+		ls.logBuffer = ls.logBuffer[1:]
+	}
+	ls.logBuffer = append(ls.logBuffer, logMsg)
+	ls.mu.Unlock()
+
 	select {
 	case c.output <- logMsg:
-	default: // Channel full; drop log or handle as needed
+	default: // Channel full, drop log
 	}
 	return nil
 }
@@ -94,12 +119,14 @@ func (d *DynamicWriteSyncer) Sync() error {
 	return nil
 }
 
-// loggerSingleton holds the singleton instance of the logger
+// LoggerInstance holds the logger and log buffer
 type loggerSingleton struct {
 	logger        *zap.SugaredLogger
 	logsCh        chan LogMessage
 	atomicLevel   zap.AtomicLevel
 	dynamicSyncer *DynamicWriteSyncer
+	logBuffer     []LogMessage // Stores the last 10 logs
+	mu            sync.Mutex   // Protects logBuffer
 }
 
 var (
@@ -125,6 +152,16 @@ func GetInstance() *loggerSingleton {
 		initLogger(instance, zapcore.InfoLevel, defaultEncoderConfig())
 	})
 	return instance
+}
+
+// GetLogs returns the last 10 logs in FIFO order
+func GetLogs() []LogMessage {
+	ls := GetInstance()
+	ls.mu.Lock()
+	defer ls.mu.Unlock()
+
+	// Return a copy to avoid race conditions
+	return append([]LogMessage{}, ls.logBuffer...)
 }
 
 // initLogger initializes the logger with the given level and encoder config
