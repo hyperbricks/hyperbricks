@@ -106,6 +106,149 @@ func StripComments(input string) string {
 	i := 0
 
 	for i < len(inputRunes) {
+		// Handle multi-character start delimiter for custom blocks: <<[
+		if !inString && !inComment && !inBlock && i+2 < len(inputRunes) && string(inputRunes[i:i+3]) == "<<[" {
+			inBlock = true
+			output = append(output, inputRunes[i:i+3]...)
+			i += 3
+			continue
+		}
+
+		// Handle multi-character end delimiter for custom blocks: ]>>
+		if inBlock && i+2 < len(inputRunes) && string(inputRunes[i:i+3]) == "]>>" {
+			inBlock = false
+			output = append(output, inputRunes[i:i+3]...)
+			i += 3
+			continue
+		}
+
+		// If inside a custom block, do not process comments or strings.
+		if inBlock {
+			output = append(output, inputRunes[i])
+			i++
+			continue
+		}
+
+		c := inputRunes[i]
+
+		// If inside a multi-line comment, look for its end (*/)
+		if inComment {
+			if c == '*' && i+1 < len(inputRunes) && inputRunes[i+1] == '/' {
+				inComment = false
+				i += 2
+				// Optionally, append a newline if the comment ended immediately before one.
+				if i < len(inputRunes) && inputRunes[i] == '\n' {
+					output = append(output, '\n')
+					i++
+				}
+				continue
+			}
+			i++
+			continue
+		}
+
+		// Process string literals – simply copy until the closing quote.
+		if inString {
+			output = append(output, c)
+			if c == '\\' && i+1 < len(inputRunes) {
+				i++
+				output = append(output, inputRunes[i])
+			} else if c == stringChar {
+				inString = false
+			}
+			i++
+			continue
+		}
+
+		// Detect start of single-line comments (//) if not in a string or block.
+		if c == '/' && i+1 < len(inputRunes) && inputRunes[i+1] == '/' {
+			// Special exception: if the slash is part of a URL (after ':') then keep it.
+			if i > 0 && inputRunes[i-1] == ':' {
+				output = append(output, c)
+				i++
+				continue
+			}
+			// Skip until the end of the line.
+			for i < len(inputRunes) && inputRunes[i] != '\n' {
+				i++
+			}
+			if i < len(inputRunes) {
+				output = append(output, '\n')
+				i++
+			}
+			continue
+		}
+		// 4.	Hash (#) Handling:
+		// •	When a # is encountered, the function looks back (ignoring spaces and tabs) to see what character appears before it.
+		// •	If the last non-whitespace character is an equal sign (=), then the # is considered part of the value and is output. This handles the test case hx_reselect = #response correctly.
+		// •	Otherwise, if the # appears at the beginning of the line or is preceded by whitespace (and not following an =), the rest of the line is skipped as a comment.
+		// Detect start of '#' comments (outside strings/blocks).
+		if c == '#' && !inString {
+			// Look backwards from the current index, ignoring whitespace.
+			j := i - 1
+			for j >= 0 && (inputRunes[j] == ' ' || inputRunes[j] == '\t') {
+				j--
+			}
+			// If the last non-whitespace character is '=', then treat '#' as literal.
+			if j >= 0 && inputRunes[j] == '=' {
+				output = append(output, c)
+				i++
+				continue
+			}
+			// Otherwise, if '#' is at the beginning or preceded by whitespace, treat it as a comment.
+			if i == 0 || inputRunes[i-1] == ' ' || inputRunes[i-1] == '\t' || inputRunes[i-1] == '\n' {
+				// Skip all characters until the end of the line.
+				for i < len(inputRunes) && inputRunes[i] != '\n' {
+					i++
+				}
+				if i < len(inputRunes) {
+					output = append(output, '\n')
+					i++
+				}
+				continue
+			}
+			// In other cases, output '#' as literal.
+			output = append(output, c)
+			i++
+			continue
+		}
+
+		// Detect start of multi-line comments: /* ... */
+		if c == '/' && i+1 < len(inputRunes) && inputRunes[i+1] == '*' {
+			inComment = true
+			i += 2
+			if len(output) > 0 && output[len(output)-1] == '\n' {
+				output = output[:len(output)-1]
+			}
+			continue
+		}
+
+		// Detect start of a new string literal.
+		if (c == '"' || c == '\'') && !inString {
+			inString = true
+			stringChar = c
+			output = append(output, c)
+			i++
+			continue
+		}
+
+		// Normal character, simply copy it.
+		output = append(output, c)
+		i++
+	}
+	return string(output)
+}
+
+func StripCommentsV4(input string) string {
+	var output []rune
+	inString := false
+	inComment := false
+	inBlock := false // To track if we're within a custom block
+	stringChar := rune(0)
+	inputRunes := []rune(input)
+	i := 0
+
+	for i < len(inputRunes) {
 		// Handle multi-character start delimiter
 		if !inString && !inComment && !inBlock && i+2 < len(inputRunes) && string(inputRunes[i:i+3]) == "<<[" {
 			inBlock = true

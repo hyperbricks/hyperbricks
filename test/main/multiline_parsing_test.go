@@ -126,6 +126,66 @@ func TestMultilineParsing_003(t *testing.T) {
 	}
 }
 
+func TestRejectArrayBracketsFormingWhenUsedInValue(t *testing.T) {
+	// Define a sample HyperBricks with a MARKDOWN block and some comments
+	hyperBricks := `
+	
+	somevalue = this is not [an array] it is just a text
+
+}`
+
+	// Expected output should contain the HTML value after parsing
+	expected := map[string]interface{}{
+		"somevalue": "this is not [an array] it is just a text",
+	}
+
+	// Call ParseHyperScript function with the HyperBricks
+	parser.KnownTypes["<HTML>"] = true
+	parsedConfig := parser.ParseHyperScript(hyperBricks)
+
+	// Inspect structure of parsed output for debugging
+	log.Printf("Parsed output structure: %v", parsedConfig)
+
+	// Compare the parsed config with the expected config using reflect.DeepEqual
+	if !reflect.DeepEqual(parsedConfig, expected) {
+		t.Errorf("Test failed!\nExpected:\n%#v\nGot:\n%#v", expected, parsedConfig)
+	}
+}
+
+func TestRejectArrayBracketsFormingWhenUsedInVariableValue(t *testing.T) {
+
+	hyperBricks := `
+	
+	$grid_background =  bg-[#333] px-2 rounded-lg shadow-md
+
+	top_section = <HTML>
+	top_section.value = <<[
+		<div class="flex flex-row justify-left items-center {{VAR:grid_background}}"></div>
+	]>>
+
+}`
+
+	// Expected output should contain the HTML value after parsing
+	expected := map[string]interface{}{
+		"top_section": map[string]interface{}{
+			"@type": "<HTML>",
+			"value": "\n\t\t<div class=\"flex flex-row justify-left items-center bg-[#333] px-2 rounded-lg shadow-md\"></div>\n\t",
+		},
+	}
+
+	// Call ParseHyperScript function with the HyperBricks
+	parser.KnownTypes["<HTML>"] = true
+	parsedConfig := parser.ParseHyperScript(hyperBricks)
+
+	// Inspect structure of parsed output for debugging
+	log.Printf("Parsed output structure: %v", parsedConfig)
+
+	// Compare the parsed config with the expected config using reflect.DeepEqual
+	if !reflect.DeepEqual(parsedConfig, expected) {
+		t.Errorf("Test failed!\nExpected:\n%#v\nGot:\n%#v", expected, parsedConfig)
+	}
+}
+
 func TestMultilineParsing_004(t *testing.T) {
 	// Define a sample HyperBricks with a MARKDOWN block and some comments
 	hyperBricks := `header_test.header {
