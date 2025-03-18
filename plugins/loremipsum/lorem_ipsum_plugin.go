@@ -36,8 +36,11 @@ func (p *LoremIpsumPlugin) Render(instance interface{}, ctx context.Context) (st
 
 	var errors []error
 
+	// predefine the plugin configuration
 	var config LoremIpsumConfig
 
+	// DecodeWithBasicHooks is basicly a function that maps the .hyperbricks config into a structure defined at the Fields struct in this file.
+	// Extra fields can be added to the Fields struct so that the are passed with instance and decoded to config.
 	err := shared.DecodeWithBasicHooks(instance, &config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
@@ -50,6 +53,7 @@ func (p *LoremIpsumPlugin) Render(instance interface{}, ctx context.Context) (st
 		return "<!--Failed to render lorem_ipsum_plugin  -->", errors
 	}
 
+	// The Field values can be referenced like this...
 	paragraphs := int(config.Fields.Paragraphs)
 
 	return fmt.Sprintf("<div class=\"lorem_ipsum_plugin-content\">%s</div>\n", lorem.Paragraph(paragraphs, paragraphs)), errors
