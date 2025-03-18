@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	assets "github.com/hyperbricks/hyperbricks"
+	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/spf13/cobra"
 )
 
