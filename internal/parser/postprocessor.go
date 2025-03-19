@@ -100,6 +100,146 @@ func StripComments(input string) string {
 	var output []rune
 	inString := false
 	inComment := false
+	inBlock := false
+	stringChar := rune(0)
+	inputRunes := []rune(input)
+	i := 0
+
+	for i < len(inputRunes) {
+		// Handle custom block start (<<[)
+		if !inString && !inComment && !inBlock && i+2 < len(inputRunes) && string(inputRunes[i:i+3]) == "<<[" {
+			inBlock = true
+			output = append(output, inputRunes[i:i+3]...)
+			i += 3
+			continue
+		}
+
+		// Handle custom block end (]>>)
+		if inBlock && i+2 < len(inputRunes) && string(inputRunes[i:i+3]) == "]>>" {
+			inBlock = false
+			output = append(output, inputRunes[i:i+3]...)
+			i += 3
+			continue
+		}
+
+		// If inside a custom block, just copy characters
+		if inBlock {
+			output = append(output, inputRunes[i])
+			i++
+			continue
+		}
+
+		c := inputRunes[i]
+
+		// Handle multi-line comment end (*/)
+		if inComment {
+			if c == '*' && i+1 < len(inputRunes) && inputRunes[i+1] == '/' {
+				inComment = false
+				i += 2
+				if i < len(inputRunes) && inputRunes[i] == '\n' {
+					output = append(output, '\n')
+					i++
+				}
+				continue
+			}
+			i++
+			continue
+		}
+
+		// Handle string literals
+		if inString {
+			output = append(output, c)
+			if c == '\\' && i+1 < len(inputRunes) { // Handle escaped characters
+				i++
+				output = append(output, inputRunes[i])
+			} else if c == stringChar {
+				inString = false
+			}
+			i++
+			continue
+		}
+
+		// Handle single-line comments (//)
+		if c == '/' && i+1 < len(inputRunes) && inputRunes[i+1] == '/' {
+			if i > 0 && inputRunes[i-1] == ':' { // Exception for URLs (http://)
+				output = append(output, c)
+				i++
+				continue
+			}
+			// Skip until end of line
+			for i < len(inputRunes) && inputRunes[i] != '\n' {
+				i++
+			}
+			if i < len(inputRunes) {
+				output = append(output, '\n')
+				i++
+			}
+			continue
+		}
+
+		// Handle # comments properly
+		if c == '#' {
+			// **NEW FIX: Check if inside a string first**
+			if inString {
+				output = append(output, c)
+				i++
+				continue
+			}
+
+			// Look back to find the last non-whitespace character
+			j := i - 1
+			for j >= 0 && (inputRunes[j] == ' ' || inputRunes[j] == '\t') {
+				j--
+			}
+
+			// **NEW FIX: If in an attribute like bg-[#333], do not treat as a comment**
+			if j >= 0 && (inputRunes[j] == '=' || inputRunes[j] == '[') {
+				output = append(output, c)
+				i++
+				continue
+			}
+
+			// Otherwise, treat it as a comment and skip the line
+			for i < len(inputRunes) && inputRunes[i] != '\n' {
+				i++
+			}
+			if i < len(inputRunes) {
+				output = append(output, '\n')
+				i++
+			}
+			continue
+		}
+
+		// Handle multi-line comment start (/*)
+		if c == '/' && i+1 < len(inputRunes) && inputRunes[i+1] == '*' {
+			inComment = true
+			i += 2
+			if len(output) > 0 && output[len(output)-1] == '\n' {
+				output = output[:len(output)-1]
+			}
+			continue
+		}
+
+		// Handle string start
+		if (c == '"' || c == '\'') && !inString {
+			inString = true
+			stringChar = c
+			output = append(output, c)
+			i++
+			continue
+		}
+
+		// Copy normal characters
+		output = append(output, c)
+		i++
+	}
+	return string(output)
+}
+
+func StripCommentsV5(input string) string {
+	var output []rune
+	inString := false
+	inComment := false
 	inBlock := false // To track if we're within a custom block
 	stringChar := rune(0)
 	inputRunes := []rune(input)
