@@ -43,7 +43,6 @@ var (
 
 	// cachedCPUUsage holds the latest CPU usage reading.
 	cachedCPUUsage string = "0%"
-	counter        string = "0"
 	startTime      time.Time
 	bandwidth      string
 )
@@ -119,8 +118,6 @@ func updateCPUUsage() {
 			cachedCPUUsage = fmt.Sprintf("%d%%", int(math.Round(50)))
 		}
 
-		counter = fmt.Sprintf("%d", requestCounter)
-
 		bandwidth = MonitorBandwidth(2 * time.Second)
 
 	}
@@ -181,7 +178,7 @@ func statusServer() {
 		data.CacheExpire = data.HbConfig.Live.CacheTime.String()
 		data.Port = fmt.Sprintf("%d", data.HbConfig.Server.Port)
 		data.Mode = data.HbConfig.Mode
-		data.Counter = counter
+		data.Counter = fmt.Sprintf("%d", requestCounter)
 		data.UpTime = Uptime()
 		data.BandWidth = bandwidth
 		data.Logs = logging.GetLogs()
