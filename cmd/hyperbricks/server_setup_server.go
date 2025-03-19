@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"runtime"
+	"time"
 
 	"net/http"
 
@@ -26,6 +27,10 @@ func StartServer(ctx context.Context) {
 
 	server = &http.Server{
 		Addr: fmt.Sprintf(":%d", hbConfig.Server.Port),
+
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
 
 	go func() {
