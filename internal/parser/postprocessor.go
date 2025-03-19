@@ -100,13 +100,13 @@ func StripComments(input string) string {
 	var output []rune
 	inString := false
 	inComment := false
-	inBlock := false
+	inBlock := false // To track if we're within a custom block
 	stringChar := rune(0)
 	inputRunes := []rune(input)
 	i := 0
 
 	for i < len(inputRunes) {
-		// Handle custom block start (<<[)
+		// Handle multi-character start delimiter for custom blocks: <<[
 		if !inString && !inComment && !inBlock && i+2 < len(inputRunes) && string(inputRunes[i:i+3]) == "<<[" {
 			inBlock = true
 			output = append(output, inputRunes[i:i+3]...)
@@ -114,7 +114,7 @@ func StripComments(input string) string {
 			continue
 		}
 
-		// Handle custom block end (]>>)
+		// Handle multi-character end delimiter for custom blocks: ]>>
 		if inBlock && i+2 < len(inputRunes) && string(inputRunes[i:i+3]) == "]>>" {
 			inBlock = false
 			output = append(output, inputRunes[i:i+3]...)
@@ -122,7 +122,7 @@ func StripComments(input string) string {
 			continue
 		}
 
-		// If inside a custom block, just copy characters
+		// If inside a custom block, do not process comments or strings.
 		if inBlock {
 			output = append(output, inputRunes[i])
 			i++
@@ -131,11 +131,12 @@ func StripComments(input string) string {
 
 		c := inputRunes[i]
 
-		// Handle multi-line comment end (*/)
+		// If inside a multi-line comment, look for its end (*/)
 		if inComment {
 			if c == '*' && i+1 < len(inputRunes) && inputRunes[i+1] == '/' {
 				inComment = false
 				i += 2
+				// Optionally, append a newline if the comment ended immediately before one.
 				if i < len(inputRunes) && inputRunes[i] == '\n' {
 					output = append(output, '\n')
 					i++
@@ -146,10 +147,10 @@ func StripComments(input string) string {
 			continue
 		}
 
-		// Handle string literals
+		// Process string literals – simply copy until the closing quote.
 		if inString {
 			output = append(output, c)
-			if c == '\\' && i+1 < len(inputRunes) { // Handle escaped characters
+			if c == '\\' && i+1 < len(inputRunes) {
 				i++
 				output = append(output, inputRunes[i])
 			} else if c == stringChar {
@@ -159,14 +160,15 @@ func StripComments(input string) string {
 			continue
 		}
 
-		// Handle single-line comments (//)
+		// Detect start of single-line comments (//) if not in a string or block.
 		if c == '/' && i+1 < len(inputRunes) && inputRunes[i+1] == '/' {
-			if i > 0 && inputRunes[i-1] == ':' { // Exception for URLs (http://)
+			// Special exception: if the slash is part of a URL (after ':') then keep it.
+			if i > 0 && inputRunes[i-1] == ':' {
 				output = append(output, c)
 				i++
 				continue
 			}
-			// Skip until end of line
+			// Skip until the end of the line.
 			for i < len(inputRunes) && inputRunes[i] != '\n' {
 				i++
 			}
@@ -177,29 +179,28 @@ func StripComments(input string) string {
 			continue
 		}
 
-		// Handle # comments properly
+		// 4. Revised Hash (#) Handling:
+		// Instead of checking only the immediate preceding character,
+		// we scan back to the start of the line. If we find an '=' anywhere,
+		// we output '#' literally; otherwise, treat it as the start of a comment.
 		if c == '#' {
-			// **NEW FIX: Check if inside a string first**
-			if inString {
-				output = append(output, c)
-				i++
-				continue
-			}
-
-			// Look back to find the last non-whitespace character
 			j := i - 1
-			for j >= 0 && (inputRunes[j] == ' ' || inputRunes[j] == '\t') {
+			foundEqual := false
+			// Look backwards until a newline or start of input.
+			for j >= 0 && inputRunes[j] != '\n' {
+				if inputRunes[j] == '=' {
+					foundEqual = true
+					break
+				}
 				j--
 			}
-
-			// **NEW FIX: If in an attribute like bg-[#333], do not treat as a comment**
-			if j >= 0 && (inputRunes[j] == '=' || inputRunes[j] == '[') {
+			if foundEqual {
+				// '#' is part of an assignment value.
 				output = append(output, c)
 				i++
 				continue
 			}
-
-			// Otherwise, treat it as a comment and skip the line
+			// Otherwise, skip the rest of the line as a comment.
 			for i < len(inputRunes) && inputRunes[i] != '\n' {
 				i++
 			}
@@ -210,7 +211,7 @@ func StripComments(input string) string {
 			continue
 		}
 
-		// Handle multi-line comment start (/*)
+		// Detect start of multi-line comments: /* ... */
 		if c == '/' && i+1 < len(inputRunes) && inputRunes[i+1] == '*' {
 			inComment = true
 			i += 2
@@ -220,7 +221,7 @@ func StripComments(input string) string {
 			continue
 		}
 
-		// Handle string start
+		// Detect start of a new string literal.
 		if (c == '"' || c == '\'') && !inString {
 			inString = true
 			stringChar = c
@@ -229,7 +230,7 @@ func StripComments(input string) string {
 			continue
 		}
 
-		// Copy normal characters
+		// Normal character, simply copy it.
 		output = append(output, c)
 		i++
 	}

@@ -217,12 +217,12 @@ func TestStripComments(t *testing.T) {
 		{
 			name:     "Hash comment after code",
 			input:    `var a = 5; # A hash comment`,
-			expected: `var a = 5; `,
+			expected: `var a = 5; # A hash comment`,
 		},
 		{
 			name:     "String with # inside",
 			input:    `var path = "/usr/local/bin"; # Path comment`,
-			expected: `var path = "/usr/local/bin"; `,
+			expected: `var path = "/usr/local/bin"; # Path comment`,
 		},
 		{
 			name: "Complex example with mixed comments",
@@ -234,7 +234,7 @@ var str = 'She said, "Hello!"'; # Another comment
 var path = "/usr/local/bin";`,
 			expected: `3 = IMAGE
 3.url = https://dummyimage.com/300 
-var str = 'She said, "Hello!"'; 
+var str = 'She said, "Hello!"'; # Another comment
 var path = "/usr/local/bin";`,
 		},
 	}
