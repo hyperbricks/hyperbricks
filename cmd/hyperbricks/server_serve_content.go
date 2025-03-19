@@ -121,6 +121,8 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 
 	if hbConfig.Server.Beautify {
 		output.WriteString(gohtml.Format(htmlContent.String()))
+	} else {
+		output.WriteString(htmlContent.String())
 	}
 
 	// only render errors in debug or development mode...
