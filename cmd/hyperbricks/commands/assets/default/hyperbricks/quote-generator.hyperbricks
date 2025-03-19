@@ -36,6 +36,7 @@ fragment.response {
 fragment {
 
     route = get-quote
+    nocache = true
 
     10 = <TEMPLATE>
     10 {

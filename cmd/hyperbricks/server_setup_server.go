@@ -26,7 +26,7 @@ func StopServer(ctx context.Context) {
 }
 
 // StartServer initializes and starts the HTTP server based on the selected mode.
-func StartServerV2(ctx context.Context) {
+func StartServer(ctx context.Context) {
 	hbConfig := getHyperBricksConfiguration()
 
 	var server *http.Server
@@ -75,7 +75,7 @@ func StartServerV2(ctx context.Context) {
 }
 
 // StartServer initializes and runs the HTTP server.
-func StartServer(ctx context.Context) {
+func StartServerV1(ctx context.Context) {
 	hbConfig := getHyperBricksConfiguration()
 
 	switch hbConfig.Mode {
