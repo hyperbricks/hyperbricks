@@ -13,5 +13,5 @@ echo "Running docker API_RENDER and API_FRAGENT_RENDER test..."
 go test -v ./test/dedicated/dedicted_test.go -args -directory="./api-tests/"
 
 # Stop the server after the test
-docker-compose -f ./test/dedicated/docker/docker-compose.yml down
+docker-compose -f ./test/dedicated/docker/docker-compose.yml down -v
 pkill -f "/exe/main"
