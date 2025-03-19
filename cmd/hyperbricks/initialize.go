@@ -3,13 +3,18 @@ package main
 import (
 	"context"
 	"fmt"
+	"runtime"
 
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"golang.org/x/time/rate"
 )
 
 func init() {
+
+	runtime.GOMAXPROCS(4)
+
 	commands.RegisterSubcommands()
 
 	// Execute the root command
@@ -66,19 +71,20 @@ var (
 	cancel context.CancelFunc
 )
 
-// initialisation for server...
 func initialisation(passedCtx context.Context, passedCancel context.CancelFunc) {
 	ctx = passedCtx
 	cancel = passedCancel
 
 	basic_initialisation()
 
-	//InitStaticFileServer()
-	initStaticFileServer()
+	hbConfig := getHyperBricksConfiguration()
+	limiter := rate.NewLimiter(rate.Limit(hbConfig.RateLimit.RequestsPerSecond), hbConfig.RateLimit.Burst)
+
+	// Initialize Static File Server with Rate Limiting
+	initStaticFileServer(limiter)
 
 	// Now everything is ready, start the server
 	StartServer(ctx)
-
 }
 
 // minimal initialisation (also for static rendering)

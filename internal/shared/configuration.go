@@ -93,6 +93,7 @@ type Config struct {
 	Mode        string            `mapstructure:"mode"`
 	Logger      LoggerConfig      `mapstructure:"logger"`
 	Server      ServerConfig      `mapstructure:"server"`
+	RateLimit   RateLimitConfig   `mapstructure:"rate_limit"`
 	Development DevelopmentConfig `mapstructure:"development"`
 	Debug       DebugConfig       `mapstructure:"debug"`
 	Live        LiveConfig        `mapstructure:"live"`
@@ -123,8 +124,16 @@ type LoggerConfig struct {
 
 // ServerConfig with defaults.
 type ServerConfig struct {
-	Port     int  `mapstructure:"port"`
-	Beautify bool `mapstructure:"beautify"`
+	Port         int           `mapstructure:"port"`
+	Beautify     bool          `mapstructure:"beautify"`
+	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
+	WriteTimeout time.Duration `mapstructure:"write_timeout"`
+	IdleTimeout  time.Duration `mapstructure:"idle_timeout"`
+}
+
+type RateLimitConfig struct {
+	RequestsPerSecond int `mapstructure:"requests_per_second"`
+	Burst             int `mapstructure:"burst"`
 }
 
 var (
@@ -176,6 +185,17 @@ func loadHyperBricksConfiguration() *Config {
 
 		Server: ServerConfig{
 			Port: 8080, // Default port
+
+			// Default Low traffic (~50-500 daily visitors).
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
+			IdleTimeout:  20 * time.Second,
+		},
+
+		RateLimit: RateLimitConfig{
+			// Default Low traffic (~50-500 daily visitors).
+			Burst:             10,
+			RequestsPerSecond: 5,
 		},
 
 		Directories: map[string]string{
@@ -234,23 +254,33 @@ func decodeConfig(input interface{}, output interface{}) error {
 		GetLogger().Errorf("Failed to set fallback CacheTime", "error", err)
 	}
 
-	decodeHook := mapstructure.DecodeHookFunc(func(
-		srcType reflect.Type,
-		destType reflect.Type,
-		value interface{},
-	) (interface{}, error) {
-		// Handle CacheTime decoding
-		if srcType.Kind() == reflect.String && destType == reflect.TypeOf(CacheTime{}) {
-			var ct CacheTime
-			err := ct.Parse(value.(string))
-			if err != nil {
-				GetLogger().Errorf("Failed to parse CacheTime", "value", value, "error", err)
-				return fallback, nil
+	decodeHook := mapstructure.ComposeDecodeHookFunc(
+		// Decode CacheTime
+		func(srcType reflect.Type, destType reflect.Type, value interface{}) (interface{}, error) {
+			if srcType.Kind() == reflect.String && destType == reflect.TypeOf(CacheTime{}) {
+				var ct CacheTime
+				err := ct.Parse(value.(string))
+				if err != nil {
+					GetLogger().Errorf("Failed to parse CacheTime", "value", value, "error", err)
+					return fallback, nil // Use fallback value on error
+				}
+				return ct, nil
 			}
-			return ct, nil
-		}
-		return value, nil
-	})
+			return value, nil
+		},
+		// Decode time.Duration
+		func(srcType reflect.Type, destType reflect.Type, value interface{}) (interface{}, error) {
+			if srcType.Kind() == reflect.String && destType == reflect.TypeOf(time.Duration(0)) {
+				duration, err := time.ParseDuration(value.(string))
+				if err != nil {
+					GetLogger().Errorf("Failed to parse time.Duration", "value", value, "error", err)
+					return time.Duration(0), nil // Default to zero if parsing fails
+				}
+				return duration, nil
+			}
+			return value, nil
+		},
+	)
 
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		DecodeHook:       decodeHook,

@@ -41,6 +41,26 @@ hyperbricks {
         # set http port here
         port = 8080
         beautify = true
+
+        # Low traffic (~50-500 daily visitors).
+        read_timeout = 5s
+        write_timeout =  10s
+        idle_timeout = 20s
+
+        # High-Traffic Blog
+        # read_timeout: 10s
+        # write_timeout: 15s
+        # idle_timeout: 30s
+    }
+
+    rate_limit {
+        # Low traffic (~50-500 daily visitors).
+        requests_per_second = 100
+        burst= 500
+        
+        # High-Traffic Blog
+        # requests_per_second = 20
+        # burst = 40
     }
 
     plugins {
