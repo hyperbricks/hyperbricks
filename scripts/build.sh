@@ -24,7 +24,9 @@ go build  -buildmode=plugin -o ./bin/plugins/LoremIpsumPlugin.so ./plugins/lorem
 go build  -buildmode=plugin -o ./bin/plugins/MarkDownPlugin.so ./plugins/markdown/markdown_plugin.go
 
 
-# Build hyperbricks cms
+# Build hyperbricks cms via install
 go install -ldflags="-s -w" ./cmd/hyperbricks
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/linux/hyperbricks ./cmd/hyperbricks
 
+# Build hyperbricks cms for linux
 echo "Build complete!\n\n"
