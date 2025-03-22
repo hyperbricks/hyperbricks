@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,6 +17,14 @@ func debug_mode_init() {
 
 	logging.GetInstance()
 	logging.ChangeLevel(zap.InfoLevel)
+
+	// if log directory is given add file log...
+	hbConfig := getHyperBricksConfiguration()
+	if dir, exists := hbConfig.Directories["logs"]; exists && strings.TrimSpace(dir) != "" {
+		logging.AddFileOutput(fmt.Sprintf("./%s/hyperbricks.log", dir))
+	} else {
+		logging.GetLogger().Info("Not logging to file...")
+	}
 
 	var wg sync.WaitGroup
 	wg.Add(1)

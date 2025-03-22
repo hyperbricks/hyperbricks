@@ -12,26 +12,48 @@ import (
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/otiai10/copy"
+	"golang.org/x/time/rate"
 )
 
-func initStaticFileServer() {
+// rateLimitMiddleware wraps a handler with rate limiting.
+func rateLimitMiddleware(limiter *rate.Limiter) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if !limiter.Allow() {
+				http.Error(w, "Too many requests", http.StatusTooManyRequests)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// initStaticFileServer sets up the static file server and wraps the default handler with rate limiting.
+func initStaticFileServer(limiter *rate.Limiter) {
 	hbConfig := getHyperBricksConfiguration()
 	staticPath := hbConfig.Directories["static"]
 
-	// Create http.FileSystems for both embedded and static directories
+	// Create an http.FileSystem for the static directory.
 	staticFS := http.Dir(staticPath)
 
-	// Use a single handler for the defined directories
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// Base handler: serves static files if the URL starts with "/static/",
+	// otherwise falls back to your custom handler.
+	baseHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case strings.HasPrefix(r.URL.Path, "/static/"):
-			// Serve files from the static directory
+			// Serve files from the static directory.
 			http.StripPrefix("/static/", http.FileServer(staticFS)).ServeHTTP(w, r)
 		default:
-			// Your custom logic for other paths
+			// Your custom logic for other paths.
 			handler(w, r)
 		}
 	})
+
+	// Wrap the base handler with the rate limiting middleware.
+	rateLimitedHandler := rateLimitMiddleware(limiter)(baseHandler)
+
+	// Register the wrapped handler with the default mux.
+	http.Handle("/", rateLimitedHandler)
 }
 
 // FileHandler routes requests to the appropriate directory based on the URL path

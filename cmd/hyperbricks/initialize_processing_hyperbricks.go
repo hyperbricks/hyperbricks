@@ -104,6 +104,7 @@ func processScript(filename string, config map[string]interface{},
 				Title:   fragmentConfig.Title,
 				Route:   fragmentConfig.Route,
 			}
+
 			tempHyperMediasBySection[hyperMediaConfig.Section] = append(tempHyperMediasBySection[hyperMediaConfig.Section], hyperMediaConfig)
 
 			// Add metadata and store in tempConfigs

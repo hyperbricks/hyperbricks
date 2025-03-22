@@ -7,10 +7,12 @@ import (
 
 	"github.com/eiannone/keyboard"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
 func keyboardActions() {
 
+	// --production flag
 	if commands.Production {
 		return
 	}
@@ -21,10 +23,12 @@ func keyboardActions() {
 		return
 	}
 
-	// Initialize the keyboard
+	// test and open keyboard
 	if err := keyboard.Open(); err != nil {
-		log.Fatalf("Failed to open keyboard: %v", err)
+		logging.GetLogger().Warnf("No keyboard...")
+		return
 	}
+
 	defer func() {
 		if err := keyboard.Close(); err != nil {
 			log.Fatalf("Failed to close keyboard: %v", err)
@@ -64,7 +68,9 @@ func keyboardActions() {
 		select {
 		case <-rPressed:
 			if hbConfig.Development.Watch {
-				fmt.Println("Detected 'r' key press!")
+				yellowTrueColor := "\033[38;2;255;255;0m"
+				reset := "\033[0m"
+				logging.GetLogger().Warn(yellowTrueColor, "....Reloading configurations....", reset)
 				PreProcessAndPopulateHyperbricksConfigurations()
 			}
 			// Place your action here

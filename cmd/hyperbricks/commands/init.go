@@ -61,7 +61,7 @@ func createModuleDirectories(module string) {
 	moduleDir := filepath.Join(baseDir, module)
 
 	// List of subdirectories to create under the module directory
-	subDirs := []string{"rendered", "static", "hyperbricks", "resources", "templates"}
+	subDirs := []string{"rendered", "static", "hyperbricks", "resources", "templates", "logs"}
 
 	// Check if the base directory exists, create it if not
 	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
