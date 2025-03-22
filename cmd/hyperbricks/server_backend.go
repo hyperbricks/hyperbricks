@@ -103,9 +103,10 @@ func Uptime() string {
 
 // updateCPUUsage periodically updates cachedCPUUsage.
 func updateCPUUsage() {
+	hbConfig := getHyperBricksConfiguration()
 	startTime = time.Now()
 	// Create a ticker that fires every second.
-	ticker := time.NewTicker(time.Second * 10)
+	ticker := time.NewTicker(hbConfig.System.MetricsWatchInterval)
 	defer ticker.Stop()
 
 	for range ticker.C {

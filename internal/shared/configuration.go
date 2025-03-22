@@ -99,6 +99,10 @@ type Config struct {
 	Live        LiveConfig        `mapstructure:"live"`
 	Directories map[string]string `mapstructure:"directories"`
 	Plugins     map[string]string `mapstructure:"plugins"`
+	System      SystemConfig      `mapstructure:"system"`
+}
+type SystemConfig struct {
+	MetricsWatchInterval time.Duration `mapstructure:"metrics_watch_interval"`
 }
 
 type LiveConfig struct {
@@ -190,6 +194,10 @@ func loadHyperBricksConfiguration() *Config {
 			ReadTimeout:  5 * time.Second,
 			WriteTimeout: 10 * time.Second,
 			IdleTimeout:  20 * time.Second,
+		},
+
+		System: SystemConfig{
+			MetricsWatchInterval: 10 * time.Second,
 		},
 
 		RateLimit: RateLimitConfig{
