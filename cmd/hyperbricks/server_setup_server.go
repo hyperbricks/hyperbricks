@@ -96,6 +96,7 @@ func StartServerV1(ctx context.Context) {
 			IdleTimeout:    60 * time.Second,
 			MaxHeaderBytes: 65536, // 64KB header limit
 		}
+
 	case shared.DEVELOPMENT_MODE, shared.DEBUG_MODE:
 		// Initialize the server
 		server = &http.Server{
