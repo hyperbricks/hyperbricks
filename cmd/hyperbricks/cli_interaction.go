@@ -10,6 +10,10 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
+var (
+	KeyboardEnabled bool = false
+)
+
 func keyboardActions() {
 
 	// --production flag
@@ -27,6 +31,8 @@ func keyboardActions() {
 	if err := keyboard.Open(); err != nil {
 		logging.GetLogger().Warnf("No keyboard...")
 		return
+	} else {
+		KeyboardEnabled = true
 	}
 
 	defer func() {

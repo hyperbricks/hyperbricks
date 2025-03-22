@@ -65,7 +65,7 @@ func StartServer(ctx context.Context) {
 
 	// Run server in a separate Goroutine
 	go func() {
-		log.Printf("🚀 Server running in %s mode at http://%s", hbConfig.Mode, shared.Location)
+		log.Printf("🟢  Server running in %s mode at http://%s", hbConfig.Mode, shared.Location)
 
 		// Start the HTTP server
 		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {

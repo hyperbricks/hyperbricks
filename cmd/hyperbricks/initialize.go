@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
@@ -42,7 +43,7 @@ func init() {
        |___/|_|                                        
 
 `
-	logging.GetLogger().Info(orangeTrueColor, logo, reset)
+	logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf(`%s%s`, logo, assets.VersionMD), reset)
 
 	if commands.RenderStatic {
 		fmt.Println("RENDER STATIC")

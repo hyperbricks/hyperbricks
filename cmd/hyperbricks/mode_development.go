@@ -27,14 +27,14 @@ func development_mode_init() {
 		logging.GetLogger().Error("WORKS?")
 		logging.GetLogger().Debug("WORKS?")
 	} else {
-		logging.GetLogger().Info("Not logging to file...")
+		logging.GetLogger().Info("File logging disabled")
 	}
 
 	if hbConfig.Development.Watch {
 		watchSourceDirectories()
 	}
 
-	if hbConfig.Development.Reload {
+	if hbConfig.Development.Reload && KeyboardEnabled {
 		logging.GetLogger().Info("Press 'r' to trigger an action or 'ESC' to exit.")
 	}
 
