@@ -65,7 +65,14 @@ func StartServer(ctx context.Context) {
 
 	// Run server in a separate Goroutine
 	go func() {
-		log.Printf("🟢  Server running in %s mode at http://%s", hbConfig.Mode, shared.Location)
+		// ANSI escape code for green text
+		green := "\033[32m"
+		// ANSI escape code to reset the text color
+		reset := "\033[0m"
+
+		// Print a green dot using a Unicode bullet character
+
+		log.Printf("%s Server running in %s mode at http://%s", green+"●"+reset, hbConfig.Mode, shared.Location)
 
 		// Start the HTTP server
 		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {

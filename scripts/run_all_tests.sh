@@ -2,7 +2,7 @@
 # Run the Go test
 echo "Running all test..."
 
-go test ./tests/main
+go test ./test/main.go -v
 scripts/run_api_fragment_render_tests_docker.sh
 scripts/run_template_tests.sh
 #scripts/build_docs.sh

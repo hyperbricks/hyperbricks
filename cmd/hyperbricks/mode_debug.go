@@ -23,7 +23,7 @@ func debug_mode_init() {
 	if dir, exists := hbConfig.Directories["logs"]; exists && strings.TrimSpace(dir) != "" {
 		logging.AddFileOutput(fmt.Sprintf("./%s/hyperbricks.log", dir))
 	} else {
-		logging.GetLogger().Info("Not logging to file...")
+		logging.GetLogger().Info("File logging disabled")
 	}
 
 	var wg sync.WaitGroup
