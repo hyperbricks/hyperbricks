@@ -98,6 +98,8 @@ func processScript(filename string, config map[string]interface{},
 			}
 
 			fragmentConfig.Route = ensureUniqueRoute(fragmentConfig.Route, filename, tempConfigs)
+			// override route
+			obj["route"] = fragmentConfig.Route
 			handleStaticRoute(obj, &fragmentConfig)
 			hyperMediaConfig := composite.HyperMediaConfig{
 				Section: fragmentConfig.Section,
@@ -110,19 +112,23 @@ func processScript(filename string, config map[string]interface{},
 			// Add metadata and store in tempConfigs
 			obj["hyperbricksfile"] = filename
 			obj["hyperbrickskey"] = key
+
 			tempConfigs[fragmentConfig.Route] = obj
 
 		case composite.HyperMediaConfigGetName():
-			hypermediaConfig, err := decodeHyperMediaConfig(v.(map[string]interface{}))
+			hyperMediaConfig, err := decodeHyperMediaConfig(v.(map[string]interface{}))
 			if err != nil {
 				logger.Warnw("Error decoding HyperMediaConfig", "error", err)
 				continue
 			}
 
-			hypermediaConfig.Route = ensureUniqueRoute(hypermediaConfig.Route, filename, tempConfigs)
-			handleStaticRoute(obj, &hypermediaConfig)
+			hyperMediaConfig.Route = ensureUniqueRoute(hyperMediaConfig.Route, filename, tempConfigs)
+			// override route
+			obj["route"] = hyperMediaConfig.Route
 
-			tempHyperMediasBySection[hypermediaConfig.Section] = append(tempHyperMediasBySection[hypermediaConfig.Section], hypermediaConfig)
+			handleStaticRoute(obj, &hyperMediaConfig)
+
+			tempHyperMediasBySection[hyperMediaConfig.Section] = append(tempHyperMediasBySection[hyperMediaConfig.Section], hyperMediaConfig)
 
 			ips, err := getHostIPv4s()
 			if err != nil {
@@ -134,17 +140,17 @@ func processScript(filename string, config map[string]interface{},
 
 			}
 			shared.Location = fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
-			if hypermediaConfig.Static == "" {
-				logger.Info(fmt.Sprintf("route: [http://%s/%s] initialized:", shared.Location, hypermediaConfig.Route))
+			if hyperMediaConfig.Static == "" {
+				logger.Info(fmt.Sprintf("route: [http://%s/%s] initialized:", shared.Location, hyperMediaConfig.Route))
 			} else {
-				logger.Info(fmt.Sprintf("static file: %s", hypermediaConfig.Static))
+				logger.Info(fmt.Sprintf("static file: %s", hyperMediaConfig.Static))
 			}
 
-			//
 			// Add metadata and store in tempConfigs
 			obj["hyperbricksfile"] = filename
 			obj["hyperbrickskey"] = key
-			tempConfigs[hypermediaConfig.Route] = obj
+
+			tempConfigs[hyperMediaConfig.Route] = obj
 
 		default:
 			continue // Handle other types if necessary
