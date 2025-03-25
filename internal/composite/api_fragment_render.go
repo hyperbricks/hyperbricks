@@ -11,6 +11,7 @@ import (
 	"net/http/cookiejar"
 	"net/http/httputil"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -387,11 +388,20 @@ func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string
 		fmt.Printf("No body provided with post...: %s\n", config.Body)
 	}
 
-	// Replace placeholders dynamically
+	// inside your for-loop:
 	for key, value := range mergedData {
-		placeholder := fmt.Sprintf("$%s", key)
-		strValue := fmt.Sprintf("%v", value)
-		config.Body = strings.ReplaceAll(config.Body, placeholder, strValue)
+		var strValue string
+		if s, ok := value.(string); ok {
+			// Safely escape using JSON
+			escaped, _ := json.Marshal(s)
+			strValue = strings.Trim(string(escaped), `"`)
+		} else {
+			strValue = fmt.Sprintf("%v", value)
+		}
+
+		// Safe replacement: match exact $key boundary
+		re := regexp.MustCompile(`\$\b` + regexp.QuoteMeta(key) + `\b`)
+		config.Body = re.ReplaceAllString(config.Body, strValue)
 	}
 
 	fmt.Printf("Updated body map string: %s\n", config.Body)
