@@ -270,7 +270,7 @@ func processRequest(ctx context.Context, bodyMap string) (string, error) {
 		}
 	}
 
-	// inside your for-loop:
+	// inside for-loop:
 	for key, value := range mergedData {
 		var strValue string
 		if s, ok := value.(string); ok {

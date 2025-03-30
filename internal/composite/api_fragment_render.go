@@ -388,7 +388,7 @@ func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string
 		fmt.Printf("No body provided with post...: %s\n", config.Body)
 	}
 
-	// inside your for-loop:
+	// inside for-loop:
 	for key, value := range mergedData {
 		var strValue string
 		if s, ok := value.(string); ok {
@@ -577,7 +577,7 @@ func isXMLResponse(resp *http.Response) bool {
 func handleAPIResponse(resp *http.Response) (interface{}, int, error) {
 	var result interface{}
 
-	// ✅ Handle JSON Response
+	// Handle JSON Response
 	if isJSONResponse(resp) {
 		dec := json.NewDecoder(resp.Body)
 		if err := dec.Decode(&result); err != nil {
@@ -586,7 +586,7 @@ func handleAPIResponse(resp *http.Response) (interface{}, int, error) {
 		return result, resp.StatusCode, nil
 	}
 
-	// ✅ Handle XML Response
+	// Handle XML Response
 	if isXMLResponse(resp) {
 		var xmlResult map[string]interface{} // XML unmarshals into a struct or map
 		dec := xml.NewDecoder(resp.Body)
@@ -596,7 +596,7 @@ func handleAPIResponse(resp *http.Response) (interface{}, int, error) {
 		return xmlResult, resp.StatusCode, nil
 	}
 
-	// ✅ Fallback: Read as Plain Text
+	// Fallback: Read as Plain Text
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, resp.StatusCode, fmt.Errorf("failed to read response body: %w", err)
