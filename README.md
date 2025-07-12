@@ -1,8 +1,8 @@
 
 
 **Licence:** MIT  
-**Version:** v0.4.54-alpha  
-**Build time:** 2025-03-26T08:50:06Z
+**Version:** v0.5.00-alpha  
+**Build time:** 2025-07-12T09:40:38Z
 
 
 ## Disclaimer
