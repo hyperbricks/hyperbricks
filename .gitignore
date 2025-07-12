@@ -16,6 +16,13 @@
 # Ignore Mac OS DS_Store files everywhere
 **/.DS_Store
 
+scripts/build_plugins.sh
+
+/plugins/routinecodec/
+/plugins/shorturl/
+/plugins/nodejs/
+/plugins/golang/
+
 TO_DO.md
 JWT_STRATEGY.md
 PostgREST HyperBricks API_RENDER.png

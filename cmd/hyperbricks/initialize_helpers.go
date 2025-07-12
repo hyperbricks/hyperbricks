@@ -96,15 +96,16 @@ page.10.value = HELLO WORLD!
 }
 
 func makeStatic(config map[string]map[string]interface{}, renderDir string) error {
+
 	logger := logging.GetLogger()
 	for _, v := range config {
 		obj := v
 
-		renderPath, hasStatic := obj["static"].(string)
+		renderPath, hasStatic := obj["route"].(string)
 		if hasStatic && strings.TrimSpace(renderPath) != "" {
 			htmlContent := fmt.Sprintf("%v", v)
 			if v["route"] != "" {
-				htmlContent = renderStaticContent(v["static"].(string), nil)
+				htmlContent = renderStaticContent(v["route"].(string), nil)
 			}
 
 			renderPath = fmt.Sprintf("%s/%s", renderDir, renderPath)
@@ -116,7 +117,7 @@ func makeStatic(config map[string]map[string]interface{}, renderDir string) erro
 				continue
 			}
 
-			err = os.WriteFile(renderPath, []byte(htmlContent), 0644)
+			err = os.WriteFile(renderPath+".html", []byte(htmlContent), 0644)
 			if err != nil {
 				logger.Errorw("Error writing static file", "path", renderPath, "error", err)
 				continue

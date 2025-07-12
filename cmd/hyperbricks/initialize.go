@@ -46,7 +46,6 @@ func init() {
 	logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf(`%s%s`, logo, assets.VersionMD), reset)
 
 	if commands.RenderStatic {
-		fmt.Println("RENDER STATIC")
 		basic_initialisation()
 		return
 	}
@@ -86,6 +85,7 @@ func initialisation(passedCtx context.Context, passedCancel context.CancelFunc) 
 
 	// Now everything is ready, start the server
 	StartServer(ctx)
+
 }
 
 // minimal initialisation (also for static rendering)
@@ -95,9 +95,8 @@ func basic_initialisation() {
 
 	//First initialize all render components, because they have to be registered befor parsing.
 	initializeComponents()
-	PreProcessAndPopulateHyperbricksConfigurations()
 
 	// now configure the registered renderers with acquired configurations
 	configureRenderers()
-
+	PreProcessAndPopulateHyperbricksConfigurations()
 }

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/internal/database"
+	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 
 	"go.uber.org/zap"
@@ -47,12 +48,13 @@ func development_mode_init() {
 		statusServer()
 
 	}()
+
 	development_mode()
 
 }
 
 func development_mode() {
-
+	hbConfig := getHyperBricksConfiguration()
 	shutdownChan := make(chan struct{})
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	// Use a WaitGroup to wait for the server to shut down
@@ -64,6 +66,10 @@ func development_mode() {
 		defer wg.Done()
 		initialisation(ctx, cancel)
 
+		// while we're at it, better to use shared.Location for logging the dashboad route (development mode only)
+		if hbConfig.Development.Dashboard {
+			logging.GetLogger().Info(fmt.Sprintf("dashboard: [http://%s/%s] initialized", shared.Location, "dashboard"))
+		}
 	}()
 	keyboardActions()
 	<-shutdownChan

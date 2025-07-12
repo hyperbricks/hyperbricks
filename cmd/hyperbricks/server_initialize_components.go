@@ -72,20 +72,17 @@ func registerPlugins() {
 		pluginDir += "/debug"
 	}
 
-	for key, value := range rm.HbConfig.Plugins {
+	for key, value := range rm.HbConfig.Plugins.Enabled {
 		//fmt.Printf("Key: %s, Value: %s\n", key, value)
+		pluginPath := pluginDir + "/" + value + ".so"
 
-		if value == "enabled" {
-			pluginPath := pluginDir + "/" + key + ".so"
-
-			// Check if the file exists
-			if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
-				logging.GetLogger().Warnf("Plugin file %s not found. Skipping preloading.", key)
-				continue // Skip loading this plugin
-			}
-
-			rm.RegisterAndLoadPlugin(pluginPath, key)
+		// Check if the file exists
+		if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
+			logging.GetLogger().Warnf("Plugin file %s not found. Skipping preloading.", key)
+			continue // Skip loading this plugin
 		}
+		logging.GetLogger().Infof("Plugin file %s is found...", value)
+		rm.RegisterAndLoadPlugin(pluginPath, value)
 	}
 }
 

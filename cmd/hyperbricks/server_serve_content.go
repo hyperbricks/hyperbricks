@@ -17,7 +17,7 @@ import (
 	"github.com/yosssi/gohtml"
 )
 
-func renderStaticContent(route string, ctx context.Context) string {
+func renderStaticContentOld(route string, ctx context.Context) string {
 	hbConfig := getHyperBricksConfiguration()
 
 	_config, found := getConfig(route)
@@ -44,6 +44,56 @@ func renderStaticContent(route string, ctx context.Context) string {
 	}
 
 	return htmlContent
+}
+
+func renderStaticContent(route string, ctx context.Context) string {
+	hbConfig := getHyperBricksConfiguration()
+
+	_config, found := getConfig(route)
+
+	if !found {
+		__config, _found := getConfig("404")
+		if _found {
+			logging.GetLogger().Info("Redirecting to 404", " from ", route)
+			_config = __config
+		} else {
+			if route == "favicon.ico" {
+				return ""
+			}
+			logging.GetLogger().Info("Config not found for route: ", route)
+			return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route)
+		}
+	}
+
+	configCopy := make(map[string]interface{})
+	for key, value := range _config {
+		configCopy[key] = value
+	}
+
+	var htmlContent strings.Builder
+
+	renderOutput, renderErrors := rm.Render(configCopy["@type"].(string), configCopy, ctx)
+
+	htmlContent.WriteString(renderOutput)
+	var output strings.Builder
+
+	if hbConfig.Server.Beautify {
+		output.WriteString(gohtml.Format(htmlContent.String()))
+	} else {
+		output.WriteString(htmlContent.String())
+	}
+
+	// only render errors in debug or development mode...
+	if hbConfig.Mode != shared.LIVE_MODE {
+		if hbConfig.Development.FrontendErrors {
+			output.WriteString(FrontEndErrorRender(renderErrors))
+		} else {
+			output.WriteString(HandleRenderErrors(renderErrors))
+		}
+	}
+
+	return output.String()
+
 }
 
 func renderContent(w http.ResponseWriter, route string, r *http.Request) (string, bool) {

@@ -345,7 +345,10 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 				return match // Return as-is
 			}
 			varName := submatches[1]
-			cvalue, err := LookupByPath(HbConfig, varName)
+			//value, err := LookupByPath(HbConfig, varName)
+			keyParts := strings.Split(varName, ".")
+			cvalue, err := getNestedValue(HbConfig, keyParts)
+
 			if err != nil {
 				fmt.Printf("Error: %s\n", err)
 			} else {
@@ -380,7 +383,7 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 func LookupByPath(data map[string]interface{}, path string) (interface{}, error) {
 	keys := strings.Split(path, ".")
 	current := data
-
+	fmt.Printf("%v", data)
 	for i, key := range keys {
 		value, exists := current[key]
 		if !exists {

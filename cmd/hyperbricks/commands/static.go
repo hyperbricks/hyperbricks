@@ -1,10 +1,6 @@
 package commands
 
 import (
-	"encoding/json"
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +8,6 @@ var (
 	RenderStatic bool
 )
 
-// NewHelloCommand creates the "hello" subcommand
 func NewMakeStaticCommand() *cobra.Command {
 	var static bool
 
@@ -21,22 +16,6 @@ func NewMakeStaticCommand() *cobra.Command {
 		Short: "Render static content",
 		Run: func(cmd *cobra.Command, args []string) {
 			RenderStatic = true
-
-			config := Config{
-				Port: Port,
-			}
-			if StartModule != "default" {
-				StartModule := fmt.Sprintf("modules/%s/package.hyperbricks", StartModule)
-				data, err := os.ReadFile(StartModule)
-				if err != nil {
-					fmt.Printf("Error reading config file: %v\n", err)
-					return
-				}
-				if err := json.Unmarshal(data, &config); err != nil {
-					//fmt.Printf("Error parsing config file: %v\n", err)
-					return
-				}
-			}
 		},
 	}
 

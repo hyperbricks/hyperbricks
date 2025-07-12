@@ -49,7 +49,7 @@ func (r *PluginRenderer) Render(instance interface{}, ctx context.Context) (stri
 		})
 		return fmt.Errorf("<!-- invalid type for MenuRenderer -->").Error(), errors
 	}
-	// fmt.Printf("<!-- plugin %v ->\n\n", r.RenderManager.Plugins)
+
 	pluginRenderer, pluginExists := r.RenderManager.Plugins[config.PluginName]
 	if !pluginExists {
 		errors = append(errors, shared.ComponentError{
@@ -78,19 +78,18 @@ func (r *PluginRenderer) Render(instance interface{}, ctx context.Context) (stri
 	allowedAttributes := []string{"id", "data-role", "data-action"}
 	extraAttributes := shared.RenderAllowedAttributes(config.ExtraAttributes, allowedAttributes)
 
-	classes := ""
+	var html string
 
-	if len(config.Classes) > 0 {
-		classes = strings.Join(config.Classes, " ")
-		classes = fmt.Sprintf(` class="%s"`, classes)
+	if len(config.Classes) > 0 || extraAttributes != "" {
+		// Build class attribute if needed
+		classAttr := ""
+		if len(config.Classes) > 0 {
+			classAttr = fmt.Sprintf(` class="%s"`, strings.Join(config.Classes, " "))
+		}
+		html = fmt.Sprintf(`<div%s%s>%s</div>`, classAttr, extraAttributes, renderedContent)
+	} else {
+		html = renderedContent
 	}
-
-	html := fmt.Sprintf(
-		`<div%s%s>%s</div>`,
-		classes,
-		extraAttributes,
-		renderedContent,
-	)
 
 	if config.Enclose != "" {
 		html = shared.EncloseContent(config.Enclose, html)
@@ -164,19 +163,18 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 	allowedAttributes := []string{"id", "data-role", "data-action"}
 	extraAttributes := shared.RenderAllowedAttributes(config.ExtraAttributes, allowedAttributes)
 
-	classes := ""
+	var html string
 
-	if len(config.Classes) > 0 {
-		classes = strings.Join(config.Classes, " ")
-		classes = fmt.Sprintf(` class="%s" `, classes)
+	if len(config.Classes) > 0 || extraAttributes != "" {
+		// Build class attribute if needed
+		classAttr := ""
+		if len(config.Classes) > 0 {
+			classAttr = fmt.Sprintf(` class="%s"`, strings.Join(config.Classes, " "))
+		}
+		html = fmt.Sprintf(`<div%s%s>%s</div>`, classAttr, extraAttributes, renderedContent)
+	} else {
+		html = renderedContent
 	}
-
-	html := fmt.Sprintf(
-		`<div%s%s>%s</div>`,
-		classes,
-		extraAttributes,
-		renderedContent,
-	)
 
 	if config.Enclose != "" {
 		html = shared.EncloseContent(config.Enclose, html)

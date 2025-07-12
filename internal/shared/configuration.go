@@ -98,7 +98,7 @@ type Config struct {
 	Debug       DebugConfig       `mapstructure:"debug"`
 	Live        LiveConfig        `mapstructure:"live"`
 	Directories map[string]string `mapstructure:"directories"`
-	Plugins     map[string]string `mapstructure:"plugins"`
+	Plugins     PluginsConfig     `mapstructure:"plugins"`
 	System      SystemConfig      `mapstructure:"system"`
 }
 type SystemConfig struct {
@@ -111,6 +111,11 @@ type LiveConfig struct {
 
 type DebugConfig struct {
 	level string `mapstructure:"level"`
+}
+
+type PluginsConfig struct {
+	Enabled []string          `mapstructure:"enabled"`
+	Config  map[string]string `mapstructure:"config"`
 }
 
 type DevelopmentConfig struct {
@@ -199,7 +204,10 @@ func loadHyperBricksConfiguration() *Config {
 		System: SystemConfig{
 			MetricsWatchInterval: 10 * time.Second,
 		},
-
+		Plugins: PluginsConfig{
+			Enabled: []string{},
+			Config:  map[string]string{},
+		},
 		RateLimit: RateLimitConfig{
 			// Default Low traffic (~50-500 daily visitors).
 			Burst:             10,

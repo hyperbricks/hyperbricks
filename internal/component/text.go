@@ -31,7 +31,14 @@ func (tc *TextConfig) Validate() []error {
 	var errors []error
 
 	if tc.Value == "" {
-		errors = append(errors, fmt.Errorf("missing value property or empty"))
+		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
+			Key:  tc.HyperBricksKey,
+			Path: tc.HyperBricksPath,
+			File: tc.HyperBricksFile,
+			Type: TextConfigGetName(),
+			Err:  fmt.Errorf("missing value property or empty").Error(),
+		})
 	}
 
 	return errors

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"embed"
 	"fmt"
 	"net/http"
 	"os"
@@ -29,7 +30,7 @@ func rateLimitMiddleware(limiter *rate.Limiter) func(http.Handler) http.Handler 
 }
 
 // initStaticFileServer sets up the static file server and wraps the default handler with rate limiting.
-func initStaticFileServer(limiter *rate.Limiter) {
+func initStaticFileServer_pre_2025(limiter *rate.Limiter) {
 	hbConfig := getHyperBricksConfiguration()
 	staticPath := hbConfig.Directories["static"]
 
@@ -49,6 +50,65 @@ func initStaticFileServer(limiter *rate.Limiter) {
 		}
 	})
 
+	// Wrap the base handler with the rate limiting middleware.
+	rateLimitedHandler := rateLimitMiddleware(limiter)(baseHandler)
+
+	// Register the wrapped handler with the default mux.
+	http.Handle("/", rateLimitedHandler)
+}
+func initStaticFileServer_v1(limiter *rate.Limiter) {
+	tbConfig := getHyperBricksConfiguration()
+	// Define the directory where static files are located
+	outDir := "./frontend/assets/"
+	staticPath := tbConfig.Directories["static"]
+	// Define multiple root directories
+	directories := map[string]string{
+		"/static/": staticPath,
+		"/out/":    outDir,
+	}
+
+	// Use a single file handler for the defined directories
+	baseHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/static/") || strings.HasPrefix(r.URL.Path, "/out/") {
+			FileHandler(directories)(w, r)
+		} else {
+			// Your custom logic for other paths
+			handler(w, r)
+		}
+	})
+
+	// Wrap the base handler with the rate limiting middleware.
+	rateLimitedHandler := rateLimitMiddleware(limiter)(baseHandler)
+
+	// Register the wrapped handler with the default mux.
+	http.Handle("/", rateLimitedHandler)
+}
+
+//go:embed frontend/*
+var frontendFiles embed.FS
+
+func initStaticFileServer(limiter *rate.Limiter) {
+	tbConfig := getHyperBricksConfiguration()
+	staticPath := tbConfig.Directories["static"]
+
+	// Create http.FileSystems for both embedded and static directories
+	staticFS := http.Dir(staticPath)
+	frontendFS := http.FS(frontendFiles)
+
+	// Use a single handler for the defined directories
+	baseHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/static/"):
+			// Serve files from the static directory
+			http.StripPrefix("/static/", http.FileServer(staticFS)).ServeHTTP(w, r)
+		case strings.HasPrefix(r.URL.Path, "/out/"):
+			// Serve embedded files
+			http.StripPrefix("/out/", http.FileServer(frontendFS)).ServeHTTP(w, r)
+		default:
+			// Your custom logic for other paths
+			handler(w, r)
+		}
+	})
 	// Wrap the base handler with the rate limiting middleware.
 	rateLimitedHandler := rateLimitMiddleware(limiter)(baseHandler)
 
@@ -80,7 +140,13 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 
 	if commands.RenderStatic {
 
-		fmt.Println("\n\n\n\nSTATIC RENDERING...")
+		orangeTrueColor := "\033[38;2;255;165;0m"
+		reset := "\033[0m"
+		msg := `
+============================================================================
+                    Beginning static rendering of routes
+============================================================================`
+		logging.GetLogger().Info(orangeTrueColor, msg, reset)
 		renderDir := ""
 		if tbrender, ok := hbConfig.Directories["render"]; ok {
 			renderDir = tbrender
@@ -101,23 +167,17 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 			logger.Errorw("Path validation failed", "path", renderDir, "error", err)
 		}
 
-		// Prompt for confirmation before deleting
-		absPath, _ := filepath.Abs(renderDir)
-		if !confirmAction(fmt.Sprintf("\n\nDo you want to remove all files in %s before rendering the new files?", absPath)) {
-			fmt.Println("Leave render dir as it is... Continue rendering.")
-		} else {
-			err := os.RemoveAll(renderDir)
-			if err != nil {
-				logger.Errorw("Error removing destination directory", "directory", renderDir, "error", err)
-			}
-
-			err = os.MkdirAll(renderDir, 0755)
-			if err != nil {
-				logger.Errorw("Error creating destination directory", "directory", renderDir, "error", err)
-			}
+		err := os.RemoveAll(renderDir)
+		if err != nil {
+			logger.Errorw("Error removing destination directory", "directory", renderDir, "error", err)
 		}
 
-		err := makeStatic(tempConfigs, renderDir)
+		err = os.MkdirAll(renderDir, 0755)
+		if err != nil {
+			logger.Errorw("Error creating destination directory", "directory", renderDir, "error", err)
+		}
+
+		err = makeStatic(tempConfigs, renderDir)
 		if err != nil {
 			logger.Errorw("Error creating static files", "error", err)
 		}
@@ -128,6 +188,11 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 		} else {
 			logger.Infow("Copied static file directory successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
 		}
+		msgII := `
+============================================================================
+                    Finished static rendering of routes
+============================================================================`
+		logging.GetLogger().Info(orangeTrueColor, msgII, reset)
 	}
 
 }
