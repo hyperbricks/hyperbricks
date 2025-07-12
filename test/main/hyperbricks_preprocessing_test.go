@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/hyperbricks/hyperbricks/internal/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/parser"
 )
 
 func Test_Preprocessing_Tests(t *testing.T) {

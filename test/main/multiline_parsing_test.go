@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/hyperbricks/hyperbricks/internal/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/parser"
 )
 
 // GetNestedValue retrieves a nested value from a map[string]interface{} using a sequence of keys.

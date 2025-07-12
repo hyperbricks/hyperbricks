@@ -11,7 +11,8 @@ import (
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
-	"github.com/hyperbricks/hyperbricks/internal/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/parser"
+
 	"github.com/mitchellh/mapstructure"
 
 	"go.uber.org/zap"

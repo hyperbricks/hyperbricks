@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hyperbricks/hyperbricks/internal/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 type HTMLConfig struct {

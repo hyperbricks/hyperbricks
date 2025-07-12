@@ -1,7 +1,7 @@
 package renderer
 
 import (
-	"github.com/hyperbricks/hyperbricks/internal/render"
+	"github.com/hyperbricks/hyperbricks/pkg/render"
 )
 
 type CompositeRenderer struct {

@@ -18,13 +18,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hyperbricks/hyperbricks/internal/component"
-	"github.com/hyperbricks/hyperbricks/internal/composite"
-	"github.com/hyperbricks/hyperbricks/internal/parser"
-	"github.com/hyperbricks/hyperbricks/internal/render"
-	"github.com/hyperbricks/hyperbricks/internal/renderer"
-	"github.com/hyperbricks/hyperbricks/internal/shared"
-	"github.com/hyperbricks/hyperbricks/internal/typefactory"
+	"github.com/hyperbricks/hyperbricks/pkg/component"
+	"github.com/hyperbricks/hyperbricks/pkg/composite"
+	"github.com/hyperbricks/hyperbricks/pkg/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/render"
+	"github.com/hyperbricks/hyperbricks/pkg/renderer"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
 )
 
 // ParsedContent holds the separated sections and optional scope after parsing.

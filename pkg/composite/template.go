@@ -12,9 +12,9 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 
-	"github.com/hyperbricks/hyperbricks/internal/renderer"
-	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/renderer"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 // TemplateConfig represents the configuration for a TEMPLATE type.

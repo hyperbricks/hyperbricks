@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	lorem "github.com/drhodes/golorem"
-	"github.com/hyperbricks/hyperbricks/internal/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 // HOW TO USE THIS PLUGIN:

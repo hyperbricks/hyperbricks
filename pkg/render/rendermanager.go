@@ -8,10 +8,10 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/hyperbricks/hyperbricks/internal/parser"
-	"github.com/hyperbricks/hyperbricks/internal/shared"
-	"github.com/hyperbricks/hyperbricks/internal/typefactory"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
 )
 
 // RenderManager is the central coordinator integrating TypeFactory.

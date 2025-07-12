@@ -1,102 +1,157 @@
-package component
+package composite
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
 	"encoding/xml"
-	"regexp"
-	"strconv"
-	"time"
-
 	"fmt"
 	"io"
-	"testing"
-
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httputil"
 	"net/url"
+	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/hyperbricks/hyperbricks/internal/composite"
-	"github.com/hyperbricks/hyperbricks/internal/renderer"
-	"github.com/hyperbricks/hyperbricks/internal/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/renderer"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
+// FragmentConfig represents configuration for a single fragment.
+type ApiFragmentRenderConfig struct {
+	shared.Composite   `mapstructure:",squash"`
+	APIConfig          `mapstructure:",squash"`
+	HxResponse         `mapstructure:"response" description:"HTMX response header configuration." example:"{!{api-fragment-render-response.hyperbricks}}"`
+	MetaDocDescription string              `mapstructure:"@doc" description:"A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience." example:"{!{api-fragment-render-@doc.hyperbricks}}"`
+	HxResponseWriter   http.ResponseWriter `mapstructure:"hx_response" exclude:"true"`
+	Title              string              `mapstructure:"title" description:"The title of the fragment" example:"{!{api-fragment-render-title.hyperbricks}}"`
+	Route              string              `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{api-fragment-render-route.hyperbricks}}"`
+	Section            string              `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{api-fragment-render-section.hyperbricks}}"`
+	Enclose            string              `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{api-fragment-render-enclose.hyperbricks}}"`
+	NoCache            bool                `mapstructure:"nocache" description:"Explicitly deisable cache" example:"{!{api-fragment-render-nocache.hyperbricks}}"`
+	Index              int                 `mapstructure:"index" description:"Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
+}
+
 type APIConfig struct {
-	shared.Component   `mapstructure:",squash"`
-	ApiRenderConfig    `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"<API_RENDER> description" example:"{!{api-render-@doc.hyperbricks}}"`
+	Endpoint  string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-fragment-endpoint.hyperbricks}}"`
+	Method    string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-fragment-method.hyperbricks}}"`
+	Headers   map[string]string      `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-fragment-headers.hyperbricks}}"`
+	Body      string                 `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-render-fragment-body.hyperbricks}}"`
+	Template  string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-fragment-template.hyperbricks}}"`
+	Inline    string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{api-render-fragment-inline.hyperbricks}}"`
+	Values    map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-fragment-values.hyperbricks}}"`
+	Username  string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-fragment-username.hyperbricks}}"`
+	Password  string                 `mapstructure:"password" description:"Password for basic auth" example:"{!{api-render-fragment-password.hyperbricks}}"`
+	Status    int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
+	SetCookie string                 `mapstructure:"setcookie" description:"Set template for cookie" example:"{!{api-render-fragment-setcookie.hyperbricks}}"`
+	// PassCookie       string                 `mapstructure:"passcookie" description:"Pass a cookie in eindpoint request" example:"{!{api-render-setcookie.hyperbricks}}"`
+	AllowedQueryKeys []string          `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-fragment-querykeys.hyperbricks}}"`
+	QueryParams      map[string]string `mapstructure:"queryparams" description:"Set proxy query key in the confifuration" example:"{!{api-render-fragment-queryparams.hyperbricks}}"`
+	JwtSecret        string            `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-fragment-jwt-secret.hyperbricks}}"`
+	JwtClaims        map[string]string `mapstructure:"jwtclaims" description:"jwt claim map" example:"{!{api-render-fragment-jwt-claims.hyperbricks}}"`
+	Debug            bool              `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-fragment-debug.hyperbricks}}"`
+	DebugPanel       bool              `mapstructure:"debugpanel" description:"Add frontendpanel code, this only works when frontend_errors is set to true in modules package.hyperbricks" example:"{!{api-render-fragment-debug.hyperbricks}}"`
 }
 
-type ApiRenderConfig struct {
-	Endpoint         string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-endpoint.hyperbricks}}"`
-	Method           string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-method.hyperbricks}}"`
-	Headers          map[string]string      `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-headers.hyperbricks}}"`
-	Body             string                 `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-render-body.hyperbricks}}"`
-	Template         string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-template.hyperbricks}}"`
-	Inline           string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{api-render-inline.hyperbricks}}"`
-	Values           map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-values.hyperbricks}}"`
-	Username         string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-username.hyperbricks}}"`
-	Password         string                 `mapstructure:"password" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks}}"`
-	Status           int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
-	SetCookie        string                 `mapstructure:"setcookie" description:"Set template for cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
-	AllowedQueryKeys []string               `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-querykeys.hyperbricks}}"`
-	QueryParams      map[string]string      `mapstructure:"queryparams" description:"Set proxy query key in the confifuration" example:"{!{api-render-queryparams.hyperbricks}}"`
-	JwtSecret        string                 `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-jwt-secret.hyperbricks}}"`
-	JwtClaims        map[string]string      `mapstructure:"jwtclaims" description:"jwt claim map" example:"{!{api-render-jwt-claims.hyperbricks}}"`
-	Debug            bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
-	DebugPanel       bool                   `mapstructure:"debugpanel" description:"Add frontendpanel code, this only works when frontend_errors is set to true in modules package.hyperbricks" example:"{!{api-render-debug.hyperbricks}}"`
+// FragmentConfigGetName returns the HyperBricks type associated with the FragmentConfig.
+func ApiFragmentRenderConfigGetName() string {
+	return "<API_FRAGMENT_RENDER>"
 }
 
-func APIConfigGetName() string {
-	return "<API_RENDER>"
-}
+// Validate ensures that the fragment has valid data.
+func (conf *ApiFragmentRenderConfig) Validate() []error {
+	var errors []error
+	// = shared.Validate(conf)
 
-func APIConfigGetName_test(t *testing.T) {
-	if APIConfigGetName() != "API" {
-		t.Errorf("Failed")
+	if conf.Endpoint == "" {
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      conf.Composite.Meta.HyperBricksKey,
+			Path:     conf.Composite.Meta.HyperBricksPath,
+			File:     conf.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
+			Err:      "[field 'endpoint' is required]",
+			Rejected: false,
+		})
 	}
+
+	if conf.Method == "" {
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      conf.Composite.Meta.HyperBricksKey,
+			Path:     conf.Composite.Meta.HyperBricksPath,
+			File:     conf.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
+			Err:      "[field 'method' is required]",
+			Rejected: false,
+		})
+	}
+	if conf.Route == "" {
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      conf.Composite.Meta.HyperBricksKey,
+			Path:     conf.Composite.Meta.HyperBricksPath,
+			File:     conf.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
+			Err:      "[field 'Route' is required]",
+			Rejected: false,
+		})
+	}
+
+	if conf.Route == "" {
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      conf.Composite.Meta.HyperBricksKey,
+			Path:     conf.Composite.Meta.HyperBricksPath,
+			File:     conf.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
+			Err:      "[field 'Route' is required]",
+			Rejected: false,
+		})
+	}
+	return errors
 }
 
-type APIRenderer struct {
-	renderer.ComponentRenderer
+// ApiFragmentRenderer handles rendering of PAGE content.
+type ApiFragmentRenderer struct {
+	renderer.CompositeRenderer
 }
 
-var _ shared.ComponentRenderer = (*APIRenderer)(nil)
+// Ensure ApiFragmentRenderer implements renderer.RenderComponent interface.
+var _ shared.CompositeRenderer = (*ApiFragmentRenderer)(nil)
 
-func (api *APIConfig) Validate() []error {
-	warnings := shared.Validate(api)
-	return warnings
-}
-
-func (r *APIRenderer) Types() []string {
+func (r *ApiFragmentRenderer) Types() []string {
 	return []string{
-		APIConfigGetName(),
+		ApiFragmentRenderConfigGetName(),
 	}
 }
 
-func (pr *APIRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
+// Render implements the RenderComponent interface.
+func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 
-	//return APIConfigGetName(), nil
+	//return ApiFragmentRenderConfigGetName(), nil
 	var errors []error
 	var builder strings.Builder
 	hbConfig := shared.GetHyperBricksConfiguration()
 
-	config, ok := instance.(APIConfig)
+	config, ok := instance.(ApiFragmentRenderConfig)
 	if !ok {
 		return "", append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
-			Key:      config.Component.Meta.HyperBricksKey,
-			Path:     config.Component.Meta.HyperBricksPath,
-			File:     config.Component.Meta.HyperBricksFile,
-			Type:     APIConfigGetName(),
+			Key:      config.Composite.Meta.HyperBricksKey,
+			Path:     config.Composite.Meta.HyperBricksPath,
+			File:     config.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
 			Err:      fmt.Errorf("invalid type for APIRenderer").Error(),
 			Rejected: true,
 		})
 	}
+
+	config.NoCache = true
 
 	validateErrors := config.Validate()
 	errors = append(errors, validateErrors...)
@@ -107,16 +162,16 @@ func (pr *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 
 	// Call function to process the request body
 	status_override := false
-	body, _error := processRequest(ctx, config.Body)
+	body, _error := processRequest(ctx, config)
 	if _error == nil {
 		config.Body = body
 	} else {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
-			Key:      config.Component.Meta.HyperBricksKey,
-			Path:     config.Component.Meta.HyperBricksPath,
-			File:     config.Component.Meta.HyperBricksFile,
-			Type:     APIConfigGetName(),
+			Key:      config.Composite.Meta.HyperBricksKey,
+			Path:     config.Composite.Meta.HyperBricksPath,
+			File:     config.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
 			Err:      _error.Error(),
 			Rejected: false,
 		})
@@ -130,10 +185,10 @@ func (pr *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
-			Key:      config.Component.Meta.HyperBricksKey,
-			Path:     config.Component.Meta.HyperBricksPath,
-			File:     config.Component.Meta.HyperBricksFile,
-			Type:     APIConfigGetName(),
+			Key:      config.Composite.Meta.HyperBricksKey,
+			Path:     config.Composite.Meta.HyperBricksPath,
+			File:     config.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
 			Err:      fmt.Errorf("failed to fetch data from API: %w", err).Error(),
 			Rejected: false,
 		})
@@ -147,10 +202,10 @@ func (pr *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 		}
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
-			Key:      config.Component.Meta.HyperBricksKey,
-			Path:     config.Component.Meta.HyperBricksPath,
-			File:     config.Component.Meta.HyperBricksFile,
-			Type:     APIConfigGetName(),
+			Key:      config.Composite.Meta.HyperBricksKey,
+			Path:     config.Composite.Meta.HyperBricksPath,
+			File:     config.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
 			Err:      "Debug in <API_RENDER> is enabled. Please disable in production",
 			Rejected: false,
 		})
@@ -170,14 +225,14 @@ func (pr *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 			//logging.GetLogger().Errorf("precached template '%s' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching", config.Template)
 			// MARKER_FOR_CODE:
 			// Attempt to load the file from disk and cache it.
-			fileContent, err := composite.GetTemplateFileContent(config.Template)
+			fileContent, err := GetTemplateFileContent(config.Template)
 			if err != nil {
 				errors = append(errors, shared.ComponentError{
 					Hash: shared.GenerateHash(),
-					Key:  config.Component.Meta.HyperBricksKey,
-					Path: config.Component.Meta.HyperBricksPath,
-					File: config.Component.Meta.HyperBricksFile,
-					Type: APIConfigGetName(),
+					Key:  config.Composite.Meta.HyperBricksKey,
+					Path: config.Composite.Meta.HyperBricksPath,
+					File: config.Composite.Meta.HyperBricksFile,
+					Type: ApiFragmentRenderConfigGetName(),
 					Err:  fmt.Errorf("failed to load template file '%s': %v", config.Template, err).Error(),
 				})
 			} else {
@@ -186,7 +241,7 @@ func (pr *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 		}
 	}
 	config.Status = status
-	renderedOutput, _errors := applyApiTemplate(templateContent, responseData, config)
+	renderedOutput, _errors := applyApiFragmentTemplate(templateContent, responseData, config)
 
 	if _errors != nil {
 		errors = append(errors, _errors...)
@@ -196,15 +251,62 @@ func (pr *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	if config.Enclose != "" {
 		apiContent = shared.EncloseContent(config.Enclose, apiContent)
 	}
+	// if config.JwtSecret == "" {
+	// 	var jwtToken string = ""
+	// 	if ctx != nil {
+	// 		jwtToken, _ = ctx.Value(shared.JwtKey).(string)
+	// 		//builder.WriteString(fmt.Sprintf("<!-- jwtToken:%s -->", jwtToken))
+	// 	}
+	// }
 
+	writer := ctx.Value(shared.ResponseWriter).(http.ResponseWriter)
+	if config.SetCookie != "" && status == 200 {
+
+		// tmplItem, err := template.New("item").Parse(config.SetCookie)
+		// if err != nil {
+		// 	errors = append(errors, fmt.Errorf("failed to parse 'item' template: %w", err))
+		// }
+
+		// var buf strings.Builder
+		// err = tmplItem.Execute(&buf, responseData)
+		// if err != nil {
+		// 	errors = append(errors, fmt.Errorf("failed to execute template: %w", err))
+		// }
+
+		cookie, _errors := applyApiFragmentTemplate(config.SetCookie, responseData, config)
+		config.SetCookie = cookie
+		if _errors != nil {
+			errors = append(errors, _errors...)
+		} else {
+			if writer != nil {
+				writer.Header().Set("Set-Cookie", cookie)
+			}
+		}
+	}
 	hbconfig := shared.GetHyperBricksConfiguration()
 	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE {
 		if config.Debug && config.DebugPanel {
-			builder.WriteString(composite.ErrorPanelTemplate)
+			builder.WriteString(ErrorPanelTemplate)
 		}
 	}
 
+	// 🛠 Debugging
+	if config.Debug {
+		// Convert map to pretty JSON
+		prettyJSON, err := json.MarshalIndent(writer, "", "  ")
+		if err != nil {
+			fmt.Println("Error formatting JSON:", err)
+
+		}
+
+		// Print formatted JSON
+		fmt.Printf("HyperBricks Response:\n%s\n", string(prettyJSON))
+	}
+
 	builder.WriteString(apiContent)
+	if config.HxResponseWriter != nil {
+		SetHeadersFromHxRequest(&config.HxResponse, writer)
+	}
 
 	return builder.String(), errors
 }
@@ -223,8 +325,24 @@ func flattenFormData(formData url.Values) map[string]interface{} {
 	return flattened
 }
 
-func processRequest(ctx context.Context, bodyMap string) (string, error) {
+func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string, error) {
 	mergedData := make(map[string]interface{})
+
+	// Specify the allowed query keys
+	allowed := []string{"id", "name", "order"}
+	if config.AllowedQueryKeys != nil {
+		allowed = config.AllowedQueryKeys
+	}
+	var filtered = url.Values{}
+
+	// Get a filtered copy of the query parameters
+	clientReq, ok := ctx.Value(shared.Request).(*http.Request)
+	if ok {
+		filtered = FilterAllowedQueryParams(clientReq, allowed)
+		for key, value := range filtered {
+			mergedData[key] = value
+		}
+	}
 
 	// Retrieve form data from context (correct type)
 	formData, formOk := ctx.Value(shared.FormData).(url.Values)
@@ -248,26 +366,26 @@ func processRequest(ctx context.Context, bodyMap string) (string, error) {
 			return "Failed to read request body", fmt.Errorf("failed to read request body: %w", err)
 		}
 
-		if len(bodyBytes) == 0 {
-			// Empty body, return the unmapped body
-			return bodyMap, nil
-		}
+		if len(bodyBytes) > 0 {
+			// Parse JSON body into a map
+			var bodyData map[string]interface{}
+			err = json.Unmarshal(bodyBytes, &bodyData)
+			if err != nil {
+				bodyData = make(map[string]interface{}) // Default empty map on error
+			}
 
-		// Parse JSON body into a map
-		var bodyData map[string]interface{}
-		err = json.Unmarshal(bodyBytes, &bodyData)
-		if err != nil {
-			bodyData = make(map[string]interface{}) // Default empty map on error
-		}
-
-		// Merge body data with conflict resolution
-		for key, value := range bodyData {
-			if _, exists := mergedData[key]; exists {
-				mergedData["body_"+key] = value // Prefix duplicate keys
-			} else {
-				mergedData[key] = value
+			// Merge body data with conflict resolution
+			for key, value := range bodyData {
+				if _, exists := mergedData[key]; exists {
+					mergedData["body_"+key] = value // Prefix duplicate keys
+				} else {
+					mergedData[key] = value
+				}
 			}
 		}
+
+	} else {
+		fmt.Printf("No body provided with post...: %s\n", config.Body)
 	}
 
 	// inside for-loop:
@@ -283,11 +401,11 @@ func processRequest(ctx context.Context, bodyMap string) (string, error) {
 
 		// Safe replacement: match exact $key boundary
 		re := regexp.MustCompile(`\$\b` + regexp.QuoteMeta(key) + `\b`)
-		bodyMap = re.ReplaceAllString(bodyMap, strValue)
+		config.Body = re.ReplaceAllString(config.Body, strValue)
 	}
 
-	fmt.Printf("Updated body map string: %s\n", bodyMap)
-	return bodyMap, nil
+	fmt.Printf("Updated body map string: %s\n", config.Body)
+	return config.Body, nil
 }
 
 // Shared HTTP transport for connection pooling
@@ -317,7 +435,7 @@ func newHttpClient() *http.Client {
 }
 
 // Updated fetchDataFromAPI function using newHttpClient()
-func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, error) {
+func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (interface{}, int, error) {
 	client := newHttpClient() // Ensures security while reusing transport
 
 	// Parse the endpoint URL
@@ -459,7 +577,7 @@ func isXMLResponse(resp *http.Response) bool {
 func handleAPIResponse(resp *http.Response) (interface{}, int, error) {
 	var result interface{}
 
-	// ✅ Handle JSON Response
+	// Handle JSON Response
 	if isJSONResponse(resp) {
 		dec := json.NewDecoder(resp.Body)
 		if err := dec.Decode(&result); err != nil {
@@ -468,7 +586,7 @@ func handleAPIResponse(resp *http.Response) (interface{}, int, error) {
 		return result, resp.StatusCode, nil
 	}
 
-	// ✅ Handle XML Response
+	// Handle XML Response
 	if isXMLResponse(resp) {
 		var xmlResult map[string]interface{} // XML unmarshals into a struct or map
 		dec := xml.NewDecoder(resp.Body)
@@ -478,7 +596,7 @@ func handleAPIResponse(resp *http.Response) (interface{}, int, error) {
 		return xmlResult, resp.StatusCode, nil
 	}
 
-	// ✅ Fallback: Read as Plain Text
+	// Fallback: Read as Plain Text
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, resp.StatusCode, fmt.Errorf("failed to read response body: %w", err)
@@ -487,7 +605,7 @@ func handleAPIResponse(resp *http.Response) (interface{}, int, error) {
 	return string(bodyBytes), resp.StatusCode, nil
 }
 
-func applyApiTemplate(templateStr string, data interface{}, config APIConfig) (string, []error) {
+func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFragmentRenderConfig) (string, []error) {
 	var errors []error
 
 	context := map[string]interface{}{
@@ -504,10 +622,10 @@ func applyApiTemplate(templateStr string, data interface{}, config APIConfig) (s
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
-			Key:      config.Component.Meta.HyperBricksKey,
-			Path:     config.Component.Meta.HyperBricksPath,
-			File:     config.Component.Meta.HyperBricksFile,
-			Type:     APIConfigGetName(),
+			Key:      config.Composite.Meta.HyperBricksKey,
+			Path:     config.Composite.Meta.HyperBricksPath,
+			File:     config.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
 			Err:      fmt.Sprintf("error parsing template: %v", err),
 			Rejected: false,
 		})
@@ -519,10 +637,10 @@ func applyApiTemplate(templateStr string, data interface{}, config APIConfig) (s
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
-			Key:      config.Component.Meta.HyperBricksKey,
-			Path:     config.Component.Meta.HyperBricksPath,
-			File:     config.Component.Meta.HyperBricksFile,
-			Type:     APIConfigGetName(),
+			Key:      config.Composite.Meta.HyperBricksKey,
+			Path:     config.Composite.Meta.HyperBricksPath,
+			File:     config.Composite.Meta.HyperBricksFile,
+			Type:     ApiFragmentRenderConfigGetName(),
 			Err:      fmt.Sprintf("error executing template: %v", err),
 			Rejected: false,
 		})

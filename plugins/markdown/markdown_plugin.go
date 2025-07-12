@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hyperbricks/hyperbricks/internal/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/russross/blackfriday/v2"
 )
 

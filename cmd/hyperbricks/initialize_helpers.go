@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 // validatePath ensures that the given path is within the ./modules directory.

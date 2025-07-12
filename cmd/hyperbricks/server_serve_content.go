@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hyperbricks/hyperbricks/internal/component"
-	"github.com/hyperbricks/hyperbricks/internal/composite"
-	"github.com/hyperbricks/hyperbricks/internal/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/component"
+	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/yosssi/gohtml"
 )
 

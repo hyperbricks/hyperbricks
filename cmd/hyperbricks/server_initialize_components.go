@@ -5,12 +5,12 @@ import (
 	"reflect"
 
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
-	"github.com/hyperbricks/hyperbricks/internal/component"
-	"github.com/hyperbricks/hyperbricks/internal/composite"
-	"github.com/hyperbricks/hyperbricks/internal/parser"
-	"github.com/hyperbricks/hyperbricks/internal/render"
-	"github.com/hyperbricks/hyperbricks/internal/renderer"
+	"github.com/hyperbricks/hyperbricks/pkg/component"
+	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/render"
+	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 )
 
 var (

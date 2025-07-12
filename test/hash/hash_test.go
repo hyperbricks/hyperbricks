@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/hyperbricks/hyperbricks/internal/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 // Test that the hash has the correct length.

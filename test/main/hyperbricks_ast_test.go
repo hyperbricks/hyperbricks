@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hyperbricks/hyperbricks/internal/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/parser"
 )
 
 // normalizeString trims and removes excess whitespace for comparison purposes.

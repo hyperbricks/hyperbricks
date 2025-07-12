@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
-	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 var SupportedExtensions = map[string]bool{

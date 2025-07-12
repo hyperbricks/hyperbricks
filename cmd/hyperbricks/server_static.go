@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
-	"github.com/hyperbricks/hyperbricks/internal/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/otiai10/copy"
 	"golang.org/x/time/rate"
 )

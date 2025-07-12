@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hyperbricks/hyperbricks/internal/typefactory"
+	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
 	"github.com/mitchellh/mapstructure"
 )
 

@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hyperbricks/hyperbricks/internal/database"
-	"github.com/hyperbricks/hyperbricks/internal/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/database"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 
 	"go.uber.org/zap"
 )

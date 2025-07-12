@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hyperbricks/hyperbricks/internal/composite"
-	"github.com/hyperbricks/hyperbricks/internal/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/composite"
+	"github.com/hyperbricks/hyperbricks/pkg/parser"
 )
 
 type CacheEntry struct {

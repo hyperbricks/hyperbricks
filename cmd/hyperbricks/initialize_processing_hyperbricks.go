@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hyperbricks/hyperbricks/internal/composite"
-	"github.com/hyperbricks/hyperbricks/internal/parser"
-	"github.com/hyperbricks/hyperbricks/internal/shared"
-	"github.com/hyperbricks/hyperbricks/internal/typefactory"
+	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
 	"github.com/mitchellh/mapstructure"
 	"go.uber.org/zap"
 )
