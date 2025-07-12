@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"reflect"
 
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
@@ -72,16 +73,16 @@ func registerPlugins() {
 		pluginDir += "/debug"
 	}
 
-	for key, value := range rm.HbConfig.Plugins.Enabled {
+	for _, value := range rm.HbConfig.Plugins.Enabled {
 		//fmt.Printf("Key: %s, Value: %s\n", key, value)
 		pluginPath := pluginDir + "/" + value + ".so"
-
+		absPath, _ := filepath.Abs(pluginPath)
 		// Check if the file exists
 		if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
-			logging.GetLogger().Warnf("Plugin file %s not found. Skipping preloading.", key)
+			logging.GetLogger().Warnf("Plugin file %s not found. Skipping preloading.", value)
 			continue // Skip loading this plugin
 		}
-		logging.GetLogger().Infof("Plugin file %s is found...", value)
+		logging.GetLogger().Infof("Plugin file %s found at %s", value, absPath)
 		rm.RegisterAndLoadPlugin(pluginPath, value)
 	}
 }
