@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
@@ -16,6 +17,7 @@ import (
 
 // PreProcessAndPopulateConfigs orchestrates the preprocessing and population of configurations.
 func PreProcessAndPopulateConfigs() error {
+
 	hbConfig, logger := retrieveConfigAndLogger()
 	templateDir, hyperBricksDir := determineDirectories(hbConfig)
 
@@ -25,9 +27,22 @@ func PreProcessAndPopulateConfigs() error {
 
 	tempConfigs := make(map[string]map[string]interface{})
 	tempHyperMediasBySection := make(map[string][]composite.HyperMediaConfig)
-	allScripts := hyperBricksArray.GetAllHyperBricks()
 
-	for filename, content := range allScripts {
+	// Acquire lock if necessary for thread safety
+	hyperBricksArray.PreProcessedHyperScriptStoreMutex.Lock()
+	allScripts := hyperBricksArray.HyperBricksStore
+	orderedRoutes := hyperBricksArray.OrderedHyperBricksRoutes
+	hyperBricksArray.PreProcessedHyperScriptStoreMutex.Unlock()
+
+	// ---- Process configs in strict order! ----
+	sort.Strings(orderedRoutes)
+
+	orangeTrueColor := "\033[38;2;255;165;0m"
+	reset := "\033[0m"
+	logging.GetLogger().Info(orangeTrueColor, "Configure Routes...", reset)
+
+	for _, filename := range orderedRoutes {
+		content := allScripts[filename]
 		config := parser.ParseHyperScript(content)
 		if err := processScript(filename, config, tempConfigs, tempHyperMediasBySection, logger); err != nil {
 			logger.Warnw("Error processing script", "file", filename, "error", err)
@@ -40,8 +55,7 @@ func PreProcessAndPopulateConfigs() error {
 	PrepareForStaticRendering(tempConfigs)
 	resetHTMLCache()
 
-	logger.Infow("Hyperbricks configurations loaded", "count", len(configs))
-
+	logging.GetLogger().Info(orangeTrueColor, len(configs), " Hyperbricks configurations loaded", reset)
 	return nil
 }
 
@@ -86,7 +100,6 @@ func processScript(
 ) error {
 	// Get the global HyperBricks configuration (used for server info, etc.)
 	hbConfig := getHyperBricksConfiguration()
-
 	// Iterate through all key-value pairs in the provided config map.
 	for key, v := range config {
 		// Assert that the value is a map[string]interface{} (object).
@@ -139,7 +152,7 @@ func processScript(
 
 			// Log route or static file initialization for observability.
 			if hyperMediaConfig.Static == "" {
-				logger.Info(fmt.Sprintf("fragment: [http://%s/%s] initialized", shared.Location, hyperMediaConfig.Route))
+				logger.Info(fmt.Sprintf("fragment (%s): [http://%s/%s] initialized", filename, shared.Location, hyperMediaConfig.Route))
 			} else {
 				logger.Info(fmt.Sprintf("static file: %s", hyperMediaConfig.Static))
 			}
@@ -190,7 +203,7 @@ func processScript(
 
 			// Log route or static file initialization for observability.
 			if hyperMediaConfig.Static == "" {
-				logger.Info(fmt.Sprintf("route: [http://%s/%s] initialized", shared.Location, hyperMediaConfig.Route))
+				logger.Info(fmt.Sprintf("route  (%s): [http://%s/%s] initialized", filename, shared.Location, hyperMediaConfig.Route))
 			} else {
 				logger.Info(fmt.Sprintf("static file: %s", hyperMediaConfig.Static))
 			}

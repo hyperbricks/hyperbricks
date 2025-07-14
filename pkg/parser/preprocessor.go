@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 
@@ -13,7 +14,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
-// GetHyperScriptFiles returns a list of .hyperbricks files in the specified directory.
+// GetHyperScriptFiles returns a sorted list of .hyperbricks files in the specified directory.
 func GetHyperScriptFiles(baseUrl string) ([]string, error) {
 	files, err := filepath.Glob(baseUrl + "/*.hyperbricks")
 	if err != nil {
@@ -24,6 +25,9 @@ func GetHyperScriptFiles(baseUrl string) ([]string, error) {
 		log.Println("No .hyperbricks files found in the directory.")
 		return nil, nil
 	}
+
+	sort.Strings(files) // Apply strict (lexicographical) order
+
 	return files, nil
 }
 
@@ -40,6 +44,7 @@ func (t *HyperScriptStringArray) GetHyperScriptContents(route string) (string, b
 // and provides thread-safe access to the data.
 type HyperScriptStringArray struct {
 	HyperBricksStore                  map[string]string
+	OrderedHyperBricksRoutes          []string
 	PreProcessedHyperScriptStoreMutex sync.RWMutex
 }
 
@@ -94,10 +99,9 @@ func (t *HyperScriptStringArray) PreProcessHyperScriptFromFile(hyperbricksfile s
 	return nil
 }
 
-// PreProcessHyperBricksFromFiles loads Hyperbricks files' contents from the specified directory
-// and stores them in the HyperScriptStringArray instance.
 func (t *HyperScriptStringArray) PreProcessHyperBricksFromFiles(hyperbricksDir string, templateDir string) error {
 	tempHyperBricks := make(map[string]string)
+	orderedRoutes := []string{} // <-- stores order
 
 	orangeTrueColor := "\033[38;2;255;165;0m"
 	reset := "\033[0m"
@@ -130,15 +134,25 @@ func (t *HyperScriptStringArray) PreProcessHyperBricksFromFiles(hyperbricksDir s
 		}
 
 		tempHyperBricks[route] = ts
-		//log.Printf("Parsed ConfigObject for route '%s': %+v", route, string(data))
+		orderedRoutes = append(orderedRoutes, route) // <--- record the order
 		logging.GetLogger().Debug("Loaded configuration for route: ", route)
 	}
 
+	// store both the map and the ordered slice
 	t.PreProcessedHyperScriptStoreMutex.Lock()
 	t.HyperBricksStore = tempHyperBricks
+	t.OrderedHyperBricksRoutes = orderedRoutes // <--- store order!
 	t.PreProcessedHyperScriptStoreMutex.Unlock()
 
 	logging.GetLogger().Debug("Total configurations loaded: ", len(tempHyperBricks))
+
+	// Example: process in strict order
+	for _, route := range orderedRoutes {
+		ts := tempHyperBricks[route]
+		logging.GetLogger().Info("Processing: ", route, ".hyperbricks")
+		// Do your real processing here
+		_ = ts // replace with real usage
+	}
 
 	return nil
 }
