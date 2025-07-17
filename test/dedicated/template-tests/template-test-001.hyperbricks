@@ -78,6 +78,7 @@ fragment.template {
     "Static": "",
     "Cache": "",
     "NoCache": false,
+    "ContentType":"",
     "Index": 0
   }
 ==== expected output ====

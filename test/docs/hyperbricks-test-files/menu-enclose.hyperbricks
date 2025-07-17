@@ -47,6 +47,7 @@ The enclosing HTML element for the header divided by |
     "Cache": "",
     "NoCache": false,
     "Index": 0,
+,"ContentType": "",
     "Doctype": "",
     "HtmlTag": "",
     "Head": null

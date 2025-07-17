@@ -57,7 +57,8 @@ The template used for rendering.
     "HyperBricksFile": "",
     "IsStatic": false,
     "Static": "",
-    "Index": 0
+    "Index": 0,
+,"ContentType": ""
   }
 ==== expected output ====
 <div class="youtube_video">

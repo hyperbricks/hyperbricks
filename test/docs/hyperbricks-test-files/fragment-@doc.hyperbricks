@@ -52,7 +52,8 @@ A FRAGMENT dynamically renders a part of an HTML page, allowing updates without 
     "Static": "",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+    "ContentType": ""
   }
 ==== expected output ====
 <h2>SOME HEADER</h2>

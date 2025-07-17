@@ -44,6 +44,7 @@ type FragmentConfig struct {
 	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{fragment-cache.hyperbricks}}"`
 	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly deisable cache" example:"{!{fragment-nocache.hyperbricks}}"`
 	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
+	ContentType        string                 `mapstructure:"content_type" description:"content type header definition"`
 }
 
 // FragmentConfigGetName returns the HyperBricks type associated with the FragmentConfig.

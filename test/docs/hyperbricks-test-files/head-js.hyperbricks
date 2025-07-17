@@ -27,6 +27,7 @@ JavaScript files to include
     "Cache": "",
     "NoCache": false,
     "Index": 0,
+,"ContentType": "",
     "Doctype": "",
     "HtmlTag": "",
     "Head": {

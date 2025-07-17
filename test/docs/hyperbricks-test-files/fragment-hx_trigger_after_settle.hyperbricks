@@ -38,6 +38,7 @@ allows you to trigger client-side events after the settle step
     "Static": "",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+,"ContentType": ""
     }
 ==== expected output ====

@@ -36,7 +36,8 @@ The route (URL-friendly identifier) for the fragment
     "Static": "",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+    "ContentType": ""
   }
 ==== expected output ====
 

@@ -1,10 +1,10 @@
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia {
-	index = 1
+	
 }
 ==== explainer ====
-Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options
+content type header definition
 ==== expected json ====
 {
   "ConfigType": "<HYPERMEDIA>",
@@ -25,11 +25,10 @@ Index number is a sort order option for the hypermedia defined in the section fi
   "Cache": "",
   "NoCache": false,
   "Static": "",
-  "Index": 1,
+  "Index": 0,
   "Doctype": "",
   "HtmlTag": "",
   "Head": null,
   "ContentType": ""
 }
 ==== expected output ====
-<!DOCTYPE html><html><body></body></html> 

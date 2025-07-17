@@ -30,6 +30,7 @@ Metadata for the head section
   "Cache": "",
   "NoCache": false,
   "Index": 0,
+,"ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
   "Head": {

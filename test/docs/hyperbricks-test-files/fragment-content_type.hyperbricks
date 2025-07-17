@@ -1,10 +1,8 @@
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
-fragment {
-	index = 1
-}
+fragment.content_type = text/json 
 ==== explainer ====
-Index number is a sort order option for the <MENU> section. See <MENU> for further explanation
+content type header definition
 ==== expected json ====
 {
   "ConfigType": "<FRAGMENT>",
@@ -36,8 +34,7 @@ Index number is a sort order option for the <MENU> section. See <MENU> for furth
   "Static": "",
   "Cache": "",
   "NoCache": false,
-  "Index": 1,
-  "ContentType": ""
+  "Index": 0,
+  "ContentType": "text/json"
 }
 ==== expected output ====
-

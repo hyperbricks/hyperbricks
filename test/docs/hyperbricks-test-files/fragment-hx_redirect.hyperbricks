@@ -38,7 +38,8 @@ Can be used to do a client-side redirect to a new location
     "Static": "",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+,"ContentType": ""
   }
 ==== expected output ====
 

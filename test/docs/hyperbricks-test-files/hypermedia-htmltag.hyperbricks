@@ -24,6 +24,7 @@ The opening HTML tag with attributes
     "Cache": "",
     "NoCache": false,
     "Index": 0,
+,"ContentType": "",
     "Doctype": "",
     "HtmlTag": "<html lang=\"en\">",
     "Head": null

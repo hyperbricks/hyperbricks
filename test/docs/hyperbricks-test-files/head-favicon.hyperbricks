@@ -27,6 +27,7 @@ Path to the favicon for the hypermedia document
     "Cache": "",
     "NoCache": false,
     "Index": 0,
+,"ContentType": "",
     "Doctype": "",
     "HtmlTag": "",
     "Head": {
