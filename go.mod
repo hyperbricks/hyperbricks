@@ -3,6 +3,7 @@ module github.com/hyperbricks/hyperbricks
 go 1.23.2
 
 require (
+	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.2.4
@@ -23,12 +24,12 @@ require (
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.25.0
+	golang.org/x/time v0.11.0
 )
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.3.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/x/ansi v0.4.5 // indirect
@@ -67,5 +68,4 @@ require (
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
-	golang.org/x/time v0.11.0 // indirect
 )

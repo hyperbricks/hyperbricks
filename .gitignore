@@ -1,5 +1,6 @@
 # Ignore specific directories in the root folder
 /modules/
+/plugins/
 /bin/
 **/archive
 /archive/

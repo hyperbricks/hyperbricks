@@ -17,20 +17,22 @@ func init() {
 	runtime.GOMAXPROCS(4)
 
 	commands.RegisterSubcommands()
+	commands.PluginCommand()
+
+	shared.Init_configuration()
+
+	shared.Module = fmt.Sprintf("modules/%s/package.hyperbricks", commands.StartModule)
+	hbConfig := getHyperBricksConfiguration()
 
 	// Execute the root command
 	if err := commands.Execute(); err != nil {
 		fmt.Println(err)
 	}
 
-	shared.Init_configuration()
-
-	if commands.Version {
+	// exit if Version or Plugin command
+	if commands.Exit {
 		return
 	}
-
-	shared.Module = fmt.Sprintf("modules/%s/package.hyperbricks", commands.StartModule)
-	hbConfig := getHyperBricksConfiguration()
 
 	orangeTrueColor := "\033[38;2;255;165;0m"
 	reset := "\033[0m"
