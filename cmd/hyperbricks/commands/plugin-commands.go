@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -347,7 +348,6 @@ func PluginBuildCommand() *cobra.Command {
 	}
 }
 
-// Build logic, outputs as ./bin/plugins/CamelCasePlugin@1.0.0.so
 func buildPlugin(pluginShortName, version string) error {
 	fmt.Printf("Building plugin: %s@%s\n", pluginShortName, version)
 	pluginDir := "./bin/plugins"
@@ -355,19 +355,54 @@ func buildPlugin(pluginShortName, version string) error {
 		return fmt.Errorf("failed to create plugin directory: %v", err)
 	}
 
-	pluginSourcePath := filepath.Join("./plugins", pluginShortName, version, fmt.Sprintf("%s_plugin.go", pluginShortName))
+	// Absolute source dir and filename
+	pluginSourceDir := filepath.Join("plugins", pluginShortName, version)
+	pluginSourceFile := fmt.Sprintf("%s_plugin.go", pluginShortName)
+	pluginSourcePath := filepath.Join(pluginSourceDir, pluginSourceFile)
 	if _, err := os.Stat(pluginSourcePath); os.IsNotExist(err) {
 		return fmt.Errorf("plugin source file %s does not exist", pluginSourcePath)
 	}
+
+	// === PATCH plugin go.mod with current hyperbricks version ===
+	mainVersion := getHyperbricksSemver()
+	gomodPath := filepath.Join(pluginSourceDir, "go.mod")
+	gomodData, err := os.ReadFile(gomodPath)
+	if err != nil {
+		return fmt.Errorf("failed to read plugin go.mod: %v", err)
+	}
+	// Replace hyperbricks version line (works even if in require block)
+	re := regexp.MustCompile(`(github.com/hyperbricks/hyperbricks\s+)v[\w\.\-]+`)
+	newGoMod := re.ReplaceAll(gomodData, []byte("${1}v"+mainVersion))
+	if string(newGoMod) != string(gomodData) {
+		fmt.Printf("Patching %s go.mod hyperbricks dependency to v%s\n", pluginShortName, mainVersion)
+		err = os.WriteFile(gomodPath, newGoMod, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write patched go.mod: %v", err)
+		}
+	}
+
+	// Run `go mod tidy` inside the plugin source dir
+	tidyCmd := exec.Command("go", "mod", "tidy")
+	tidyCmd.Dir = pluginSourceDir
+	tidyCmd.Stdout = os.Stdout
+	tidyCmd.Stderr = os.Stderr
+	if err := tidyCmd.Run(); err != nil {
+		return fmt.Errorf("failed to run go mod tidy: %v", err)
+	}
+
+	// Output path: relative from pluginSourceDir to bin/plugins
 	camel := toCamelCase(pluginShortName)
-	outputPath := filepath.Join(pluginDir, fmt.Sprintf("%s@%s.so", camel, version))
-	buildCmd := exec.Command("go", "build", "-buildmode=plugin", "-o", outputPath, pluginSourcePath)
+	outputRelPath := filepath.ToSlash(filepath.Join("..", "..", "..", "bin", "plugins", fmt.Sprintf("%s@%s.so", camel, version)))
+
+	// Build from inside the plugin source dir, using relative source and output paths
+	buildCmd := exec.Command("go", "build", "-buildmode=plugin", "-o", outputRelPath, pluginSourceFile)
+	buildCmd.Dir = pluginSourceDir
 	buildCmd.Stdout = os.Stdout
 	buildCmd.Stderr = os.Stderr
 	if err := buildCmd.Run(); err != nil {
 		return fmt.Errorf("failed to build plugin: %v", err)
 	}
-	fmt.Println("Build successful:", outputPath)
+	fmt.Println("Build successful:", outputRelPath)
 	return nil
 }
 
