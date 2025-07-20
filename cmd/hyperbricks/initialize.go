@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"runtime"
 
 	"github.com/hyperbricks/hyperbricks/assets"
@@ -49,7 +50,8 @@ func init() {
 
 	if commands.RenderStatic {
 		basic_initialisation()
-		return
+		http.Handle("/", http.FileServer(http.Dir(fmt.Sprintf("modules/%s/rendered", commands.StartModule))))
+		http.ListenAndServe(":8080", nil)
 	}
 
 	if !commands.StartMode {

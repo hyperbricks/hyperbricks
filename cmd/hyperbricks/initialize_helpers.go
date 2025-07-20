@@ -117,7 +117,7 @@ func makeStatic(config map[string]map[string]interface{}, renderDir string) erro
 				continue
 			}
 
-			err = os.WriteFile(renderPath+".html", []byte(htmlContent), 0644)
+			err = os.WriteFile(renderPath, []byte(htmlContent), 0644)
 			if err != nil {
 				logger.Errorw("Error writing static file", "path", renderPath, "error", err)
 				continue
