@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"plugin"
 	"regexp"
 	"sort"
 	"strings"
@@ -46,7 +47,35 @@ func PluginCommand() *cobra.Command {
 	return cmd
 }
 
-func PluginListCommand() *cobra.Command {
+func checkPluginBinaryCompatibility(path string, hbVer *semver.Version) (bool, error) {
+	p, err := plugin.Open(path)
+	if err != nil {
+		return false, fmt.Errorf("failed to open plugin: %w", err)
+	}
+
+	sym, err := p.Lookup("CompatibleHyperbricks")
+	if err != nil {
+		return false, fmt.Errorf("missing CompatibleHyperbricks")
+	}
+
+	compatListPtr, ok := sym.(*[]string)
+	if !ok {
+		return false, fmt.Errorf("invalid CompatibleHyperbricks symbol type")
+	}
+
+	for _, constraintStr := range *compatListPtr {
+		constraint, err := semver.NewConstraint(constraintStr)
+		if err != nil {
+			continue
+		}
+		if constraint.Check(hbVer) {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func PluginListCommandOld() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List available plugins compatible with this Hyperbricks version",
@@ -185,6 +214,159 @@ func PluginListCommand() *cobra.Command {
 				fmt.Println("")
 			} else {
 				fmt.Println("\033[1;33m\n# No plugins currently installed. Use \033[1;32m`plugin build`\033[1;33m or \033[1;32m`plugin install`\033[1;33m to add them!\033[0m")
+			}
+		},
+	}
+	return cmd
+}
+
+func PluginListCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List available plugins compatible with this Hyperbricks version",
+		Run: func(cmd *cobra.Command, args []string) {
+			Exit = true
+			hbVer, err := semver.NewVersion(getHyperbricksSemver())
+			if err != nil {
+				fmt.Println("Error: could not parse Hyperbricks version:", err)
+				return
+			}
+
+			plugins, err := fetchPluginIndex()
+			if err != nil {
+				fmt.Println("Error fetching plugin index:", err)
+				return
+			}
+
+			type PluginView struct {
+				ShortName   string
+				Source      string
+				Version     string
+				AllVersions []string
+				Compat      []string
+				Installed   bool
+				Compatible  bool
+			}
+
+			var list []PluginView
+
+			for name, versions := range plugins {
+				var compatible *PluginMeta
+				var compatibleVer *semver.Version
+				allVersions := make([]string, 0, len(versions))
+				compatConstraints := make(map[string]struct{})
+
+				for ver, meta := range versions {
+					allVersions = append(allVersions, ver)
+					for _, compat := range meta.CompatibleHyperbricks {
+						compatConstraints[compat] = struct{}{}
+						constraints, err := semver.NewConstraint(compat)
+						if err == nil && constraints.Check(hbVer) {
+							sv, _ := semver.NewVersion(ver)
+							if compatible == nil || sv.GreaterThan(compatibleVer) {
+								compatible = &meta
+								compatibleVer = sv
+							}
+						}
+					}
+				}
+
+				if compatible != nil {
+					shortName := pluginShortName(name)
+					camel := toCamelCase(strings.TrimSuffix(compatible.Source, ".go"))
+					soName := fmt.Sprintf("%s@%s.so", camel, compatible.Version)
+					soPath := filepath.Join("./bin/plugins", soName)
+
+					installed := false
+					compatibleBinary := false
+					if _, err := os.Stat(soPath); err == nil {
+						installed = true
+						compatibleBinary, _ = checkPluginBinaryCompatibility(soPath, hbVer)
+					}
+
+					compatList := make([]string, 0, len(compatConstraints))
+					for k := range compatConstraints {
+						compatList = append(compatList, k)
+					}
+					sort.Strings(compatList)
+					sort.Strings(allVersions)
+
+					list = append(list, PluginView{
+						ShortName:   shortName,
+						Version:     compatible.Version,
+						Source:      compatible.Source,
+						AllVersions: allVersions,
+						Compat:      compatList,
+						Installed:   installed,
+						Compatible:  compatibleBinary,
+					})
+				}
+			}
+
+			sort.Slice(list, func(i, j int) bool {
+				return list[i].ShortName < list[j].ShortName
+			})
+
+			if len(list) == 0 {
+				fmt.Println("No compatible plugins found for this version.")
+				return
+			}
+			fmt.Println("")
+			w := tabwriter.NewWriter(os.Stdout, 2, 4, 2, ' ', 0)
+			fmt.Fprintln(w, "Name\tPlugin Version\tAvailable Versions\tCompatible Hyperbricks\tInstalled")
+			fmt.Fprintln(w, "----\t--------------\t------------------\t----------------------\t---------")
+			for _, p := range list {
+				installedText := "no"
+				if p.Installed {
+					if p.Compatible {
+						installedText = "\033[1;32myes\033[0m"
+					} else {
+						installedText = "\033[1;31myes (incompatible)\033[0m"
+					}
+				}
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+					p.ShortName,
+					p.Version,
+					strings.Join(p.AllVersions, ", "),
+					strings.Join(p.Compat, ", "),
+					installedText,
+				)
+			}
+			w.Flush()
+
+			// Gather all compatible installed plugin binaries
+			var installedBinaries []string
+			for _, p := range list {
+				if p.Installed && p.Compatible {
+					camel := toCamelCase(strings.TrimSuffix(p.Source, ".go"))
+					bin := fmt.Sprintf("%s@%s.so", camel, p.Version)
+					installedBinaries = append(installedBinaries, bin)
+				}
+			}
+
+			if len(installedBinaries) > 0 {
+				fmt.Println("")
+				fmt.Println("\033[1;33mTo enable plugins, they must be compiled for the currently installed version of Hyperbricks.\033[0m")
+				fmt.Println("\033[0;36mThis can be done automatically using:\033[0m")
+				fmt.Println("\033[1;32m hyperbricks plugin install <name>@<plugin_version>\033[0m\n")
+				fmt.Println("\033[0;36m# To preload the plugin, add the binary .so name to your package.hyperbricks\033[0m")
+				fmt.Println("\033[0;36m# under the `plugins.enabled` array:\033[0m")
+				fmt.Println("\033[0;36m# Plugin binaries are named as <name>@<plugin_version>.so for clarity.\033[0m")
+
+				fmt.Printf("\033[1;34mplugins {\n  enabled = [ ")
+				for i, bin := range installedBinaries {
+					if i > 0 {
+						fmt.Print(" ")
+					}
+					fmt.Printf("\033[1;32m%s\033[0m", bin)
+					if i < len(installedBinaries)-1 {
+						fmt.Print(",")
+					}
+				}
+				fmt.Println("\033[1;34m ]\n}\033[0m")
+				fmt.Println("")
+			} else {
+				fmt.Println("\033[1;33m\n# No compatible plugins currently installed. Use \033[1;32m`plugin build`\033[1;33m or \033[1;32m`plugin install`\033[1;33m to add them!\033[0m")
 			}
 		},
 	}
