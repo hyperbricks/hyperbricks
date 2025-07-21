@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"plugin"
+	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -55,42 +56,35 @@ func checkPluginBinaryCompatibility(path string, hbVer *semver.Version) (bool, e
 
 	sym, err := p.Lookup("CompatibleHyperbricks")
 	if err != nil {
-		return false, fmt.Errorf("missing CompatibleHyperbricks")
+		return false, fmt.Errorf("plugin missing CompatibleHyperbricks symbol")
 	}
 
-	// Try as pointer to slice
-	if compatListPtr, ok := sym.(*[]string); ok {
-		for _, constraintStr := range *compatListPtr {
-			if matchesConstraint(hbVer, constraintStr) {
-				return true, nil
-			}
+	// Use reflect to unwrap the value safely
+	val := reflect.ValueOf(sym)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	if val.Kind() != reflect.Slice {
+		return false, fmt.Errorf("CompatibleHyperbricks is not a slice")
+	}
+
+	for i := 0; i < val.Len(); i++ {
+		raw := val.Index(i)
+		if raw.Kind() != reflect.String {
+			continue
 		}
-		return false, nil
-	}
-
-	// Try as direct slice
-	if compatList, ok := sym.([]string); ok {
-		for _, constraintStr := range compatList {
-			if matchesConstraint(hbVer, constraintStr) {
-				return true, nil
-			}
+		constraintStr := raw.String()
+		constraint, err := semver.NewConstraint(constraintStr)
+		if err != nil {
+			continue
 		}
-		return false, nil
-	}
-
-	// Try as *interface{} (some build quirks)
-	if ifacePtr, ok := sym.(*interface{}); ok {
-		if compatList, ok := (*ifacePtr).([]string); ok {
-			for _, constraintStr := range compatList {
-				if matchesConstraint(hbVer, constraintStr) {
-					return true, nil
-				}
-			}
-			return false, nil
+		if constraint.Check(hbVer) {
+			return true, nil
 		}
 	}
 
-	return false, fmt.Errorf("incompatible symbol type for CompatibleHyperbricks")
+	return false, nil
 }
 
 func matchesConstraint(hbVer *semver.Version, constraintStr string) bool {
