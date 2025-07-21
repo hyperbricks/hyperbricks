@@ -58,21 +58,47 @@ func checkPluginBinaryCompatibility(path string, hbVer *semver.Version) (bool, e
 		return false, fmt.Errorf("missing CompatibleHyperbricks")
 	}
 
-	compatListPtr, ok := sym.(*[]string)
-	if !ok {
-		return false, fmt.Errorf("invalid CompatibleHyperbricks symbol type")
+	// Try as pointer to slice
+	if compatListPtr, ok := sym.(*[]string); ok {
+		for _, constraintStr := range *compatListPtr {
+			if matchesConstraint(hbVer, constraintStr) {
+				return true, nil
+			}
+		}
+		return false, nil
 	}
 
-	for _, constraintStr := range *compatListPtr {
-		constraint, err := semver.NewConstraint(constraintStr)
-		if err != nil {
-			continue
+	// Try as direct slice
+	if compatList, ok := sym.([]string); ok {
+		for _, constraintStr := range compatList {
+			if matchesConstraint(hbVer, constraintStr) {
+				return true, nil
+			}
 		}
-		if constraint.Check(hbVer) {
-			return true, nil
+		return false, nil
+	}
+
+	// Try as *interface{} (some build quirks)
+	if ifacePtr, ok := sym.(*interface{}); ok {
+		if compatList, ok := (*ifacePtr).([]string); ok {
+			for _, constraintStr := range compatList {
+				if matchesConstraint(hbVer, constraintStr) {
+					return true, nil
+				}
+			}
+			return false, nil
 		}
 	}
-	return false, nil
+
+	return false, fmt.Errorf("incompatible symbol type for CompatibleHyperbricks")
+}
+
+func matchesConstraint(hbVer *semver.Version, constraintStr string) bool {
+	c, err := semver.NewConstraint(constraintStr)
+	if err != nil {
+		return false
+	}
+	return c.Check(hbVer)
 }
 
 func PluginListCommandOld() *cobra.Command {
