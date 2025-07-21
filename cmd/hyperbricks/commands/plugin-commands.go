@@ -24,6 +24,7 @@ import (
 type PluginMeta struct {
 	Plugin                string   `json:"plugin"`
 	Version               string   `json:"version"`
+	Source                string   `json:"source"`
 	CompatibleHyperbricks []string `json:"compatible_hyperbricks"`
 	Description           string   `json:"description"`
 }
@@ -43,65 +44,6 @@ func PluginCommand() *cobra.Command {
 	cmd.AddCommand(PluginBuildCommand())
 	cmd.AddCommand(PluginUpdateCommand())
 	return cmd
-}
-
-// Returns the plugin's short name (right of last '/')
-func pluginShortName(fullName string) string {
-	if ix := strings.LastIndex(fullName, "/"); ix >= 0 {
-		return fullName[ix+1:]
-	}
-	return fullName
-}
-
-// Returns a CamelCase version of a plugin name (for filenames)
-func toCamelCase(s string) string {
-	var out []rune
-	upperNext := true
-	for _, r := range s {
-		if r == '-' || r == '_' {
-			upperNext = true
-			continue
-		}
-		if upperNext {
-			out = append(out, unicode.ToUpper(r))
-			upperNext = false
-		} else {
-			out = append(out, r)
-		}
-	}
-	return string(out)
-}
-
-// Fetches plugin index JSON from remote
-func fetchPluginIndex() (map[string]map[string]PluginMeta, error) {
-	resp, err := http.Get(pluginIndexURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch plugin index: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to fetch plugin index, status code: %d", resp.StatusCode)
-	}
-
-	var plugins map[string]map[string]PluginMeta
-	err = json.NewDecoder(resp.Body).Decode(&plugins)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode plugin index JSON: %v", err)
-	}
-
-	return plugins, nil
-}
-
-// Returns the current Hyperbricks version as semver string
-func getHyperbricksSemver() string {
-	ver := assets.VersionMD
-	ver = strings.TrimPrefix(ver, "v")
-	parts := strings.Fields(ver)
-	if len(parts) > 0 {
-		return parts[0]
-	}
-	return ver
 }
 
 // Lists compatible plugins, all versions, and install status
@@ -242,7 +184,7 @@ func PluginListCommand() *cobra.Command {
 func PluginInstallCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "install <name>[@<version>]",
-		Short: "Install a plugin's source to ./plugin folder, by name (optionally @version, e.g. esbuild@1.0.0)",
+		Short: "Install a plugin's source to ./plugin folder and build, by name (optionally @version, e.g. esbuild@1.0.0)",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			nameArg := args[0]
@@ -260,8 +202,10 @@ func PluginInstallCommand() *cobra.Command {
 			}
 
 			var fullName string
+
 			for k := range plugins {
 				short := pluginShortName(k)
+
 				if short == pluginName || k == pluginName {
 					fullName = k
 					break
@@ -314,7 +258,8 @@ func PluginInstallCommand() *cobra.Command {
 
 			// Build the plugin after cloning
 			fmt.Println("Building plugin...")
-			if err := buildPlugin(pluginShort, ver); err != nil {
+			source := meta.Source
+			if err := buildPlugin(source, pluginShort, ver); err != nil {
 				fmt.Printf("Build failed: %v\n", err)
 				return
 			}
@@ -330,7 +275,7 @@ func PluginInstallCommand() *cobra.Command {
 func PluginBuildCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "build <name>@<version>",
-		Short: "Build or rebuild a plugin from source in ./plugin to ./bin/plugins/",
+		Short: "Build or rebuild a plugin from source in ./plugin/<name>/<version> to ./bin/plugins/",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			pluginArg := args[0]
@@ -340,15 +285,36 @@ func PluginBuildCommand() *cobra.Command {
 				return
 			}
 			name, version := parts[0], parts[1]
+
+			manifestPath := fmt.Sprintf("./plugins/%s/%s/manifest.json", name, version)
+			manifestData, err := os.ReadFile(manifestPath)
+			if err != nil {
+				fmt.Printf("Warning: manifest.json not found at '%s'\n", manifestPath)
+				return
+			}
+
+			var meta PluginMeta
+			if err := json.Unmarshal(manifestData, &meta); err != nil {
+				fmt.Printf("Warning: could not parse manifest.json: %v\n", err)
+				return
+			}
+
+			if meta.Source == "" {
+				fmt.Println("Warning: 'source' field is missing in manifest.json")
+				return
+			}
+
+			source := meta.Source
+
 			fmt.Println("Building:", name, "Version:", version)
-			if err := buildPlugin(name, version); err != nil {
+			if err := buildPlugin(source, name, version); err != nil {
 				fmt.Printf("Build failed: %v\n", err)
 			}
 		},
 	}
 }
 
-func buildPlugin(pluginShortName, version string) error {
+func buildPlugin(source, pluginShortName, version string) error {
 	fmt.Printf("Building plugin: %s@%s\n", pluginShortName, version)
 	pluginDir := "./bin/plugins"
 	if err := os.MkdirAll(pluginDir, 0755); err != nil {
@@ -357,7 +323,7 @@ func buildPlugin(pluginShortName, version string) error {
 
 	// Absolute source dir and filename
 	pluginSourceDir := filepath.Join("plugins", pluginShortName, version)
-	pluginSourceFile := fmt.Sprintf("%s_plugin.go", pluginShortName)
+	pluginSourceFile := source
 	pluginSourcePath := filepath.Join(pluginSourceDir, pluginSourceFile)
 	if _, err := os.Stat(pluginSourcePath); os.IsNotExist(err) {
 		return fmt.Errorf("plugin source file %s does not exist", pluginSourcePath)
@@ -391,7 +357,7 @@ func buildPlugin(pluginShortName, version string) error {
 	}
 
 	// Output path: relative from pluginSourceDir to bin/plugins
-	camel := toCamelCase(pluginShortName)
+	camel := toCamelCase(strings.TrimSuffix(source, ".go"))
 	outputRelPath := filepath.ToSlash(filepath.Join("..", "..", "..", "bin", "plugins", fmt.Sprintf("%s@%s.so", camel, version)))
 
 	// Build from inside the plugin source dir, using relative source and output paths
@@ -527,4 +493,63 @@ func copyDir(src, dst string) error {
 		_, err = io.Copy(out, in)
 		return err
 	})
+}
+
+// Returns the current Hyperbricks version as semver string
+func getHyperbricksSemver() string {
+	ver := assets.VersionMD
+	ver = strings.TrimPrefix(ver, "v")
+	parts := strings.Fields(ver)
+	if len(parts) > 0 {
+		return parts[0]
+	}
+	return ver
+}
+
+// Returns the plugin's short name (right of last '/')
+func pluginShortName(fullName string) string {
+	if ix := strings.LastIndex(fullName, "/"); ix >= 0 {
+		return fullName[ix+1:]
+	}
+	return fullName
+}
+
+// Returns a CamelCase version of a plugin name (for filenames)
+func toCamelCase(s string) string {
+	var out []rune
+	upperNext := true
+	for _, r := range s {
+		if r == '-' || r == '_' {
+			upperNext = true
+			continue
+		}
+		if upperNext {
+			out = append(out, unicode.ToUpper(r))
+			upperNext = false
+		} else {
+			out = append(out, r)
+		}
+	}
+	return string(out)
+}
+
+// Fetches plugin index JSON from remote
+func fetchPluginIndex() (map[string]map[string]PluginMeta, error) {
+	resp, err := http.Get(pluginIndexURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch plugin index: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to fetch plugin index, status code: %d", resp.StatusCode)
+	}
+
+	var plugins map[string]map[string]PluginMeta
+	err = json.NewDecoder(resp.Body).Decode(&plugins)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode plugin index JSON: %v", err)
+	}
+
+	return plugins, nil
 }
