@@ -35,18 +35,20 @@ func NewStartCommand() *cobra.Command {
 				Port: Port,
 			}
 
-			if StartModule != "default" {
-				StartModule := fmt.Sprintf("modules/%s/package.hyperbricks", StartModule)
-				data, err := os.ReadFile(StartModule)
-				if err != nil {
-					fmt.Printf("Error reading config file: %v\n", err)
-					Exit = true
-					return
-				}
-				if err := json.Unmarshal(data, &config); err != nil {
-					StartMode = true
-					return
-				}
+			if StartModule == "" {
+				StartModule = "default"
+			}
+
+			StartModule := fmt.Sprintf("modules/%s/package.hyperbricks", StartModule)
+			data, err := os.ReadFile(StartModule)
+			if err != nil {
+				fmt.Printf("Error reading config file: %v\n", err)
+				Exit = true
+				return
+			}
+			if err := json.Unmarshal(data, &config); err != nil {
+				StartMode = true
+				return
 			}
 
 			fmt.Printf("Starting server with config: %s on port: %d\n", StartModule, config.Port)
