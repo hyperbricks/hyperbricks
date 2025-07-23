@@ -101,6 +101,7 @@ func basic_initialisation() {
 	initializeComponents()
 
 	// now configure the registered renderers with acquired configurations
-	configureRenderers()
 	PreProcessAndPopulateHyperbricksConfigurations()
+	// linking resources to the renderers
+	configureRenderers()
 }

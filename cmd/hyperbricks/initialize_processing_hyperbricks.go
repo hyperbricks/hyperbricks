@@ -46,7 +46,6 @@ func PreProcessAndPopulateConfigs() error {
 
 	updateGlobalConfigs(tempConfigs)
 	updateGlobalHyperMediasBySection(tempHyperMediasBySection)
-
 	PrepareForStaticRendering(tempConfigs)
 	resetHTMLCache()
 
