@@ -9,7 +9,6 @@ require (
 	github.com/charmbracelet/bubbletea v1.2.4
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/disintegration/imaging v1.6.2
-	github.com/drhodes/golorem v0.0.0-20220328165741-da82e5b29246
 	github.com/eiannone/keyboard v0.0.0-20220611211555-0d226195f203
 	github.com/emirpasic/gods v1.18.1
 	github.com/fsnotify/fsnotify v1.8.0
@@ -18,7 +17,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/otiai10/copy v1.14.1
-	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/spf13/cobra v1.8.1
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4

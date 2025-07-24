@@ -9,7 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eiannone/keyboard"
 	"github.com/fsnotify/fsnotify"
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
@@ -21,7 +23,7 @@ func validatePath(renderDir string) error {
 	}
 
 	// Get the absolute path of ./modules
-	allowedBasePath, err := filepath.Abs("./modules")
+	allowedBasePath, err := filepath.Abs(fmt.Sprintf("./modules/%s", commands.StartModule))
 	if err != nil {
 		return errors.New("failed to resolve base path for ./modules")
 	}
@@ -38,6 +40,38 @@ func validatePath(renderDir string) error {
 	}
 
 	return nil
+}
+
+func confirmDeletion(dir string) bool {
+	force := os.Getenv("FORCE_DELETE")
+	if force == "true" {
+		return true
+	}
+
+	fmt.Printf("Are you sure you want to delete directory %q? (y/n): ", dir)
+
+	if err := keyboard.Open(); err != nil {
+		fmt.Println("Failed to open keyboard input, aborting deletion.")
+		return false
+	}
+	defer keyboard.Close()
+
+	for {
+		char, key, err := keyboard.GetKey()
+		if err != nil {
+			fmt.Printf("\nError reading input: %v\n", err)
+			return false
+		}
+
+		if char == 'y' || char == 'Y' {
+			fmt.Println("yes")
+			return true
+		}
+		if char == 'n' || char == 'N' || key == keyboard.KeyEsc || key == keyboard.KeyCtrlC {
+			fmt.Println("no")
+			return false
+		}
+	}
 }
 
 func ensureDirectoriesExist(directories map[string]string) {

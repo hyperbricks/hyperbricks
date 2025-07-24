@@ -6,8 +6,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os/exec"
-	"runtime"
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
@@ -73,7 +71,7 @@ func StartServer(ctx context.Context) {
 		// Print a green dot using a Unicode bullet character
 
 		log.Printf("%s Server running in %s mode at http://%s", green+"●"+reset, hbConfig.Mode, shared.Location)
-
+		log.Printf("Press 'q', ESC or Ctrl+C to stop the server...")
 		// Start the HTTP server
 		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
 			log.Fatal("Server error:", err)
@@ -81,83 +79,83 @@ func StartServer(ctx context.Context) {
 	}()
 }
 
-// StartServer initializes and runs the HTTP server.
-func StartServerV1(ctx context.Context) {
-	hbConfig := getHyperBricksConfiguration()
+// // StartServer initializes and runs the HTTP server.
+// func StartServerV1(ctx context.Context) {
+// 	hbConfig := getHyperBricksConfiguration()
 
-	switch hbConfig.Mode {
+// 	switch hbConfig.Mode {
 
-	case shared.LIVE_MODE:
-		// Initialize the server
-		server = &http.Server{
-			Addr:           fmt.Sprintf(":%d", hbConfig.Server.Port),
-			ReadTimeout:    0, // Disable read timeout since it's cached
-			WriteTimeout:   0, // No delay in writing responses
-			IdleTimeout:    60 * time.Second,
-			MaxHeaderBytes: 65536, // 64KB header limit
-		}
+// 	case shared.LIVE_MODE:
+// 		// Initialize the server
+// 		server = &http.Server{
+// 			Addr:           fmt.Sprintf(":%d", hbConfig.Server.Port),
+// 			ReadTimeout:    0, // Disable read timeout since it's cached
+// 			WriteTimeout:   0, // No delay in writing responses
+// 			IdleTimeout:    60 * time.Second,
+// 			MaxHeaderBytes: 65536, // 64KB header limit
+// 		}
 
-	case shared.DEVELOPMENT_MODE, shared.DEBUG_MODE:
-		// Initialize the server
-		server = &http.Server{
-			Addr: fmt.Sprintf(":%d", hbConfig.Server.Port),
+// 	case shared.DEVELOPMENT_MODE, shared.DEBUG_MODE:
+// 		// Initialize the server
+// 		server = &http.Server{
+// 			Addr: fmt.Sprintf(":%d", hbConfig.Server.Port),
 
-			ReadTimeout:  hbConfig.Server.ReadTimeout,
-			WriteTimeout: hbConfig.Server.WriteTimeout,
-			IdleTimeout:  hbConfig.Server.IdleTimeout,
-		}
-	}
+// 			ReadTimeout:  hbConfig.Server.ReadTimeout,
+// 			WriteTimeout: hbConfig.Server.WriteTimeout,
+// 			IdleTimeout:  hbConfig.Server.IdleTimeout,
+// 		}
+// 	}
 
-	go func() {
-		ips, err := getHostIPv4s()
-		if err != nil {
-			logging.GetLogger().Errorw("Error retrieving host IPs", "error", err)
-			return
-		}
-		if len(ips) == 0 {
-			logging.GetLogger().Errorw("No IPv4 addresses found for the host")
-			return
-		}
+// 	go func() {
+// 		ips, err := getHostIPv4s()
+// 		if err != nil {
+// 			logging.GetLogger().Errorw("Error retrieving host IPs", "error", err)
+// 			return
+// 		}
+// 		if len(ips) == 0 {
+// 			logging.GetLogger().Errorw("No IPv4 addresses found for the host")
+// 			return
+// 		}
 
-		shared.Location = fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
-		orangeTrueColor := "\033[38;2;255;165;0m"
-		reset := "\033[0m"
+// 		shared.Location = fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
+// 		orangeTrueColor := "\033[38;2;255;165;0m"
+// 		reset := "\033[0m"
 
-		// Open dashboard if in development mode
-		if hbConfig.Mode == shared.DEVELOPMENT_MODE && hbConfig.Development.Dashboard {
-			logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf("Dashboard running at http://%s/dashboard", shared.Location), reset)
-			url := fmt.Sprintf("http://%s/dashboard", shared.Location)
-			err := openBrowser(url)
-			if err != nil {
-				fmt.Println("Error opening browser:", err)
-			}
-		}
+// 		// Open dashboard if in development mode
+// 		if hbConfig.Mode == shared.DEVELOPMENT_MODE && hbConfig.Development.Dashboard {
+// 			logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf("Dashboard running at http://%s/dashboard", shared.Location), reset)
+// 			url := fmt.Sprintf("http://%s/dashboard", shared.Location)
+// 			err := openBrowser(url)
+// 			if err != nil {
+// 				fmt.Println("Error opening browser:", err)
+// 			}
+// 		}
 
-		logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf("Server is listening at http://%s", shared.Location), reset)
+// 		logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf("Server is listening at http://%s", shared.Location), reset)
 
-		// Start the server
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logging.GetLogger().Fatalw("Server failed to start", "error", err)
-		}
-	}()
-}
+// 		// Start the server
+// 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+// 			logging.GetLogger().Fatalw("Server failed to start", "error", err)
+// 		}
+// 	}()
+// }
 
-// openBrowser opens the dashboard URL in a browser.
-func openBrowser(url string) error {
-	var cmd string
-	var args []string
+// // openBrowser opens the dashboard URL in a browser.
+// func openBrowser(url string) error {
+// 	var cmd string
+// 	var args []string
 
-	switch runtime.GOOS {
-	case "windows":
-		cmd = "rundll32"
-		args = []string{"url.dll,FileProtocolHandler", url}
-	case "darwin":
-		cmd = "open"
-		args = []string{url}
-	default: // Linux, BSD, etc.
-		cmd = "xdg-open"
-		args = []string{url}
-	}
+// 	switch runtime.GOOS {
+// 	case "windows":
+// 		cmd = "rundll32"
+// 		args = []string{"url.dll,FileProtocolHandler", url}
+// 	case "darwin":
+// 		cmd = "open"
+// 		args = []string{url}
+// 	default: // Linux, BSD, etc.
+// 		cmd = "xdg-open"
+// 		args = []string{url}
+// 	}
 
-	return exec.Command(cmd, args...).Start()
-}
+// 	return exec.Command(cmd, args...).Start()
+// }

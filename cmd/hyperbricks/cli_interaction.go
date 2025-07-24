@@ -68,7 +68,7 @@ func keyboardActions() {
 			}
 		}
 	}()
-
+	logging.GetLogger().Infoln("Press 'q', ESC or Ctrl+C to stop the server...")
 	// Main loop to handle events
 	for {
 		select {
