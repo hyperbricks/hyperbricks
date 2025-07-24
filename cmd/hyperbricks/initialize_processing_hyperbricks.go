@@ -44,10 +44,18 @@ func PreProcessAndPopulateConfigs() error {
 		}
 	}
 
+	// populate configurations
 	updateGlobalConfigs(tempConfigs)
 	updateGlobalHyperMediasBySection(tempHyperMediasBySection)
+
+	// linking resources to the renderers
+	linkRendererResources()
+
+	// prepare for static rendering
 	PrepareForStaticRendering(tempConfigs)
-	resetHTMLCache()
+
+	// clear cache
+	clearHTMLCache()
 
 	logger.Infow("Hyperbricks configurations loaded", "count", len(tempConfigs))
 
@@ -324,7 +332,7 @@ func GetGlobalHyperMediasBySection() map[string][]composite.HyperMediaConfig {
 }
 
 // resetHTMLCache clears the HTML cache.
-func resetHTMLCache() {
+func clearHTMLCache() {
 	htmlCacheMutex.Lock()
 	defer htmlCacheMutex.Unlock()
 	htmlCache = make(map[string]CacheEntry)

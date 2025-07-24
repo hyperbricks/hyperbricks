@@ -204,7 +204,7 @@ func registerRenderers() {
 	rm.RegisterComponent(component.APIConfigGetName(), apiRenderer, reflect.TypeOf(component.APIConfig{}))
 }
 
-func configureRenderers() {
+func linkRendererResources() {
 	// populating renderers with template from hyperbricks
 	rm.GetRenderComponent(composite.TemplateConfigGetName()).(*composite.TemplateRenderer).TemplateProvider = parser.GetTemplate
 	rm.GetRenderComponent(component.APIConfigGetName()).(*component.APIRenderer).TemplateProvider = parser.GetTemplate

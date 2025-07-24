@@ -97,11 +97,9 @@ func basic_initialisation() {
 	setWorkingDirectory()
 	applyHyperBricksConfigurations()
 
-	//First initialize all render components, because they have to be registered befor parsing.
+	// First initialize all render components, because they have to be registered before parsing.
 	initializeComponents()
 
-	// now configure the registered renderers with acquired configurations
+	// Now configure and populate the registered renderers with acquired configurations
 	PreProcessAndPopulateHyperbricksConfigurations()
-	// linking resources to the renderers
-	configureRenderers()
 }
