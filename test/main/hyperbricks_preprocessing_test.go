@@ -37,7 +37,7 @@ func Test_Preprocessing_Tests(t *testing.T) {
     `
 	parser.KnownTypes["<TEXT>"] = true
 	// Parse the input using the modified parser
-	preprocesses, _ := parser.PreprocessHyperScript(input, "./", "./test/docs/modules/default/templates/")
+	preprocesses, _ := parser.PreprocessHyperScript(input)
 	parsedConfig := parser.ParseHyperScript(preprocesses)
 
 	// Construct the expected configuration as a nested map

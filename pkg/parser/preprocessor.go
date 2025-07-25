@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
+	"github.com/hyperbricks/hyperbricks/pkg/core"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
@@ -63,51 +63,15 @@ func (tsa *HyperScriptStringArray) GetAllHyperBricks() map[string]string {
 	return copyMap
 }
 
-// PreProcessHyperScriptFromFile loads a HyperBricks file's content from the specified file path
-// and stores it in the HyperScriptStringArray instance.
-// func (t *HyperScriptStringArray) PreProcessHyperScriptFromFile(hyperbricksfile string, hyperbricksDir string, templateDir string) error {
-// 	tempHyperBricks := make(map[string]string)
-
-// 	// Read the content of the file
-// 	data, err := os.ReadFile(hyperbricksfile)
-// 	if err != nil {
-// 		logging.GetLogger().Error("Error reading file ", hyperbricksfile, ":", err)
-// 		return fmt.Errorf("read file error: %w", err)
-// 	}
-
-// 	// Extract route from the file path (filename without extension)
-// 	route := filepath.Base(hyperbricksfile)
-// 	route = route[:len(route)-len(filepath.Ext(route))]
-
-// 	// Preprocess the HyperBricks content
-// 	ts, err := PreprocessHyperScript(string(data), hyperbricksDir, templateDir)
-// 	if err != nil {
-// 		logging.GetLogger().Error("Error preprocessing HyperBricks")
-// 		return fmt.Errorf("preprocessing error: %w", err)
-// 	}
-
-// 	// Store the preprocessed HyperBricks using the route as the key
-// 	tempHyperBricks[route] = ts
-// 	logging.GetLogger().Info("Loaded configuration for route: ", route)
-
-// 	// Update the HyperBricksStore with the new data in a thread-safe manner
-// 	t.PreProcessedHyperScriptStoreMutex.Lock()
-// 	t.HyperBricksStore = tempHyperBricks
-// 	t.PreProcessedHyperScriptStoreMutex.Unlock()
-// 	logging.GetLogger().Info("Total configurations loaded:", len(tempHyperBricks))
-
-// 	return nil
-// }
-
-func (t *HyperScriptStringArray) PreProcessHyperBricksFromFiles(hyperbricksDir string, templateDir string) error {
+func (t *HyperScriptStringArray) PreProcessHyperBricksFromFiles() error {
 	tempHyperBricks := make(map[string]string)
 	orderedRoutes := []string{} // <-- stores order
 
 	orangeTrueColor := "\033[38;2;255;165;0m"
 	reset := "\033[0m"
 
-	logging.GetLogger().Info(orangeTrueColor, "Loading hyperbricks files in ", hyperbricksDir, "...", reset)
-	files, err := GetHyperScriptFiles(hyperbricksDir)
+	logging.GetLogger().Info(orangeTrueColor, "Loading hyperbricks files in ", core.ModuleDirectories.HyperbricksDir, "...", reset)
+	files, err := GetHyperScriptFiles(core.ModuleDirectories.HyperbricksDir)
 	if err != nil {
 		return fmt.Errorf("glob error: %v", err)
 	}
@@ -127,7 +91,7 @@ func (t *HyperScriptStringArray) PreProcessHyperBricksFromFiles(hyperbricksDir s
 		route := filepath.Base(file)
 		route = route[:len(route)-len(filepath.Ext(route))]
 
-		ts, err := PreprocessHyperScript(string(data), hyperbricksDir, templateDir)
+		ts, err := PreprocessHyperScript(string(data))
 		if err != nil {
 			logging.GetLogger().Error("Error preprocessing")
 			return fmt.Errorf("preprocessing error: %s", err)
@@ -163,10 +127,12 @@ func (t *HyperScriptStringArray) PreProcessHyperBricksFromFiles(hyperbricksDir s
 // {{MODULES_ROOT}}
 
 // PreprocessHyperScript processes @import directives and replaces TEMPLATE tokens.
-func PreprocessHyperScript(hyperBricks string, hyperbricksDir string, templateDir string) (string, error) {
+func PreprocessHyperScript(hyperBricks string) (string, error) {
+	hyperbricksDir := core.ModuleDirectories.HyperbricksDir
+	templateDir := core.ModuleDirectories.TemplateDir
+	workingDir := core.ModuleDirectories.Root
 
-	// 1. Serve static files from the ./static directory at the /static/ URL path
-	processed, err := processImports(hyperBricks, fmt.Sprintf("./%s", hyperbricksDir), make(map[string]bool))
+	processed, err := processImports(hyperBricks, fmt.Sprintf("%s%s", workingDir, hyperbricksDir), make(map[string]bool))
 	if err != nil {
 		logging.GetLogger().Error("failed to process imports: %v", err)
 		return "", fmt.Errorf("failed to process imports: %w", err)
@@ -180,7 +146,7 @@ func PreprocessHyperScript(hyperBricks string, hyperbricksDir string, templateDi
 			return token
 		}
 		templateName := matches[1]
-		templatePath := filepath.Join(fmt.Sprintf("./%s", templateDir), templateName)
+		templatePath := filepath.Join(fmt.Sprintf("%s%s", workingDir, templateDir), templateName)
 		logging.GetLogger().Debug("process import: ", templatePath)
 		content, err := os.ReadFile(templatePath)
 		if err != nil {
@@ -192,10 +158,10 @@ func PreprocessHyperScript(hyperBricks string, hyperbricksDir string, templateDi
 	})
 
 	moduleDirPattern := regexp.MustCompile(`{{MODULE}}`)
-	processed = moduleDirPattern.ReplaceAllString(processed, "modules/"+commands.StartModule)
+	processed = moduleDirPattern.ReplaceAllString(processed, core.ModuleDirectories.ModuleDir)
 
-	// rootPattern := regexp.MustCompile(`{{RESOURCES}}`)
-	// processed = rootPattern.ReplaceAllString(processed, "modules/"+commands.StartModule)
+	rootPattern := regexp.MustCompile(`{{RESOURCES}}`)
+	processed = rootPattern.ReplaceAllString(processed, core.ModuleDirectories.ResourcesDir)
 
 	fileRegex := regexp.MustCompile(`\{\{FILE:(.*?)\}\}`)
 	//templateRegex := regexp.MustCompile(`{{TEMPLATE:(\w+)}}`)

@@ -8,6 +8,7 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
+	"github.com/hyperbricks/hyperbricks/pkg/core"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
@@ -19,15 +20,15 @@ import (
 // PreProcessAndPopulateConfigs orchestrates the preprocessing and population of configurations.
 func PreProcessAndPopulateConfigs() error {
 	hbConfig, logger := retrieveConfigAndLogger()
-	templateDir, hyperBricksDir := determineDirectories(hbConfig)
+	determineDirectories(hbConfig)
 
-	if err := loadHyperBricks(hyperBricksDir, templateDir); err != nil {
+	if err := loadHyperBricks(); err != nil {
 		return fmt.Errorf("error loading HyperBricks: %w", err)
 	}
 
 	tempConfigs := make(map[string]map[string]interface{})
 	tempHyperMediasBySection := make(map[string][]composite.HyperMediaConfig)
-	filenameToRoutes := make(map[string][]string) // <-- Our mapping
+	filenameToRoutes := make(map[string][]string)
 
 	// Acquire lock if necessary for thread safety
 	hyperBricksArray.PreProcessedHyperScriptStoreMutex.Lock()
@@ -76,7 +77,7 @@ func retrieveConfigAndLogger() (*shared.Config, *zap.SugaredLogger) {
 }
 
 // determineDirectories resolves the directories for templates and HyperBricks.
-func determineDirectories(hbConfig *shared.Config) (string, string) {
+func determineDirectories(hbConfig *shared.Config) core.ModuleConfiguredDirectories {
 	getDirectory := func(key, defaultDir string) string {
 		if dir, exists := hbConfig.Directories[key]; exists && strings.TrimSpace(dir) != "" {
 			return fmt.Sprintf("./%s", dir)
@@ -84,14 +85,22 @@ func determineDirectories(hbConfig *shared.Config) (string, string) {
 		return defaultDir
 	}
 
-	templateDir := getDirectory("templates", "./templates")
-	hyperBricksDir := getDirectory("hyperbricks", "./hyperbricks")
-	return templateDir, hyperBricksDir
+	core.ModuleDirectories.ModulesRoot = "./modules"
+	core.ModuleDirectories.ModuleDir = "modules/" + commands.StartModule
+
+	core.ModuleDirectories.Root = "./"
+	core.ModuleDirectories.RenderedDir = getDirectory("rendered", fmt.Sprintf("%s/rendered", core.ModuleDirectories.ModuleDir))
+	core.ModuleDirectories.TemplateDir = getDirectory("templates", fmt.Sprintf("%s/templates", core.ModuleDirectories.ModuleDir))
+	core.ModuleDirectories.HyperbricksDir = getDirectory("hyperbricks", fmt.Sprintf("%s/hyperbricks", core.ModuleDirectories.ModuleDir))
+	core.ModuleDirectories.StaticDir = getDirectory("static", fmt.Sprintf("%s/static", core.ModuleDirectories.ModuleDir))
+	core.ModuleDirectories.ResourcesDir = getDirectory("resources", fmt.Sprintf("%s/resources", core.ModuleDirectories.ModuleDir))
+
+	return core.ModuleDirectories
 }
 
 // loadHyperBricks preprocesses HyperBricks from the specified directories.
-func loadHyperBricks(hyperBricksDir, templateDir string) error {
-	return hyperBricksArray.PreProcessHyperBricksFromFiles(hyperBricksDir, templateDir)
+func loadHyperBricks() error {
+	return hyperBricksArray.PreProcessHyperBricksFromFiles()
 }
 
 // processScript parses and processes a single HyperBricks file.
