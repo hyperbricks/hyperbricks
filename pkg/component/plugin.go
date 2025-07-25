@@ -8,6 +8,7 @@ import (
 	"plugin"
 	"strings"
 
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
@@ -69,7 +70,7 @@ func (r *PluginRenderer) Render(instance interface{}, ctx context.Context) (stri
 		return renderedContent, errors
 
 	}
-	if ctx == nil {
+	if ctx == nil && commands.RenderStatic {
 		ctx = context.Background()
 	}
 	renderedContent, renderErrs := pluginRenderer.Render(instance, ctx)
@@ -155,7 +156,7 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 	if err != nil {
 		log.Fatalf("Error initializing plugin: %v", err)
 	}
-	if ctx == nil {
+	if ctx == nil && commands.RenderStatic {
 		ctx = context.Background()
 	}
 	renderedContent, renderErrs := renderer.Render(instance, ctx)
