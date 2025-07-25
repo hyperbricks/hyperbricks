@@ -50,6 +50,8 @@ func init() {
 
 	if commands.RenderStatic {
 		basic_initialisation()
+
+		// serve
 		if err := serveStatic(); err != nil {
 			log.Fatalf("Static server error: %v", err)
 		}
