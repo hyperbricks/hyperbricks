@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
@@ -51,16 +52,18 @@ func PreProcessAndPopulateConfigs() error {
 	// linking resources to the renderers
 	linkRendererResources()
 
-	// prepare for static rendering
-	PrepareForStaticRendering(tempConfigs)
-
 	// clear cache
 	clearHTMLCache()
 
 	logger.Infow("Hyperbricks configurations loaded", "count", len(tempConfigs))
 
-	// Print mapping from filename to routes
-	printFilenameToRoutesMapping(filenameToRoutes)
+	// prepare for static rendering
+	if commands.RenderStatic {
+		PrepareForStaticRendering(tempConfigs)
+	} else {
+		// Print mapping from filename to routes
+		printFilenameToRoutesMapping(filenameToRoutes)
+	}
 
 	return nil
 }

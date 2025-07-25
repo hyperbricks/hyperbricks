@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -16,37 +15,42 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
-// validatePath ensures that the given path is within the ./modules directory.
 func validatePath(renderDir string) error {
 	if strings.TrimSpace(renderDir) == "" {
 		return fmt.Errorf("the path is empty")
 	}
 
-	// Get the absolute path of ./modules
-	allowedBasePath, err := filepath.Abs(fmt.Sprintf("./modules/%s", commands.StartModule))
+	// Absolute path to the module directory
+	moduleBasePath, err := filepath.Abs(filepath.Join("modules", commands.StartModule))
 	if err != nil {
-		return errors.New("failed to resolve base path for ./modules")
+		return fmt.Errorf("failed to resolve base path for ./modules: %w", err)
 	}
 
-	// Get the absolute path of the renderDir
+	// Absolute path to the renderDir
 	absRenderDir, err := filepath.Abs(renderDir)
 	if err != nil {
-		return errors.New("failed to resolve absolute path for renderDir")
+		return fmt.Errorf("failed to resolve absolute path for renderDir: %w", err)
 	}
 
-	// Ensure the renderDir is within the allowed base path
-	if !strings.HasPrefix(absRenderDir, allowedBasePath) {
-		return errors.New("renderDir is outside the allowed ./modules directory")
+	// Normalize paths
+	moduleBasePath = filepath.Clean(moduleBasePath)
+	absRenderDir = filepath.Clean(absRenderDir)
+
+	// Compute the relative path
+	rel, err := filepath.Rel(moduleBasePath, absRenderDir)
+	if err != nil {
+		return fmt.Errorf("failed to determine relative path: %w", err)
+	}
+
+	// Check that it's inside the module path and not equal to it
+	if rel == "." || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
+		return fmt.Errorf("renderDir must be a subdirectory of ./modules/%s", commands.StartModule)
 	}
 
 	return nil
 }
 
 func confirmDeletion(dir string) bool {
-	force := os.Getenv("FORCE_DELETE")
-	if force == "true" {
-		return true
-	}
 
 	fmt.Printf("Are you sure you want to delete directory %q? (y/n): ", dir)
 

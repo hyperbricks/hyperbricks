@@ -142,74 +142,76 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 	hbConfig := shared.GetHyperBricksConfiguration()
 	logger := logging.GetLogger()
 
-	if commands.RenderStatic {
-
-		orangeTrueColor := "\033[38;2;255;165;0m"
-		reset := "\033[0m"
-		msg := `
+	orangeTrueColor := "\033[38;2;255;165;0m"
+	reset := "\033[0m"
+	msg := `
 ============================================================================
                     Beginning static rendering of routes
 ============================================================================`
-		logger.Info(orangeTrueColor, msg, reset)
+	logger.Info(orangeTrueColor, msg, reset)
 
-		renderDir := ""
-		if tbrender, ok := hbConfig.Directories["render"]; ok {
-			renderDir = tbrender
-		}
+	renderDir := ""
+	if tbrender, ok := hbConfig.Directories["render"]; ok {
+		renderDir = tbrender
+	}
 
-		staticDir := ""
-		if tbstatic, ok := hbConfig.Directories["static"]; ok {
-			staticDir = tbstatic
-		}
+	staticDir := ""
+	if tbstatic, ok := hbConfig.Directories["static"]; ok {
+		staticDir = tbstatic
+	}
 
-		if renderDir == "" || staticDir == "" {
-			return
-		}
+	if renderDir == "" || staticDir == "" {
+		return
+	}
 
-		// Validate renderDir is inside ./modules
-		if err := validatePath(renderDir); err != nil {
-			logger.Errorw("Path validation failed", "path", renderDir, "error", err)
-			return
-		}
+	// Validate renderDir is inside ./modules
+	if err := validatePath(renderDir); err != nil {
+		logger.Errorw("Path validation failed", "path", renderDir, "error", err)
+		logger.Infoln("Exiting...")
+		return
+	}
 
-		// Confirm before deleting, skip if FORCE_DELETE=true
-		if !confirmDeletion(renderDir) {
-			logger.Infow("User aborted deletion", "directory", renderDir)
-			return
-		}
-
-		logger.Infow("Copying static directory", "source", staticDir, "destination", renderDir)
-
+	if !confirmDeletion(renderDir) {
+		logger.Infow("User skipped deletion", "directory", renderDir)
+	} else {
+		logger.Infow("Deleting all files in ", "directory", renderDir)
 		err := os.RemoveAll(renderDir)
 		if err != nil {
 			logger.Errorw("Error removing destination directory", "directory", renderDir, "error", err)
 			return
 		}
+	}
 
-		err = os.MkdirAll(renderDir, 0755)
-		if err != nil {
-			logger.Errorw("Error creating destination directory", "directory", renderDir, "error", err)
-			return
-		}
+	logger.Infow("Copying static directory", "source", staticDir, "destination", renderDir)
 
-		err = makeStatic(tempConfigs, renderDir)
-		if err != nil {
-			logger.Errorw("Error creating static files", "error", err)
-		}
+	err := os.MkdirAll(renderDir, 0755)
+	if err != nil {
+		logger.Errorw("Error creating destination directory", "directory", renderDir, "error", err)
+		return
+	}
 
-		err = copy.Copy(staticDir, filepath.Join(renderDir, "static"))
-		if err != nil {
-			logger.Errorw("Error copying directory", "source", staticDir, "destination", filepath.Join(renderDir, "static"), "error", err)
-		} else {
-			logger.Infow("Copied static file directory successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
-		}
+	err = makeStatic(tempConfigs, renderDir)
+	if err != nil {
+		logger.Errorw("Error creating static files", "error", err)
+	}
 
-		msgII := `
+	err = copy.Copy(staticDir, filepath.Join(renderDir, "static"))
+	if err != nil {
+		logger.Errorw("Error copying directory", "source", staticDir, "destination", filepath.Join(renderDir, "static"), "error", err)
+	} else {
+		logger.Infow("Copied static file directory successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
+	}
+
+	msgII := `
 ============================================================================
                     Finished static rendering of routes
 ============================================================================`
-		logger.Info(orangeTrueColor, msgII, reset)
+	logger.Info(orangeTrueColor, msgII, reset)
+
+	if err := serveStatic(); err != nil {
+		log.Fatalf("Static server error: %v", err)
 	}
+
 }
 
 func serveStatic() error {
