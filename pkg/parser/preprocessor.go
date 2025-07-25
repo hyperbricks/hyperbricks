@@ -121,11 +121,6 @@ func (t *HyperScriptStringArray) PreProcessHyperBricksFromFiles() error {
 	return nil
 }
 
-// {{RESOURCES}
-// {{STATIC}}
-// {{MODULE}}
-// {{MODULES_ROOT}}
-
 // PreprocessHyperScript processes @import directives and replaces TEMPLATE tokens.
 func PreprocessHyperScript(hyperBricks string) (string, error) {
 	hyperbricksDir := core.ModuleDirectories.HyperbricksDir
@@ -138,13 +133,17 @@ func PreprocessHyperScript(hyperBricks string) (string, error) {
 		return "", fmt.Errorf("failed to process imports: %w", err)
 	}
 
+	// ===============
+	// CACHE MARKERS
+	// ===============
 	templateRegex := regexp.MustCompile(`\{\{TEMPLATE:(.*?)\}\}`)
-	//templateRegex := regexp.MustCompile(`{{TEMPLATE:(\w+)}}`)
 	processed = templateRegex.ReplaceAllStringFunc(processed, func(token string) string {
 		matches := templateRegex.FindStringSubmatch(token)
+
 		if len(matches) != 2 {
 			return token
 		}
+
 		templateName := matches[1]
 		templatePath := filepath.Join(fmt.Sprintf("%s%s", workingDir, templateDir), templateName)
 		logging.GetLogger().Debug("process import: ", templatePath)
@@ -153,15 +152,8 @@ func PreprocessHyperScript(hyperBricks string) (string, error) {
 			logging.GetLogger().Error("failed to process imports: ", err)
 			return token
 		}
-
 		return fmt.Sprintf("<![%s[%s]]>", string(templateName), string(content))
 	})
-
-	moduleDirPattern := regexp.MustCompile(`{{MODULE}}`)
-	processed = moduleDirPattern.ReplaceAllString(processed, core.ModuleDirectories.ModuleDir)
-
-	rootPattern := regexp.MustCompile(`{{RESOURCES}}`)
-	processed = rootPattern.ReplaceAllString(processed, core.ModuleDirectories.ResourcesDir)
 
 	fileRegex := regexp.MustCompile(`\{\{FILE:(.*?)\}\}`)
 	//templateRegex := regexp.MustCompile(`{{TEMPLATE:(\w+)}}`)
@@ -181,6 +173,30 @@ func PreprocessHyperScript(hyperBricks string) (string, error) {
 
 		return " <<[" + string(content) + " ]>>"
 	})
+
+	// ===============
+	// PATH MARKERS
+	// ===============
+	moduleRootDirPattern := regexp.MustCompile(`{{MODULE_ROOT}}`)
+	processed = moduleRootDirPattern.ReplaceAllString(processed, core.ModuleDirectories.ModulesRoot)
+
+	rootDirPattern := regexp.MustCompile(`{{ROOT}}`)
+	processed = rootDirPattern.ReplaceAllString(processed, core.ModuleDirectories.Root)
+
+	moduleDirPattern := regexp.MustCompile(`{{MODULE}}`)
+	processed = moduleDirPattern.ReplaceAllString(processed, core.ModuleDirectories.ModuleDir)
+
+	rootPattern := regexp.MustCompile(`{{RESOURCES}}`)
+	processed = rootPattern.ReplaceAllString(processed, core.ModuleDirectories.ResourcesDir)
+
+	templatePattern := regexp.MustCompile(`{{TEMPLATES}}`)
+	processed = templatePattern.ReplaceAllString(processed, core.ModuleDirectories.TemplateDir)
+
+	staticPattern := regexp.MustCompile(`{{STATIC}}`)
+	processed = staticPattern.ReplaceAllString(processed, core.ModuleDirectories.StaticDir)
+
+	hyperBricksPattern := regexp.MustCompile(`{{HYPERBRICKS}}`)
+	processed = hyperBricksPattern.ReplaceAllString(processed, core.ModuleDirectories.HyperbricksDir)
 
 	return processed, nil
 }
