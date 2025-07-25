@@ -69,7 +69,9 @@ func (r *PluginRenderer) Render(instance interface{}, ctx context.Context) (stri
 		return renderedContent, errors
 
 	}
-
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	renderedContent, renderErrs := pluginRenderer.Render(instance, ctx)
 	if renderErrs != nil {
 		errors = append(errors, renderErrs...)
@@ -153,7 +155,9 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 	if err != nil {
 		log.Fatalf("Error initializing plugin: %v", err)
 	}
-
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	renderedContent, renderErrs := renderer.Render(instance, ctx)
 	if renderErrs != nil {
 
