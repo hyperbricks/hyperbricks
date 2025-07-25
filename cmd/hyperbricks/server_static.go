@@ -208,10 +208,6 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 ============================================================================`
 	logger.Info(orangeTrueColor, msgII, reset)
 
-	if err := serveStatic(); err != nil {
-		log.Fatalf("Static server error: %v", err)
-	}
-
 }
 
 func serveStatic() error {

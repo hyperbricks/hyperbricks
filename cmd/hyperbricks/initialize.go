@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"runtime"
 
 	"github.com/hyperbricks/hyperbricks/assets"
@@ -49,6 +50,9 @@ func init() {
 
 	if commands.RenderStatic {
 		basic_initialisation()
+		if err := serveStatic(); err != nil {
+			log.Fatalf("Static server error: %v", err)
+		}
 	}
 
 	if !commands.StartMode {
