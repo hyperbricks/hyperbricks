@@ -65,39 +65,39 @@ func (tsa *HyperScriptStringArray) GetAllHyperBricks() map[string]string {
 
 // PreProcessHyperScriptFromFile loads a HyperBricks file's content from the specified file path
 // and stores it in the HyperScriptStringArray instance.
-func (t *HyperScriptStringArray) PreProcessHyperScriptFromFile(hyperbricksfile string, hyperbricksDir string, templateDir string) error {
-	tempHyperBricks := make(map[string]string)
+// func (t *HyperScriptStringArray) PreProcessHyperScriptFromFile(hyperbricksfile string, hyperbricksDir string, templateDir string) error {
+// 	tempHyperBricks := make(map[string]string)
 
-	// Read the content of the file
-	data, err := os.ReadFile(hyperbricksfile)
-	if err != nil {
-		logging.GetLogger().Error("Error reading file ", hyperbricksfile, ":", err)
-		return fmt.Errorf("read file error: %w", err)
-	}
+// 	// Read the content of the file
+// 	data, err := os.ReadFile(hyperbricksfile)
+// 	if err != nil {
+// 		logging.GetLogger().Error("Error reading file ", hyperbricksfile, ":", err)
+// 		return fmt.Errorf("read file error: %w", err)
+// 	}
 
-	// Extract route from the file path (filename without extension)
-	route := filepath.Base(hyperbricksfile)
-	route = route[:len(route)-len(filepath.Ext(route))]
+// 	// Extract route from the file path (filename without extension)
+// 	route := filepath.Base(hyperbricksfile)
+// 	route = route[:len(route)-len(filepath.Ext(route))]
 
-	// Preprocess the HyperBricks content
-	ts, err := PreprocessHyperScript(string(data), hyperbricksDir, templateDir)
-	if err != nil {
-		logging.GetLogger().Error("Error preprocessing HyperBricks")
-		return fmt.Errorf("preprocessing error: %w", err)
-	}
+// 	// Preprocess the HyperBricks content
+// 	ts, err := PreprocessHyperScript(string(data), hyperbricksDir, templateDir)
+// 	if err != nil {
+// 		logging.GetLogger().Error("Error preprocessing HyperBricks")
+// 		return fmt.Errorf("preprocessing error: %w", err)
+// 	}
 
-	// Store the preprocessed HyperBricks using the route as the key
-	tempHyperBricks[route] = ts
-	logging.GetLogger().Info("Loaded configuration for route: ", route)
+// 	// Store the preprocessed HyperBricks using the route as the key
+// 	tempHyperBricks[route] = ts
+// 	logging.GetLogger().Info("Loaded configuration for route: ", route)
 
-	// Update the HyperBricksStore with the new data in a thread-safe manner
-	t.PreProcessedHyperScriptStoreMutex.Lock()
-	t.HyperBricksStore = tempHyperBricks
-	t.PreProcessedHyperScriptStoreMutex.Unlock()
-	logging.GetLogger().Info("Total configurations loaded:", len(tempHyperBricks))
+// 	// Update the HyperBricksStore with the new data in a thread-safe manner
+// 	t.PreProcessedHyperScriptStoreMutex.Lock()
+// 	t.HyperBricksStore = tempHyperBricks
+// 	t.PreProcessedHyperScriptStoreMutex.Unlock()
+// 	logging.GetLogger().Info("Total configurations loaded:", len(tempHyperBricks))
 
-	return nil
-}
+// 	return nil
+// }
 
 func (t *HyperScriptStringArray) PreProcessHyperBricksFromFiles(hyperbricksDir string, templateDir string) error {
 	tempHyperBricks := make(map[string]string)
@@ -157,13 +157,10 @@ func (t *HyperScriptStringArray) PreProcessHyperBricksFromFiles(hyperbricksDir s
 	return nil
 }
 
-// func (t *HyperScriptStringArray) PreProcessAllLoadedTemplates() {
-//     t.PreProcessedHyperScriptStoreMutex.RLock()
-//     for route, content := range t.HyperBricksStore {
-//         fmt.Printf("Slug: %s, Content: %s\n", route, content)
-//     }
-//     t.PreProcessedHyperScriptStoreMutex.RUnlock()
-// }
+// {{RESOURCES}
+// {{STATIC}}
+// {{MODULE}}
+// {{MODULES_ROOT}}
 
 // PreprocessHyperScript processes @import directives and replaces TEMPLATE tokens.
 func PreprocessHyperScript(hyperBricks string, hyperbricksDir string, templateDir string) (string, error) {
@@ -194,8 +191,11 @@ func PreprocessHyperScript(hyperBricks string, hyperbricksDir string, templateDi
 		return fmt.Sprintf("<![%s[%s]]>", string(templateName), string(content))
 	})
 
-	rootPattern := regexp.MustCompile(`{{MODULE_PATH}}`)
-	processed = rootPattern.ReplaceAllString(processed, "modules/"+commands.StartModule)
+	moduleDirPattern := regexp.MustCompile(`{{MODULE}}`)
+	processed = moduleDirPattern.ReplaceAllString(processed, "modules/"+commands.StartModule)
+
+	// rootPattern := regexp.MustCompile(`{{RESOURCES}}`)
+	// processed = rootPattern.ReplaceAllString(processed, "modules/"+commands.StartModule)
 
 	fileRegex := regexp.MustCompile(`\{\{FILE:(.*?)\}\}`)
 	//templateRegex := regexp.MustCompile(`{{TEMPLATE:(\w+)}}`)
