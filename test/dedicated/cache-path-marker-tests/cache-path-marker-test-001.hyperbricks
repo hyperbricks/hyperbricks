@@ -1,0 +1,31 @@
+==== hyperbricks config {!{template}} ====
+$appName = HyperBricks
+$version = 1.0.0
+template = <TEMPLATE>
+template.inline = <<[
+
+{{.name}}
+{{.version}}
+{{.module_root}}
+{{.root}}
+{{.module}}
+{{.resources}}
+{{.template}}
+{{.static}}
+{{.hyperbricks}}
+
+]>>
+template.values = {
+    name = {{VAR:appName}}
+    version = {{VAR:version}}
+    module_root = {{MODULE_ROOT}}
+    root = {{ROOT}}
+    module = {{MODULE}}
+    resources = {{RESOURCES}}
+    template = {{TEMPLATES}}
+    static = {{STATIC}}
+    hyperbricks = {{HYPERBRICKS}}
+}
+==== expected json ====
+==== expected output ====
+TEST 123

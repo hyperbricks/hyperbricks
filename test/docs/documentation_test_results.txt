@@ -1,6 +1,6 @@
 === RUN   Test_TestAndDocumentationRender
 loading 
-&{live {info ./logs/hyperbricks.log} {0 false 5s 10s 20s} {5 10} {false false false false} {} {10m0s} map[hyperbricks:modules/default/hyperbricks plugins:bin/plugins render:modules/default/rendered resources:modules/default/resources static:modules/default/static templates:modules/default/templates] {[] map[]} {10s}}=== RUN   Test_TestAndDocumentationRender/fragment-response
+&{live {info ./logs/hyperbricks.log} {0 false 5s 10s 20s} {5 10} {false false false false} {} {10m0s} map[hyperbricks:modules//hyperbricks plugins:bin/plugins render:modules//rendered resources:modules//resources static:modules//static templates:modules//templates] {[] map[]} {10s}}=== RUN   Test_TestAndDocumentationRender/fragment-response
 === RUN   Test_TestAndDocumentationRender/fragment-@doc
 === RUN   Test_TestAndDocumentationRender/fragment-title
 === RUN   Test_TestAndDocumentationRender/fragment-route
@@ -87,11 +87,11 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
 === RUN   Test_TestAndDocumentationRender/template-inline
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-20-07-2025 15:41	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
-2025/07/20 15:41:14 [failed to load template file ''|open : no such file or directory]
+27-07-2025 15:38	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/07/27 15:38:10 [failed to load template file ''|open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-20-07-2025 15:41	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
-2025/07/20 15:41:14 [failed to load template file ''|open : no such file or directory]
+27-07-2025 15:38	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/07/27 15:38:10 [failed to load template file ''|open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/template-values
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/template-enclose
@@ -146,12 +146,12 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-file
 === RUN   Test_TestAndDocumentationRender/json-template
-20-07-2025 15:41	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+27-07-2025 15:38	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-inline
 === RUN   Test_TestAndDocumentationRender/json-values
-20-07-2025 15:41	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+27-07-2025 15:38	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
-20-07-2025 15:41	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+27-07-2025 15:38	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
@@ -168,10 +168,10 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
-2025/07/20 15:41:15 Version: v0.5.6-alpha
-2025/07/20 15:41:15 Build Time: 2025-07-20T13:41:13Z
-2025/07/20 15:41:15 Static HTML file generated at ../../docs/hyperbricks-reference-v0.5.6-alpha.md
---- PASS: Test_TestAndDocumentationRender (0.57s)
+2025/07/27 15:38:11 Version: v0.5.99-alpha
+2025/07/27 15:38:11 Build Time: 2025-07-27T13:38:09Z
+2025/07/27 15:38:11 Static HTML file generated at ../../docs/hyperbricks-reference-v0.5.99-alpha.md
+--- PASS: Test_TestAndDocumentationRender (0.56s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -278,4 +278,4 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
 PASS
-ok  	command-line-arguments	0.785s
+ok  	command-line-arguments	0.775s
