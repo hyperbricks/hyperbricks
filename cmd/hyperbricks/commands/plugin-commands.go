@@ -204,16 +204,17 @@ func PluginListCommand() *cobra.Command {
 				fmt.Println("\033[1;33mTo enable plugins, they must be compiled for the currently installed version of Hyperbricks.\033[0m")
 				fmt.Println("\033[0;36mThis can be done automatically using:\033[0m")
 				fmt.Println("\033[1;32m hyperbricks plugin install <name>@<plugin_version>\033[0m \n")
-				fmt.Println("\033[0;36m# To preload the plugin, add the binary .so name to your package.hyperbricks\033[0m")
+				fmt.Println("\033[0;36m# To preload the plugin, add the binary name (without the .so extension) to your package.hyperbricks\033[0m")
 				fmt.Println("\033[0;36m# under the `plugins.enabled` array:\033[0m")
-				fmt.Println("\033[0;36m# Plugin binaries are named as <name>@<plugin_version>.so for clarity.\033[0m")
+				fmt.Println("\033[0;36m# Plugin binaries are named as <name>@<plugin_version> for clarity.\033[0m")
 
 				fmt.Printf("\033[1;34mplugins {\n  enabled = [ ")
 				for i, bin := range installedBinaries {
+					binName := strings.TrimSuffix(bin, ".so") // remove the .so suffix
 					if i > 0 {
 						fmt.Print(" ")
 					}
-					fmt.Printf("\033[1;32m%s\033[0m", bin)
+					fmt.Printf("\033[1;32m%s\033[0m", binName)
 					if i < len(installedBinaries)-1 {
 						fmt.Print(",")
 					}
