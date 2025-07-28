@@ -1,0 +1,44 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_reselect = #someotherid
+    }
+}
+==== explainer ====
+A css selector that allows you to choose which part of the response is used to be swapped in.
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "#someotherid",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+,"ContentType": ""
+  }
+==== expected output ====

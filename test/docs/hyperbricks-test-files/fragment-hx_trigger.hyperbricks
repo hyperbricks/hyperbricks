@@ -1,0 +1,44 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_trigger = myEvent
+    }
+}
+==== explainer ====
+allows you to trigger client-side events
+==== expected json ====
+{
+"ConfigType": "<FRAGMENT>",
+"ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+"HxTemplateResult": "",
+"HxLocation": "",
+"HxPushedUrl": "",
+"HxRedirect": "",
+"HxRefresh": "",
+"HxReplaceUrl": "",
+"HxReswap": "",
+"HxRetarget": "",
+"HxReselect": "",
+"HxTrigger": "myEvent",
+"HxTriggerafterSettle": "",
+"HxTriggerafterSwap": "",
+"MetaDocDescription": "",
+"HxResponseWriter": null,
+"Title": "",
+"Route": "",
+"Section": "",
+"Items": null,
+"Enclose": "",
+"Template": null,
+  "HyperBricksFile": "",
+"IsStatic": false,
+"Static": "",
+"Cache": "",
+"NoCache": false,
+"Index": 0,
+,"ContentType": ""
+}
+==== expected output ====

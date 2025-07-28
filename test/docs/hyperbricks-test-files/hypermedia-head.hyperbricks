@@ -1,0 +1,99 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.head = <HEAD>
+hypermedia.head {
+    css = [styles.css,xxxx]
+    js = [styles.css,xxxx]
+
+    meta {
+        a = b
+        b = c
+    }
+    999 = <HTML>
+    999.value = <!-- 999 overrides default generator meta tag -->
+
+    1001 = <CSS>
+    1001.inline = <<[
+        body {
+          padding:10px;
+        }
+    ]>>
+
+    20 = <HTML>
+    20.value = <meta name="generator" content="hyperbricks cms">
+     
+}
+hypermedia.10 = <HTML>
+hypermedia.10.value = <p>some HTML</p>
+==== explainer ====
+Builds header content. See <HEADER> for details
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Cache": "",
+  "NoCache": false,
+  "Static": "",
+  "Index": 0,
+,"ContentType": "",
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "1001": {
+      "@type": "<CSS>",
+      "inline": "\nbody {\n  padding:10px;\n}\n    "
+    },
+    "20": {
+      "@type": "<HTML>",
+      "value": "<meta name=\"generator\" content=\"hyperbricks cms\">"
+    },
+    "999": {
+      "@type": "<HTML>",
+      "value": "<!-- 999 overrides default generator meta tag -->"
+    },
+    "@type": "<HEAD>",
+    "css": [
+      "styles.css",
+      "xxxx"
+    ],
+    "js": [
+      "styles.css",
+      "xxxx"
+    ],
+    "meta": {
+      "a": "b",
+      "b": "c"
+    }
+  }
+}
+==== expected output ====
+<!DOCTYPE html>
+<html><head><meta name="generator" content="hyperbricks cms">
+        <!-- 999 overrides default generator meta tag -->
+        <meta name="a" content="b">
+        <meta name="b" content="c">
+        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="xxxx">
+        <script src="styles.css"></script>
+        <script src="xxxx"></script>
+        <style>
+        
+        body {
+          padding:10px;
+        }
+            
+        </style></head><body><p>some HTML</p></body></html>

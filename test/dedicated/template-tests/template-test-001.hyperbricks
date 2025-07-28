@@ -1,0 +1,95 @@
+==== hyperbricks config {!{fragment}} ====
+someOtherObject {
+    a = no weels!
+    b = no brakes!
+    c = but stereo works
+    motor {
+        # this should render as map
+        d = no oil
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.route = warning-lights.html
+fragment.template {
+        inline = <<[
+            <div class="flex space-x-2 {{.someOtherObject.motor.d }}">
+                <ul>
+                {{ range .warningLights }}
+                         <li>{{ . }}</li>
+                 {{ end }}
+                 {{ range .someOtherObject }}
+                        <li>{{ . }}</li>
+                  {{ end }}
+                </ul>
+            </div>
+            ]>>
+        values {
+            warningLights = [Check Engine, Low Fuel,Brake System]
+            someOtherObject < someOtherObject
+        }
+    }
+
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "warning-lights.html",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": {
+      "inline": "\n<div class=\"flex space-x-2 {{.someOtherObject.motor.d }}\">\n    <ul>\n    {{ range .warningLights }}\n             <li>{{ . }}</li>\n     {{ end }}\n     {{ range .someOtherObject }}\n            <li>{{ . }}</li>\n      {{ end }}\n    </ul>\n</div>\n",
+      "values": {
+        "someOtherObject": {
+          "a": "no weels!",
+          "b": "no brakes!",
+          "c": "but stereo works",
+          "motor": {
+            "d": "no oil"
+          }
+        },
+        "warningLights": [
+          "Check Engine",
+          "Low Fuel",
+          "Brake System"
+        ]
+      }
+    },
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "ContentType":"",
+    "Index": 0
+  }
+==== expected output ====
+<div class="flex space-x-2 no oil">
+    <ul>
+        <li>Check Engine</li>
+        <li>Low Fuel</li>
+        <li>Brake System</li>
+        <li>no weels!</li>
+        <li>no brakes!</li>
+        <li>but stereo works</li>
+        <li>map[d:no oil]</li>
+    </ul>
+</div>

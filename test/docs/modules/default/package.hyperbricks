@@ -1,0 +1,63 @@
+# here you can set the current module
+$module = modules/default
+
+
+# use this sort of objects to set hyperbricks globals
+myconf {
+    some = value
+}
+
+# this is the main hyperbricks configuration object. Use hyperbricks, not other objects.
+hyperbricks {
+    static = true
+
+    # live, development or debug mode
+    mode = live
+
+    # settings for debugging hyperbricks in go env
+    debug {
+        level = debugging
+    }
+
+    # only available in development mode. Then press r to reload.
+    development {
+        # watches hyperbricks and templatedir (directories) 
+        watch = true
+        reload = true
+    }
+
+    live {
+        # settings for live mode
+        cache
+    }
+
+    server {
+        # set http port here
+        port = 8080
+        beautify = true
+    }
+
+    directories {
+        # directory for rendered static html output
+        render = {{VAR:module}}/rendered
+
+        # This dir for all static assets that do not need processing
+        static = {{VAR:module}}/static
+
+        # Directory for resources that need processing
+        resources = {{VAR:module}}/resources
+
+        # Use this folder for templating with type TEMPLATE
+        # Use {{TEMPLATE:path/template}} without .tmpl extension
+        templates = {{VAR:module}}/templates
+
+        # folder that will be scanned for hyperbricks files
+        hyperbricks = {{VAR:module}}/hyperbricks
+    }
+
+    # debug, info, error, fatal, disable
+    logger {
+        level = info
+        path = {{VAR:module}}/logs/hyperbricks_v2.log
+    }
+}

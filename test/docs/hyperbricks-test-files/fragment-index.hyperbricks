@@ -1,0 +1,43 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	index = 1
+}
+==== explainer ====
+Index number is a sort order option for the <MENU> section. See <MENU> for further explanation
+==== expected json ====
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 1,
+  "ContentType": ""
+}
+==== expected output ====
+

@@ -1,0 +1,42 @@
+==== hyperbricks config {!{api_me_render}} ====
+# This test should produce a good result
+api_me_render = <API_FRAGMENT_RENDER>
+api_me_render {
+    route = me
+    endpoint = https://dummyjson.com/auth/me
+	method = GET
+    body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	headers {
+		Access-Control-Allow-Credentials = true
+        Authorization = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJlbWlseXMiLCJlbWFpbCI6ImVtaWx5LmpvaG5zb25AeC5kdW1teWpzb24uY29tIiwiZmlyc3ROYW1lIjoiRW1pbHkiLCJsYXN0TmFtZSI6IkpvaG5zb24iLCJnZW5kZXIiOiJmZW1hbGUiLCJpbWFnZSI6Imh0dHBzOi8vZHVtbXlqc29uLmNvbS9pY29uL2VtaWx5cy8xMjgiLCJpYXQiOjE3NDEzNTA4NjEsImV4cCI6MTc0MTM1MjY2MX0.Qvro1CbzRQlcIydey-1rZSBT8i5p4UwBr5Y3K2o27XY
+		Accept = application/json
+		Content-Type = application/json
+        credentials= include
+	}
+	 inline = <<[
+        {{ if eq .Status 200 }}
+            <h1>{{.someproperty}}</h1>
+            <ul id="{{index .Data.id}}">gender
+                <li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+                <li>gender: {{index .Data.gender}} </li>
+                <li>Bank CardNumber: {{index .Data.bank.cardNumber}} </li>
+            <img src="{{index .Data.image}}">
+            <ul>
+
+            {{ else }} 
+                {{.Data.message}}
+        {{ end }}
+        
+	 ]>>
+     values {
+         someproperty = API_FRAGMENT_RENDER demo
+     }
+
+    #setcookie =  <<[={{.Data.accessToken}}]>>
+    #debugpanel = false
+	#debug = true
+	enclose = <div class="userlist">|</div>
+}
+==== expected json ====
+==== expected output ====
+<div class="userlist">Token Expired!</div>

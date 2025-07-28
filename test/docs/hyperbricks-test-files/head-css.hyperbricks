@@ -1,0 +1,44 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    css = [style.css,morestyles.css]
+}
+==== explainer ====
+CSS files to include
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+,"ContentType": "",
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "@type": "<HEAD>",
+      "css": [
+        "style.css",
+        "morestyles.css"
+      ]
+    }
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="morestyles.css">
+        </head><body></body></html> 

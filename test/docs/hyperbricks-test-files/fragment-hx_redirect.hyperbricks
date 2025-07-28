@@ -1,0 +1,45 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_redirect = /some/new/location
+    }
+}
+==== explainer ====
+Can be used to do a client-side redirect to a new location
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "/some/new/location",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+,"ContentType": ""
+  }
+==== expected output ====
+

@@ -1,0 +1,20 @@
+==== hyperbricks config {!{status_code_test}} ====
+# this forces the endpoint into a status code
+status_code_test = <API_RENDER>
+status_code_test {
+    route = status_code_test
+    endpoint = http://localhost:8090/echo/query
+    method = GET
+   
+    # this forces query parameters
+    queryparams  {
+        code = 1000
+    }
+
+	inline = <<[
+        {{.Data.queryParams.code}}
+	]>>
+}
+==== expected json ====
+==== expected output ====
+1000

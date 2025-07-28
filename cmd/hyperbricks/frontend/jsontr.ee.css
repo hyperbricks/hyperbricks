@@ -1,0 +1,286 @@
+body {
+    display: flex;
+    margin: 0;
+}
+
+.pages {
+    position: fixed;
+    display: flex ;
+    gap:5px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    align-content: center;  
+    flex-direction: column;
+    font-family: monospace;
+    background-color: #f3f3f3;
+    padding-bottom: 50px;
+    padding-left: 12px;
+    padding-top: 50px;
+    margin: 10px 10px 10px 10px;
+  }
+  
+  .page-item-wrapper {
+   
+    display: inline-block; /* Ensure each link remains in one line */
+  }
+  
+  .page-items {
+    text-decoration: none; /* Optional: Remove underline */
+    padding: 5px; /* Optional: Add some padding */
+  }
+
+  #json-tree {
+    
+    overflow: scroll;
+  }
+
+svg {
+    cursor: grab;
+    --bg-color: #f3f3f3;
+    --line-color-1: #E0E0E0;
+    --line-color-2: #E4E4E4;
+    background-color: #f3f3f3;
+    background-image: linear-gradient(#E0E0E0 1.5px, transparent 1.5px), linear-gradient(90deg, #E0E0E0 1.5px, transparent 1.5px), linear-gradient(#E4E4E4 1px, transparent 1px), linear-gradient(90deg, #E4E4E4 1px, transparent 1px);
+    background-position: -1.5px -1.5px, -1.5px -1.5px, -1px -1px, -1px -1px;
+    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    padding-left: 100px;
+}
+
+#form {
+    height: calc(var(--vh, 1vh) * 100 - 61px);
+}
+
+#editor-container {
+    display: flex;
+    height: 100%;
+    overflow: hidden;
+    font-family: monospace;
+    padding-bottom: 80px;
+}
+
+#line-numbers {
+    width: 40px;
+    background-color: #f7f7f7;
+    text-align: right;
+    padding: 10px 10px 10px 0;
+    color: #999;
+    overflow: hidden;
+    border-right: 1px solid #ccc;
+    font-size: .875em;
+    line-height: 125%;
+}
+
+#editor {
+    flex: 1;
+    padding: 10px;
+    overflow: auto;
+    white-space: pre;
+    outline: none;
+    pointer-events: auto;
+    font-size: .875em;
+    line-height: 125%;
+}
+
+#editor[data-placeholder]:empty:before {
+    content: attr(data-placeholder);
+    color: #ccc;
+}
+
+#mermaid-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    
+}
+
+#zoomControl {
+    bottom: 10px;
+    right: 10px;
+}
+
+#zoom-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: grab;
+    --bg-color: #f3f3f3;
+    --line-color-1: #E0E0E0;
+    --line-color-2: #E4E4E4;
+    background-color: #f3f3f3;
+    background-image: linear-gradient(#E0E0E0 1.5px, transparent 1.5px), linear-gradient(90deg, #E0E0E0 1.5px, transparent 1.5px), linear-gradient(#E4E4E4 1px, transparent 1px), linear-gradient(90deg, #E4E4E4 1px, transparent 1px);
+    background-position: -1.5px -1.5px, -1.5px -1.5px, -1px -1px, -1px -1px;
+    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+}
+
+#diagram {
+    transform-origin: 0 0;
+    position: absolute;
+    top: 25%;
+    left: 10%;
+}
+
+.share svg {
+    height: 25px;
+    width: 25px;
+}
+
+#mobileText {
+    display: none;
+}
+
+.cm-error-highlight {
+    background-color: rgba(255, 0, 0, .2)
+}
+
+.cm-s-default .cm-string.cm-property {
+    color: #b16b2a !important
+}
+
+.cm-s-default .cm-string {
+    color: green !important
+}
+
+.CodeMirror-gutters {
+    background: #f1f5f9 !important;
+    border-right: 1px solid #e2e8f0 !important
+}
+
+.CodeMirror {
+    height: 100% !important;
+    width: 100% !important;
+    resize: vertical;
+    overflow: auto;
+    font-family: monospace !important;
+    font-size: 12px;
+}
+
+#copyToClipboard {
+    position: absolute;
+    top: 5px;
+    right: 15px;
+    z-index: 100;
+    border: 0;
+    font-size: 12px;
+}
+
+#copyToClipboard svg {
+    stroke-width: 2;
+    flex-shrink: 0;
+    height: 1rem;
+    width: 1rem;
+}
+
+#diagram rect {
+    fill: rgb(246, 248, 250);
+    transition: stroke 100ms ease-in-out;
+    stroke: #475872;
+    shape-rendering: geometricPrecision;
+    stroke-width: 1pt;
+}
+
+#diagram foreignObject {
+    color: rgb(0, 0, 0);
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 500;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+#diagram foreignObject span {
+    color: green;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.json-key {
+    color: #b16b2a !important;
+}
+
+#diagram foreignObject span span {
+    display: inline;
+    flex: 1 1 0%;
+    color: green;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.arrow-line {
+    fill: transparent;
+    stroke: #485a74;
+    pointer-events: none;
+    shape-rendering: geometricPrecision;
+    stroke-width: 1pt;
+}
+
+#actionsWrapper {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    flex-direction: row !important;
+    gap: 10px;
+}
+
+#actionsWrapper button {
+    margin: 0 !important;
+}
+
+#actionsWrapper button span {
+    display: none;
+}
+
+#actionsWrapper button span#mobileText {
+    display: block !important;
+}
+
+.CodeMirror-gutters {
+    position: relative; /* Asegura que los hijos puedan cambiar el orden */
+}
+
+.CodeMirror-linenumbers {
+    order: 1; /* Los nأ؛meros de lأ­nea se quedan en la izquierda */
+}
+
+.CodeMirror-foldgutter {
+    order: 2; /* Mueve el plegado hacia la derecha */
+    margin-left: 5px; /* Aأ±ade un margen opcional */
+}
+
+.btn-svg svg {
+    height: 40px;
+    width: 40px;
+}
+
+button#exportSVG,
+button#export,
+button#reset,
+button#zoom-out,
+button#zoom-in {
+    padding: 0;
+}
+
+button#exportSVG svg,
+button#export svg,
+button#reset svg,
+button#zoom-out svg,
+button#zoom-in svg {
+    height: 30px;
+    width: 30px;
+}
+
+@media (max-width: 991px) {
+    #form {
+        height: calc(var(--vh, 1vh) * 100 - 65px);
+    }
+
+    #graphContainer {
+        padding: 0!important;
+    }
+}

@@ -1,0 +1,30 @@
+==== hyperbricks config {!{image}} ====
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 310
+image.height = 310
+image.id = #cat
+==== explainer ====
+Id of image
+==== expected json ====
+{
+    "ConfigType": "<IMAGE>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+    "Width": 310,
+    "Height": 310,
+    "Alt": "",
+    "Title": "",
+    "Id": "#cat",
+    "Class": "",
+    "Quality": 0,
+    "Loading": "",
+    "IsStatic": false
+  }
+==== expected output ====
+<img src="static/images/cute_cat_w310_h310.jpg" width="310" height="310" id="#cat" /> 

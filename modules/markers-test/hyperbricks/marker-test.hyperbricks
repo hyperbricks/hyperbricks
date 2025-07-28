@@ -1,0 +1,41 @@
+
+$appName = HyperBricks
+$version = 1.0.0
+
+template = <TEMPLATE>
+template.inline = <<[
+    name:{{.name}}
+    version:{{.version}}
+    module_root:{{.module_root}}
+    root:{{.root}}
+    module:{{.module}}
+    resources:{{.resources}}
+    template:{{.template}}
+    static:{{.static}}
+    hyperbricks:{{.hyperbricks}}
+]>>
+
+template.values = {
+    name = {{VAR:appName}}
+    version = {{VAR:version}}
+    module_root = {{MODULE_ROOT}}
+    root = {{ROOT}}
+    module = {{MODULE}}
+    resources = {{RESOURCES}}
+    template = {{TEMPLATES}}
+    static = {{STATIC}}
+    hyperbricks = {{HYPERBRICKS}}
+}
+
+test_001 = <FRAGMENT>
+test_001.route = test_001
+test_001.10 = <TEXT>
+test_001.10.value = {{FILE:modules/markers-test/resources/test.txt}}
+
+test_002 = <HYPERMEDIA>
+test_002.route = test_002
+test_002.10 < template
+
+test_003 = <HYPERMEDIA>
+test_003.route = test_003
+test_003.10 < template

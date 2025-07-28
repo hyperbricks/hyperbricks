@@ -1,0 +1,41 @@
+==== hyperbricks config {!{fragment}} ====
+someOtherObject {
+    a = no weels!
+    b = no brakes!
+    c = but stereo works
+    motor {
+        # this should render as map
+        d = no oil
+    }
+}
+
+# Fragment: Returns an empty response (HTMX will still trigger JavaScript)
+fragment = <FRAGMENT>
+fragment.route = get-quote
+
+fragment.10 = <TEMPLATE>
+fragment.10 {
+    inline = <<[
+        <ul>
+            {{$users := fromJson .users}}
+            {{ range $users }}
+                <li>{{.name}} ({{.email}})</li>
+            {{ end }}
+        </ul>
+    ]>>
+    values {
+        users = <<[ 
+            
+            [
+                { "name": "Alice", "email": "alice@example.com" },
+                { "name": "Bob", "email": "bob@example.com" }
+            ]
+
+        ]>>
+    }
+}
+==== expected output ====
+<ul>
+    <li>Alice (alice@example.com)</li>
+    <li>Bob (bob@example.com)</li>
+</ul>

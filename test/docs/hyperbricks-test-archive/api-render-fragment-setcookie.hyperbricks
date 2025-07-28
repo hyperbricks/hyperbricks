@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Set template for cookie
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>

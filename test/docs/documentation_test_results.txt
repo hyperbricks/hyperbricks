@@ -1,0 +1,282 @@
+=== RUN   Test_TestAndDocumentationRender
+loading 
+&{live {info ./logs/hyperbricks.log} {0 false 5s 10s 20s} {5 10} {false false false false} {} {10m0s} map[hyperbricks:modules//hyperbricks plugins:bin/plugins render:modules//rendered resources:modules//resources static:modules//static templates:modules//templates] {[] map[]} {10s}}=== RUN   Test_TestAndDocumentationRender/fragment-response
+=== RUN   Test_TestAndDocumentationRender/fragment-@doc
+=== RUN   Test_TestAndDocumentationRender/fragment-title
+=== RUN   Test_TestAndDocumentationRender/fragment-route
+=== RUN   Test_TestAndDocumentationRender/fragment-section
+=== RUN   Test_TestAndDocumentationRender/fragment-enclose
+=== RUN   Test_TestAndDocumentationRender/fragment-template
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-static
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-cache
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-nocache
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-index
+=== RUN   Test_TestAndDocumentationRender/fragment-content_type
+
+Embedded Field: HxResponse (mapped as: response)
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_location
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_push_url
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_redirect
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_refresh
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_replace_url
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_reswap
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_retarget
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_reselect
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_trigger
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-@doc
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-title
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-route
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-section
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-bodytag
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-enclose
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-favicon
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-template
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-cache
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-nocache
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-static
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-index
+=== RUN   Test_TestAndDocumentationRender/hypermedia-doctype
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-htmltag
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-head
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-content_type
+=== RUN   Test_TestAndDocumentationRender/head-title
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/head-favicon
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/head-meta
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/head-css
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/head-js
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/template-@doc
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/template-template
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/template-inline
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/template-querykeys
+28-07-2025 19:22	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/07/28 19:22:22 [failed to load template file ''|open : no such file or directory]
+=== RUN   Test_TestAndDocumentationRender/template-queryparams
+28-07-2025 19:22	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/07/28 19:22:22 [failed to load template file ''|open : no such file or directory]
+=== RUN   Test_TestAndDocumentationRender/template-values
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/template-enclose
+=== RUN   Test_TestAndDocumentationRender/tree-@doc
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/tree-enclose
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/html-enclose
+=== RUN   Test_TestAndDocumentationRender/html-value
+=== RUN   Test_TestAndDocumentationRender/html-trimspace
+=== RUN   Test_TestAndDocumentationRender/css-attributes
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/css-enclose
+=== RUN   Test_TestAndDocumentationRender/css-inline
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/css-link
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/css-file
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/javascript-attributes
+=== RUN   Test_TestAndDocumentationRender/javascript-enclose
+=== RUN   Test_TestAndDocumentationRender/javascript-inline
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/javascript-link
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/javascript-file
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/image-attributes
+=== RUN   Test_TestAndDocumentationRender/image-enclose
+=== RUN   Test_TestAndDocumentationRender/image-src
+=== RUN   Test_TestAndDocumentationRender/image-width
+=== RUN   Test_TestAndDocumentationRender/image-height
+=== RUN   Test_TestAndDocumentationRender/image-alt
+=== RUN   Test_TestAndDocumentationRender/image-title
+=== RUN   Test_TestAndDocumentationRender/image-id
+=== RUN   Test_TestAndDocumentationRender/image-class
+=== RUN   Test_TestAndDocumentationRender/image-quality
+=== RUN   Test_TestAndDocumentationRender/image-loading
+=== RUN   Test_TestAndDocumentationRender/image-is_static
+=== RUN   Test_TestAndDocumentationRender/images-attributes
+=== RUN   Test_TestAndDocumentationRender/images-enclose
+=== RUN   Test_TestAndDocumentationRender/images-directory
+=== RUN   Test_TestAndDocumentationRender/images-width
+=== RUN   Test_TestAndDocumentationRender/images-height
+=== RUN   Test_TestAndDocumentationRender/images-id
+=== RUN   Test_TestAndDocumentationRender/images-class
+=== RUN   Test_TestAndDocumentationRender/images-alt
+=== RUN   Test_TestAndDocumentationRender/images-title
+=== RUN   Test_TestAndDocumentationRender/images-quality
+=== RUN   Test_TestAndDocumentationRender/images-loading
+=== RUN   Test_TestAndDocumentationRender/json-attributes
+=== RUN   Test_TestAndDocumentationRender/json-enclose
+=== RUN   Test_TestAndDocumentationRender/json-file
+=== RUN   Test_TestAndDocumentationRender/json-template
+28-07-2025 19:22	ERROR	failed to process imports: open sometemplate.html: no such file or directory
+=== RUN   Test_TestAndDocumentationRender/json-inline
+=== RUN   Test_TestAndDocumentationRender/json-values
+28-07-2025 19:22	ERROR	failed to process imports: open sometemplate.html: no such file or directory
+=== RUN   Test_TestAndDocumentationRender/json-debug
+28-07-2025 19:22	ERROR	failed to process imports: open sometemplate.html: no such file or directory
+=== RUN   Test_TestAndDocumentationRender/text-enclose
+=== RUN   Test_TestAndDocumentationRender/text-value
+=== RUN   Test_TestAndDocumentationRender/menu-enclose
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/menu-section
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/menu-order
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/menu-sort
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/menu-active
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/menu-item
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/menu-enclose#01
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+2025/07/28 19:22:23 Version: v0.6.0-alpha
+2025/07/28 19:22:23 Build Time: 2025-07-28T17:22:21Z
+2025/07/28 19:22:23 Static HTML file generated at ../../REFERENCE.md
+2025/07/28 19:22:23 Static HTML file generated at ../../README.md
+--- PASS: Test_TestAndDocumentationRender (0.56s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-route (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-section (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-template (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-static (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-cache (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-nocache (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-index (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-content_type (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-hx_location (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-hx_push_url (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-hx_redirect (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-hx_refresh (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-hx_replace_url (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-hx_reswap (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-hx_retarget (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-hx_reselect (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-@doc (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-title (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-route (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-section (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-bodytag (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-favicon (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-template (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-cache (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-nocache (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-static (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-index (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-doctype (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-htmltag (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-head (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-content_type (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/head-title (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/head-favicon (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/head-meta (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/head-css (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/head-js (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-@doc (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-template (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-inline (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-querykeys (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-queryparams (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-values (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/template-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/tree-@doc (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/tree-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/html-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/html-value (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/html-trimspace (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-attributes (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-inline (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-link (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-file (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-attributes (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-inline (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-link (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-file (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/image-attributes (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-enclose (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-src (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-width (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-height (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-alt (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-title (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-id (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-class (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-quality (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-loading (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-is_static (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/images-attributes (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-enclose (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/images-directory (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/images-width (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/images-height (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/images-id (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-class (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-alt (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-title (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-quality (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-loading (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/json-attributes (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-file (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-template (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-inline (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-values (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/json-debug (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/text-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/text-value (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-section (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-order (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-sort (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-active (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
+PASS
+ok  	command-line-arguments	0.773s

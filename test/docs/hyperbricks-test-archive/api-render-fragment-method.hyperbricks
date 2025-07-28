@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+HTTP method to use for API calls, GET POST PUT DELETE etc... 
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>
