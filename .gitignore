@@ -1,8 +1,9 @@
-
 # Ignore specific directories in the root folder
 test/docs/modules/
+modules/default/
 /plugins/
 /bin/
+
 **/archive
 /archive/
 
@@ -18,15 +19,7 @@ test/docs/modules/
 # Ignore Mac OS DS_Store files everywhere
 **/.DS_Store
 
-scripts/build_plugins.sh
-
-/plugins/routinecodec/
-/plugins/shorturl/
-/plugins/nodejs/
-/plugins/golang/
-
 TO_DO.md
-JWT_STRATEGY.md
-PostgREST HyperBricks API_RENDER.png
-test/docs/template_install_backup.md
-CHANGES
+CHANGES.md
+
+.gitignore
