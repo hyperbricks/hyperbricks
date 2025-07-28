@@ -1,0 +1,30 @@
+==== hyperbricks config {!{api_set_token_render}} ====
+# This test is a bit strange, it does generate different content when the right Bearer is send, but it cant be really tested
+api_set_token_render = <API_FRAGMENT_RENDER>
+api_set_token_render {
+    route = set_token
+    endpoint = https://authenticationtest.com/
+	method = GET
+	#body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+	#username = user
+	#password = pass
+	headers {
+        Authorization =  Bearer t0k3nId
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	 inline = <<[
+        {{.Status}}
+	 ]>>
+     values {
+         someproperty = API_FRAGMENT_RENDER demo
+     }
+
+    setcookie =  <<[token={{.Data.accessToken}}]>>
+    #debugpanel = false
+	#debug = true
+	#enclose = <div class="userlist">|</div>
+}
+==== expected json ====
+==== expected output ====
+200

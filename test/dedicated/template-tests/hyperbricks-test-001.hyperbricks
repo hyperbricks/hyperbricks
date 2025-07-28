@@ -1,0 +1,75 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = structured_page
+hypermedia.title = Structured Page
+hypermedia.bodytag = <body class="bg-gray-100 p-4">|</body>
+
+hypermedia.head {
+    100 = <HTML>
+    100.value = <<[
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            header, footer { background: #333; color: white; padding: 10px; text-align: center; }
+            main { padding: 20px; }
+        </style>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+        <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    ]>>
+}
+
+hypermedia.template {
+    inline = <<[
+        <!DOCTYPE html>
+        <html lang="en">
+        
+        {{.head}}
+
+        <body>
+            <header>
+                <h1>{{.title}}</h1>
+            </header>
+            <main>
+                <p>{{.content}}</p>
+            </main>
+            <footer>
+                <p>&copy; 2025 My Website</p>
+            </footer>
+        </body>
+        </html>
+    ]>>
+    values {
+
+        title = Structured Page
+        content = This is a Hypermedia document with a full HTML structure.
+    }
+}
+==== expected json ====
+==== expected output ====
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    header, footer { background: #333; color: white; padding: 10px; text-align: center; }
+    main { padding: 20px; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <meta name="generator" content="hyperbricks cms"><title>Structured Page</title>
+</head>
+<body>
+    <header>
+        <h1>Structured Page</h1>
+    </header>
+    <main>
+        <p>This is a Hypermedia document with a full HTML structure.</p>
+    </main>
+    <footer>
+        <p>&copy; 2025 My Website</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,48 @@
+==== hyperbricks config {!{api_login}} ====
+# Login with auth via body json and set returned token as cookie in the client's browser
+api_login = <API_FRAGMENT_RENDER>
+api_login {
+    # this is the fragment route:
+    route = login
+    endpoint = https://dummyjson.com/auth/login
+	method = POST
+
+	# use body...
+    body = {"username":"emilys","password":"emilyspass","expiresInMins":30}
+
+    # https://dummyjson.com does not have basic auth option but basic auth can be set like this:
+	# username = emilys
+	# password = emilyspass
+
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+	 inline = <<[
+        {{ if eq .Status 200 }}
+            <h1>{{.someproperty}}</h1>
+            <ul id="{{index .Data.id}}">
+                <li>{{index .Data.firstName}} {{index .Data.lastName}}</li>
+                <img src="{{index .Data.image}}">
+            <ul>
+
+            {{ else }} 
+                {{.Data.message}}
+        {{ end }}
+	 ]>>
+     values {
+         someproperty = API_FRAGMENT_RENDER demo
+     }
+    debug = true
+    # this is the template for setting the token (accessToken)
+    # response data is alway found in .Data
+    setcookie =  <<[token={{.Data.accessToken}}]>>
+
+}
+==== expected json ====
+==== expected output ====
+<h1>API_FRAGMENT_RENDER demo</h1>
+<ul id="1">
+    <li>Emily Johnson</li>
+    <img src="https://dummyjson.com/icon/emilys/128">
+<ul>

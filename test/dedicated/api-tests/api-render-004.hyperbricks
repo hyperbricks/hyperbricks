@@ -1,0 +1,16 @@
+==== hyperbricks config {!{echo_api_key}} ====
+# this forces the endpoint into a status code
+echo_api_key = <API_RENDER>
+echo_api_key {
+    route = status_code_test
+    endpoint = http://localhost:8090/echo/data
+    method = POST
+    body = {"my_api_key":"HARD_CODED_NOT_MAPPED"}
+	inline = <<[
+        {{.Data.my_api_key}}
+	]>>
+    debug = true
+}
+==== expected json ====
+==== expected output ====
+HARD_CODED_NOT_MAPPED

@@ -1,0 +1,51 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    meta {
+        a = b
+        b = c
+    }
+}
+==== explainer ====
+Metadata for the head section
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+,"ContentType": "",
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "@type": "<HEAD>",
+    "meta": {
+      "a": "b",
+      "b": "c"
+    }
+  }
+}
+==== expected output ====
+<!DOCTYPE html><html>
+<head>
+<meta name="generator" content="hyperbricks cms">
+<meta name="a" content="b">
+<meta name="b" content="c">
+</head>
+<body></body></html> 

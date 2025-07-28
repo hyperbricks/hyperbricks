@@ -1,0 +1,43 @@
+==== hyperbricks config {!{local_json_test}} ====
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+
+    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+	inline = <<[
+        <h1>Quotes</h1>
+        <ul>
+            {{range .Data.quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+    debug = false
+}
+==== explainer ====
+Template for rendering output
+==== expected json ====
+{
+    "ConfigType": "<JSON_RENDER>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "",
+    "FilePath": "hyperbricks-test-files/assets/quotes.json",
+    "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+    "Template": "",
+    "Values": null,
+    "Debug": false
+  }
+  
+==== expected output ====
+<h1>Quotes</h1>
+<ul>
+    <li><strong>Rumi:</strong> Your heart is the size of an ocean. Go find yourself in its hidden depths.</li>
+    <li><strong>Abdul Kalam:</strong> The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.</li>
+    <li><strong>Abdul Kalam:</strong> Thinking is the capital, Enterprise is the way, Hard Work is the solution.</li>
+    <li><strong>Bill Gates:</strong> If You Can&#39;T Make It Good, At Least Make It Look Good.</li>
+    <li><strong>Rumi:</strong> Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.</li>
+</ul>

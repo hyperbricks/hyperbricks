@@ -1,0 +1,35 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    route = index
+}
+==== explainer ====
+The route (URL-friendly identifier) for the hypermedia
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "index",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+,"ContentType": "",
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><body></body></html> 

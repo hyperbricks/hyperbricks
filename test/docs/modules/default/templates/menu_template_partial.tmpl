@@ -1,0 +1,15 @@
+<h1>MENU</h1>
+<ul>
+    {{- range $section, $pages := .Pages }}
+        <li>
+            <strong>{{ $section }}</strong>
+            <ul>
+                {{- range $pages }}
+                    <li>
+                        <a href="{{ .Slug }}">{{ .Title }}</a>
+                    </li>
+                {{- end }}
+            </ul>
+        </li>
+    {{- end }}
+</ul>

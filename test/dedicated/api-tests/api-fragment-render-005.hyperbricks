@@ -1,0 +1,43 @@
+==== hyperbricks config {!{api_add_user}} ====
+$API_URL= http://localhost:3000
+$JWT_SECRET = a-string-secret-at-least-256-bits-long
+
+# create a new user (local request behind frontend)
+
+api_add_user = <API_FRAGMENT_RENDER>
+api_add_user {
+    route = index
+	endpoint = {{VAR:API_URL}}/rpc/create_user
+
+    # we need a secret to create users
+    jwtsecret = {{VAR:JWT_SECRET}}
+    jwtclaims {
+        sub = user
+    }
+    
+	method = POST
+	body = {"p_username":"testuser1","p_email": "testuser1@example.com","p_password": "securepassword"}
+	headers {
+		Access-Control-Allow-Credentials = true
+		Content-Type = application/json
+	}
+    
+
+	inline = <<[
+        {{ if eq .Status 204 }}
+        <p>User Created, please check your email</p>
+        {{ else if eq .Status 409 }}
+            <p>User already exists</p>
+            {{ else }}
+                <p>Something went wrong</p>
+        {{ end }}
+	]>>
+    values {
+        someproperty = User
+    }
+	debug = true
+	enclose = <div class="userlist">|</div>
+}
+==== expected json ====
+==== expected output ====
+<div class="userlist"><p>User Created, please check your email</p></div> 

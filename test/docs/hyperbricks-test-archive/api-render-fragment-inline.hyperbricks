@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>

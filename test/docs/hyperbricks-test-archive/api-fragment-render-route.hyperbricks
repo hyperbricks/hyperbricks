@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+The route (URL-friendly identifier) for the fragment
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>

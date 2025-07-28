@@ -1,0 +1,33 @@
+==== hyperbricks config {!{api_test}} ====
+$API_URL= http://localhost:3000/
+
+api_test = <API_FRAGMENT_RENDER>
+api_test {
+    route = index
+	endpoint = {{VAR:API_URL}}tasks
+	method = GET
+	inline = <<[
+        
+        {{if gt (len .Data) 0}}
+            <p>Tasklist has item(s)</p> 
+        {{else}}
+            <p>Tasklist is empty</p> 
+        {{end}}
+    ]>>
+	querykeys = [id,order]
+
+	values {
+        postgrest_url = {{VAR:API_URL}}
+    }
+
+	headers {
+        Access-Control-Allow-Credentials = true
+        Authorization = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiIDogIjEiLCAicm9sZSIgOiAiYXV0aGVudGljYXRlZCJ9.AW7K8SMa3KpCXMpOte1H82-iM0OGTJhB2MH2-0ADdnA
+		Content-Type = application/json
+	}
+
+	debug = true
+}
+==== expected json ====
+==== expected output ====
+<p>Tasklist has item(s)</p> 

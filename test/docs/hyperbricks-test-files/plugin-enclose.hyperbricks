@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+The enclosing HTML element for the header divided by |
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>

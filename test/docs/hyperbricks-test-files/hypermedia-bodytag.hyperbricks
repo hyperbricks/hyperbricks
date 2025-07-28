@@ -1,0 +1,42 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+==== explainer ====
+Special body enclosure with use of a pipe symbol |. Please note that this will not work when a template is applied. In that case, you have to add the bodytag in the template.
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "<body id=\"main\">|</body>",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+,"ContentType": "",
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null
+}
+==== expected output ====
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    HELLO WORLD!
+  </body>
+</html>
+==== more details ====

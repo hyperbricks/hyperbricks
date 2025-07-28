@@ -1,0 +1,43 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
+==== explainer ====
+Enclosure of the property for the hypermedia
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "index",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "<body id=\"main\">|</body>",
+  "Enclose": "<p>|</p>",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+,"ContentType": "",
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null
+}
+==== expected output ====
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>HELLO WORLD!</p>
+  </body>
+</html>
+==== more details ====

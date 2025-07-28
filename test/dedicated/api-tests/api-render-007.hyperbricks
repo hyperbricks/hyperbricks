@@ -1,0 +1,14 @@
+==== hyperbricks config {!{no_code_test}} ====
+# nothing there so test succeeds
+no_code_test = <API_RENDER>
+no_code_test {
+    route = no_code_test
+    endpoint = http://localhost:8090/echo/query
+    method = GET
+	inline = <<[
+        {{.Data.queryParams.code}}
+	]>>
+
+}
+==== expected json ====
+==== expected output ====

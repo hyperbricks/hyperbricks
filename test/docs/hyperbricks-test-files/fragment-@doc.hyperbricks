@@ -1,0 +1,61 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment.response.hx_trigger = myEvent
+fragment.10 = <TEMPLATE>
+fragment.10 {
+    inline = <<[
+        <h2>{{.header}}</h2>
+        <p>{{.text}}</p>
+        {{.image}}
+]>>
+    
+    values {
+        header = SOME HEADER
+        text = <TEXT>
+        text.value = some text
+
+        image = <IMAGE>
+        image.src = hyperbricks-test-files/assets/cute_cat.jpg
+        image.width = 800
+    }
+}
+==== explainer ====
+A FRAGMENT dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+==== expected json ====
+{
+    "ConfigType": "<FRAGMENT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HxTemplateResult": "",
+    "HxLocation": "",
+    "HxPushedUrl": "",
+    "HxRedirect": "",
+    "HxRefresh": "",
+    "HxReplaceUrl": "",
+    "HxReswap": "",
+    "HxRetarget": "",
+    "HxReselect": "",
+    "HxTrigger": "myEvent",
+    "HxTriggerafterSettle": "",
+    "HxTriggerafterSwap": "",
+    "MetaDocDescription": "",
+    "HxResponseWriter": null,
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "Enclose": "",
+    "Template": null,
+    "HyperBricksFile": "",
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "ContentType": ""
+  }
+==== expected output ====
+<h2>SOME HEADER</h2>
+<p>some text</p>
+<img src="static/images/cute_cat_w800_h800.jpg" width="800" height="800" />

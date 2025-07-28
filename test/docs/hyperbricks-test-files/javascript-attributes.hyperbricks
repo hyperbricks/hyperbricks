@@ -1,0 +1,37 @@
+==== hyperbricks config {!{head}} ====
+head = <HEAD>
+head {
+    10 = <JAVASCRIPT>
+    10.file = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
+}
+==== explainer ====
+Extra attributes like id, data-role, data-action, type
+==== expected json ====
+{
+    "ConfigType": "<HEAD>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "Items": {
+      "10": {
+        "@type": "<JAVASCRIPT>",
+        "attributes": {
+          "type": "text/javascript"
+        },
+        "file": "hyperbricks-test-files/assets/main.js"
+      }
+    },
+    "Title": "",
+    "Favicon": "",
+    "MetaData": null,
+    "Css": null,
+    "Js": null
+  }
+==== expected output ====
+<head><script type="text/javascript">
+console.log("Hello World!")
+</script><meta name="generator" content="hyperbricks cms"></head>

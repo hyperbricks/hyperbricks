@@ -1,0 +1,64 @@
+==== hyperbricks config {!{fragment}} ====
+someOtherObject {
+    a = no weels!
+    b = no brakes!
+    c = but stereo works
+    motor {
+        # this should render as map
+        d = no oil
+    }
+}
+
+# Fragment: Returns an empty response (HTMX will still trigger JavaScript)
+fragment = <FRAGMENT>
+fragment.route = get-quote
+
+fragment.10 = <TEMPLATE>
+fragment.10 {
+    inline = <<[
+
+        {{define "sometemplate"}}
+            <h1>{{.title}}</h1>
+        {{end}}
+
+        {{template "sometemplate" .}}
+
+        {{ $random := 4 }}
+        <div class="text-xl">{{ index .options $random }}</div>
+        <div class="text-sm">{{ index .options_author $random }}</div>
+         {{$user := fromJson .someJSON}}  {{$user.name}}  {{$user.age}}
+        
+    ]>>
+
+
+     # Predefined quotes
+     values {
+
+        title = SOME TITLE
+
+        someJSON = <<[
+            {"name":"John", "age":30, "car":null}
+        ]>>
+
+        options = [
+            The only way to do great work is to love what you do.,
+            Life is what happens when youre busy making other plans.,
+            The purpose of our lives is to be happy.,
+            Get busy living or get busy dying.,
+            You miss 100% of the shots you don’t take.
+        ]
+
+       options_author = [
+            Steve Jobs,
+            John Lennon,
+            Dalai Lama,
+            Stephen King,
+            Wayne Gretzky
+        ]
+    }
+}
+==== expected output ====
+<h1>SOME TITLE</h1>
+<div class="text-xl">You miss 100% of the shots you don’t take.</div>
+<div class="text-sm">Wayne Gretzky</div>
+   John  30

@@ -1,0 +1,47 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.link = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
+}
+==== explainer ====
+Use link for a script tag with a src attribute
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Title": "",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+,"ContentType": "",
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": {
+      "10": {
+        "@type": "<JAVASCRIPT>",
+        "attributes": {
+          "type": "text/javascript"
+        },
+        "link": "hyperbricks-test-files/assets/main.js"
+      }
+    }
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><script src="hyperbricks-test-files/assets/main.js"></script><meta name="generator" content="hyperbricks cms"></head><body></body></html> 

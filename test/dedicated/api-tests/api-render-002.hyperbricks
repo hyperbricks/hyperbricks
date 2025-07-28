@@ -1,0 +1,15 @@
+==== hyperbricks config {!{status_code_test}} ====
+# this forces the endpoint into a status code
+status_code_test = <API_RENDER>
+status_code_test {
+    route = status_code_test
+    endpoint = http://localhost:8090/validate/body
+    method = GET
+    body = {"password":"$user_password"}
+	inline = <<[
+       Status:{{.Status}}
+	]>>
+}
+==== expected json ====
+==== expected output ====
+Status:200

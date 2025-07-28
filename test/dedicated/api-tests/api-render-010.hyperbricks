@@ -1,0 +1,15 @@
+==== hyperbricks config {!{disallow_parameter}} ====
+# Bu not adding 'example' to the querykeys it blocks it from the query to the API request
+disallow_parameter = <API_RENDER>
+disallow_parameter {
+    route = status_code_test
+    endpoint = http://localhost:8090/echo/query
+    method = GET
+    # allowed query parameters from url
+    querykeys = []
+	inline = <<[
+        {{.Data.queryParams.example}}
+	]>>
+}
+==== expected json ====
+==== expected output ====

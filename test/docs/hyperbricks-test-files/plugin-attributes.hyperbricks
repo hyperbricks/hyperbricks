@@ -1,0 +1,13 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+	
+}
+==== explainer ====
+Extra attributes like id, data-role, data-action
+==== expected json ====
+{
+	
+}
+==== expected output ====
+<div>this test fails</div>

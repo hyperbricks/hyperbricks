@@ -1,0 +1,24 @@
+==== hyperbricks config {!{filter_parameter}} ====
+# this allows the example value into the API request
+filter_parameter = <API_RENDER>
+filter_parameter {
+    route = status_code_test
+    endpoint = http://localhost:8090/echo/query
+    method = GET
+   
+    # allowed query parameters from url
+    querykeys = [example]
+    
+	inline = <<[
+        {{.Data.queryParams.example}}
+	]>>
+
+	debug = true 
+
+    response {
+        hx_target = target-element-id
+    }
+}
+==== expected json ====
+==== expected output ====
+testValue

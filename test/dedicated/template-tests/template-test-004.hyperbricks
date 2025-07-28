@@ -1,0 +1,19 @@
+==== hyperbricks config {!{upper_example}} ====
+upper_example = <TEMPLATE>
+upper_example {
+    inline = <<[
+        <article>
+            <h2>{{ .title | upper }}</h2>
+            <p>{{ .content }}</p>
+        </article>
+    ]>>
+    values {
+        title = Getting started
+        content = HyperBricks makes it easy to build web applications with HTMX.
+    }
+}
+==== expected output ====
+<article>
+    <h2>GETTING STARTED</h2>
+    <p>HyperBricks makes it easy to build web applications with HTMX.</p>
+</article>
