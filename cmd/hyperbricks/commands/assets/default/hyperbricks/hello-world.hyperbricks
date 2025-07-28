@@ -1,5 +1,5 @@
 page = <HYPERMEDIA>
-page.route = hello-world
+page.route = index
 page.10 = <TEXT>    
 page.10.value = HELLO WORLD!
 page.10.enclose = <p>|</p>

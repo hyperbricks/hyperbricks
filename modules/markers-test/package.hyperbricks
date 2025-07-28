@@ -29,7 +29,7 @@ hyperbricks {
         frontend_errors = false
 
          # shows dashboard in development mode
-        dashboard = false
+        dashboard = true
     }
 
     live {

@@ -1,29 +1,6 @@
-{{define "main"}}
-
-**Licence:** MIT  
+{{define "main"}}**Licence:** MIT  
 **Version:** {{.version}}  
 **Build time:** {{.buildtime}}
-
-
-{{include "template_note.md"}}
-
-Go direct to:
-- [Quickstart](#quickstart)
-- [Installation Instructions for HyperBricks](#installation-instructions-for-hyperbricks)
-- [Defining Hypermedia Documents and Fragments](#defining-hypermedia-documents-and-fragments)
-- [Adding Properties to Configurations](#adding-properties-to-configurations)
-- [Rendering Order and Property Rules](#rendering-order-and-property-rules)
-- [Example Configurations](#example-configurations)
-  - [Hypermedia Example](#hypermedia-example)
-  - [Fragment Example with HTMX Trigger](#fragment-example-with-htmx-trigger)
-- [Object Inheritance and Reusability](#object-inheritance-and-reusability)
-- [Importing Predefined HyperScripts](#importing-predefined-hyperscripts)
-- [HyperBricks type reference](#hyperbricks-type-reference)
-- [API Serverside Render](#api-serverside-render)
-
-{{include "template_general.md"}}
-{{include "template_general_examples.md"}}
-{{include "template_install.md"}}
 
 <h1><a id="hyperbricks-type-reference">HyperBricks type reference</a></h1>
 

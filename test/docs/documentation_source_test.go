@@ -450,7 +450,18 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	}
 
 	// Generate the static HTML file
-	renderStaticFile(tmpl, data, "../../docs/hyperbricks-reference-"+Version+".md")
+	// renderStaticFile(tmpl, data, "../../REFERENCE-"+Version+".md")
+
+	renderStaticFile(tmpl, data, "../../REFERENCE.md")
+
+	// Parse the HTML template
+	tmpl, err = template.New("main").Funcs(funcMap).ParseFiles("readme.md")
+	if err != nil {
+		log.Fatalf("Error parsing template: %v", err)
+	}
+
+	// Generate the static HTML file
+	renderStaticFile(tmpl, data, "../../README.md")
 
 	// // HTTP handler to serve the page dynamically
 	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

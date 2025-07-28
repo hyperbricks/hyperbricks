@@ -4,7 +4,7 @@ go test ./test/docs/documentation_source_test.go -v \
 -args -version="$(cat ./assets/version.md | tr -d \n)" \
         -buildtime="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   > ./test/docs/documentation_test_results.txt
-cp ./docs/hyperbricks-reference-$(cat assets/version.md | tr -d \n).md ./README.md
+# cp ./docs/hyperbricks-reference-$(cat assets/version.md | tr -d \n).md ./README.md
 
 matches=$(grep -iF "PASS:" ./test/docs/documentation_test_results.txt);
 
