@@ -1,6 +1,6 @@
 **Licence:** MIT  
 **Version:** v0.6.0-alpha  
-**Build time:** 2025-07-28T16:57:33Z
+**Build time:** 2025-07-28T17:22:21Z
 
 <h1><a id="hyperbricks-type-reference">HyperBricks type reference</a></h1>
 

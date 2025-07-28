@@ -87,11 +87,11 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
 === RUN   Test_TestAndDocumentationRender/template-inline
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-28-07-2025 18:57	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
-2025/07/28 18:57:34 [failed to load template file ''|open : no such file or directory]
+28-07-2025 19:22	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/07/28 19:22:22 [failed to load template file ''|open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-28-07-2025 18:57	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
-2025/07/28 18:57:34 [failed to load template file ''|open : no such file or directory]
+28-07-2025 19:22	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/07/28 19:22:22 [failed to load template file ''|open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/template-values
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/template-enclose
@@ -146,12 +146,12 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-file
 === RUN   Test_TestAndDocumentationRender/json-template
-28-07-2025 18:57	ERROR	failed to process imports: open sometemplate.html: no such file or directory
+28-07-2025 19:22	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-inline
 === RUN   Test_TestAndDocumentationRender/json-values
-28-07-2025 18:57	ERROR	failed to process imports: open sometemplate.html: no such file or directory
+28-07-2025 19:22	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
-28-07-2025 18:57	ERROR	failed to process imports: open sometemplate.html: no such file or directory
+28-07-2025 19:22	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
@@ -168,11 +168,11 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
-2025/07/28 18:57:35 Version: v0.6.0-alpha
-2025/07/28 18:57:35 Build Time: 2025-07-28T16:57:33Z
-2025/07/28 18:57:35 Static HTML file generated at ../../REFERENCE.md
-2025/07/28 18:57:35 Static HTML file generated at ../../README.md
---- PASS: Test_TestAndDocumentationRender (0.55s)
+2025/07/28 19:22:23 Version: v0.6.0-alpha
+2025/07/28 19:22:23 Build Time: 2025-07-28T17:22:21Z
+2025/07/28 19:22:23 Static HTML file generated at ../../REFERENCE.md
+2025/07/28 19:22:23 Static HTML file generated at ../../README.md
+--- PASS: Test_TestAndDocumentationRender (0.56s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -279,4 +279,4 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
 PASS
-ok  	command-line-arguments	0.755s
+ok  	command-line-arguments	0.773s
