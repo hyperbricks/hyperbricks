@@ -1,0 +1,4 @@
+analysis:
+  paths:
+    exclude:
+      - docs/FOSSA-ThirdPartyReport.md
