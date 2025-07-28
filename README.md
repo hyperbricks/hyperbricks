@@ -1,10 +1,10 @@
-
-
 **Licence:** MIT  
 **Version:** v0.5.1-alpha  
 **Build time:** 2025-07-12T11:53:35Z
 
 ## Disclaimer
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks?ref=badge_shield)
+
 
 This project is a personal experiment, initially built for my own use. You’re welcome to use it however you like, but please be aware that it’s currently in an alpha stage and not recommended for production environments.
 
@@ -6154,3 +6154,7 @@ hypermedia.head {
 
 
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks?ref=badge_large)
