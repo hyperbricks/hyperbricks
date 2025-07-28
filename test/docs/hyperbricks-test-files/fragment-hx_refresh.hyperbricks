@@ -38,6 +38,7 @@ If set to 'true' the client-side will do a full refresh of the page
     "Static": "",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+,"ContentType": ""
   }
 ==== expected output ====

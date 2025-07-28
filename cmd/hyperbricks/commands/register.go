@@ -4,6 +4,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	Exit = false
+)
 var RootCmd = &cobra.Command{
 	Use:   "hyperbricks", // Set the correct command name
 	Short: "Hyperbricks CLI",
@@ -18,6 +21,8 @@ func RegisterSubcommands() {
 	RootCmd.AddCommand(VersionCommand())
 	RootCmd.AddCommand(NewSelectCommand())
 	RootCmd.AddCommand(NewMakeStaticCommand())
+	RootCmd.AddCommand(PluginCommand())
+
 }
 
 // Execute runs the root command

@@ -36,6 +36,7 @@ Static file path associated with the fragment, this will only work for a hx-get 
     "Static": "some_static_file.extension",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+,"ContentType": ""
   }
 ==== expected output ====

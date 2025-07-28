@@ -18,7 +18,7 @@ func VersionCommand() *cobra.Command {
 		Use:   "version",
 		Short: "Show version",
 		Run: func(cmd *cobra.Command, args []string) {
-			Version = true
+			Exit = true
 			fmt.Println(assets.VersionMD)
 		},
 	}

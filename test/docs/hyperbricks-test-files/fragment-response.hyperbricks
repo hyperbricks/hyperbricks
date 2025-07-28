@@ -38,7 +38,8 @@ HTMX response header configuration.
     "Static": "",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+    "ContentType": ""
   }
 ==== expected output ====
 ==== more details ====

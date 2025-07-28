@@ -1,5 +1,7 @@
+
 # Ignore specific directories in the root folder
-/modules/
+test/docs/modules/
+/plugins/
 /bin/
 **/archive
 /archive/
@@ -26,4 +28,5 @@ scripts/build_plugins.sh
 TO_DO.md
 JWT_STRATEGY.md
 PostgREST HyperBricks API_RENDER.png
+test/docs/template_install_backup.md
 CHANGES

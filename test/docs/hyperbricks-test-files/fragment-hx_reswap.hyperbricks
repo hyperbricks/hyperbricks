@@ -38,6 +38,7 @@ Allows you to specify how the response will be swapped. See hx-swap in the [HTMX
     "Static": "",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+,"ContentType": ""
   }
 ==== expected output ====

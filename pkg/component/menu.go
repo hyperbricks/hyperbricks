@@ -135,7 +135,7 @@ func (mr *MenuRenderer) Render(instance interface{}, ctx context.Context) (strin
 
 	pages, ok := sortedHyperMedias[config.Section]
 	if !ok || len(pages) == 0 {
-		builder.WriteString(fmt.Sprintf("<!-- No pages found for section '%s' -->\n", config.Section))
+		builder.WriteString(fmt.Sprintf("<!-- No pages found for section '%s' %v-->\n", config.Section, config.HyperMediasBySection))
 		errors = append(errors, fmt.Errorf("no pages found for section '%s'", config.Section))
 		return builder.String(), errors
 	}

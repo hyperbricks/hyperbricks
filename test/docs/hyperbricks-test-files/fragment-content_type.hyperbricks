@@ -1,0 +1,40 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment.content_type = text/json 
+==== explainer ====
+content type header definition
+==== expected json ====
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "IsStatic": false,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "ContentType": "text/json"
+}
+==== expected output ====

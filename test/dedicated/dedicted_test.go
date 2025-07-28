@@ -258,7 +258,7 @@ func Test_All_Dedicated_Tests(t *testing.T) {
 				//fmt.Println("\nExpected Output:")
 				//fmt.Println(parsed.ExpectedOutput)
 				// Parse the combined configuration.
-				preprocesses, _ := parser.PreprocessHyperScript(parsed.HyperbricksConfig, "./", "./test/dedicated/modules/default/templates/")
+				preprocesses, _ := parser.PreprocessHyperScript(parsed.HyperbricksConfig)
 				parsedConfig := parser.ParseHyperScript(preprocesses)
 				//fmt.Printf("got obj from hyperscript:%v", parsedConfig)
 				// Convert the struct to JSON

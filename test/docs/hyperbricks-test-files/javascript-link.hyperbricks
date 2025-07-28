@@ -30,6 +30,7 @@ Use link for a script tag with a src attribute
     "Cache": "",
     "NoCache": false,
     "Index": 0,
+,"ContentType": "",
     "Doctype": "",
     "HtmlTag": "",
     "Head": {

@@ -17,35 +17,6 @@ import (
 	"github.com/yosssi/gohtml"
 )
 
-func renderStaticContentOld(route string, ctx context.Context) string {
-	hbConfig := getHyperBricksConfiguration()
-
-	_config, found := getConfig(route)
-	if !found {
-		logging.GetLogger().Info("Config not found for route", "route", route)
-		return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route)
-	}
-
-	configCopy := make(map[string]interface{})
-	for key, value := range _config {
-		configCopy[key] = value
-	}
-
-	if configCopy["@type"].(string) == composite.FragmentConfigGetName() {
-		configCopy["hx_response"] = nil
-	}
-
-	htmlContent, renderErrors := rm.Render(configCopy["@type"].(string), configCopy, ctx)
-
-	htmlContent = FrontEndErrorRender(renderErrors) + htmlContent
-
-	if hbConfig.Server.Beautify {
-		htmlContent = gohtml.Format(htmlContent)
-	}
-
-	return htmlContent
-}
-
 func renderStaticContent(route string, ctx context.Context) string {
 	hbConfig := getHyperBricksConfiguration()
 
@@ -96,7 +67,13 @@ func renderStaticContent(route string, ctx context.Context) string {
 
 }
 
-func renderContent(w http.ResponseWriter, route string, r *http.Request) (string, bool) {
+type RenderContent struct {
+	Content     string
+	NoCache     bool
+	ContentType string
+}
+
+func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderContent {
 	hbConfig := getHyperBricksConfiguration()
 	nocache := false
 
@@ -109,16 +86,28 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 			_config = __config
 		} else {
 			if route == "favicon.ico" {
-				return "", false
+				return RenderContent{
+					Content:     "",
+					NoCache:     false,
+					ContentType: "",
+				}
 			}
 			logging.GetLogger().Info("Config not found for route: ", route)
-			return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route), false
+			return RenderContent{
+				Content:     fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route),
+				NoCache:     false,
+				ContentType: "",
+			}
 		}
 	}
 
 	if _, ok := _config["nocache"].(string); ok {
 		nocache = true
 		// logging.GetLogger().Debugf("NoCache = true: %s from %s", val, route)
+	}
+	var contentType = ""
+	if ct, ok := _config["content_type"].(string); ok {
+		contentType = ct
 	}
 
 	configCopy := make(map[string]interface{})
@@ -183,7 +172,12 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) (string
 			output.WriteString(HandleRenderErrors(renderErrors))
 		}
 	}
-	return output.String(), nocache
+
+	return RenderContent{
+		Content:     output.String(),
+		NoCache:     nocache,
+		ContentType: contentType,
+	}
 
 }
 
@@ -303,15 +297,23 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 
 	var htmlContent strings.Builder
 	if hbConfig.Mode == shared.LIVE_MODE {
-		content := handleLiveMode(w, route, r)
-		htmlContent.WriteString(content)
+		cacheEntry := handleLiveMode(w, route, r)
+		htmlContent.WriteString(cacheEntry.Content)
+		if cacheEntry.ContentType != "" {
+			w.Header().Set("Content-Type", cacheEntry.ContentType)
+		} else {
+			w.Header().Set("Content-Type", "text/html")
+		}
 	} else {
-		content := handleDeveloperMode(w, route, r)
-		htmlContent.WriteString(content)
-	}
+		renderContent := handleDeveloperMode(w, route, r)
+		htmlContent.WriteString(renderContent.Content)
+		if renderContent.ContentType != "" {
+			w.Header().Set("Content-Type", renderContent.ContentType)
+		} else {
+			w.Header().Set("Content-Type", "text/html")
+		}
 
-	//w.Header().Set("HX-Trigger", "Deleted")
-	w.Header().Set("Content-Type", "text/html")
+	}
 
 	if _, err := fmt.Fprint(w, htmlContent.String()); err != nil {
 		logging.GetLogger().Errorw("Error writing response", "route", route, "error", err)
@@ -321,15 +323,13 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 }
 
 // RENDER WITHOUT CACHE
-func handleDeveloperMode(w http.ResponseWriter, route string, r *http.Request) string {
-
+func handleDeveloperMode(w http.ResponseWriter, route string, r *http.Request) RenderContent {
 	logging.GetLogger().Debugw("Developer mode active. Rendering fresh content:", route)
-	htmlContent, _ := renderContent(w, route, r)
-	return htmlContent
+	return renderContent(w, route, r)
 }
 
 // RENDER WITH CACHE
-func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) string {
+func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheEntry {
 
 	hbConfig := getHyperBricksConfiguration()
 	cacheDuration := hbConfig.Live.CacheTime
@@ -340,7 +340,7 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) string
 
 	if found && time.Since(cacheEntry.Timestamp) <= cacheDuration.Duration {
 		logging.GetLogger().Debugw("Cache hit for route", "route", route)
-		return cacheEntry.Content
+		return cacheEntry
 	}
 
 	if found {
@@ -349,24 +349,29 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) string
 		logging.GetLogger().Debugf("Cache missing for route %s. Rendering content.", route)
 	}
 
-	htmlContent, nocache := renderContent(w, route, r)
-	if !nocache {
-		//Calculate expiration time
-		var now = time.Now()
-		expirationTime := now.Add(cacheDuration.Duration).Format("2006-01-02 15:04:05 (-07:00)")
-		renderTime := time.Now().Format("2006-01-02 15:04:05 (-07:00)")
+	//Calculate expiration time
+	var now = time.Now()
+	expirationTime := now.Add(cacheDuration.Duration).Format("2006-01-02 15:04:05 (-07:00)")
+	renderTime := time.Now().Format("2006-01-02 15:04:05 (-07:00)")
 
-		htmlContent += fmt.Sprintf("\n<!-- Rendered at: %s -->", renderTime)
-		htmlContent += fmt.Sprintf("\n<!-- Cache expires at: %s -->", expirationTime)
-		if htmlContent != "" {
+	renderContent := renderContent(w, route, r)
+	if !renderContent.NoCache {
+		renderContent.Content += fmt.Sprintf("\n<!-- Rendered at: %s -->", renderTime)
+		renderContent.Content += fmt.Sprintf("\n<!-- Cache expires at: %s -->", expirationTime)
+		if renderContent.Content != "" {
 			htmlCacheMutex.Lock()
 			htmlCache[route] = CacheEntry{
-				Content:   htmlContent,
-				Timestamp: now,
+				Content:     renderContent.Content,
+				Timestamp:   now,
+				ContentType: renderContent.ContentType,
 			}
 			htmlCacheMutex.Unlock()
 			logging.GetLogger().Debugw("Updated cache for route", "route", route)
 		}
 	}
-	return htmlContent
+	return CacheEntry{
+		Content:     renderContent.Content,
+		Timestamp:   now,
+		ContentType: renderContent.ContentType,
+	}
 }

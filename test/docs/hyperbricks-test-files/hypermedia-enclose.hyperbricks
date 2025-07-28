@@ -28,6 +28,7 @@ Enclosure of the property for the hypermedia
   "Cache": "",
   "NoCache": false,
   "Index": 0,
+,"ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
   "Head": null

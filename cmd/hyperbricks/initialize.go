@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"runtime"
 
 	"github.com/hyperbricks/hyperbricks/assets"
@@ -17,17 +18,19 @@ func init() {
 	runtime.GOMAXPROCS(4)
 
 	commands.RegisterSubcommands()
+	commands.PluginCommand()
 
 	// Execute the root command
 	if err := commands.Execute(); err != nil {
 		fmt.Println(err)
 	}
 
-	shared.Init_configuration()
-
-	if commands.Version {
+	// exit if Version or Plugin command
+	if commands.Exit {
 		return
 	}
+
+	shared.Init_configuration()
 
 	shared.Module = fmt.Sprintf("modules/%s/package.hyperbricks", commands.StartModule)
 	hbConfig := getHyperBricksConfiguration()
@@ -47,7 +50,11 @@ func init() {
 
 	if commands.RenderStatic {
 		basic_initialisation()
-		return
+
+		// serve
+		if err := serveStatic(); err != nil {
+			log.Fatalf("Static server error: %v", err)
+		}
 	}
 
 	if !commands.StartMode {
@@ -93,10 +100,9 @@ func basic_initialisation() {
 	setWorkingDirectory()
 	applyHyperBricksConfigurations()
 
-	//First initialize all render components, because they have to be registered befor parsing.
+	// First initialize all render components, because they have to be registered before parsing.
 	initializeComponents()
 
-	// now configure the registered renderers with acquired configurations
-	configureRenderers()
+	// Now configure and populate the registered renderers with acquired configurations
 	PreProcessAndPopulateHyperbricksConfigurations()
 }

@@ -47,6 +47,7 @@ The section of the menu to display.
     "Cache": "",
     "NoCache": false,
     "Index": 0,
+,"ContentType": "",
     "Doctype": "",
     "HtmlTag": "",
     "Head": null

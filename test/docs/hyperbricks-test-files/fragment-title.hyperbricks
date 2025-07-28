@@ -36,7 +36,8 @@ The title of the fragment, only used in the context of the <MENU> component. For
     "Static": "",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+    "ContentType": ""
   }
   
 ==== expected output ====

@@ -29,6 +29,7 @@ Explicitly disable cache
   "Cache": "",
   "NoCache": true,
   "Index": 0,
+,"ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
   "Head": null

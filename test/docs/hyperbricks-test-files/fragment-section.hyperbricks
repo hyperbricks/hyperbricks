@@ -36,7 +36,8 @@ The section the fragment belongs to. This can be used with the component <MENU> 
     "Static": "",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+    "ContentType": ""
   }
 ==== expected output ====
 

@@ -69,13 +69,8 @@ hyperbricks {
     }
 
     plugins {
-        # propertyname must match the base filename without the .so extension
-        # value must be enabled, otherwise it will not preload
-        # to compile plugins run ./script/build.sh
-
-        #### uncomment to preload ####
-        # MarkdownPlugin = enabled
-        # LoremIpsumPlugin = enabled
+        # run "hyperbricks plugin help" and "hyperbricks plugin list" for options
+        # enabled = [ plugin.so , otherplugin.so ]
      }
 
     directories {
@@ -89,7 +84,7 @@ hyperbricks {
         resources = {{VAR:module}}/resources
 
         # plugins folder
-        # plugins = ./bin/plugins/
+        plugins = ./bin/plugins/
 
         # Use this folder for templating with type TEMPLATE
         # Use {{TEMPLATE:path/template}} without .tmpl extension

@@ -55,7 +55,8 @@ Template configurations for rendering the fragment. (This will disable rendering
     "Static": "",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+,"ContentType": ""
   }
 ==== expected output ====
 <div><p>SOME HTML CONTENT</p></div>

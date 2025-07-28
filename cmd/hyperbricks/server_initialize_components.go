@@ -204,18 +204,12 @@ func registerRenderers() {
 	rm.RegisterComponent(component.APIConfigGetName(), apiRenderer, reflect.TypeOf(component.APIConfig{}))
 }
 
-func configureRenderers() {
+func linkRendererResources() {
 	// populating renderers with template from hyperbricks
 	rm.GetRenderComponent(composite.TemplateConfigGetName()).(*composite.TemplateRenderer).TemplateProvider = parser.GetTemplate
 	rm.GetRenderComponent(component.APIConfigGetName()).(*component.APIRenderer).TemplateProvider = parser.GetTemplate
 	rm.GetRenderComponent(component.LocalJSONConfigGetName()).(*component.LocalJSONRenderer).TemplateProvider = parser.GetTemplate
 	rm.GetRenderComponent(component.MenuConfigGetName()).(*component.MenuRenderer).TemplateProvider = parser.GetTemplate
 	rm.GetRenderComponent(component.PluginRenderGetName()).(*component.PluginRenderer).TemplateProvider = parser.GetTemplate
-
-	hypermediasMutex.Lock()
-	temp := hypermediasBySection // Copy the map for use outside the lock
-	hypermediasMutex.Unlock()
-
-	rm.GetRenderComponent(component.MenuConfigGetName()).(*component.MenuRenderer).HyperMediasBySection = temp
-
+	rm.GetRenderComponent(component.MenuConfigGetName()).(*component.MenuRenderer).HyperMediasBySection = GetGlobalHyperMediasBySection()
 }

@@ -1,14 +1,18 @@
 package main
 
 import (
-	"bufio"
+	"context"
 	"embed"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
+	"github.com/eiannone/keyboard"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
@@ -138,70 +142,129 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 	hbConfig := shared.GetHyperBricksConfiguration()
 	logger := logging.GetLogger()
 
-	if commands.RenderStatic {
-
-		orangeTrueColor := "\033[38;2;255;165;0m"
-		reset := "\033[0m"
-		msg := `
+	orangeTrueColor := "\033[38;2;255;165;0m"
+	reset := "\033[0m"
+	msg := `
 ============================================================================
                     Beginning static rendering of routes
 ============================================================================`
-		logging.GetLogger().Info(orangeTrueColor, msg, reset)
-		renderDir := ""
-		if tbrender, ok := hbConfig.Directories["render"]; ok {
-			renderDir = tbrender
-		}
+	logger.Info(orangeTrueColor, msg, reset)
 
-		staticDir := ""
-		if tbstatic, ok := hbConfig.Directories["static"]; ok {
-			staticDir = tbstatic
-		}
+	renderDir := ""
+	if tbrender, ok := hbConfig.Directories["render"]; ok {
+		renderDir = tbrender
+	}
 
-		if renderDir == "" || staticDir == "" {
-			return
-		}
+	staticDir := ""
+	if tbstatic, ok := hbConfig.Directories["static"]; ok {
+		staticDir = tbstatic
+	}
 
-		logger.Infow("Copying static directory", "source", staticDir, "destination", renderDir)
+	if renderDir == "" || staticDir == "" {
+		return
+	}
 
-		if err := validatePath(renderDir); err != nil {
-			logger.Errorw("Path validation failed", "path", renderDir, "error", err)
-		}
+	// Validate renderDir is inside ./modules
+	if err := validatePath(renderDir); err != nil {
+		logger.Errorw("Path validation failed", "path", renderDir, "error", err)
+		logger.Infoln("Exiting...")
+		return
+	}
 
+	if !confirmDeletion(renderDir) {
+		logger.Infow("User skipped deletion", "directory", renderDir)
+	} else {
+		logger.Infow("Deleting all files in ", "directory", renderDir)
 		err := os.RemoveAll(renderDir)
 		if err != nil {
 			logger.Errorw("Error removing destination directory", "directory", renderDir, "error", err)
+			return
 		}
+	}
 
-		err = os.MkdirAll(renderDir, 0755)
-		if err != nil {
-			logger.Errorw("Error creating destination directory", "directory", renderDir, "error", err)
-		}
+	logger.Infow("Copying static directory", "source", staticDir, "destination", renderDir)
 
-		err = makeStatic(tempConfigs, renderDir)
-		if err != nil {
-			logger.Errorw("Error creating static files", "error", err)
-		}
+	err := os.MkdirAll(renderDir, 0755)
+	if err != nil {
+		logger.Errorw("Error creating destination directory", "directory", renderDir, "error", err)
+		return
+	}
 
-		err = copy.Copy(staticDir, filepath.Join(renderDir, "static"))
-		if err != nil {
-			logger.Errorw("Error copying directory", "source", staticDir, "destination", filepath.Join(renderDir, "static"), "error", err)
-		} else {
-			logger.Infow("Copied static file directory successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
-		}
-		msgII := `
+	err = makeStatic(tempConfigs, renderDir)
+	if err != nil {
+		logger.Errorw("Error creating static files", "error", err)
+	}
+
+	err = copy.Copy(staticDir, filepath.Join(renderDir, "static"))
+	if err != nil {
+		logger.Errorw("Error copying directory", "source", staticDir, "destination", filepath.Join(renderDir, "static"), "error", err)
+	} else {
+		logger.Infow("Copied static file directory successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
+	}
+
+	msgII := `
 ============================================================================
                     Finished static rendering of routes
 ============================================================================`
-		logging.GetLogger().Info(orangeTrueColor, msgII, reset)
-	}
+	logger.Info(orangeTrueColor, msgII, reset)
 
 }
 
-// confirmAction prompts the user for confirmation before proceeding.
-func confirmAction(prompt string) bool {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Printf("%s (yes/no): ", prompt)
-	response, _ := reader.ReadString('\n')
-	response = strings.TrimSpace(strings.ToLower(response))
-	return response == "yes"
+func serveStatic() error {
+	hbConfig := shared.GetHyperBricksConfiguration()
+
+	// Get host IPv4 addresses
+	ips, err := getHostIPv4s()
+	if err != nil || len(ips) == 0 {
+		return fmt.Errorf("no IPv4 addresses found: %w", err)
+	}
+
+	ip := ips[0]
+	portStr := strconv.Itoa(hbConfig.Server.Port)
+	addr := ip + ":" + portStr
+
+	handler := http.FileServer(http.Dir(fmt.Sprintf("modules/%s/rendered", commands.StartModule)))
+	server := &http.Server{Addr: addr, Handler: handler}
+
+	// Run server in background goroutine
+	go func() {
+		log.Printf("Serving static files at http://%s\n", addr)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("HTTP server ListenAndServe: %v", err)
+		}
+	}()
+
+	// Open keyboard for input
+	if err := keyboard.Open(); err != nil {
+		log.Printf("Failed to open keyboard: %v", err)
+		return err
+	}
+	defer keyboard.Close()
+
+	fmt.Println("Press 'q', ESC or Ctrl+C to stop the server...")
+
+	// Wait for q, ESC, or Ctrl+C
+	for {
+		char, key, err := keyboard.GetKey()
+		if err != nil {
+			log.Printf("Error reading keyboard input: %v", err)
+			break
+		}
+		if char == 'q' || key == keyboard.KeyEsc || key == keyboard.KeyCtrlC {
+			fmt.Println("Shutdown signal received, shutting down server...")
+			break
+		}
+	}
+
+	// Gracefully shutdown server with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("Server forced to shutdown: %v", err)
+		return err
+	}
+
+	fmt.Println("Server stopped.")
+	return nil
 }

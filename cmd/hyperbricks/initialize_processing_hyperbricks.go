@@ -3,9 +3,12 @@ package main
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strings"
 
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
+	"github.com/hyperbricks/hyperbricks/pkg/core"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
@@ -17,30 +20,51 @@ import (
 // PreProcessAndPopulateConfigs orchestrates the preprocessing and population of configurations.
 func PreProcessAndPopulateConfigs() error {
 	hbConfig, logger := retrieveConfigAndLogger()
-	templateDir, hyperBricksDir := determineDirectories(hbConfig)
+	determineDirectories(hbConfig)
 
-	if err := loadHyperBricks(hyperBricksDir, templateDir); err != nil {
+	if err := loadHyperBricks(); err != nil {
 		return fmt.Errorf("error loading HyperBricks: %w", err)
 	}
 
 	tempConfigs := make(map[string]map[string]interface{})
 	tempHyperMediasBySection := make(map[string][]composite.HyperMediaConfig)
-	allScripts := hyperBricksArray.GetAllHyperBricks()
+	filenameToRoutes := make(map[string][]string)
 
-	for filename, content := range allScripts {
+	// Acquire lock if necessary for thread safety
+	hyperBricksArray.PreProcessedHyperScriptStoreMutex.Lock()
+	allScripts := hyperBricksArray.HyperBricksStore
+	orderedRoutes := hyperBricksArray.OrderedHyperBricksRoutes
+	hyperBricksArray.PreProcessedHyperScriptStoreMutex.Unlock()
+
+	// ---- Process configs in strict order! ----
+	sort.Strings(orderedRoutes)
+	for _, filename := range orderedRoutes {
+		content := allScripts[filename]
 		config := parser.ParseHyperScript(content)
-		if err := processScript(filename, config, tempConfigs, tempHyperMediasBySection, logger); err != nil {
+		if err := processScript(filename, config, tempConfigs, tempHyperMediasBySection, logger, filenameToRoutes); err != nil {
 			logger.Warnw("Error processing script", "file", filename, "error", err)
 		}
 	}
 
+	// populate configurations
 	updateGlobalConfigs(tempConfigs)
 	updateGlobalHyperMediasBySection(tempHyperMediasBySection)
 
-	PrepareForStaticRendering(tempConfigs)
-	resetHTMLCache()
+	// linking resources to the renderers
+	linkRendererResources()
 
-	logger.Infow("Hyperbricks configurations loaded", "count", len(configs))
+	// clear cache
+	clearHTMLCache()
+
+	logger.Infow("Hyperbricks configurations loaded", "count", len(tempConfigs))
+
+	// prepare for static rendering
+	if commands.RenderStatic {
+		PrepareForStaticRendering(tempConfigs)
+	} else {
+		// Print mapping from filename to routes
+		printFilenameToRoutesMapping(filenameToRoutes)
+	}
 
 	return nil
 }
@@ -53,7 +77,7 @@ func retrieveConfigAndLogger() (*shared.Config, *zap.SugaredLogger) {
 }
 
 // determineDirectories resolves the directories for templates and HyperBricks.
-func determineDirectories(hbConfig *shared.Config) (string, string) {
+func determineDirectories(hbConfig *shared.Config) core.ModuleConfiguredDirectories {
 	getDirectory := func(key, defaultDir string) string {
 		if dir, exists := hbConfig.Directories[key]; exists && strings.TrimSpace(dir) != "" {
 			return fmt.Sprintf("./%s", dir)
@@ -61,14 +85,22 @@ func determineDirectories(hbConfig *shared.Config) (string, string) {
 		return defaultDir
 	}
 
-	templateDir := getDirectory("templates", "./templates")
-	hyperBricksDir := getDirectory("hyperbricks", "./hyperbricks")
-	return templateDir, hyperBricksDir
+	core.ModuleDirectories.ModulesRoot = "./modules"
+	core.ModuleDirectories.ModuleDir = "modules/" + commands.StartModule
+
+	core.ModuleDirectories.Root = "./"
+	core.ModuleDirectories.RenderedDir = getDirectory("rendered", fmt.Sprintf("%s/rendered", core.ModuleDirectories.ModuleDir))
+	core.ModuleDirectories.TemplateDir = getDirectory("templates", fmt.Sprintf("%s/templates", core.ModuleDirectories.ModuleDir))
+	core.ModuleDirectories.HyperbricksDir = getDirectory("hyperbricks", fmt.Sprintf("%s/hyperbricks", core.ModuleDirectories.ModuleDir))
+	core.ModuleDirectories.StaticDir = getDirectory("static", fmt.Sprintf("%s/static", core.ModuleDirectories.ModuleDir))
+	core.ModuleDirectories.ResourcesDir = getDirectory("resources", fmt.Sprintf("%s/resources", core.ModuleDirectories.ModuleDir))
+
+	return core.ModuleDirectories
 }
 
 // loadHyperBricks preprocesses HyperBricks from the specified directories.
-func loadHyperBricks(hyperBricksDir, templateDir string) error {
-	return hyperBricksArray.PreProcessHyperBricksFromFiles(hyperBricksDir, templateDir)
+func loadHyperBricks() error {
+	return hyperBricksArray.PreProcessHyperBricksFromFiles()
 }
 
 // processScript parses and processes a single HyperBricks file.
@@ -83,33 +115,29 @@ func processScript(
 	tempConfigs map[string]map[string]interface{},
 	tempHyperMediasBySection map[string][]composite.HyperMediaConfig,
 	logger *zap.SugaredLogger,
+	filenameToRoutes map[string][]string, // <-- add this
 ) error {
-	// Get the global HyperBricks configuration (used for server info, etc.)
 	hbConfig := getHyperBricksConfiguration()
 
-	// Iterate through all key-value pairs in the provided config map.
-	for key, v := range config {
-		// Assert that the value is a map[string]interface{} (object).
+	keys := make([]string, 0, len(config))
+	for key := range config {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		v := config[key]
 		obj, ok := v.(map[string]interface{})
 		if !ok {
-			// Skip if the structure is unexpected.
 			continue
 		}
-
-		// Check if the object has a '@type' field (required for processing).
 		typeValue, hasType := obj["@type"]
 		if !hasType {
-			// Skip configurations without a type field.
 			continue
 		}
-
-		// Branch logic based on the type of configuration.
 		switch typeValue {
-
-		// Handle recognized fragment config types.
 		case composite.FragmentConfigGetName(), composite.ApiFragmentRenderConfigGetName():
-			// Decode the fragment config into a strongly-typed struct.
-			fragmentConfig, err := decodeFragmentConfig(v.(map[string]interface{}))
+			fragmentConfig, err := decodeFragmentConfig(obj)
 			if err != nil {
 				logger.Warnw("Error decoding HyperMediaConfig", "error", err)
 				continue
@@ -117,16 +145,9 @@ func processScript(
 			if fragmentConfig.Route == "" {
 				continue
 			}
-
-			// Ensure the route is unique within tempConfigs, avoiding name collisions.
 			fragmentConfig.Route = ensureUniqueRoute(fragmentConfig.Route, filename, tempConfigs)
-			// Override the route in the config object with the unique value.
 			obj["route"] = fragmentConfig.Route
-
-			// Optional: perform static route handling/processing if needed.
 			handleStaticRoute(obj, &fragmentConfig)
-
-			// Track this fragment by section for organizational purposes.
 			hyperMediaConfig := composite.HyperMediaConfig{
 				Section: fragmentConfig.Section,
 				Title:   fragmentConfig.Title,
@@ -136,49 +157,34 @@ func processScript(
 				tempHyperMediasBySection[hyperMediaConfig.Section],
 				hyperMediaConfig,
 			)
-
-			// Log route or static file initialization for observability.
 			if hyperMediaConfig.Static == "" {
-				logger.Info(fmt.Sprintf("fragment: [http://%s/%s] initialized", shared.Location, hyperMediaConfig.Route))
+				logger.Info(fmt.Sprintf("fragment (%s): [http://%s/%s] initialized", filename, shared.Location, hyperMediaConfig.Route))
 			} else {
 				logger.Info(fmt.Sprintf("static file: %s", hyperMediaConfig.Static))
 			}
-
-			// Add traceability metadata (source file, config key) to the object.
 			obj["hyperbricksfile"] = filename
 			obj["hyperbrickskey"] = key
-
-			// Register the processed config using its unique route.
 			tempConfigs[fragmentConfig.Route] = obj
 
-		// Handle standard HyperMediaConfig types.
+			// --- Map filename to route here
+			filenameToRoutes[filename] = append(filenameToRoutes[filename], fragmentConfig.Route)
+
 		case composite.HyperMediaConfigGetName():
-			// Decode the hypermedia config struct.
-			hyperMediaConfig, err := decodeHyperMediaConfig(v.(map[string]interface{}))
+			hyperMediaConfig, err := decodeHyperMediaConfig(obj)
 			if err != nil {
 				logger.Warnw("Error decoding HyperMediaConfig", "error", err)
 				continue
 			}
-
 			if hyperMediaConfig.Route == "" {
 				continue
 			}
-
-			// Ensure route uniqueness as above.
 			hyperMediaConfig.Route = ensureUniqueRoute(hyperMediaConfig.Route, filename, tempConfigs)
-
 			obj["route"] = hyperMediaConfig.Route
-
-			// Optional: process static route logic.
 			handleStaticRoute(obj, &hyperMediaConfig)
-
-			// Organize this config by section for quick lookup later.
 			tempHyperMediasBySection[hyperMediaConfig.Section] = append(
 				tempHyperMediasBySection[hyperMediaConfig.Section],
 				hyperMediaConfig,
 			)
-
-			// Get host IPv4s for logging initialized routes.
 			ips, err := getHostIPv4s()
 			if err != nil {
 				logging.GetLogger().Errorw("Error retrieving host IPs", "error", err)
@@ -187,28 +193,39 @@ func processScript(
 				logging.GetLogger().Errorw("No IPv4 addresses found for the host")
 			}
 			shared.Location = fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
-
-			// Log route or static file initialization for observability.
 			if hyperMediaConfig.Static == "" {
-				logger.Info(fmt.Sprintf("route: [http://%s/%s] initialized", shared.Location, hyperMediaConfig.Route))
+				logger.Info(fmt.Sprintf("route  (%s): [http://%s/%s] initialized", filename, shared.Location, hyperMediaConfig.Route))
 			} else {
 				logger.Info(fmt.Sprintf("static file: %s", hyperMediaConfig.Static))
 			}
-
-			// Add traceability metadata.
 			obj["hyperbricksfile"] = filename
 			obj["hyperbrickskey"] = key
-
-			// Store the config under its resolved, unique route.
 			tempConfigs[hyperMediaConfig.Route] = obj
 
-		// Skip unknown types (other config types could be handled here if needed).
+			// --- Map filename to route here
+			filenameToRoutes[filename] = append(filenameToRoutes[filename], hyperMediaConfig.Route)
+
 		default:
 			continue
 		}
 	}
-
 	return nil
+}
+
+func printFilenameToRoutesMapping(filenameToRoutes map[string][]string) {
+	filenames := make([]string, 0, len(filenameToRoutes))
+	for fname := range filenameToRoutes {
+		filenames = append(filenames, fname)
+	}
+	logging.GetLogger().Info("====== route/config map ======")
+
+	sort.Strings(filenames)
+	for _, fname := range filenames {
+		routes := filenameToRoutes[fname]
+		logging.GetLogger().Info(fmt.Sprintf("%-24s -> %s", fname, strings.Join(routes, ", ")))
+
+	}
+	logging.GetLogger().Info("==============================")
 }
 
 func decodeHyperMediaConfig(v map[string]interface{}) (composite.HyperMediaConfig, error) {
@@ -327,7 +344,7 @@ func GetGlobalHyperMediasBySection() map[string][]composite.HyperMediaConfig {
 }
 
 // resetHTMLCache clears the HTML cache.
-func resetHTMLCache() {
+func clearHTMLCache() {
 	htmlCacheMutex.Lock()
 	defer htmlCacheMutex.Unlock()
 	htmlCache = make(map[string]CacheEntry)

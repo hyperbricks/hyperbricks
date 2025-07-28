@@ -1,7 +1,9 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -28,10 +30,25 @@ func NewStartCommand() *cobra.Command {
 		Use:   "start",
 		Short: "Start server",
 		Run: func(cmd *cobra.Command, args []string) {
-			StartMode = true
 
 			config := Config{
 				Port: Port,
+			}
+
+			if StartModule == "" {
+				StartModule = "default"
+			}
+
+			StartModule := fmt.Sprintf("modules/%s/package.hyperbricks", StartModule)
+			data, err := os.ReadFile(StartModule)
+			if err != nil {
+				fmt.Printf("Error reading config file: %v\n", err)
+				Exit = true
+				return
+			}
+			if err := json.Unmarshal(data, &config); err != nil {
+				StartMode = true
+				return
 			}
 
 			fmt.Printf("Starting server with config: %s on port: %d\n", StartModule, config.Port)

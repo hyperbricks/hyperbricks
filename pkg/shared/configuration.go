@@ -175,8 +175,10 @@ func loadHyperBricksConfiguration() *Config {
 	if err != nil {
 		GetLogger().Info("Failed to read config file", "path", configFilePath, "error", err)
 	}
+
+	moduleDir := "modules/" + commands.StartModule
 	rootPattern := regexp.MustCompile(`{{MODULE_PATH}}`)
-	_config := rootPattern.ReplaceAllString(string(configContent), "modules/"+commands.StartModule)
+	_config := rootPattern.ReplaceAllString(string(configContent), moduleDir)
 
 	// Parse the configuration file content
 	parsedConfig := parser.ParseHyperScript(_config)
@@ -216,11 +218,12 @@ func loadHyperBricksConfiguration() *Config {
 		},
 
 		Directories: map[string]string{
-			"render":      "modules/default/rendered",
-			"static":      "modules/default/static",
-			"resources":   "modules/default/resources",
-			"templates":   "modules/default/templates",
-			"hyperbricks": "modules/default/hyperbricks",
+			"render":      fmt.Sprintf("%s/rendered", moduleDir),
+			"static":      fmt.Sprintf("%s/static", moduleDir),
+			"plugins":     "bin/plugins",
+			"resources":   fmt.Sprintf("%s/resources", moduleDir),
+			"templates":   fmt.Sprintf("%s/templates", moduleDir),
+			"hyperbricks": fmt.Sprintf("%s/hyperbricks", moduleDir),
 		},
 
 		Development: DevelopmentConfig{

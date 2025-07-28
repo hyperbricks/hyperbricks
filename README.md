@@ -1,6 +1,7 @@
 **Licence:** MIT  
-**Version:** v0.5.1-alpha  
-**Build time:** 2025-07-12T11:53:35Z
+**Version:** v0.5.99-alpha  
+**Build time:** 2025-07-27T13:38:09Z
+
 
 ## Disclaimer
 
@@ -645,131 +646,534 @@ html result:
 
 </html>
 ```
+## Hyperbricks Configuration Reference
 
-### Quickstart
-Follow these steps to get started
-#### 1. [Installation Instructions for HyperBricks](#installation-instructions-for-hyperbricks)
-#### 2.	Initialize a new project:
-```bash
-hyperbricks init -m someproject
+This section explains the configuration options for your `package.hyperbricks` file.
+
+---
+
+### Module Declaration
+
+```ini
+# Set the current module path
+$module = modules/default
 ```
 
-This creates a folder <someproject> in the modules directory in the root. Always run the hyperbricks cli commands the root (parent of modules directory), otherwise it will not find the module given by the -m parameter.
+Use the `$module` variable to reference the module directory throughout your configuration.
 
-In the folder someproject you find this directory structure:
+---
+
+### Global Configuration Objects
+
+You can define global config blocks (e.g., for custom use):
+
+```ini
+myconf {
+    some = value
+}
+```
+
+Only the `hyperbricks` object is processed by the runtime. Other objects are allowed for organizational or user-defined purposes.
+
+---
+
+### Main Configuration Block
+
+#### `hyperbricks { ... }`
+
+This is the primary configuration block.
+
+---
+
+### Mode Settings
+
+```ini
+mode = development
+```
+
+Available modes:
+
+* `development` – Ideal for local dev with live reload.
+* `live` – Optimized for production deployment.
+* `debug` – Extra verbose logging (used for diagnostics).
+
+---
+
+### Debugging
+
+```ini
+debug {
+    level = debugging
+}
+```
+
+Controls Go-level debug verbosity.
+
+---
+
+### Development Mode
+
+```ini
+development {
+    watch = true
+    reload = true
+    frontend_errors = false
+    dashboard = false
+}
+```
+
+These settings are active only in `development` mode.
+
+---
+
+### Live Mode
+
+```ini
+live {
+    cache = 10s
+}
+```
+
+* Sets cache duration for rendered pages.
+* Supports Go-style durations like `300ms`, `2h45m`, etc.
+
+---
+
+### Server Settings
+
+```ini
+server {
+    port = 8080
+    beautify = true
+    read_timeout = 5s
+    write_timeout = 10s
+    idle_timeout = 20s
+}
+```
+
+Adjust timeout values based on traffic level. High-traffic blogs may prefer higher values (see commented examples).
+
+---
+
+### System Settings
+
+```ini
+system {
+    metrics_watch_interval = 10s
+}
+```
+
+Interval for system ticker to gather and report metrics.
+
+---
+
+### Rate Limiting
+
+```ini
+rate_limit {
+    requests_per_second = 100
+    burst = 500
+}
+```
+
+Control traffic with configurable request and burst limits. Adjust for your traffic level.
+
+---
+
+### Plugins
+
+```ini
+plugins {
+    # Example:
+    # enabled = [ plugin.so , otherplugin.so ]
+}
+```
+
+Enable plugins by listing their exact `.so` filenames. Use `hyperbricks plugin help` and `hyperbricks plugin list` for details.
+See plugin section on how to create and/or install plugins for Hyperbricks.
+
+---
+
+### Directory Settings
+
+```ini
+directories {
+    render      = {{VAR:module}}/rendered
+    static      = {{VAR:module}}/static
+    resources   = {{VAR:module}}/resources
+    plugins     = ./bin/plugins/
+    templates   = {{VAR:module}}/templates
+    hyperbricks = {{VAR:module}}/hyperbricks
+    # logs = {{VAR:module}}/logs
+}
+```
+
+| Key           | Purpose                                                 |
+| ------------- | ------------------------------------------------------- |
+| `render`      | Where static output is generated (`hyperbricks static`) |
+| `static`      | Public assets served as-is, like minified JS/CSS        |
+| `resources`   | Raw, unprocessed files like JS sources or markdown      |
+| `plugins`     | Path to `.so` plugin files                              |
+| `templates`   | Used with `<TEMPLATE>` and template engines             |
+| `hyperbricks` | Directory to scan for `.hyperbricks` files              |
+| `logs`        | (Optional) Enable file-based logging                    |
+
+---
+
+## Module Directory Structure Guide
+
+A Hyperbricks module follows a specific folder structure. Each folder serves a unique role in how your module is configured, rendered, and served.
+
 ```
 someproject/
-  ├── hyperbricks
-  ├────── hello_world.hyperbricks
-  ├────── quote-generator.hyperbricks
-  ├── rendered
-  ├── resources
-  ├── static
-  ├────── main.js
-  ├── templates
-  ├────── head.html
-  ├────── template.html
-  └─ package.hyperbricks
+├── hyperbricks/
+├── rendered/
+├── resources/
+├── static/
+├── templates/
+└── package.hyperbricks
 ```
 
-#### 3.	Start the project:
-```bash
-hyperbricks start -m someproject 
+---
+
+### Folder Breakdown
+
+#### `hyperbricks/`
+
+Contains the core `.hyperbricks` configuration files.
+
+* Files are loaded automatically in alphanumeric order from the root of this folder.
+* Subdirectories are not auto-loaded — you must explicitly include them using `@import`.
+
+---
+
+#### `rendered/`
+
+Default output folder used by the `hyperbricks static` command.
+
+* Stores pre-rendered routes and other static outputs.
+* Contents are typically generated — not edited by hand.
+
+---
+
+#### `resources/`
+
+Raw asset and source data folder.
+
+Use this to store:
+
+* JavaScript source files
+* Tailwind or other build configurations
+* Uncompiled markdown documents
+* Unprocessed images or data files
+
+---
+
+#### `static/`
+
+Public asset directory available at runtime.
+
+* Served relative to the root domain.
+* Example: `static/css/styles.min.css` becomes `https://mydomain.com/static/css/styles.min.css`
+
+Use it for precompiled CSS, JS, fonts, or images.
+
+---
+
+#### `templates/`
+
+Stores template files used during rendering.
+
+* Used for `<TEMPLATE>` blocks and any other templated output components.
+* Often embedded into config via `hypermedia` markers.
+
+---
+
+#### `package.hyperbricks`
+
+Module entry point.
+
+* Defines the module's main configuration.
+* Links together scripts, templates, resources, and routes.
+
+---
+
+### Path Markers in Configurations
+
+Use these markers in your configuration files for cleaner, portable paths:
+
+| Marker        | Refers To                  |
+| ------------- | -------------------------- |
+| `MODULE`      | Current module directory   |
+| `MODULE_ROOT` | Root folder of all modules |
+| `RESOURCES`   | `resources/` directory     |
+| `HYPERBRICKS` | `hyperbricks/` directory   |
+| `TEMPLATES`   | `templates/` directory     |
+| `STATIC`      | `static/` directory        |
+| `ROOT`        | Root of the entire project |
+
+---
+
+## Hypermedia Markers: Cached Content Embedding
+
+The `hypermedia` marker lets you preload files into memory and assign them as templates or raw text blocks. These are injected into the configuration and made instantly available — no runtime file access required.
+
+### Why use it?
+
+* Fast rendering
+* Self-contained config
+* Immutable state after load
+
+### Structure
+
+```
+hypermedia.<key> = <TYPE>
+hypermedia.<key>.<field> = {{<TYPE>:<file>}}
 ```
 
-HyperBricks will scan the hyperbricks root folder for files with the .hyperbricks extensions (not subfolders) and look for package.hyperbricks in the root of the module for global configurations.
+| Type       | Field      | Loaded From                |
+| ---------- | ---------- | -------------------------- |
+| `TEMPLATE` | `template` | `templates/` in the module |
+| `TEXT`     | `value`    | Module's root directory    |
 
-for start options type:
-```bash
-hyperbricks start --help 
+### Examples
+
+```ini
+hypermedia.10 = TEMPLATE
+hypermedia.10.template = {{TEMPLATE:sometemplate.html}}
+
+hypermedia.10 = TEXT
+hypermedia.10.value = {{TEXT:sometext.md}}
 ```
 
-#### 4.	Access the project in the browser:
-Open the web browser and navigate to http://localhost:8080 to view running hyperbricks.
+---
 
-### Installation Instructions for HyperBricks
+## Quickstart
+
+### 1. Install Hyperbricks
 
 Requirements:
 
-- Go version 1.23.2 or higher
-
-To install HyperBricks, use the following command:
+* Go 1.23.2 or higher
 
 ```bash
 go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
 ```
 
-This command downloads and installs the HyperBricks CLI tool
+---
 
-### Usage:
-```
-hyperbricks [command]
-```
-```
-Available Commands:
--  completion  [Generate the autocompletion script for the specified shell]
--  help        [Help about any command]
--  init        [Create package.hyperbricks and required directories]
--  select      [Select a hyperbricks module]
--  start       [Start server]
--  static      [Render static content]
--  version     [Show version]
-
-Flags:
-  -h, --help   help for hyperbricks
-```
-Use "hyperbricks [command] --help" for more information about a command.
-
-### Initializing a Project
-
-To initialize a new HyperBricks project, use the `init` command:
+### 2. Initialize a New Project
 
 ```bash
-hyperbricks init -m <name-of-hyperbricks-module>
+hyperbricks init -m someproject
 ```
-without the -m and ```<name-of-hyperbricks-module>``` this will create a ```default``` folder.
 
+This creates a folder `someproject` in the `modules` directory with this structure:
 
-This will create a `package.hyperbricks` configuration file and set up the required directories for the project.
+```
+someproject/
+├── hyperbricks/
+├── rendered/
+├── resources/
+├── static/
+├── templates/
+└── package.hyperbricks
+```
+
+Always run Hyperbricks CLI from the **project root** (parent of `modules/`).
 
 ---
 
-### Starting a Module
-
-Once the project is initialized, start the HyperBricks server using the `start` command:
+### 3. Start the Project
 
 ```bash
-hyperbricks start  -m <name-of-hyperbricks-module>
+hyperbricks start -m someproject
 ```
 
-Use the --production flag when adding system and service manager in linux or on a mac
-```bash
-hyperbricks start  -m <name-of-hyperbricks-module> --production
-```
-This will launch the server, allowing you to manage and serve hypermedia content on the ip of the machine.
+Visit: [http://localhost:8080](http://localhost:8080)
 
-Or ```hyperbricks start``` for running the module named ```default```.
-
-### Rendering static files to render directory
+To see CLI options:
 
 ```bash
-hyperbricks static  -m <name-of-hyperbricks-module>
+hyperbricks start --help
 ```
 
-### Additional Commands
+---
 
-HyperBricks provides other useful commands:
-
-
-
-- **`completion`**: Generate shell autocompletion scripts for supported shells.
-- **`help`**: Display help information for any command.
-
-For detailed usage information about a specific command, run:
+### 4. Render Static Output
 
 ```bash
-hyperbricks [command] --help
+hyperbricks static -m someproject
 ```
+
+---
+
+### Other Commands
+
+```bash
+hyperbricks [command]
+```
+
+| Command      | Description                                |
+| ------------ | ------------------------------------------ |
+| `completion` | Generate shell autocompletion              |
+| `help`       | Help on any command                        |
+| `init`       | Create config and folders for a new module |
+| `select`     | Select the active module                   |
+| `plugin`     | plugin management commands                 |
+| `start`      | Start the server                           |
+| `static`     | Render static HTML output                  |
+| `version`    | Show version info                          |
+
+Use `hyperbricks [command] --help` for detailed options.
+
+## Hyperbricks Plugin System
+
+Hyperbricks supports plugins compiled as Go `.so` files. The CLI offers tools to discover, install, build, and manage plugins compatible with your current version of Hyperbricks.
+
+---
+
+### Overview
+
+To access plugin management commands:
+
+```bash
+hyperbricks plugin [subcommand]
+```
+
+Subcommands:
+
+| Command          | Description                                           |
+| ---------------- | ----------------------------------------------------- |
+| `plugin list`    | List compatible plugins and their installation status |
+| `plugin install` | Download and compile a plugin by name and version     |
+| `plugin build`   | Rebuild a plugin from local source                    |
+| `plugin remove`  | Remove a compiled plugin from the local system        |
+| `plugin update`  | Update a plugin to the latest compatible version      |
+
+---
+
+## `plugin list`
+
+Displays available plugins that are compatible with your installed Hyperbricks version.
+
+```bash
+hyperbricks plugin list
+```
+
+Output includes:
+
+* Plugin name
+* Compatible version
+* All available versions
+* Hyperbricks version constraints
+* Installation status (e.g. installed, incompatible, not found)
+
+Example output:
+```
+Name         Plugin Version  Available Versions  Compatible Hyperbricks  Installed
+----         --------------  ------------------  ----------------------  ---------
+esbuild      1.0.0           1.0.0               >=0.5.0-alpha           yes
+loremipsum   1.0.0           1.0.0               >=0.5.0-alpha           yes
+markdown     1.0.0           1.0.0               >=0.5.0-alpha           yes
+myplugin     1.0.0           1.0.0               >=0.5.0-alpha           no
+tailwindcss  1.0.0           1.0.0               >=0.5.0-alpha           yes
+```
+
+To enable plugins, they must be compiled for the currently installed version of Hyperbricks.
+This can be done automatically using:
+ hyperbricks plugin install <name>@<plugin_version> 
+
+* To preload the plugin, add the binary .so name to your package.hyperbricks
+* under the `plugins.enabled` array:
+* Plugin binaries are named as <name>@<plugin_version>.so for clarity.
+```
+plugins {
+  enabled = [ EsbuildPlugin@1.0.0.so, LoremIpsumPlugin@1.0.0.so, MarkdownPlugin@1.0.0.so, TailwindcssPlugin@1.0.0.so ]
+}
+```
+---
+
+## `plugin install <name>[@<version>]`
+
+Installs and builds a plugin from the remote Hyperbricks plugin index.
+
+```bash
+hyperbricks plugin install markdown@1.0.0
+```
+
+If no version is specified, the latest compatible version is used.
+
+### What it does:
+
+1. **Fetches metadata** from the remote plugin index.
+2. **Performs a sparse Git checkout** of the plugin's source files.
+3. **Patches the plugin’s `go.mod`** to match your current Hyperbricks version.
+4. **Runs `go mod tidy` and `go build`** to compile the plugin into `./bin/plugins`.
+
+---
+
+## `plugin build <name>@<version>`
+
+Builds a plugin from local source already downloaded to `./plugins/<name>/<version>`.
+
+```bash
+hyperbricks plugin build markdown@1.0.0
+```
+
+Useful when:
+
+* You manually edited a plugin
+* You cloned or fetched plugin sources yourself
+
+---
+
+## `plugin remove <name>@<version>`
+
+Removes a compiled `.so` plugin binary from `./bin/plugins`.
+
+```bash
+hyperbricks plugin remove markdown@1.0.0
+```
+
+This does not delete the source folder from `./plugins`.
+
+---
+
+## `plugin update <name>`
+
+(Planned) Checks for and installs the latest compatible version of a given plugin.
+
+```bash
+hyperbricks plugin update markdown
+```
+
+*Note: This command currently shows placeholder output. Update logic is not yet implemented.*
+
+---
+
+## Using Installed Plugins
+
+To enable a plugin in your module, add its `.so` filename to the `plugins.enabled` list in `package.hyperbricks`.
+
+Example:
+
+```ini
+plugins {
+    enabled = [ Markdown@1.0.0.so ]
+}
+```
+
+> Plugin binary filenames follow the format `<CamelCaseName>@<version>.so`.
+
+---
+
+## Plugin Compatibility
+
+* A plugin is only valid if compiled for the same version of Hyperbricks as you're running.
+* The CLI inspects `.so` binaries to validate their embedded version.
+* Incompatible or outdated plugins are flagged in yellow or red when using `plugin list`.
+
 
 <h1><a id="hyperbricks-type-reference">HyperBricks type reference</a></h1>
 
@@ -1353,34 +1757,6 @@ fragment.10 {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 **Properties**
 
 - [response](#fragment-response)
@@ -1389,22 +1765,8 @@ fragment.10 {
 - [route](#fragment-route)
 - [section](#fragment-section)
 - [enclose](#fragment-enclose)
-- [template](#fragment-template)
-- [static](#fragment-static)
-- [cache](#fragment-cache)
-- [nocache](#fragment-nocache)
 - [index](#fragment-index)
-- [hx_location](#fragment-hx_location)
-- [hx_push_url](#fragment-hx_push_url)
-- [hx_redirect](#fragment-hx_redirect)
-- [hx_refresh](#fragment-hx_refresh)
-- [hx_replace_url](#fragment-hx_replace_url)
-- [hx_reswap](#fragment-hx_reswap)
-- [hx_retarget](#fragment-hx_retarget)
-- [hx_reselect](#fragment-hx_reselect)
-- [hx_trigger](#fragment-hx_trigger)
-- [hx_trigger_after_settle](#fragment-hx_trigger_after_settle)
-- [hx_trigger_after_swap](#fragment-hx_trigger_after_swap)
+- [content_type](#fragment-content_type)
 
 
 
@@ -1573,167 +1935,6 @@ fragment {
 
 
 
-## fragment template
-#### template
-
-**Description**  
-Template configurations for rendering the fragment. (This will disable rendering any content added to the alpha numeric items that are added to the fragment root object.) See &lt;TEMPLATE&gt; for more details using templates.
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	template {
-        # template = {{TEMPLATE:mytemplate.tmpl}}
-        inline = <<[
-            <div>{{.content}}</div>
-
-        ]>>
-      
-        values {
-            content = <HTML>
-            content.value = <p>SOME HTML CONTENT</p>
-        }
-    }
-}
-
-````
-
-**Expected Result**
-
-````html
-<div>
-  <p>
-    SOME HTML CONTENT
-  </p>
-</div>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## fragment static
-#### static
-
-**Description**  
-Static file path associated with the fragment, this will only work for a hx-get (GET) request. 
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	static = some_static_file.extension
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## fragment cache
-#### cache
-
-**Description**  
-Cache expire string
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = index
-hypermedia.cache = 10m
-hypermedia.bodytag = <body id="main">|</body>
-hypermedia.10 = <TEXT>
-hypermedia.10.value = HELLO WORLD!
-hypermedia.enclose = <p>|</p>
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <body id="main">
-    <p>
-      HELLO WORLD!
-    </p>
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-
-## fragment nocache
-#### nocache
-
-**Description**  
-Explicitly disable cache
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = index
-hypermedia.nocache = true
-hypermedia.bodytag = <body id="main">|</body>
-hypermedia.10 = <TEXT>
-hypermedia.10.value = HELLO WORLD!
-hypermedia.enclose = <p>|</p>
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <body id="main">
-    <p>
-      HELLO WORLD!
-    </p>
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## fragment index
 #### index
 
@@ -1759,291 +1960,17 @@ fragment {
 
 
 
-## fragment hx_location
-#### hx_location
+## fragment content_type
+#### content_type
 
 **Description**  
-Allows you to do a client-side redirect that does not do a full page reload
+content type header definition
 
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
-fragment {
-	response {
-        hx_location = someurl
-    }
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## fragment hx_push_url
-#### hx_push_url
-
-**Description**  
-Pushes a new url into the history stack
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	response {
-        hx_push_url = /some/url
-    }
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## fragment hx_redirect
-#### hx_redirect
-
-**Description**  
-Can be used to do a client-side redirect to a new location
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	response {
-        hx_redirect = /some/new/location
-    }
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## fragment hx_refresh
-#### hx_refresh
-
-**Description**  
-If set to &#39;true&#39; the client-side will do a full refresh of the page
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	response {
-        hx_refresh = true
-    }
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## fragment hx_replace_url
-#### hx_replace_url
-
-**Description**  
-replaces the current url in the location bar
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	response {
-        hx_replace_url = /alternative/url
-    }
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## fragment hx_reswap
-#### hx_reswap
-
-**Description**  
-Allows you to specify how the response will be swapped. See hx-swap in the [HTMX documentation](https://htmx.org/).
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	response {
-        hx_reswap = innerHTML
-    }
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## fragment hx_retarget
-#### hx_retarget
-
-**Description**  
-A css selector that updates the target of the content update
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	response {
-        hx_retarget = #someid
-    }
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## fragment hx_reselect
-#### hx_reselect
-
-**Description**  
-A css selector that allows you to choose which part of the response is used to be swapped in.
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	response {
-        hx_reselect = #someotherid
-    }
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## fragment hx_trigger
-#### hx_trigger
-
-**Description**  
-allows you to trigger client-side events
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	response {
-        hx_trigger = myEvent
-    }
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## fragment hx_trigger_after_settle
-#### hx_trigger_after_settle
-
-**Description**  
-allows you to trigger client-side events after the settle step
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	response {
-        hx_trigger_after_settle = myAfterSettleEvent
-    }
-}
-
-````
-
-
-
-
-
-
-
-
-
-
-## fragment hx_trigger_after_swap
-#### hx_trigger_after_swap
-
-**Description**  
-allows you to trigger client-side events after the swap step
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	response {
-        hx_trigger_after_swap = myAfterSwapEvent
-    }
-}
+fragment.content_type = text/json 
 
 ````
 
@@ -2064,235 +1991,7 @@ fragment {
 
 
 
-
-
-
-
-
-
-
-
-
-
 **Properties**
-
-- [title](#head-title)
-- [favicon](#head-favicon)
-- [meta](#head-meta)
-- [css](#head-css)
-- [js](#head-js)
-
-
-
-
-
-## head title
-#### title
-
-**Description**  
-The title of the hypermedia document
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head = <HEAD>
-hypermedia.head {
-    title = Home
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <title>
-      Home
-    </title>
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## head favicon
-#### favicon
-
-**Description**  
-Path to the favicon for the hypermedia document
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head = <HEAD>
-hypermedia.head {
-    favicon = /images/icon.ico
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <link rel="icon" type="image/x-icon" href="/images/icon.ico">
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## head meta
-#### meta
-
-**Description**  
-Metadata for the head section
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head = <HEAD>
-hypermedia.head {
-    meta {
-        a = b
-        b = c
-    }
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <meta name="a" content="b">
-    <meta name="b" content="c">
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## head css
-#### css
-
-**Description**  
-CSS files to include
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head = <HEAD>
-hypermedia.head {
-    css = [style.css,morestyles.css]
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="morestyles.css">
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## head js
-#### js
-
-**Description**  
-JavaScript files to include
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head = <HEAD>
-hypermedia.head {
-    js = [main.js,helpers.js]
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <script src="main.js"></script>
-    <script src="helpers.js"></script>
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
 
 
 
@@ -2307,534 +2006,14 @@ hypermedia.head {
 
 
 
-HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use &lt;FRAGMENT&gt; to utilize hx-[method] (GET,POST etc) requests.  
-
-
-**Main Example**
-````properties
-css = <HTML>
-css.value = <<[
-    <style>
-        body {
-            padding:20px;
-        }
-    </style>
-]>>
-
-
-# index page
-hypermedia = <HYPERMEDIA>
-hypermedia.head = <HEAD>
-hypermedia.head {
-    10 < css
-    20 = <CSS>
-    20.inline = <<[
-        .content {
-            color:green;
-        }
-    ]>>
-}
-hypermedia.10 = <TREE>
-hypermedia.10 {
-    1 = <HTML>
-    1.value = <p>SOME CONTENT</p>
-}
-
-
-````
-
-
-**Expected Result**
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <style>
-      body {
-      padding:20px;
-      }
-    </style>
-    <style>
-      .content {
-      color:green;
-      }
-    </style>
-    <meta name="generator" content="hyperbricks cms">
-  </head>
-  <body>
-    <p>
-      SOME CONTENT
-    </p>
-  </body>
-</html>
-````
-
-
-**more**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 
 **Properties**
 
-
-- [title](#hypermedia-title)
-- [route](#hypermedia-route)
-- [section](#hypermedia-section)
-- [bodytag](#hypermedia-bodytag)
-- [enclose](#hypermedia-enclose)
-- [favicon](#hypermedia-favicon)
-- [template](#hypermedia-template)
-- [cache](#hypermedia-cache)
-- [nocache](#hypermedia-nocache)
-- [static](#hypermedia-static)
 - [index](#hypermedia-index)
-- [doctype](#hypermedia-doctype)
-- [htmltag](#hypermedia-htmltag)
-- [head](#hypermedia-head)
-
-
-
-
-
-
-
-
-## hypermedia title
-#### title
-
-**Description**  
-The title of the hypermedia site
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia {
-    title = Home
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <title>
-      Home
-    </title>
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## hypermedia route
-#### route
-
-**Description**  
-The route (URL-friendly identifier) for the hypermedia
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia {
-    route = index
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## hypermedia section
-#### section
-
-**Description**  
-The section the hypermedia belongs to. This can be used with the component &lt;MENU&gt; for example.
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia {
-    section = my_section
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## hypermedia bodytag
-#### bodytag
-
-**Description**  
-Special body enclosure with use of a pipe symbol |. Please note that this will not work when a template is applied. In that case, you have to add the bodytag in the template.
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = index
-hypermedia.bodytag = <body id="main">|</body>
-hypermedia.10 = <TEXT>
-hypermedia.10.value = HELLO WORLD!
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <body id="main">
-    HELLO WORLD!
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-
-## hypermedia enclose
-#### enclose
-
-**Description**  
-Enclosure of the property for the hypermedia
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = index
-hypermedia.bodytag = <body id="main">|</body>
-hypermedia.10 = <TEXT>
-hypermedia.10.value = HELLO WORLD!
-hypermedia.enclose = <p>|</p>
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <body id="main">
-    <p>
-      HELLO WORLD!
-    </p>
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-
-## hypermedia favicon
-#### favicon
-
-**Description**  
-Path to the favicon for the hypermedia
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia {
-    favicon = static/favicon.ico
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <link rel="icon" type="image/x-icon" href="static/favicon.ico">
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-
-## hypermedia template
-#### template
-
-**Description**  
-Template configurations for rendering the hypermedia. See &lt;TEMPLATE&gt; for field descriptions.
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia {
-	template {
-        # template = {{TEMPLATE:mytemplate.tmpl}}
-        inline = <<[
-            <div>{{.content}}</div>
-        ]>>
-
-        values {
-            content = <HTML>
-            content.value = <p>SOME HTML CONTENT</p>
-        }
-    }
-}
-
-````
-
-**Expected Result**
-
-````html
-<div>
-  <p>
-    SOME HTML CONTENT
-  </p>
-</div>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## hypermedia cache
-#### cache
-
-**Description**  
-Cache expire string
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = index
-hypermedia.cache = 10m
-hypermedia.bodytag = <body id="main">|</body>
-hypermedia.10 = <TEXT>
-hypermedia.10.value = HELLO WORLD!
-hypermedia.enclose = <p>|</p>
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <body id="main">
-    <p>
-      HELLO WORLD!
-    </p>
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-
-## hypermedia nocache
-#### nocache
-
-**Description**  
-Explicitly disable cache
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = index
-hypermedia.nocache = true
-hypermedia.bodytag = <body id="main">|</body>
-hypermedia.10 = <TEXT>
-hypermedia.10.value = HELLO WORLD!
-hypermedia.enclose = <p>|</p>
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <body id="main">
-    <p>
-      HELLO WORLD!
-    </p>
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-
-## hypermedia static
-#### static
-
-**Description**  
-Static file path associated with the hypermedia, for rendering out the hypermedia to static files.
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia {
-	static = index.html
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
+- [content_type](#hypermedia-content_type)
 
 
 
@@ -2876,111 +2055,19 @@ hypermedia {
 
 
 
-## hypermedia doctype
-#### doctype
+## hypermedia content_type
+#### content_type
 
 **Description**  
-Alternative Doctype for the HTML document
+content type header definition
 
 
 **Example**
 ````properties
 hypermedia = <HYPERMEDIA>
-# this is just an example of an alternative doctype configuration
-hypermedia.doctype = <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## hypermedia htmltag
-#### htmltag
-
-**Description**  
-The opening HTML tag with attributes
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.htmltag = <html lang="en">
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html lang="en">
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## hypermedia head
-#### head
-
-**Description**  
-Builds header content. See &lt;HEADER&gt; for details
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = index
-hypermedia.head = <HEAD>
-hypermedia.head {
-    css = [styles.css,xxxx]
-    js = [styles.css,xxxx]
-
-    meta {
-        a = b
-        b = c
-    }
-    999 = <HTML>
-    999.value = <!-- 999 overrides default generator meta tag -->
-
-    1001 = <CSS>
-    1001.inline = <<[
-        body {
-          padding:10px;
-        }
-    ]>>
-
-    20 = <HTML>
-    20.value = <meta name="generator" content="hyperbricks cms">
-     
+hypermedia {
+	
 }
-hypermedia.10 = <HTML>
-hypermedia.10.value = <p>some HTML</p>
 
 ````
 
@@ -2989,26 +2076,7 @@ hypermedia.10.value = <p>some HTML</p>
 ````html
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <!-- 999 overrides default generator meta tag -->
-    <meta name="a" content="b">
-    <meta name="b" content="c">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="xxxx">
-    <script src="styles.css"></script>
-    <script src="xxxx"></script>
-    <style>
-      body {
-      padding:10px;
-      }
-    </style>
-  </head>
-  <body>
-    <p>
-      some HTML
-    </p>
-  </body>
+  <body></body>
 </html>
 ````
 
@@ -3031,67 +2099,6 @@ hypermedia.10.value = <p>some HTML</p>
 
 
 
-&lt;TEMPLATE&gt; can be used nested in &lt;FRAGMENT&gt; or &lt;HYPERMEDIA&gt; types. It uses golang&#39;s standard html/template library.
-
-
-**Main Example**
-````properties
-# Use the a TEMPLATE:filepath (relative from templates folder defined in module's package.hyperbricks) directive like this:
-template = {{TEMPLATE:youtube.tmpl}}
-
-# Or use the inline notation:
-inline = <<[
-    <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
-]>>
-
-myComponent = <TEMPLATE>
-myComponent {
-    inline = <<[
-        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
-    ]>>
-    values {
-        width = 300
-        height = 400
-        src = https://www.youtube.com/embed/tgbNymZ7vqY
-    }
-}
-
-fragment = <FRAGMENT>
-fragment.content = <TREE>
-fragment.content {
-    10 < myComponent
-    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
-
-    20 < myComponent
-
-    enclose = <div class="youtube_video">|</div>
-}
-
-````
-
-
-**Expected Result**
-````html
-<div class="youtube_video">
-  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-</div>
-````
-
-
-**more**
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -3100,129 +2107,9 @@ fragment.content {
 
 **Properties**
 
-
-- [template](#template-template)
-- [inline](#template-inline)
 - [querykeys](#template-querykeys)
 - [queryparams](#template-queryparams)
-- [values](#template-values)
 - [enclose](#template-enclose)
-
-
-
-
-
-
-
-
-## template template
-#### template
-
-**Description**  
-The template used for rendering.
-
-
-**Example**
-````properties
-myComponent = <TEMPLATE>
-myComponent {
-
-    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
-    inline = <<[
-        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
-    ]>>
-  
-    values {
-        width = 300
-        height = 400
-        src = https://www.youtube.com/embed/tgbNymZ7vqY
-    }
-}
-
-fragment = <FRAGMENT>
-fragment.content = <TREE>
-fragment.content {
-    10 < myComponent
-    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
-
-    20 < myComponent
-
-    enclose = <div class="youtube_video">|</div>
-}
-
-````
-
-**Expected Result**
-
-````html
-<div class="youtube_video">
-  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-</div>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## template inline
-#### inline
-
-**Description**  
-The inline template used for rendering.
-
-
-**Example**
-````properties
-myComponent = <TEMPLATE>
-myComponent {
-    
-    inline = <<[
-        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
-    ]>>
-  
-    values {
-        width = 300
-        height = 400
-        src = https://www.youtube.com/embed/tgbNymZ7vqY
-    }
-}
-
-fragment = <FRAGMENT>
-fragment.content = <TREE>
-fragment.content {
-    10 < myComponent
-    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
-
-    20 < myComponent
-
-    enclose = <div class="youtube_video">|</div>
-}
-
-````
-
-**Expected Result**
-
-````html
-<div class="youtube_video">
-  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-</div>
-````
-
-
-
-
-
-
-
 
 
 
@@ -3302,64 +2189,6 @@ myComponent {
 
 
 
-## template values
-#### values
-
-**Description**  
-Key-value pairs for template rendering
-
-
-**Example**
-````properties
-
-$test = hello world
-
-myComponent = <TEMPLATE>
-myComponent {
-    inline = <<[
-        <h1>{{.header}}</h1>
-        <p>{{.text}}</p>
-    ]>>
-
-    values {
-        header = {{VAR:test}}!
-        text = some text
-    }
-}
-
-fragment = <FRAGMENT>
-fragment.content = <TREE>
-fragment.content {
-    10 < myComponent
-    enclose = <div class="sometext">|</div>
-}
-
-````
-
-**Expected Result**
-
-````html
-<div class="sometext">
-  <h1>
-    hello world!
-  </h1>
-  <p>
-    some text
-  </p>
-</div>
-````
-
-
-
-
-
-
-
-
-
-
-
-
 ## template enclose
 #### enclose
 
@@ -3412,136 +2241,7 @@ myComponent {
 
 
 
-TREE description
-
-
-**Main Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	10 = <TREE>
-    10 {
-        10 = <TREE>
-        10 {
-            1 = <HTML>
-            1.value = <p>SOME NESTED HTML --- 10-1</p>
-
-            2 = <HTML>
-            2.value = <p>SOME NESTED HTML --- 10-2</p>
-        }
-
-        20 = <TREE>
-        20 {
-            1 = <HTML>
-            1.value = <p>SOME NESTED HTML --- 20-1</p>
-            
-            2 = <HTML>
-            2.value = <p>SOME NESTED HTML --- 20-2</p>
-        }
-    }
-}
-
-````
-
-
-**Expected Result**
-````html
-<p>
-  SOME NESTED HTML --- 10-1
-</p>
-<p>
-  SOME NESTED HTML --- 10-2
-</p>
-<p>
-  SOME NESTED HTML --- 20-1
-</p>
-<p>
-  SOME NESTED HTML --- 20-2
-</p>
-````
-
-
-**more**
-
-
-
-
-
-
-
-
 **Properties**
-
-
-- [enclose](#tree-enclose)
-
-
-
-
-
-
-
-
-## tree enclose
-#### enclose
-
-**Description**  
-Enclosing tag using the pipe symbol |
-
-
-**Example**
-````properties
-fragment = <FRAGMENT>
-fragment {
-	10 = <TREE>
-    10 {
-        10 = <TREE>
-        10 {
-            1 = <HTML>
-            1.value = <p>SOME NESTED HTML --- 10-1</p>
-
-            2 = <HTML>
-            2.value = <p>SOME NESTED HTML --- 10-2</p>
-        }
-
-        20 = <TREE>
-        20 {
-            1 = <HTML>
-            1.value = <p>SOME NESTED HTML --- 20-1</p>
-            
-            2 = <HTML>
-            2.value = <p>SOME NESTED HTML --- 20-2</p>
-        }
-        enclose = <div>|</div>
-    }
-}
-
-````
-
-**Expected Result**
-
-````html
-<div>
-  <p>
-    SOME NESTED HTML --- 10-1
-  </p>
-  <p>
-    SOME NESTED HTML --- 10-2
-  </p>
-  <p>
-    SOME NESTED HTML --- 20-1
-  </p>
-  <p>
-    SOME NESTED HTML --- 20-2
-  </p>
-</div>
-````
-
-
-
-
-
-
 
 
 
@@ -4146,554 +2846,7 @@ local_json_test {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 **Properties**
-
-- [enclose](#menu-enclose)
-- [section](#menu-section)
-- [order](#menu-order)
-- [sort](#menu-sort)
-- [active](#menu-active)
-- [item](#menu-item)
-- [enclose](#menu-enclose)
-
-
-
-
-
-## menu enclose
-#### enclose
-
-**Description**  
-The enclosing HTML element for the header divided by |
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = doc
-hypermedia.title = DOCUMENT
-hypermedia.section = demo_main_menu
-hypermedia.10 = <MENU>
-hypermedia.10 {
-    section = demo_main_menu
-    sort = index
-    order = asc
-    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
-    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
-    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
-}
-
-hm_1 < hypermedia
-hm_1.route = doc1
-hm_1.title = DOCUMENT_1
-
-hm_2 < hypermedia
-hm_2.route = doc2
-hm_2.title = DOCUMENT_2
-
-hm_3 < hypermedia
-hm_3.route = doc3
-hm_3.title = DOCUMENT_3
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <title>
-      DOCUMENT_3
-    </title>
-  </head>
-  <body>
-    <nav class="nav nav-masthead justify-content-center float-md-end">
-      <a class="nav-link fw-bold py-1 px-0" href="doc1">
-        DOCUMENT_1
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc2">
-        DOCUMENT_2
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc3">
-        DOCUMENT_3
-      </a>
-    </nav>
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## menu section
-#### section
-
-**Description**  
-The section of the menu to display.
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = doc
-hypermedia.title = DOCUMENT
-hypermedia.section = demo_main_menu
-hypermedia.10 = <MENU>
-hypermedia.10 {
-    section = demo_main_menu
-    sort = index
-    order = asc
-    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
-    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
-    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
-}
-
-hm_1 < hypermedia
-hm_1.route = doc1
-hm_1.title = DOCUMENT_1
-
-hm_2 < hypermedia
-hm_2.route = doc2
-hm_2.title = DOCUMENT_2
-
-hm_3 < hypermedia
-hm_3.route = doc3
-hm_3.title = DOCUMENT_3
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <title>
-      DOCUMENT_3
-    </title>
-  </head>
-  <body>
-    <nav class="nav nav-masthead justify-content-center float-md-end">
-      <a class="nav-link fw-bold py-1 px-0" href="doc1">
-        DOCUMENT_1
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc2">
-        DOCUMENT_2
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc3">
-        DOCUMENT_3
-      </a>
-    </nav>
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## menu order
-#### order
-
-**Description**  
-The order of items in the menu (&#39;asc&#39; or &#39;desc&#39;).
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = doc
-hypermedia.title = DOCUMENT
-hypermedia.section = demo_main_menu
-hypermedia.10 = <MENU>
-hypermedia.10 {
-    section = demo_main_menu
-    sort = index
-    order = asc
-    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
-    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
-    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
-}
-
-hm_1 < hypermedia
-hm_1.route = doc1
-hm_1.title = DOCUMENT_1
-
-hm_2 < hypermedia
-hm_2.route = doc2
-hm_2.title = DOCUMENT_2
-
-hm_3 < hypermedia
-hm_3.route = doc3
-hm_3.title = DOCUMENT_3
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <title>
-      DOCUMENT_3
-    </title>
-  </head>
-  <body>
-    <nav class="nav nav-masthead justify-content-center float-md-end">
-      <a class="nav-link fw-bold py-1 px-0" href="doc1">
-        DOCUMENT_1
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc2">
-        DOCUMENT_2
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc3">
-        DOCUMENT_3
-      </a>
-    </nav>
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## menu sort
-#### sort
-
-**Description**  
-The field to sort menu items by (&#39;title&#39;, &#39;route&#39;, or &#39;index&#39;).
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = doc
-hypermedia.title = DOCUMENT
-hypermedia.section = demo_main_menu
-hypermedia.10 = <MENU>
-hypermedia.10 {
-    section = demo_main_menu
-    sort = index
-    order = asc
-    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
-    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
-    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
-}
-
-hm_1 < hypermedia
-hm_1.route = doc1
-hm_1.title = DOCUMENT_1
-
-hm_2 < hypermedia
-hm_2.route = doc2
-hm_2.title = DOCUMENT_2
-
-hm_3 < hypermedia
-hm_3.route = doc3
-hm_3.title = DOCUMENT_3
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <title>
-      DOCUMENT_3
-    </title>
-  </head>
-  <body>
-    <nav class="nav nav-masthead justify-content-center float-md-end">
-      <a class="nav-link fw-bold py-1 px-0" href="doc1">
-        DOCUMENT_1
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc2">
-        DOCUMENT_2
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc3">
-        DOCUMENT_3
-      </a>
-    </nav>
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## menu active
-#### active
-
-**Description**  
-Template for the active menu item.
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = doc
-hypermedia.title = DOCUMENT
-hypermedia.section = demo_main_menu
-hypermedia.10 = <MENU>
-hypermedia.10 {
-    section = demo_main_menu
-    sort = index
-    order = asc
-    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
-    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
-    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
-}
-
-hm_1 < hypermedia
-hm_1.route = doc1
-hm_1.title = DOCUMENT_1
-
-hm_2 < hypermedia
-hm_2.route = doc2
-hm_2.title = DOCUMENT_2
-
-hm_3 < hypermedia
-hm_3.route = doc3
-hm_3.title = DOCUMENT_3
-
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <title>
-      DOCUMENT_3
-    </title>
-  </head>
-  <body>
-    <nav class="nav nav-masthead justify-content-center float-md-end">
-      <a class="nav-link fw-bold py-1 px-0" href="doc1">
-        DOCUMENT_1
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc2">
-        DOCUMENT_2
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc3">
-        DOCUMENT_3
-      </a>
-    </nav>
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## menu item
-#### item
-
-**Description**  
-Template for regular menu items.
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = doc
-hypermedia.title = DOCUMENT
-hypermedia.section = demo_main_menu
-hypermedia.10 = <MENU>
-hypermedia.10 {
-    section = demo_main_menu
-    sort = index
-    order = asc
-    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
-    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
-    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
-}
-
-hm_1 < hypermedia
-hm_1.route = doc1
-hm_1.title = DOCUMENT_1
-
-hm_2 < hypermedia
-hm_2.route = doc2
-hm_2.title = DOCUMENT_2
-
-hm_3 < hypermedia
-hm_3.route = doc3
-hm_3.title = DOCUMENT_3
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <title>
-      DOCUMENT_3
-    </title>
-  </head>
-  <body>
-    <nav class="nav nav-masthead justify-content-center float-md-end">
-      <a class="nav-link fw-bold py-1 px-0" href="doc1">
-        DOCUMENT_1
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc2">
-        DOCUMENT_2
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc3">
-        DOCUMENT_3
-      </a>
-    </nav>
-  </body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## menu enclose
-#### enclose
-
-**Description**  
-The enclosing HTML element for the header divided by |
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.route = doc
-hypermedia.title = DOCUMENT
-hypermedia.section = demo_main_menu
-hypermedia.10 = <MENU>
-hypermedia.10 {
-    section = demo_main_menu
-    sort = index
-    order = asc
-    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
-    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
-    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
-}
-
-hm_1 < hypermedia
-hm_1.route = doc1
-hm_1.title = DOCUMENT_1
-
-hm_2 < hypermedia
-hm_2.route = doc2
-hm_2.title = DOCUMENT_2
-
-hm_3 < hypermedia
-hm_3.route = doc3
-hm_3.title = DOCUMENT_3
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="generator" content="hyperbricks cms">
-    <title>
-      DOCUMENT_3
-    </title>
-  </head>
-  <body>
-    <nav class="nav nav-masthead justify-content-center float-md-end">
-      <a class="nav-link fw-bold py-1 px-0" href="doc1">
-        DOCUMENT_1
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc2">
-        DOCUMENT_2
-      </a>
-      <a class="nav-link fw-bold py-1 px-0" href="doc3">
-        DOCUMENT_3
-      </a>
-    </nav>
-  </body>
-</html>
-````
-
-
-
-
-
-
 
 
 
@@ -4715,69 +2868,9 @@ hm_3.title = DOCUMENT_3
 
 
 
-
-
-
-
-
-
-
-
 **Properties**
 
-- [attributes](#css-attributes)
 - [enclose](#css-enclose)
-- [inline](#css-inline)
-- [link](#css-link)
-- [file](#css-file)
-
-
-
-
-
-## css attributes
-#### attributes
-
-**Description**  
-Extra attributes like id, data-role, data-action, media
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head {
-    10 = <CSS>
-    10.file = hyperbricks-test-files/assets/styles.css
-    10.attributes {
-        media = screen
-    }
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <style media="screen">
-      body {
-      background-color: red;
-      }
-    </style>
-    <meta name="generator" content="hyperbricks cms">
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
 
 
 
@@ -4815,145 +2908,6 @@ head {
   </style>
   <meta name="generator" content="hyperbricks cms">
 </head>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## css inline
-#### inline
-
-**Description**  
-Use inline to define css in a multiline block &lt;&lt;[ /* css goes here */ ]&gt;&gt;
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head {
-    10 = <CSS>
-    10.inline = <<[
-        body {
-            background-color: lightblue;
-        }
-    ]>>
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <style>
-      body {
-      background-color: lightblue;
-      }
-    </style>
-    <meta name="generator" content="hyperbricks cms">
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## css link
-#### link
-
-**Description**  
-Use link for a link tag to a css file.
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head = <HEAD>
-hypermedia.head {
-    10 = <CSS>
-    10.link = styles.css
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <link rel="stylesheet" href="styles.css">
-    <meta name="generator" content="hyperbricks cms">
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## css file
-#### file
-
-**Description**  
-file overrides link and inline, it loads contents of a file and renders it in a style tag.
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head {
-    10 = <CSS>
-    10.file = hyperbricks-test-files/assets/styles.css
-    10.attributes {
-        media = screen
-    }
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <style media="screen">
-      body {
-      background-color: red;
-      }
-    </style>
-    <meta name="generator" content="hyperbricks cms">
-  </head>
-  <body></body>
-</html>
 ````
 
 
@@ -5916,19 +3870,10 @@ images.loading = lazy
 
 
 
-
-
-
-
-
-
 **Properties**
 
 - [attributes](#javascript-attributes)
 - [enclose](#javascript-enclose)
-- [inline](#javascript-inline)
-- [link](#javascript-link)
-- [file](#javascript-file)
 
 
 
@@ -6016,143 +3961,3 @@ console.log("Hello World!")
 
 
 
-
-## javascript inline
-#### inline
-
-**Description**  
-Use inline to define JavaScript in a multiline block &lt;&lt;[ /* JavaScript goes here */ ]&gt;&gt;
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head {
-    10 = <JAVASCRIPT>
-    10.inline = console.log("Hello World!")
-    10.attributes {
-        type = text/javascript
-    }
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <script type="text/javascript">
-      console.log("Hello World!")
-    </script>
-    <meta name="generator" content="hyperbricks cms">
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## javascript link
-#### link
-
-**Description**  
-Use link for a script tag with a src attribute
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head {
-    10 = <JAVASCRIPT>
-    10.link = hyperbricks-test-files/assets/main.js
-    10.attributes {
-        type = text/javascript
-    }
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <script src="hyperbricks-test-files/assets/main.js"></script>
-    <meta name="generator" content="hyperbricks cms">
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-## javascript file
-#### file
-
-**Description**  
-File overrides link and inline, it loads contents of a file and renders it in a script tag.
-
-
-**Example**
-````properties
-hypermedia = <HYPERMEDIA>
-hypermedia.head {
-    10 = <JAVASCRIPT>
-    10.file = hyperbricks-test-files/assets/main.js
-    10.attributes {
-        type = text/javascript
-    }
-}
-
-````
-
-**Expected Result**
-
-````html
-<!DOCTYPE html>
-<html>
-  <head>
-    <script type="text/javascript">
-      console.log("Hello World!")
-    </script>
-    <meta name="generator" content="hyperbricks cms">
-  </head>
-  <body></body>
-</html>
-````
-
-
-
-
-
-
-
-
-
-
-
-
-
-## License
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks?ref=badge_large)

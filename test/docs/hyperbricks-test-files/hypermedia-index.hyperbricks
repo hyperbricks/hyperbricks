@@ -7,28 +7,29 @@ hypermedia {
 Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options
 ==== expected json ====
 {
-    "ConfigType": "<HYPERMEDIA>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "MetaDocDescription": "",
-    "Title": "",
-    "Route": "",
-    "Section": "",
-    "Items": null,
-    "BodyTag": "",
-    "Enclose": "",
-    "Favicon": "",
-    "Template": null,
-    "IsStatic": false,
-    "Static": "",
-    "Cache": "",
-    "NoCache": false,
-    "Index": 1,
-    "Doctype": "",
-    "HtmlTag": "",
-    "Head": null
-  } 
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "IsStatic": false,
+  "Cache": "",
+  "NoCache": false,
+  "Static": "",
+  "Index": 1,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null,
+  "ContentType": ""
+}
 ==== expected output ====
 <!DOCTYPE html><html><body></body></html> 

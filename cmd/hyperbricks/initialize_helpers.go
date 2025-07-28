@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -9,35 +8,74 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eiannone/keyboard"
 	"github.com/fsnotify/fsnotify"
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
-// validatePath ensures that the given path is within the ./modules directory.
 func validatePath(renderDir string) error {
 	if strings.TrimSpace(renderDir) == "" {
 		return fmt.Errorf("the path is empty")
 	}
 
-	// Get the absolute path of ./modules
-	allowedBasePath, err := filepath.Abs("./modules")
+	// Absolute path to the module directory
+	moduleBasePath, err := filepath.Abs(filepath.Join("modules", commands.StartModule))
 	if err != nil {
-		return errors.New("failed to resolve base path for ./modules")
+		return fmt.Errorf("failed to resolve base path for ./modules: %w", err)
 	}
 
-	// Get the absolute path of the renderDir
+	// Absolute path to the renderDir
 	absRenderDir, err := filepath.Abs(renderDir)
 	if err != nil {
-		return errors.New("failed to resolve absolute path for renderDir")
+		return fmt.Errorf("failed to resolve absolute path for renderDir: %w", err)
 	}
 
-	// Ensure the renderDir is within the allowed base path
-	if !strings.HasPrefix(absRenderDir, allowedBasePath) {
-		return errors.New("renderDir is outside the allowed ./modules directory")
+	// Normalize paths
+	moduleBasePath = filepath.Clean(moduleBasePath)
+	absRenderDir = filepath.Clean(absRenderDir)
+
+	// Compute the relative path
+	rel, err := filepath.Rel(moduleBasePath, absRenderDir)
+	if err != nil {
+		return fmt.Errorf("failed to determine relative path: %w", err)
+	}
+
+	// Check that it's inside the module path and not equal to it
+	if rel == "." || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
+		return fmt.Errorf("renderDir must be a subdirectory of ./modules/%s", commands.StartModule)
 	}
 
 	return nil
+}
+
+func confirmDeletion(dir string) bool {
+
+	fmt.Printf("Are you sure you want to delete directory %q? (y/n): ", dir)
+
+	if err := keyboard.Open(); err != nil {
+		fmt.Println("Failed to open keyboard input, aborting deletion.")
+		return false
+	}
+	defer keyboard.Close()
+
+	for {
+		char, key, err := keyboard.GetKey()
+		if err != nil {
+			fmt.Printf("\nError reading input: %v\n", err)
+			return false
+		}
+
+		if char == 'y' || char == 'Y' {
+			fmt.Println("yes")
+			return true
+		}
+		if char == 'n' || char == 'N' || key == keyboard.KeyEsc || key == keyboard.KeyCtrlC {
+			fmt.Println("no")
+			return false
+		}
+	}
 }
 
 func ensureDirectoriesExist(directories map[string]string) {
@@ -117,7 +155,7 @@ func makeStatic(config map[string]map[string]interface{}, renderDir string) erro
 				continue
 			}
 
-			err = os.WriteFile(renderPath+".html", []byte(htmlContent), 0644)
+			err = os.WriteFile(renderPath, []byte(htmlContent), 0644)
 			if err != nil {
 				logger.Errorw("Error writing static file", "path", renderPath, "error", err)
 				continue

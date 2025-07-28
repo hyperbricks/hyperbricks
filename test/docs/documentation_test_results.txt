@@ -1,79 +1,124 @@
 === RUN   Test_TestAndDocumentationRender
 loading 
-&{live {info ./logs/hyperbricks.log} {0 false 5s 10s 20s} {5 10} {false false false false} {} {10m0s} map[hyperbricks:modules/default/hyperbricks render:modules/default/rendered resources:modules/default/resources static:modules/default/static templates:modules/default/templates] {[] map[]} {10s}}=== RUN   Test_TestAndDocumentationRender/fragment-response
+&{live {info ./logs/hyperbricks.log} {0 false 5s 10s 20s} {5 10} {false false false false} {} {10m0s} map[hyperbricks:modules//hyperbricks plugins:bin/plugins render:modules//rendered resources:modules//resources static:modules//static templates:modules//templates] {[] map[]} {10s}}=== RUN   Test_TestAndDocumentationRender/fragment-response
 === RUN   Test_TestAndDocumentationRender/fragment-@doc
 === RUN   Test_TestAndDocumentationRender/fragment-title
 === RUN   Test_TestAndDocumentationRender/fragment-route
 === RUN   Test_TestAndDocumentationRender/fragment-section
 === RUN   Test_TestAndDocumentationRender/fragment-enclose
 === RUN   Test_TestAndDocumentationRender/fragment-template
-12-07-2025 13:53	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-static
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-cache
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-nocache
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-index
+=== RUN   Test_TestAndDocumentationRender/fragment-content_type
 
 Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/fragment-hx_location
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-hx_push_url
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-hx_redirect
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-hx_refresh
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-hx_replace_url
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-hx_reswap
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-hx_retarget
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-hx_reselect
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-@doc
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-title
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-route
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-section
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-bodytag
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-enclose
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-favicon
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-template
-12-07-2025 13:53	ERROR	failed to process imports: open test/docs/modules/default/templates/mytemplate.tmpl: no such file or directory
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-cache
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-nocache
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-static
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-index
 === RUN   Test_TestAndDocumentationRender/hypermedia-doctype
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-htmltag
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/hypermedia-head
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+=== RUN   Test_TestAndDocumentationRender/hypermedia-content_type
 === RUN   Test_TestAndDocumentationRender/head-title
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/head-favicon
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/head-meta
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/head-css
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/head-js
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/template-@doc
-12-07-2025 13:53	ERROR	failed to process imports: open test/docs/modules/default/templates/youtube.tmpl: no such file or directory
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/template-template
-12-07-2025 13:53	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/template-inline
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-12-07-2025 13:53	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
-2025/07/12 13:53:36 [failed to load template file ''|open : no such file or directory]
+27-07-2025 15:38	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/07/27 15:38:10 [failed to load template file ''|open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-12-07-2025 13:53	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
-2025/07/12 13:53:36 [failed to load template file ''|open : no such file or directory]
+27-07-2025 15:38	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/07/27 15:38:10 [failed to load template file ''|open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/template-values
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/template-enclose
 === RUN   Test_TestAndDocumentationRender/tree-@doc
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/tree-enclose
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/html-enclose
 === RUN   Test_TestAndDocumentationRender/html-value
 === RUN   Test_TestAndDocumentationRender/html-trimspace
 === RUN   Test_TestAndDocumentationRender/css-attributes
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/css-enclose
 === RUN   Test_TestAndDocumentationRender/css-inline
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/css-link
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/css-file
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/javascript-attributes
 === RUN   Test_TestAndDocumentationRender/javascript-enclose
 === RUN   Test_TestAndDocumentationRender/javascript-inline
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/javascript-link
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/javascript-file
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/image-attributes
 === RUN   Test_TestAndDocumentationRender/image-enclose
 === RUN   Test_TestAndDocumentationRender/image-src
@@ -101,25 +146,32 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-file
 === RUN   Test_TestAndDocumentationRender/json-template
-12-07-2025 13:53	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+27-07-2025 15:38	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-inline
 === RUN   Test_TestAndDocumentationRender/json-values
-12-07-2025 13:53	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+27-07-2025 15:38	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
-12-07-2025 13:53	ERROR	failed to process imports: open test/docs/modules/default/templates/sometemplate.html: no such file or directory
+27-07-2025 15:38	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/menu-section
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/menu-order
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/menu-sort
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/menu-active
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/menu-item
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
-2025/07/12 13:53:36 Version: v0.5.1-alpha
-2025/07/12 13:53:36 Build Time: 2025-07-12T11:53:35Z
-2025/07/12 13:53:36 Static HTML file generated at ../../docs/hyperbricks-reference-v0.5.1-alpha.md
---- PASS: Test_TestAndDocumentationRender (0.58s)
+Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
+2025/07/27 15:38:11 Version: v0.5.99-alpha
+2025/07/27 15:38:11 Build Time: 2025-07-27T13:38:09Z
+2025/07/27 15:38:11 Static HTML file generated at ../../docs/hyperbricks-reference-v0.5.99-alpha.md
+--- PASS: Test_TestAndDocumentationRender (0.56s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -131,6 +183,7 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/fragment-cache (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-nocache (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-index (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-content_type (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_location (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_push_url (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_redirect (0.00s)
@@ -157,6 +210,7 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-doctype (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-htmltag (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-head (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-content_type (0.00s)
     --- PASS: Test_TestAndDocumentationRender/head-title (0.00s)
     --- PASS: Test_TestAndDocumentationRender/head-favicon (0.00s)
     --- PASS: Test_TestAndDocumentationRender/head-meta (0.00s)
@@ -224,4 +278,4 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
 PASS
-ok  	command-line-arguments	0.793s
+ok  	command-line-arguments	0.775s

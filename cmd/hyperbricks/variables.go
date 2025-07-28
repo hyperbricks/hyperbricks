@@ -9,8 +9,9 @@ import (
 )
 
 type CacheEntry struct {
-	Content   string
-	Timestamp time.Time
+	ContentType string
+	Content     string
+	Timestamp   time.Time
 }
 
 var (

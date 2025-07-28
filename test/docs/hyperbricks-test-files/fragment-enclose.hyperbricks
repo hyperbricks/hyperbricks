@@ -38,7 +38,8 @@ Enclosing property using the pipe symbol |
     "Static": "",
     "Cache": "",
     "NoCache": false,
-    "Index": 0
+    "Index": 0,
+    "ContentType": ""
   }
 ==== expected output ====
 <div><p>TEST HTML</p></div> 
