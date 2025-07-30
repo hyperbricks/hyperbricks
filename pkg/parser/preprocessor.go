@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"text/template"
 
 	"github.com/hyperbricks/hyperbricks/pkg/core"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
@@ -133,6 +135,12 @@ func PreprocessHyperScript(hyperBricks string) (string, error) {
 		return "", fmt.Errorf("failed to process imports: %w", err)
 	}
 
+	processed, err = processMacroBlocks(processed)
+	if err != nil {
+		logging.GetLogger().Error("failed to process @macro blocks: %v", err)
+		return "", fmt.Errorf("failed to process macro blocks: %w", err)
+	}
+
 	// ===============
 	// CACHE MARKERS
 	// ===============
@@ -240,4 +248,63 @@ func processImports(hyperBricks, baseDir string, importedFiles map[string]bool) 
 	}
 
 	return hyperBricks, nil
+}
+
+// processMacroBlocks vervangt alle @macro-blokken in de HyperBricks config door de ge-expandeerde inhoud.
+func processMacroBlocks(input string) (string, error) {
+	// Regex voor @macro as (..){..} = <<[ ... ]>>
+	macroPattern := regexp.MustCompile(`(?s)@macro\s+as\s*\(([^)]+)\)\s*{([\s\S]+?)}\s*=\s*<<\[(.*?)\]>>`)
+	matches := macroPattern.FindAllStringSubmatch(input, -1)
+
+	if len(matches) == 0 {
+		return input, nil
+	}
+
+	result := input
+	for _, match := range matches {
+		fullMatch := match[0]
+		varNames := strings.Split(match[1], ",")
+		for i := range varNames {
+			varNames[i] = strings.TrimSpace(varNames[i])
+		}
+		dataLines := strings.Split(strings.TrimSpace(match[2]), "\n")
+		tmplBlock := match[3]
+		fmt.Printf("Template block: >>>\n%s\n<<<\n", tmplBlock)
+		var buf strings.Builder
+		tmpl, err := template.New("macro").Parse(tmplBlock)
+		if err != nil {
+			return "", fmt.Errorf("template parse error: %w", err)
+		}
+
+		for _, line := range dataLines {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+			fields := strings.Split(line, "|")
+			row := map[string]string{}
+			for i, varName := range varNames {
+				if i < len(fields) {
+					row[varName] = strings.TrimSpace(fields[i])
+				} else {
+					row[varName] = ""
+				}
+			}
+			// Gebruik de Go template engine per row
+			var rendered bytes.Buffer
+			if err := tmpl.Execute(&rendered, row); err != nil {
+				return "", fmt.Errorf("template execute error: %w", err)
+			}
+			buf.WriteString(rendered.String())
+			if !strings.HasSuffix(rendered.String(), "\n") {
+				buf.WriteString("\n")
+			}
+		}
+
+		// Vervang het hele macro-blok met de gegenereerde output
+		result = strings.Replace(result, fullMatch, buf.String(), 1)
+		fmt.Printf("result block:%s", buf.String())
+	}
+
+	return result, nil
 }
