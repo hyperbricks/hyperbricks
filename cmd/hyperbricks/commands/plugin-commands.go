@@ -29,6 +29,10 @@ type PluginMeta struct {
 	Description           string   `json:"description"`
 }
 
+var (
+	RequestedHyperbricksVersion string
+)
+
 const pluginIndexURL = "https://raw.githubusercontent.com/hyperbricks/hyperbricks-plugins/main/plugins.index.json"
 const pluginRepoURL = "https://github.com/hyperbricks/hyperbricks-plugins"
 
@@ -230,11 +234,13 @@ func PluginListCommand() *cobra.Command {
 
 // Installs a plugin (syntax: <name>[@<version>])
 func PluginInstallCommand() *cobra.Command {
+
 	cmd := &cobra.Command{
 		Use:   "install <name>[@<version>]",
 		Short: "Install a plugin's source to ./plugin folder and build, by name (optionally @version, e.g. esbuild@1.0.0)",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+
 			nameArg := args[0]
 			pluginName := nameArg
 			version := ""
@@ -316,6 +322,8 @@ func PluginInstallCommand() *cobra.Command {
 			fmt.Printf("Plugin \"%s\" (%s) installed successfully.\n", pluginName, ver)
 		},
 	}
+
+	cmd.Flags().StringVarP(&RequestedHyperbricksVersion, "hyperbricks-version", "v", "", "Specify the Hyperbricks version to check compatibility against")
 	return cmd
 }
 
@@ -379,6 +387,10 @@ func buildPlugin(source, pluginShortName, version string) error {
 
 	// === PATCH plugin go.mod with current hyperbricks version ===
 	mainVersion := getHyperbricksSemver()
+	if RequestedHyperbricksVersion != "" {
+		mainVersion = RequestedHyperbricksVersion
+	}
+
 	gomodPath := filepath.Join(pluginSourceDir, "go.mod")
 	gomodData, err := os.ReadFile(gomodPath)
 	if err != nil {
