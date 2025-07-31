@@ -135,12 +135,6 @@ func PreprocessHyperScript(hyperBricks string) (string, error) {
 		return "", fmt.Errorf("failed to process imports: %w", err)
 	}
 
-	processed, err = processMacroBlocks(processed)
-	if err != nil {
-		logging.GetLogger().Error("failed to process @macro blocks: %v", err)
-		return "", fmt.Errorf("failed to process macro blocks: %w", err)
-	}
-
 	// ===============
 	// CACHE MARKERS
 	// ===============
@@ -205,6 +199,12 @@ func PreprocessHyperScript(hyperBricks string) (string, error) {
 
 	hyperBricksPattern := regexp.MustCompile(`{{HYPERBRICKS}}`)
 	processed = hyperBricksPattern.ReplaceAllString(processed, core.ModuleDirectories.HyperbricksDir)
+
+	processed, err = processMacroBlocks(processed)
+	if err != nil {
+		logging.GetLogger().Error("failed to process @macro blocks: %v", err)
+		return "", fmt.Errorf("failed to process macro blocks: %w", err)
+	}
 
 	return processed, nil
 }
