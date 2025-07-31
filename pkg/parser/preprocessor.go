@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -10,7 +9,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"text/template"
 
 	"github.com/hyperbricks/hyperbricks/pkg/core"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
@@ -250,10 +248,11 @@ func processImports(hyperBricks, baseDir string, importedFiles map[string]bool) 
 	return hyperBricks, nil
 }
 
-// processMacroBlocks vervangt alle @macro-blokken in de HyperBricks config door de ge-expandeerde inhoud.
+// processMacroBlocks replaces all @macro blocks in the HyperBricks config with the expanded output.
+// Now supports <<<[ ... ]>>> blocks and {{{.var}}} macro replacements.
 func processMacroBlocks(input string) (string, error) {
-	// Regex voor @macro as (..){..} = <<[ ... ]>>
-	macroPattern := regexp.MustCompile(`(?s)@macro\s+as\s*\(([^)]+)\)\s*{([\s\S]+?)}\s*=\s*<<\[(.*?)\]>>`)
+	// Regex for @macro as (..){..} = <<<[ ... ]>>>
+	macroPattern := regexp.MustCompile(`(?s)@macro\s+as\s*\(([^)]+)\)\s*{([\s\S]+?)}\s*=\s*<<<\[(.*?)\]>>>`)
 	matches := macroPattern.FindAllStringSubmatch(input, -1)
 
 	if len(matches) == 0 {
@@ -271,15 +270,12 @@ func processMacroBlocks(input string) (string, error) {
 		tmplBlock := match[3]
 		fmt.Printf("Template block: >>>\n%s\n<<<\n", tmplBlock)
 		var buf strings.Builder
-		tmpl, err := template.New("macro").Parse(tmplBlock)
-		if err != nil {
-			return "", fmt.Errorf("template parse error: %w", err)
-		}
 
+		// For each data line
 		for _, line := range dataLines {
 			line = strings.TrimSpace(line)
-			if line == "" {
-				continue
+			if line == "" || strings.HasPrefix(line, "#") {
+				continue // Skip empty or comment lines!
 			}
 			fields := strings.Split(line, "|")
 			row := map[string]string{}
@@ -290,21 +286,30 @@ func processMacroBlocks(input string) (string, error) {
 					row[varName] = ""
 				}
 			}
-			// Gebruik de Go template engine per row
-			var rendered bytes.Buffer
-			if err := tmpl.Execute(&rendered, row); err != nil {
-				return "", fmt.Errorf("template execute error: %w", err)
-			}
-			buf.WriteString(rendered.String())
-			if !strings.HasSuffix(rendered.String(), "\n") {
+			// Replace {{{.var}}} with row[var]
+			rendered := replaceTripleBraces(tmplBlock, row)
+			buf.WriteString(rendered)
+			if !strings.HasSuffix(rendered, "\n") {
 				buf.WriteString("\n")
 			}
 		}
 
-		// Vervang het hele macro-blok met de gegenereerde output
+		// Replace the whole macro block with the expanded output
 		result = strings.Replace(result, fullMatch, buf.String(), 1)
 		fmt.Printf("result block:%s", buf.String())
 	}
 
 	return result, nil
+}
+
+// replaceTripleBraces replaces all {{{.var}}} in the template with their values from row.
+func replaceTripleBraces(template string, row map[string]string) string {
+	re := regexp.MustCompile(`\{\{\{\.([a-zA-Z0-9_]+)\}\}\}`)
+	return re.ReplaceAllStringFunc(template, func(m string) string {
+		key := re.FindStringSubmatch(m)[1]
+		if val, ok := row[key]; ok {
+			return val
+		}
+		return ""
+	})
 }
