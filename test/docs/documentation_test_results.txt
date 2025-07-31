@@ -87,11 +87,11 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
 === RUN   Test_TestAndDocumentationRender/template-inline
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-28-07-2025 20:59	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
-2025/07/28 20:59:37 [failed to load template file ''|open : no such file or directory]
+31-07-2025 00:33	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/07/31 00:33:02 [failed to load template file ''|open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-28-07-2025 20:59	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
-2025/07/28 20:59:37 [failed to load template file ''|open : no such file or directory]
+31-07-2025 00:33	ERROR	precached template '' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching
+2025/07/31 00:33:02 [failed to load template file ''|open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/template-values
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/template-enclose
@@ -146,12 +146,12 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-file
 === RUN   Test_TestAndDocumentationRender/json-template
-28-07-2025 20:59	ERROR	failed to process imports: open sometemplate.html: no such file or directory
+31-07-2025 00:33	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-inline
 === RUN   Test_TestAndDocumentationRender/json-values
-28-07-2025 20:59	ERROR	failed to process imports: open sometemplate.html: no such file or directory
+31-07-2025 00:33	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/json-debug
-28-07-2025 20:59	ERROR	failed to process imports: open sometemplate.html: no such file or directory
+31-07-2025 00:33	ERROR	failed to process imports: open sometemplate.html: no such file or directory
 === RUN   Test_TestAndDocumentationRender/text-enclose
 === RUN   Test_TestAndDocumentationRender/text-value
 === RUN   Test_TestAndDocumentationRender/menu-enclose
@@ -168,11 +168,11 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
 Error: error parsing expected JSON: invalid character ',' looking for beginning of object key string
-2025/07/28 20:59:37 Version: v0.6.1-alpha
-2025/07/28 20:59:37 Build Time: 2025-07-28T18:59:36Z
-2025/07/28 20:59:37 Static HTML file generated at ../../REFERENCE.md
-2025/07/28 20:59:37 Static HTML file generated at ../../README.md
---- PASS: Test_TestAndDocumentationRender (0.58s)
+2025/07/31 00:33:03 Version: v0.6.1-alpha
+2025/07/31 00:33:03 Build Time: 2025-07-30T22:33:01Z
+2025/07/31 00:33:03 Static HTML file generated at ../../REFERENCE.md
+2025/07/31 00:33:03 Static HTML file generated at ../../README.md
+--- PASS: Test_TestAndDocumentationRender (0.57s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -257,10 +257,10 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
     --- PASS: Test_TestAndDocumentationRender/images-width (0.02s)
     --- PASS: Test_TestAndDocumentationRender/images-height (0.02s)
     --- PASS: Test_TestAndDocumentationRender/images-id (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-class (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/images-class (0.03s)
     --- PASS: Test_TestAndDocumentationRender/images-alt (0.03s)
     --- PASS: Test_TestAndDocumentationRender/images-title (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-quality (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/images-quality (0.03s)
     --- PASS: Test_TestAndDocumentationRender/images-loading (0.03s)
     --- PASS: Test_TestAndDocumentationRender/json-attributes (0.00s)
     --- PASS: Test_TestAndDocumentationRender/json-enclose (0.00s)
@@ -279,4 +279,4 @@ Error: error parsing expected JSON: invalid character ',' looking for beginning 
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
 PASS
-ok  	command-line-arguments	0.798s
+ok  	command-line-arguments	0.777s
