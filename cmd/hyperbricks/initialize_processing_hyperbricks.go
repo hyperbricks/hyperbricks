@@ -125,6 +125,15 @@ func processScript(
 	}
 	sort.Strings(keys)
 
+	ips, err := getHostIPv4s()
+	if err != nil {
+		logging.GetLogger().Errorw("Error retrieving host IPs", "error", err)
+	}
+	if len(ips) == 0 {
+		logging.GetLogger().Errorw("No IPv4 addresses found for the host")
+	}
+	shared.Location = fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
+
 	for _, key := range keys {
 		v := config[key]
 		obj, ok := v.(map[string]interface{})
@@ -135,6 +144,7 @@ func processScript(
 		if !hasType {
 			continue
 		}
+
 		switch typeValue {
 		case composite.FragmentConfigGetName(), composite.ApiFragmentRenderConfigGetName():
 			fragmentConfig, err := decodeFragmentConfig(obj)
@@ -185,14 +195,7 @@ func processScript(
 				tempHyperMediasBySection[hyperMediaConfig.Section],
 				hyperMediaConfig,
 			)
-			ips, err := getHostIPv4s()
-			if err != nil {
-				logging.GetLogger().Errorw("Error retrieving host IPs", "error", err)
-			}
-			if len(ips) == 0 {
-				logging.GetLogger().Errorw("No IPv4 addresses found for the host")
-			}
-			shared.Location = fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
+
 			if hyperMediaConfig.Static == "" {
 				logger.Info(fmt.Sprintf("route  (%s): [http://%s/%s] initialized", filename, shared.Location, hyperMediaConfig.Route))
 			} else {
