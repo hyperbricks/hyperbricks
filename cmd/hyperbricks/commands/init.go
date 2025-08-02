@@ -55,50 +55,58 @@ $module = modules/%s
 	fmt.Printf("Config file created successfully at %s\n", newConfigPath)
 }
 
+// ensureDir checks for the existence of a directory at path.
+// If it doesn’t exist, it creates it with mode 0755 and logs the result.
+func ensureDir(dir string) error {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return fmt.Errorf("failed to create directory %s: %w", dir, err)
+		}
+		fmt.Printf("Created directory: %s\n", dir)
+	} else {
+		fmt.Printf("Directory already exists: %s\n", dir)
+	}
+	return nil
+}
+
+// createModuleDirectories sets up the standard directory layout for a module
+// under ./modules/<module>, plus a global ./bin/plugins directory.
 func createModuleDirectories(module string) {
-	// Define the base path for modules
+	// base directory for all modules
 	baseDir := "./modules"
+
+	// path to this specific module
 	moduleDir := filepath.Join(baseDir, module)
 
-	// List of subdirectories to create under the module directory
-	subDirs := []string{"rendered", "static", "hyperbricks", "resources", "templates", "logs"}
-
-	// Check if the base directory exists, create it if not
-	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
-		err = os.Mkdir(baseDir, 0755)
-		if err != nil {
-			fmt.Printf("Failed to create base directory %s: %v\n", baseDir, err)
-			return
-		}
-		fmt.Printf("Created base directory: %s\n", baseDir)
-	} else {
-		fmt.Printf("Base directory already exists: %s\n", baseDir)
+	// standard subdirectories under each module
+	subDirs := []string{
+		"rendered",
+		"static",
+		"hyperbricks",
+		"resources",
+		"templates",
+		"logs",
 	}
 
-	// Check if the module directory exists, create it if not
-	if _, err := os.Stat(moduleDir); os.IsNotExist(err) {
-		err = os.Mkdir(moduleDir, 0755)
-		if err != nil {
-			fmt.Printf("Failed to create module directory %s: %v\n", moduleDir, err)
-			return
-		}
-		fmt.Printf("Created module directory: %s\n", moduleDir)
-	} else {
-		fmt.Printf("Module directory already exists: %s\n", moduleDir)
+	// list of all directories we want to ensure exist
+	dirs := []string{
+		baseDir,
+		moduleDir,
 	}
 
-	// Create the subdirectories under the module directory
-	for _, subDir := range subDirs {
-		subDirPath := filepath.Join(moduleDir, subDir)
-		if _, err := os.Stat(subDirPath); os.IsNotExist(err) {
-			err = os.Mkdir(subDirPath, 0755)
-			if err != nil {
-				fmt.Printf("Failed to create subdirectory %s: %v\n", subDirPath, err)
-				continue
-			}
-			fmt.Printf("Created subdirectory: %s\n", subDirPath)
-		} else {
-			fmt.Printf("Subdirectory already exists: %s\n", subDirPath)
+	// add each module subdirectory
+	for _, sub := range subDirs {
+		dirs = append(dirs, filepath.Join(moduleDir, sub))
+	}
+
+	// add the global plugins directory
+	dirs = append(dirs, filepath.Join(".", "bin", "plugins"))
+
+	// create or verify each directory
+	for _, dir := range dirs {
+		if err := ensureDir(dir); err != nil {
+			// log error and continue to next
+			fmt.Println(err)
 		}
 	}
 }
