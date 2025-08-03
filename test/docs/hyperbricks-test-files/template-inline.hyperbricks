@@ -57,7 +57,7 @@ The inline template used for rendering.
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": ""
+"ContentType": ""
   }
 ==== expected output ====
 <div class="youtube_video">

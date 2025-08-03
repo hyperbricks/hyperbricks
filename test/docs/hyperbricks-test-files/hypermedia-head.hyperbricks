@@ -49,7 +49,7 @@ Builds header content. See <HEADER> for details
   "NoCache": false,
   "Static": "",
   "Index": 0,
-,"ContentType": "",
+"ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
   "Head": {

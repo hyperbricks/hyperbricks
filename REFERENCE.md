@@ -1,55 +1,18 @@
 **Licence:** MIT  
-**Version:** v0.6.1-alpha  
-**Build time:** 2025-07-30T22:33:01Z
+**Version:** v0.6.4-alpha  
+**Build time:** 2025-08-03T21:57:47Z
 
-<h1><a id="hyperbricks-type-reference">HyperBricks type reference</a></h1>
-
-### Component categories:
- 
-
-### **component**
-
-- [&lt;HTML&gt;](#<HTML>) 
-- [&lt;TEXT&gt;](#<TEXT>) 
+## HyperBricks type reference
 
 
-### **composite**
 
-- [&lt;FRAGMENT&gt;](#<FRAGMENT>) 
-- [&lt;HEAD&gt;](#<HEAD>) 
-- [&lt;HYPERMEDIA&gt;](#<HYPERMEDIA>) 
-- [&lt;TEMPLATE&gt;](#<TEMPLATE>) 
-- [&lt;TREE&gt;](#<TREE>) 
-
-
-### **data**
-
-- [&lt;JSON&gt;](#<JSON>) 
-
-
-### **menu**
-
-- [&lt;MENU&gt;](#<MENU>) 
-
-
-### **resources**
-
-- [&lt;CSS&gt;](#<CSS>) 
-- [&lt;IMAGE&gt;](#<IMAGE>) 
-- [&lt;IMAGES&gt;](#<IMAGES>) 
-- [&lt;JS&gt;](#<JS>) 
+## Category: **component**
 
 
 
 
 
-### Category: **component**
-
-
-
-
-
-<h3><a id="&lt;HTML&gt;">&lt;HTML&gt;</a></h3>
+### &lt;HTML&gt;
 
 **Type Description**
 
@@ -64,16 +27,13 @@
 
 **Properties**
 
-- [enclose](#html-enclose)
-- [value](#html-value)
-- [trimspace](#html-trimspace)
 
 
 
 
 
-## html enclose
-#### enclose
+### ### html enclose
+### enclose
 
 **Description**  
 The enclosing HTML element for the header divided by |
@@ -111,8 +71,8 @@ html.enclose = <div>|</div>
 
 
 
-## html value
-#### value
+### ### html value
+### value
 
 **Description**  
 The raw HTML content
@@ -145,8 +105,8 @@ html.value = <p>HTML TEST</p>
 
 
 
-## html trimspace
-#### trimspace
+### ### html trimspace
+### trimspace
 
 **Description**  
 Property trimspace filters (if set to true true),  all leading and trailing white space removed, as defined by Unicode.
@@ -183,7 +143,7 @@ html.trimspace = true
 
 
 
-<h3><a id="&lt;TEXT&gt;">&lt;TEXT&gt;</a></h3>
+### &lt;TEXT&gt;
 
 **Type Description**
 
@@ -196,15 +156,13 @@ html.trimspace = true
 
 **Properties**
 
-- [enclose](#text-enclose)
-- [value](#text-value)
 
 
 
 
 
-## text enclose
-#### enclose
+### ### text enclose
+### enclose
 
 **Description**  
 The enclosing HTML element for the text divided by |
@@ -239,8 +197,8 @@ text {
 
 
 
-## text value
-#### value
+### ### text value
+### value
 
 **Description**  
 The paragraph content
@@ -275,7 +233,7 @@ text {
 
 
 
-### Category: **composite**
+## Category: **composite**
 
 
 
@@ -339,6 +297,7 @@ The data can be mapped from form or body POST data. Use $ symbol to map the spec
 - Uses cookies for session-based auth if needed.
 
 ### **Key Differences Between `<API_RENDER>` and `<API_FRAGMENT_RENDER>` Mode**
+
 | Feature              | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
 |----------------------|-----------------------------|-----------------------------|
 | **Cache** | ✅ Yes (optional)| ❌ No (explicit)|
@@ -353,6 +312,7 @@ The data can be mapped from form or body POST data. Use $ symbol to map the spec
 `<API_RENDER>` does not handle specific user auth. That makes this component only suited for fetching and rendering public data that can be cached on a interval. This can be set in the root composite component.
 
 `<API_FRAGMENT_RENDER>` Can handle Client auth requests based on login forms and tokens that will be passed through bi-directional.
+
 | `Client->Server` | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
 |----------------------|-----------------------------|-----------------------------|
 | **Client->Server: JWT Authentication (`jwtsecret`)** | ❌ No | ✅ Yes |
@@ -364,6 +324,7 @@ The data can be mapped from form or body POST data. Use $ symbol to map the spec
 ### **Server->API Interaction**
 Both components can apply authentication on API requests. So for example a Weather Service that requires a 
 API key can be set by adding a header or by creating a JWT claim based on a secret
+
 | `Server->API` | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
 |----------------------|-----------------------------|-----------------------------|
 | **Server->API: JWT Authentication (`jwtsecret`)** |✅ Yes  | ✅ Yes |
@@ -450,6 +411,7 @@ api_login {
 ```
 
 ### expected output example 1
+
 ```html
 <h1>API_FRAGMENT_RENDER demo</h1>
 <ul id="1">
@@ -515,7 +477,7 @@ api_me_render {
 ```
 
 
-<h3><a id="&lt;FRAGMENT&gt;">&lt;FRAGMENT&gt;</a></h3>
+### &lt;FRAGMENT&gt;
 
 **Type Description**
 
@@ -584,23 +546,45 @@ fragment.10 {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 **Properties**
 
-- [response](#fragment-response)
-
-- [title](#fragment-title)
-- [route](#fragment-route)
-- [section](#fragment-section)
-- [enclose](#fragment-enclose)
-- [index](#fragment-index)
-- [content_type](#fragment-content_type)
 
 
 
 
 
-## fragment response
-#### response
+### ### fragment response
+### response
 
 **Description**  
 HTMX response header configuration.
@@ -648,8 +632,8 @@ This document provides an overview of the HTML headers used in the `HxResponse` 
 
 
 
-## fragment title
-#### title
+### ### fragment title
+### title
 
 **Description**  
 The title of the fragment, only used in the context of the &lt;MENU&gt; component. For document title use &lt;HYPERMEDIA&gt; type.
@@ -673,8 +657,8 @@ fragment {
 
 
 
-## fragment route
-#### route
+### ### fragment route
+### route
 
 **Description**  
 The route (URL-friendly identifier) for the fragment
@@ -698,8 +682,8 @@ fragment {
 
 
 
-## fragment section
-#### section
+### ### fragment section
+### section
 
 **Description**  
 The section the fragment belongs to. This can be used with the component &lt;MENU&gt; for example.
@@ -723,8 +707,8 @@ fragment {
 
 
 
-## fragment enclose
-#### enclose
+### ### fragment enclose
+### enclose
 
 **Description**  
 Enclosing property using the pipe symbol |
@@ -762,8 +746,169 @@ fragment {
 
 
 
-## fragment index
-#### index
+### ### fragment template
+### template
+
+**Description**  
+Template configurations for rendering the fragment. (This will disable rendering any content added to the alpha numeric items that are added to the fragment root object.) See &lt;TEMPLATE&gt; for more details using templates.
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	template {
+        
+        inline = <<[
+            <div>{{.content}}</div>
+
+        ]>>
+      
+        values {
+            content = <HTML>
+            content.value = <p>SOME HTML CONTENT</p>
+        }
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<div>
+  <p>
+    SOME HTML CONTENT
+  </p>
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### fragment static
+### static
+
+**Description**  
+Static file path associated with the fragment, this will only work for a hx-get (GET) request. 
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	static = some_static_file.extension
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+### ### fragment cache
+### cache
+
+**Description**  
+Cache expire string
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.cache = 10m
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>
+      HELLO WORLD!
+    </p>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ### fragment nocache
+### nocache
+
+**Description**  
+Explicitly disable cache
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.nocache = true
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>
+      HELLO WORLD!
+    </p>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ### fragment index
+### index
 
 **Description**  
 Index number is a sort order option for the &lt;MENU&gt; section. See &lt;MENU&gt; for further explanation
@@ -787,8 +932,8 @@ fragment {
 
 
 
-## fragment content_type
-#### content_type
+### ### fragment content_type
+### content_type
 
 **Description**  
 content type header definition
@@ -810,10 +955,646 @@ fragment.content_type = text/json
 
 
 
+### ### fragment hx_location
+### hx_location
 
-<h3><a id="&lt;HEAD&gt;">&lt;HEAD&gt;</a></h3>
+**Description**  
+Allows you to do a client-side redirect that does not do a full page reload
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_location = someurl
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+### ### fragment hx_push_url
+### hx_push_url
+
+**Description**  
+Pushes a new url into the history stack
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_push_url = /some/url
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+### ### fragment hx_redirect
+### hx_redirect
+
+**Description**  
+Can be used to do a client-side redirect to a new location
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_redirect = /some/new/location
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+### ### fragment hx_refresh
+### hx_refresh
+
+**Description**  
+If set to &#39;true&#39; the client-side will do a full refresh of the page
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_refresh = true
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+### ### fragment hx_replace_url
+### hx_replace_url
+
+**Description**  
+replaces the current url in the location bar
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_replace_url = /alternative/url
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+### ### fragment hx_reswap
+### hx_reswap
+
+**Description**  
+Allows you to specify how the response will be swapped. See hx-swap in the [HTMX documentation](https://htmx.org/).
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_reswap = innerHTML
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+### ### fragment hx_retarget
+### hx_retarget
+
+**Description**  
+A css selector that updates the target of the content update
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_retarget = #someid
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+### ### fragment hx_reselect
+### hx_reselect
+
+**Description**  
+A css selector that allows you to choose which part of the response is used to be swapped in.
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_reselect = #someotherid
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+### ### fragment hx_trigger
+### hx_trigger
+
+**Description**  
+allows you to trigger client-side events
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_trigger = myEvent
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+### ### fragment hx_trigger_after_settle
+### hx_trigger_after_settle
+
+**Description**  
+allows you to trigger client-side events after the settle step
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_trigger_after_settle = myAfterSettleEvent
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+### ### fragment hx_trigger_after_swap
+### hx_trigger_after_swap
+
+**Description**  
+allows you to trigger client-side events after the swap step
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	response {
+        hx_trigger_after_swap = myAfterSwapEvent
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+
+### &lt;HEAD&gt;
 
 **Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Properties**
+
+
+
+
+
+
+### ### head title
+### title
+
+**Description**  
+The title of the hypermedia document
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    title = Home
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      Home
+    </title>
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### head favicon
+### favicon
+
+**Description**  
+Path to the favicon for the hypermedia document
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    favicon = /images/icon.ico
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <link rel="icon" type="image/x-icon" href="/images/icon.ico">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### head meta
+### meta
+
+**Description**  
+Metadata for the head section
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    meta {
+        a = b
+        b = c
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <meta name="a" content="b">
+    <meta name="b" content="c">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### head css
+### css
+
+**Description**  
+CSS files to include
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    css = [style.css,morestyles.css]
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="morestyles.css">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### head js
+### js
+
+**Description**  
+JavaScript files to include
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    js = [main.js,helpers.js]
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <script src="main.js"></script>
+    <script src="helpers.js"></script>
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+### &lt;HYPERMEDIA&gt;
+
+**Type Description**
+
+
+
+
+HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use &lt;FRAGMENT&gt; to utilize hx-[method] (GET,POST etc) requests.  
+
+
+**Main Example**
+````properties
+css = <HTML>
+css.value = <<[
+    <style>
+        body {
+            padding:20px;
+        }
+    </style>
+]>>
+
+
+
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    10 < css
+    20 = <CSS>
+    20.inline = <<[
+        .content {
+            color:green;
+        }
+    ]>>
+}
+hypermedia.10 = <TREE>
+hypermedia.10 {
+    1 = <HTML>
+    1.value = <p>SOME CONTENT</p>
+}
+
+
+````
+
+
+**Expected Result**
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+      padding:20px;
+      }
+    </style>
+    <style>
+      .content {
+      color:green;
+      }
+    </style>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body>
+    <p>
+      SOME CONTENT
+    </p>
+  </body>
+</html>
+````
+
+
+**more**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -826,28 +1607,419 @@ fragment.content_type = text/json
 
 
 
-<h3><a id="&lt;HYPERMEDIA&gt;">&lt;HYPERMEDIA&gt;</a></h3>
-
-**Type Description**
 
 
+### ### hypermedia title
+### title
+
+**Description**  
+The title of the hypermedia site
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    title = Home
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      Home
+    </title>
+  </head>
+  <body></body>
+</html>
+````
 
 
 
 
 
 
-**Properties**
-
-- [index](#hypermedia-index)
-- [content_type](#hypermedia-content_type)
 
 
 
 
 
-## hypermedia index
-#### index
+
+### ### hypermedia route
+### route
+
+**Description**  
+The route (URL-friendly identifier) for the hypermedia
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    route = index
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia section
+### section
+
+**Description**  
+The section the hypermedia belongs to. This can be used with the component &lt;MENU&gt; for example.
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    section = my_section
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia bodytag
+### bodytag
+
+**Description**  
+Special body enclosure with use of a pipe symbol |. Please note that this will not work when a template is applied. In that case, you have to add the bodytag in the template.
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    HELLO WORLD!
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia enclose
+### enclose
+
+**Description**  
+Enclosure of the property for the hypermedia
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>
+      HELLO WORLD!
+    </p>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia favicon
+### favicon
+
+**Description**  
+Path to the favicon for the hypermedia
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    favicon = static/favicon.ico
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <link rel="icon" type="image/x-icon" href="static/favicon.ico">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia template
+### template
+
+**Description**  
+Template configurations for rendering the hypermedia. See &lt;TEMPLATE&gt; for field descriptions.
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	template {
+        
+        inline = <<[
+            <div>{{.content}}</div>
+        ]>>
+
+        values {
+            content = <HTML>
+            content.value = <p>SOME HTML CONTENT</p>
+        }
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<div>
+  <p>
+    SOME HTML CONTENT
+  </p>
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia cache
+### cache
+
+**Description**  
+Cache expire string
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.cache = 10m
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>
+      HELLO WORLD!
+    </p>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia nocache
+### nocache
+
+**Description**  
+Explicitly disable cache
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.nocache = true
+hypermedia.bodytag = <body id="main">|</body>
+hypermedia.10 = <TEXT>
+hypermedia.10.value = HELLO WORLD!
+hypermedia.enclose = <p>|</p>
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>
+      HELLO WORLD!
+    </p>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia static
+### static
+
+**Description**  
+Static file path associated with the hypermedia, for rendering out the hypermedia to static files.
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia {
+	static = index.html
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia index
+### index
 
 **Description**  
 Index number is a sort order option for the hypermedia defined in the section field. See &lt;MENU&gt; for further explanation and field options
@@ -882,8 +2054,155 @@ hypermedia {
 
 
 
-## hypermedia content_type
-#### content_type
+### ### hypermedia doctype
+### doctype
+
+**Description**  
+Alternative Doctype for the HTML document
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+
+hypermedia.doctype = <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia htmltag
+### htmltag
+
+**Description**  
+The opening HTML tag with attributes
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.htmltag = <html lang="en">
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html lang="en">
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia head
+### head
+
+**Description**  
+Builds header content. See &lt;HEADER&gt; for details
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = index
+hypermedia.head = <HEAD>
+hypermedia.head {
+    css = [styles.css,xxxx]
+    js = [styles.css,xxxx]
+
+    meta {
+        a = b
+        b = c
+    }
+    999 = <HTML>
+    999.value = <!-- 999 overrides default generator meta tag -->
+
+    1001 = <CSS>
+    1001.inline = <<[
+        body {
+          padding:10px;
+        }
+    ]>>
+
+    20 = <HTML>
+    20.value = <meta name="generator" content="hyperbricks cms">
+     
+}
+hypermedia.10 = <HTML>
+hypermedia.10.value = <p>some HTML</p>
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <!-- 999 overrides default generator meta tag -->
+    <meta name="a" content="b">
+    <meta name="b" content="c">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="xxxx">
+    <script src="styles.css"></script>
+    <script src="xxxx"></script>
+    <style>
+      body {
+      padding:10px;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      some HTML
+    </p>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### hypermedia content_type
+### content_type
 
 **Description**  
 content type header definition
@@ -919,9 +2238,70 @@ hypermedia {
 
 
 
-<h3><a id="&lt;TEMPLATE&gt;">&lt;TEMPLATE&gt;</a></h3>
+### &lt;TEMPLATE&gt;
 
 **Type Description**
+
+
+
+
+&lt;TEMPLATE&gt; can be used nested in &lt;FRAGMENT&gt; or &lt;HYPERMEDIA&gt; types. It uses golang&#39;s standard html/template library.
+
+
+**Main Example**
+````properties
+
+template = youtube.tmpl
+
+
+inline = <<[
+    <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
+]>>
+
+myComponent = <TEMPLATE>
+myComponent {
+    inline = <<[
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
+    ]>>
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
+}
+
+````
+
+
+**Expected Result**
+````html
+<div class="youtube_video">
+  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+````
+
+
+**more**
+
+
+
+
+
+
+
+
 
 
 
@@ -934,16 +2314,129 @@ hypermedia {
 
 **Properties**
 
-- [querykeys](#template-querykeys)
-- [queryparams](#template-queryparams)
-- [enclose](#template-enclose)
 
 
 
 
 
-## template querykeys
-#### querykeys
+
+
+
+### ### template template
+### template
+
+**Description**  
+The template used for rendering.
+
+
+**Example**
+````properties
+myComponent = <TEMPLATE>
+myComponent {
+
+    
+    inline = <<[
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
+    ]>>
+  
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div class="youtube_video">
+  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### template inline
+### inline
+
+**Description**  
+The inline template used for rendering.
+
+
+**Example**
+````properties
+myComponent = <TEMPLATE>
+myComponent {
+    
+    inline = <<[
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
+    ]>>
+  
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 < myComponent
+
+    enclose = <div class="youtube_video">|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div class="youtube_video">
+  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### template querykeys
+### querykeys
 
 **Description**  
 The inline template used for rendering.
@@ -979,8 +2472,8 @@ myComponent {
 
 
 
-## template queryparams
-#### queryparams
+### ### template queryparams
+### queryparams
 
 **Description**  
 The inline template used for rendering.
@@ -1016,8 +2509,66 @@ myComponent {
 
 
 
-## template enclose
-#### enclose
+### ### template values
+### values
+
+**Description**  
+Key-value pairs for template rendering
+
+
+**Example**
+````properties
+
+$test = hello world
+
+myComponent = <TEMPLATE>
+myComponent {
+    inline = <<[
+        <h1>{{.header}}</h1>
+        <p>{{.text}}</p>
+    ]>>
+
+    values {
+        header = {{VAR:test}}!
+        text = some text
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 < myComponent
+    enclose = <div class="sometext">|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div class="sometext">
+  <h1>
+    hello world!
+  </h1>
+  <p>
+    some text
+  </p>
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### template enclose
+### enclose
 
 **Description**  
 Enclosing property for the template rendered output divided by |
@@ -1061,9 +2612,67 @@ myComponent {
 
 
 
-<h3><a id="&lt;TREE&gt;">&lt;TREE&gt;</a></h3>
+### &lt;TREE&gt;
 
 **Type Description**
+
+
+
+
+TREE description
+
+
+**Main Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	10 = <TREE>
+    10 {
+        10 = <TREE>
+        10 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 10-1</p>
+
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 10-2</p>
+        }
+
+        20 = <TREE>
+        20 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 20-1</p>
+            
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 20-2</p>
+        }
+    }
+}
+
+````
+
+
+**Expected Result**
+````html
+<p>
+  SOME NESTED HTML --- 10-1
+</p>
+<p>
+  SOME NESTED HTML --- 10-2
+</p>
+<p>
+  SOME NESTED HTML --- 20-1
+</p>
+<p>
+  SOME NESTED HTML --- 20-2
+</p>
+````
+
+
+**more**
+
+
+
+
 
 
 
@@ -1075,13 +2684,82 @@ myComponent {
 
 
 
-### Category: **data**
+
+
+
+### ### tree enclose
+### enclose
+
+**Description**  
+Enclosing tag using the pipe symbol |
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	10 = <TREE>
+    10 {
+        10 = <TREE>
+        10 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 10-1</p>
+
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 10-2</p>
+        }
+
+        20 = <TREE>
+        20 {
+            1 = <HTML>
+            1.value = <p>SOME NESTED HTML --- 20-1</p>
+            
+            2 = <HTML>
+            2.value = <p>SOME NESTED HTML --- 20-2</p>
+        }
+        enclose = <div>|</div>
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<div>
+  <p>
+    SOME NESTED HTML --- 10-1
+  </p>
+  <p>
+    SOME NESTED HTML --- 10-2
+  </p>
+  <p>
+    SOME NESTED HTML --- 20-1
+  </p>
+  <p>
+    SOME NESTED HTML --- 20-2
+  </p>
+</div>
+````
 
 
 
 
 
-<h3><a id="&lt;JSON&gt;">&lt;JSON&gt;</a></h3>
+
+
+
+
+
+
+
+## Category: **data**
+
+
+
+
+
+### &lt;JSON&gt;
 
 **Type Description**
 
@@ -1104,20 +2782,13 @@ myComponent {
 
 **Properties**
 
-- [attributes](#json-attributes)
-- [enclose](#json-enclose)
-- [file](#json-file)
-- [template](#json-template)
-- [inline](#json-inline)
-- [values](#json-values)
-- [debug](#json-debug)
 
 
 
 
 
-## json attributes
-#### attributes
+### ### json attributes
+### attributes
 
 **Description**  
 Extra attributes like id, data-role, data-action
@@ -1192,8 +2863,8 @@ local_json_test {
 
 
 
-## json enclose
-#### enclose
+### ### json enclose
+### enclose
 
 **Description**  
 The enclosing HTML element for the header divided by |
@@ -1268,8 +2939,8 @@ local_json_test {
 
 
 
-## json file
-#### file
+### ### json file
+### file
 
 **Description**  
 Path to the local JSON file
@@ -1344,8 +3015,8 @@ local_json_test {
 
 
 
-## json template
-#### template
+### ### json template
+### template
 
 **Description**  
 Template for rendering output
@@ -1357,7 +3028,7 @@ local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
 
-    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+    
 	inline = <<[
         <h1>Quotes</h1>
         <ul>
@@ -1422,8 +3093,8 @@ local_json_test {
 
 
 
-## json inline
-#### inline
+### ### json inline
+### inline
 
 **Description**  
 Use inline to define the template in a multiline block &lt;&lt;[ /* Template code goes here */ ]&gt;&gt;
@@ -1498,8 +3169,8 @@ local_json_test {
 
 
 
-## json values
-#### values
+### ### json values
+### values
 
 **Description**  
 Key-value pairs for template rendering
@@ -1511,7 +3182,7 @@ local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
 
-    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+    
 	inline = <<[
         <h1>{{.someproperty}}</h1>
         <ul>
@@ -1579,8 +3250,8 @@ local_json_test {
 
 
 
-## json debug
-#### debug
+### ### json debug
+### debug
 
 **Description**  
 Debug the response data
@@ -1592,7 +3263,7 @@ local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
 
-    # this is a testfile with limitations, use {{TEMPLATE:sometemplate.html}} or use inline like here
+    
 	inline = <<[
         <h1>{{.someproperty}}</h1>
         <ul>
@@ -1660,15 +3331,29 @@ local_json_test {
 
 
 
-### Category: **menu**
+## Category: **menu**
 
 
 
 
 
-<h3><a id="&lt;MENU&gt;">&lt;MENU&gt;</a></h3>
+### &lt;MENU&gt;
 
 **Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1680,13 +3365,539 @@ local_json_test {
 
 
 
-### Category: **resources**
+### ### menu enclose
+### enclose
+
+**Description**  
+The enclosing HTML element for the header divided by |
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
 
 
 
 
 
-<h3><a id="&lt;CSS&gt;">&lt;CSS&gt;</a></h3>
+
+
+
+
+
+
+
+### ### menu section
+### section
+
+**Description**  
+The section of the menu to display.
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### menu order
+### order
+
+**Description**  
+The order of items in the menu (&#39;asc&#39; or &#39;desc&#39;).
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### menu sort
+### sort
+
+**Description**  
+The field to sort menu items by (&#39;title&#39;, &#39;route&#39;, or &#39;index&#39;).
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### menu active
+### active
+
+**Description**  
+Template for the active menu item.
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### menu item
+### item
+
+**Description**  
+Template for regular menu items.
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### menu enclose
+### enclose
+
+**Description**  
+The enclosing HTML element for the header divided by |
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.route = doc
+hypermedia.title = DOCUMENT
+hypermedia.section = demo_main_menu
+hypermedia.10 = <MENU>
+hypermedia.10 {
+    section = demo_main_menu
+    sort = index
+    order = asc
+    active = <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">{{ .Title }}</a>
+    item = <a class="nav-link fw-bold py-1 px-0" href="{{ .Route }}"> {{ .Title }}</a>
+    enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
+}
+
+hm_1 < hypermedia
+hm_1.route = doc1
+hm_1.title = DOCUMENT_1
+
+hm_2 < hypermedia
+hm_2.route = doc2
+hm_2.title = DOCUMENT_2
+
+hm_3 < hypermedia
+hm_3.route = doc3
+hm_3.title = DOCUMENT_3
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      DOCUMENT_3
+    </title>
+  </head>
+  <body>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a class="nav-link fw-bold py-1 px-0" href="doc1">
+        DOCUMENT_1
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc2">
+        DOCUMENT_2
+      </a>
+      <a class="nav-link fw-bold py-1 px-0" href="doc3">
+        DOCUMENT_3
+      </a>
+    </nav>
+  </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+## Category: **resources**
+
+
+
+
+
+### &lt;CSS&gt;
 
 **Type Description**
 
@@ -1695,16 +3906,71 @@ local_json_test {
 
 
 
+
+
+
+
+
+
+
+
 **Properties**
 
-- [enclose](#css-enclose)
 
 
 
 
 
-## css enclose
-#### enclose
+### ### css attributes
+### attributes
+
+**Description**  
+Extra attributes like id, data-role, data-action, media
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.file = hyperbricks-test-files/assets/styles.css
+    10.attributes {
+        media = screen
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style media="screen">
+      body {
+      background-color: red;
+      }
+    </style>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### css enclose
+### enclose
 
 **Description**  
 A custom &lt;style&gt; tag definition |. Will override extraAttributes.
@@ -1748,8 +4014,147 @@ head {
 
 
 
+### ### css inline
+### inline
 
-<h3><a id="&lt;IMAGE&gt;">&lt;IMAGE&gt;</a></h3>
+**Description**  
+Use inline to define css in a multiline block &lt;&lt;[ /* css goes here */ ]&gt;&gt;
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.inline = <<[
+        body {
+            background-color: lightblue;
+        }
+    ]>>
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+      background-color: lightblue;
+      }
+    </style>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### css link
+### link
+
+**Description**  
+Use link for a link tag to a css file.
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head = <HEAD>
+hypermedia.head {
+    10 = <CSS>
+    10.link = styles.css
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="styles.css">
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### css file
+### file
+
+**Description**  
+file overrides link and inline, it loads contents of a file and renders it in a style tag.
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.file = hyperbricks-test-files/assets/styles.css
+    10.attributes {
+        media = screen
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <style media="screen">
+      body {
+      background-color: red;
+      }
+    </style>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+### &lt;IMAGE&gt;
 
 **Type Description**
 
@@ -1782,25 +4187,13 @@ head {
 
 **Properties**
 
-- [attributes](#image-attributes)
-- [enclose](#image-enclose)
-- [src](#image-src)
-- [width](#image-width)
-- [height](#image-height)
-- [alt](#image-alt)
-- [title](#image-title)
-- [id](#image-id)
-- [class](#image-class)
-- [quality](#image-quality)
-- [loading](#image-loading)
-- [is_static](#image-is_static)
 
 
 
 
 
-## image attributes
-#### attributes
+### ### image attributes
+### attributes
 
 **Description**  
 Extra attributes like loading, data-role, data-action etc
@@ -1834,8 +4227,8 @@ image.attributes {
 
 
 
-## image enclose
-#### enclose
+### ### image enclose
+### enclose
 
 **Description**  
 Use the pipe symbol | to enclose the ````&lt;IMG&gt;```` tag.
@@ -1872,8 +4265,8 @@ image.enclose = <div id="#gallery">|</div>
 
 
 
-## image src
-#### src
+### ### image src
+### src
 
 **Description**  
 The source URL of the image
@@ -1911,8 +4304,8 @@ image.enclose = <div id="#logo">|</div>
 
 
 
-## image width
-#### width
+### ### image width
+### width
 
 **Description**  
 The width of the image (can be a number or percentage)
@@ -1950,8 +4343,8 @@ image.enclose = <div id="#logo">|</div>
 
 
 
-## image height
-#### height
+### ### image height
+### height
 
 **Description**  
 The height of the image (can be a number or percentage)
@@ -1989,8 +4382,8 @@ image.enclose = <div id="#logo">|</div>
 
 
 
-## image alt
-#### alt
+### ### image alt
+### alt
 
 **Description**  
 Alternative text for the image
@@ -2025,8 +4418,8 @@ image.enclose = <div id="#gallery">|</div>
 
 
 
-## image title
-#### title
+### ### image title
+### title
 
 **Description**  
 The title attribute of the image
@@ -2058,8 +4451,8 @@ image.title = Some Cute Cat!
 
 
 
-## image id
-#### id
+### ### image id
+### id
 
 **Description**  
 Id of image
@@ -2092,8 +4485,8 @@ image.id = #cat
 
 
 
-## image class
-#### class
+### ### image class
+### class
 
 **Description**  
 CSS class for styling the image
@@ -2126,8 +4519,8 @@ image.class = aclass bclass cclass
 
 
 
-## image quality
-#### quality
+### ### image quality
+### quality
 
 **Description**  
 Image quality for optimization, bigger is better.
@@ -2160,8 +4553,8 @@ image.quality = 1
 
 
 
-## image loading
-#### loading
+### ### image loading
+### loading
 
 **Description**  
 Lazy loading strategy (e.g., &#39;lazy&#39;, &#39;eager&#39;)
@@ -2194,8 +4587,8 @@ image.loading = lazy
 
 
 
-## image is_static
-#### is_static
+### ### image is_static
+### is_static
 
 **Description**  
 Flag indicating if the image is static, if so the img will not be scaled and has to be present in the configured static image directory. See package.hyperbricks in the module for settings. 
@@ -2236,7 +4629,7 @@ image.is_static = true
 
 
 
-<h3><a id="&lt;IMAGES&gt;">&lt;IMAGES&gt;</a></h3>
+### &lt;IMAGES&gt;
 
 **Type Description**
 
@@ -2267,24 +4660,13 @@ image.is_static = true
 
 **Properties**
 
-- [attributes](#images-attributes)
-- [enclose](#images-enclose)
-- [directory](#images-directory)
-- [width](#images-width)
-- [height](#images-height)
-- [id](#images-id)
-- [class](#images-class)
-- [alt](#images-alt)
-- [title](#images-title)
-- [quality](#images-quality)
-- [loading](#images-loading)
 
 
 
 
 
-## images attributes
-#### attributes
+### ### images attributes
+### attributes
 
 **Description**  
 Extra attributes like id, data-role, data-action
@@ -2321,8 +4703,8 @@ images.attributes {
 
 
 
-## images enclose
-#### enclose
+### ### images enclose
+### enclose
 
 **Description**  
 Use the pipe symbol | to enclose the ````&lt;IMG&gt;```` tag.
@@ -2359,8 +4741,8 @@ image.enclose = <div id="#gallery">|</div>
 
 
 
-## images directory
-#### directory
+### ### images directory
+### directory
 
 **Description**  
 The directory path containing the images
@@ -2397,8 +4779,8 @@ image.enclose = <div id="#gallery">|</div>
 
 
 
-## images width
-#### width
+### ### images width
+### width
 
 **Description**  
 The width of the images (can be a number or percentage)
@@ -2429,8 +4811,8 @@ image.width = 330
 
 
 
-## images height
-#### height
+### ### images height
+### height
 
 **Description**  
 The height of the images (can be a number or percentage)
@@ -2461,8 +4843,8 @@ image.height = 100
 
 
 
-## images id
-#### id
+### ### images id
+### id
 
 **Description**  
 Id of images with a index added to it
@@ -2499,8 +4881,8 @@ images.attributes {
 
 
 
-## images class
-#### class
+### ### images class
+### class
 
 **Description**  
 CSS class for styling the image
@@ -2539,8 +4921,8 @@ images.attributes {
 
 
 
-## images alt
-#### alt
+### ### images alt
+### alt
 
 **Description**  
 Alternative text for the image
@@ -2577,8 +4959,8 @@ images.alt = gallery image
 
 
 
-## images title
-#### title
+### ### images title
+### title
 
 **Description**  
 The title attribute of the image
@@ -2613,8 +4995,8 @@ images.title = sometitle
 
 
 
-## images quality
-#### quality
+### ### images quality
+### quality
 
 **Description**  
 Image quality for optimization
@@ -2649,8 +5031,8 @@ images.quality = 1
 
 
 
-## images loading
-#### loading
+### ### images loading
+### loading
 
 **Description**  
 Lazy loading strategy (e.g., &#39;lazy&#39;, &#39;eager&#39;)
@@ -2686,7 +5068,7 @@ images.loading = lazy
 
 
 
-<h3><a id="&lt;JS&gt;">&lt;JS&gt;</a></h3>
+### &lt;JS&gt;
 
 **Type Description**
 
@@ -2697,17 +5079,21 @@ images.loading = lazy
 
 
 
+
+
+
+
+
+
 **Properties**
 
-- [attributes](#javascript-attributes)
-- [enclose](#javascript-enclose)
 
 
 
 
 
-## javascript attributes
-#### attributes
+### ### javascript attributes
+### attributes
 
 **Description**  
 Extra attributes like id, data-role, data-action, type
@@ -2748,8 +5134,8 @@ head {
 
 
 
-## javascript enclose
-#### enclose
+### ### javascript enclose
+### enclose
 
 **Description**  
 The enclosing HTML element for the header divided by |
@@ -2776,6 +5162,142 @@ head {
 <script defer></script>
 console.log("Hello World!")
 <meta name="generator" content="hyperbricks cms">
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### javascript inline
+### inline
+
+**Description**  
+Use inline to define JavaScript in a multiline block &lt;&lt;[ /* JavaScript goes here */ ]&gt;&gt;
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.inline = console.log("Hello World!")
+    10.attributes {
+        type = text/javascript
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+      console.log("Hello World!")
+    </script>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### javascript link
+### link
+
+**Description**  
+Use link for a script tag with a src attribute
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.link = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="hyperbricks-test-files/assets/main.js"></script>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### ### javascript file
+### file
+
+**Description**  
+File overrides link and inline, it loads contents of a file and renders it in a script tag.
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JAVASCRIPT>
+    10.file = hyperbricks-test-files/assets/main.js
+    10.attributes {
+        type = text/javascript
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+      console.log("Hello World!")
+    </script>
+    <meta name="generator" content="hyperbricks cms">
+  </head>
+  <body></body>
+</html>
 ````
 
 

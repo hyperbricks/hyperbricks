@@ -29,7 +29,7 @@ Cache expire string
   "Cache": "10m",
   "NoCache": false,
   "Index": 0,
-,"ContentType": "",
+"ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
   "Head": null

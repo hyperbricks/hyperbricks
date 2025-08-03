@@ -26,7 +26,7 @@ Static file path associated with the hypermedia, for rendering out the hypermedi
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": "",
+"ContentType": "",
     "Doctype": "",
     "HtmlTag": "",
     "Head": null

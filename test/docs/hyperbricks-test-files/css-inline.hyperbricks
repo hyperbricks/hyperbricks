@@ -31,7 +31,7 @@ Use inline to define css in a multiline block <<[ /* css goes here */ ]>>
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": "",
+"ContentType": "",
     "Doctype": "",
     "HtmlTag": "",
     "Head": {

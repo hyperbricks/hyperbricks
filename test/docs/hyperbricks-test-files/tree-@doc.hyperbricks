@@ -56,7 +56,7 @@ TREE description
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": ""
+"ContentType": ""
   }
 ==== expected output ====
 <p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p>
