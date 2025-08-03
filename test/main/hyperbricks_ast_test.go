@@ -280,7 +280,8 @@ This is a multiline text.]>>
 	parser.KnownTypes["<HYPERMEDIA>"] = true
 	parser.KnownTypes["<TREE>"] = true
 	// Parse the input
-	parsedConfig := parser.ParseHyperScript(input)
+
+	parsedConfig := parser.ParseHyperScript(parser.StripComments(input))
 
 	// Construct expected configuration as a nested ConfigObject
 	expected := map[string]interface{}{
