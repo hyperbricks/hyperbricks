@@ -55,7 +55,7 @@ Key-value pairs for template rendering
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": ""
+"ContentType": ""
   }
 ==== expected output ====
 <div class="sometext">

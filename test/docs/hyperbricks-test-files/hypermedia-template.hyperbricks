@@ -44,7 +44,7 @@ Template configurations for rendering the hypermedia. See <TEMPLATE> for field d
   "NoCache": false,
   "Static": "",
   "Index": 0,
-,"ContentType": "",
+"ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
   "Head": null

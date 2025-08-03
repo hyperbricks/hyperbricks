@@ -39,6 +39,6 @@ replaces the current url in the location bar
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": ""
+"ContentType": ""
   }
 ==== expected output ====

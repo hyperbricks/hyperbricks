@@ -58,7 +58,7 @@ The template used for rendering.
     "IsStatic": false,
     "Static": "",
     "Index": 0,
-,"ContentType": ""
+"ContentType": ""
   }
 ==== expected output ====
 <div class="youtube_video">

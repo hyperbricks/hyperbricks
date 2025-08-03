@@ -26,7 +26,7 @@ The route (URL-friendly identifier) for the hypermedia
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": "",
+"ContentType": "",
     "Doctype": "",
     "HtmlTag": "",
     "Head": null

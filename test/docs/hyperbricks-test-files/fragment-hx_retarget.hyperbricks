@@ -39,7 +39,7 @@ A css selector that updates the target of the content update
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": ""
+"ContentType": ""
   }
 ==== expected output ====
 

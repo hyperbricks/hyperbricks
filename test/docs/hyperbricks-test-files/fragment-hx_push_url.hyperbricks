@@ -39,6 +39,6 @@ Pushes a new url into the history stack
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": ""
+"ContentType": ""
   }
 ==== expected output ====

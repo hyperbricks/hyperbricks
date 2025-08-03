@@ -57,6 +57,7 @@ The data can be mapped from form or body POST data. Use $ symbol to map the spec
 - Uses cookies for session-based auth if needed.
 
 ### **Key Differences Between `<API_RENDER>` and `<API_FRAGMENT_RENDER>` Mode**
+
 | Feature              | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
 |----------------------|-----------------------------|-----------------------------|
 | **Cache** | ✅ Yes (optional)| ❌ No (explicit)|
@@ -71,6 +72,7 @@ The data can be mapped from form or body POST data. Use $ symbol to map the spec
 `<API_RENDER>` does not handle specific user auth. That makes this component only suited for fetching and rendering public data that can be cached on a interval. This can be set in the root composite component.
 
 `<API_FRAGMENT_RENDER>` Can handle Client auth requests based on login forms and tokens that will be passed through bi-directional.
+
 | `Client->Server` | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
 |----------------------|-----------------------------|-----------------------------|
 | **Client->Server: JWT Authentication (`jwtsecret`)** | ❌ No | ✅ Yes |
@@ -82,6 +84,7 @@ The data can be mapped from form or body POST data. Use $ symbol to map the spec
 ### **Server->API Interaction**
 Both components can apply authentication on API requests. So for example a Weather Service that requires a 
 API key can be set by adding a header or by creating a JWT claim based on a secret
+
 | `Server->API` | `<API_RENDER>` | `<API_FRAGMENT_RENDER>` |
 |----------------------|-----------------------------|-----------------------------|
 | **Server->API: JWT Authentication (`jwtsecret`)** |✅ Yes  | ✅ Yes |
@@ -168,6 +171,7 @@ api_login {
 ```
 
 ### expected output example 1
+
 ```html
 <h1>API_FRAGMENT_RENDER demo</h1>
 <ul id="1">

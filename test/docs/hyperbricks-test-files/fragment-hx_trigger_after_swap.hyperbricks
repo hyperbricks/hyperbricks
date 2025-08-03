@@ -39,6 +39,6 @@ allows you to trigger client-side events after the swap step
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": ""
+"ContentType": ""
     }
 ==== expected output ====

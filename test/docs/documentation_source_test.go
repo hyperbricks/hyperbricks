@@ -24,7 +24,6 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
 	"github.com/yosssi/gohtml"
-	"golang.org/x/net/html"
 )
 
 var (
@@ -390,7 +389,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 	categorizedDocs := make(map[string]map[string][]FieldDoc)
 	for _, cfg := range types {
-		//fmt.Printf("\n\n======= Processing type: %s =======\n", cfg.Name)
+		fmt.Printf("\n\n======= Processing type: %s =======\n", cfg.Name)
 		var fields []FieldDoc
 		// Process non-embedded fields first
 		val := reflect.ValueOf(cfg.Config)
@@ -448,10 +447,6 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	if err != nil {
 		log.Fatalf("Error parsing template: %v", err)
 	}
-
-	// Generate the static HTML file
-	// renderStaticFile(tmpl, data, "../../REFERENCE-"+Version+".md")
-
 	renderStaticFile(tmpl, data, "../../REFERENCE.md")
 
 	// Parse the HTML template
@@ -463,20 +458,6 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	// Generate the static HTML file
 	renderStaticFile(tmpl, data, "../../README.md")
 
-	// // HTTP handler to serve the page dynamically
-	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-
-	// 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	// 	if err := tmpl.Execute(w, data); err != nil {
-	// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	}
-	// })
-
-	// // Start the HTTP server
-	// log.Println("Serving at http://localhost:8080")
-	// if err := http.ListenAndServe(":8080", nil); err != nil {
-	// 	log.Fatalf("Error starting server: %v", err)
-	// }
 }
 func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *testing.T, rm *render.RenderManager, _fields []FieldDoc) []FieldDoc {
 
@@ -566,6 +547,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				//fmt.Println("\nExpected Output:")
 				//fmt.Println(parsed.ExpectedOutput)
 				// Parse the combined configuration.
+				parsed.HyperbricksConfig = parser.StripComments(parsed.HyperbricksConfig)
 				preprocesses, _ := parser.PreprocessHyperScript(parsed.HyperbricksConfig)
 				parsedConfig := parser.ParseHyperScript(preprocesses)
 				//fmt.Printf("got obj from hyperscript:%v", parsedConfig)
@@ -640,19 +622,19 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 					Name:            cfg.Name,
 					TestSuccess:     TestSuccess,
 					Type:            request.TypeName,
-					TypeLink:        strings.ToLower(fmt.Sprintf("[%s](#%s)", request.TypeName, request.TypeName)),
-					TypeAnchor:      strings.ToLower(fmt.Sprintf(`## %s`, request.TypeName)),
+					TypeLink:        strings.ToLower(fmt.Sprintf("### %s", request.TypeName)),
+					TypeAnchor:      strings.ToLower(fmt.Sprintf(`### %s`, request.TypeName)),
 					Mapstructure:    field.Tag.Get("mapstructure"),
 					Description:     parsed.Explainer, //field.Tag.Get("description")
 					MoreDetails:     parsed.MoreDetails,
 					Category:        cfg.ConfigCategory,
-					CategoryLink:    template.HTML(strings.ToLower(fmt.Sprintf("[%s](#%s-%s)", field.Tag.Get("mapstructure"), cfg.Name, field.Tag.Get("mapstructure")))),
-					CategoryAnchor:  template.HTML(strings.ToLower(fmt.Sprintf(`## %s %s`, cfg.Name, field.Tag.Get("mapstructure")))),
+					CategoryLink:    template.HTML(strings.ToLower(fmt.Sprintf("### %s %s", cfg.Name, field.Tag.Get("mapstructure")))),
+					CategoryAnchor:  template.HTML(strings.ToLower(fmt.Sprintf(`### %s %s`, cfg.Name, field.Tag.Get("mapstructure")))),
 					Example:         template.HTML(parsed.HyperbricksConfig),
 					Result:          template.HTML(gohtml.Format(result)),
 					TypeDescription: cfg.TypeDescription,
-					FieldLink:       template.HTML(strings.ToLower(fmt.Sprintf("[%s](#%s-%s)", field.Tag.Get("mapstructure"), cfg.Name, field.Tag.Get("mapstructure")))),
-					FieldAnchor:     template.HTML(strings.ToLower(fmt.Sprintf(`## %s %s`, cfg.Name, field.Tag.Get("mapstructure")))),
+					FieldLink:       template.HTML(strings.ToLower(fmt.Sprintf("### %s %s", cfg.Name, field.Tag.Get("mapstructure")))),
+					FieldAnchor:     template.HTML(strings.ToLower(fmt.Sprintf(`### %s %s`, cfg.Name, field.Tag.Get("mapstructure")))),
 				})
 			})
 		}
@@ -762,75 +744,6 @@ func ParseContent(content string) (*ParsedContent, error) {
 	}, nil
 }
 
-// ParseContent parses the provided content string into its respective parts.
-// It also extracts an optional scope from the "hyperbricks config" header.
-func OldParseContent(content string) (*ParsedContent, error) {
-	// Regular expression to match section headers like:
-	// ==== hyperbricks config {!{fragment}} ====
-	// It captures the header title and an optional scope.
-	headerRegex := regexp.MustCompile(`^====\s*([^!]+?)(?:\s*\{\!\{([^}]+)\}\})?\s*====$`)
-
-	sections := make(map[string]string)
-	var currentSection string
-	var sb strings.Builder
-
-	// Variable to store the scope for "hyperbricks config" if found.
-	var hyperbricksConfigScope string
-
-	lines := strings.Split(content, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		matches := headerRegex.FindStringSubmatch(line)
-		if matches != nil {
-			// When encountering a new header, save the current section's content.
-			if currentSection != "" {
-				sections[strings.ToLower(currentSection)] = strings.TrimSpace(sb.String())
-				sb.Reset()
-			}
-			// matches[1] contains the header title.
-			currentSection = strings.TrimSpace(matches[1])
-
-			// If a scope was provided, matches[2] will contain it.
-			scope := ""
-			if len(matches) >= 3 {
-				scope = strings.TrimSpace(matches[2])
-			}
-
-			// Specifically store scope for "hyperbricks config" header.
-			if strings.EqualFold(currentSection, "hyperbricks config") {
-				hyperbricksConfigScope = scope
-			}
-		} else {
-			if currentSection != "" {
-				sb.WriteString(line)
-				sb.WriteString("\n")
-			}
-		}
-	}
-	if currentSection != "" {
-		sections[strings.ToLower(currentSection)] = strings.TrimSpace(sb.String())
-	}
-
-	hyperbricksConfig := sections["hyperbricks config"]
-	explainer := sections["explainer"]
-	expectedJSONStr := sections["expected json"]
-	expectedOutput := sections["expected output"]
-
-	var expectedJSON map[string]interface{}
-	if err := json.Unmarshal([]byte(expectedJSONStr), &expectedJSON); err != nil {
-		return nil, fmt.Errorf("error parsing expected JSON: %v", err)
-	}
-
-	return &ParsedContent{
-		HyperbricksConfig:      hyperbricksConfig,
-		HyperbricksConfigScope: hyperbricksConfigScope,
-		Explainer:              explainer,
-		ExpectedJSON:           expectedJSON,
-		ExpectedJSONAsString:   sections["expected json"],
-		ExpectedOutput:         expectedOutput,
-	}, nil
-}
-
 func _checkAndReadFile(input string, description string) string {
 	filePath := "hyperbricks-test-files/"
 	// Define a regex pattern to match {{<filename.extension>}}
@@ -924,38 +837,9 @@ func findFieldByName(val reflect.Value, fieldName string) reflect.Value {
 	return reflect.Value{}
 }
 
-// normalizeHTML parses the input HTML string and renders it back into a
-// canonical form, removing insignificant whitespace differences.
-func normalizeHTML(input string) (string, error) {
-	// Parse the HTML into a DOM tree.
-	doc, err := html.Parse(strings.NewReader(input))
-	if err != nil {
-		return "", err
-	}
-
-	// Render the DOM tree back to HTML.
-	var buf bytes.Buffer
-	err = html.Render(&buf, doc)
-	if err != nil {
-		return "", err
-	}
-
-	// The rendered HTML may include an outer <html><head></head><body>...
-	// structure depending on the input. If you only need the body’s content,
-	// additional processing might be necessary. For simplicity, this example
-	// compares the entire document structure.
-	return buf.String(), nil
-}
-
 // stripAllWhitespace removes all whitespace characters from the input string.
 func stripAllWhitespace(s string) string {
 	re := regexp.MustCompile(`\s+`)
-	return re.ReplaceAllString(s, "")
-}
-
-// removeTabsAndNewlines removes tab, newline, and carriage return characters from the input string.
-func removeTabsAndNewlines(s string) string {
-	re := regexp.MustCompile(`[\t\n\r]+`)
 	return re.ReplaceAllString(s, "")
 }
 

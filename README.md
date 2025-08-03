@@ -1,6 +1,6 @@
 **Licence:** MIT  
-**Version:** v0.6.1-alpha  
-**Build time:** 2025-07-30T22:33:01Z
+**Version:** v0.6.4-alpha  
+**Build time:** 2025-08-03T21:57:47Z
 
 ## HyperBricks
 

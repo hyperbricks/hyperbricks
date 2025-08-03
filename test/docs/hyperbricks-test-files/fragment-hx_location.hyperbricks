@@ -39,6 +39,6 @@ Allows you to do a client-side redirect that does not do a full page reload
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": ""
+"ContentType": ""
   }
 ==== expected output ====

@@ -48,7 +48,7 @@ Template for the active menu item.
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": "",
+"ContentType": "",
     "Doctype": "",
     "HtmlTag": "",
     "Head": null

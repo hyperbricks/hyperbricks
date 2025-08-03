@@ -1,6 +1,6 @@
 ==== hyperbricks config {!{fragment}} ====
 # Use the a TEMPLATE:filepath (relative from templates folder defined in module's package.hyperbricks) directive like this:
-template = {{TEMPLATE:youtube.tmpl}}
+template = youtube.tmpl
 
 # Or use the inline notation:
 inline = <<[
@@ -63,7 +63,7 @@ fragment.content {
    "Cache": "",
   "NoCache": false,
   "Index": 0,
-,"ContentType": ""
+"ContentType": ""
 }
 ==== expected output ====
  <div class="youtube_video">

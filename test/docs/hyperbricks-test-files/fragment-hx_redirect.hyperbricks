@@ -39,7 +39,7 @@ Can be used to do a client-side redirect to a new location
     "Cache": "",
     "NoCache": false,
     "Index": 0,
-,"ContentType": ""
+"ContentType": ""
   }
 ==== expected output ====
 
