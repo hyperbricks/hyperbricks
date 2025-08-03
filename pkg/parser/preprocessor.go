@@ -90,8 +90,8 @@ func (t *HyperScriptStringArray) PreProcessHyperBricksFromFiles() error {
 
 		route := filepath.Base(file)
 		route = route[:len(route)-len(filepath.Ext(route))]
-
-		ts, err := PreprocessHyperScript(string(data))
+		uncommented := StripComments(string(data))
+		ts, err := PreprocessHyperScript(uncommented)
 		if err != nil {
 			logging.GetLogger().Error("Error preprocessing")
 			return fmt.Errorf("preprocessing error: %s", err)
