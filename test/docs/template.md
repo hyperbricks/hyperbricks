@@ -6,7 +6,7 @@
 
 {{range $category, $types := .data}}
 
-## Category: **{{$category}}**
+# Category: **{{$category}}**
 
 {{range $typeName, $fields := $types}}
 
@@ -14,7 +14,7 @@
    {{include "template_api_fragment_render.md"}}
 {{end}}
 
-### {{$typeName}}
+## {{$typeName}}
 
 **Type Description**
 
@@ -48,8 +48,6 @@
 
 {{if ne .Mapstructure "@doc"}}
 
-
-### {{.FieldAnchor}}
 ### {{.Mapstructure}}
 
 **Description**  
