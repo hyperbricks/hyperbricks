@@ -56,11 +56,7 @@ func ParseHyperScript(input string) map[string]interface{} {
 	// Initialize variables map
 	variables := make(map[string]string)
 
-	// Strip comments from the cdata and input
-	cleanedCDATA := StripCDATAAndStore(input)
-	cleanedInput := StripComments(cleanedCDATA)
-
-	lines := strings.Split(cleanedInput, "\n")
+	lines := strings.Split(StripCDATAAndStore(input), "\n")
 	index := 0
 	config := map[string]interface{}{}
 	parseLines(lines, &index, config, config, variables) // Pass variables map
