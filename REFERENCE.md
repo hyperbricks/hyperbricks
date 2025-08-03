@@ -1,18 +1,18 @@
 **Licence:** MIT  
 **Version:** v0.6.4-alpha  
-**Build time:** 2025-08-03T21:57:47Z
+**Build time:** 2025-08-03T22:17:44Z
 
 ## HyperBricks type reference
 
 
 
-## Category: **component**
+# Category: **component**
 
 
 
 
 
-### &lt;HTML&gt;
+## &lt;HTML&gt;
 
 **Type Description**
 
@@ -31,8 +31,6 @@
 
 
 
-
-### ### html enclose
 ### enclose
 
 **Description**  
@@ -70,8 +68,6 @@ html.enclose = <div>|</div>
 
 
 
-
-### ### html value
 ### value
 
 **Description**  
@@ -104,8 +100,6 @@ html.value = <p>HTML TEST</p>
 
 
 
-
-### ### html trimspace
 ### trimspace
 
 **Description**  
@@ -143,7 +137,7 @@ html.trimspace = true
 
 
 
-### &lt;TEXT&gt;
+## &lt;TEXT&gt;
 
 **Type Description**
 
@@ -160,8 +154,6 @@ html.trimspace = true
 
 
 
-
-### ### text enclose
 ### enclose
 
 **Description**  
@@ -196,8 +188,6 @@ text {
 
 
 
-
-### ### text value
 ### value
 
 **Description**  
@@ -233,7 +223,7 @@ text {
 
 
 
-## Category: **composite**
+# Category: **composite**
 
 
 
@@ -477,7 +467,7 @@ api_me_render {
 ```
 
 
-### &lt;FRAGMENT&gt;
+## &lt;FRAGMENT&gt;
 
 **Type Description**
 
@@ -582,8 +572,6 @@ fragment.10 {
 
 
 
-
-### ### fragment response
 ### response
 
 **Description**  
@@ -631,8 +619,6 @@ This document provides an overview of the HTML headers used in the `HxResponse` 
 
 
 
-
-### ### fragment title
 ### title
 
 **Description**  
@@ -656,8 +642,6 @@ fragment {
 
 
 
-
-### ### fragment route
 ### route
 
 **Description**  
@@ -681,8 +665,6 @@ fragment {
 
 
 
-
-### ### fragment section
 ### section
 
 **Description**  
@@ -706,8 +688,6 @@ fragment {
 
 
 
-
-### ### fragment enclose
 ### enclose
 
 **Description**  
@@ -745,8 +725,6 @@ fragment {
 
 
 
-
-### ### fragment template
 ### template
 
 **Description**  
@@ -793,8 +771,6 @@ fragment {
 
 
 
-
-### ### fragment static
 ### static
 
 **Description**  
@@ -818,8 +794,6 @@ fragment {
 
 
 
-
-### ### fragment cache
 ### cache
 
 **Description**  
@@ -862,8 +836,6 @@ hypermedia.enclose = <p>|</p>
 
 
 
-
-### ### fragment nocache
 ### nocache
 
 **Description**  
@@ -906,8 +878,6 @@ hypermedia.enclose = <p>|</p>
 
 
 
-
-### ### fragment index
 ### index
 
 **Description**  
@@ -931,8 +901,6 @@ fragment {
 
 
 
-
-### ### fragment content_type
 ### content_type
 
 **Description**  
@@ -954,8 +922,6 @@ fragment.content_type = text/json
 
 
 
-
-### ### fragment hx_location
 ### hx_location
 
 **Description**  
@@ -981,8 +947,6 @@ fragment {
 
 
 
-
-### ### fragment hx_push_url
 ### hx_push_url
 
 **Description**  
@@ -1008,8 +972,6 @@ fragment {
 
 
 
-
-### ### fragment hx_redirect
 ### hx_redirect
 
 **Description**  
@@ -1035,8 +997,6 @@ fragment {
 
 
 
-
-### ### fragment hx_refresh
 ### hx_refresh
 
 **Description**  
@@ -1062,8 +1022,6 @@ fragment {
 
 
 
-
-### ### fragment hx_replace_url
 ### hx_replace_url
 
 **Description**  
@@ -1089,8 +1047,6 @@ fragment {
 
 
 
-
-### ### fragment hx_reswap
 ### hx_reswap
 
 **Description**  
@@ -1116,8 +1072,6 @@ fragment {
 
 
 
-
-### ### fragment hx_retarget
 ### hx_retarget
 
 **Description**  
@@ -1143,8 +1097,6 @@ fragment {
 
 
 
-
-### ### fragment hx_reselect
 ### hx_reselect
 
 **Description**  
@@ -1170,8 +1122,6 @@ fragment {
 
 
 
-
-### ### fragment hx_trigger
 ### hx_trigger
 
 **Description**  
@@ -1197,8 +1147,6 @@ fragment {
 
 
 
-
-### ### fragment hx_trigger_after_settle
 ### hx_trigger_after_settle
 
 **Description**  
@@ -1224,8 +1172,6 @@ fragment {
 
 
 
-
-### ### fragment hx_trigger_after_swap
 ### hx_trigger_after_swap
 
 **Description**  
@@ -1253,7 +1199,7 @@ fragment {
 
 
 
-### &lt;HEAD&gt;
+## &lt;HEAD&gt;
 
 **Type Description**
 
@@ -1276,8 +1222,6 @@ fragment {
 
 
 
-
-### ### head title
 ### title
 
 **Description**  
@@ -1319,8 +1263,6 @@ hypermedia.head {
 
 
 
-
-### ### head favicon
 ### favicon
 
 **Description**  
@@ -1360,8 +1302,6 @@ hypermedia.head {
 
 
 
-
-### ### head meta
 ### meta
 
 **Description**  
@@ -1405,8 +1345,6 @@ hypermedia.head {
 
 
 
-
-### ### head css
 ### css
 
 **Description**  
@@ -1447,8 +1385,6 @@ hypermedia.head {
 
 
 
-
-### ### head js
 ### js
 
 **Description**  
@@ -1491,7 +1427,7 @@ hypermedia.head {
 
 
 
-### &lt;HYPERMEDIA&gt;
+## &lt;HYPERMEDIA&gt;
 
 **Type Description**
 
@@ -1608,8 +1544,6 @@ hypermedia.10 {
 
 
 
-
-### ### hypermedia title
 ### title
 
 **Description**  
@@ -1650,8 +1584,6 @@ hypermedia {
 
 
 
-
-### ### hypermedia route
 ### route
 
 **Description**  
@@ -1686,8 +1618,6 @@ hypermedia {
 
 
 
-
-### ### hypermedia section
 ### section
 
 **Description**  
@@ -1722,8 +1652,6 @@ hypermedia {
 
 
 
-
-### ### hypermedia bodytag
 ### bodytag
 
 **Description**  
@@ -1762,8 +1690,6 @@ hypermedia.10.value = HELLO WORLD!
 
 
 
-
-### ### hypermedia enclose
 ### enclose
 
 **Description**  
@@ -1805,8 +1731,6 @@ hypermedia.enclose = <p>|</p>
 
 
 
-
-### ### hypermedia favicon
 ### favicon
 
 **Description**  
@@ -1846,8 +1770,6 @@ hypermedia {
 
 
 
-
-### ### hypermedia template
 ### template
 
 **Description**  
@@ -1893,8 +1815,6 @@ hypermedia {
 
 
 
-
-### ### hypermedia cache
 ### cache
 
 **Description**  
@@ -1937,8 +1857,6 @@ hypermedia.enclose = <p>|</p>
 
 
 
-
-### ### hypermedia nocache
 ### nocache
 
 **Description**  
@@ -1981,8 +1899,6 @@ hypermedia.enclose = <p>|</p>
 
 
 
-
-### ### hypermedia static
 ### static
 
 **Description**  
@@ -2017,8 +1933,6 @@ hypermedia {
 
 
 
-
-### ### hypermedia index
 ### index
 
 **Description**  
@@ -2053,8 +1967,6 @@ hypermedia {
 
 
 
-
-### ### hypermedia doctype
 ### doctype
 
 **Description**  
@@ -2088,8 +2000,6 @@ hypermedia.doctype = <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://w
 
 
 
-
-### ### hypermedia htmltag
 ### htmltag
 
 **Description**  
@@ -2122,8 +2032,6 @@ hypermedia.htmltag = <html lang="en">
 
 
 
-
-### ### hypermedia head
 ### head
 
 **Description**  
@@ -2200,8 +2108,6 @@ hypermedia.10.value = <p>some HTML</p>
 
 
 
-
-### ### hypermedia content_type
 ### content_type
 
 **Description**  
@@ -2238,7 +2144,7 @@ hypermedia {
 
 
 
-### &lt;TEMPLATE&gt;
+## &lt;TEMPLATE&gt;
 
 **Type Description**
 
@@ -2321,8 +2227,6 @@ fragment.content {
 
 
 
-
-### ### template template
 ### template
 
 **Description**  
@@ -2378,8 +2282,6 @@ fragment.content {
 
 
 
-
-### ### template inline
 ### inline
 
 **Description**  
@@ -2434,8 +2336,6 @@ fragment.content {
 
 
 
-
-### ### template querykeys
 ### querykeys
 
 **Description**  
@@ -2471,8 +2371,6 @@ myComponent {
 
 
 
-
-### ### template queryparams
 ### queryparams
 
 **Description**  
@@ -2508,8 +2406,6 @@ myComponent {
 
 
 
-
-### ### template values
 ### values
 
 **Description**  
@@ -2566,8 +2462,6 @@ fragment.content {
 
 
 
-
-### ### template enclose
 ### enclose
 
 **Description**  
@@ -2612,7 +2506,7 @@ myComponent {
 
 
 
-### &lt;TREE&gt;
+## &lt;TREE&gt;
 
 **Type Description**
 
@@ -2686,8 +2580,6 @@ fragment {
 
 
 
-
-### ### tree enclose
 ### enclose
 
 **Description**  
@@ -2753,13 +2645,13 @@ fragment {
 
 
 
-## Category: **data**
+# Category: **data**
 
 
 
 
 
-### &lt;JSON&gt;
+## &lt;JSON&gt;
 
 **Type Description**
 
@@ -2786,8 +2678,6 @@ fragment {
 
 
 
-
-### ### json attributes
 ### attributes
 
 **Description**  
@@ -2862,8 +2752,6 @@ local_json_test {
 
 
 
-
-### ### json enclose
 ### enclose
 
 **Description**  
@@ -2938,8 +2826,6 @@ local_json_test {
 
 
 
-
-### ### json file
 ### file
 
 **Description**  
@@ -3014,8 +2900,6 @@ local_json_test {
 
 
 
-
-### ### json template
 ### template
 
 **Description**  
@@ -3092,8 +2976,6 @@ local_json_test {
 
 
 
-
-### ### json inline
 ### inline
 
 **Description**  
@@ -3168,8 +3050,6 @@ local_json_test {
 
 
 
-
-### ### json values
 ### values
 
 **Description**  
@@ -3249,8 +3129,6 @@ local_json_test {
 
 
 
-
-### ### json debug
 ### debug
 
 **Description**  
@@ -3331,13 +3209,13 @@ local_json_test {
 
 
 
-## Category: **menu**
+# Category: **menu**
 
 
 
 
 
-### &lt;MENU&gt;
+## &lt;MENU&gt;
 
 **Type Description**
 
@@ -3364,8 +3242,6 @@ local_json_test {
 
 
 
-
-### ### menu enclose
 ### enclose
 
 **Description**  
@@ -3439,8 +3315,6 @@ hm_3.title = DOCUMENT_3
 
 
 
-
-### ### menu section
 ### section
 
 **Description**  
@@ -3514,8 +3388,6 @@ hm_3.title = DOCUMENT_3
 
 
 
-
-### ### menu order
 ### order
 
 **Description**  
@@ -3589,8 +3461,6 @@ hm_3.title = DOCUMENT_3
 
 
 
-
-### ### menu sort
 ### sort
 
 **Description**  
@@ -3664,8 +3534,6 @@ hm_3.title = DOCUMENT_3
 
 
 
-
-### ### menu active
 ### active
 
 **Description**  
@@ -3740,8 +3608,6 @@ hm_3.title = DOCUMENT_3
 
 
 
-
-### ### menu item
 ### item
 
 **Description**  
@@ -3815,8 +3681,6 @@ hm_3.title = DOCUMENT_3
 
 
 
-
-### ### menu enclose
 ### enclose
 
 **Description**  
@@ -3891,13 +3755,13 @@ hm_3.title = DOCUMENT_3
 
 
 
-## Category: **resources**
+# Category: **resources**
 
 
 
 
 
-### &lt;CSS&gt;
+## &lt;CSS&gt;
 
 **Type Description**
 
@@ -3920,8 +3784,6 @@ hm_3.title = DOCUMENT_3
 
 
 
-
-### ### css attributes
 ### attributes
 
 **Description**  
@@ -3968,8 +3830,6 @@ hypermedia.head {
 
 
 
-
-### ### css enclose
 ### enclose
 
 **Description**  
@@ -4013,8 +3873,6 @@ head {
 
 
 
-
-### ### css inline
 ### inline
 
 **Description**  
@@ -4062,8 +3920,6 @@ hypermedia.head {
 
 
 
-
-### ### css link
 ### link
 
 **Description**  
@@ -4104,8 +3960,6 @@ hypermedia.head {
 
 
 
-
-### ### css file
 ### file
 
 **Description**  
@@ -4154,7 +4008,7 @@ hypermedia.head {
 
 
 
-### &lt;IMAGE&gt;
+## &lt;IMAGE&gt;
 
 **Type Description**
 
@@ -4191,8 +4045,6 @@ hypermedia.head {
 
 
 
-
-### ### image attributes
 ### attributes
 
 **Description**  
@@ -4226,8 +4078,6 @@ image.attributes {
 
 
 
-
-### ### image enclose
 ### enclose
 
 **Description**  
@@ -4264,8 +4114,6 @@ image.enclose = <div id="#gallery">|</div>
 
 
 
-
-### ### image src
 ### src
 
 **Description**  
@@ -4303,8 +4151,6 @@ image.enclose = <div id="#logo">|</div>
 
 
 
-
-### ### image width
 ### width
 
 **Description**  
@@ -4342,8 +4188,6 @@ image.enclose = <div id="#logo">|</div>
 
 
 
-
-### ### image height
 ### height
 
 **Description**  
@@ -4381,8 +4225,6 @@ image.enclose = <div id="#logo">|</div>
 
 
 
-
-### ### image alt
 ### alt
 
 **Description**  
@@ -4417,8 +4259,6 @@ image.enclose = <div id="#gallery">|</div>
 
 
 
-
-### ### image title
 ### title
 
 **Description**  
@@ -4450,8 +4290,6 @@ image.title = Some Cute Cat!
 
 
 
-
-### ### image id
 ### id
 
 **Description**  
@@ -4484,8 +4322,6 @@ image.id = #cat
 
 
 
-
-### ### image class
 ### class
 
 **Description**  
@@ -4518,8 +4354,6 @@ image.class = aclass bclass cclass
 
 
 
-
-### ### image quality
 ### quality
 
 **Description**  
@@ -4552,8 +4386,6 @@ image.quality = 1
 
 
 
-
-### ### image loading
 ### loading
 
 **Description**  
@@ -4586,8 +4418,6 @@ image.loading = lazy
 
 
 
-
-### ### image is_static
 ### is_static
 
 **Description**  
@@ -4629,7 +4459,7 @@ image.is_static = true
 
 
 
-### &lt;IMAGES&gt;
+## &lt;IMAGES&gt;
 
 **Type Description**
 
@@ -4664,8 +4494,6 @@ image.is_static = true
 
 
 
-
-### ### images attributes
 ### attributes
 
 **Description**  
@@ -4702,8 +4530,6 @@ images.attributes {
 
 
 
-
-### ### images enclose
 ### enclose
 
 **Description**  
@@ -4740,8 +4566,6 @@ image.enclose = <div id="#gallery">|</div>
 
 
 
-
-### ### images directory
 ### directory
 
 **Description**  
@@ -4778,8 +4602,6 @@ image.enclose = <div id="#gallery">|</div>
 
 
 
-
-### ### images width
 ### width
 
 **Description**  
@@ -4810,8 +4632,6 @@ image.width = 330
 
 
 
-
-### ### images height
 ### height
 
 **Description**  
@@ -4842,8 +4662,6 @@ image.height = 100
 
 
 
-
-### ### images id
 ### id
 
 **Description**  
@@ -4880,8 +4698,6 @@ images.attributes {
 
 
 
-
-### ### images class
 ### class
 
 **Description**  
@@ -4920,8 +4736,6 @@ images.attributes {
 
 
 
-
-### ### images alt
 ### alt
 
 **Description**  
@@ -4958,8 +4772,6 @@ images.alt = gallery image
 
 
 
-
-### ### images title
 ### title
 
 **Description**  
@@ -4994,8 +4806,6 @@ images.title = sometitle
 
 
 
-
-### ### images quality
 ### quality
 
 **Description**  
@@ -5030,8 +4840,6 @@ images.quality = 1
 
 
 
-
-### ### images loading
 ### loading
 
 **Description**  
@@ -5068,7 +4876,7 @@ images.loading = lazy
 
 
 
-### &lt;JS&gt;
+## &lt;JS&gt;
 
 **Type Description**
 
@@ -5091,8 +4899,6 @@ images.loading = lazy
 
 
 
-
-### ### javascript attributes
 ### attributes
 
 **Description**  
@@ -5133,8 +4939,6 @@ head {
 
 
 
-
-### ### javascript enclose
 ### enclose
 
 **Description**  
@@ -5174,8 +4978,6 @@ console.log("Hello World!")
 
 
 
-
-### ### javascript inline
 ### inline
 
 **Description**  
@@ -5220,8 +5022,6 @@ hypermedia.head {
 
 
 
-
-### ### javascript link
 ### link
 
 **Description**  
@@ -5264,8 +5064,6 @@ hypermedia.head {
 
 
 
-
-### ### javascript file
 ### file
 
 **Description**  

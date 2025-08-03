@@ -62,9 +62,9 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/template-template
 === RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-2025/08/03 23:57:48 [.template or a .inline is required]
+2025/08/04 00:17:45 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-2025/08/03 23:57:48 [.template or a .inline is required]
+2025/08/04 00:17:45 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
 
@@ -148,11 +148,11 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/menu-active
 === RUN   Test_TestAndDocumentationRender/menu-item
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
-2025/08/03 23:57:48 Version: v0.6.4-alpha
-2025/08/03 23:57:48 Build Time: 2025-08-03T21:57:47Z
-2025/08/03 23:57:48 Static HTML file generated at ../../REFERENCE.md
-2025/08/03 23:57:48 Static HTML file generated at ../../README.md
---- PASS: Test_TestAndDocumentationRender (0.56s)
+2025/08/04 00:17:45 Version: v0.6.4-alpha
+2025/08/04 00:17:45 Build Time: 2025-08-03T22:17:44Z
+2025/08/04 00:17:45 Static HTML file generated at ../../REFERENCE.md
+2025/08/04 00:17:45 Static HTML file generated at ../../README.md
+--- PASS: Test_TestAndDocumentationRender (0.58s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -238,10 +238,10 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/images-height (0.02s)
     --- PASS: Test_TestAndDocumentationRender/images-id (0.03s)
     --- PASS: Test_TestAndDocumentationRender/images-class (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-alt (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-alt (0.04s)
     --- PASS: Test_TestAndDocumentationRender/images-title (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-quality (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-loading (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-quality (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/images-loading (0.04s)
     --- PASS: Test_TestAndDocumentationRender/json-attributes (0.00s)
     --- PASS: Test_TestAndDocumentationRender/json-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/json-file (0.00s)
@@ -259,4 +259,4 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
 PASS
-ok  	command-line-arguments	0.769s
+ok  	command-line-arguments	0.789s
