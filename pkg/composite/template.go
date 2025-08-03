@@ -75,13 +75,13 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 
 	if config.Inline != "" {
 		templateContent = config.Inline
-	} else {
+	} else if config.Template != "" {
 		// Fetch the template content
 		tc, found := tr.TemplateProvider(config.Template)
 		if found {
 			templateContent = tc
 		} else {
-			logging.GetLogger().Errorf("precached template '%s' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching", config.Template)
+			logging.GetLogger().Warnf("precached template '%s' not found, use {{TEMPLATE:sometemplate.tmpl}} for precaching", config.Template)
 			// MARKER_FOR_CODE:
 			// Attempt to load the file from disk and cache it.
 			fileContent, err := GetTemplateFileContent(config.Template)
@@ -98,6 +98,15 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 				templateContent = fileContent
 			}
 		}
+	} else {
+		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
+			File: config.Composite.Meta.HyperBricksFile,
+			Path: config.Composite.Meta.HyperBricksPath,
+			Key:  config.Composite.Meta.HyperBricksKey,
+			Type: "<TEMPLATE>",
+			Err:  fmt.Errorf(".template or a .inline is required").Error(),
+		})
 	}
 
 	// Attempt to get the params of current request from the context and add it to the template values...
