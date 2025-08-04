@@ -1,6 +1,10 @@
 **Licence:** MIT  
 **Version:** v0.6.4-alpha  
-**Build time:** 2025-08-03T22:17:44Z
+**Build time:** 2025-08-04T11:35:49Z
+
+## Build Status
+
+[![Build & Test (develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml/badge.svg?branch=develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml?query=branch%3Adevelop)
 
 ## HyperBricks type reference
 

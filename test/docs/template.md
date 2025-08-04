@@ -2,6 +2,10 @@
 **Version:** {{.version}}  
 **Build time:** {{.buildtime}}
 
+## Build Status
+
+[![Build & Test (develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml/badge.svg?branch=develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml?query=branch%3Adevelop)
+
 ## HyperBricks type reference
 
 {{range $category, $types := .data}}
