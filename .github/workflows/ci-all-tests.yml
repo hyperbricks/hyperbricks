@@ -23,8 +23,7 @@ jobs:
         run: chmod +x scripts/*.sh
 
       - name: Build and start services
-        run: docker-compose -f ./test/dedicated/docker/docker-compose.yml up -d --build
-
+        run: docker compose -f ./test/dedicated/docker/docker-compose.yml up -d --build
       - name: Wait for Postgres to be ready
         run: |
           for i in {1..20}; do
