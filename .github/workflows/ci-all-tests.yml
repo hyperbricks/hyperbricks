@@ -1,4 +1,4 @@
-name: CI for Current Branch (Go)
+name: CI Hyperbricks Tests
 permissions:
   contents: write
 on:

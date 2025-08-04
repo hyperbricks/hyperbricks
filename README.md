@@ -2,7 +2,9 @@
 **Version:** v0.6.4-alpha  
 **Build time:** 2025-08-03T22:17:44Z
 
-[![CI (develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml/badge.svg?branch=develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml)
+![CI (develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml/badge.svg?branch=develop)
+
+![CI (main)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml/badge.svg?branch=main)
 
 ## HyperBricks
 
