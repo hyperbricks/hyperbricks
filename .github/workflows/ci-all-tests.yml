@@ -22,6 +22,9 @@ jobs:
       - name: Make scripts executable
         run: chmod +x scripts/*.sh
 
+      - name: Debug scripts folder
+        run: ls -l scripts/
+
       - name: Build and start services
         run: docker compose -f ./test/dedicated/docker/docker-compose.yml up -d --build
 
