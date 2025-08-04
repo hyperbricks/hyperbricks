@@ -6,6 +6,8 @@
 
 [![Build & Test (develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml/badge.svg?branch=develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml?query=branch%3Adevelop)
 
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks.svg?type=small)](https://app.fossa.com/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks?ref=badge_small)
+
 ## HyperBricks
 
 **HyperBricks** is a fullstack **Web App Build System** for [HTMX](https://htmx.org/)-powered [hypermedia](https://hypermedia.systems/book/contents/) applications. It enables you to build dynamic, modular web applications by describing your app’s state, structure, and behavior in declarative configuration files — called *hyperbricks*.
