@@ -20,3 +20,5 @@ TO_DO.md
 CHANGES.md
 
 .gitignore
+.env
+scripts/fossa_build.sh
