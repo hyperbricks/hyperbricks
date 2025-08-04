@@ -1,10 +1,12 @@
 **Licence:** MIT  
-**Version:** v0.6.4-alpha  
-**Build time:** 2025-08-04T11:35:49Z
+**Version:** v0.6.5-alpha  
+**Build time:** 2025-08-04T14:18:21Z
 
 ## Build Status
 
 [![Build & Test (develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml/badge.svg?branch=develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml?query=branch%3Adevelop)
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks.svg?type=small)](https://app.fossa.com/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks?ref=badge_small)
 
 ## HyperBricks
 
