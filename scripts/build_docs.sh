@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 go test ./test/docs/documentation_source_test.go -v \
 -args -version="$(cat ./assets/version.md | tr -d \n)" \
