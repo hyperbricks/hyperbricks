@@ -4,7 +4,10 @@ permissions:
 on:
   push:
     branches:
-      - '*'   # Triggers on any branch
+      - develop
+  pull_request:
+    branches:
+      - develop
 
 jobs:
   build-and-test:
