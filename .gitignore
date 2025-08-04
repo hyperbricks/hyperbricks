@@ -7,9 +7,6 @@ modules/default/
 **/archive
 /archive/
 
-# Ignore Go sum file in the root
-/go.sum
-
 # Ignore VSCode workspace settings directory globally
 **/.vscode/
 
