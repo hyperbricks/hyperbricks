@@ -2,6 +2,8 @@
 **Version:** v0.6.4-alpha  
 **Build time:** 2025-08-03T22:17:44Z
 
+[![CI (develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci.yml)
+
 ## HyperBricks
 
 **HyperBricks** is a fullstack **Web App Build System** for [HTMX](https://htmx.org/)-powered [hypermedia](https://hypermedia.systems/book/contents/) applications. It enables you to build dynamic, modular web applications by describing your app’s state, structure, and behavior in declarative configuration files — called *hyperbricks*.
