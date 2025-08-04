@@ -24,6 +24,7 @@ jobs:
 
       - name: Build and start services
         run: docker compose -f ./test/dedicated/docker/docker-compose.yml up -d --build
+
       - name: Wait for Postgres to be ready
         run: |
           for i in {1..20}; do
@@ -42,4 +43,4 @@ jobs:
 
       - name: Tear down containers
         if: always()
-        run: docker-compose -f ./test/dedicated/docker/docker-compose.yml down -v
+        run: docker compose -f ./test/dedicated/docker/docker-compose.yml down -v
