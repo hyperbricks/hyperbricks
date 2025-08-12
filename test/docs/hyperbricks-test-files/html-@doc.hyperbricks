@@ -1,0 +1,22 @@
+==== hyperbricks config {!{html}} ====
+html = <HTML>
+html.value = <<[
+        <p>HTML TEST</p>    
+    ]>>
+html.enclose = <div>|</div>
+==== explainer ====
+The enclosing HTML element for the header divided by |
+==== expected json ====
+{
+    "ConfigType": "<HTML>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "<div>|</div>",
+    "Value": "\n<p>HTML TEST</p>    \n    ",
+    "TrimSpace": false
+  }
+==== expected output ====
+<div><p>HTML TEST</p></div>

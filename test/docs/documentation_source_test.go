@@ -58,17 +58,6 @@ type FieldDoc struct {
 	FieldAnchor        template.HTML `json:"fieldanchor"`
 }
 
-type DocumentationTypeStruct struct {
-	Name            string
-	TypeDescription string
-	ConfigType      string
-	ConfigCategory  string
-	Fields          map[string]string
-	Embedded        map[string]string
-	ExcludeFields   []string
-	Config          any
-}
-
 // ParsedContent holds the separated sections and optional scope after parsing.
 type ParsedContent struct {
 	HyperbricksConfig      string
@@ -484,7 +473,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 		}
 
 		tag := field.Tag.Get("mapstructure")
-		if isExcludedField(tag, cfg.ExcludeFields) {
+		if IsExcludedField(tag, cfg.ExcludeFields) {
 			continue
 		}
 
@@ -643,7 +632,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 	return fields
 }
 
-func isExcludedField(tag string, excludeFields []string) bool {
+func IsExcludedField(tag string, excludeFields []string) bool {
 	for _, field := range excludeFields {
 		if field == tag {
 			return true
@@ -813,7 +802,7 @@ fragment {
 	return input
 }
 
-func findFieldByName(val reflect.Value, fieldName string) reflect.Value {
+func FindFieldByName(val reflect.Value, fieldName string) reflect.Value {
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
