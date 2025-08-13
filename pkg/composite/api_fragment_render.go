@@ -32,7 +32,7 @@ type ApiFragmentRenderConfig struct {
 	Route              string              `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{api-fragment-render-route.hyperbricks}}"`
 	Section            string              `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{api-fragment-render-section.hyperbricks}}"`
 	Enclose            string              `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{api-fragment-render-enclose.hyperbricks}}"`
-	NoCache            bool                `mapstructure:"nocache" description:"Explicitly deisable cache" example:"{!{api-fragment-render-nocache.hyperbricks}}"`
+	NoCache            bool                `mapstructure:"nocache" exclude:"true"` // description:"Explicitly deisable cache" example:"{!{api-fragment-render-nocache.hyperbricks}}"`
 	Index              int                 `mapstructure:"index" description:"Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
 }
 
