@@ -1,20 +1,20 @@
 ==== hyperbricks config {!{html}} ====
 html = <HTML>
-html.value = <p>HTML TEST</p>    
-}
+html.value = <p>HTML TEST</p>
 ==== explainer ====
 The raw HTML content
 ==== expected json ====
 {
-    "ConfigType": "<HTML>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "ExtraAttributes": null,
-    "Enclose": "",
-    "Value": "<p>HTML TEST</p>",
-    "TrimSpace": false
-  }
+  "ConfigType": "<HTML>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Value": "<p>HTML TEST</p>",
+  "TrimSpace": false
+}
 ==== expected output ====
 <p>HTML TEST</p>

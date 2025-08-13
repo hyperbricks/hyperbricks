@@ -245,9 +245,12 @@ func writeTypeDoc(b *strings.Builder, cfg DocumentationTypeStruct) {
 	gen := findGeneralExample(cfg)
 	props := collectProps(cfg)
 
+	// fmt.Printf(" ./test/docs/%s ", full)
+	fmt.Printf(" %s ", desc)
+
 	// Header
 	b.WriteString(fmt.Sprintf("### %s\n", codeifyTags(cfg.ConfigType)))
-	b.WriteString(fmt.Sprintf("Description: %s\n\n", escCell(desc)))
+	b.WriteString(fmt.Sprintf("%s\n\n", escCell(desc)))
 
 	// Table
 	b.WriteString("Property | Description\n")
@@ -262,17 +265,15 @@ func writeTypeDoc(b *strings.Builder, cfg DocumentationTypeStruct) {
 		b.WriteString(fmt.Sprintf("%s | %s\n", escCell(p.Key), escCell(dd)))
 	}
 
-	b.WriteString("\nGeneral example\n")
 	if gen.hasExample {
+		b.WriteString("\n#### General example:\n")
 		b.WriteString("````hyperbricks\n")
 		b.WriteString(strings.TrimRight(gen.HBConfig, "\n"))
 		b.WriteString("\n````\n\n")
-
+		b.WriteString("\n#### Result:\n")
 		b.WriteString("````html\n")
 		b.WriteString(strings.TrimRight(gen.Result, "\n"))
 		b.WriteString("\n````\n\n")
-	} else {
-		b.WriteString("```properties\n# todo: add general example\n```\n\n")
 	}
 }
 
@@ -286,6 +287,7 @@ func findTypeDescription(cfg DocumentationTypeStruct) string {
 	for i := 0; i < rt.NumField(); i++ {
 		f := rt.Field(i)
 		if f.Tag.Get("mapstructure") == "@doc" {
+
 			if d := strings.TrimSpace(f.Tag.Get("description")); d != "" {
 				return d
 			}
@@ -493,8 +495,8 @@ func readExampleOrEmpty(exampleTag string) parsedContent {
 
 		return parsedContent{}
 	}
-	fmt.Printf(" ./test/docs/%s ", full)
-	fmt.Printf(" %s ", full)
+	// fmt.Printf(" ./test/docs/%s ", full)
+	// fmt.Printf(" %s ", full)
 	pc, _ := parseContent(string(raw))
 
 	pc.hasExample = strings.TrimSpace(pc.HBConfig) != ""

@@ -37,6 +37,17 @@ var (
 	BuildTime string
 )
 
+// Types we use to drive the doc
+type DocumentationTypeStruct struct {
+	Name            string            // logical name used for example file fallbacks (lowercased)
+	TypeDescription string            // fallback description if @doc is missing
+	ConfigType      string            // the visible <TYPE> token
+	ConfigCategory  string            // "composite" => Composites; anything else => Components
+	Embedded        map[string]string // map[StructName]prefix, e.g. {"HxResponse":"response"}
+	ExcludeFields   []string          // mapstructure keys to exclude (e.g. "attributes", "is_static")
+	Config          any               // zero value of the config struct
+}
+
 // FieldDoc represents a field documentation entry
 type FieldDoc struct {
 	Name               string        `json:"name"`
@@ -67,6 +78,33 @@ type ParsedContent struct {
 	ExpectedJSONAsString   string
 	ExpectedOutput         string
 	MoreDetails            string
+}
+
+// Deep search by field name across embedded structs (handles struct and *struct)
+func findFieldByName(val reflect.Value, fieldName string) reflect.Value {
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	if !val.IsValid() || val.Kind() != reflect.Struct {
+		return reflect.Value{}
+	}
+	fv := val.FieldByName(fieldName)
+	if fv.IsValid() {
+		return fv
+	}
+	rt := val.Type()
+	for i := 0; i < rt.NumField(); i++ {
+		sub := val.Field(i)
+		if !sub.IsValid() {
+			continue
+		}
+		if sub.Kind() == reflect.Struct || (sub.Kind() == reflect.Ptr && sub.Elem().Kind() == reflect.Struct) {
+			if found := findFieldByName(sub, fieldName); found.IsValid() {
+				return found
+			}
+		}
+	}
+	return reflect.Value{}
 }
 
 func Test_TestAndDocumentationRender(t *testing.T) {
