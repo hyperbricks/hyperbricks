@@ -42,7 +42,6 @@ type ApiRenderConfig struct {
 	Username         string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-username.hyperbricks}}"`
 	Password         string                 `mapstructure:"password" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks}}"`
 	Status           int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
-	SetCookie        string                 `mapstructure:"setcookie" description:"Set template for cookie" example:"{!{api-render-setcookie.hyperbricks}}"`
 	AllowedQueryKeys []string               `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-querykeys.hyperbricks}}"`
 	QueryParams      map[string]string      `mapstructure:"queryparams" description:"Set proxy query key in the confifuration" example:"{!{api-render-queryparams.hyperbricks}}"`
 	JwtSecret        string                 `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-jwt-secret.hyperbricks}}"`
