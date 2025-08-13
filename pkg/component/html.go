@@ -10,7 +10,7 @@ import (
 
 type HTMLConfig struct {
 	shared.Component   `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"HTML For all your line or multiline HTML" example:"{!{html-@doc.hyperbricks}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Component for rendering all your single or multiline HTML snippets." example:"{!{html-@doc.hyperbricks}}"`
 
 	Value     string `mapstructure:"value" validate:"required" description:"The raw HTML content" example:"{!{html-value.hyperbricks}}"`
 	TrimSpace bool   `mapstructure:"trimspace"  description:"TrimSpace filters all leading and trailing white space removed, as defined by Unicode." example:"{!{html-trimspace.hyperbricks}}"`

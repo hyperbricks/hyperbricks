@@ -62,9 +62,9 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/template-template
 === RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-2025/08/04 16:18:22 [.template or a .inline is required]
+2025/08/12 22:33:31 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-2025/08/04 16:18:22 [.template or a .inline is required]
+2025/08/12 22:33:31 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
 
@@ -76,6 +76,8 @@ Embedded Field: HxResponse (mapped as: response)
 
 ======= Processing type: Html =======
 === RUN   Test_TestAndDocumentationRender/html-enclose
+=== RUN   Test_TestAndDocumentationRender/html-@doc
+Error: error parsing expected JSON: invalid character 'o' looking for beginning of value
 === RUN   Test_TestAndDocumentationRender/html-value
 === RUN   Test_TestAndDocumentationRender/html-trimspace
 
@@ -83,6 +85,7 @@ Embedded Field: HxResponse (mapped as: response)
 ======= Processing type: Css =======
 === RUN   Test_TestAndDocumentationRender/css-attributes
 === RUN   Test_TestAndDocumentationRender/css-enclose
+=== RUN   Test_TestAndDocumentationRender/css-@doc
 === RUN   Test_TestAndDocumentationRender/css-inline
 === RUN   Test_TestAndDocumentationRender/css-link
 === RUN   Test_TestAndDocumentationRender/css-file
@@ -91,6 +94,7 @@ Embedded Field: HxResponse (mapped as: response)
 ======= Processing type: Javascript =======
 === RUN   Test_TestAndDocumentationRender/javascript-attributes
 === RUN   Test_TestAndDocumentationRender/javascript-enclose
+=== RUN   Test_TestAndDocumentationRender/javascript-@doc
 === RUN   Test_TestAndDocumentationRender/javascript-inline
 === RUN   Test_TestAndDocumentationRender/javascript-link
 === RUN   Test_TestAndDocumentationRender/javascript-file
@@ -98,25 +102,713 @@ Embedded Field: HxResponse (mapped as: response)
 
 ======= Processing type: Image =======
 === RUN   Test_TestAndDocumentationRender/image-attributes
+    documentation_source_test.go:636: Test failed for image-attributes!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "usemap": "#catmap"
+  },
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 100,
+  "Height": 0,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": {
+    "usemap": "#catmap"
+  },
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/image-enclose
+    documentation_source_test.go:636: Test failed for image-enclose!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Enclose": "<div id=\"#gallery\">|</div>",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 100,
+  "Height": 0,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "<div id=\"#gallery\">|</div>",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 100
+}
+
+=== RUN   Test_TestAndDocumentationRender/image-@doc
 === RUN   Test_TestAndDocumentationRender/image-src
+    documentation_source_test.go:636: Test failed for image-src!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Enclose": "<div id=\"#logo\">|</div>",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 300,
+  "Height": 300,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "<div id=\"#logo\">|</div>",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Height": 300,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 300
+}
+
 === RUN   Test_TestAndDocumentationRender/image-width
+    documentation_source_test.go:636: Test failed for image-width!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Enclose": "<div id=\"#logo\">|</div>",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 300,
+  "Height": 300,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "<div id=\"#logo\">|</div>",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Height": 300,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 300
+}
+
 === RUN   Test_TestAndDocumentationRender/image-height
+    documentation_source_test.go:636: Test failed for image-height!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Enclose": "<div id=\"#logo\">|</div>",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 310,
+  "Height": 310,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "<div id=\"#logo\">|</div>",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Height": 310,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 310
+}
+
 === RUN   Test_TestAndDocumentationRender/image-alt
+    documentation_source_test.go:636: Test failed for image-alt!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "<div id=\"#gallery\">|</div>",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 100,
+  "Height": 0,
+  "Alt": "Cute cat!",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "Cute cat!",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "<div id=\"#gallery\">|</div>",
+  "ExtraAttributes": null,
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/image-title
+    documentation_source_test.go:636: Test failed for image-title!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 100,
+  "Height": 0,
+  "Alt": "",
+  "Title": "Some Cute Cat!",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "Some Cute Cat!",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/image-id
+    documentation_source_test.go:636: Test failed for image-id!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 310,
+  "Height": 310,
+  "Alt": "",
+  "Title": "",
+  "Id": "#cat",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 310,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "#cat",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 310
+}
+
 === RUN   Test_TestAndDocumentationRender/image-class
+    documentation_source_test.go:636: Test failed for image-class!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 100,
+  "Height": 0,
+  "Alt": "",
+  "Title": "Some Cute Cat!",
+  "Id": "",
+  "Class": "aclass bclass cclass",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "aclass bclass cclass",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "Some Cute Cat!",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/image-quality
+    documentation_source_test.go:636: Test failed for image-quality!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 320,
+  "Height": 320,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 1,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 320,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 1,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 320
+}
+
 === RUN   Test_TestAndDocumentationRender/image-loading
-=== RUN   Test_TestAndDocumentationRender/image-is_static
+    documentation_source_test.go:636: Test failed for image-loading!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 320,
+  "Height": 320,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "lazy",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 320,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "lazy",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 320
+}
+
 
 
 ======= Processing type: Images =======
 === RUN   Test_TestAndDocumentationRender/images-attributes
 === RUN   Test_TestAndDocumentationRender/images-enclose
+    documentation_source_test.go:636: Test failed for images-enclose!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Enclose": "<div id=\"#gallery\">|</div>",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 100,
+  "Height": 0,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "<div id=\"#gallery\">|</div>",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/images-directory
+    documentation_source_test.go:636: Test failed for images-directory!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Enclose": "<div id=\"#gallery\">|</div>",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 100,
+  "Height": 0,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "<div id=\"#gallery\">|</div>",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/images-width
+    documentation_source_test.go:636: Test failed for images-width!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 330,
+  "Height": 0,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 330
+}
+
 === RUN   Test_TestAndDocumentationRender/images-height
+    documentation_source_test.go:636: Test failed for images-height!
+output:
+{
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 0,
+  "Height": 100,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 100,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 0
+}
+
 === RUN   Test_TestAndDocumentationRender/images-id
 === RUN   Test_TestAndDocumentationRender/images-class
 === RUN   Test_TestAndDocumentationRender/images-alt
@@ -137,6 +829,7 @@ Embedded Field: HxResponse (mapped as: response)
 
 ======= Processing type: Text =======
 === RUN   Test_TestAndDocumentationRender/text-enclose
+=== RUN   Test_TestAndDocumentationRender/text-@doc
 === RUN   Test_TestAndDocumentationRender/text-value
 
 
@@ -148,11 +841,11 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/menu-active
 === RUN   Test_TestAndDocumentationRender/menu-item
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
-2025/08/04 16:18:23 Version: v0.6.5-alpha
-2025/08/04 16:18:23 Build Time: 2025-08-04T14:18:21Z
-2025/08/04 16:18:23 Static HTML file generated at ../../REFERENCE.md
-2025/08/04 16:18:23 Static HTML file generated at ../../README.md
---- PASS: Test_TestAndDocumentationRender (0.58s)
+2025/08/12 22:33:32 Version: v0.6.5-alpha
+2025/08/12 22:33:32 Build Time: 2025-08-12T20:33:31Z
+2025/08/12 22:33:32 Static HTML file generated at ../../REFERENCE.md
+2025/08/12 22:33:32 Static HTML file generated at ../../README.md
+--- FAIL: Test_TestAndDocumentationRender (0.58s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -207,35 +900,38 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/tree-@doc (0.00s)
     --- PASS: Test_TestAndDocumentationRender/tree-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/html-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/html-@doc (0.00s)
     --- PASS: Test_TestAndDocumentationRender/html-value (0.00s)
     --- PASS: Test_TestAndDocumentationRender/html-trimspace (0.00s)
     --- PASS: Test_TestAndDocumentationRender/css-attributes (0.00s)
     --- PASS: Test_TestAndDocumentationRender/css-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/css-@doc (0.00s)
     --- PASS: Test_TestAndDocumentationRender/css-inline (0.00s)
     --- PASS: Test_TestAndDocumentationRender/css-link (0.00s)
     --- PASS: Test_TestAndDocumentationRender/css-file (0.00s)
     --- PASS: Test_TestAndDocumentationRender/javascript-attributes (0.00s)
     --- PASS: Test_TestAndDocumentationRender/javascript-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/javascript-@doc (0.00s)
     --- PASS: Test_TestAndDocumentationRender/javascript-inline (0.00s)
     --- PASS: Test_TestAndDocumentationRender/javascript-link (0.00s)
     --- PASS: Test_TestAndDocumentationRender/javascript-file (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/image-attributes (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-enclose (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-src (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-width (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-height (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-alt (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-title (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-id (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-class (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-quality (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-loading (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-is_static (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/image-attributes (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/image-enclose (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/image-@doc (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/image-src (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/image-width (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/image-height (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/image-alt (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/image-title (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/image-id (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/image-class (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/image-quality (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/image-loading (0.02s)
     --- PASS: Test_TestAndDocumentationRender/images-attributes (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-enclose (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-directory (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-width (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-height (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/images-enclose (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/images-directory (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/images-width (0.02s)
+    --- FAIL: Test_TestAndDocumentationRender/images-height (0.02s)
     --- PASS: Test_TestAndDocumentationRender/images-id (0.03s)
     --- PASS: Test_TestAndDocumentationRender/images-class (0.03s)
     --- PASS: Test_TestAndDocumentationRender/images-alt (0.03s)
@@ -250,6 +946,7 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/json-values (0.00s)
     --- PASS: Test_TestAndDocumentationRender/json-debug (0.00s)
     --- PASS: Test_TestAndDocumentationRender/text-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/text-@doc (0.00s)
     --- PASS: Test_TestAndDocumentationRender/text-value (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-section (0.00s)
@@ -258,5 +955,6 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/menu-active (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
-PASS
-ok  	command-line-arguments	0.792s
+FAIL
+FAIL	command-line-arguments	0.798s
+FAIL

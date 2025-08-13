@@ -10,10 +10,11 @@ import (
 )
 
 type CssConfig struct {
-	shared.Component `mapstructure:",squash"`
-	Inline           string `mapstructure:"inline" description:"Use inline to define css in a multiline block <<[ /* css goes here */ ]>>" example:"{!{css-inline.hyperbricks}}"`
-	Link             string `mapstructure:"link" description:"Use link for a link tag" example:"{!{css-link.hyperbricks}}"`
-	File             string `mapstructure:"file" description:"file overrides link and inline, it loads contents of a file and renders it in a style tag." example:"{!{css-file.hyperbricks}}"`
+	shared.Component   `mapstructure:",squash"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Link css or render style tags from a css file or use inline attribute for multiline css blocks." example:"{!{css-@doc.hyperbricks}}"`
+	Inline             string `mapstructure:"inline" description:"Use inline to define css in a multiline block <<[ /* css goes here */ ]>>" example:"{!{css-inline.hyperbricks}}"`
+	Link               string `mapstructure:"link" description:"Use link for a link tag" example:"{!{css-link.hyperbricks}}"`
+	File               string `mapstructure:"file" description:"file overrides link and inline, it loads contents of a file and renders it in a style tag." example:"{!{css-file.hyperbricks}}"`
 }
 
 func CssConfigGetName() string {

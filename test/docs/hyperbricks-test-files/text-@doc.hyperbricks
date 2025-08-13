@@ -5,7 +5,7 @@ text {
     enclose = <span>|</span>
 }
 ==== explainer ====
-The paragraph content
+
 ==== expected json ====
 {
     "ConfigType": "<TEXT>",

@@ -15,6 +15,7 @@ The enclosing HTML element for the text divided by |
     "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "<span>|</span>",
+    "MetaDocDescription": "",
     "Value": "SOME VALUE"
   }
 ==== expected output ====

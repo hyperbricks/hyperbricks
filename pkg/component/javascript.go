@@ -10,10 +10,11 @@ import (
 )
 
 type JavaScriptConfig struct {
-	shared.Component `mapstructure:",squash"`
-	Inline           string `mapstructure:"inline" description:"Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here */ ]>>" example:"{!{javascript-inline.hyperbricks}}"`
-	Link             string `mapstructure:"link" description:"Use link for a script tag with a src attribute" example:"{!{javascript-link.hyperbricks}}"`
-	File             string `mapstructure:"file" description:"File overrides link and inline, it loads contents of a file and renders it in a script tag." example:"{!{javascript-file.hyperbricks}}"`
+	shared.Component   `mapstructure:",squash"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Link js or render script tags from a js file or use inline attribute for multiline js blocks." example:"{!{javascript-@doc.hyperbricks}}"`
+	Inline             string `mapstructure:"inline" description:"Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here */ ]>>" example:"{!{javascript-inline.hyperbricks}}"`
+	Link               string `mapstructure:"link" description:"Use link for a script tag with a src attribute" example:"{!{javascript-link.hyperbricks}}"`
+	File               string `mapstructure:"file" description:"File overrides link and inline, it loads contents of a file and renders it in a script tag." example:"{!{javascript-file.hyperbricks}}"`
 }
 
 func JavaScriptConfigGetName() string {

@@ -1,0 +1,28 @@
+==== hyperbricks config {!{js}} ====
+js = <JAVASCRIPT>
+js.file = hyperbricks-test-files/assets/script.js
+js.attributes {
+    type = text/javascript
+}
+==== explainer ====
+Extra attributes like id, data-role, data-action, type
+==== expected json ====
+{
+  "ConfigType": "<JAVASCRIPT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "type": "text/javascript"
+  },
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Inline": "",
+  "Link": "",
+  "File": "hyperbricks-test-files/assets/script.js"
+}
+==== expected output ====
+<script type="text/javascript">
+    console.log("Hello World!")
+</script>

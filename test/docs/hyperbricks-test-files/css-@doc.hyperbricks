@@ -1,0 +1,31 @@
+==== hyperbricks config {!{css}} ====
+css = <CSS>
+css.file = hyperbricks-test-files/assets/styles.css
+css.attributes {
+    media = screen
+}
+css.enclose = <style media="print">|</style>
+==== explainer ====
+A custom <style> tag definition |. Will override extraAttributes.
+==== expected json ====
+{
+  "ConfigType": "<CSS>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "media": "screen"
+  },
+  "Enclose": "<style media=\"print\">|</style>",
+  "MetaDocDescription": "",
+  "Inline": "",
+  "Link": "",
+  "File": "hyperbricks-test-files/assets/styles.css"
+}
+==== expected output ====
+<style media="print">
+  body {
+      background-color: red;
+  }
+</style>

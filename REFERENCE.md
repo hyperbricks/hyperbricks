@@ -1,6 +1,6 @@
 **Licence:** MIT  
 **Version:** v0.6.5-alpha  
-**Build time:** 2025-08-04T14:18:21Z
+**Build time:** 2025-08-12T20:33:31Z
 
 ## Build Status
 
@@ -81,8 +81,7 @@ The raw HTML content
 **Example**
 ````properties
 html = <HTML>
-html.value = <p>HTML TEST</p>    
-}
+html.value = <p>HTML TEST</p>
 
 ````
 
@@ -117,7 +116,6 @@ html.value = <<[
         <p>HTML TEST</p>    
     ]>>
 html.trimspace = true
-}
 
 ````
 
@@ -144,6 +142,35 @@ html.trimspace = true
 ## &lt;TEXT&gt;
 
 **Type Description**
+
+
+
+
+
+
+
+
+
+**Main Example**
+````properties
+text = <TEXT>
+text {
+	value = SOME VALUE
+    enclose = <span>|</span>
+}
+
+````
+
+
+**Expected Result**
+````html
+<span>
+  SOME VALUE
+</span>
+````
+
+
+**more**
 
 
 
@@ -181,6 +208,9 @@ text {
   SOME VALUE
 </span>
 ````
+
+
+
 
 
 
@@ -3776,6 +3806,38 @@ hm_3.title = DOCUMENT_3
 
 
 
+A custom &lt;style&gt; tag definition |. Will override extraAttributes.
+
+
+**Main Example**
+````properties
+css = <CSS>
+css.file = hyperbricks-test-files/assets/styles.css
+css.attributes {
+    media = screen
+}
+css.enclose = <style media="print">|</style>
+
+````
+
+
+**Expected Result**
+````html
+<style media="print">
+  body {
+  background-color: red;
+  }
+</style>
+````
+
+
+**more**
+
+
+
+
+
+
 
 
 
@@ -3866,6 +3928,9 @@ head {
   <meta name="generator" content="hyperbricks cms">
 </head>
 ````
+
+
+
 
 
 
@@ -4026,6 +4091,38 @@ hypermedia.head {
 
 
 
+**Main Example**
+````properties
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+
+image.title = Some Cute Cat!
+image.class = class-a class-b class-c
+image.attributes {
+  usemap = #catmap 
+}
+image.alt = cat but cute
+image.quality = 90
+image.id = #cat
+
+````
+
+
+**Expected Result**
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" alt="cat but cute" title="Some Cute Cat!" class="class-a class-b class-c" id="#cat" usemap="#catmap" />
+````
+
+
+**more**
+
+
+
+
+
+
+
 
 
 
@@ -4107,6 +4204,9 @@ image.enclose = <div id="#gallery">|</div>
   <img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" />
 </div>
 ````
+
+
+
 
 
 
@@ -4410,45 +4510,6 @@ image.loading = lazy
 
 ````html
 <img src="static/images/cute_cat_w320_h320.jpg" width="320" height="320" loading="lazy" />
-````
-
-
-
-
-
-
-
-
-
-
-
-### is_static
-
-**Description**  
-Flag indicating if the image is static, if so the img will not be scaled and has to be present in the configured static image directory. See package.hyperbricks in the module for settings. 
-```
-#conveys this logic:
-destDir := hbConfig.Directories[&#34;static&#34;] &#43; &#34;/images/&#34;
-if config.IsStatic {
-    destDir = hbConfig.Directories[&#34;render&#34;] &#43; &#34;/images/&#34;
-}
-```
-
-
-**Example**
-````properties
-image = <IMAGE>
-image.src = cute_cat.jpg
-image.width = 310
-image.height = 310
-image.is_static = true
-
-````
-
-**Expected Result**
-
-````html
-<img src="static/images/cute_cat.jpg" />
 ````
 
 
@@ -4891,6 +4952,35 @@ images.loading = lazy
 
 
 
+Extra attributes like id, data-role, data-action, type
+
+
+**Main Example**
+````properties
+js = <JAVASCRIPT>
+js.file = hyperbricks-test-files/assets/script.js
+js.attributes {
+    type = text/javascript
+}
+
+````
+
+
+**Expected Result**
+````html
+<script type="text/javascript">
+  console.log("Hello World!")
+</script>
+````
+
+
+**more**
+
+
+
+
+
+
 
 
 
@@ -4971,6 +5061,9 @@ head {
 console.log("Hello World!")
 <meta name="generator" content="hyperbricks cms">
 ````
+
+
+
 
 
 
