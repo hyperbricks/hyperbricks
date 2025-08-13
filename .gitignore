@@ -18,7 +18,6 @@ modules/default/
 
 TO_DO.md
 CHANGES.md
-
+REFERENCE.generated.md
 .gitignore
 .env
-scripts/fossa_build.sh
