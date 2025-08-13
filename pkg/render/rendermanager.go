@@ -108,32 +108,6 @@ func (rm *RenderManager) RegisterComponent(rendererType string, component shared
 	rm.renderers[rendererType] = component
 }
 
-// InitializeRenderers registers all renderers, including special types.
-func (rm *RenderManager) InitializeRenderers() {
-
-}
-
-// LoadPlugin loads a Go plugin dynamically and registers it.
-func (rm *RenderManager) LoadPlugin(path string, name string) error {
-	p, err := plugin.Open(path)
-	if err != nil {
-		return err
-	}
-	sym, err := p.Lookup("Plugin")
-	if err != nil {
-		return err
-	}
-	renderPlugin, ok := sym.(shared.PluginRenderer)
-	if !ok {
-		return fmt.Errorf("plugin does not implement RenderPlugin interface")
-	}
-
-	rm.mu.Lock()
-	defer rm.mu.Unlock()
-	rm.Plugins[name] = renderPlugin
-	return nil
-}
-
 // RegisterAndLoadPlugin loads a Go plugin dynamically and registers it.
 func (rm *RenderManager) RegisterAndLoadPlugin(path string, name string) error {
 	logger := logging.GetLogger()
