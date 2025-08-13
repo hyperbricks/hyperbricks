@@ -3,7 +3,6 @@ package component
 import (
 	"context"
 	"fmt"
-	"log"
 	"path/filepath"
 	"plugin"
 	"strings"
@@ -144,18 +143,48 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 
 	symbol, err := p.Lookup("Plugin")
 	if err != nil {
-		log.Fatalf("Failed to lookup 'Plugin' symbol: %v", err)
+		builder.WriteString(fmt.Sprintf("<!-- Failed to lookup plugin %v: %v -->\n", config.PluginName, err))
+		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
+			File: config.Component.Meta.HyperBricksFile,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Sprintf("Failed to lookup plugin %v: %v\n", config.PluginName, err),
+		})
+		return builder.String(), errors
+
 	}
 
 	pluginFactory, ok := symbol.(func() (shared.PluginRenderer, error))
 	if !ok {
-		log.Fatalf("Plugin symbol is not of expected type 'func() (shared.Renderer, error)'")
+		builder.WriteString(fmt.Sprintf("<!-- Plugin symbol is not of expected type 'func() (shared.Renderer, error)' %v: %v -->\n", config.PluginName, err))
+		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
+			File: config.Component.Meta.HyperBricksFile,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Sprintf("Plugin symbol is not of expected type 'func() (shared.Renderer, error)' %v: %v\n", config.PluginName, err),
+		})
+		return builder.String(), errors
+
 	}
 
 	renderer, err := pluginFactory()
 	if err != nil {
-		log.Fatalf("Error initializing plugin: %v", err)
+		builder.WriteString(fmt.Sprintf("<!--Error initializing plugin: %v: %v -->\n", config.PluginName, err))
+		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
+			File: config.Component.Meta.HyperBricksFile,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Sprintf("Error initializing plugin: %v: %v\n", config.PluginName, err),
+		})
+		return builder.String(), errors
 	}
+
 	if ctx == nil && commands.RenderStatic {
 		ctx = context.Background()
 	}
