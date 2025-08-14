@@ -1,0 +1,12 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JS>
+    10.file = template-tests/assets/script-local.js
+}
+==== explainer ====
+Use a local JS file path relative to the dedicated tests directory.
+==== expected output ====
+<!DOCTYPE html><html><head><script>
+console.log('from file');
+</script><meta name="generator" content="hyperbricks cms"></head><body></body></html>
