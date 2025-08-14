@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/cookiejar"
 	"net/http/httputil"
 	"net/url"
 	"regexp"
@@ -19,6 +17,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/shared/apiutil"
 )
 
 // FragmentConfig represents configuration for a single fragment.
@@ -90,18 +89,6 @@ func (conf *ApiFragmentRenderConfig) Validate() []error {
 			Rejected: false,
 		})
 	}
-	if conf.Route == "" {
-		errors = append(errors, shared.ComponentError{
-			Hash:     shared.GenerateHash(),
-			Key:      conf.Composite.Meta.HyperBricksKey,
-			Path:     conf.Composite.Meta.HyperBricksPath,
-			File:     conf.Composite.Meta.HyperBricksFile,
-			Type:     ApiFragmentRenderConfigGetName(),
-			Err:      "[field 'Route' is required]",
-			Rejected: false,
-		})
-	}
-
 	if conf.Route == "" {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
@@ -311,25 +298,11 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 	return builder.String(), errors
 }
 
-func flattenFormData(formData url.Values) map[string]interface{} {
-	flattened := make(map[string]interface{})
-
-	for key, values := range formData {
-		if len(values) == 1 {
-			flattened[key] = values[0] // Single value → string
-		} else {
-			flattened[key] = values // Multiple values → []string
-		}
-	}
-
-	return flattened
-}
-
 func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string, error) {
 	mergedData := make(map[string]interface{})
 
 	// Specify the allowed query keys
-	allowed := []string{"id", "name", "order"}
+	allowed := apiutil.DefaultQueryKeys
 	if config.AllowedQueryKeys != nil {
 		allowed = config.AllowedQueryKeys
 	}
@@ -347,9 +320,7 @@ func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string
 	// Retrieve form data from context (correct type)
 	formData, formOk := ctx.Value(shared.FormData).(url.Values)
 	if formOk {
-		// fmt.Printf("formData:%v", formData)
-		flattenedForm := flattenFormData(formData)
-		// fmt.Printf("flattenedForm:%v", flattenedForm)
+		flattenedForm := apiutil.FlattenFormData(formData)
 		for key, value := range flattenedForm {
 			mergedData[key] = value
 		}
@@ -385,7 +356,9 @@ func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string
 		}
 
 	} else {
-		fmt.Printf("No body provided with post...: %s\n", config.Body)
+		if config.Debug {
+			fmt.Printf("No body provided with post...: %s\n", config.Body)
+		}
 	}
 
 	// inside for-loop:
@@ -404,39 +377,15 @@ func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string
 		config.Body = re.ReplaceAllString(config.Body, strValue)
 	}
 
-	fmt.Printf("Updated body map string: %s\n", config.Body)
+	if config.Debug {
+		fmt.Printf("Updated body map string: %s\n", config.Body)
+	}
 	return config.Body, nil
 }
 
-// Shared HTTP transport for connection pooling
-var sharedTransport = &http.Transport{
-	MaxIdleConnsPerHost: 10,
-	DisableKeepAlives:   false,
-}
-
-// Securely creates a new HTTP client with a unique cookie jar per request.
-// - This ensures session cookies are **not shared between users**.
-// - While reusing the transport for efficiency, each request has **isolated cookies**.
-//
-// this approach is secure with respect to cookie isolation. Here’s why:
-// 	•	Unique Cookie Jar per Client: Each time you call newHttpClient(), you create a new cookie jar using cookiejar.New(nil). This ensures that each HTTP client instance has its own separate cookie store. Cookies obtained during a request using one client won’t be accessible by another.
-// 	•	Shared Transport Is Safe for Connection Pooling: The sharedTransport is used solely for managing connections (for efficiency through connection pooling) and does not store or manage cookie data. The Go http.Transport is designed to be safely shared across multiple clients.
-// 	•	Isolation of Session Data: Since the cookie jar is a property of the http.Client and not the transport, each client’s session cookies remain isolated. This design prevents any mix-up of cookies between different users.
-
-// Thus, with each client using its own cookie jar, there is no risk of cookie leakage or mixing between clients even though the transport is shared for efficiency.
-
-func newHttpClient() *http.Client {
-	jar, _ := cookiejar.New(nil) // Create a new cookie jar per request to prevent cookie leaks.
-	return &http.Client{
-		Timeout:   10 * time.Second,
-		Transport: sharedTransport, // Reuses connections efficiently while isolating cookies.
-		Jar:       jar,             // Ensures cookies remain request-specific and cannot be leaked.
-	}
-}
-
-// Updated fetchDataFromAPI function using newHttpClient()
+// Updated fetchDataFromAPI function using a shared HTTP client helper
 func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (interface{}, int, error) {
-	client := newHttpClient() // Ensures security while reusing transport
+	client := apiutil.NewHTTPClient()
 
 	// Parse the endpoint URL
 	endpoint, err := url.Parse(config.Endpoint)
@@ -445,7 +394,7 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 	}
 
 	// Specify the allowed query keys
-	allowed := []string{"id", "name", "order"}
+	allowed := apiutil.DefaultQueryKeys
 	if config.AllowedQueryKeys != nil {
 		allowed = config.AllowedQueryKeys
 	}
@@ -542,7 +491,7 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 	var result interface{}
 	dec := json.NewDecoder(resp.Body)
 	if err := dec.Decode(&result); err != nil {
-		result, resp.StatusCode, err = handleAPIResponse(resp)
+		result, resp.StatusCode, err = apiutil.HandleAPIResponse(resp)
 		if err != nil {
 			//return nil, resp.StatusCode, fmt.Errorf("failed to decode JSON response: %w", err)
 		}
@@ -559,50 +508,6 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 	}
 
 	return result, resp.StatusCode, nil
-}
-
-// Check if response is JSON
-func isJSONResponse(resp *http.Response) bool {
-	contentType := resp.Header.Get("Content-Type")
-	return strings.HasPrefix(contentType, "application/json")
-}
-
-// Check if response is XML
-func isXMLResponse(resp *http.Response) bool {
-	contentType := resp.Header.Get("Content-Type")
-	return strings.HasPrefix(contentType, "application/xml") || strings.HasPrefix(contentType, "text/xml")
-}
-
-// Handle API response dynamically
-func handleAPIResponse(resp *http.Response) (interface{}, int, error) {
-	var result interface{}
-
-	// Handle JSON Response
-	if isJSONResponse(resp) {
-		dec := json.NewDecoder(resp.Body)
-		if err := dec.Decode(&result); err != nil {
-			return nil, resp.StatusCode, fmt.Errorf("failed to decode JSON response: %w", err)
-		}
-		return result, resp.StatusCode, nil
-	}
-
-	// Handle XML Response
-	if isXMLResponse(resp) {
-		var xmlResult map[string]interface{} // XML unmarshals into a struct or map
-		dec := xml.NewDecoder(resp.Body)
-		if err := dec.Decode(&xmlResult); err != nil {
-			return nil, resp.StatusCode, fmt.Errorf("failed to decode XML response: %w", err)
-		}
-		return xmlResult, resp.StatusCode, nil
-	}
-
-	// Fallback: Read as Plain Text
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, resp.StatusCode, fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	return string(bodyBytes), resp.StatusCode, nil
 }
 
 func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFragmentRenderConfig) (string, []error) {
