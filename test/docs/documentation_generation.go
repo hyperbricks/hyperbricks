@@ -176,14 +176,6 @@ func typesToDocument() []DocumentationTypeStructII {
 			ConfigCategory:  "resources",
 			Config:          component.CssConfig{},
 		},
-		// {
-		// 	Name:            "Style",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded:        map[string]string{},
-		// 	ConfigType:      "<STYLE>",
-		// 	ConfigCategory:  "resources",
-		// 	Config:          component.StyleConfig{},
-		// },
 		{
 			Name:            "Javascript",
 			TypeDescription: "Basic type description here.....",
@@ -274,6 +266,15 @@ func writeTypeDoc(b *strings.Builder, cfg DocumentationTypeStructII) {
 		b.WriteString("````html\n")
 		b.WriteString(strings.TrimRight(gen.Result, "\n"))
 		b.WriteString("\n````\n\n")
+
+		b.WriteString("\n")
+		b.WriteString(strings.TrimRight(gen.Explainer, "\n"))
+		b.WriteString("\n")
+
+		b.WriteString("\n")
+		b.WriteString(strings.TrimRight(gen.More, "\n"))
+		b.WriteString("\n")
+
 	}
 }
 
@@ -303,11 +304,13 @@ func findTypeDescription(cfg DocumentationTypeStructII) string {
 }
 
 func findGeneralExample(cfg DocumentationTypeStructII) parsedContent {
+
 	// Use @doc example file if present; else fall back to <lower(name)>-@doc.hyperbricks
 	rv := reflect.ValueOf(cfg.Config)
 	if rv.Kind() == reflect.Ptr {
 		rv = rv.Elem()
 	}
+
 	rt := rv.Type()
 	for i := 0; i < rt.NumField(); i++ {
 		f := rt.Field(i)
