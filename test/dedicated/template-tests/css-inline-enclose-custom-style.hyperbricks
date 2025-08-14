@@ -1,0 +1,15 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.inline = <<[
+body{color:red;}
+]>>
+    10.enclose = <style media="print">|</style>
+}
+==== explainer ====
+Enclose replaces the default <style> tag with the provided tag.
+==== expected output ====
+<!DOCTYPE html><html><head><style media="print">
+body{color:red;}
+</style><meta name="generator" content="hyperbricks cms"></head><body></body></html>
