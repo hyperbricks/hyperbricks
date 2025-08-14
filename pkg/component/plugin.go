@@ -3,7 +3,6 @@ package component
 import (
 	"context"
 	"fmt"
-	"log"
 	"path/filepath"
 	"plugin"
 	"strings"
@@ -36,7 +35,6 @@ func (r *PluginRenderer) Types() []string {
 }
 func (r *PluginRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
 	var errors []error
-	var builder strings.Builder
 
 	config, ok := instance.(PluginConfig)
 	if !ok {
@@ -46,12 +44,12 @@ func (r *PluginRenderer) Render(instance interface{}, ctx context.Context) (stri
 			Path: config.HyperBricksPath,
 			File: config.HyperBricksFile,
 			Type: PluginRenderGetName(),
-			Err:  fmt.Errorf("invalid type for MenuRenderer").Error(),
+			Err:  fmt.Errorf("invalid type for PluginRenderer").Error(),
 		})
-		return fmt.Errorf("<!-- invalid type for MenuRenderer -->").Error(), errors
+		return fmt.Errorf("<!-- invalid type for PluginRenderer -->").Error(), errors
 	}
 
-	pluginRenderer, pluginExists := r.RenderManager.Plugins[config.PluginName]
+	pluginRenderer, pluginExists := r.RenderManager.GetPlugin(config.PluginName)
 	if !pluginExists {
 		errors = append(errors, shared.ComponentError{
 			Hash: shared.GenerateHash(),
@@ -66,44 +64,13 @@ func (r *PluginRenderer) Render(instance interface{}, ctx context.Context) (stri
 		if renderErrs != nil {
 			errors = append(errors, renderErrs...)
 		}
-
 		return renderedContent, errors
-
-	}
-	if ctx == nil && commands.RenderStatic {
-		ctx = context.Background()
-	}
-	renderedContent, renderErrs := pluginRenderer.Render(instance, ctx)
-	if renderErrs != nil {
-		errors = append(errors, renderErrs...)
 	}
 
-	allowedAttributes := []string{"id", "data-role", "data-action"}
-	extraAttributes := shared.RenderAllowedAttributes(config.ExtraAttributes, allowedAttributes)
-
-	var html string
-
-	if len(config.Classes) > 0 || extraAttributes != "" {
-		// Build class attribute if needed
-		classAttr := ""
-		if len(config.Classes) > 0 {
-			classAttr = fmt.Sprintf(` class="%s"`, strings.Join(config.Classes, " "))
-		}
-		html = fmt.Sprintf(`<div%s%s>%s</div>`, classAttr, extraAttributes, renderedContent)
-	} else {
-		html = renderedContent
-	}
-
-	if config.Enclose != "" {
-		html = shared.EncloseContent(config.Enclose, html)
-	}
-
-	builder.WriteString(html)
-	return builder.String(), errors
+	return renderAndWrap(pluginRenderer, config, instance, ctx, errors)
 }
 
 func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context) (string, []error) {
-
 	var errors []error
 	var builder strings.Builder
 
@@ -125,7 +92,6 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 	if tbplugindir, ok := hbConfig.Directories["plugins"]; ok {
 		pluginDir = tbplugindir
 	}
-
 	pluginPath := filepath.Join(pluginDir, config.PluginName+".so")
 
 	p, err := plugin.Open(pluginPath)
@@ -144,34 +110,76 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 
 	symbol, err := p.Lookup("Plugin")
 	if err != nil {
-		log.Fatalf("Failed to lookup 'Plugin' symbol: %v", err)
+		builder.WriteString(fmt.Sprintf("<!-- Failed to lookup plugin %v: %v -->\n", config.PluginName, err))
+		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
+			File: config.Component.Meta.HyperBricksFile,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Sprintf("Failed to lookup plugin %v: %v\n", config.PluginName, err),
+		})
+		return builder.String(), errors
 	}
 
 	pluginFactory, ok := symbol.(func() (shared.PluginRenderer, error))
 	if !ok {
-		log.Fatalf("Plugin symbol is not of expected type 'func() (shared.Renderer, error)'")
+		builder.WriteString(fmt.Sprintf(
+			"<!-- Plugin symbol is not of expected type 'func() (shared.Renderer, error)' %v -->\n",
+			config.PluginName,
+		))
+		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
+			File: config.Component.Meta.HyperBricksFile,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Sprintf("Plugin symbol is not of expected type 'func() (shared.Renderer, error)' %v", config.PluginName),
+		})
+		return builder.String(), errors
 	}
 
 	renderer, err := pluginFactory()
 	if err != nil {
-		log.Fatalf("Error initializing plugin: %v", err)
+		builder.WriteString(fmt.Sprintf("<!--Error initializing plugin: %v: %v -->\n", config.PluginName, err))
+		errors = append(errors, shared.ComponentError{
+			Hash: shared.GenerateHash(),
+			Key:  config.Component.Meta.HyperBricksKey,
+			Path: config.Component.Meta.HyperBricksPath,
+			File: config.Component.Meta.HyperBricksFile,
+			Type: PluginRenderGetName(),
+			Err:  fmt.Sprintf("Error initializing plugin: %v: %v\n", config.PluginName, err),
+		})
+		return builder.String(), errors
 	}
+
+	// Store hot-loaded plugin so it's available next time
+	r.RenderManager.SetPlugin(config.PluginName, renderer)
+
+	return renderAndWrap(renderer, config, instance, ctx, errors)
+}
+
+func renderAndWrap(r shared.PluginRenderer, config PluginConfig, instance interface{}, ctx context.Context, errs []error) (string, []error) {
+	var builder strings.Builder
+
 	if ctx == nil && commands.RenderStatic {
 		ctx = context.Background()
 	}
-	renderedContent, renderErrs := renderer.Render(instance, ctx)
+	renderedContent, renderErrs := r.Render(instance, ctx)
 	if renderErrs != nil {
-
-		errors = append(errors, renderErrs...)
+		errs = append(errs, renderErrs...)
 	}
 
+	builder.WriteString(wrapPluginHTML(config, renderedContent))
+	return builder.String(), errs
+}
+
+func wrapPluginHTML(config PluginConfig, renderedContent string) string {
 	allowedAttributes := []string{"id", "data-role", "data-action"}
 	extraAttributes := shared.RenderAllowedAttributes(config.ExtraAttributes, allowedAttributes)
 
 	var html string
-
 	if len(config.Classes) > 0 || extraAttributes != "" {
-		// Build class attribute if needed
 		classAttr := ""
 		if len(config.Classes) > 0 {
 			classAttr = fmt.Sprintf(` class="%s"`, strings.Join(config.Classes, " "))
@@ -184,8 +192,5 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 	if config.Enclose != "" {
 		html = shared.EncloseContent(config.Enclose, html)
 	}
-
-	builder.WriteString(html)
-	return builder.String(), errors
-
+	return html
 }
