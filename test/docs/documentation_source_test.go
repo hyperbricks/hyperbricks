@@ -38,7 +38,7 @@ var (
 )
 
 // Types we use to drive the doc
-type DocumentationTypeStruct struct {
+type DocumentationTypeStructI struct {
 	Name            string            // logical name used for example file fallbacks (lowercased)
 	TypeDescription string            // fallback description if @doc is missing
 	ConfigType      string            // the visible <TYPE> token
@@ -114,7 +114,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	Version = *versionFlag
 	BuildTime = *buildTimeFlag
 
-	types := []DocumentationTypeStruct{
+	types := []DocumentationTypeStructI{
 		{
 			Name:            "Fragment",
 			TypeDescription: "Basic type description here.....",
@@ -486,7 +486,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	renderStaticFile(tmpl, data, "../../README.md")
 
 }
-func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *testing.T, rm *render.RenderManager, _fields []FieldDoc) []FieldDoc {
+func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStructI, t *testing.T, rm *render.RenderManager, _fields []FieldDoc) []FieldDoc {
 
 	var fields []FieldDoc
 	if len(_fields) > 0 {
@@ -564,7 +564,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				var expected map[string]interface{}
 
 				// Convert JSON string to bytes and unmarshal into the map
-				if err := json.Unmarshal([]byte(buf.String()), &expected); err != nil {
+				if err := json.Unmarshal(buf.Bytes(), &expected); err != nil {
 					fmt.Println("Error unmarshaling JSON:", err)
 					return
 				}

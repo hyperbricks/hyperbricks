@@ -32,7 +32,7 @@ var examplesDirFlag = flag.String("examples", "hyperbricks-test-files", "directo
 var outPathFlag = flag.String("out", "REFERENCE.generated.md", "output markdown path")
 
 // Types we use to drive the doc
-type DocumentationTypeStruct struct {
+type DocumentationTypeStructII struct {
 	Name            string            // logical name used for example file fallbacks (lowercased)
 	TypeDescription string            // fallback description if @doc is missing
 	ConfigType      string            // the visible <TYPE> token
@@ -62,8 +62,8 @@ func main() {
 
 	types := typesToDocument()
 
-	var components []DocumentationTypeStruct
-	var composites []DocumentationTypeStruct
+	var components []DocumentationTypeStructII
+	var composites []DocumentationTypeStructII
 	for _, t := range types {
 		if strings.EqualFold(t.ConfigCategory, "composite") {
 			composites = append(composites, t)
@@ -97,8 +97,8 @@ func main() {
 
 // ----------------- Types to document (edit here) -----------------
 
-func typesToDocument() []DocumentationTypeStruct {
-	return []DocumentationTypeStruct{
+func typesToDocument() []DocumentationTypeStructII {
+	return []DocumentationTypeStructII{
 		// Composites
 		{
 			Name:            "Fragment",
@@ -240,7 +240,7 @@ func typesToDocument() []DocumentationTypeStruct {
 
 // ----------------- Doc rendering -----------------
 
-func writeTypeDoc(b *strings.Builder, cfg DocumentationTypeStruct) {
+func writeTypeDoc(b *strings.Builder, cfg DocumentationTypeStructII) {
 	desc := findTypeDescription(cfg)
 	gen := findGeneralExample(cfg)
 	props := collectProps(cfg)
@@ -277,7 +277,7 @@ func writeTypeDoc(b *strings.Builder, cfg DocumentationTypeStruct) {
 	}
 }
 
-func findTypeDescription(cfg DocumentationTypeStruct) string {
+func findTypeDescription(cfg DocumentationTypeStructII) string {
 	// Prefer @doc field description, else TypeDescription
 	rv := reflect.ValueOf(cfg.Config)
 	if rv.Kind() == reflect.Ptr {
@@ -293,7 +293,7 @@ func findTypeDescription(cfg DocumentationTypeStruct) string {
 			}
 		}
 		if f.Tag.Get("mapstructure") == ",squash" {
-			sub := findTypeDescription(DocumentationTypeStruct{Config: zeroValue(f.Type).Interface()})
+			sub := findTypeDescription(DocumentationTypeStructII{Config: zeroValue(f.Type).Interface()})
 			if sub != "" {
 				return sub
 			}
@@ -302,7 +302,7 @@ func findTypeDescription(cfg DocumentationTypeStruct) string {
 	return strings.TrimSpace(cfg.TypeDescription)
 }
 
-func findGeneralExample(cfg DocumentationTypeStruct) parsedContent {
+func findGeneralExample(cfg DocumentationTypeStructII) parsedContent {
 	// Use @doc example file if present; else fall back to <lower(name)>-@doc.hyperbricks
 	rv := reflect.ValueOf(cfg.Config)
 	if rv.Kind() == reflect.Ptr {
@@ -315,7 +315,7 @@ func findGeneralExample(cfg DocumentationTypeStruct) parsedContent {
 			return readExampleOrEmpty(f.Tag.Get("example"))
 		}
 		if f.Tag.Get("mapstructure") == ",squash" {
-			pc := findGeneralExample(DocumentationTypeStruct{Config: zeroValue(f.Type).Interface()})
+			pc := findGeneralExample(DocumentationTypeStructII{Config: zeroValue(f.Type).Interface()})
 			if pc.hasExample {
 				return pc
 			}
@@ -330,7 +330,7 @@ func findGeneralExample(cfg DocumentationTypeStruct) parsedContent {
 // - embedded/squashed fields (mapstructure:",squash")
 // - nested groups (struct fields with a concrete map key; we prefix with that key + ".")
 // - extra embedded groups listed in cfg.Embedded (e.g. HxResponse -> response.*)
-func collectProps(cfg DocumentationTypeStruct) []propDoc {
+func collectProps(cfg DocumentationTypeStructII) []propDoc {
 	props := make([]propDoc, 0)
 	seen := map[string]bool{}
 
@@ -343,7 +343,7 @@ func collectProps(cfg DocumentationTypeStruct) []propDoc {
 		rv = rv.Elem()
 	}
 	for embeddedName, prefix := range cfg.Embedded {
-		field := findFieldByName(rv, embeddedName)
+		field := findFieldByNameII(rv, embeddedName)
 		if field.IsValid() {
 			props = append(props, walkStruct(field, prefix+".", cfg, seen)...)
 		}
@@ -360,7 +360,7 @@ func IsExcludedFieldGen(tag string, excludeFields []string) bool {
 	return false
 }
 
-func walkStruct(val reflect.Value, prefix string, cfg DocumentationTypeStruct, seen map[string]bool) []propDoc {
+func walkStruct(val reflect.Value, prefix string, cfg DocumentationTypeStructII, seen map[string]bool) []propDoc {
 	out := []propDoc{}
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -557,7 +557,7 @@ func parseContent(content string) (parsedContent, error) {
 }
 
 // Deep search by field name across embedded structs (handles struct and *struct)
-func findFieldByName(val reflect.Value, fieldName string) reflect.Value {
+func findFieldByNameII(val reflect.Value, fieldName string) reflect.Value {
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
@@ -575,7 +575,7 @@ func findFieldByName(val reflect.Value, fieldName string) reflect.Value {
 			continue
 		}
 		if sub.Kind() == reflect.Struct || (sub.Kind() == reflect.Ptr && sub.Elem().Kind() == reflect.Struct) {
-			if found := findFieldByName(sub, fieldName); found.IsValid() {
+			if found := findFieldByNameII(sub, fieldName); found.IsValid() {
 				return found
 			}
 		}

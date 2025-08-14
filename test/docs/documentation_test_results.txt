@@ -62,9 +62,9 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/template-template
 === RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-2025/08/12 22:33:31 [.template or a .inline is required]
+2025/08/14 18:08:21 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-2025/08/12 22:33:31 [.template or a .inline is required]
+2025/08/14 18:08:21 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
 
@@ -621,6 +621,54 @@ expected:
 
 ======= Processing type: Images =======
 === RUN   Test_TestAndDocumentationRender/images-attributes
+    documentation_source_test.go:636: Test failed for images-attributes!
+output:
+{
+  "ConfigType": "<IMAGES>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "decoding": "async"
+  },
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Width": 100,
+  "Height": 0,
+  "Id": "#galleryimage_",
+  "Class": "",
+  "IsStatic": false,
+  "Alt": "",
+  "Title": "",
+  "Quality": 0,
+  "Loading": "lazy"
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGES>",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Enclose": "",
+  "ExtraAttributes": {
+    "decoding": "async"
+  },
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "#galleryimage_",
+  "IsStatic": false,
+  "Loading": "lazy",
+  "Quality": 0,
+  "Title": "",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/images-enclose
     documentation_source_test.go:636: Test failed for images-enclose!
 output:
@@ -670,6 +718,7 @@ expected:
   "Width": 100
 }
 
+=== RUN   Test_TestAndDocumentationRender/images-@doc
 === RUN   Test_TestAndDocumentationRender/images-directory
     documentation_source_test.go:636: Test failed for images-directory!
 output:
@@ -810,21 +859,578 @@ expected:
 }
 
 === RUN   Test_TestAndDocumentationRender/images-id
+    documentation_source_test.go:636: Test failed for images-id!
+output:
+{
+  "ConfigType": "<IMAGES>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "decoding": "async"
+  },
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Width": 100,
+  "Height": 0,
+  "Id": "#img_",
+  "Class": "",
+  "IsStatic": false,
+  "Alt": "",
+  "Title": "",
+  "Quality": 0,
+  "Loading": "lazy"
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGES>",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Enclose": "",
+  "ExtraAttributes": {
+    "decoding": "async"
+  },
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "#img_",
+  "IsStatic": false,
+  "Loading": "lazy",
+  "Quality": 0,
+  "Title": "",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/images-class
+    documentation_source_test.go:636: Test failed for images-class!
+output:
+{
+  "ConfigType": "<IMAGES>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "decoding": "async"
+  },
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Width": 100,
+  "Height": 10,
+  "Id": "#galleryimage_",
+  "Class": "galleryimage bordered",
+  "IsStatic": false,
+  "Alt": "",
+  "Title": "",
+  "Quality": 0,
+  "Loading": "lazy"
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "galleryimage bordered",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGES>",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Enclose": "",
+  "ExtraAttributes": {
+    "decoding": "async"
+  },
+  "Height": 10,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "#galleryimage_",
+  "IsStatic": false,
+  "Loading": "lazy",
+  "Quality": 0,
+  "Title": "",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/images-alt
+    documentation_source_test.go:636: Test failed for images-alt!
+output:
+{
+  "ConfigType": "<IMAGES>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Width": 100,
+  "Height": 10,
+  "Id": "#galleryimage_",
+  "Class": "galleryimage bordered",
+  "IsStatic": false,
+  "Alt": "gallery image",
+  "Title": "",
+  "Quality": 0,
+  "Loading": "lazy"
+}
+
+expected:
+{
+  "Alt": "gallery image",
+  "Class": "galleryimage bordered",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGES>",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 10,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "#galleryimage_",
+  "IsStatic": false,
+  "Loading": "lazy",
+  "Quality": 0,
+  "Title": "",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/images-title
+    documentation_source_test.go:636: Test failed for images-title!
+output:
+{
+  "ConfigType": "<IMAGES>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Width": 100,
+  "Height": 0,
+  "Id": "#img_",
+  "Class": "",
+  "IsStatic": false,
+  "Alt": "",
+  "Title": "sometitle",
+  "Quality": 0,
+  "Loading": "lazy"
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGES>",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "#img_",
+  "IsStatic": false,
+  "Loading": "lazy",
+  "Quality": 0,
+  "Title": "sometitle",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/images-quality
+    documentation_source_test.go:636: Test failed for images-quality!
+output:
+{
+  "ConfigType": "<IMAGES>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Width": 100,
+  "Height": 0,
+  "Id": "#img_",
+  "Class": "",
+  "IsStatic": false,
+  "Alt": "",
+  "Title": "",
+  "Quality": 1,
+  "Loading": "lazy"
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGES>",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "#img_",
+  "IsStatic": false,
+  "Loading": "lazy",
+  "Quality": 1,
+  "Title": "",
+  "Width": 100
+}
+
 === RUN   Test_TestAndDocumentationRender/images-loading
+    documentation_source_test.go:636: Test failed for images-loading!
+output:
+{
+  "ConfigType": "<IMAGES>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Width": 100,
+  "Height": 0,
+  "Id": "#img_",
+  "Class": "",
+  "IsStatic": false,
+  "Alt": "",
+  "Title": "",
+  "Quality": 0,
+  "Loading": "lazy"
+}
+
+expected:
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGES>",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "#img_",
+  "IsStatic": false,
+  "Loading": "lazy",
+  "Quality": 0,
+  "Title": "",
+  "Width": 100
+}
+
 
 
 ======= Processing type: Json =======
 === RUN   Test_TestAndDocumentationRender/json-attributes
+    documentation_source_test.go:636: Test failed for json-attributes!
+output:
+{
+  "ConfigType": "<JSON_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "Template": "",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Values": null,
+  "Debug": false
+}
+
+expected:
+{
+  "ConfigCategory": "",
+  "ConfigType": "<JSON_RENDER>",
+  "Debug": false,
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Template": "",
+  "Values": null
+}
+
 === RUN   Test_TestAndDocumentationRender/json-enclose
+    documentation_source_test.go:636: Test failed for json-enclose!
+output:
+{
+  "ConfigType": "<JSON_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "Template": "",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Values": null,
+  "Debug": false
+}
+
+expected:
+{
+  "ConfigCategory": "",
+  "ConfigType": "<JSON_RENDER>",
+  "Debug": false,
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Template": "",
+  "Values": null
+}
+
+=== RUN   Test_TestAndDocumentationRender/json-@doc
+    documentation_source_test.go:636: Test failed for json-@doc!
+output:
+{
+  "ConfigType": "<JSON_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "Template": "",
+  "Inline": "\n        <h1>{{.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Values": {
+    "someproperty": "Quotes!"
+  },
+  "Debug": false
+}
+
+expected:
+{
+  "ConfigCategory": "",
+  "ConfigType": "<JSON_RENDER>",
+  "Debug": false,
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "\n        <h1>{{.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Template": "",
+  "Values": {
+    "someproperty": "Quotes!"
+  }
+}
+
 === RUN   Test_TestAndDocumentationRender/json-file
+    documentation_source_test.go:636: Test failed for json-file!
+output:
+{
+  "ConfigType": "<JSON_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "Template": "",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Values": null,
+  "Debug": false
+}
+
+expected:
+{
+  "ConfigCategory": "",
+  "ConfigType": "<JSON_RENDER>",
+  "Debug": false,
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Template": "",
+  "Values": null
+}
+
 === RUN   Test_TestAndDocumentationRender/json-template
+    documentation_source_test.go:636: Test failed for json-template!
+output:
+{
+  "ConfigType": "<JSON_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "Template": "",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Values": null,
+  "Debug": false
+}
+
+expected:
+{
+  "ConfigCategory": "",
+  "ConfigType": "<JSON_RENDER>",
+  "Debug": false,
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Template": "",
+  "Values": null
+}
+
 === RUN   Test_TestAndDocumentationRender/json-inline
+    documentation_source_test.go:636: Test failed for json-inline!
+output:
+{
+  "ConfigType": "<JSON_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "Template": "",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Values": null,
+  "Debug": false
+}
+
+expected:
+{
+  "ConfigCategory": "",
+  "ConfigType": "<JSON_RENDER>",
+  "Debug": false,
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Template": "",
+  "Values": null
+}
+
 === RUN   Test_TestAndDocumentationRender/json-values
+    documentation_source_test.go:636: Test failed for json-values!
+output:
+{
+  "ConfigType": "<JSON_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "Template": "",
+  "Inline": "\n        <h1>{{.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Values": {
+    "someproperty": "Quotes!"
+  },
+  "Debug": false
+}
+
+expected:
+{
+  "ConfigCategory": "",
+  "ConfigType": "<JSON_RENDER>",
+  "Debug": false,
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "\n        <h1>{{.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Template": "",
+  "Values": {
+    "someproperty": "Quotes!"
+  }
+}
+
 === RUN   Test_TestAndDocumentationRender/json-debug
+    documentation_source_test.go:636: Test failed for json-debug!
+output:
+{
+  "ConfigType": "<JSON_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "MetaDocDescription": "",
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "Template": "",
+  "Inline": "\n        <h1>{{.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Values": {
+    "someproperty": "Quotes!"
+  },
+  "Debug": false
+}
+
+expected:
+{
+  "ConfigCategory": "",
+  "ConfigType": "<JSON_RENDER>",
+  "Debug": false,
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "\n        <h1>{{.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Template": "",
+  "Values": {
+    "someproperty": "Quotes!"
+  }
+}
+
 
 
 ======= Processing type: Text =======
@@ -841,11 +1447,11 @@ expected:
 === RUN   Test_TestAndDocumentationRender/menu-active
 === RUN   Test_TestAndDocumentationRender/menu-item
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
-2025/08/12 22:33:32 Version: v0.6.5-alpha
-2025/08/12 22:33:32 Build Time: 2025-08-12T20:33:31Z
-2025/08/12 22:33:32 Static HTML file generated at ../../REFERENCE.md
-2025/08/12 22:33:32 Static HTML file generated at ../../README.md
---- FAIL: Test_TestAndDocumentationRender (0.58s)
+2025/08/14 18:08:22 Version: v0.6.5-alpha
+2025/08/14 18:08:22 Build Time: 2025-08-14T16:08:19Z
+2025/08/14 18:08:22 Static HTML file generated at ../../REFERENCE.md
+2025/08/14 18:08:22 Static HTML file generated at ../../README.md
+--- FAIL: Test_TestAndDocumentationRender (0.61s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
@@ -927,24 +1533,26 @@ expected:
     --- FAIL: Test_TestAndDocumentationRender/image-class (0.02s)
     --- FAIL: Test_TestAndDocumentationRender/image-quality (0.02s)
     --- FAIL: Test_TestAndDocumentationRender/image-loading (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-attributes (0.03s)
+    --- FAIL: Test_TestAndDocumentationRender/images-attributes (0.03s)
     --- FAIL: Test_TestAndDocumentationRender/images-enclose (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/images-@doc (0.02s)
     --- FAIL: Test_TestAndDocumentationRender/images-directory (0.02s)
     --- FAIL: Test_TestAndDocumentationRender/images-width (0.02s)
     --- FAIL: Test_TestAndDocumentationRender/images-height (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-id (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-class (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-alt (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-title (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-quality (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-loading (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/json-attributes (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-file (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-template (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-inline (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-values (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/json-debug (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/images-id (0.03s)
+    --- FAIL: Test_TestAndDocumentationRender/images-class (0.03s)
+    --- FAIL: Test_TestAndDocumentationRender/images-alt (0.03s)
+    --- FAIL: Test_TestAndDocumentationRender/images-title (0.03s)
+    --- FAIL: Test_TestAndDocumentationRender/images-quality (0.03s)
+    --- FAIL: Test_TestAndDocumentationRender/images-loading (0.03s)
+    --- FAIL: Test_TestAndDocumentationRender/json-attributes (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/json-enclose (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/json-@doc (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/json-file (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/json-template (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/json-inline (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/json-values (0.00s)
+    --- FAIL: Test_TestAndDocumentationRender/json-debug (0.00s)
     --- PASS: Test_TestAndDocumentationRender/text-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/text-@doc (0.00s)
     --- PASS: Test_TestAndDocumentationRender/text-value (0.00s)
@@ -956,5 +1564,5 @@ expected:
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
 FAIL
-FAIL	command-line-arguments	0.798s
+FAIL	command-line-arguments	0.817s
 FAIL
