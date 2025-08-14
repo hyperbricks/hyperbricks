@@ -108,6 +108,22 @@ func (rm *RenderManager) RegisterComponent(rendererType string, component shared
 	rm.renderers[rendererType] = component
 }
 
+func (rm *RenderManager) GetPlugin(name string) (shared.PluginRenderer, bool) {
+	rm.mu.RLock()
+	defer rm.mu.RUnlock()
+	pr, ok := rm.Plugins[name]
+	return pr, ok
+}
+
+func (rm *RenderManager) SetPlugin(name string, pr shared.PluginRenderer) {
+	rm.mu.Lock()
+	defer rm.mu.Unlock()
+	if rm.Plugins == nil {
+		rm.Plugins = make(map[string]shared.PluginRenderer)
+	}
+	rm.Plugins[name] = pr
+}
+
 // RegisterAndLoadPlugin loads a Go plugin dynamically and registers it.
 func (rm *RenderManager) RegisterAndLoadPlugin(path string, name string) error {
 	logger := logging.GetLogger()
@@ -137,16 +153,9 @@ func (rm *RenderManager) RegisterAndLoadPlugin(path string, name string) error {
 		return fmt.Errorf("error initializing plugin: %v", err)
 	}
 
-	// Lock and store the plugin instance safely
-	rm.mu.Lock()
-	defer rm.mu.Unlock()
+	// Use the helper to store it safely
+	rm.SetPlugin(name, renderer)
 
-	// Ensure Plugins map is initialized before storing
-	if rm.Plugins == nil {
-		rm.Plugins = make(map[string]shared.PluginRenderer)
-	}
-
-	rm.Plugins[name] = renderer
 	return nil // No error
 }
 
