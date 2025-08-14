@@ -1,0 +1,18 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JS>
+    10.link = main.js
+    10.attributes {
+        async = true
+        defer = true
+        integrity = sha256-xyz
+        crossorigin = anonymous
+        referrerpolicy = no-referrer
+        type = module
+    }
+}
+==== explainer ====
+Script tag with src should include allowed attributes in stable order.
+==== expected output ====
+<!DOCTYPE html><html><head><script src="main.js" async="true" defer="true" type="module" integrity="sha256-xyz" crossorigin="anonymous" referrerpolicy="no-referrer"></script><meta name="generator" content="hyperbricks cms"></head><body></body></html>

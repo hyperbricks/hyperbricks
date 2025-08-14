@@ -1,0 +1,15 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JS>
+    10.inline = <<[
+console.log('inline');
+]>>
+    10.enclose = <script defer></script>
+}
+==== explainer ====
+Enclose replaces the default <script> tag with the provided one.
+==== expected output ====
+<!DOCTYPE html><html><head><script defer></script>
+console.log('inline');
+</script defer></script><meta name="generator" content="hyperbricks cms"></head><body></body></html>
