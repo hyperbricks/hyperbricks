@@ -15,6 +15,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/shared/apiutil"
 )
 
 // TemplateConfig represents the configuration for a TEMPLATE type.
@@ -114,7 +115,7 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 		req, ok := ctx.Value(shared.Request).(*http.Request)
 		if ok && req != nil && req.URL != nil {
 
-			allowed := []string{"id", "name", "order"}
+			allowed := apiutil.DefaultQueryKeys
 			if config.AllowedQueryKeys != nil {
 				allowed = config.AllowedQueryKeys
 			}

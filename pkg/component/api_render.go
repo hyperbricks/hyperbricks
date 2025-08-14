@@ -4,17 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"encoding/xml"
 	"regexp"
 	"strconv"
 	"time"
 
 	"fmt"
 	"io"
-	"testing"
 
 	"net/http"
-	"net/http/cookiejar"
 	"net/http/httputil"
 	"net/url"
 	"strings"
@@ -23,6 +20,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/shared/apiutil"
 )
 
 type APIConfig struct {
@@ -54,12 +52,6 @@ func APIConfigGetName() string {
 	return "<API_RENDER>"
 }
 
-func APIConfigGetName_test(t *testing.T) {
-	if APIConfigGetName() != "API" {
-		t.Errorf("Failed")
-	}
-}
-
 type APIRenderer struct {
 	renderer.ComponentRenderer
 }
@@ -67,8 +59,31 @@ type APIRenderer struct {
 var _ shared.ComponentRenderer = (*APIRenderer)(nil)
 
 func (api *APIConfig) Validate() []error {
-	warnings := shared.Validate(api)
-	return warnings
+	var errors []error
+	if api.Endpoint == "" {
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      api.Component.Meta.HyperBricksKey,
+			Path:     api.Component.Meta.HyperBricksPath,
+			File:     api.Component.Meta.HyperBricksFile,
+			Type:     APIConfigGetName(),
+			Err:      "[field 'endpoint' is required]",
+			Rejected: false,
+		})
+	}
+	if api.Method == "" {
+		errors = append(errors, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      api.Component.Meta.HyperBricksKey,
+			Path:     api.Component.Meta.HyperBricksPath,
+			File:     api.Component.Meta.HyperBricksFile,
+			Type:     APIConfigGetName(),
+			Err:      "[field 'method' is required]",
+			Rejected: false,
+		})
+	}
+	errors = append(errors, shared.Validate(api)...)
+	return errors
 }
 
 func (r *APIRenderer) Types() []string {
@@ -106,7 +121,7 @@ func (pr *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 
 	// Call function to process the request body
 	status_override := false
-	body, _error := processRequest(ctx, config.Body)
+	body, _error := processRequest(ctx, config)
 	if _error == nil {
 		config.Body = body
 	} else {
@@ -208,29 +223,14 @@ func (pr *APIRenderer) Render(instance interface{}, ctx context.Context) (string
 	return builder.String(), errors
 }
 
-func flattenFormData(formData url.Values) map[string]interface{} {
-	flattened := make(map[string]interface{})
-
-	for key, values := range formData {
-		if len(values) == 1 {
-			flattened[key] = values[0] // Single value → string
-		} else {
-			flattened[key] = values // Multiple values → []string
-		}
-	}
-
-	return flattened
-}
-
-func processRequest(ctx context.Context, bodyMap string) (string, error) {
+func processRequest(ctx context.Context, config APIConfig) (string, error) {
+	bodyMap := config.Body
 	mergedData := make(map[string]interface{})
 
 	// Retrieve form data from context (correct type)
 	formData, formOk := ctx.Value(shared.FormData).(url.Values)
 	if formOk {
-		// fmt.Printf("formData:%v", formData)
-		flattenedForm := flattenFormData(formData)
-		// fmt.Printf("flattenedForm:%v", flattenedForm)
+		flattenedForm := apiutil.FlattenFormData(formData)
 		for key, value := range flattenedForm {
 			mergedData[key] = value
 		}
@@ -285,39 +285,15 @@ func processRequest(ctx context.Context, bodyMap string) (string, error) {
 		bodyMap = re.ReplaceAllString(bodyMap, strValue)
 	}
 
-	fmt.Printf("Updated body map string: %s\n", bodyMap)
+	if config.Debug {
+		fmt.Printf("Updated body map string: %s\n", bodyMap)
+	}
 	return bodyMap, nil
 }
 
-// Shared HTTP transport for connection pooling
-var sharedTransport = &http.Transport{
-	MaxIdleConnsPerHost: 10,
-	DisableKeepAlives:   false,
-}
-
-// Securely creates a new HTTP client with a unique cookie jar per request.
-// - This ensures session cookies are **not shared between users**.
-// - While reusing the transport for efficiency, each request has **isolated cookies**.
-//
-// this approach is secure with respect to cookie isolation. Here’s why:
-// 	•	Unique Cookie Jar per Client: Each time you call newHttpClient(), you create a new cookie jar using cookiejar.New(nil). This ensures that each HTTP client instance has its own separate cookie store. Cookies obtained during a request using one client won’t be accessible by another.
-// 	•	Shared Transport Is Safe for Connection Pooling: The sharedTransport is used solely for managing connections (for efficiency through connection pooling) and does not store or manage cookie data. The Go http.Transport is designed to be safely shared across multiple clients.
-// 	•	Isolation of Session Data: Since the cookie jar is a property of the http.Client and not the transport, each client’s session cookies remain isolated. This design prevents any mix-up of cookies between different users.
-
-// Thus, with each client using its own cookie jar, there is no risk of cookie leakage or mixing between clients even though the transport is shared for efficiency.
-
-func newHttpClient() *http.Client {
-	jar, _ := cookiejar.New(nil) // Create a new cookie jar per request to prevent cookie leaks.
-	return &http.Client{
-		Timeout:   10 * time.Second,
-		Transport: sharedTransport, // Reuses connections efficiently while isolating cookies.
-		Jar:       jar,             // Ensures cookies remain request-specific and cannot be leaked.
-	}
-}
-
-// Updated fetchDataFromAPI function using newHttpClient()
+// Updated fetchDataFromAPI function using a shared HTTP client helper
 func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, error) {
-	client := newHttpClient() // Ensures security while reusing transport
+	client := apiutil.NewHTTPClient()
 
 	// Parse the endpoint URL
 	endpoint, err := url.Parse(config.Endpoint)
@@ -326,7 +302,7 @@ func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, 
 	}
 
 	// Specify the allowed query keys
-	allowed := []string{"id", "name", "order"}
+	allowed := apiutil.DefaultQueryKeys
 	if config.AllowedQueryKeys != nil {
 		allowed = config.AllowedQueryKeys
 	}
@@ -423,7 +399,7 @@ func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, 
 	var result interface{}
 	dec := json.NewDecoder(resp.Body)
 	if err := dec.Decode(&result); err != nil {
-		result, resp.StatusCode, err = handleAPIResponse(resp)
+		result, resp.StatusCode, err = apiutil.HandleAPIResponse(resp)
 		if err != nil {
 			//return nil, resp.StatusCode, fmt.Errorf("failed to decode JSON response: %w", err)
 		}
@@ -440,50 +416,6 @@ func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, 
 	}
 
 	return result, resp.StatusCode, nil
-}
-
-// Check if response is JSON
-func isJSONResponse(resp *http.Response) bool {
-	contentType := resp.Header.Get("Content-Type")
-	return strings.HasPrefix(contentType, "application/json")
-}
-
-// Check if response is XML
-func isXMLResponse(resp *http.Response) bool {
-	contentType := resp.Header.Get("Content-Type")
-	return strings.HasPrefix(contentType, "application/xml") || strings.HasPrefix(contentType, "text/xml")
-}
-
-// Handle API response dynamically
-func handleAPIResponse(resp *http.Response) (interface{}, int, error) {
-	var result interface{}
-
-	// ✅ Handle JSON Response
-	if isJSONResponse(resp) {
-		dec := json.NewDecoder(resp.Body)
-		if err := dec.Decode(&result); err != nil {
-			return nil, resp.StatusCode, fmt.Errorf("failed to decode JSON response: %w", err)
-		}
-		return result, resp.StatusCode, nil
-	}
-
-	// ✅ Handle XML Response
-	if isXMLResponse(resp) {
-		var xmlResult map[string]interface{} // XML unmarshals into a struct or map
-		dec := xml.NewDecoder(resp.Body)
-		if err := dec.Decode(&xmlResult); err != nil {
-			return nil, resp.StatusCode, fmt.Errorf("failed to decode XML response: %w", err)
-		}
-		return xmlResult, resp.StatusCode, nil
-	}
-
-	// ✅ Fallback: Read as Plain Text
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, resp.StatusCode, fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	return string(bodyBytes), resp.StatusCode, nil
 }
 
 func applyApiTemplate(templateStr string, data interface{}, config APIConfig) (string, []error) {
