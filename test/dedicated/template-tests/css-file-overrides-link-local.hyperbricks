@@ -1,0 +1,15 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.file = template-tests/assets/styles-local.css
+    10.link = styles.css
+}
+==== explainer ====
+When both file and link are set, file content takes precedence and must render as a style block.
+==== expected output ====
+<!DOCTYPE html><html><head><style>
+body {
+    color: blue;
+}
+</style><meta name="generator" content="hyperbricks cms"></head><body></body></html>
