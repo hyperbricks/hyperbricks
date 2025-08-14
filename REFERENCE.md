@@ -1,6 +1,6 @@
 **Licence:** MIT  
 **Version:** v0.6.5-alpha  
-**Build time:** 2025-08-12T20:33:31Z
+**Build time:** 2025-08-14T16:08:19Z
 
 ## Build Status
 
@@ -2696,6 +2696,79 @@ fragment {
 
 
 
+Debug the response data
+
+
+**Main Example**
+````properties
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+
+    inline = <<[
+        <h1>{{.someproperty}}</h1>
+        <ul>
+            {{range .Data.quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+    values {
+        someproperty = Quotes!
+    }
+    debug = false
+}
+
+````
+
+
+**Expected Result**
+````html
+<h1>
+  Quotes!
+</h1>
+<ul>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Your heart is the size of an ocean. Go find yourself in its hidden depths.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    Thinking is the capital, Enterprise is the way, Hard Work is the solution.
+  </li>
+  <li>
+    <strong>
+      Bill Gates:
+    </strong>
+    If You Can&#39;T Make It Good, At Least Make It Look Good.
+  </li>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.
+  </li>
+</ul>
+````
+
+
+**more**
+
+
+
+
+
+
 
 
 
@@ -2849,6 +2922,9 @@ local_json_test {
   </li>
 </ul>
 ````
+
+
+
 
 
 
@@ -4538,6 +4614,40 @@ image.loading = lazy
 
 
 
+**Main Example**
+````properties
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+
+image.title = Some Cute Cat!
+image.class = class-a class-b class-c
+image.attributes {
+  usemap = #catmap 
+}
+image.alt = cat but cute
+image.quality = 90
+image.id = #cat
+
+````
+
+
+**Expected Result**
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" alt="cat but cute" title="Some Cute Cat!" class="class-a class-b class-c" id="#cat" usemap="#catmap" />
+````
+
+
+**more**
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4620,6 +4730,9 @@ image.enclose = <div id="#gallery">|</div>
   <img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" />
 </div>
 ````
+
+
+
 
 
 
