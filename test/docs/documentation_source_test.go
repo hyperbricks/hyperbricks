@@ -125,14 +125,14 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory: "composite",
 			Config:         composite.FragmentConfig{},
 		},
-		// {
-		// 	Name:            "ApiFragmentRender",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded:        map[string]string{},
-		// 	ConfigType:      "<API_FRAGMENT_RENDER>",
-		// 	ConfigCategory:  "composite",
-		// 	Config:          composite.ApiFragmentRenderConfig{},
-		// },
+		{
+			Name:            "ApiFragmentRender",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<API_FRAGMENT_RENDER>",
+			ConfigCategory:  "composite",
+			Config:          composite.ApiFragmentRenderConfig{},
+		},
 		{
 			Name:            "Hypermedia",
 			TypeDescription: "Basic type description here.....",
@@ -165,18 +165,6 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory:  "composite",
 			Config:          composite.TreeConfig{},
 		},
-		// API is for version 2.0.0
-		// {
-		// 	Name:            "Api",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded: map[string]string{
-		// 		"HxResponse": "response",
-		// 	},
-		// 	ConfigType:     "<API>",
-		// 	ConfigCategory: "composite",
-		// 	Config:         composite.HxApiConfig{},
-		// },
-		// COMPONENTS
 		{
 			Name:            "Html",
 			TypeDescription: "Basic type description here.....",
@@ -231,14 +219,14 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory:  "data",
 			Config:          component.LocalJSONConfig{},
 		},
-		// {
-		// 	Name:            "Plugin",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded:        map[string]string{},
-		// 	ConfigType:      "<PLUGIN>",
-		// 	ConfigCategory:  "component",
-		// 	Config:          component.PluginConfig{},
-		// },
+		{
+			Name:            "Plugin",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<PLUGIN>",
+			ConfigCategory:  "component",
+			Config:          component.PluginConfig{},
+		},
 		{
 			Name:            "Text",
 			TypeDescription: "Basic type description here.....",
@@ -261,17 +249,17 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory: "menu",
 			Config:         component.MenuConfig{},
 		},
-		// {
-		// 	Name:            "Api_Render",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded:        map[string]string{},
-		// 	ExcludeFields: []string{
-		// 		"attributes",
-		// 	},
-		// 	ConfigType:     "<API_RENDER>",
-		// 	ConfigCategory: "data",
-		// 	Config:         component.APIConfig{},
-		// },
+		{
+			Name:            "Api_Render",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ExcludeFields: []string{
+				"attributes",
+			},
+			ConfigType:     "<API_RENDER>",
+			ConfigCategory: "data",
+			Config:         component.APIConfig{},
+		},
 	}
 
 	// Initialize shared configuration settings.
