@@ -23,7 +23,7 @@ else
     num_matches=$(echo "$matches" | wc -l);
 fi
 echo "$matches"
-echo "\n${pass_num_matches} tests passing";
+echo "${pass_num_matches} tests passing";
 echo "${num_matches} tests failing";
 
 
@@ -35,4 +35,4 @@ else
     total_num_matches=$(echo "$matches" | wc -l);
 fi
 
-echo "${total_num_matches} tests in total \n\n";
+echo "${total_num_matches} tests in total";

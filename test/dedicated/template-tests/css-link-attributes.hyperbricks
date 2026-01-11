@@ -1,0 +1,17 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.link = styles.css
+    10.attributes {
+        integrity = sha256-abc
+        crossorigin = anonymous
+        referrerpolicy = no-referrer
+        title = MyStyles
+        disabled = true
+    }
+}
+==== explainer ====
+Link tag should include allowed attributes in stable order.
+==== expected output ====
+<!DOCTYPE html><html><head><link rel="stylesheet" href="styles.css" integrity="sha256-abc" crossorigin="anonymous" referrerpolicy="no-referrer" title="MyStyles" disabled="true"><meta name="generator" content="hyperbricks cms"></head><body></body></html>

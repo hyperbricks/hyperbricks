@@ -1,0 +1,14 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.file = template-tests/assets/styles-local.css
+}
+==== explainer ====
+Use a local CSS file path relative to the dedicated tests working directory.
+==== expected output ====
+<!DOCTYPE html><html><head><style>
+body {
+    color: blue;
+}
+</style><meta name="generator" content="hyperbricks cms"></head><body></body></html>

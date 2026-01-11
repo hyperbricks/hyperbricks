@@ -1,0 +1,23 @@
+==== hyperbricks config {!{html}} ====
+html = <HTML>
+html.value = <<[
+  <p>HTML TEST</p>
+]>>
+html.enclose = <div>|</div>
+==== explainer ====
+Component for rendering all your single or multiline snippets.
+==== expected json ====
+{
+  "ConfigType": "<HTML>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "<div>|</div>",
+  "MetaDocDescription": "",
+  "Value": "\n<p>HTML TEST</p>\n",
+  "TrimSpace": false
+}
+==== expected output ====
+<div><p>HTML TEST</p></div>

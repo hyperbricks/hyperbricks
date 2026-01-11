@@ -1,0 +1,15 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <CSS>
+    10.inline = <<[
+body{color:red;}
+]>>
+    10.link = styles.css
+}
+==== explainer ====
+Inline CSS should take precedence over link when both are set.
+==== expected output ====
+<!DOCTYPE html><html><head><style>
+body{color:red;}
+</style><meta name="generator" content="hyperbricks cms"></head><body></body></html>

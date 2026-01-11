@@ -15,23 +15,24 @@ if config.IsStatic {
 ```
 ==== expected json ====
 {
-    "ConfigType": "<IMAGE>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "ExtraAttributes": null,
-    "Enclose": "",
-    "Src": "cute_cat.jpg",
-    "Width": 310,
-    "Height": 310,
-    "Alt": "",
-    "Title": "",
-    "Class": "",
-    "Id": "",
-    "Quality": 0,
-    "Loading": "",
-    "IsStatic": true
-  }
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "Src": "cute_cat.jpg",
+  "Width": 310,
+  "Height": 310,
+  "Alt": "",
+  "Title": "",
+  "Class": "",
+  "Id": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": true
+}
 ==== expected output ====
 <img src="static/images/cute_cat.jpg" /> 

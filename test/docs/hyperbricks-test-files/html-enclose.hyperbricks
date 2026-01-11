@@ -15,6 +15,7 @@ The enclosing HTML element for the header divided by |
     "HyperBricksPath": "",
     "HyperBricksFile": "",
     "ExtraAttributes": null,
+    "MetaDocDescription": "",
     "Enclose": "<div>|</div>",
     "Value": "\n<p>HTML TEST</p>    \n    ",
     "TrimSpace": false

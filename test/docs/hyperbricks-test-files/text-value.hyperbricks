@@ -15,6 +15,7 @@ The paragraph content
     "HyperBricksFile": "",
     "ExtraAttributes": null,
     "Enclose": "<span>|</span>",
+    "MetaDocDescription": "",
     "Value": "SOME VALUE"
   }
 ==== expected output ====
