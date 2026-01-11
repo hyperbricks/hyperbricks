@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -35,6 +36,60 @@ func resolveBeautify(config map[string]interface{}, defaultValue bool) bool {
 	}
 
 	return defaultValue
+}
+
+func resolveRoute(route string, routing shared.RoutingConfig) (string, bool) {
+	routing = normalizeRoutingConfig(routing)
+	route = strings.Trim(route, "/")
+	if route == "" {
+		if _, ok := getConfig("index"); ok {
+			return "index", true
+		}
+		for _, indexFile := range routing.IndexFiles {
+			if _, ok := getConfig(indexFile); ok {
+				return indexFile, true
+			}
+		}
+		return "", false
+	}
+
+	if _, ok := getConfig(route); ok {
+		return route, true
+	}
+
+	if !routing.CleanURLs {
+		return "", false
+	}
+
+	ext := strings.TrimPrefix(strings.ToLower(path.Ext(route)), ".")
+	if ext != "" {
+		for _, allowed := range routing.Extensions {
+			if ext != strings.ToLower(allowed) {
+				continue
+			}
+			trimmed := strings.TrimSuffix(route, "."+ext)
+			if _, ok := getConfig(trimmed); ok {
+				return trimmed, true
+			}
+			break
+		}
+	} else {
+		base := path.Base(route)
+		if !strings.Contains(base, ".") {
+			for _, allowed := range routing.Extensions {
+				allowed = strings.ToLower(strings.TrimPrefix(allowed, "."))
+				if allowed == "" {
+					continue
+				}
+				candidate := route + "." + allowed
+				if _, ok := getConfig(candidate); ok {
+					return candidate, true
+				}
+			}
+		}
+	}
+
+	return "", false
 }
 
 func renderStaticContentFromConfig(config map[string]interface{}, routeOverride string, ctx context.Context) string {
@@ -74,35 +129,37 @@ func renderStaticContentFromConfig(config map[string]interface{}, routeOverride 
 	return output.String()
 }
 
-func renderStaticContent(route string, ctx context.Context) string {
-	_config, found := getConfig(route)
+// func renderStaticContent(route string, ctx context.Context) string {
+// 	_config, found := getConfig(route)
 
-	if !found {
-		__config, _found := getConfig("404")
-		if _found {
-			logging.GetLogger().Info("Redirecting to 404", " from ", route)
-			_config = __config
-		} else {
-			if route == "favicon.ico" {
-				return ""
-			}
-			logging.GetLogger().Info("Config not found for route: ", route)
-			return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route)
-		}
-	}
+// 	if !found {
+// 		__config, _found := getConfig("404")
+// 		if _found {
+// 			logging.GetLogger().Info("Redirecting to 404", " from ", route)
+// 			_config = __config
+// 		} else {
+// 			if route == "favicon.ico" {
+// 				return ""
+// 			}
+// 			logging.GetLogger().Info("Config not found for route: ", route)
+// 			return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route)
+// 		}
+// 	}
 
-	return renderStaticContentFromConfig(_config, "", ctx)
-}
+// 	return renderStaticContentFromConfig(_config, "", ctx)
+// }
 
 type RenderContent struct {
 	Content     string
 	NoCache     bool
 	ContentType string
+	Status      int
 }
 
 func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderContent {
 	hbConfig := getHyperBricksConfiguration()
 	nocache := false
+	status := http.StatusOK
 
 	_config, found := getConfig(route)
 
@@ -111,12 +168,14 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 		if _found {
 			logging.GetLogger().Info("Redirecting to 404", " from ", route)
 			_config = __config
+			status = http.StatusNotFound
 		} else {
 			if route == "favicon.ico" {
 				return RenderContent{
 					Content:     "",
 					NoCache:     false,
 					ContentType: "",
+					Status:      http.StatusNoContent,
 				}
 			}
 			logging.GetLogger().Info("Config not found for route: ", route)
@@ -124,6 +183,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 				Content:     fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route),
 				NoCache:     false,
 				ContentType: "",
+				Status:      http.StatusNotFound,
 			}
 		}
 	}
@@ -204,6 +264,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 		Content:     output.String(),
 		NoCache:     nocache,
 		ContentType: contentType,
+		Status:      status,
 	}
 
 }
@@ -314,8 +375,10 @@ func HandleRenderErrors(renderErrors []error) string {
 func ServeContent(w http.ResponseWriter, r *http.Request) {
 	hbConfig := getHyperBricksConfiguration()
 
-	route := strings.TrimPrefix(r.URL.Path, "/")
-	if route == "" {
+	route := strings.Trim(r.URL.Path, "/")
+	if resolvedRoute, ok := resolveRoute(route, hbConfig.Server.Routing); ok {
+		route = resolvedRoute
+	} else if route == "" {
 		route = "index"
 	}
 
@@ -331,6 +394,11 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.Header().Set("Content-Type", "text/html")
 		}
+		status := cacheEntry.Status
+		if status == 0 {
+			status = http.StatusOK
+		}
+		w.WriteHeader(status)
 	} else {
 		renderContent := handleDeveloperMode(w, route, r)
 		htmlContent.WriteString(renderContent.Content)
@@ -339,6 +407,11 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.Header().Set("Content-Type", "text/html")
 		}
+		status := renderContent.Status
+		if status == 0 {
+			status = http.StatusOK
+		}
+		w.WriteHeader(status)
 
 	}
 
@@ -391,6 +464,7 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheE
 				Content:     renderContent.Content,
 				Timestamp:   now,
 				ContentType: renderContent.ContentType,
+				Status:      renderContent.Status,
 			}
 			htmlCacheMutex.Unlock()
 			logging.GetLogger().Debugw("Updated cache for route", "route", route)
@@ -400,5 +474,6 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheE
 		Content:     renderContent.Content,
 		Timestamp:   now,
 		ContentType: renderContent.ContentType,
+		Status:      renderContent.Status,
 	}
 }

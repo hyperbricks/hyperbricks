@@ -11,6 +11,7 @@ import (
 type CacheEntry struct {
 	ContentType string
 	Content     string
+	Status      int
 	Timestamp   time.Time
 }
 
