@@ -1,6 +1,6 @@
 **Licence:** MIT  
-**Version:** v0.6.5-alpha  
-**Build time:** 2026-01-11T09:42:21Z
+**Version:** v0.7.0-alpha  
+**Build time:** 2026-01-11T12:52:10Z
 
 ## Build Status
 
@@ -19,6 +19,37 @@
 ## &lt;HTML&gt;
 
 **Type Description**
+
+
+
+
+
+
+Component for rendering all your single or multiline snippets.
+
+
+**Main Example**
+````properties
+html = <HTML>
+html.value = <<[
+  <p>HTML TEST</p>
+]>>
+html.enclose = <div>|</div>
+
+````
+
+
+**Expected Result**
+````html
+<div>
+  <p>
+    HTML TEST
+  </p>
+</div>
+````
+
+
+**more**
 
 
 
@@ -72,6 +103,9 @@ html.enclose = <div>|</div>
 
 
 
+
+
+
 ### value
 
 **Description**  
@@ -81,8 +115,7 @@ The raw HTML content
 **Example**
 ````properties
 html = <HTML>
-html.value = <p>HTML TEST</p>    
-}
+html.value = <p>HTML TEST</p>
 
 ````
 
@@ -117,7 +150,6 @@ html.value = <<[
         <p>HTML TEST</p>    
     ]>>
 html.trimspace = true
-}
 
 ````
 
@@ -141,9 +173,226 @@ html.trimspace = true
 
 
 
+## &lt;PLUGIN&gt;
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Properties**
+
+
+
+
+
+### attributes
+
+**Description**  
+Extra attributes like id, data-role, data-action
+
+
+**Example**
+````properties
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+    attributes {
+        data-role = demo
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+````
+
+
+
+
+
+
+
+
+
+
+
+### enclose
+
+**Description**  
+The enclosing HTML element for the header divided by |
+
+
+**Example**
+````properties
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+    enclose = <div>|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+````
+
+
+
+
+
+
+
+
+
+
+
+### plugin
+
+**Description**  
+
+
+
+**Example**
+````properties
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+}
+
+````
+
+**Expected Result**
+
+````html
+<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+````
+
+
+
+
+
+
+
+
+
+
+
+### classes
+
+**Description**  
+Optional CSS classes for the link
+
+
+**Example**
+````properties
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+    classes = [primary, secondary]
+}
+
+````
+
+**Expected Result**
+
+````html
+<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+````
+
+
+
+
+
+
+
+
+
+
+
+### data
+
+**Description**  
+
+
+
+**Example**
+````properties
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+    data {
+        key = value
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## &lt;TEXT&gt;
 
 **Type Description**
+
+
+
+
+
+
+
+
+
+**Main Example**
+````properties
+text = <TEXT>
+text {
+	value = SOME VALUE
+    enclose = <span>|</span>
+}
+
+````
+
+
+**Expected Result**
+````html
+<span>
+  SOME VALUE
+</span>
+````
+
+
+**more**
 
 
 
@@ -192,6 +441,9 @@ text {
 
 
 
+
+
+
 ### value
 
 **Description**  
@@ -228,6 +480,695 @@ text {
 
 
 # Category: **composite**
+
+
+
+
+
+## &lt;API_FRAGMENT_RENDER&gt;
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A &lt;FRAGMENT&gt; dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+
+
+**Main Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+}
+
+````
+
+
+
+**more**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Properties**
+
+
+
+
+
+### endpoint
+
+**Description**  
+The API endpoint
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/endpoint
+    method = GET
+    route = api-fragment
+}
+
+````
+
+
+
+
+
+
+
+
+
+### method
+
+**Description**  
+HTTP method to use for API calls, GET POST PUT DELETE etc... 
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = POST
+    route = api-fragment
+}
+
+````
+
+
+
+
+
+
+
+
+
+### headers
+
+**Description**  
+Optional HTTP headers for API requests
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    headers {
+        Accept = application/json
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### body
+
+**Description**  
+Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    body = {"foo":"bar"}
+}
+
+````
+
+
+
+
+
+
+
+
+
+### template
+
+**Description**  
+Loads contents of a template file in the modules template directory
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    template = example
+}
+
+````
+
+**Expected Result**
+
+````html
+[error parsing template]
+````
+
+
+
+
+
+
+
+
+
+
+
+### inline
+
+**Description**  
+Use inline to define the template in a multiline block &lt;&lt;[ /* Template goes here */ ]&gt;&gt;
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    inline = <div>INLINE</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div>
+  INLINE
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+### values
+
+**Description**  
+Key-value pairs for template rendering
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    values {
+        foo = bar
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### username
+
+**Description**  
+Username for basic auth
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    username = user1
+}
+
+````
+
+
+
+
+
+
+
+
+
+### password
+
+**Description**  
+Password for basic auth
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    password = secret
+}
+
+````
+
+
+
+
+
+
+
+
+
+### setcookie
+
+**Description**  
+Set template for cookie
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    setcookie = session=abc
+}
+
+````
+
+
+
+
+
+
+
+
+
+### querykeys
+
+**Description**  
+Set allowed proxy query keys
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    querykeys = [foo, bar]
+}
+
+````
+
+
+
+
+
+
+
+
+
+### queryparams
+
+**Description**  
+Set proxy query key in the confifuration
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    queryparams {
+        foo = bar
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### jwtsecret
+
+**Description**  
+When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    jwtsecret = secret
+}
+
+````
+
+
+
+
+
+
+
+
+
+### jwtclaims
+
+**Description**  
+jwt claim map
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    jwtclaims {
+        sub = user
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### debug
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    debug = true
+    debugpanel = true
+}
+
+````
+
+
+
+
+
+
+
+
+
+### debugpanel
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    debug = true
+    debugpanel = true
+}
+
+````
+
+
+
+
+
+
+
+
+
+### response
+
+**Description**  
+HTMX response header configuration.
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    response {
+        hx_trigger = myEvent
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### title
+
+**Description**  
+The title of the fragment
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    title = API Fragment Title
+}
+
+````
+
+
+
+
+
+
+
+
+
+### route
+
+**Description**  
+The route (URL-friendly identifier) for the fragment
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment-route
+}
+
+````
+
+
+
+
+
+
+
+
+
+### section
+
+**Description**  
+The section the fragment belongs to
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    section = api
+}
+
+````
+
+
+
+
+
+
+
+
+
+### enclose
+
+**Description**  
+Wrapping property for the fragment rendered output
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    enclose = <div>|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div></div>
+````
+
+
+
+
+
+
+
+
+
+
+
+### index
+
+**Description**  
+Index number is a sort order option for the &lt;MENU&gt; section. See &lt;MENU&gt; for further explanation
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	index = 1
+}
+
+````
+
+
+
+
+
+
 
 
 
@@ -2723,11 +3664,590 @@ fragment {
 
 
 
+## &lt;API_RENDER&gt;
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;API_RENDER&gt; description
+
+
+**Main Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+}
+
+````
+
+
+
+**more**
+
+
+
+
+
+
+**Properties**
+
+
+
+
+
+### enclose
+
+**Description**  
+The enclosing HTML element for the header divided by |
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    enclose = <div>|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div></div>
+````
+
+
+
+
+
+
+
+
+
+
+
+### endpoint
+
+**Description**  
+The API endpoint
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/endpoint
+    method = GET
+}
+
+````
+
+
+
+
+
+
+
+
+
+### method
+
+**Description**  
+HTTP method to use for API calls, GET POST PUT DELETE etc... 
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = POST
+}
+
+````
+
+
+
+
+
+
+
+
+
+### headers
+
+**Description**  
+Optional HTTP headers for API requests
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    headers {
+        Accept = application/json
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### body
+
+**Description**  
+Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    body = {"foo":"bar"}
+}
+
+````
+
+
+
+
+
+
+
+
+
+### template
+
+**Description**  
+Loads contents of a template file in the modules template directory
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    template = example
+}
+
+````
+
+**Expected Result**
+
+````html
+[error parsing template]
+````
+
+
+
+
+
+
+
+
+
+
+
+### inline
+
+**Description**  
+Use inline to define the template in a multiline block &lt;&lt;[ /* Template goes here */ ]&gt;&gt;
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    inline = <div>INLINE</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div>
+  INLINE
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+### values
+
+**Description**  
+Key-value pairs for template rendering
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    values {
+        foo = bar
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### username
+
+**Description**  
+Username for basic auth
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    username = user1
+}
+
+````
+
+
+
+
+
+
+
+
+
+### password
+
+**Description**  
+Password for basic auth
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    password = secret
+}
+
+````
+
+
+
+
+
+
+
+
+
+### querykeys
+
+**Description**  
+Set allowed proxy query keys
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    querykeys = [foo, bar]
+}
+
+````
+
+
+
+
+
+
+
+
+
+### queryparams
+
+**Description**  
+Set proxy query key in the confifuration
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    queryparams {
+        foo = bar
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### jwtsecret
+
+**Description**  
+When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    jwtsecret = secret
+}
+
+````
+
+
+
+
+
+
+
+
+
+### jwtclaims
+
+**Description**  
+jwt claim map
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    jwtclaims {
+        sub = user
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### debug
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    debug = true
+    debugpanel = true
+}
+
+````
+
+
+
+
+
+
+
+
+
+### debugpanel
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    debug = true
+    debugpanel = true
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## &lt;JSON&gt;
 
 **Type Description**
 
 
+
+
+
+
+
+
+Debug the response data
+
+
+**Main Example**
+````properties
+local_json_test = <JSON_RENDER>
+local_json_test {
+	file =  hyperbricks-test-files/assets/quotes.json
+
+    inline = <<[
+        <h1>{{.someproperty}}</h1>
+        <ul>
+            {{range .Data.quotes}}
+                <li><strong>{{.author}}:</strong> {{.quote}}</li>
+            {{end}}
+        </ul>
+	]>>
+    values {
+        someproperty = Quotes!
+    }
+    debug = false
+}
+
+````
+
+
+**Expected Result**
+````html
+<h1>
+  Quotes!
+</h1>
+<ul>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Your heart is the size of an ocean. Go find yourself in its hidden depths.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    The Bay of Bengal is hit frequently by cyclones. The months of November and May, in particular, are dangerous in this regard.
+  </li>
+  <li>
+    <strong>
+      Abdul Kalam:
+    </strong>
+    Thinking is the capital, Enterprise is the way, Hard Work is the solution.
+  </li>
+  <li>
+    <strong>
+      Bill Gates:
+    </strong>
+    If You Can&#39;T Make It Good, At Least Make It Look Good.
+  </li>
+  <li>
+    <strong>
+      Rumi:
+    </strong>
+    Heart be brave. If you cannot be brave, just go. Love&#39;s glory is not a small thing.
+  </li>
+</ul>
+````
+
+
+**more**
 
 
 
@@ -2887,6 +4407,9 @@ local_json_test {
   </li>
 </ul>
 ````
+
+
+
 
 
 
@@ -3844,6 +5367,69 @@ hm_3.title = DOCUMENT_3
 
 
 
+### Inline css example
+&lt;div id=&#34;python&#34; class=&#34;tab-content&#34;&gt;
+&lt;pre&gt;&lt;code class=&#34;language-html&#34;&gt;
+&lt;p&gt;oki&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div id=&#34;javascript&#34; class=&#34;tab-content&#34; style=&#34;display:none;&#34;&gt;
+&lt;pre&gt;&lt;code class=&#34;language-hyperbricks&#34;&gt;
+css = &lt;CSS&gt;
+css.file = hyperbricks-test-files/assets/styles.css
+css.attributes {
+    media = screen
+}
+css.enclose = &lt;style media=&#34;print&#34;&gt;|&lt;/style&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+
+
+
+
+**Main Example**
+````properties
+css = <CSS>
+css.file = hyperbricks-test-files/assets/styles.css
+css.attributes {
+    media = screen
+}
+css.enclose = <style media="print">|</style>
+
+````
+
+
+**Expected Result**
+````html
+<style media="print">
+  body {
+  background-color: red;
+  }
+</style>
+````
+
+
+**more**
+And some other details we do not want to forget....
+
+like an extra example:
+
+```hyperbricks
+css = &lt;CSS&gt;
+css.file = hyperbricks-test-files/assets/styles.css
+css.attributes {
+    media = screen
+}
+css.enclose = &lt;style media=&#34;print&#34;&gt;|&lt;/style&gt;
+```
+
+
+
+
+
+
 
 
 
@@ -3934,6 +5520,9 @@ head {
   <meta name="generator" content="hyperbricks cms">
 </head>
 ````
+
+
+
 
 
 
@@ -4094,6 +5683,38 @@ hypermedia.head {
 
 
 
+**Main Example**
+````properties
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+
+image.title = Some Cute Cat!
+image.class = class-a class-b class-c
+image.attributes {
+  usemap = #catmap 
+}
+image.alt = cat but cute
+image.quality = 90
+image.id = #cat
+
+````
+
+
+**Expected Result**
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" alt="cat but cute" title="Some Cute Cat!" class="class-a class-b class-c" id="#cat" usemap="#catmap" />
+````
+
+
+**more**
+
+
+
+
+
+
+
 
 
 
@@ -4175,6 +5796,9 @@ image.enclose = <div id="#gallery">|</div>
   <img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" />
 </div>
 ````
+
+
+
 
 
 
@@ -4490,45 +6114,6 @@ image.loading = lazy
 
 
 
-### is_static
-
-**Description**  
-Flag indicating if the image is static, if so the img will not be scaled and has to be present in the configured static image directory. See package.hyperbricks in the module for settings. 
-```
-#conveys this logic:
-destDir := hbConfig.Directories[&#34;static&#34;] &#43; &#34;/images/&#34;
-if config.IsStatic {
-    destDir = hbConfig.Directories[&#34;render&#34;] &#43; &#34;/images/&#34;
-}
-```
-
-
-**Example**
-````properties
-image = <IMAGE>
-image.src = cute_cat.jpg
-image.width = 310
-image.height = 310
-image.is_static = true
-
-````
-
-**Expected Result**
-
-````html
-<img src="static/images/cute_cat.jpg" />
-````
-
-
-
-
-
-
-
-
-
-
-
 
 
 ## &lt;IMAGES&gt;
@@ -4536,6 +6121,40 @@ image.is_static = true
 **Type Description**
 
 
+
+
+
+
+
+
+
+
+
+**Main Example**
+````properties
+image = <IMAGE>
+image.src = hyperbricks-test-files/assets/cute_cat.jpg
+image.width = 100
+
+image.title = Some Cute Cat!
+image.class = class-a class-b class-c
+image.attributes {
+  usemap = #catmap 
+}
+image.alt = cat but cute
+image.quality = 90
+image.id = #cat
+
+````
+
+
+**Expected Result**
+````html
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" alt="cat but cute" title="Some Cute Cat!" class="class-a class-b class-c" id="#cat" usemap="#catmap" />
+````
+
+
+**more**
 
 
 
@@ -4627,6 +6246,9 @@ image.enclose = <div id="#gallery">|</div>
   <img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" />
 </div>
 ````
+
+
+
 
 
 
@@ -4959,6 +6581,35 @@ images.loading = lazy
 
 
 
+Extra attributes like id, data-role, data-action, type
+
+
+**Main Example**
+````properties
+js = <JAVASCRIPT>
+js.file = hyperbricks-test-files/assets/script.js
+js.attributes {
+    type = text/javascript
+}
+
+````
+
+
+**Expected Result**
+````html
+<script type="text/javascript">
+  console.log("Hello World!")
+</script>
+````
+
+
+**more**
+
+
+
+
+
+
 
 
 
@@ -5050,6 +6701,9 @@ console.log("Hello World!")
 
 
 
+
+
+
 ### inline
 
 **Description**  
@@ -5119,7 +6773,7 @@ hypermedia.head {
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="hyperbricks-test-files/assets/main.js"></script>
+    <script src="hyperbricks-test-files/assets/main.js" type="text/javascript"></script>
     <meta name="generator" content="hyperbricks cms">
   </head>
   <body></body>
