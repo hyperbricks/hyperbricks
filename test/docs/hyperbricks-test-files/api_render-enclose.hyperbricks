@@ -1,0 +1,38 @@
+==== hyperbricks config {!{api_render}} ====
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    enclose = <div>|</div>
+}
+==== explainer ====
+The enclosing HTML element for the header divided by |
+==== expected json ====
+{
+  "ConfigType": "<API_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "<div>|</div>",
+  "Endpoint": "https://example.com/api",
+  "Method": "GET",
+  "Headers": null,
+  "Body": "",
+  "Template": "",
+  "Inline": "",
+  "Values": null,
+  "Username": "",
+  "Password": "",
+  "Status": 0,
+  "AllowedQueryKeys": null,
+  "QueryParams": null,
+  "JwtSecret": "",
+  "JwtClaims": null,
+  "Debug": false,
+  "DebugPanel": false,
+  "MetaDocDescription": ""
+}
+==== expected output ====
+<div></div>

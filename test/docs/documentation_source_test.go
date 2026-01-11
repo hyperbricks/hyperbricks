@@ -333,6 +333,15 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 	rm.RegisterComponent(composite.FragmentConfigGetName(), fragmentRenderer, reflect.TypeOf(composite.FragmentConfig{}))
 
+	apiFragmentRenderer := &composite.ApiFragmentRenderer{
+		CompositeRenderer: renderer.CompositeRenderer{
+			RenderManager:    rm,
+			TemplateProvider: templateProvider,
+		},
+	}
+
+	rm.RegisterComponent(composite.ApiFragmentRenderConfigGetName(), apiFragmentRenderer, reflect.TypeOf(composite.ApiFragmentRenderConfig{}))
+
 	// TEMPLATE ....
 	hypermediaRenderer := &composite.HyperMediaRenderer{
 		CompositeRenderer: renderer.CompositeRenderer{

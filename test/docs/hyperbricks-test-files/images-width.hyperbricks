@@ -6,23 +6,24 @@ image.width = 330
 The width of the images (can be a number or percentage)
 ==== expected json ====
 {
-    "ConfigType": "<IMAGE>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "ExtraAttributes": null,
-    "Enclose": "",
-    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
-    "Width": 330,
-    "Height": 0,
-    "Alt": "",
-    "Title": "",
-    "Id": "",
-    "Class": "",
-    "Quality": 0,
-    "Loading": "",
-    "IsStatic": false
-  }
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 330,
+  "Height": 0,
+  "Alt": "",
+  "Title": "",
+  "Id": "",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
 ==== expected output ====
 <img src="static/images/cute_cat_w330_h330.jpg" width="330" height="330" /> 

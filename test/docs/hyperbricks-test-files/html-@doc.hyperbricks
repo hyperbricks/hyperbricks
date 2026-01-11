@@ -7,7 +7,6 @@ html.enclose = <div>|</div>
 ==== explainer ====
 Component for rendering all your single or multiline snippets.
 ==== expected json ====
-output:
 {
   "ConfigType": "<HTML>",
   "ConfigCategory": "",

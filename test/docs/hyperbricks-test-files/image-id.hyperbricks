@@ -8,23 +8,24 @@ image.id = #cat
 Id of image
 ==== expected json ====
 {
-    "ConfigType": "<IMAGE>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "ExtraAttributes": null,
-    "Enclose": "",
-    "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
-    "Width": 310,
-    "Height": 310,
-    "Alt": "",
-    "Title": "",
-    "Id": "#cat",
-    "Class": "",
-    "Quality": 0,
-    "Loading": "",
-    "IsStatic": false
-  }
+  "ConfigType": "<IMAGE>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Width": 310,
+  "Height": 310,
+  "Alt": "",
+  "Title": "",
+  "Id": "#cat",
+  "Class": "",
+  "Quality": 0,
+  "Loading": "",
+  "IsStatic": false
+}
 ==== expected output ====
 <img src="static/images/cute_cat_w310_h310.jpg" width="310" height="310" id="#cat" /> 

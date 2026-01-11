@@ -1,6 +1,6 @@
 **Licence:** MIT  
 **Version:** v0.6.5-alpha  
-**Build time:** 2025-08-14T16:08:19Z
+**Build time:** 2026-01-11T12:22:48Z
 
 ## Build Status
 
@@ -19,6 +19,37 @@
 ## &lt;HTML&gt;
 
 **Type Description**
+
+
+
+
+
+
+Component for rendering all your single or multiline snippets.
+
+
+**Main Example**
+````properties
+html = <HTML>
+html.value = <<[
+  <p>HTML TEST</p>
+]>>
+html.enclose = <div>|</div>
+
+````
+
+
+**Expected Result**
+````html
+<div>
+  <p>
+    HTML TEST
+  </p>
+</div>
+````
+
+
+**more**
 
 
 
@@ -61,6 +92,9 @@ html.enclose = <div>|</div>
   </p>
 </div>
 ````
+
+
+
 
 
 
@@ -125,6 +159,194 @@ html.trimspace = true
 <p>
   HTML TEST
 </p>
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+## &lt;PLUGIN&gt;
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Properties**
+
+
+
+
+
+### attributes
+
+**Description**  
+Extra attributes like id, data-role, data-action
+
+
+**Example**
+````properties
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+    attributes {
+        data-role = demo
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+````
+
+
+
+
+
+
+
+
+
+
+
+### enclose
+
+**Description**  
+The enclosing HTML element for the header divided by |
+
+
+**Example**
+````properties
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+    enclose = <div>|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+````
+
+
+
+
+
+
+
+
+
+
+
+### plugin
+
+**Description**  
+
+
+
+**Example**
+````properties
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+}
+
+````
+
+**Expected Result**
+
+````html
+<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+````
+
+
+
+
+
+
+
+
+
+
+
+### classes
+
+**Description**  
+Optional CSS classes for the link
+
+
+**Example**
+````properties
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+    classes = [primary, secondary]
+}
+
+````
+
+**Expected Result**
+
+````html
+<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+````
+
+
+
+
+
+
+
+
+
+
+
+### data
+
+**Description**  
+
+
+
+**Example**
+````properties
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+    data {
+        key = value
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
 ````
 
 
@@ -258,6 +480,695 @@ text {
 
 
 # Category: **composite**
+
+
+
+
+
+## &lt;API_FRAGMENT_RENDER&gt;
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A &lt;FRAGMENT&gt; dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+
+
+**Main Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+}
+
+````
+
+
+
+**more**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Properties**
+
+
+
+
+
+### endpoint
+
+**Description**  
+The API endpoint
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/endpoint
+    method = GET
+    route = api-fragment
+}
+
+````
+
+
+
+
+
+
+
+
+
+### method
+
+**Description**  
+HTTP method to use for API calls, GET POST PUT DELETE etc... 
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = POST
+    route = api-fragment
+}
+
+````
+
+
+
+
+
+
+
+
+
+### headers
+
+**Description**  
+Optional HTTP headers for API requests
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    headers {
+        Accept = application/json
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### body
+
+**Description**  
+Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    body = {"foo":"bar"}
+}
+
+````
+
+
+
+
+
+
+
+
+
+### template
+
+**Description**  
+Loads contents of a template file in the modules template directory
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    template = example
+}
+
+````
+
+**Expected Result**
+
+````html
+[error parsing template]
+````
+
+
+
+
+
+
+
+
+
+
+
+### inline
+
+**Description**  
+Use inline to define the template in a multiline block &lt;&lt;[ /* Template goes here */ ]&gt;&gt;
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    inline = <div>INLINE</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div>
+  INLINE
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+### values
+
+**Description**  
+Key-value pairs for template rendering
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    values {
+        foo = bar
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### username
+
+**Description**  
+Username for basic auth
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    username = user1
+}
+
+````
+
+
+
+
+
+
+
+
+
+### password
+
+**Description**  
+Password for basic auth
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    password = secret
+}
+
+````
+
+
+
+
+
+
+
+
+
+### setcookie
+
+**Description**  
+Set template for cookie
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    setcookie = session=abc
+}
+
+````
+
+
+
+
+
+
+
+
+
+### querykeys
+
+**Description**  
+Set allowed proxy query keys
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    querykeys = [foo, bar]
+}
+
+````
+
+
+
+
+
+
+
+
+
+### queryparams
+
+**Description**  
+Set proxy query key in the confifuration
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    queryparams {
+        foo = bar
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### jwtsecret
+
+**Description**  
+When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    jwtsecret = secret
+}
+
+````
+
+
+
+
+
+
+
+
+
+### jwtclaims
+
+**Description**  
+jwt claim map
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    jwtclaims {
+        sub = user
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### debug
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    debug = true
+    debugpanel = true
+}
+
+````
+
+
+
+
+
+
+
+
+
+### debugpanel
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    debug = true
+    debugpanel = true
+}
+
+````
+
+
+
+
+
+
+
+
+
+### response
+
+**Description**  
+HTMX response header configuration.
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    response {
+        hx_trigger = myEvent
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+
+
+### title
+
+**Description**  
+The title of the fragment
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    title = API Fragment Title
+}
+
+````
+
+
+
+
+
+
+
+
+
+### route
+
+**Description**  
+The route (URL-friendly identifier) for the fragment
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment-route
+}
+
+````
+
+
+
+
+
+
+
+
+
+### section
+
+**Description**  
+The section the fragment belongs to
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    section = api
+}
+
+````
+
+
+
+
+
+
+
+
+
+### enclose
+
+**Description**  
+Wrapping property for the fragment rendered output
+
+
+**Example**
+````properties
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment
+    enclose = <div>|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div></div>
+````
+
+
+
+
+
+
+
+
+
+
+
+### index
+
+**Description**  
+Index number is a sort order option for the &lt;MENU&gt; section. See &lt;MENU&gt; for further explanation
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	index = 1
+}
+
+````
+
+
+
+
+
+
 
 
 
@@ -2685,6 +3596,512 @@ fragment {
 
 
 
+## &lt;API_RENDER&gt;
+
+**Type Description**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;API_RENDER&gt; description
+
+
+**Main Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+}
+
+````
+
+
+
+**more**
+
+
+
+
+
+
+**Properties**
+
+
+
+
+
+### enclose
+
+**Description**  
+The enclosing HTML element for the header divided by |
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    enclose = <div>|</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div></div>
+````
+
+
+
+
+
+
+
+
+
+
+
+### endpoint
+
+**Description**  
+The API endpoint
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/endpoint
+    method = GET
+}
+
+````
+
+
+
+
+
+
+
+
+
+### method
+
+**Description**  
+HTTP method to use for API calls, GET POST PUT DELETE etc... 
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = POST
+}
+
+````
+
+
+
+
+
+
+
+
+
+### headers
+
+**Description**  
+Optional HTTP headers for API requests
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    headers {
+        Accept = application/json
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### body
+
+**Description**  
+Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    body = {"foo":"bar"}
+}
+
+````
+
+
+
+
+
+
+
+
+
+### template
+
+**Description**  
+Loads contents of a template file in the modules template directory
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    template = example
+}
+
+````
+
+**Expected Result**
+
+````html
+[error parsing template]
+````
+
+
+
+
+
+
+
+
+
+
+
+### inline
+
+**Description**  
+Use inline to define the template in a multiline block &lt;&lt;[ /* Template goes here */ ]&gt;&gt;
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    inline = <div>INLINE</div>
+}
+
+````
+
+**Expected Result**
+
+````html
+<div>
+  INLINE
+</div>
+````
+
+
+
+
+
+
+
+
+
+
+
+### values
+
+**Description**  
+Key-value pairs for template rendering
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    values {
+        foo = bar
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### username
+
+**Description**  
+Username for basic auth
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    username = user1
+}
+
+````
+
+
+
+
+
+
+
+
+
+### password
+
+**Description**  
+Password for basic auth
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    password = secret
+}
+
+````
+
+
+
+
+
+
+
+
+
+### querykeys
+
+**Description**  
+Set allowed proxy query keys
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    querykeys = [foo, bar]
+}
+
+````
+
+
+
+
+
+
+
+
+
+### queryparams
+
+**Description**  
+Set proxy query key in the confifuration
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    queryparams {
+        foo = bar
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### jwtsecret
+
+**Description**  
+When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    jwtsecret = secret
+}
+
+````
+
+
+
+
+
+
+
+
+
+### jwtclaims
+
+**Description**  
+jwt claim map
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    jwtclaims {
+        sub = user
+    }
+}
+
+````
+
+
+
+
+
+
+
+
+
+### debug
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    debug = true
+    debugpanel = true
+}
+
+````
+
+
+
+
+
+
+
+
+
+### debugpanel
+
+**Description**  
+Debug the response data
+
+
+**Example**
+````properties
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    debug = true
+    debugpanel = true
+}
+
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## &lt;JSON&gt;
 
 **Type Description**
@@ -3882,7 +5299,26 @@ hm_3.title = DOCUMENT_3
 
 
 
-A custom &lt;style&gt; tag definition |. Will override extraAttributes.
+### Inline css example
+&lt;div id=&#34;python&#34; class=&#34;tab-content&#34;&gt;
+&lt;pre&gt;&lt;code class=&#34;language-html&#34;&gt;
+&lt;p&gt;oki&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div id=&#34;javascript&#34; class=&#34;tab-content&#34; style=&#34;display:none;&#34;&gt;
+&lt;pre&gt;&lt;code class=&#34;language-hyperbricks&#34;&gt;
+css = &lt;CSS&gt;
+css.file = hyperbricks-test-files/assets/styles.css
+css.attributes {
+    media = screen
+}
+css.enclose = &lt;style media=&#34;print&#34;&gt;|&lt;/style&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+
+
 
 
 **Main Example**
@@ -3908,6 +5344,18 @@ css.enclose = <style media="print">|</style>
 
 
 **more**
+And some other details we do not want to forget....
+
+like an extra example:
+
+```hyperbricks
+css = &lt;CSS&gt;
+css.file = hyperbricks-test-files/assets/styles.css
+css.attributes {
+    media = screen
+}
+css.enclose = &lt;style media=&#34;print&#34;&gt;|&lt;/style&gt;
+```
 
 
 
@@ -5257,7 +6705,7 @@ hypermedia.head {
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="hyperbricks-test-files/assets/main.js"></script>
+    <script src="hyperbricks-test-files/assets/main.js" type="text/javascript"></script>
     <meta name="generator" content="hyperbricks cms">
   </head>
   <body></body>

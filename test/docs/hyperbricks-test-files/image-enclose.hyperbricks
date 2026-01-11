@@ -15,6 +15,7 @@ Use the pipe symbol | to enclose the ````<IMG>```` tag.
   "HyperBricksKey": "",
   "HyperBricksPath": "",
   "HyperBricksFile": "",
+  "MetaDocDescription": "",
   "ExtraAttributes": {
     "loading": "lazy"
   },
