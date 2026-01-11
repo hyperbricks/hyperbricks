@@ -32,7 +32,7 @@ func init() {
 
 	shared.Init_configuration()
 
-	shared.Module = fmt.Sprintf("modules/%s/package.hyperbricks", commands.StartModule)
+	shared.Module = commands.GetModuleConfigPath()
 	hbConfig := getHyperBricksConfiguration()
 
 	orangeTrueColor := "\033[38;2;255;165;0m"

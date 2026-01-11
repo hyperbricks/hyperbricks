@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/eiannone/keyboard"
-	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
+	"github.com/hyperbricks/hyperbricks/pkg/core"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/otiai10/copy"
@@ -223,7 +223,11 @@ func serveStatic() error {
 	portStr := strconv.Itoa(hbConfig.Server.Port)
 	addr := ip + ":" + portStr
 
-	handler := http.FileServer(http.Dir(fmt.Sprintf("modules/%s/rendered", commands.StartModule)))
+	renderDir := hbConfig.Directories["render"]
+	if strings.TrimSpace(renderDir) == "" {
+		renderDir = core.ModuleDirectories.RenderedDir
+	}
+	handler := http.FileServer(http.Dir(renderDir))
 	server := &http.Server{Addr: addr, Handler: handler}
 
 	// Run server in background goroutine

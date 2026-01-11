@@ -21,3 +21,6 @@ CHANGES.md
 REFERENCE.generated.md
 .gitignore
 .env
+deploy/
+modules/test-001/
+/hyperbricks
