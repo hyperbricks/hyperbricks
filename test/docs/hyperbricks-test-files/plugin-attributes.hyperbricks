@@ -1,13 +1,27 @@
-==== hyperbricks config {!{fragment}} ====
-fragment = <FRAGMENT>
-fragment {
-	
+==== hyperbricks config {!{plugin}} ====
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+    attributes {
+        data-role = demo
+    }
 }
 ==== explainer ====
 Extra attributes like id, data-role, data-action
 ==== expected json ====
 {
-	
+  "ConfigType": "<PLUGIN>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": {
+    "data-role": "demo"
+  },
+  "Enclose": "",
+  "PluginName": "example",
+  "Classes": null,
+  "Data": null
 }
 ==== expected output ====
-<div>this test fails</div>
+<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->

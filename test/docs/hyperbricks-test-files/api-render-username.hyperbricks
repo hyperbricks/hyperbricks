@@ -1,0 +1,37 @@
+==== hyperbricks config {!{api_render}} ====
+api_render = <API_RENDER>
+api_render {
+    endpoint = https://example.com/api
+    method = GET
+    username = user1
+}
+==== explainer ====
+Username for basic auth
+==== expected json ====
+{
+  "ConfigType": "<API_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "Endpoint": "https://example.com/api",
+  "Method": "GET",
+  "Headers": null,
+  "Body": "",
+  "Template": "",
+  "Inline": "",
+  "Values": null,
+  "Username": "user1",
+  "Password": "",
+  "Status": 0,
+  "AllowedQueryKeys": null,
+  "QueryParams": null,
+  "JwtSecret": "",
+  "JwtClaims": null,
+  "Debug": false,
+  "DebugPanel": false,
+  "MetaDocDescription": ""
+}
+==== expected output ====

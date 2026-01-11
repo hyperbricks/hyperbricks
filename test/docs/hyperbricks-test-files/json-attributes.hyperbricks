@@ -16,20 +16,20 @@ local_json_test {
 Extra attributes like id, data-role, data-action
 ==== expected json ====
 {
-    "ConfigType": "<JSON_RENDER>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "ExtraAttributes": null,
-    "Enclose": "",
-    "FilePath": "hyperbricks-test-files/assets/quotes.json",
-    "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-    "Debug": false,
-    "Values": null,
-    "Template": ""
-  }
-  
+  "ConfigType": "<JSON_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Debug": false,
+  "Values": null,
+  "Template": ""
+}
 ==== expected output ====
 <h1>Quotes</h1>
 <ul>
