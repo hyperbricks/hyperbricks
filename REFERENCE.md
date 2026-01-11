@@ -1,6 +1,6 @@
 **Licence:** MIT  
 **Version:** v0.6.5-alpha  
-**Build time:** 2025-08-04T14:18:21Z
+**Build time:** 2026-01-11T08:40:14Z
 
 ## Build Status
 
@@ -570,6 +570,8 @@ fragment.10 {
 
 
 
+
+
 **Properties**
 
 
@@ -614,6 +616,29 @@ This document provides an overview of the HTML headers used in the `HxResponse` 
 | hx_trigger_after_settle        | HX-Trigger-After-Settle     | Allows you to trigger client-side events after the settle step |
 | hx_trigger_after_swap          | HX-Trigger-After-Swap       | Allows you to trigger client-side events after the swap step |
 
+
+
+
+
+
+
+
+
+
+### beautify
+
+**Description**  
+Override server.beautify for this object when rendered directly
+
+
+**Example**
+````properties
+fragment = <FRAGMENT>
+fragment {
+	beautify = false
+}
+
+````
 
 
 
@@ -1539,7 +1564,50 @@ hypermedia.10 {
 
 
 
+
+
 **Properties**
+
+
+
+
+
+
+
+
+### beautify
+
+**Description**  
+Override server.beautify for this object when rendered directly
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    beautify = false
+    title = Home
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="generator" content="hyperbricks cms">
+    <title>
+      Home
+    </title>
+  </head>
+  <body></body>
+</html>
+````
+
+
+
 
 
 

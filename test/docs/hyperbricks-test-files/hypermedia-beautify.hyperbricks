@@ -1,0 +1,37 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    beautify = false
+    title = Home
+}
+==== explainer ====
+Override server.beautify for this object when rendered directly
+==== expected json ====
+{
+    "ConfigType": "<HYPERMEDIA>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "MetaDocDescription": "",
+    "Beautify": false,
+    "Title": "Home",
+    "Route": "",
+    "Section": "",
+    "Items": null,
+    "BodyTag": "",
+    "Enclose": "",
+    "Favicon": "",
+    "Template": null,
+    "IsStatic": false,
+    "Static": "",
+    "Cache": "",
+    "NoCache": false,
+    "Index": 0,
+    "ContentType": "",
+    "Doctype": "",
+    "HtmlTag": "",
+    "Head": null
+  }
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title></head><body></body></html>

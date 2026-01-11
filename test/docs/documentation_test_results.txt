@@ -1,10 +1,11 @@
 === RUN   Test_TestAndDocumentationRender
 loading 
-&{live {info ./logs/hyperbricks.log} {0 false 5s 10s 20s} {5 10} {false false false false} {} {10m0s} map[hyperbricks:modules//hyperbricks plugins:bin/plugins render:modules//rendered resources:modules//resources static:modules//static templates:modules//templates] {[] map[]} {10s}}
+&{live {info ./logs/hyperbricks.log} {0 false 5s 10s 20s} {5 10} {false false false false} {} {10m0s} map[hyperbricks:modules/default/hyperbricks plugins:bin/plugins render:modules/default/rendered resources:modules/default/resources static:modules/default/static templates:modules/default/templates] {[] map[]} {10s}}
 
 ======= Processing type: Fragment =======
 === RUN   Test_TestAndDocumentationRender/fragment-response
 === RUN   Test_TestAndDocumentationRender/fragment-@doc
+=== RUN   Test_TestAndDocumentationRender/fragment-beautify
 === RUN   Test_TestAndDocumentationRender/fragment-title
 === RUN   Test_TestAndDocumentationRender/fragment-route
 === RUN   Test_TestAndDocumentationRender/fragment-section
@@ -32,6 +33,7 @@ Embedded Field: HxResponse (mapped as: response)
 
 ======= Processing type: Hypermedia =======
 === RUN   Test_TestAndDocumentationRender/hypermedia-@doc
+=== RUN   Test_TestAndDocumentationRender/hypermedia-beautify
 === RUN   Test_TestAndDocumentationRender/hypermedia-title
 === RUN   Test_TestAndDocumentationRender/hypermedia-route
 === RUN   Test_TestAndDocumentationRender/hypermedia-section
@@ -62,9 +64,9 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/template-template
 === RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-2025/08/04 16:18:22 [.template or a .inline is required]
+2026/01/11 09:40:15 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-2025/08/04 16:18:22 [.template or a .inline is required]
+2026/01/11 09:40:15 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
 
@@ -148,13 +150,14 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/menu-active
 === RUN   Test_TestAndDocumentationRender/menu-item
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
-2025/08/04 16:18:23 Version: v0.6.5-alpha
-2025/08/04 16:18:23 Build Time: 2025-08-04T14:18:21Z
-2025/08/04 16:18:23 Static HTML file generated at ../../REFERENCE.md
-2025/08/04 16:18:23 Static HTML file generated at ../../README.md
---- PASS: Test_TestAndDocumentationRender (0.58s)
+2026/01/11 09:40:16 Version: v0.6.5-alpha
+2026/01/11 09:40:16 Build Time: 2026-01-11T08:40:14Z
+2026/01/11 09:40:16 Static HTML file generated at ../../REFERENCE.md
+2026/01/11 09:40:16 Static HTML file generated at ../../README.md
+--- PASS: Test_TestAndDocumentationRender (0.57s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-beautify (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-route (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-section (0.00s)
@@ -177,6 +180,7 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-@doc (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/hypermedia-beautify (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-title (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-route (0.00s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-section (0.00s)
@@ -259,4 +263,4 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
 PASS
-ok  	command-line-arguments	0.792s
+ok  	command-line-arguments	0.813s
