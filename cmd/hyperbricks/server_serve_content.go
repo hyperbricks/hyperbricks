@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,6 +17,25 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/yosssi/gohtml"
 )
+
+func resolveBeautify(config map[string]interface{}, defaultValue bool) bool {
+	raw, ok := config["beautify"]
+	if !ok {
+		return defaultValue
+	}
+
+	switch value := raw.(type) {
+	case bool:
+		return value
+	case string:
+		parsed, err := strconv.ParseBool(value)
+		if err == nil {
+			return parsed
+		}
+	}
+
+	return defaultValue
+}
 
 func renderStaticContent(route string, ctx context.Context) string {
 	hbConfig := getHyperBricksConfiguration()
@@ -48,7 +68,7 @@ func renderStaticContent(route string, ctx context.Context) string {
 	htmlContent.WriteString(renderOutput)
 	var output strings.Builder
 
-	if hbConfig.Server.Beautify {
+	if resolveBeautify(configCopy, hbConfig.Server.Beautify) {
 		output.WriteString(gohtml.Format(htmlContent.String()))
 	} else {
 		output.WriteString(htmlContent.String())
@@ -158,7 +178,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 	htmlContent.WriteString(renderOutput)
 	var output strings.Builder
 
-	if hbConfig.Server.Beautify {
+	if resolveBeautify(configCopy, hbConfig.Server.Beautify) {
 		output.WriteString(gohtml.Format(htmlContent.String()))
 	} else {
 		output.WriteString(htmlContent.String())
