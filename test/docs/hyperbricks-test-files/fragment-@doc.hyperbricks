@@ -48,7 +48,6 @@ A FRAGMENT dynamically renders a part of an HTML page, allowing updates without 
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

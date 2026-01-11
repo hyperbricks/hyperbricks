@@ -139,12 +139,15 @@ func makeStatic(config map[string]map[string]interface{}, renderDir string) erro
 	for _, v := range config {
 		obj := v
 
-		renderPath, hasStatic := obj["route"].(string)
-		if hasStatic && strings.TrimSpace(renderPath) != "" {
-			htmlContent := fmt.Sprintf("%v", v)
-			if v["route"] != "" {
-				htmlContent = renderStaticContent(v["route"].(string), nil)
-			}
+		renderPath := ""
+		if staticPath, ok := obj["static"].(string); ok && strings.TrimSpace(staticPath) != "" {
+			renderPath = strings.TrimSpace(staticPath)
+		} else if routePath, ok := obj["route"].(string); ok && strings.TrimSpace(routePath) != "" {
+			renderPath = strings.TrimSpace(routePath)
+		}
+
+		if renderPath != "" {
+			htmlContent := renderStaticContentFromConfig(obj, renderPath, nil)
 
 			renderPath = fmt.Sprintf("%s/%s", renderDir, renderPath)
 			dir := filepath.Dir(renderPath)

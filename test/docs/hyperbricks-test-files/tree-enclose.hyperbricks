@@ -52,7 +52,6 @@ Enclosing tag using the pipe symbol |
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

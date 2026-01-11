@@ -25,7 +25,6 @@ Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here
 "Enclose": "",
 "Favicon": "",
 "Template": null,
-"IsStatic": false,
 "Static": "",
 "Cache": "",
 "NoCache": false,

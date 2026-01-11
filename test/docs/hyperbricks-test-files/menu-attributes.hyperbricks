@@ -42,7 +42,6 @@ Extra attributes like id, data-role, data-action
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Index": 0,
     "Doctype": "",

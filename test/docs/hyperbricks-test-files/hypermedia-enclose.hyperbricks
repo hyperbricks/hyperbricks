@@ -23,7 +23,6 @@ Enclosure of the property for the hypermedia
   "Enclose": "<p>|</p>",
   "Favicon": "",
   "Template": null,
-  "IsStatic": false,
   "Static": "",
   "Cache": "",
   "NoCache": false,

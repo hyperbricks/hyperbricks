@@ -34,7 +34,6 @@ A css selector that allows you to choose which part of the response is used to b
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

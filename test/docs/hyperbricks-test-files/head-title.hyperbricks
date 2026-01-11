@@ -22,7 +22,6 @@ The title of the hypermedia document
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

@@ -43,7 +43,6 @@ Template for the active menu item.
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

@@ -21,7 +21,6 @@ The title of the hypermedia site
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

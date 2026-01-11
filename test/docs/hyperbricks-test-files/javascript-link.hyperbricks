@@ -25,7 +25,6 @@ Use link for a script tag with a src attribute
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

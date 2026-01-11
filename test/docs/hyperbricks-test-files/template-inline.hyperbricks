@@ -52,7 +52,6 @@ The inline template used for rendering.
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

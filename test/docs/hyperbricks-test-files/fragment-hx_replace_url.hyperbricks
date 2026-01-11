@@ -34,7 +34,6 @@ replaces the current url in the location bar
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,
