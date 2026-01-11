@@ -46,6 +46,30 @@ rm -rf deploy/<module>/runtime/<build_id>
 hyperbricks start --deploy -m <module>
 ```
 
+## Static Rendering + Export
+
+Render static output without serving it:
+
+```bash
+hyperbricks static -m <module>
+```
+
+Optional flags:
+- `--serve` to start the static file server after rendering
+- `--force` to overwrite the rendered output without confirmation
+- `--zip` to export the rendered output as a zip archive
+- `--out <dir>` to set the export folder (default: `./exports/<module>`)
+- `--exclude a,b,c` to remove paths from the export (relative to the render root, commas trimmed)
+
+Example export:
+
+```bash
+hyperbricks static -m <module> --zip --out ./exports/<module> --exclude "editor, about, blog"
+```
+
+Export output:
+- `./exports/<module>/export-<module>-YYYYmmdd-HHMMSS.zip`
+
 ## Rollbacks
 
 To roll back, set `current` in `deploy/<module>/hyperbricks.versions.json` to an older build ID and restart with `--deploy`.

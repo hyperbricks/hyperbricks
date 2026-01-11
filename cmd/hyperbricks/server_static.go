@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/eiannone/keyboard"
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/core"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
@@ -201,6 +202,15 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 		logger.Errorw("Error copying directory", "source", staticDir, "destination", filepath.Join(renderDir, "static"), "error", err)
 	} else {
 		logger.Infow("Copied static file directory successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
+	}
+
+	if commands.ExportZip {
+		exportPath, err := exportStaticZip(renderDir, commands.StartModule, commands.ExportOutDir, commands.ExportExclude)
+		if err != nil {
+			logger.Errorw("Error exporting static zip", "error", err)
+		} else {
+			logger.Infow("Created static export", "path", exportPath)
+		}
 	}
 
 	msgII := `

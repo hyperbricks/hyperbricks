@@ -22,5 +22,6 @@ REFERENCE.generated.md
 .gitignore
 .env
 deploy/
+exports/
 modules/test-001/
 /hyperbricks
