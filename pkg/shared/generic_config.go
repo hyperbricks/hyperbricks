@@ -11,7 +11,6 @@ type Meta struct {
 
 type CompositeRendererConfig struct {
 	Meta     `mapstructure:",squash"`
-	Beautify *bool                  `mapstructure:"beautify" description:"Override server.beautify for this object when rendered directly"`
 	Items    map[string]interface{} `mapstructure:",remain"`
 }
 

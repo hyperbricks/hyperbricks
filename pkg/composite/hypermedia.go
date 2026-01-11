@@ -14,6 +14,7 @@ import (
 type HyperMediaConfig struct {
 	shared.Composite   `mapstructure:",squash"`
 	MetaDocDescription string                 `mapstructure:"@doc" description:"HYPERMEDIA description" example:"{!{hypermedia-@doc.hyperbricks}}"`
+	Beautify           *bool                  `mapstructure:"beautify" json:"Beautify,omitempty" description:"Override server.beautify for this object when rendered directly"`
 	Title              string                 `mapstructure:"title" description:"The title of the hypermedia site" example:"{!{hypermedia-title.hyperbricks}}"`
 	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the hypermedia" example:"{!{hypermedia-route.hyperbricks}}"`
 	Section            string                 `mapstructure:"section" description:"The section the hypermedia belongs to. This can be used with the component <MENU> for example." example:"{!{hypermedia-section.hyperbricks}}"`
