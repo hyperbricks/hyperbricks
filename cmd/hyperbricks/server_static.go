@@ -171,7 +171,8 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 		return
 	}
 
-	if !confirmDeletion(renderDir) {
+	shouldDelete := commands.ForceStatic || confirmDeletion(renderDir)
+	if !shouldDelete {
 		logger.Infow("User skipped deletion", "directory", renderDir)
 	} else {
 		logger.Infow("Deleting all files in ", "directory", renderDir)
