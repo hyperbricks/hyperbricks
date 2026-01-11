@@ -21,7 +21,7 @@ func validatePath(renderDir string) error {
 	}
 
 	// Absolute path to the module directory
-	moduleBasePath, err := filepath.Abs(filepath.Join("modules", commands.StartModule))
+	moduleBasePath, err := filepath.Abs(commands.GetModuleRoot())
 	if err != nil {
 		return fmt.Errorf("failed to resolve base path for ./modules: %w", err)
 	}
@@ -44,7 +44,7 @@ func validatePath(renderDir string) error {
 
 	// Check that it's inside the module path and not equal to it
 	if rel == "." || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
-		return fmt.Errorf("renderDir must be a subdirectory of ./modules/%s", commands.StartModule)
+		return fmt.Errorf("renderDir must be a subdirectory of %s", commands.GetModuleRoot())
 	}
 
 	return nil

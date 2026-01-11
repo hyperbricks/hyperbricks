@@ -80,16 +80,24 @@ func retrieveConfigAndLogger() (*shared.Config, *zap.SugaredLogger) {
 func determineDirectories(hbConfig *shared.Config) core.ModuleConfiguredDirectories {
 	getDirectory := func(key, defaultDir string) string {
 		if dir, exists := hbConfig.Directories[key]; exists && strings.TrimSpace(dir) != "" {
-			return fmt.Sprintf("./%s", dir)
+			if filepath.IsAbs(dir) {
+				return dir
+			}
+			return filepath.Clean(fmt.Sprintf("./%s", dir))
 		}
 		return defaultDir
 	}
 
-	core.ModuleDirectories.ModulesRoot = "./modules"
-	core.ModuleDirectories.ModuleDir = "modules/" + commands.StartModule
+	moduleDir := commands.GetModuleRoot()
+	modulesRoot := filepath.Dir(moduleDir)
+	if !filepath.IsAbs(modulesRoot) {
+		modulesRoot = filepath.Clean("./" + modulesRoot)
+	}
+	core.ModuleDirectories.ModulesRoot = modulesRoot
+	core.ModuleDirectories.ModuleDir = moduleDir
 
 	core.ModuleDirectories.Root = "./"
-	core.ModuleDirectories.RenderedDir = getDirectory("rendered", fmt.Sprintf("%s/rendered", core.ModuleDirectories.ModuleDir))
+	core.ModuleDirectories.RenderedDir = getDirectory("render", fmt.Sprintf("%s/rendered", core.ModuleDirectories.ModuleDir))
 	core.ModuleDirectories.TemplateDir = getDirectory("templates", fmt.Sprintf("%s/templates", core.ModuleDirectories.ModuleDir))
 	core.ModuleDirectories.HyperbricksDir = getDirectory("hyperbricks", fmt.Sprintf("%s/hyperbricks", core.ModuleDirectories.ModuleDir))
 	core.ModuleDirectories.StaticDir = getDirectory("static", fmt.Sprintf("%s/static", core.ModuleDirectories.ModuleDir))
