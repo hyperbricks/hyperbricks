@@ -40,7 +40,6 @@ type FragmentConfig struct {
 	Items              map[string]interface{} `mapstructure:",remain"`
 	Enclose            string                 `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{fragment-enclose.hyperbricks}}"`
 	Template           map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks}}"`
-	IsStatic           bool                   `mapstructure:"isstatic" exclude:"true"`
 	Static             string                 `mapstructure:"static" description:"Static file path associated with the fragment" example:"{!{fragment-static.hyperbricks}}"`
 	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{fragment-cache.hyperbricks}}"`
 	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly deisable cache" example:"{!{fragment-nocache.hyperbricks}}"`

@@ -42,7 +42,6 @@ The order of items in the menu ('asc' or 'desc').
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

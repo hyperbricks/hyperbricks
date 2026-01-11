@@ -37,28 +37,16 @@ func resolveBeautify(config map[string]interface{}, defaultValue bool) bool {
 	return defaultValue
 }
 
-func renderStaticContent(route string, ctx context.Context) string {
+func renderStaticContentFromConfig(config map[string]interface{}, routeOverride string, ctx context.Context) string {
 	hbConfig := getHyperBricksConfiguration()
 
-	_config, found := getConfig(route)
-
-	if !found {
-		__config, _found := getConfig("404")
-		if _found {
-			logging.GetLogger().Info("Redirecting to 404", " from ", route)
-			_config = __config
-		} else {
-			if route == "favicon.ico" {
-				return ""
-			}
-			logging.GetLogger().Info("Config not found for route: ", route)
-			return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route)
-		}
+	configCopy := make(map[string]interface{}, len(config))
+	for key, value := range config {
+		configCopy[key] = value
 	}
 
-	configCopy := make(map[string]interface{})
-	for key, value := range _config {
-		configCopy[key] = value
+	if strings.TrimSpace(routeOverride) != "" {
+		configCopy["route"] = strings.TrimSpace(routeOverride)
 	}
 
 	var htmlContent strings.Builder
@@ -84,7 +72,26 @@ func renderStaticContent(route string, ctx context.Context) string {
 	}
 
 	return output.String()
+}
 
+func renderStaticContent(route string, ctx context.Context) string {
+	_config, found := getConfig(route)
+
+	if !found {
+		__config, _found := getConfig("404")
+		if _found {
+			logging.GetLogger().Info("Redirecting to 404", " from ", route)
+			_config = __config
+		} else {
+			if route == "favicon.ico" {
+				return ""
+			}
+			logging.GetLogger().Info("Config not found for route: ", route)
+			return fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route)
+		}
+	}
+
+	return renderStaticContentFromConfig(_config, "", ctx)
 }
 
 type RenderContent struct {

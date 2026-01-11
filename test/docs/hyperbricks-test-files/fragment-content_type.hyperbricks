@@ -30,7 +30,6 @@ content type header definition
   "Items": null,
   "Enclose": "",
   "Template": null,
-  "IsStatic": false,
   "Static": "",
   "Cache": "",
   "NoCache": false,

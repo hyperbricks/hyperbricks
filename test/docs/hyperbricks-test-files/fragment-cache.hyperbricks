@@ -24,7 +24,6 @@ Cache expire string
   "Enclose": "<p>|</p>",
   "Favicon": "",
   "Template": null,
-  "IsStatic": false,
   "Static": "",
   "Cache": "10m",
   "NoCache": false,

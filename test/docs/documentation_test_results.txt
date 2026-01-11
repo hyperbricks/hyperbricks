@@ -64,9 +64,9 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/template-template
 === RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-2026/01/11 09:40:15 [.template or a .inline is required]
+2026/01/11 10:42:22 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-2026/01/11 09:40:15 [.template or a .inline is required]
+2026/01/11 10:42:22 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
 
@@ -150,11 +150,11 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/menu-active
 === RUN   Test_TestAndDocumentationRender/menu-item
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
-2026/01/11 09:40:16 Version: v0.6.5-alpha
-2026/01/11 09:40:16 Build Time: 2026-01-11T08:40:14Z
-2026/01/11 09:40:16 Static HTML file generated at ../../REFERENCE.md
-2026/01/11 09:40:16 Static HTML file generated at ../../README.md
---- PASS: Test_TestAndDocumentationRender (0.57s)
+2026/01/11 10:42:22 Version: v0.6.5-alpha
+2026/01/11 10:42:22 Build Time: 2026-01-11T09:42:21Z
+2026/01/11 10:42:22 Static HTML file generated at ../../REFERENCE.md
+2026/01/11 10:42:22 Static HTML file generated at ../../README.md
+--- PASS: Test_TestAndDocumentationRender (0.58s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-beautify (0.00s)
@@ -263,4 +263,4 @@ Embedded Field: HxResponse (mapped as: response)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
 PASS
-ok  	command-line-arguments	0.813s
+ok  	command-line-arguments	0.820s

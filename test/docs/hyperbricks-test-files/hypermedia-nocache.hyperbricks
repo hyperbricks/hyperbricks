@@ -24,7 +24,6 @@ Explicitly disable cache
   "Enclose": "<p>|</p>",
   "Favicon": "",
   "Template": null,
-  "IsStatic": false,
   "Static": "",
   "Cache": "",
   "NoCache": true,

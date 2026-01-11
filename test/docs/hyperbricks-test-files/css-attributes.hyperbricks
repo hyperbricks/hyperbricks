@@ -25,7 +25,6 @@ Extra attributes like id, data-role, data-action, media
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

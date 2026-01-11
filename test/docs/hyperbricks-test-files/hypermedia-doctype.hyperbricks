@@ -20,7 +20,6 @@ Alternative Doctype for the HTML document
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

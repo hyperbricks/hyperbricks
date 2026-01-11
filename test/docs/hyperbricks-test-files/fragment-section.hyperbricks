@@ -32,7 +32,6 @@ The section the fragment belongs to. This can be used with the component <MENU> 
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

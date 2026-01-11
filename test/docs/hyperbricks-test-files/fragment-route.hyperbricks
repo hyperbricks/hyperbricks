@@ -32,7 +32,6 @@ The route (URL-friendly identifier) for the fragment
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

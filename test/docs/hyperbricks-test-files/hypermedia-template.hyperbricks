@@ -39,7 +39,6 @@ Template configurations for rendering the hypermedia. See <TEMPLATE> for field d
       }
     }
   },
-  "IsStatic": false,
   "Cache": "",
   "NoCache": false,
   "Static": "",

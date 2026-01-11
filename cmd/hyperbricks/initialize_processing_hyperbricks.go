@@ -165,7 +165,6 @@ func processScript(
 			}
 			fragmentConfig.Route = ensureUniqueRoute(fragmentConfig.Route, filename, tempConfigs)
 			obj["route"] = fragmentConfig.Route
-			handleStaticRoute(obj, &fragmentConfig)
 			hyperMediaConfig := composite.HyperMediaConfig{
 				Section: fragmentConfig.Section,
 				Title:   fragmentConfig.Title,
@@ -198,7 +197,6 @@ func processScript(
 			}
 			hyperMediaConfig.Route = ensureUniqueRoute(hyperMediaConfig.Route, filename, tempConfigs)
 			obj["route"] = hyperMediaConfig.Route
-			handleStaticRoute(obj, &hyperMediaConfig)
 			tempHyperMediasBySection[hyperMediaConfig.Section] = append(
 				tempHyperMediasBySection[hyperMediaConfig.Section],
 				hyperMediaConfig,
@@ -317,21 +315,6 @@ func ensureUniqueRoute(original, filename string, tempConfigs map[string]map[str
 // 	}
 // 	return endpoint
 // }
-
-// handleStaticSlug updates the route and marks the config as static if a static route is provided.
-func handleStaticRoute(obj map[string]interface{}, config interface{}) {
-	if routeObj, hasStatic := obj["static"].(string); hasStatic && strings.TrimSpace(routeObj) != "" {
-		route := strings.TrimSpace(routeObj)
-		switch cfg := config.(type) {
-		case *composite.HyperMediaConfig:
-			cfg.Route = route
-			cfg.IsStatic = true
-		case *composite.FragmentConfig:
-			cfg.Route = route
-			cfg.IsStatic = true
-		}
-	}
-}
 
 // updateGlobalConfigs safely updates the global configs map.
 func updateGlobalConfigs(tempConfigs map[string]map[string]interface{}) {

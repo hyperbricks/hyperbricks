@@ -34,7 +34,6 @@ allows you to trigger client-side events after the swap step
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

@@ -21,7 +21,6 @@ The section the hypermedia belongs to. This can be used with the component <MENU
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

@@ -44,7 +44,6 @@ Builds header content. See <HEADER> for details
   "Enclose": "",
   "Favicon": "",
   "Template": null,
-  "IsStatic": false,
   "Cache": "",
   "NoCache": false,
   "Static": "",

@@ -55,7 +55,6 @@ The template used for rendering.
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Index": 0,
 "ContentType": ""

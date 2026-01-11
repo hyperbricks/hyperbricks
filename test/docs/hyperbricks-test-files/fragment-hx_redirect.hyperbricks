@@ -34,7 +34,6 @@ Can be used to do a client-side redirect to a new location
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

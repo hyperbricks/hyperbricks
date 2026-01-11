@@ -34,7 +34,6 @@ Allows you to do a client-side redirect that does not do a full page reload
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

@@ -34,7 +34,6 @@ If set to 'true' the client-side will do a full refresh of the page
     "Enclose": "",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

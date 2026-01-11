@@ -21,7 +21,6 @@ Path to the favicon for the hypermedia
     "Enclose": "",
     "Favicon": "static/favicon.ico",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

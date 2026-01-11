@@ -45,7 +45,6 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
   "Enclose": "",
   "Favicon": "",
   "Template": null,
-  "IsStatic": false,
   "Static": "",
   "Cache": "",
   "NoCache": false,

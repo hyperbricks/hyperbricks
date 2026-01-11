@@ -42,7 +42,6 @@ The enclosing HTML element for the header divided by |
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

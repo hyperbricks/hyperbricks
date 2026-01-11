@@ -23,7 +23,6 @@ Use link for a link tag to a css file.
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

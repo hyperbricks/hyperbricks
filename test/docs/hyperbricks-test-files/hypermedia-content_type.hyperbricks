@@ -21,7 +21,6 @@ content type header definition
   "Enclose": "",
   "Favicon": "",
   "Template": null,
-  "IsStatic": false,
   "Cache": "",
   "NoCache": false,
   "Static": "",

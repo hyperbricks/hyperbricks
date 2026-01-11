@@ -26,7 +26,6 @@ Use inline to define css in a multiline block <<[ /* css goes here */ ]>>
     "Enclose": "",
     "Favicon": "",
     "Template": null,
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,

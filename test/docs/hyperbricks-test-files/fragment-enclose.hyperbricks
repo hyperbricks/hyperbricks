@@ -34,7 +34,6 @@ Enclosing property using the pipe symbol |
     "Enclose": "<div>|</div>",
     "Template": null,
     "HyperBricksFile": "",
-    "IsStatic": false,
     "Static": "",
     "Cache": "",
     "NoCache": false,
