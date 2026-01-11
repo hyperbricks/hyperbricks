@@ -8,6 +8,9 @@ var (
 	RenderStatic bool
 	ServeStatic  bool
 	ForceStatic  bool
+	ExportZip    bool
+	ExportOutDir string
+	ExportExclude string
 )
 
 func NewMakeStaticCommand() *cobra.Command {
@@ -22,6 +25,9 @@ func NewMakeStaticCommand() *cobra.Command {
 	// Add flags
 	cmd.Flags().BoolVar(&ServeStatic, "serve", false, "Serve rendered static files")
 	cmd.Flags().BoolVar(&ForceStatic, "force", false, "Overwrite rendered output without confirmation")
+	cmd.Flags().BoolVar(&ExportZip, "zip", false, "Export rendered output as a zip file")
+	cmd.Flags().StringVar(&ExportOutDir, "out", "", "Output directory for zip export (default ./exports/<module>)")
+	cmd.Flags().StringVar(&ExportExclude, "exclude", "", "Comma-separated paths to exclude, relative to render root")
 	cmd.Flags().StringVarP(&StartModule, "module", "m", "default", "module in the ./modules directory")
 
 	return cmd
