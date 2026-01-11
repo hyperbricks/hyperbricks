@@ -133,6 +133,12 @@ type LoggerConfig struct {
 	Path  string `mapstructure:"path"`
 }
 
+type RoutingConfig struct {
+	CleanURLs  bool     `mapstructure:"clean_urls"`
+	IndexFiles []string `mapstructure:"index_files"`
+	Extensions []string `mapstructure:"extensions"`
+}
+
 // ServerConfig with defaults.
 type ServerConfig struct {
 	Port         int           `mapstructure:"port"`
@@ -140,6 +146,7 @@ type ServerConfig struct {
 	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
 	WriteTimeout time.Duration `mapstructure:"write_timeout"`
 	IdleTimeout  time.Duration `mapstructure:"idle_timeout"`
+	Routing      RoutingConfig `mapstructure:"routing"`
 }
 
 type RateLimitConfig struct {
@@ -206,6 +213,12 @@ func loadHyperBricksConfiguration() *Config {
 			ReadTimeout:  5 * time.Second,
 			WriteTimeout: 10 * time.Second,
 			IdleTimeout:  20 * time.Second,
+
+			Routing: RoutingConfig{
+				CleanURLs:  true,
+				IndexFiles: []string{"index.html", "index.htm"},
+				Extensions: []string{"html", "htm"},
+			},
 		},
 
 		System: SystemConfig{

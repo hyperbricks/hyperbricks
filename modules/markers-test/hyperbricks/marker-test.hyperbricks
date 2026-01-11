@@ -30,7 +30,7 @@ template.values = {
 test_001 = <FRAGMENT>
 test_001.route = test_001
 test_001.10 = <TEXT>
-test_001.10.value = {{FILE:modules/markers-test/resources/test.txt}}
+test_001.10.value = {{FILE:{{RESOURCES}}/test.txt}}
 
 test_002 = <HYPERMEDIA>
 test_002.route = test_002

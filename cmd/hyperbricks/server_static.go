@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -238,7 +239,43 @@ func serveStatic() error {
 	if strings.TrimSpace(renderDir) == "" {
 		renderDir = core.ModuleDirectories.RenderedDir
 	}
-	handler := http.FileServer(http.Dir(renderDir))
+	routing := normalizeRoutingConfig(hbConfig.Server.Routing)
+	fileServer := http.FileServer(http.Dir(renderDir))
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestPath := r.URL.Path
+		if requestPath == "" {
+			requestPath = "/"
+		}
+
+		if strings.HasSuffix(requestPath, "/") {
+			for _, indexFile := range routing.IndexFiles {
+				candidate := requestPath + indexFile
+				if filePath, ok := staticFilePath(renderDir, candidate); ok {
+					serveStaticFile(w, r, filePath)
+					return
+				}
+			}
+		}
+
+		if routing.CleanURLs {
+			base := path.Base(requestPath)
+			if !strings.Contains(base, ".") {
+				for _, ext := range routing.Extensions {
+					if ext == "" {
+						continue
+					}
+					candidate := requestPath + "." + ext
+					if staticFileExists(renderDir, candidate) {
+						r.URL.Path = candidate
+						fileServer.ServeHTTP(w, r)
+						return
+					}
+				}
+			}
+		}
+
+		fileServer.ServeHTTP(w, r)
+	})
 	server := &http.Server{Addr: addr, Handler: handler}
 
 	// Run server in background goroutine
@@ -282,4 +319,40 @@ func serveStatic() error {
 
 	fmt.Println("Server stopped.")
 	return nil
+}
+
+func staticFileExists(rootDir, urlPath string) bool {
+	_, ok := staticFilePath(rootDir, urlPath)
+	return ok
+}
+
+func staticFilePath(rootDir, urlPath string) (string, bool) {
+	cleanPath := path.Clean("/" + urlPath)
+	cleanPath = strings.TrimPrefix(cleanPath, "/")
+	if cleanPath == "" {
+		return "", false
+	}
+	fullPath := filepath.Join(rootDir, filepath.FromSlash(cleanPath))
+	info, err := os.Stat(fullPath)
+	if err != nil || info.IsDir() {
+		return "", false
+	}
+	return fullPath, true
+}
+
+func serveStaticFile(w http.ResponseWriter, r *http.Request, filePath string) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil || info.IsDir() {
+		http.NotFound(w, r)
+		return
+	}
+
+	http.ServeContent(w, r, info.Name(), info.ModTime(), file)
 }

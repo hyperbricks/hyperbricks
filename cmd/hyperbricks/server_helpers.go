@@ -2,6 +2,9 @@ package main
 
 import (
 	"net"
+	"strings"
+
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 func getConfig(requestedSlug string) (map[string]interface{}, bool) {
@@ -51,4 +54,43 @@ func getHostIPv4s() ([]string, error) {
 	}
 
 	return ipAddresses, nil
+}
+
+func normalizeRoutingConfig(routing shared.RoutingConfig) shared.RoutingConfig {
+	if len(routing.IndexFiles) == 0 {
+		routing.IndexFiles = []string{"index.html", "index.htm"}
+	}
+	if len(routing.Extensions) == 0 {
+		routing.Extensions = []string{"html", "htm"}
+	}
+
+	indexFiles := make([]string, 0, len(routing.IndexFiles))
+	for _, name := range routing.IndexFiles {
+		name = strings.TrimSpace(name)
+		name = strings.TrimPrefix(name, "/")
+		if name == "" {
+			continue
+		}
+		indexFiles = append(indexFiles, name)
+	}
+	if len(indexFiles) == 0 {
+		indexFiles = []string{"index.html"}
+	}
+	routing.IndexFiles = indexFiles
+
+	extensions := make([]string, 0, len(routing.Extensions))
+	for _, ext := range routing.Extensions {
+		ext = strings.TrimSpace(ext)
+		ext = strings.TrimPrefix(ext, ".")
+		if ext == "" {
+			continue
+		}
+		extensions = append(extensions, ext)
+	}
+	if len(extensions) == 0 {
+		extensions = []string{"html"}
+	}
+	routing.Extensions = extensions
+
+	return routing
 }

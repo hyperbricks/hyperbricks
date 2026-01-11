@@ -51,6 +51,13 @@ hyperbricks {
         port = 8080
         beautify = true
 
+        routing {
+            # use clean URLs like /help for help.html
+            clean_urls = true
+            index_files = [ index.html, index.htm ]
+            extensions = [ html, htm ]
+        }
+
         # Low traffic (~50-500 daily visitors).
         read_timeout = 5s
         write_timeout =  10s
