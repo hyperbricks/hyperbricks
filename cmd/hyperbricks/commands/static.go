@@ -6,11 +6,11 @@ import (
 
 var (
 	RenderStatic bool
+	ServeStatic  bool
+	ForceStatic  bool
 )
 
 func NewMakeStaticCommand() *cobra.Command {
-	var static bool
-
 	cmd := &cobra.Command{
 		Use:   "static",
 		Short: "Render static content",
@@ -20,7 +20,8 @@ func NewMakeStaticCommand() *cobra.Command {
 	}
 
 	// Add flags
-	cmd.Flags().BoolVarP(&static, "static", "s", true, "Render static content")
+	cmd.Flags().BoolVar(&ServeStatic, "serve", false, "Serve rendered static files")
+	cmd.Flags().BoolVar(&ForceStatic, "force", false, "Overwrite rendered output without confirmation")
 	cmd.Flags().StringVarP(&StartModule, "module", "m", "default", "module in the ./modules directory")
 
 	return cmd
