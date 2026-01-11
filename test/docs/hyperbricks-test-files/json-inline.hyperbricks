@@ -16,20 +16,20 @@ local_json_test {
 Use inline to define the template in a multiline block <<[ /* Template code goes here */ ]>>
 ==== expected json ====
 {
-    "ConfigType": "<JSON_RENDER>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "ExtraAttributes": null,
-    "Enclose": "",
-    "FilePath": "hyperbricks-test-files/assets/quotes.json",
-    "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
-    "Template": "",
-    "Values": null,
-    "Debug": false
-  }
-  
+  "ConfigType": "<JSON_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "ExtraAttributes": null,
+  "Enclose": "",
+  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "Inline": "\n        <h1>Quotes</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Template": "",
+  "Values": null,
+  "Debug": false
+}
 ==== expected output ====
 <h1>Quotes</h1>
 <ul>

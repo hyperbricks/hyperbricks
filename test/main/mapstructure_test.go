@@ -344,7 +344,7 @@ func Test_BasicHyperMediaRenderChain(t *testing.T) {
 	hypermedia {
 		css = [a,b,c,d]
 		head {
-			10 = <JAVASCRIPT>
+			10 = <JS>
 			10.inline = <<[console.log("Hello World")]>>
 		}
 
@@ -434,7 +434,9 @@ func Test_BasicHyperMediaRenderChain(t *testing.T) {
 	rm.RegisterComponent(component.CssConfigGetName(), &component.CssRenderer{}, reflect.TypeOf(component.CssConfig{}))
 
 	rm.RegisterComponent(component.StyleConfigGetName(), &component.StyleRenderer{}, reflect.TypeOf(component.StyleConfig{}))
+	// Register legacy and new JS types
 	rm.RegisterComponent(component.JavaScriptConfigGetName(), &component.JavaScriptRenderer{}, reflect.TypeOf(component.JavaScriptConfig{}))
+	rm.RegisterComponent(component.JSConfigGetName(), &component.JSRenderer{}, reflect.TypeOf(component.JSConfig{}))
 
 	// Parse the input
 	parsedConfig := parser.ParseHyperScript(input)

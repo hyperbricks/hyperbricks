@@ -1,0 +1,13 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia.head {
+    10 = <JS>
+    10.file = template-tests/assets/script-local.js
+    10.link = main.js
+}
+==== explainer ====
+When both file and link are set, file content takes precedence and must render as a script block.
+==== expected output ====
+<!DOCTYPE html><html><head><script>
+console.log('from file');
+</script><meta name="generator" content="hyperbricks cms"></head><body></body></html>

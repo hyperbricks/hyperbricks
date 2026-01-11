@@ -1,0 +1,56 @@
+==== hyperbricks config {!{api_fragment}} ====
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = api-fragment-route
+}
+==== explainer ====
+The route (URL-friendly identifier) for the fragment
+==== expected json ====
+{
+  "ConfigType": "<API_FRAGMENT_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "Items": null,
+  "Endpoint": "https://example.com/fragment",
+  "Method": "GET",
+  "Headers": null,
+  "Body": "",
+  "Template": "",
+  "Inline": "",
+  "Values": null,
+  "Username": "",
+  "Password": "",
+  "Status": 0,
+  "SetCookie": "",
+  "AllowedQueryKeys": null,
+  "QueryParams": null,
+  "JwtSecret": "",
+  "JwtClaims": null,
+  "Debug": false,
+  "DebugPanel": false,
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "api-fragment-route",
+  "Section": "",
+  "Enclose": "",
+  "NoCache": false,
+  "Index": 0
+}
+==== expected output ====

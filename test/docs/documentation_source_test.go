@@ -37,6 +37,17 @@ var (
 	BuildTime string
 )
 
+// Types we use to drive the doc
+type DocumentationTypeStructI struct {
+	Name            string            // logical name used for example file fallbacks (lowercased)
+	TypeDescription string            // fallback description if @doc is missing
+	ConfigType      string            // the visible <TYPE> token
+	ConfigCategory  string            // "composite" => Composites; anything else => Components
+	Embedded        map[string]string // map[StructName]prefix, e.g. {"HxResponse":"response"}
+	ExcludeFields   []string          // mapstructure keys to exclude (e.g. "attributes", "is_static")
+	Config          any               // zero value of the config struct
+}
+
 // FieldDoc represents a field documentation entry
 type FieldDoc struct {
 	Name               string        `json:"name"`
@@ -58,17 +69,6 @@ type FieldDoc struct {
 	FieldAnchor        template.HTML `json:"fieldanchor"`
 }
 
-type DocumentationTypeStruct struct {
-	Name            string
-	TypeDescription string
-	ConfigType      string
-	ConfigCategory  string
-	Fields          map[string]string
-	Embedded        map[string]string
-	ExcludeFields   []string
-	Config          any
-}
-
 // ParsedContent holds the separated sections and optional scope after parsing.
 type ParsedContent struct {
 	HyperbricksConfig      string
@@ -80,6 +80,33 @@ type ParsedContent struct {
 	MoreDetails            string
 }
 
+// Deep search by field name across embedded structs (handles struct and *struct)
+func findFieldByName(val reflect.Value, fieldName string) reflect.Value {
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	if !val.IsValid() || val.Kind() != reflect.Struct {
+		return reflect.Value{}
+	}
+	fv := val.FieldByName(fieldName)
+	if fv.IsValid() {
+		return fv
+	}
+	rt := val.Type()
+	for i := 0; i < rt.NumField(); i++ {
+		sub := val.Field(i)
+		if !sub.IsValid() {
+			continue
+		}
+		if sub.Kind() == reflect.Struct || (sub.Kind() == reflect.Ptr && sub.Elem().Kind() == reflect.Struct) {
+			if found := findFieldByName(sub, fieldName); found.IsValid() {
+				return found
+			}
+		}
+	}
+	return reflect.Value{}
+}
+
 func Test_TestAndDocumentationRender(t *testing.T) {
 
 	flag.Parse()
@@ -87,7 +114,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	Version = *versionFlag
 	BuildTime = *buildTimeFlag
 
-	types := []DocumentationTypeStruct{
+	types := []DocumentationTypeStructI{
 		{
 			Name:            "Fragment",
 			TypeDescription: "Basic type description here.....",
@@ -98,14 +125,14 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory: "composite",
 			Config:         composite.FragmentConfig{},
 		},
-		// {
-		// 	Name:            "ApiFragmentRender",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded:        map[string]string{},
-		// 	ConfigType:      "<API_FRAGMENT_RENDER>",
-		// 	ConfigCategory:  "composite",
-		// 	Config:          composite.ApiFragmentRenderConfig{},
-		// },
+		{
+			Name:            "ApiFragmentRender",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<API_FRAGMENT_RENDER>",
+			ConfigCategory:  "composite",
+			Config:          composite.ApiFragmentRenderConfig{},
+		},
 		{
 			Name:            "Hypermedia",
 			TypeDescription: "Basic type description here.....",
@@ -138,18 +165,6 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory:  "composite",
 			Config:          composite.TreeConfig{},
 		},
-		// API is for version 2.0.0
-		// {
-		// 	Name:            "Api",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded: map[string]string{
-		// 		"HxResponse": "response",
-		// 	},
-		// 	ConfigType:     "<API>",
-		// 	ConfigCategory: "composite",
-		// 	Config:         composite.HxApiConfig{},
-		// },
-		// COMPONENTS
 		{
 			Name:            "Html",
 			TypeDescription: "Basic type description here.....",
@@ -204,14 +219,14 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory:  "data",
 			Config:          component.LocalJSONConfig{},
 		},
-		// {
-		// 	Name:            "Plugin",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded:        map[string]string{},
-		// 	ConfigType:      "<PLUGIN>",
-		// 	ConfigCategory:  "component",
-		// 	Config:          component.PluginConfig{},
-		// },
+		{
+			Name:            "Plugin",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ConfigType:      "<PLUGIN>",
+			ConfigCategory:  "component",
+			Config:          component.PluginConfig{},
+		},
 		{
 			Name:            "Text",
 			TypeDescription: "Basic type description here.....",
@@ -234,17 +249,17 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			ConfigCategory: "menu",
 			Config:         component.MenuConfig{},
 		},
-		// {
-		// 	Name:            "Api_Render",
-		// 	TypeDescription: "Basic type description here.....",
-		// 	Embedded:        map[string]string{},
-		// 	ExcludeFields: []string{
-		// 		"attributes",
-		// 	},
-		// 	ConfigType:     "<API_RENDER>",
-		// 	ConfigCategory: "data",
-		// 	Config:         component.APIConfig{},
-		// },
+		{
+			Name:            "Api_Render",
+			TypeDescription: "Basic type description here.....",
+			Embedded:        map[string]string{},
+			ExcludeFields: []string{
+				"attributes",
+			},
+			ConfigType:     "<API_RENDER>",
+			ConfigCategory: "data",
+			Config:         component.APIConfig{},
+		},
 	}
 
 	// Initialize shared configuration settings.
@@ -317,6 +332,15 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	}
 
 	rm.RegisterComponent(composite.FragmentConfigGetName(), fragmentRenderer, reflect.TypeOf(composite.FragmentConfig{}))
+
+	apiFragmentRenderer := &composite.ApiFragmentRenderer{
+		CompositeRenderer: renderer.CompositeRenderer{
+			RenderManager:    rm,
+			TemplateProvider: templateProvider,
+		},
+	}
+
+	rm.RegisterComponent(composite.ApiFragmentRenderConfigGetName(), apiFragmentRenderer, reflect.TypeOf(composite.ApiFragmentRenderConfig{}))
 
 	// TEMPLATE ....
 	hypermediaRenderer := &composite.HyperMediaRenderer{
@@ -459,7 +483,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	renderStaticFile(tmpl, data, "../../README.md")
 
 }
-func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *testing.T, rm *render.RenderManager, _fields []FieldDoc) []FieldDoc {
+func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStructI, t *testing.T, rm *render.RenderManager, _fields []FieldDoc) []FieldDoc {
 
 	var fields []FieldDoc
 	if len(_fields) > 0 {
@@ -484,7 +508,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 		}
 
 		tag := field.Tag.Get("mapstructure")
-		if isExcludedField(tag, cfg.ExcludeFields) {
+		if IsExcludedField(tag, cfg.ExcludeFields) {
 			continue
 		}
 
@@ -537,7 +561,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 				var expected map[string]interface{}
 
 				// Convert JSON string to bytes and unmarshal into the map
-				if err := json.Unmarshal([]byte(buf.String()), &expected); err != nil {
+				if err := json.Unmarshal(buf.Bytes(), &expected); err != nil {
 					fmt.Println("Error unmarshaling JSON:", err)
 					return
 				}
@@ -643,7 +667,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStruct, t *
 	return fields
 }
 
-func isExcludedField(tag string, excludeFields []string) bool {
+func IsExcludedField(tag string, excludeFields []string) bool {
 	for _, field := range excludeFields {
 		if field == tag {
 			return true
@@ -813,7 +837,7 @@ fragment {
 	return input
 }
 
-func findFieldByName(val reflect.Value, fieldName string) reflect.Value {
+func FindFieldByName(val reflect.Value, fieldName string) reflect.Value {
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}

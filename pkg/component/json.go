@@ -14,12 +14,14 @@ import (
 )
 
 type LocalJSONConfig struct {
-	shared.Component `mapstructure:",squash"`
-	FilePath         string                 `mapstructure:"file" validate:"required" description:"Path to the local JSON file" example:"{!{json-file.hyperbricks}}"`
-	Template         string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{json-template.hyperbricks}}"`
-	Inline           string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template code goes here */ ]>>" example:"{!{json-inline.hyperbricks}}"`
-	Values           map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{json-values.hyperbricks}}"`
-	Debug            bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{json-debug.hyperbricks}}"`
+	shared.Component   `mapstructure:",squash"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Reads a local JSON object from file, then renders a template to produce HTML output. The template can be provided inline (preferred) or by name; named templates are resolved via TemplateProvider and, if not found, loaded from disk. The template context exposes .Data (the parsed JSON) plus any key/value pairs from Values. When debug is true, the loaded JSON is emitted in an HTML comment." example:"{!{json-@doc.hyperbricks}}"`
+
+	FilePath string                 `mapstructure:"file" validate:"required" description:"Path to the local JSON file" example:"{!{json-file.hyperbricks}}"`
+	Template string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{json-template.hyperbricks}}"`
+	Inline   string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template code goes here */ ]>>" example:"{!{json-inline.hyperbricks}}"`
+	Values   map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{json-values.hyperbricks}}"`
+	Debug    bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{json-debug.hyperbricks}}"`
 }
 
 func LocalJSONConfigGetName() string {
