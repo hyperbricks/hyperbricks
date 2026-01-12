@@ -65,6 +65,7 @@ func newExcludePickerModel(root string) (excludePickerModel, error) {
 	m.list.SetFilteringEnabled(false)
 	m.list.SetShowHelp(true)
 	m.list.Styles.Title = m.list.Styles.Title.Background(orange)
+	m.list.DisableQuitKeybindings()
 
 	if err := m.refreshList(); err != nil {
 		return excludePickerModel{}, err

@@ -41,6 +41,7 @@ func newModulePickerModel(items []list.Item, title string) modulePickerModel {
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
 	l.SetShowHelp(true)
+	l.DisableQuitKeybindings()
 
 	return modulePickerModel{list: l}
 }
@@ -59,7 +60,7 @@ func (m modulePickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selected = selected.name
 				return m, tea.Quit
 			}
-		case "ctrl+c", "q", "esc":
+		case "ctrl+c", "q":
 			m.canceled = true
 			return m, tea.Quit
 		}
