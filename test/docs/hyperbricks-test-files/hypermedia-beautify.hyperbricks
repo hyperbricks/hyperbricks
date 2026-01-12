@@ -31,7 +31,8 @@ Override server.beautify for this object when rendered directly
   "Doctype": "",
   "HtmlTag": "",
   "Head": null,
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title></head><body></body></html>

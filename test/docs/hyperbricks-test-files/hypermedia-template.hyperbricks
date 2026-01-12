@@ -47,7 +47,8 @@ Template configurations for rendering the hypermedia. See <TEMPLATE> for field d
   "Doctype": "",
   "HtmlTag": "",
   "Head": null,
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <div><p>SOME HTML CONTENT</p></div>

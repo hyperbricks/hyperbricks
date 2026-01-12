@@ -83,12 +83,61 @@ func extractResponseHeaders(raw map[string]interface{}) map[string]string {
 	return headers
 }
 
+func extractResponseCookies(raw map[string]interface{}) []string {
+	value, ok := raw["cookies"]
+	if !ok || value == nil {
+		return nil
+	}
+
+	var cookies []string
+	addCookie := func(val string) {
+		val = strings.TrimSpace(val)
+		if val == "" {
+			return
+		}
+		cookies = append(cookies, val)
+	}
+
+	switch typed := value.(type) {
+	case []string:
+		for _, val := range typed {
+			addCookie(val)
+		}
+	case []interface{}:
+		for _, val := range typed {
+			if val == nil {
+				continue
+			}
+			addCookie(fmt.Sprintf("%v", val))
+		}
+	case string:
+		addCookie(typed)
+	default:
+		addCookie(fmt.Sprintf("%v", typed))
+	}
+
+	if len(cookies) == 0 {
+		return nil
+	}
+	return cookies
+}
+
 func applyResponseHeaders(headers map[string]string, writer http.ResponseWriter) {
 	for key, val := range headers {
 		if strings.TrimSpace(key) == "" {
 			continue
 		}
 		writer.Header().Set(key, val)
+	}
+}
+
+func applyResponseCookies(cookies []string, writer http.ResponseWriter) {
+	for _, cookie := range cookies {
+		cookie = strings.TrimSpace(cookie)
+		if cookie == "" {
+			continue
+		}
+		writer.Header().Add("Set-Cookie", cookie)
 	}
 }
 
@@ -217,6 +266,8 @@ type RenderContent struct {
 	NoCache     bool
 	ContentType string
 	Status      int
+	Headers     map[string]string
+	Cookies     []string
 }
 
 func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderContent {
@@ -226,6 +277,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 
 	_config, found := getConfig(route)
 	headers := map[string]string(nil)
+	cookies := []string(nil)
 
 	if !found {
 		__config, _found := getConfig("404")
@@ -262,9 +314,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 	}
 	if configType, ok := _config["@type"].(string); ok && configType == composite.HyperMediaConfigGetName() {
 		headers = extractResponseHeaders(_config)
-		if len(headers) > 0 {
-			applyResponseHeaders(headers, w)
-		}
+		cookies = extractResponseCookies(_config)
 	}
 	if contentType == "" && len(headers) > 0 {
 		contentType = headerContentType(headers)
@@ -338,6 +388,8 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 		NoCache:     nocache,
 		ContentType: contentType,
 		Status:      status,
+		Headers:     headers,
+		Cookies:     cookies,
 	}
 
 }
@@ -462,6 +514,8 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 	if hbConfig.Mode == shared.LIVE_MODE {
 		cacheEntry := handleLiveMode(w, route, r)
 		htmlContent.WriteString(cacheEntry.Content)
+		applyResponseHeaders(cacheEntry.Headers, w)
+		applyResponseCookies(cacheEntry.Cookies, w)
 		if cacheEntry.ContentType != "" {
 			w.Header().Set("Content-Type", cacheEntry.ContentType)
 		} else {
@@ -475,6 +529,8 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 	} else {
 		renderContent := handleDeveloperMode(w, route, r)
 		htmlContent.WriteString(renderContent.Content)
+		applyResponseHeaders(renderContent.Headers, w)
+		applyResponseCookies(renderContent.Cookies, w)
 		if renderContent.ContentType != "" {
 			w.Header().Set("Content-Type", renderContent.ContentType)
 		} else {
@@ -538,6 +594,8 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheE
 				Timestamp:   now,
 				ContentType: renderContent.ContentType,
 				Status:      renderContent.Status,
+				Headers:     renderContent.Headers,
+				Cookies:     renderContent.Cookies,
 			}
 			htmlCacheMutex.Unlock()
 			logging.GetLogger().Debugw("Updated cache for route", "route", route)
@@ -548,5 +606,7 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheE
 		Timestamp:   now,
 		ContentType: renderContent.ContentType,
 		Status:      renderContent.Status,
+		Headers:     renderContent.Headers,
+		Cookies:     renderContent.Cookies,
 	}
 }

@@ -29,7 +29,8 @@ Static file path associated with the hypermedia, for rendering out the hypermedi
   "Doctype": "",
   "HtmlTag": "",
   "Head": null,
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><body></body></html> 

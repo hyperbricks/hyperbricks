@@ -32,7 +32,8 @@ Cache expire string
   "Doctype": "",
   "HtmlTag": "",
   "Head": null,
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html>

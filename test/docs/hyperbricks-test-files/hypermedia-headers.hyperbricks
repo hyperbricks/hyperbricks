@@ -35,7 +35,8 @@ HTTP response headers to include when serving this hypermedia
   "Headers": {
     "X-Frame-Options": "DENY",
     "Content-Security-Policy": "default-src 'self'"
-  }
+  },
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><body></body></html>

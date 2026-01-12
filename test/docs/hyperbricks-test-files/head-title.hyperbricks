@@ -33,7 +33,8 @@ The title of the hypermedia document
     "@type": "<HEAD>",
     "title": "Home"
   },
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title>

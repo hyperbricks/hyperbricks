@@ -29,7 +29,8 @@ The route (URL-friendly identifier) for the hypermedia
   "Doctype": "",
   "HtmlTag": "",
   "Head": null,
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><body></body></html> 

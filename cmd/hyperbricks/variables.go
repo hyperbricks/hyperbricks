@@ -13,6 +13,8 @@ type CacheEntry struct {
 	Content     string
 	Status      int
 	Timestamp   time.Time
+	Headers     map[string]string
+	Cookies     []string
 }
 
 var (

@@ -1,11 +1,10 @@
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
-hypermedia.head = <HEAD>
-hypermedia.head {
-    js = [main.js,helpers.js]
+hypermedia {
+    cookies = [session=abc; Path=/; HttpOnly; Secure, prefs=dark; Path=/; Max-Age=31536000; SameSite=Lax]
 }
 ==== explainer ====
-JavaScript files to include
+HTTP cookies to include when serving this hypermedia
 ==== expected json ====
 {
   "ConfigType": "<HYPERMEDIA>",
@@ -29,17 +28,12 @@ JavaScript files to include
   "ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
-  "Head": {
-    "@type": "<HEAD>",
-    "js": [
-      "main.js",
-      "helpers.js"
-    ]
-  },
+  "Head": null,
   "Headers": null,
-  "Cookies": null
+  "Cookies": [
+    "session=abc; Path=/; HttpOnly; Secure",
+    "prefs=dark; Path=/; Max-Age=31536000; SameSite=Lax"
+  ]
 }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><script src="main.js"></script>
-<script src="helpers.js"></script>
-</head><body></body></html> 
+<!DOCTYPE html><html><body></body></html>

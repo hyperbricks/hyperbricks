@@ -39,7 +39,8 @@ Use inline to define css in a multiline block <<[ /* css goes here */ ]>>
       "inline": "\nbody {\n    background-color: lightblue;\n}\n    "
     }
   },
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><head><style>

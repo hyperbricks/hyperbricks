@@ -29,7 +29,8 @@ The section the hypermedia belongs to. This can be used with the component <MENU
   "Doctype": "",
   "HtmlTag": "",
   "Head": null,
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><body></body></html> 

@@ -78,7 +78,8 @@ Builds header content. See <HEADER> for details
       "b": "c"
     }
   },
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html>

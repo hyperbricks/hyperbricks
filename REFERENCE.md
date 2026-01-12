@@ -1,6 +1,6 @@
 **Licence:** MIT  
 **Version:** v0.7.2-alpha  
-**Build time:** 2026-01-12T12:55:11Z
+**Build time:** 2026-01-12T15:05:00Z
 
 ## Build Status
 
@@ -2509,6 +2509,8 @@ hypermedia.10 {
 
 
 
+
+
 **Properties**
 
 
@@ -3137,6 +3139,40 @@ hypermedia {
         X-Frame-Options = DENY
         Content-Security-Policy = default-src 'self'
     }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+### cookies
+
+**Description**  
+HTTP cookies to include when serving this hypermedia
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    cookies = [session=abc; Path=/; HttpOnly; Secure, prefs=dark; Path=/; Max-Age=31536000; SameSite=Lax]
 }
 
 ````

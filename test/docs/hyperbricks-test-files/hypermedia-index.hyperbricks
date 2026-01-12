@@ -29,7 +29,8 @@ Index number is a sort order option for the hypermedia defined in the section fi
   "HtmlTag": "",
   "Head": null,
   "ContentType": "",
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><body></body></html> 

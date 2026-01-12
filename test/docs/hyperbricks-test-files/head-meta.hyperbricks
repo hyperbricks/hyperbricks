@@ -39,7 +39,8 @@ Metadata for the head section
       "b": "c"
     }
   },
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html>
