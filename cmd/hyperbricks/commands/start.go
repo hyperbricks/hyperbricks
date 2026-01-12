@@ -34,6 +34,12 @@ func NewStartCommand() *cobra.Command {
 		Use:   "start",
 		Short: "Start server",
 		Run: func(cmd *cobra.Command, args []string) {
+			if StartDeploy && cmd.Flags().NFlag() == 1 {
+				RunDeployStartWizard()
+				if Exit {
+					return
+				}
+			}
 
 			config := Config{
 				Port: Port,

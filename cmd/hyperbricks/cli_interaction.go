@@ -83,6 +83,9 @@ func keyboardActions() {
 		case <-done:
 			fmt.Println("Exiting program.")
 			cancel()
+			if err := keyboard.Close(); err != nil {
+				log.Printf("Failed to close keyboard: %v", err)
+			}
 			os.Exit(1)
 			return
 		}

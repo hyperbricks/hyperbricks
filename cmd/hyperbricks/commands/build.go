@@ -58,6 +58,10 @@ func NewBuildCommand() *cobra.Command {
 		Use:   "build",
 		Short: "Build a Hypermedia Runtime Archive",
 		Run: func(cmd *cobra.Command, args []string) {
+			if cmd.Flags().NFlag() == 0 {
+				RunBuildWizard()
+				return
+			}
 			if err := runBuild(); err != nil {
 				fmt.Printf("Error building archive: %v\n", err)
 				Exit = true

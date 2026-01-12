@@ -3,9 +3,7 @@ package commands
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -68,58 +66,4 @@ func RunStaticWizard() {
 
 	StaticWizard = true
 	RenderStatic = true
-}
-
-func promptYesNo(reader *bufio.Reader, prompt string) (bool, error) {
-	for {
-		fmt.Print(prompt)
-		input, err := readLine(reader)
-		if err != nil {
-			return false, err
-		}
-		input = strings.ToLower(strings.TrimSpace(input))
-		if input == "" {
-			return false, nil
-		}
-		if input == "y" || input == "yes" {
-			return true, nil
-		}
-		if input == "n" || input == "no" {
-			return false, nil
-		}
-		fmt.Println("Please enter y or n.")
-	}
-}
-
-func promptInput(reader *bufio.Reader, prompt string) (string, error) {
-	fmt.Print(prompt)
-	return readLine(reader)
-}
-
-func promptPort(reader *bufio.Reader, prompt string, defaultPort int) (int, error) {
-	for {
-		fmt.Print(prompt)
-		input, err := readLine(reader)
-		if err != nil {
-			return 0, err
-		}
-		input = strings.TrimSpace(input)
-		if input == "" {
-			return defaultPort, nil
-		}
-		port, err := strconv.Atoi(input)
-		if err != nil || port <= 0 || port > 65535 {
-			fmt.Println("Please enter a valid port number.")
-			continue
-		}
-		return port, nil
-	}
-}
-
-func readLine(reader *bufio.Reader) (string, error) {
-	line, err := reader.ReadString('\n')
-	if err != nil && err != io.EOF {
-		return "", err
-	}
-	return strings.TrimRight(line, "\r\n"), nil
 }
