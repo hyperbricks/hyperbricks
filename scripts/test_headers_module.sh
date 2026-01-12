@@ -16,6 +16,17 @@ HB_PID=""
 HB_LISTEN_PID=""
 HB_PORT=""
 
+ensure_module_dirs() {
+  local module="$1"
+  local module_dir="modules/${module}"
+
+  mkdir -p "${module_dir}/static" \
+    "${module_dir}/resources" \
+    "${module_dir}/templates" \
+    "${module_dir}/rendered" \
+    "./bin/plugins"
+}
+
 command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
@@ -152,6 +163,7 @@ start_server() {
   local port="$2"
   local log_file="$3"
 
+  ensure_module_dirs "${module}"
   ensure_port_available "${port}"
 
   echo "Starting hyperbricks for module ${module} on port ${port}..."
