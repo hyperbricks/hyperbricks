@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
+	"os"
 	"runtime"
+	"strings"
 
 	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
@@ -14,6 +17,9 @@ import (
 )
 
 func init() {
+	if isTestRun() || flag.Lookup("test.v") != nil {
+		return
+	}
 
 	runtime.GOMAXPROCS(4)
 
@@ -72,6 +78,15 @@ func init() {
 		development_mode_init()
 	}
 
+}
+
+func isTestRun() bool {
+	for _, arg := range os.Args {
+		if strings.HasPrefix(arg, "-test.") {
+			return true
+		}
+	}
+	return false
 }
 
 // Package-level channel declaration

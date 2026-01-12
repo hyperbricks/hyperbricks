@@ -41,7 +41,8 @@ Use link for a script tag with a src attribute
       "link": "hyperbricks-test-files/assets/main.js"
     }
   },
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><head><script src="hyperbricks-test-files/assets/main.js" type="text/javascript"></script><meta name="generator" content="hyperbricks cms"></head><body></body></html> 

@@ -41,7 +41,8 @@ Extra attributes like id, data-role, data-action, media
       "file": "hyperbricks-test-files/assets/styles.css"
     }
   },
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
   <!DOCTYPE html><html><head><style media="screen">

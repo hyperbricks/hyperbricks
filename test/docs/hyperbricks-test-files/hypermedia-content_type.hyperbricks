@@ -29,6 +29,7 @@ content type header definition
   "HtmlTag": "",
   "Head": null,
   "ContentType": "",
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====

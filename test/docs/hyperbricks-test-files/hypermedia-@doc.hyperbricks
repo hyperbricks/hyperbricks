@@ -63,7 +63,8 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
     },
     "@type": "<HEAD>"
   },
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><head>

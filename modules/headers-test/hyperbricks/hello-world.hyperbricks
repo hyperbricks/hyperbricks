@@ -1,0 +1,21 @@
+page = <HYPERMEDIA>
+page.route = index.html
+page.headers {
+    X-Test = headers-test-dev
+    Content-Security-Policy = default-src 'self'
+}
+page.cookies = [session=dev; Path=/; HttpOnly, prefs=dev; Path=/; Max-Age=31536000; SameSite=Lax]
+page.10 = <TEXT>    
+page.10.value = HELLO WORLD!
+page.10.enclose = <p>|</p>
+
+help = <HYPERMEDIA>
+help.route = help.html
+help.headers {
+    X-Test = headers-test-dev
+    Content-Security-Policy = default-src 'self'
+}
+help.cookies = [session=dev; Path=/; HttpOnly, prefs=dev; Path=/; Max-Age=31536000; SameSite=Lax]
+help.10 = <TEXT>
+help.10.value = HELP PAGE
+help.10.enclose = <p>|</p>

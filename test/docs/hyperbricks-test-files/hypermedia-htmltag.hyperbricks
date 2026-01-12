@@ -27,7 +27,8 @@ The opening HTML tag with attributes
   "Doctype": "",
   "HtmlTag": "<html lang=\"en\">",
   "Head": null,
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html lang="en"><body></body></html> 

@@ -33,7 +33,8 @@ Path to the favicon for the hypermedia document
     "@type": "<HEAD>",
     "favicon": "/images/icon.ico"
   },
-  "Headers": null
+  "Headers": null,
+  "Cookies": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="/images/icon.ico">
