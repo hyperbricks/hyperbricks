@@ -6,7 +6,7 @@ modules/default/
 
 **/archive
 /archive/
-
+.cache/
 # Ignore VSCode workspace settings directory globally
 **/.vscode/
 
