@@ -8,35 +8,36 @@ hypermedia.head {
 CSS files to include
 ==== expected json ====
 {
-    "ConfigType": "<HYPERMEDIA>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "MetaDocDescription": "",
-    "Title": "",
-    "Route": "",
-    "Section": "",
-    "Items": null,
-    "BodyTag": "",
-    "Enclose": "",
-    "Favicon": "",
-    "Template": null,
-    "Static": "",
-    "Cache": "",
-    "NoCache": false,
-    "Index": 0,
-"ContentType": "",
-    "Doctype": "",
-    "HtmlTag": "",
-    "Head": {
-      "@type": "<HEAD>",
-      "css": [
-        "style.css",
-        "morestyles.css"
-      ]
-    }
-  }
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "ContentType": "",
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "@type": "<HEAD>",
+    "css": [
+      "style.css",
+      "morestyles.css"
+    ]
+  },
+  "Headers": null
+}
 ==== expected output ====
 <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="stylesheet" href="style.css">
         <link rel="stylesheet" href="morestyles.css">

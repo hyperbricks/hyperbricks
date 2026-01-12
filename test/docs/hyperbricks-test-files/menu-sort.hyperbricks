@@ -28,29 +28,30 @@ hm_3.title = DOCUMENT_3
 The field to sort menu items by ('title', 'route', or 'index').
 ==== expected json ====
 {
-    "ConfigType": "<HYPERMEDIA>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "MetaDocDescription": "",
-    "Title": "DOCUMENT_3",
-    "Route": "doc3",
-    "Section": "demo_main_menu",
-    "Items": null,
-    "BodyTag": "",
-    "Enclose": "",
-    "Favicon": "",
-    "Template": null,
-    "Static": "",
-    "Cache": "",
-    "NoCache": false,
-    "Index": 0,
-"ContentType": "",
-    "Doctype": "",
-    "HtmlTag": "",
-    "Head": null
-  }
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "DOCUMENT_3",
+  "Route": "doc3",
+  "Section": "demo_main_menu",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "ContentType": "",
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null,
+  "Headers": null
+}
 ==== expected output ====
 <!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
 </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>

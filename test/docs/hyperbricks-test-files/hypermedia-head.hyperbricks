@@ -48,7 +48,7 @@ Builds header content. See <HEADER> for details
   "NoCache": false,
   "Static": "",
   "Index": 0,
-"ContentType": "",
+  "ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
   "Head": {
@@ -77,7 +77,8 @@ Builds header content. See <HEADER> for details
       "a": "b",
       "b": "c"
     }
-  }
+  },
+  "Headers": null
 }
 ==== expected output ====
 <!DOCTYPE html>

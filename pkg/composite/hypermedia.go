@@ -30,6 +30,7 @@ type HyperMediaConfig struct {
 	Doctype            string                 `mapstructure:"doctype" description:"Alternative Doctype for the HTML document" example:"{!{hypermedia-doctype.hyperbricks}}"`
 	HtmlTag            string                 `mapstructure:"htmltag" description:"The opening HTML tag with attributes" example:"{!{hypermedia-htmltag.hyperbricks}}"`
 	Head               map[string]interface{} `mapstructure:"head" description:"Configurations for the head section of the hypermedia" example:"{!{hypermedia-head.hyperbricks}}"`
+	Headers            map[string]string      `mapstructure:"headers" description:"HTTP response headers to include when serving this hypermedia" example:"{!{hypermedia-headers.hyperbricks}}"`
 	ContentType        string                 `mapstructure:"content_type" description:"content type header definition"`
 }
 

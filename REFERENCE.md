@@ -1,6 +1,6 @@
 **Licence:** MIT  
-**Version:** v0.7.0-alpha  
-**Build time:** 2026-01-11T18:23:33Z
+**Version:** v0.7.2-alpha  
+**Build time:** 2026-01-12T12:55:11Z
 
 ## Build Status
 
@@ -2507,6 +2507,8 @@ hypermedia.10 {
 
 
 
+
+
 **Properties**
 
 
@@ -3108,6 +3110,43 @@ hypermedia.10.value = <p>some HTML</p>
       some HTML
     </p>
   </body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+### headers
+
+**Description**  
+HTTP response headers to include when serving this hypermedia
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    headers {
+        X-Frame-Options = DENY
+        Content-Security-Policy = default-src 'self'
+    }
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body></body>
 </html>
 ````
 

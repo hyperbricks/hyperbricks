@@ -11,37 +11,38 @@ hypermedia.head {
 File overrides link and inline, it loads contents of a file and renders it in a script tag.
 ==== expected json ====
 {
-    "ConfigType": "<HYPERMEDIA>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "MetaDocDescription": "",
-    "Title": "",
-    "Route": "",
-    "Section": "",
-    "Items": null,
-    "BodyTag": "",
-    "Enclose": "",
-    "Favicon": "",
-    "Template": null,
-    "Static": "",
-    "Cache": "",
-    "NoCache": false,
-    "Index": 0,
-"ContentType": "",
-    "Doctype": "",
-    "HtmlTag": "",
-    "Head": {
-      "10": {
-        "@type": "<JAVASCRIPT>",
-        "attributes": {
-          "type": "text/javascript"
-        },
-        "file": "hyperbricks-test-files/assets/main.js"
-      }
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "ContentType": "",
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "10": {
+      "@type": "<JAVASCRIPT>",
+      "attributes": {
+        "type": "text/javascript"
+      },
+      "file": "hyperbricks-test-files/assets/main.js"
     }
-  }
+  },
+  "Headers": null
+}
 ==== expected output ====
 <!DOCTYPE html><html><head><script type="text/javascript">
         console.log("Hello World!")

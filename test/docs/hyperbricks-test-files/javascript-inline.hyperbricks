@@ -11,36 +11,37 @@ hypermedia.head {
 Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here */ ]>>
 ==== expected json ====
 {
-"ConfigType": "<HYPERMEDIA>",
-"ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
   "HyperBricksFile": "",
-"MetaDocDescription": "",
-"Title": "",
-"Route": "",
-"Section": "",
-"Items": null,
-"BodyTag": "",
-"Enclose": "",
-"Favicon": "",
-"Template": null,
-"Static": "",
-"Cache": "",
-"NoCache": false,
-"Index": 0,
-"ContentType": "",
-"Doctype": "",
-"HtmlTag": "",
-"Head": {
-  "10": {
-    "@type": "<JAVASCRIPT>",
-    "attributes": {
-      "type": "text/javascript"
-    },
-    "inline": "console.log(\"Hello World!\")"
-  }
-}
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "ContentType": "",
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "10": {
+      "@type": "<JAVASCRIPT>",
+      "attributes": {
+        "type": "text/javascript"
+      },
+      "inline": "console.log(\"Hello World!\")"
+    }
+  },
+  "Headers": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><head><script type="text/javascript">

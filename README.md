@@ -1,6 +1,6 @@
 **Licence:** MIT  
-**Version:** v0.7.0-alpha  
-**Build time:** 2026-01-11T18:23:33Z
+**Version:** v0.7.2-alpha  
+**Build time:** 2026-01-12T12:55:11Z
 
 ## Build Status
 

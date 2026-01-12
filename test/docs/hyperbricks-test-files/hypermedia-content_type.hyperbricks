@@ -28,6 +28,7 @@ content type header definition
   "Doctype": "",
   "HtmlTag": "",
   "Head": null,
-  "ContentType": ""
+  "ContentType": "",
+  "Headers": null
 }
 ==== expected output ====
