@@ -1,6 +1,5 @@
 # Ignore specific directories in the root folder
-test/docs/modules/
-modules/default/
+
 /plugins/
 /bin/
 
@@ -23,7 +22,7 @@ REFERENCE.generated.md
 .env
 deploy/
 exports/
-modules/test-001/
+
 /hyperbricks/
 rendered/
 logs/
