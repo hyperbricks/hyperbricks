@@ -24,4 +24,6 @@ REFERENCE.generated.md
 deploy/
 exports/
 modules/test-001/
-/hyperbricks
+/hyperbricks/
+rendered/
+logs/

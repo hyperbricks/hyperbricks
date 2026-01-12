@@ -5,12 +5,14 @@ import (
 )
 
 var (
-	RenderStatic bool
-	ServeStatic  bool
-	ForceStatic  bool
-	ExportZip    bool
-	ExportOutDir string
-	ExportExclude string
+	RenderStatic    bool
+	ServeStatic     bool
+	ForceStatic     bool
+	ExportZip       bool
+	ExportOutDir    string
+	ExportExclude   string
+	StaticWizard    bool
+	StaticServePort int
 )
 
 func NewMakeStaticCommand() *cobra.Command {
@@ -18,6 +20,10 @@ func NewMakeStaticCommand() *cobra.Command {
 		Use:   "static",
 		Short: "Render static content",
 		Run: func(cmd *cobra.Command, args []string) {
+			if cmd.Flags().NFlag() == 0 {
+				RunStaticWizard()
+				return
+			}
 			RenderStatic = true
 		},
 	}

@@ -173,7 +173,10 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 		return
 	}
 
-	shouldDelete := commands.ForceStatic || confirmDeletion(renderDir)
+	shouldDelete := commands.ForceStatic
+	if !commands.StaticWizard {
+		shouldDelete = commands.ForceStatic || confirmDeletion(renderDir)
+	}
 	if !shouldDelete {
 		logger.Infow("User skipped deletion", "directory", renderDir)
 	} else {
@@ -206,6 +209,14 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) {
 	}
 
 	if commands.ExportZip {
+		if commands.StaticWizard && strings.TrimSpace(commands.ExportExclude) == "" {
+			excludeCSV, err := commands.RunStaticExcludePicker(renderDir)
+			if err != nil {
+				logger.Errorw("Error selecting zip excludes", "error", err)
+			} else {
+				commands.ExportExclude = excludeCSV
+			}
+		}
 		exportPath, err := exportStaticZip(renderDir, commands.StartModule, commands.ExportOutDir, commands.ExportExclude)
 		if err != nil {
 			logger.Errorw("Error exporting static zip", "error", err)
@@ -232,7 +243,11 @@ func serveStatic() error {
 	}
 
 	ip := ips[0]
-	portStr := strconv.Itoa(hbConfig.Server.Port)
+	port := hbConfig.Server.Port
+	if commands.StaticServePort > 0 {
+		port = commands.StaticServePort
+	}
+	portStr := strconv.Itoa(port)
 	addr := ip + ":" + portStr
 
 	renderDir := hbConfig.Directories["render"]
