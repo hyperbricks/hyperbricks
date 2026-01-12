@@ -38,6 +38,69 @@ func resolveBeautify(config map[string]interface{}, defaultValue bool) bool {
 	return defaultValue
 }
 
+func extractResponseHeaders(raw map[string]interface{}) map[string]string {
+	value, ok := raw["headers"]
+	if !ok || value == nil {
+		return nil
+	}
+
+	headers := make(map[string]string)
+
+	switch typed := value.(type) {
+	case map[string]string:
+		for key, val := range typed {
+			key = strings.TrimSpace(key)
+			if key == "" {
+				continue
+			}
+			headers[key] = strings.TrimSpace(val)
+		}
+	case map[string]interface{}:
+		for key, val := range typed {
+			key = strings.TrimSpace(key)
+			if key == "" {
+				continue
+			}
+			headers[key] = strings.TrimSpace(fmt.Sprintf("%v", val))
+		}
+	case map[interface{}]interface{}:
+		for key, val := range typed {
+			keyStr, ok := key.(string)
+			if !ok {
+				continue
+			}
+			keyStr = strings.TrimSpace(keyStr)
+			if keyStr == "" {
+				continue
+			}
+			headers[keyStr] = strings.TrimSpace(fmt.Sprintf("%v", val))
+		}
+	}
+
+	if len(headers) == 0 {
+		return nil
+	}
+	return headers
+}
+
+func applyResponseHeaders(headers map[string]string, writer http.ResponseWriter) {
+	for key, val := range headers {
+		if strings.TrimSpace(key) == "" {
+			continue
+		}
+		writer.Header().Set(key, val)
+	}
+}
+
+func headerContentType(headers map[string]string) string {
+	for key, val := range headers {
+		if strings.EqualFold(key, "Content-Type") {
+			return val
+		}
+	}
+	return ""
+}
+
 func resolveRoute(route string, routing shared.RoutingConfig) (string, bool) {
 	routing = normalizeRoutingConfig(routing)
 	route = strings.Trim(route, "/")
@@ -162,6 +225,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 	status := http.StatusOK
 
 	_config, found := getConfig(route)
+	headers := map[string]string(nil)
 
 	if !found {
 		__config, _found := getConfig("404")
@@ -195,6 +259,15 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 	var contentType = ""
 	if ct, ok := _config["content_type"].(string); ok {
 		contentType = ct
+	}
+	if configType, ok := _config["@type"].(string); ok && configType == composite.HyperMediaConfigGetName() {
+		headers = extractResponseHeaders(_config)
+		if len(headers) > 0 {
+			applyResponseHeaders(headers, w)
+		}
+	}
+	if contentType == "" && len(headers) > 0 {
+		contentType = headerContentType(headers)
 	}
 
 	configCopy := make(map[string]interface{})

@@ -11,37 +11,38 @@ hypermedia.head {
 Extra attributes like id, data-role, data-action, media
 ==== expected json ====
 {
-    "ConfigType": "<HYPERMEDIA>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "MetaDocDescription": "",
-    "Title": "",
-    "Route": "",
-    "Section": "",
-    "Items": null,
-    "BodyTag": "",
-    "Enclose": "",
-    "Favicon": "",
-    "Template": null,
-    "Static": "",
-    "Cache": "",
-    "NoCache": false,
-    "Index": 0,
-"ContentType": "",
-    "Doctype": "",
-    "HtmlTag": "",
-    "Head": {
-      "10": {
-        "@type": "<CSS>",
-        "attributes": {
-          "media": "screen"
-        },
-        "file": "hyperbricks-test-files/assets/styles.css"
-      }
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "ContentType": "",
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "10": {
+      "@type": "<CSS>",
+      "attributes": {
+        "media": "screen"
+      },
+      "file": "hyperbricks-test-files/assets/styles.css"
     }
-  }
+  },
+  "Headers": null
+}
 ==== expected output ====
   <!DOCTYPE html><html><head><style media="screen">
   body {

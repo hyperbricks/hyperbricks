@@ -1,10 +1,13 @@
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia {
-    favicon = static/favicon.ico
+    headers {
+        X-Frame-Options = DENY
+        Content-Security-Policy = default-src 'self'
+    }
 }
 ==== explainer ====
-Path to the favicon for the hypermedia
+HTTP response headers to include when serving this hypermedia
 ==== expected json ====
 {
   "ConfigType": "<HYPERMEDIA>",
@@ -19,18 +22,20 @@ Path to the favicon for the hypermedia
   "Items": null,
   "BodyTag": "",
   "Enclose": "",
-  "Favicon": "static/favicon.ico",
+  "Favicon": "",
   "Template": null,
-  "Static": "",
   "Cache": "",
   "NoCache": false,
+  "Static": "",
   "Index": 0,
-  "ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
   "Head": null,
-  "Headers": null
+  "ContentType": "",
+  "Headers": {
+    "X-Frame-Options": "DENY",
+    "Content-Security-Policy": "default-src 'self'"
+  }
 }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="static/favicon.ico"></head><body></body></html> 
-==== more details ====
+<!DOCTYPE html><html><body></body></html>

@@ -29,7 +29,7 @@ file overrides link and inline, it loads contents of a file and renders it in a 
   "Cache": "",
   "NoCache": false,
   "Index": 0,
-"ContentType": "",
+  "ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
   "Head": {
@@ -40,7 +40,8 @@ file overrides link and inline, it loads contents of a file and renders it in a 
       },
       "file": "hyperbricks-test-files/assets/styles.css"
     }
-  }
+  },
+  "Headers": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><head><style media="screen">

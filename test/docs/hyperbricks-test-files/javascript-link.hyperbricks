@@ -11,36 +11,37 @@ hypermedia.head {
 Use link for a script tag with a src attribute
 ==== expected json ====
 {
-    "ConfigType": "<HYPERMEDIA>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "MetaDocDescription": "",
-    "Title": "",
-    "Route": "",
-    "Section": "",
-    "Items": null,
-    "BodyTag": "",
-    "Enclose": "",
-    "Favicon": "",
-    "Template": null,
-    "Static": "",
-    "Cache": "",
-    "NoCache": false,
-    "Index": 0,
-"ContentType": "",
-    "Doctype": "",
-    "HtmlTag": "",
-    "Head": {
-      "10": {
-        "@type": "<JAVASCRIPT>",
-        "attributes": {
-          "type": "text/javascript"
-        },
-        "link": "hyperbricks-test-files/assets/main.js"
-      }
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "ContentType": "",
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": {
+    "10": {
+      "@type": "<JAVASCRIPT>",
+      "attributes": {
+        "type": "text/javascript"
+      },
+      "link": "hyperbricks-test-files/assets/main.js"
     }
-  }
+  },
+  "Headers": null
+}
 ==== expected output ====
 <!DOCTYPE html><html><head><script src="hyperbricks-test-files/assets/main.js" type="text/javascript"></script><meta name="generator" content="hyperbricks cms"></head><body></body></html> 

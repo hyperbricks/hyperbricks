@@ -7,28 +7,29 @@ hypermedia {
 The section the hypermedia belongs to. This can be used with the component <MENU> for example.
 ==== expected json ====
 {
-    "ConfigType": "<HYPERMEDIA>",
-    "ConfigCategory": "",
-    "HyperBricksKey": "",
-    "HyperBricksPath": "",
-    "HyperBricksFile": "",
-    "MetaDocDescription": "",
-    "Title": "",
-    "Route": "",
-    "Section": "my_section",
-    "Items": null,
-    "BodyTag": "",
-    "Enclose": "",
-    "Favicon": "",
-    "Template": null,
-    "Static": "",
-    "Cache": "",
-    "NoCache": false,
-    "Index": 0,
-"ContentType": "",
-    "Doctype": "",
-    "HtmlTag": "",
-    "Head": null
-  }
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "my_section",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "ContentType": "",
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null,
+  "Headers": null
+}
 ==== expected output ====
 <!DOCTYPE html><html><body></body></html> 

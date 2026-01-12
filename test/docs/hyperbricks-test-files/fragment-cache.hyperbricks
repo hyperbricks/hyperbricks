@@ -28,10 +28,11 @@ Cache expire string
   "Cache": "10m",
   "NoCache": false,
   "Index": 0,
-"ContentType": "",
+  "ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
-  "Head": null
+  "Head": null,
+  "Headers": null
 }
 ==== expected output ====
 <!DOCTYPE html>

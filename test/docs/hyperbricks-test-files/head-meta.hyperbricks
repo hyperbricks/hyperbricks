@@ -29,7 +29,7 @@ Metadata for the head section
   "Cache": "",
   "NoCache": false,
   "Index": 0,
-"ContentType": "",
+  "ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
   "Head": {
@@ -38,7 +38,8 @@ Metadata for the head section
       "a": "b",
       "b": "c"
     }
-  }
+  },
+  "Headers": null
 }
 ==== expected output ====
 <!DOCTYPE html><html>

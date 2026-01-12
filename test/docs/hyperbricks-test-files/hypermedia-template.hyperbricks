@@ -43,10 +43,11 @@ Template configurations for rendering the hypermedia. See <TEMPLATE> for field d
   "NoCache": false,
   "Static": "",
   "Index": 0,
-"ContentType": "",
+  "ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
-  "Head": null
+  "Head": null,
+  "Headers": null
 }
 ==== expected output ====
 <div><p>SOME HTML CONTENT</p></div>

@@ -49,7 +49,7 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
   "Cache": "",
   "NoCache": false,
   "Index": 0,
-"ContentType": "",
+  "ContentType": "",
   "Doctype": "",
   "HtmlTag": "",
   "Head": {
@@ -62,7 +62,8 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
       "inline": "\n.content {\n    color:green;\n}\n    "
     },
     "@type": "<HEAD>"
-  }
+  },
+  "Headers": null
 }
 ==== expected output ====
 <!DOCTYPE html><html><head>
