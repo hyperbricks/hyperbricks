@@ -1,0 +1,10 @@
+page = <HYPERMEDIA>
+page.route = index
+page {
+    image = <IMAGE>
+    image.src = {{RESOURCES}}/cute_cat_w800_h800.jpg
+    image.width = 100
+    image.loading = lazy
+    image.id = img_
+    image.title = sometitle
+}

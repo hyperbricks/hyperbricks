@@ -1,3 +1,6 @@
+# here you can set the current module
+$module = modules/self-closing-tag
+
 
 # use this sort of objects to set hyperbricks globals
 myconf {
@@ -50,9 +53,8 @@ hyperbricks {
         # set http port here
         port = 8080
         beautify = true
-        # use <img ... /> instead of <img ...>
         self_closing_tags = true
-
+        
         routing {
             # use clean URLs like /help for help.html
             clean_urls = true
