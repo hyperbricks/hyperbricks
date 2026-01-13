@@ -143,7 +143,12 @@ func (ir *ImageProcessor) processAndBuildImgTag(srcPath, destDir string, config 
 	addDimensions(newFileName, builder)
 	addOptionalAttributes(config, builder)
 
-	builder.WriteString(" />")
+	hbConfig := shared.GetHyperBricksConfiguration()
+	if hbConfig.Server.SelfClosingTags {
+		builder.WriteString(" />")
+	} else {
+		builder.WriteString(">")
+	}
 	return nil
 }
 
