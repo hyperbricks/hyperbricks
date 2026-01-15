@@ -275,6 +275,7 @@ func addOptionalAttributes(config SingleImageConfig, builder *strings.Builder) {
 		"referrerpolicy",
 		"ismap",
 		"class",
+		"tabindex",
 	}
 
 	extraAttributes := shared.RenderAllowedAttributes(config.ExtraAttributes, allowedAttributes)
