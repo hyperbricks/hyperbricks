@@ -18,6 +18,8 @@
 TO_DO.md
 CHANGES.md
 REFERENCE.generated.md
+alpine-hyperbricks-compile.md
+*.pdf
 .gitignore
 .env
 deploy/

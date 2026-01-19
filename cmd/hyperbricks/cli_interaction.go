@@ -15,6 +15,9 @@ var (
 )
 
 func keyboardActions() {
+	if os.Getenv("HB_NO_KEYBOARD") != "" {
+		return
+	}
 
 	// --production flag
 	if commands.Production {
@@ -45,14 +48,16 @@ func keyboardActions() {
 	rPressed := make(chan bool)
 	// Channel to handle program termination (e.g., on ESC key)
 	done := make(chan bool)
+	// Channel to disable keyboard handling when input is unavailable
+	disabled := make(chan bool)
 
 	// Goroutine to listen for key presses
 	go func() {
 		for {
 			char, key, err := keyboard.GetKey()
 			if err != nil {
-				log.Printf("Error reading key: %v", err)
-				done <- true
+				log.Printf("Keyboard input unavailable: %v", err)
+				disabled <- true
 				return
 			}
 
@@ -80,6 +85,9 @@ func keyboardActions() {
 				PreProcessAndPopulateHyperbricksConfigurations()
 			}
 			// Place your action here
+		case <-disabled:
+			KeyboardEnabled = false
+			return
 		case <-done:
 			fmt.Println("Exiting program.")
 			cancel()

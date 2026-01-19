@@ -54,6 +54,11 @@ func confirmDeletion(dir string) bool {
 
 	fmt.Printf("Are you sure you want to delete directory %q? (y/n): ", dir)
 
+	if os.Getenv("HB_NO_KEYBOARD") != "" {
+		fmt.Println("non-interactive mode: deletion aborted.")
+		return false
+	}
+
 	if err := keyboard.Open(); err != nil {
 		fmt.Println("Failed to open keyboard input, aborting deletion.")
 		return false

@@ -38,9 +38,6 @@ func init() {
 
 	shared.Init_configuration()
 
-	shared.Module = commands.GetModuleConfigPath()
-	hbConfig := getHyperBricksConfiguration()
-
 	orangeTrueColor := "\033[38;2;255;165;0m"
 	reset := "\033[0m"
 	logo := `
@@ -53,6 +50,22 @@ func init() {
 
 `
 	logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf(`%s%s`, logo, assets.VersionMD), reset)
+
+	if commands.StartDeployRemote {
+		if err := startDeployAPIServer(); err != nil {
+			log.Fatalf("Deploy API server error: %v", err)
+		}
+		return
+	}
+	if commands.StartDeployLocal {
+		if err := startDeployLocalServer(); err != nil {
+			log.Fatalf("Deploy local server error: %v", err)
+		}
+		return
+	}
+
+	shared.Module = commands.GetModuleConfigPath()
+	hbConfig := getHyperBricksConfiguration()
 
 	if commands.RenderStatic {
 		basic_initialisation()

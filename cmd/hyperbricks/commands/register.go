@@ -1,11 +1,14 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
 var (
-	Exit = false
+	Exit           = false
+	NonInteractive bool
 )
 var RootCmd = &cobra.Command{
 	Use:   "hyperbricks", // Set the correct command name
@@ -15,6 +18,13 @@ var RootCmd = &cobra.Command{
 
 // RegisterSubcommands adds all subcommands to the root command
 func RegisterSubcommands() {
+	RootCmd.PersistentFlags().BoolVar(&NonInteractive, "non-interactive", false, "Disable keyboard input")
+	RootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+		if NonInteractive {
+			_ = os.Setenv("HB_NO_KEYBOARD", "1")
+		}
+	}
+
 	// Add subcommands explicitly
 	RootCmd.AddCommand(NewInitCommand())
 	RootCmd.AddCommand(NewStartCommand())

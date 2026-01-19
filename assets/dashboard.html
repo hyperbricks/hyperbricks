@@ -3,188 +3,197 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <meta name="generator" content="hyperbricks cms">
     <title>Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   </head>
-  <body class="bg-[#1F1F1F] text-gray-300 p-2 flex items-center justify-center min-h-screen mb-10">
-    <div class="flex flex-col p-0 m-0">
-      <div class="max-w-7xl mx-auto grid grid-cols-3 xs:grid-cols-2 gap-[3px] mb-[3px]">
-        <section id="top_section" class="mb-[1px] mt-[4px] p-[4px] pb-[7px] col-span-3  bg-[#333] rounded-md">
-          <h2 class="font-semibold text-[#05D000] text-sm mb-1 uppercase"></h2>
-          <div class="flex flex-row justify-left items-center">
-            <img style="width: 150px; height: 50px; object-fit: cover;" src="/assets/logo.png" />
-            <h1 class="text-white w-96 text-center text-base font-semibold uppercase">
-              Dashboard
-            </h1>
-            <div class="flex flex-row justify-left rounded mr-3 items-center bg-[#222] opacity-25">
-              <div class="text-sm p-2">
-                <span class="block sm:hidden">XS</span>
-                <span class="hidden sm:block md:hidden">SM</span>
-                <span class="hidden md:block lg:hidden">MD</span>
-                <span class="hidden lg:block xl:hidden">LG</span>
-                <span class="hidden xl:block 2xl:hidden">XL</span>
-                <span class="hidden 2xl:block">2XL</span>
-              </div>
-            </div>
+  <body>
+    <div class="shell">
+      <header id="top_section" class="hero">
+        <div class="badge">Runtime</div>
+        <div class="hero-brand">
+          <img class="hero-logo" src="/assets/logo.png" alt="Hyperbricks logo" />
+          <div class="hero-text">
+            <h1>Hyperbricks Dashboard</h1>
+            <p>Live module status and system metrics.</p>
           </div>
-        </section>
-        
-        <section id="general" class="p-2 pb-3 col-span-3 sm:col-span-1 md:col-span-1  bg-[#333] rounded-md">
-          <h2 class="font-semibold text-[#05D000] text-sm mb-1 uppercase">Module</h2>
-          <table class="w-full text-sm text-left">
-            <thead class="text-gray-400 border-b border-[#222222]">
-              <tr>
-                <th class="p-1">Context</th>
-                <th class="p-1">Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-b border-[#222222]"><td class="p-1 text-white">Module</td><td class="p-1 text-white">{{.Module}}</td></tr>
-              <tr class="border-b border-[#222222]"><td class="p-1 text-white">Mode</td><td class="p-1 text-white">{{.Mode}}</td></tr>
-              <tr class="border-b border-[#222222]"><td class="p-1 text-white">Gateway</td><td class="p-1 text-white">{{.Gateway}}</td></tr>
-              <tr class="border-b border-[#222222]"><td class="p-1 text-white">Port</td><td class="p-1 text-white">{{.Port}}</td></tr>
-              <tr><td class="p-1 text-white">Location</td><td class="p-1 text-white"><a href="http://{{.Gateway}}:{{.Port}}" class="text-[#05D000] underline"><i class="fas fa-external-link-alt"></i></a></td></tr>
-            </tbody>
-          </table>
-        </section>
-        
-        <section id="metrics" class="p-2 pb-3 col-span-3 sm:col-span-2 md:col-span-2 bg-[#333] rounded-md">
-          <h2 class="font-semibold text-[#05D000] text-sm mb-1 uppercase">Metrics</h2>
-          <table class="w-full text-sm text-left">
-            <thead class="text-gray-400 border-b border-[#222222]">
-              <tr>
-                <th class="p-1">Metric</th>
-                <th class="p-1">Quantity</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-b border-[#222222]"><td class="p-1 text-white">Uptime</td><td class="p-1 text-white">{{.UpTime}}</td></tr>
-              <tr class="border-b border-[#222222]"><td class="p-1 text-white">Total Requests</td><td class="p-1 text-white">{{.Counter}}</td></tr>
-              <tr class="border-b border-[#222222]"><td class="p-1 text-white">Default Cache Expire</td><td class="p-1 text-white">{{.CacheExpire}}</td></tr>
-              <tr class="border-b border-[#222222]"><td class="p-1 text-white">Memory</td><td class="p-1 text-white">{{.Mem}} MiB</td></tr>
-              <tr class="border-b border-[#222222]"><td class="p-1 text-white">CPU Usage</td><td class="p-1 text-white">{{.Cpu}}</td></tr>
-              <tr><td class="p-1 text-white">Bandwidth</td><td class="p-1 text-white">{{.BandWidth}}</td></tr>
-            </tbody>
-          </table>
-        </section>
-        
-        <section id="routes" class="p-2 pb-3 col-span-3 bg-[#333] rounded-md">
-          <h2 class="font-semibold text-[#05D000] text-sm mb-1 uppercase">Routes</h2>
-          <table class="w-full text-sm text-left">
-            <thead class="text-gray-400 border-b border-[#222222]">
-              <tr>
-                <th class="p-1">Location</th>
-                <th class="p-1">Route Type</th>
-                <th class="p-1">Link</th>
-                <th class="p-1 opacity-25">Config</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{range $key, $value := .Configs}}
-              <tr class="border-b border-[#222222]">
-                <td class="p-1 text-white">/{{$value.route}}</td>
-                <td class="p-1 text-white">{{$value.type}}</td>
-                <td class="p-1 text-white"><a href="/{{$value.route}}" class="text-[#05D000] underline"><i class="fas fa-external-link-alt"></i></a></td>
-                <td class="p-1 text-white"><a href="/{{$value.route}}" class="text-[#05D000] underline text-center opacity-25"><i class="fas fa-cog"></i></a></td>
-              </tr>
-              {{end}}
-            </tbody>
-          </table>
-        </section> 
+        </div>
+      </header>
 
-        <section id="logs" class="p-2 pb-3 col-span-3 bg-[#333] rounded-md">
-          <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-[#05D000] text-sm uppercase">Logs</h2>
-            <button id="toggleLogs" class="text-[#05D000] text-lg">
-              <span id="logsPlusIcon">+</span>
-              <span id="logsMinusIcon" class="hidden">−</span>
-            </button>
-          </div>
-
-          <div id="logsContainer" class="hidden">
-            <table class="w-full text-sm text-left">
-              <thead class="text-gray-400 border-b border-[#222222]">
+      <div class="grid">
+        <section id="general" class="panel general">
+          <h2>Module</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
                 <tr>
-                  <th class="p-1">Level</th>
-                  <th class="p-1">Message</th>
+                  <th>Context</th>
+                  <th>Value</th>
                 </tr>
               </thead>
               <tbody>
-                
-                {{range .Logs}}
-                <tr class="border-b border-[#222222]">
-                  <td class="p-1 text-white">{{.Level}}</td>
-                  <td class="p-1 text-white">{{ .Message | replace "\x1b[0m" "" | replace "\x1b[38;2;255;165;0m" "" }}</td>
+                <tr>
+                  <td data-label="Context">Module</td>
+                  <td data-label="Value">{{.Module}}</td>
+                </tr>
+                <tr>
+                  <td data-label="Context">Mode</td>
+                  <td data-label="Value">{{.Mode}}</td>
+                </tr>
+                <tr>
+                  <td data-label="Context">Gateway</td>
+                  <td data-label="Value">{{.Gateway}}</td>
+                </tr>
+                <tr>
+                  <td data-label="Context">Port</td>
+                  <td data-label="Value">{{.Port}}</td>
+                </tr>
+                <tr>
+                  <td data-label="Context">Location</td>
+                  <td data-label="Value">
+                    <a href="http://{{.Gateway}}:{{.Port}}" class="link"><i class="fas fa-external-link-alt"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="metrics" class="panel metrics">
+          <h2>Metrics</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td data-label="Metric">Uptime</td>
+                  <td data-label="Quantity">{{.UpTime}}</td>
+                </tr>
+                <tr>
+                  <td data-label="Metric">Total Requests</td>
+                  <td data-label="Quantity">{{.Counter}}</td>
+                </tr>
+                <tr>
+                  <td data-label="Metric">Default Cache Expire</td>
+                  <td data-label="Quantity">{{.CacheExpire}}</td>
+                </tr>
+                <tr>
+                  <td data-label="Metric">Memory</td>
+                  <td data-label="Quantity">{{.Mem}} MiB</td>
+                </tr>
+                <tr>
+                  <td data-label="Metric">CPU Usage</td>
+                  <td data-label="Quantity">{{.Cpu}}</td>
+                </tr>
+                <tr>
+                  <td data-label="Metric">Bandwidth</td>
+                  <td data-label="Quantity">{{.BandWidth}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="routes" class="panel routes">
+          <h2>Routes</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Location</th>
+                  <th>Route Type</th>
+                  <th>Link</th>
+                  <th>Config</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{range $key, $value := .Configs}}
+                <tr>
+                  <td data-label="Location">/{{$value.route}}</td>
+                  <td data-label="Route Type">{{$value.type}}</td>
+                  <td data-label="Link">
+                    <a href="/{{$value.route}}" class="link"><i class="fas fa-external-link-alt"></i></a>
+                  </td>
+                  <td data-label="Config">
+                    <a href="/{{$value.route}}" class="link"><i class="fas fa-cog"></i></a>
+                  </td>
                 </tr>
                 {{end}}
               </tbody>
             </table>
-                <script>
-            document.getElementById('toggleLogs').addEventListener('click', function () {
-                const logs = document.getElementById('logsContainer');
-                const plusIcon = document.getElementById('logsPlusIcon');
-                const minusIcon = document.getElementById('logsMinusIcon');
-
-                if (logs.classList.contains('hidden')) {
-                    logs.classList.remove('hidden');
-                    plusIcon.classList.add('hidden');
-                    minusIcon.classList.remove('hidden');
-                } else {
-                    logs.classList.add('hidden');
-                    plusIcon.classList.remove('hidden');
-                    minusIcon.classList.add('hidden');
-                }
-            });
-            </script>
           </div>
         </section>
 
+        <section id="logs" class="panel logs">
+          <div class="panel-header">
+            <h2>Logs</h2>
+            <button id="toggleLogs" class="ghost" type="button">
+              <span id="logsPlusIcon">+</span>
+              <span id="logsMinusIcon" class="hidden">-</span>
+            </button>
+          </div>
 
-        <section id="plugins" class="p-2 pb-3 col-span-3  bg-[#333] rounded-md">
-          <h2 class="font-semibold text-[#05D000] text-sm mb-1 uppercase">
-            plugins
-          </h2>
-          <table class="w-full text-sm text-left">
-            <thead class="text-gray-400 border-b border-[#222222]">
-              <tr>
-                <th class="p-1">
-                  Context
-                </th>
-                <th class="p-1">
-                  Value
-                </th>
-              </tr>
-            </thead>
-            <tr class="border-b border-[#222222]">
-              <td class="p-1 text-white">
-                Plugin Dir
-              </td>
-              <td class="p-1 text-white">
-                {{.PluginDir}}
-              </td>
-            </tr>
-            <thead class="text-gray-400 border-b border-[#222222] ">
-              <tr>
-                <th class="p-1">
-                  Plugin
-                </th>
-                <th class="p-1">
-                  Key
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-               {{range $key, $value := .Plugins}}
-                  <tr class="border-b border-[#222222]">
-                      <td class="p-1 text-white">{{$key}}</td> 
-                      <td class="p-1 text-white">{{$value}}</td>
+          <div id="logsContainer" class="hidden">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Level</th>
+                    <th>Message</th>
                   </tr>
-              {{end}}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {{range .Logs}}
+                  <tr>
+                    <td data-label="Level">{{.Level}}</td>
+                    <td data-label="Message">{{ .Message | replace "\x1b[0m" "" | replace "\x1b[38;2;255;165;0m" "" }}</td>
+                  </tr>
+                  {{end}}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="plugins" class="panel plugins">
+          <h2>Plugins</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Context</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tr>
+                <td data-label="Context">Plugin Dir</td>
+                <td data-label="Value">{{.PluginDir}}</td>
+              </tr>
+              <thead>
+                <tr>
+                  <th>Plugin</th>
+                  <th>Key</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{range $key, $value := .Plugins}}
+                <tr>
+                  <td data-label="Plugin">{{$key}}</td>
+                  <td data-label="Key">{{$value}}</td>
+                </tr>
+                {{end}}
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
       <!-- <section id="timeline" class="p-2 pb-3 col-span-3 sm:col-span-1 md:col-span-1  bg-[#333] rounded-md opacity-25">
@@ -199,7 +208,7 @@
                 +
               </span>
               <span id="minusIcon" class="hidden">
-                −
+                -
               </span>
             </button>
           </div>
@@ -291,5 +300,23 @@
         </div>
       </section> -->
     </div>
+
+    <script>
+      document.getElementById('toggleLogs').addEventListener('click', function () {
+        const logs = document.getElementById('logsContainer');
+        const plusIcon = document.getElementById('logsPlusIcon');
+        const minusIcon = document.getElementById('logsMinusIcon');
+
+        if (logs.classList.contains('hidden')) {
+          logs.classList.remove('hidden');
+          plusIcon.classList.add('hidden');
+          minusIcon.classList.remove('hidden');
+        } else {
+          logs.classList.add('hidden');
+          plusIcon.classList.remove('hidden');
+          minusIcon.classList.add('hidden');
+        }
+      });
+    </script>
   </body>
 </html>
