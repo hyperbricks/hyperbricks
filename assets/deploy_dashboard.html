@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hyperbricks Deploy Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/dashboard.css">
+  </head>
+  <body data-mode="remote">
+    <div class="shell">
+      <header class="hero">
+        <div class="hero-bar">
+          <div class="badge">Deploy API</div>
+          <div class="menu">
+            <button id="menuToggle" class="ghost" type="button">Menu</button>
+            <div id="menuPanel" class="menu-panel hidden">
+              <div class="menu-section remote-only">
+                <div class="menu-title">Connection</div>
+                <div class="connect menu-connect">
+                  <div class="connect-row">
+                    <div class="field">
+                      <label for="baseUrl">API Base</label>
+                      <input id="baseUrl" placeholder="http://127.0.0.1:9090" />
+                    </div>
+                    <div class="field">
+                      <label for="secret">HMAC Secret</label>
+                      <input id="secret" type="password" placeholder="Enter shared secret" />
+                    </div>
+                  </div>
+                  <div class="actions-row">
+                    <button id="loadModules">Load Modules</button>
+                    <button id="refreshStatus" class="secondary" disabled>Refresh Status</button>
+                    <button id="clearSecret" class="ghost" type="button">Clear Secret</button>
+                  </div>
+                  <div class="note-row">
+                    <span class="note">Timestamp and nonce are generated per request.</span>
+                    <span id="signerMode" class="note"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="menu-section local-only">
+                <div class="menu-title">Connection</div>
+                <div class="connect menu-connect">
+                  <div class="connect-row">
+                    <div class="field">
+                      <label for="localApiBase">Local API</label>
+                      <input id="localApiBase" readonly />
+                    </div>
+                    <div class="field">
+                      <label for="localTargetName">Target</label>
+                      <input id="localTargetName" readonly />
+                    </div>
+                  </div>
+                  <div class="connect-row">
+                    <div class="field">
+                      <label for="localTargetApi">Remote API</label>
+                      <input id="localTargetApi" readonly />
+                    </div>
+                    <div class="field">
+                      <label for="localTargetRoot">Remote Root</label>
+                      <input id="localTargetRoot" readonly />
+                    </div>
+                  </div>
+                  <div class="note-row">
+                    <span class="note">Local mode uses deploy.client for push/sync.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="menu-divider"></div>
+              <button id="killAllProcesses" class="danger menu-action remote-only" type="button">Kill all hyperbricks (except API)</button>
+            </div>
+          </div>
+        </div>
+        <div class="hero-brand">
+          <img class="hero-logo" src="/assets/logo.png" alt="Hyperbricks logo" />
+          <div class="hero-text">
+            <h1>Hyperbricks Deploy Dashboard</h1>
+            <p>Signed browser client for deploy management.</p>
+          </div>
+        </div>
+      </header>
+
+      <div class="grid">
+        <section class="panel status">
+          <h2>Server Status</h2>
+          <div class="status-grid">
+            <div class="status-card">
+              <span>API</span>
+              <strong id="apiStatus">offline</strong>
+            </div>
+            <div class="status-card">
+              <span>Last Check</span>
+              <strong id="apiTime">-</strong>
+            </div>
+            <div class="status-card">
+              <span>Hyperbricks</span>
+              <strong id="apiVersion">-</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel modules">
+          <h2>Modules</h2>
+          <ul id="moduleList" class="module-list"></ul>
+        </section>
+
+        <section class="panel builds">
+          <div class="panel-header">
+            <h2>Builds</h2>
+            <div class="actions-row">
+              <button id="buildModule" class="secondary local-only" type="button">Build</button>
+              <button id="syncRemote" class="ghost local-only" type="button">Sync Remote</button>
+              <button id="rollbackModule" class="danger remote-only" disabled>Rollback</button>
+              <span id="rollbackTarget" class="note remote-only">-</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Build</th>
+                  <th>Version</th>
+                  <th>Built</th>
+                  <th>Mode</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="buildRows">
+                <tr>
+                  <td colspan="5" class="note">Select a module to load builds.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel log">
+          <h2>Activity</h2>
+          <pre id="activity">Ready.</pre>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const ui = {
+        baseUrl: document.getElementById("baseUrl"),
+        secret: document.getElementById("secret"),
+        localApiBase: document.getElementById("localApiBase"),
+        localTargetName: document.getElementById("localTargetName"),
+        localTargetApi: document.getElementById("localTargetApi"),
+        localTargetRoot: document.getElementById("localTargetRoot"),
+        moduleList: document.getElementById("moduleList"),
+        buildRows: document.getElementById("buildRows"),
+        apiStatus: document.getElementById("apiStatus"),
+        apiTime: document.getElementById("apiTime"),
+        apiVersion: document.getElementById("apiVersion"),
+        signerMode: document.getElementById("signerMode"),
+        loadModules: document.getElementById("loadModules"),
+        refreshStatus: document.getElementById("refreshStatus"),
+        clearSecret: document.getElementById("clearSecret"),
+        buildModule: document.getElementById("buildModule"),
+        syncRemote: document.getElementById("syncRemote"),
+        rollbackModule: document.getElementById("rollbackModule"),
+        rollbackTarget: document.getElementById("rollbackTarget"),
+        activity: document.getElementById("activity"),
+        menuToggle: document.getElementById("menuToggle"),
+        menuPanel: document.getElementById("menuPanel"),
+        killAll: document.getElementById("killAllProcesses")
+      };
+
+      const mode = (document.body.dataset.mode || "remote").toLowerCase();
+      const isLocalMode = mode === "local";
+
+      const state = {
+        mode: mode,
+        modules: [],
+        selectedModule: "",
+        builds: [],
+        runningBuild: "",
+        currentBuild: "",
+        selectionToken: 0,
+        logsEnabled: !isLocalMode
+      };
+      document.body.classList.add(isLocalMode ? "mode-local" : "mode-remote");
+
+      const storageKeys = {
+        secret: "hbDeploySecret",
+        module: "hbDeployModule"
+      };
+
+      let serverStatusTimer = null;
+
+      function setActivity(message, isError) {
+        ui.activity.textContent = message;
+        ui.activity.style.color = isError ? "var(--danger)" : "var(--ink)";
+      }
+
+      function isSelectionCurrent(token, module) {
+        return token === state.selectionToken && module === state.selectedModule;
+      }
+
+      function shortenValue(value) {
+        if (!value) {
+          return "-";
+        }
+        const text = String(value);
+        if (text.length <= 12) {
+          return text;
+        }
+        return text.slice(0, 5) + "…" + text.slice(-5);
+      }
+
+      function formatDate(value) {
+        if (!value) {
+          return "-";
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return value;
+        }
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        let hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        const ampm = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12;
+        if (hours === 0) {
+          hours = 12;
+        }
+        const hourStr = String(hours).padStart(2, "0");
+        return year + "-" + month + "-" + day + ", " + hourStr + ":" + minutes + " " + ampm;
+      }
+
+      function formatRelativeTime(value) {
+        if (!value) {
+          return "-";
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return value;
+        }
+        const diffMs = Date.now() - date.getTime();
+        const absMs = Math.abs(diffMs);
+        if (absMs < 60000) {
+          return "just now";
+        }
+        const units = [
+          { label: "y", ms: 31536000000 },
+          { label: "mo", ms: 2592000000 },
+          { label: "w", ms: 604800000 },
+          { label: "d", ms: 86400000 },
+          { label: "h", ms: 3600000 },
+          { label: "m", ms: 60000 }
+        ];
+        for (const unit of units) {
+          const amount = Math.floor(absMs / unit.ms);
+          if (amount >= 1) {
+            return diffMs >= 0 ? amount + unit.label + " ago" : "in " + amount + unit.label;
+          }
+        }
+        return "just now";
+      }
+
+      function copyText(value) {
+        if (!value || value === "-") {
+          return Promise.resolve();
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+          return navigator.clipboard.writeText(value);
+        }
+        const textarea = document.createElement("textarea");
+        textarea.value = value;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand("copy");
+        } catch (err) {
+          return Promise.reject(err);
+        } finally {
+          document.body.removeChild(textarea);
+        }
+        return Promise.resolve();
+      }
+
+      function getBaseUrl() {
+        const raw = ui.baseUrl.value.trim();
+        if (raw) {
+          return raw;
+        }
+        if (window.location.origin && window.location.origin !== "null") {
+          return window.location.origin;
+        }
+        return "http://127.0.0.1:9090";
+      }
+
+      function getApiPrefix() {
+        return isLocalMode ? "/local" : "/deploy";
+      }
+
+      function apiPath(path) {
+        return getApiPrefix() + path;
+      }
+
+      function getSecret() {
+        return ui.secret.value.trim();
+      }
+
+      function getSavedModule() {
+        return localStorage.getItem(storageKeys.module) || "";
+      }
+
+      function saveModule(module) {
+        if (module) {
+          localStorage.setItem(storageKeys.module, module);
+        }
+      }
+
+      function toHex(buffer) {
+        return Array.from(new Uint8Array(buffer))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      function hasWebCrypto() {
+        return !!(window.crypto && window.crypto.subtle && window.isSecureContext);
+      }
+
+      function utf8Bytes(str) {
+        if (window.TextEncoder) {
+          return new TextEncoder().encode(str);
+        }
+        const out = [];
+        for (let i = 0; i < str.length; i++) {
+          let code = str.charCodeAt(i);
+          if (code < 0x80) {
+            out.push(code);
+          } else if (code < 0x800) {
+            out.push(0xc0 | (code >> 6), 0x80 | (code & 0x3f));
+          } else if (code < 0xd800 || code >= 0xe000) {
+            out.push(
+              0xe0 | (code >> 12),
+              0x80 | ((code >> 6) & 0x3f),
+              0x80 | (code & 0x3f)
+            );
+          } else {
+            i++;
+            const next = str.charCodeAt(i);
+            const u = ((code & 0x3ff) << 10) | (next & 0x3ff) | 0x10000;
+            out.push(
+              0xf0 | (u >> 18),
+              0x80 | ((u >> 12) & 0x3f),
+              0x80 | ((u >> 6) & 0x3f),
+              0x80 | (u & 0x3f)
+            );
+          }
+        }
+        return new Uint8Array(out);
+      }
+
+      function concatBytes(a, b) {
+        const out = new Uint8Array(a.length + b.length);
+        out.set(a, 0);
+        out.set(b, a.length);
+        return out;
+      }
+
+      function sha256Bytes(bytes) {
+        const K = [
+          0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+          0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+          0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
+          0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+          0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
+          0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+          0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
+          0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+          0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
+          0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+          0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
+          0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+          0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
+          0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+          0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
+          0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+        ];
+
+        let h0 = 0x6a09e667;
+        let h1 = 0xbb67ae85;
+        let h2 = 0x3c6ef372;
+        let h3 = 0xa54ff53a;
+        let h4 = 0x510e527f;
+        let h5 = 0x9b05688c;
+        let h6 = 0x1f83d9ab;
+        let h7 = 0x5be0cd19;
+
+        const bitLenHi = Math.floor(bytes.length / 0x20000000);
+        const bitLenLo = (bytes.length << 3) >>> 0;
+        const withOne = bytes.length + 1;
+        const padLen = (64 - ((withOne + 8) % 64)) % 64;
+        const total = bytes.length + 1 + padLen + 8;
+        const data = new Uint8Array(total);
+        data.set(bytes, 0);
+        data[bytes.length] = 0x80;
+        data[total - 8] = (bitLenHi >>> 24) & 0xff;
+        data[total - 7] = (bitLenHi >>> 16) & 0xff;
+        data[total - 6] = (bitLenHi >>> 8) & 0xff;
+        data[total - 5] = bitLenHi & 0xff;
+        data[total - 4] = (bitLenLo >>> 24) & 0xff;
+        data[total - 3] = (bitLenLo >>> 16) & 0xff;
+        data[total - 2] = (bitLenLo >>> 8) & 0xff;
+        data[total - 1] = bitLenLo & 0xff;
+
+        const w = new Array(64);
+        for (let offset = 0; offset < data.length; offset += 64) {
+          for (let i = 0; i < 16; i++) {
+            const j = offset + i * 4;
+            w[i] = ((data[j] << 24) | (data[j + 1] << 16) | (data[j + 2] << 8) | data[j + 3]) >>> 0;
+          }
+          for (let i = 16; i < 64; i++) {
+            const v1 = w[i - 2];
+            const s1 = ((v1 >>> 17) | (v1 << 15)) ^ ((v1 >>> 19) | (v1 << 13)) ^ (v1 >>> 10);
+            const v2 = w[i - 15];
+            const s0 = ((v2 >>> 7) | (v2 << 25)) ^ ((v2 >>> 18) | (v2 << 14)) ^ (v2 >>> 3);
+            w[i] = (w[i - 16] + s0 + w[i - 7] + s1) >>> 0;
+          }
+
+          let a = h0;
+          let b = h1;
+          let c = h2;
+          let d = h3;
+          let e = h4;
+          let f = h5;
+          let g = h6;
+          let h = h7;
+
+          for (let i = 0; i < 64; i++) {
+            const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+            const ch = (e & f) ^ (~e & g);
+            const temp1 = (h + S1 + ch + K[i] + w[i]) >>> 0;
+            const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+            const maj = (a & b) ^ (a & c) ^ (b & c);
+            const temp2 = (S0 + maj) >>> 0;
+
+            h = g;
+            g = f;
+            f = e;
+            e = (d + temp1) >>> 0;
+            d = c;
+            c = b;
+            b = a;
+            a = (temp1 + temp2) >>> 0;
+          }
+
+          h0 = (h0 + a) >>> 0;
+          h1 = (h1 + b) >>> 0;
+          h2 = (h2 + c) >>> 0;
+          h3 = (h3 + d) >>> 0;
+          h4 = (h4 + e) >>> 0;
+          h5 = (h5 + f) >>> 0;
+          h6 = (h6 + g) >>> 0;
+          h7 = (h7 + h) >>> 0;
+        }
+
+        const out = new Uint8Array(32);
+        const hs = [h0, h1, h2, h3, h4, h5, h6, h7];
+        for (let i = 0; i < hs.length; i++) {
+          const v = hs[i];
+          out[i * 4] = (v >>> 24) & 0xff;
+          out[i * 4 + 1] = (v >>> 16) & 0xff;
+          out[i * 4 + 2] = (v >>> 8) & 0xff;
+          out[i * 4 + 3] = v & 0xff;
+        }
+        return out;
+      }
+
+      function hmacSha256Bytes(keyBytes, msgBytes) {
+        const blockSize = 64;
+        let key = keyBytes;
+        if (key.length > blockSize) {
+          key = sha256Bytes(key);
+        }
+        if (key.length < blockSize) {
+          const padded = new Uint8Array(blockSize);
+          padded.set(key, 0);
+          key = padded;
+        }
+        const oKey = new Uint8Array(blockSize);
+        const iKey = new Uint8Array(blockSize);
+        for (let i = 0; i < blockSize; i++) {
+          const b = key[i];
+          oKey[i] = b ^ 0x5c;
+          iKey[i] = b ^ 0x36;
+        }
+        const inner = sha256Bytes(concatBytes(iKey, msgBytes));
+        return sha256Bytes(concatBytes(oKey, inner));
+      }
+
+      function sha256HexFallback(text) {
+        const bytes = utf8Bytes(text);
+        const hashBytes = sha256Bytes(bytes);
+        return toHex(hashBytes);
+      }
+
+      function hmacHexFallback(key, text) {
+        const keyBytes = utf8Bytes(key);
+        const msgBytes = utf8Bytes(text);
+        const out = hmacSha256Bytes(keyBytes, msgBytes);
+        return toHex(out);
+      }
+
+      async function sha256Hex(text) {
+        if (hasWebCrypto()) {
+          try {
+            const data = utf8Bytes(text);
+            const hash = await crypto.subtle.digest("SHA-256", data);
+            return toHex(hash);
+          } catch (err) {
+            return sha256HexFallback(text);
+          }
+        }
+        return sha256HexFallback(text);
+      }
+
+      async function hmacHex(key, text) {
+        if (hasWebCrypto()) {
+          try {
+            const keyData = utf8Bytes(key);
+            const cryptoKey = await crypto.subtle.importKey(
+              "raw",
+              keyData,
+              { name: "HMAC", hash: "SHA-256" },
+              false,
+              ["sign"]
+            );
+            const sig = await crypto.subtle.sign(
+              "HMAC",
+              cryptoKey,
+              utf8Bytes(text)
+            );
+            return toHex(sig);
+          } catch (err) {
+            return hmacHexFallback(key, text);
+          }
+        }
+        return hmacHexFallback(key, text);
+      }
+
+      function randomHex(length) {
+        const bytes = new Uint8Array(length / 2);
+        if (window.crypto && crypto.getRandomValues) {
+          crypto.getRandomValues(bytes);
+        } else {
+          for (let i = 0; i < bytes.length; i++) {
+            bytes[i] = Math.floor(Math.random() * 256);
+          }
+        }
+        return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+      }
+
+      function setApiStatus(stateText) {
+        ui.apiStatus.textContent = stateText;
+        ui.apiTime.textContent = new Date().toLocaleTimeString();
+      }
+
+      function findRollbackTarget(builds, currentBuild) {
+        if (!currentBuild || !Array.isArray(builds)) {
+          return "";
+        }
+        for (let i = builds.length - 1; i >= 0; i--) {
+          const buildId = builds[i].build_id;
+          if (buildId && buildId !== currentBuild) {
+            return buildId;
+          }
+        }
+        return "";
+      }
+
+      function updateRollbackTarget() {
+        if (!ui.rollbackTarget || !ui.rollbackModule) {
+          return;
+        }
+        if (isLocalMode) {
+          ui.rollbackTarget.textContent = "-";
+          ui.rollbackTarget.removeAttribute("title");
+          ui.rollbackModule.disabled = true;
+          return;
+        }
+        if (!state.selectedModule) {
+          ui.rollbackTarget.textContent = "-";
+          ui.rollbackTarget.removeAttribute("title");
+          ui.rollbackModule.disabled = true;
+          return;
+        }
+        const target = findRollbackTarget(state.builds, state.currentBuild);
+        if (!target) {
+          ui.rollbackTarget.textContent = "No previous build";
+          ui.rollbackTarget.removeAttribute("title");
+          ui.rollbackModule.disabled = true;
+          return;
+        }
+        ui.rollbackTarget.textContent = "Rolls back to " + shortenValue(target);
+        ui.rollbackTarget.title = target;
+        ui.rollbackModule.disabled = false;
+      }
+
+      function escapeAttr(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function metaValue(value, options) {
+        const opts = options || {};
+        const raw = value ? String(value) : "";
+        const display = raw ? (opts.shorten ? shortenValue(raw) : raw) : "-";
+        const titleText = opts.title ? String(opts.title) : (raw && display !== raw ? raw : "");
+        const className = opts.mono ? "mono wrap" : "";
+        const titleAttr = titleText ? ` title="${escapeAttr(titleText)}"` : "";
+        const classAttr = className ? ` class="${className}"` : "";
+        return `<strong${classAttr}${titleAttr}>${display}</strong>`;
+      }
+
+      function metaRow(label, valueHtml) {
+        return `<div class="meta-row"><span>${label}</span>${valueHtml}</div>`;
+      }
+
+      function metaLink(label, url) {
+        if (!url) {
+          return metaRow(label, "<strong>-</strong>");
+        }
+        const safeUrl = escapeAttr(url);
+        return metaRow(
+          label,
+          `<a class="link" href="${safeUrl}" target="_blank" rel="noreferrer">${url}</a>`
+        );
+      }
+
+      function stripAnsi(text) {
+        if (!text) {
+          return "";
+        }
+        return String(text).replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, "");
+      }
+
+      function buildDetailsHTML(module, buildId, data) {
+        const localMode = isLocalMode;
+        const running = !localMode && !!data.running;
+        const portValue = !localMode ? (data.port || "") : "";
+        const portText = portValue ? String(portValue) : "-";
+        const moduleName = data.module || module || "-";
+        const buildValue = data.build_id || buildId || "-";
+        const buildShort = shortenValue(buildValue);
+        const buildTitle = buildValue && buildShort !== buildValue ? ` title="${escapeAttr(buildValue)}"` : "";
+        const stateText = localMode ? (data.remote_status || "local") : (running ? "running" : "stopped");
+        const link = !localMode && running && portValue ? moduleLinkFromPort(portValue) : "";
+        const dash = link ? link + "/dashboard" : "";
+        const builtRaw = data.built_at || "";
+        const builtDisplay = builtRaw ? formatDate(builtRaw) : "-";
+        const logsEnabled = !localMode && state.logsEnabled !== false;
+        const logPanel = logsEnabled
+          ? `
+            <div class="log-panel" data-log-build="${buildValue}">
+              <div class="log-header">
+                <span>Logs (tail)</span>
+                <div class="log-actions">
+                  <button class="ghost log-btn" data-log-action="load" data-build="${buildValue}" type="button">Load</button>
+                  <button class="ghost log-btn" data-log-action="refresh" data-build="${buildValue}" type="button">Refresh</button>
+                </div>
+              </div>
+              <pre class="log-output" data-log-output="${buildValue}">Logs not loaded.</pre>
+              <span class="note log-note hidden">Log output truncated.</span>
+            </div>
+          `
+          : (localMode ? "" : `<span class="note">Logs disabled in deploy config.</span>`);
+        const remoteMeta = localMode
+          ? `
+              ${metaRow("Pushed At", metaValue(data.pushed_at || "-"))}
+              ${metaRow("Remote Target", metaValue(data.remote_target || "-"))}
+              ${metaRow("Remote Status", metaValue(data.remote_status || (data.pushed_at ? "unknown" : "local")))}
+              ${metaRow("Remote Checked", metaValue(data.remote_checked_at || "-"))}
+            `
+          : `
+              ${metaLink("Module Link", link)}
+              ${metaLink("Module Dashboard", dash)}
+            `;
+        return `
+          <div class="details-shell">
+            <div class="status-grid details-grid">
+              <div class="status-card">
+                <span>State</span>
+                <strong>${stateText}</strong>
+              </div>
+              <div class="status-card">
+                <span>Module</span>
+                <strong>${moduleName}</strong>
+              </div>
+              <div class="status-card">
+                <span>Build</span>
+                <strong class="mono wrap"${buildTitle}>${buildShort}</strong>
+              </div>
+              <div class="status-card">
+                <span>Port</span>
+                <strong>${portText}</strong>
+              </div>
+            </div>
+            <div class="meta-scroll">
+              ${metaRow("Mode", metaValue(data.production ? "production" : "default"))}
+              ${metaRow("Module Version", metaValue(data.moduleversion || "-"))}
+              ${metaRow("Commit", metaValue(data.commit || "-", { mono: true, shorten: true }))}
+              ${metaRow("Built", metaValue(builtDisplay, { title: builtRaw }))}
+              ${metaRow("Source", metaValue(data.source_hash || "-", { mono: true, shorten: true }))}
+              ${metaRow("Format", metaValue(data.format || "-"))}
+              ${remoteMeta}
+            </div>
+            ${logPanel}
+          </div>
+        `;
+      }
+
+      async function loadBuildDetails(buildId, detailsRow) {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module || !detailsRow) {
+          return;
+        }
+        const container = detailsRow.querySelector(".build-details");
+        if (!container) {
+          return;
+        }
+        container.innerHTML = "<span class=\"note\">Loading status...</span>";
+        try {
+          const data = await apiRequest("GET", apiPath("/modules/" + module + "/builds/" + buildId + "/status"));
+          if (!isSelectionCurrent(token, module)) {
+            return;
+          }
+          container.innerHTML = buildDetailsHTML(module, buildId, data);
+          if (!isLocalMode && state.logsEnabled !== false) {
+            wireBuildLogs(container, buildId, data.running);
+          }
+        } catch (err) {
+          if (!isSelectionCurrent(token, module)) {
+            return;
+          }
+          container.innerHTML = "<span class=\"note\">Failed to load build status.</span>";
+          handleError(err);
+        }
+      }
+
+      function toggleBuildDetails(buildId, detailsRow, button) {
+        if (!detailsRow || !button) {
+          return;
+        }
+        const isHidden = detailsRow.classList.contains("hidden");
+        if (isHidden) {
+          detailsRow.classList.remove("hidden");
+          button.classList.add("active");
+          button.setAttribute("title", "Hide details");
+          button.setAttribute("aria-label", "Hide details");
+          loadBuildDetails(buildId, detailsRow);
+        } else {
+          detailsRow.classList.add("hidden");
+          button.classList.remove("active");
+          button.setAttribute("title", "Show details");
+          button.setAttribute("aria-label", "Show details");
+        }
+      }
+
+      function wireBuildLogs(container, buildId, running) {
+        if (isLocalMode) {
+          return;
+        }
+        const panel = container.querySelector(".log-panel");
+        if (!panel) {
+          return;
+        }
+        const output = panel.querySelector(".log-output");
+        const note = panel.querySelector(".log-note");
+        const load = () => loadBuildLogs(buildId, panel);
+        panel.querySelectorAll("button[data-log-action]").forEach((button) => {
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            load();
+          });
+        });
+        if (output && !running) {
+          output.textContent = "Build not running. Start it to generate logs.";
+        } else if (running) {
+          load();
+        }
+        if (note) {
+          note.classList.add("hidden");
+        }
+      }
+
+      function clearBuildLogOutput(buildId, message) {
+        if (!buildId || buildId === "-") {
+          return;
+        }
+        const outputs = document.querySelectorAll("pre[data-log-output]");
+        outputs.forEach((output) => {
+          if (output.dataset.logOutput !== buildId) {
+            return;
+          }
+          output.textContent = message || "Logs cleared. Load to see new output.";
+          const panel = output.closest(".log-panel");
+          if (!panel) {
+            return;
+          }
+          const note = panel.querySelector(".log-note");
+          if (note) {
+            note.classList.add("hidden");
+          }
+        });
+      }
+
+      async function loadBuildLogs(buildId, panel) {
+        if (isLocalMode) {
+          return;
+        }
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module || !panel) {
+          return;
+        }
+        const output = panel.querySelector(".log-output");
+        const note = panel.querySelector(".log-note");
+        if (!output) {
+          return;
+        }
+        output.textContent = "Loading logs...";
+        if (note) {
+          note.classList.add("hidden");
+        }
+        try {
+          const path = apiPath("/modules/" + module + "/builds/" + buildId + "/logs") + "?lines=200";
+          const data = await apiRequest("GET", path);
+          if (!isSelectionCurrent(token, module)) {
+            return;
+          }
+          const content = stripAnsi((data && data.log_output) ? String(data.log_output) : "");
+          output.textContent = content || "No logs available yet.";
+          if (note) {
+            if (data && data.truncated) {
+              note.textContent = "Log output truncated.";
+              note.classList.remove("hidden");
+            } else {
+              note.classList.add("hidden");
+            }
+          }
+        } catch (err) {
+          if (!isSelectionCurrent(token, module)) {
+            return;
+          }
+          output.textContent = "Failed to load logs.";
+          if (note) {
+            note.classList.add("hidden");
+          }
+          handleError(err);
+        }
+      }
+
+      async function openBuildLink(buildId, suffix, label) {
+        if (isLocalMode) {
+          setActivity("Links are available in remote mode only.", true);
+          return;
+        }
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module || !buildId || buildId === "-") {
+          return;
+        }
+        setActivity("Loading " + label + " link for " + buildId + "...");
+        const data = await apiRequest("GET", apiPath("/modules/" + module + "/builds/" + buildId + "/status"));
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        const port = data.port || 0;
+        const base = port ? moduleLinkFromPort(port) : "";
+        if (!base) {
+          setActivity("No port available for " + label + " link.", true);
+          return;
+        }
+        if (!data.running) {
+          setActivity("Build not running; opening link anyway.", true);
+        } else {
+          setActivity("Opening " + label + " link...");
+        }
+        window.open(base + suffix, "_blank", "noopener");
+      }
+
+      function updateSignerMode() {
+        if (!ui.signerMode) {
+          return;
+        }
+        if (isLocalMode) {
+          ui.signerMode.textContent = "Local mode (no HMAC)";
+          return;
+        }
+        if (hasWebCrypto()) {
+          ui.signerMode.textContent = "Signer: WebCrypto (secure context)";
+        } else {
+          ui.signerMode.textContent = "Signer: JS fallback (http)";
+        }
+      }
+
+      function applyModeLabels() {
+        if (!isLocalMode) {
+          return;
+        }
+        const badge = document.querySelector(".badge");
+        if (badge) {
+          badge.textContent = "Deploy Local";
+        }
+        const title = document.querySelector(".hero-text h1");
+        if (title) {
+          title.textContent = "Hyperbricks Local Dashboard";
+        }
+        const subtitle = document.querySelector(".hero-text p");
+        if (subtitle) {
+          subtitle.textContent = "Local build and push dashboard.";
+        }
+      }
+
+      function closeMenu() {
+        if (ui.menuPanel) {
+          ui.menuPanel.classList.add("hidden");
+        }
+      }
+
+      function toggleMenu(event) {
+        if (!ui.menuPanel) {
+          return;
+        }
+        if (event) {
+          event.stopPropagation();
+        }
+        ui.menuPanel.classList.toggle("hidden");
+      }
+
+      function moduleLinkFromPort(port) {
+        if (!port) {
+          return "";
+        }
+        try {
+          const base = new URL(getBaseUrl());
+          const host = base.hostname;
+          const scheme = base.protocol === "https:" ? "https:" : "http:";
+          return scheme + "//" + host + ":" + port;
+        } catch (err) {
+          return "";
+        }
+      }
+
+
+      async function apiRequest(method, path, bodyObj) {
+        const baseUrl = isLocalMode ? window.location.origin : getBaseUrl();
+        const url = new URL(path, baseUrl);
+        const body = bodyObj ? JSON.stringify(bodyObj) : "";
+        const headers = {
+          "Accept": "application/json"
+        };
+        if (!isLocalMode) {
+          const secret = getSecret();
+          if (!secret) {
+            throw new Error("Missing HMAC secret.");
+          }
+          const ts = Math.floor(Date.now() / 1000).toString();
+          const nonce = randomHex(32);
+          const bodyHash = await sha256Hex(body);
+          const canonical = [method, url.pathname, bodyHash, ts, nonce].join("\n");
+          const signature = await hmacHex(secret, canonical);
+          headers["X-HB-Timestamp"] = ts;
+          headers["X-HB-Nonce"] = nonce;
+          headers["X-HB-Signature"] = signature;
+        }
+        if (bodyObj) {
+          headers["Content-Type"] = "application/json";
+        }
+
+        let response;
+        try {
+          response = await fetch(url.toString(), {
+            method,
+            headers,
+            body: bodyObj ? body : undefined
+          });
+        } catch (err) {
+          setApiStatus("offline");
+          throw err;
+        }
+        if (response.ok) {
+          setApiStatus("online");
+        } else {
+          setApiStatus("error " + response.status);
+        }
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(payload.error || response.statusText);
+        }
+        return payload;
+      }
+
+      function setLocalConnectionDetails(status) {
+        if (!isLocalMode) {
+          return;
+        }
+        if (ui.localApiBase) {
+          ui.localApiBase.value = window.location.origin;
+        }
+        if (ui.localTargetName) {
+          ui.localTargetName.value = (status.target || "").trim() || "-";
+        }
+        if (ui.localTargetApi) {
+          ui.localTargetApi.value = (status.target_api || "").trim() || "-";
+        }
+        if (ui.localTargetRoot) {
+          ui.localTargetRoot.value = (status.target_root || "").trim() || "-";
+        }
+      }
+
+      async function refreshServerStatus() {
+        if (!isLocalMode && !getSecret()) {
+          return;
+        }
+        const data = await apiRequest("GET", apiPath("/status"));
+        if (ui.apiVersion) {
+          ui.apiVersion.textContent = (data.version || "").trim() || "-";
+        }
+        setLocalConnectionDetails(data);
+        state.logsEnabled = !isLocalMode && data.logs_enabled !== false;
+      }
+
+      function startServerStatusTick() {
+        if (serverStatusTimer) {
+          return;
+        }
+        serverStatusTimer = setInterval(() => {
+          refreshServerStatus().catch(() => {});
+        }, 30000);
+      }
+
+      async function findRunningModule(modules) {
+        for (const module of modules) {
+          try {
+            const data = await apiRequest("GET", apiPath("/modules/" + module + "/status"));
+            if (data.running) {
+              return module;
+            }
+          } catch (err) {
+            continue;
+          }
+        }
+        return "";
+      }
+
+      function renderModules() {
+        ui.moduleList.innerHTML = "";
+        state.modules.forEach((module) => {
+          const item = document.createElement("li");
+          item.className = "module-item" + (module === state.selectedModule ? " active" : "");
+          item.innerHTML = "<span>" + module + "</span><span class=\"mono\">select</span>";
+          item.addEventListener("click", () => selectModule(module));
+          ui.moduleList.appendChild(item);
+        });
+      }
+
+      function renderBuilds() {
+        ui.buildRows.innerHTML = "";
+        if (!state.builds.length) {
+          const row = document.createElement("tr");
+          row.innerHTML = "<td colspan=\"5\" class=\"note\">No builds found.</td>";
+          ui.buildRows.appendChild(row);
+          return;
+        }
+        state.builds.forEach((build) => {
+          const row = document.createElement("tr");
+          const buildId = build.build_id || "-";
+          const buildShort = shortenValue(buildId);
+          const builtAt = formatRelativeTime(build.built_at || "");
+          const builtTitle = build.built_at ? formatDate(build.built_at) : "";
+          const isRunning = state.runningBuild && buildId === state.runningBuild;
+          const isProduction = !!build.production;
+          const modeDefaultSelected = isProduction ? "" : " selected";
+          const modeProductionSelected = isProduction ? " selected" : "";
+          const detailsDisabled = buildId === "-" ? " disabled" : "";
+          const iconDisabled = buildId === "-" ? " disabled" : "";
+          const actionDisabled = buildId === "-" ? " disabled" : "";
+          const actionButtons = isRunning
+            ? `
+                <a class="icon-btn${actionDisabled}" data-action="restart" data-build="${buildId}" href="#" title="Restart" aria-label="Restart">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12a8 8 0 0 1 14.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M18 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M20 12a8 8 0 0 1-14.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M6 20v-5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+                <button class="danger" data-action="stop" data-build="${buildId}">Stop</button>
+              `
+            : `
+                <a class="icon-btn${actionDisabled}" data-action="start" data-build="${buildId}" href="#" title="Start" aria-label="Start">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M7 5l12 7-12 7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              `;
+          const remoteControls = `
+                ${actionButtons}
+                <a class="icon-btn${iconDisabled}" data-action="link" data-build="${buildId}" href="#" title="Open runtime" aria-label="Open runtime">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10 13a5 5 0 0 1 0-7l2-2a5 5 0 0 1 7 7l-1 1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M14 11a5 5 0 0 1 0 7l-2 2a5 5 0 0 1-7-7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </a>
+                <a class="icon-btn${iconDisabled}" data-action="dashboard" data-build="${buildId}" href="#" title="Open dashboard" aria-label="Open dashboard">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="3" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="13" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="3" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="13" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </a>
+                <a class="icon-btn${detailsDisabled}" data-action="details" data-build="${buildId}" href="#" title="Show details" aria-label="Show details">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 10v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="7" r="1" fill="currentColor"/>
+                  </svg>
+                </a>
+                <a class="icon-btn danger${iconDisabled}" data-action="delete" data-build="${buildId}" href="#" title="Delete build" aria-label="Delete build">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 7h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M9 7V5h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="6" y="7" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </a>
+              `;
+          const localControls = `
+                <a class="icon-btn${iconDisabled}" data-action="push" data-build="${buildId}" href="#" title="Push build" aria-label="Push build">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 19V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+                <a class="icon-btn${detailsDisabled}" data-action="details" data-build="${buildId}" href="#" title="Show details" aria-label="Show details">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 10v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="7" r="1" fill="currentColor"/>
+                  </svg>
+                </a>
+                <a class="icon-btn danger${iconDisabled}" data-action="delete" data-build="${buildId}" href="#" title="Delete build" aria-label="Delete build">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 7h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M9 7V5h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="6" y="7" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </a>
+              `;
+          const actionControls = isLocalMode ? localControls : remoteControls;
+          row.innerHTML = `
+            <td data-label="Build">
+              <div class="value-row">
+                <span class="mono wrap" title="${buildId}">${buildShort}</span>
+                <button class="copy-btn" data-copy="${buildId}" type="button">Copy</button>
+              </div>
+            </td>
+            <td data-label="Version">${build.moduleversion || "-"}</td>
+            <td data-label="Built" title="${builtTitle}">${builtAt}</td>
+            <td data-label="Mode">
+              <select class="mode-select" data-action="mode" data-build="${buildId}">
+                <option value="default"${modeDefaultSelected}>Default</option>
+                <option value="production"${modeProductionSelected}>Production</option>
+              </select>
+            </td>
+            <td data-label="Action">
+              <div class="actions-row">
+                ${actionControls}
+              </div>
+            </td>
+          `;
+          const detailsRow = document.createElement("tr");
+          detailsRow.className = "details-row hidden";
+          detailsRow.innerHTML = `
+            <td colspan="5">
+              <div class="build-details" data-build="${buildId}">
+                <span class="note">Open details to load build status.</span>
+              </div>
+            </td>
+          `;
+          row.querySelectorAll("button[data-action], a[data-action]").forEach((element) => {
+            const action = element.dataset.action;
+            element.addEventListener("click", (event) => {
+              if (element.classList.contains("disabled") || element.disabled) {
+                event.preventDefault();
+                return;
+              }
+              if (element.tagName === "A") {
+                event.preventDefault();
+              }
+              if (action === "start") {
+                activateBuild(buildId).catch(handleError);
+              } else if (action === "restart") {
+                restartModule(buildId).catch(handleError);
+              } else if (action === "stop") {
+                stopModule().catch(handleError);
+              } else if (action === "details") {
+                toggleBuildDetails(buildId, detailsRow, element);
+              } else if (action === "link") {
+                openBuildLink(buildId, "", "runtime").catch(handleError);
+              } else if (action === "dashboard") {
+                openBuildLink(buildId, "/dashboard", "dashboard").catch(handleError);
+              } else if (action === "push") {
+                pushBuild(buildId).catch(handleError);
+              } else if (action === "delete") {
+                deleteBuild(buildId).catch(handleError);
+              }
+            });
+          });
+          row.querySelectorAll("select[data-action=\"mode\"]").forEach((select) => {
+            select.addEventListener("change", (event) => {
+              const value = event.target.value;
+              setBuildProduction(buildId, value === "production").catch(handleError);
+            });
+          });
+          row.querySelectorAll(".copy-btn").forEach((button) => {
+            button.addEventListener("click", () => {
+              const value = button.dataset.copy || "";
+              copyText(value)
+                .then(() => setActivity("Copied to clipboard."))
+                .catch(() => setActivity("Copy failed.", true));
+            });
+          });
+          ui.buildRows.appendChild(row);
+          ui.buildRows.appendChild(detailsRow);
+        });
+      }
+
+      function updateStatus(status) {
+        const fullBuild = status.current && status.current !== "-" ? status.current : "";
+        state.currentBuild = fullBuild;
+        state.runningBuild = status.running_build || "";
+        updateRollbackTarget();
+      }
+
+      async function loadModules() {
+        setActivity("Loading modules...");
+        state.selectionToken += 1;
+        const data = await apiRequest("GET", apiPath("/modules"));
+        state.modules = data.modules || [];
+        state.selectedModule = "";
+        renderModules();
+        ui.buildRows.innerHTML = "<tr><td colspan=\"5\" class=\"note\">Select a module to load builds.</td></tr>";
+        updateStatus({ module: "", current: "", port: "-", versions: "-" });
+        ui.refreshStatus.disabled = true;
+        state.runningBuild = "";
+        state.currentBuild = "";
+        updateRollbackTarget();
+        const saved = getSavedModule();
+        let autoSelect = "";
+        if (saved && state.modules.includes(saved)) {
+          autoSelect = saved;
+        } else if (state.modules.length === 1) {
+          autoSelect = state.modules[0];
+        } else if (!isLocalMode && state.modules.length > 1) {
+          setActivity("Detecting running module...");
+          autoSelect = await findRunningModule(state.modules);
+        }
+        if (autoSelect) {
+          await selectModule(autoSelect);
+        }
+        setActivity("Modules loaded.");
+        refreshServerStatus().catch(handleError);
+      }
+
+      async function selectModule(module) {
+        state.selectedModule = module;
+        saveModule(module);
+        renderModules();
+        state.builds = [];
+        state.runningBuild = "";
+        state.currentBuild = "";
+        ui.buildRows.innerHTML = "<tr><td colspan=\"5\" class=\"note\">Loading builds...</td></tr>";
+        ui.refreshStatus.disabled = true;
+        updateRollbackTarget();
+        const token = state.selectionToken + 1;
+        state.selectionToken = token;
+        await refreshStatus(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await loadBuilds(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        ui.refreshStatus.disabled = false;
+        updateRollbackTarget();
+      }
+
+      async function loadBuilds(token, moduleOverride) {
+        const module = moduleOverride || state.selectedModule;
+        const requestToken = typeof token === "number" ? token : state.selectionToken;
+        if (!module) {
+          return;
+        }
+        setActivity("Loading builds for " + module + "...");
+        const data = await apiRequest("GET", apiPath("/modules/" + module + "/builds"));
+        if (!isSelectionCurrent(requestToken, module)) {
+          return;
+        }
+        state.builds = data.versions || [];
+        renderBuilds();
+        updateRollbackTarget();
+        setActivity("Builds updated.");
+      }
+
+      async function setBuildProduction(buildId, isProduction) {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module || !buildId || buildId === "-") {
+          return;
+        }
+        const label = isProduction ? "production" : "default";
+        setActivity("Setting mode for " + buildId + " to " + label + "...");
+        const data = await apiRequest(
+          "POST",
+          apiPath("/modules/" + module + "/builds/" + buildId + "/production"),
+          { production: isProduction }
+        );
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        const target = state.builds.find((build) => build.build_id === buildId);
+        if (target) {
+          target.production = typeof data.production === "boolean" ? data.production : isProduction;
+        }
+        renderBuilds();
+        updateRollbackTarget();
+        if (data.restarted) {
+          clearBuildLogOutput(buildId, "Logs cleared. Module restarting...");
+          await refreshStatus(token, module);
+          if (!isSelectionCurrent(token, module)) {
+            return;
+          }
+          setActivity("Mode updated and module restarted.");
+          return;
+        }
+        setActivity("Mode updated.");
+      }
+
+      async function refreshStatus(token, moduleOverride) {
+        const module = moduleOverride || state.selectedModule;
+        const requestToken = typeof token === "number" ? token : state.selectionToken;
+        if (!module) {
+          return;
+        }
+        setActivity("Refreshing status for " + module + "...");
+        const data = await apiRequest("GET", apiPath("/modules/" + module + "/status"));
+        if (!isSelectionCurrent(requestToken, module)) {
+          return;
+        }
+        updateStatus(data);
+        let isRunning = false;
+        if (typeof data.running === "boolean") {
+          isRunning = data.running;
+        }
+        if (isRunning && !state.runningBuild) {
+          state.runningBuild = data.current || "";
+        }
+        renderBuilds();
+        setActivity("Status updated.");
+      }
+
+      async function activateBuild(buildId) {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module) {
+          return;
+        }
+        setActivity("Activating build " + buildId + "...");
+        await apiRequest("POST", apiPath("/modules/" + module + "/activate"), { build_id: buildId });
+        clearBuildLogOutput(buildId, "Logs cleared. Starting build...");
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await refreshStatus(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await loadBuilds(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        setActivity("Build activated.");
+      }
+
+      async function rollbackModule() {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module) {
+          return;
+        }
+        setActivity("Rolling back " + module + "...");
+        await apiRequest("POST", apiPath("/modules/" + module + "/rollback"));
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await refreshStatus(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await loadBuilds(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        setActivity("Rollback complete.");
+      }
+
+      async function restartModule(buildId) {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module) {
+          return;
+        }
+        setActivity("Restarting " + module + "...");
+        await apiRequest("POST", apiPath("/modules/" + module + "/restart"));
+        clearBuildLogOutput(buildId, "Logs cleared. Restarting build...");
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await refreshStatus(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        setActivity("Restart completed.");
+      }
+
+      async function stopModule() {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module) {
+          return;
+        }
+        setActivity("Stopping " + module + "...");
+        await apiRequest("POST", apiPath("/modules/" + module + "/stop"));
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await refreshStatus(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        setActivity("Stop completed.");
+      }
+
+      async function deleteBuild(buildId) {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module) {
+          return;
+        }
+        const confirmText = isLocalMode
+          ? "Delete local build " + buildId + "? This removes the files."
+          : "Delete build " + buildId + "? This stops it if running and removes files.";
+        if (!confirm(confirmText)) {
+          return;
+        }
+        setActivity("Deleting build " + buildId + "...");
+        const data = await apiRequest("POST", apiPath("/modules/" + module + "/builds/" + buildId + "/delete"));
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await refreshStatus(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await loadBuilds(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        if (data && data.module_deleted) {
+          setActivity("Build deleted; module folder removed.");
+          return;
+        }
+        if (data && data.rollback_error) {
+          setActivity("Build deleted, but rollback failed: " + data.rollback_error, true);
+          return;
+        }
+        if (data && data.rollback) {
+          setActivity("Build deleted; rolled back to " + shortenValue(data.rollback_build || "") + ".");
+          return;
+        }
+        setActivity("Build deleted.");
+      }
+
+      async function buildLocalModule() {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module) {
+          return;
+        }
+        setActivity("Building " + module + "...");
+        const data = await apiRequest("POST", apiPath("/modules/" + module + "/build"));
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await loadBuilds(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        setActivity("Build complete: " + shortenValue(data.build_id || "") + ".");
+      }
+
+      async function pushBuild(buildId) {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module || !buildId || buildId === "-") {
+          return;
+        }
+        setActivity("Pushing build " + buildId + "...");
+        const data = await apiRequest("POST", apiPath("/modules/" + module + "/push/" + buildId), {});
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await loadBuilds(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        const target = data.target ? " to " + data.target : "";
+        setActivity("Push complete" + target + ".");
+      }
+
+      async function syncRemote() {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module) {
+          return;
+        }
+        setActivity("Syncing remote for " + module + "...");
+        await apiRequest("POST", apiPath("/remote/sync"), { module: module });
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        await loadBuilds(token, module);
+        if (!isSelectionCurrent(token, module)) {
+          return;
+        }
+        setActivity("Remote sync complete.");
+      }
+
+      function wireEvents() {
+        ui.loadModules.addEventListener("click", () => loadModules().catch(handleError));
+        ui.refreshStatus.addEventListener("click", () => {
+          const module = state.selectedModule;
+          const token = state.selectionToken;
+          refreshStatus(token, module).catch(handleError);
+        });
+        ui.clearSecret.addEventListener("click", () => {
+          localStorage.removeItem(storageKeys.secret);
+          ui.secret.value = "";
+          if (ui.apiVersion) {
+            ui.apiVersion.textContent = "-";
+          }
+          setActivity("Secret cleared.");
+        });
+        ui.secret.addEventListener("input", () => {
+          localStorage.setItem(storageKeys.secret, ui.secret.value);
+          refreshServerStatus().catch(() => {});
+        });
+        ui.rollbackModule.addEventListener("click", () => rollbackModule().catch(handleError));
+        if (ui.buildModule) {
+          ui.buildModule.addEventListener("click", () => buildLocalModule().catch(handleError));
+        }
+        if (ui.syncRemote) {
+          ui.syncRemote.addEventListener("click", () => syncRemote().catch(handleError));
+        }
+
+        if (ui.menuToggle) {
+          ui.menuToggle.addEventListener("click", toggleMenu);
+        }
+        if (ui.menuPanel) {
+          ui.menuPanel.addEventListener("click", (event) => event.stopPropagation());
+        }
+        if (ui.killAll) {
+          ui.killAll.addEventListener("click", () => {
+            closeMenu();
+            if (!confirm("Kill all hyperbricks processes (except deploy API)?")) {
+              return;
+            }
+            apiRequest("POST", apiPath("/admin/kill-all"))
+              .then((data) => {
+                const killed = data.killed || [];
+                const skipped = data.skipped || [];
+                const failed = data.failed || [];
+                if (failed.length) {
+                  setActivity("Kill all completed with errors: " + failed.join(", "), true);
+                  return;
+                }
+                setActivity("Killed " + killed.length + " process(es). Skipped " + skipped.length + ".");
+              })
+              .catch(handleError);
+          });
+        }
+        document.addEventListener("click", closeMenu);
+      }
+
+      function handleError(err) {
+        setActivity(err.message || String(err), true);
+      }
+
+      function initDefaults() {
+        if (window.location.origin && window.location.origin !== "null") {
+          ui.baseUrl.value = window.location.origin;
+        }
+        const savedSecret = localStorage.getItem(storageKeys.secret);
+        if (savedSecret) {
+          ui.secret.value = savedSecret;
+        }
+        updateSignerMode();
+        applyModeLabels();
+        updateRollbackTarget();
+        startServerStatusTick();
+        if (isLocalMode) {
+          loadModules().catch(handleError);
+          refreshServerStatus().catch(handleError);
+        } else if (savedSecret) {
+          loadModules().catch(handleError);
+          refreshServerStatus().catch(handleError);
+        }
+      }
+
+      wireEvents();
+      initDefaults();
+    </script>
+  </body>
+</html>

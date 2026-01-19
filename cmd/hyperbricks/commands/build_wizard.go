@@ -60,7 +60,7 @@ func RunBuildWizard() {
 	}
 	buildReplaceTarget = replaceTarget
 
-	if err := runBuild(); err != nil {
+	if _, err := runBuild(); err != nil {
 		fmt.Printf("Error building archive: %v\n", err)
 		Exit = true
 		return
