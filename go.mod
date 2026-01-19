@@ -69,6 +69,7 @@ require (
 )
 
 retract (
+	v0.7.45-alpha
 	v0.7.44-alpha
 	v0.5.981-alpha
 	v0.5.99-alpha
