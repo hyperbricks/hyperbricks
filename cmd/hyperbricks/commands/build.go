@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/assets"
@@ -26,7 +27,11 @@ var (
 	buildZip           bool
 	buildForce         bool
 	buildReplaceTarget string
+	buildPush          bool
+	buildPushTarget    string
 )
+
+var buildMu sync.Mutex
 
 const versionIndexFile = "hyperbricks.versions.json"
 
@@ -39,6 +44,7 @@ type buildFile struct {
 
 type buildIndex struct {
 	Current  string          `json:"current"`
+	Port     int             `json:"port,omitempty"`
 	Versions []buildIndexRow `json:"versions"`
 }
 
@@ -50,6 +56,22 @@ type buildIndexRow struct {
 	BuiltAt       string `json:"built_at"`
 	Commit        string `json:"commit"`
 	SourceHash    string `json:"source_hash"`
+	Production    bool   `json:"production,omitempty"`
+}
+
+type buildResult struct {
+	Module      string
+	BuildID     string
+	ArchivePath string
+	Built       bool
+}
+
+type BuildOptions struct {
+	Module        string
+	OutDir        string
+	Force         bool
+	ReplaceTarget string
+	Format        string
 }
 
 // NewBuildCommand creates the "build" subcommand.
@@ -62,10 +84,18 @@ func NewBuildCommand() *cobra.Command {
 				RunBuildWizard()
 				return
 			}
-			if err := runBuild(); err != nil {
+			result, err := runBuild()
+			if err != nil {
 				fmt.Printf("Error building archive: %v\n", err)
 				Exit = true
 				return
+			}
+			if buildPush {
+				if err := runBuildPush(result); err != nil {
+					fmt.Printf("Error pushing build: %v\n", err)
+					Exit = true
+					return
+				}
 			}
 		},
 	}
@@ -77,53 +107,107 @@ func NewBuildCommand() *cobra.Command {
 	cmd.Flags().Lookup("replace").NoOptDefVal = "current"
 	cmd.Flags().StringVar(&buildOutDir, "out", "deploy", "output directory for build archives")
 	cmd.Flags().StringVarP(&buildModule, "module", "m", "default", "module in the ./modules directory")
+	cmd.Flags().BoolVar(&buildPush, "push", false, "Push build archive to a deploy target")
+	cmd.Flags().StringVar(&buildPushTarget, "target", "", "Deploy target name for --push")
 
 	return cmd
 }
 
-func runBuild() error {
+func BuildModuleWithOptions(opts BuildOptions) (buildResult, error) {
+	if strings.TrimSpace(opts.Module) == "" {
+		return buildResult{}, fmt.Errorf("module name cannot be empty")
+	}
+	buildMu.Lock()
+	defer buildMu.Unlock()
+
+	prevModule := buildModule
+	prevOutDir := buildOutDir
+	prevForce := buildForce
+	prevReplace := buildReplaceTarget
+	prevHRA := buildHRA
+	prevZip := buildZip
+
+	buildModule = opts.Module
+	if strings.TrimSpace(opts.OutDir) != "" {
+		buildOutDir = opts.OutDir
+	}
+	buildForce = opts.Force
+	buildReplaceTarget = opts.ReplaceTarget
+	buildHRA = false
+	buildZip = false
+	switch strings.ToLower(strings.TrimSpace(opts.Format)) {
+	case "zip":
+		buildZip = true
+	case "hra", "":
+	default:
+		buildModule = prevModule
+		buildOutDir = prevOutDir
+		buildForce = prevForce
+		buildReplaceTarget = prevReplace
+		buildHRA = prevHRA
+		buildZip = prevZip
+		return buildResult{}, fmt.Errorf("unsupported build format: %s", opts.Format)
+	}
+
+	result, err := runBuild()
+
+	buildModule = prevModule
+	buildOutDir = prevOutDir
+	buildForce = prevForce
+	buildReplaceTarget = prevReplace
+	buildHRA = prevHRA
+	buildZip = prevZip
+
+	return result, err
+}
+
+func runBuild() (buildResult, error) {
+	result := buildResult{
+		Module: buildModule,
+	}
 	format, ext, err := resolveBuildFormat()
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	if strings.TrimSpace(buildModule) == "" {
-		return fmt.Errorf("module name cannot be empty")
+		return result, fmt.Errorf("module name cannot be empty")
 	}
 
 	moduleDir := filepath.Join("modules", buildModule)
 	if _, err := os.Stat(moduleDir); err != nil {
-		return fmt.Errorf("module directory not found: %s", moduleDir)
+		return result, fmt.Errorf("module directory not found: %s", moduleDir)
 	}
 
 	configPath := filepath.Join(moduleDir, "package.hyperbricks")
 	configContent, err := os.ReadFile(configPath)
 	if err != nil {
-		return fmt.Errorf("failed to read %s: %w", configPath, err)
+		return result, fmt.Errorf("failed to read %s: %w", configPath, err)
 	}
 
 	files, err := collectModuleFiles(moduleDir)
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	sourceHash, err := computeSourceHash(files)
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	outDir := filepath.Join(buildOutDir, buildModule)
 	indexPath := filepath.Join(outDir, versionIndexFile)
 	index, err := loadBuildIndex(indexPath)
 	if err != nil {
-		return err
+		return result, err
 	}
 	replaceTarget := strings.TrimSpace(buildReplaceTarget)
 	if !(buildForce || replaceTarget != "") {
 		if current, ok := findBuildIndex(index, index.Current); ok {
 			if current.SourceHash == sourceHash && current.SourceHash != "" {
 				fmt.Printf("No changes detected. Current build %s matches source hash. Use --force or --replace to rebuild.\n", index.Current)
-				return nil
+				result.BuildID = index.Current
+				return result, nil
 			}
 		}
 	}
@@ -143,41 +227,44 @@ func runBuild() error {
 
 	updatedConfig, moduleVersion, err := updatePackageMetadata(configPath, string(configContent), updates)
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	buildID, err := computeBuildID(files, []byte(updatedConfig))
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	if err := os.MkdirAll(outDir, 0755); err != nil {
-		return fmt.Errorf("failed to create output directory %s: %w", outDir, err)
+		return result, fmt.Errorf("failed to create output directory %s: %w", outDir, err)
 	}
 
 	filename := fmt.Sprintf("%s-%s-%s.%s", buildModule, moduleVersion, buildID, ext)
 	outPath := filepath.Join(outDir, filename)
 
 	if err := writeArchive(outPath, files, []byte(updatedConfig)); err != nil {
-		return err
+		return result, err
 	}
 
 	oldFile, err := updateBuildIndex(indexPath, buildID, moduleVersion, format, outPath, builtAt, commit, sourceHash, replaceTarget)
 	if err != nil {
-		return err
+		return result, err
 	}
 	if oldFile != "" {
 		oldPath := filepath.Clean(filepath.FromSlash(oldFile))
 		newPath := filepath.Clean(outPath)
 		if oldPath != newPath {
 			if err := os.Remove(oldPath); err != nil && !os.IsNotExist(err) {
-				return fmt.Errorf("failed to remove previous archive %s: %w", oldPath, err)
+				return result, fmt.Errorf("failed to remove previous archive %s: %w", oldPath, err)
 			}
 		}
 	}
 
 	fmt.Printf("Built archive: %s\n", outPath)
-	return nil
+	result.BuildID = buildID
+	result.ArchivePath = outPath
+	result.Built = true
+	return result, nil
 }
 
 func resolveBuildFormat() (string, string, error) {
@@ -457,6 +544,9 @@ func updateBuildIndex(indexPath string, buildID string, moduleVersion string, fo
 		BuiltAt:       builtAt,
 		Commit:        commit,
 		SourceHash:    sourceHash,
+	}
+	if existing, ok := findBuildIndex(index, buildID); ok {
+		entry.Production = existing.Production
 	}
 
 	updated := false

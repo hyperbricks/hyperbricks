@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
@@ -71,7 +72,9 @@ func StartServer(ctx context.Context) {
 		// Print a green dot using a Unicode bullet character
 
 		log.Printf("%s Server running in %s mode at http://%s", green+"●"+reset, hbConfig.Mode, shared.Location)
-		log.Printf("Press 'q', ESC or Ctrl+C to stop the server...")
+		if os.Getenv("HB_NO_KEYBOARD") == "" {
+			log.Printf("Press 'q', ESC or Ctrl+C to stop the server...")
+		}
 		// Start the HTTP server
 		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
 			log.Fatal("Server error:", err)

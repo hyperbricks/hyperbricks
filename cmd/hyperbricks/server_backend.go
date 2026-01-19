@@ -155,6 +155,12 @@ func statusServer() {
 		w.Write(assets.Logo)
 	})
 
+	http.HandleFunc("/assets/dashboard.css", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", mime.TypeByExtension(".css"))
+		w.Header().Set("Cache-Control", "no-store")
+		w.Write([]byte(assets.DashboardCSS))
+	})
+
 	http.HandleFunc("/dashboard", func(w http.ResponseWriter, r *http.Request) {
 		var data SysData
 

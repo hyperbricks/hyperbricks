@@ -5,11 +5,11 @@ page_2.headers {
 }
 page_2.route = help.html
 page_2.10 = <TEXT>    
-page_2.10.value =  HELP-><a href="index">/index</a>|<a href="index.html">index.html</a>|<a href="/">index /</a>
+page_2.10.value = YOOO HELP-><a href="index">/index</a>|<a href="index.html">index.html</a>|<a href="/">index /</a>
 page_2.10.enclose = <p>|</p>
 
 page = <HYPERMEDIA>
 page.route = index.html
 page.10 = <TEXT>    
-page.10.value = INDEX-><a href="/help">/help</a><a href="help">help</a><a href="help.html">help.html</a>
+page.10.value = hahah INDEX-><a href="/help">/help</a><a href="help">help</a><a href="help.html">help.html</a>
 page.10.enclose = <p>|</p>

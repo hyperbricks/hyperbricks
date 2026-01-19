@@ -7,10 +7,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/eiannone/keyboard"
@@ -301,6 +303,11 @@ func serveStatic() error {
 		}
 	}()
 
+	if os.Getenv("HB_NO_KEYBOARD") != "" {
+		log.Println("Non-interactive mode: keyboard input disabled.")
+		return waitForServerSignal(server)
+	}
+
 	// Open keyboard for input
 	if err := keyboard.Open(); err != nil {
 		log.Printf("Failed to open keyboard: %v", err)
@@ -324,6 +331,23 @@ func serveStatic() error {
 	}
 
 	// Gracefully shutdown server with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("Server forced to shutdown: %v", err)
+		return err
+	}
+
+	fmt.Println("Server stopped.")
+	return nil
+}
+
+func waitForServerSignal(server *http.Server) error {
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
