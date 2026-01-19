@@ -30,6 +30,19 @@ func defaultInitMode() bool {
 	return false
 }
 
+func envTrue(name string) bool {
+	value := strings.TrimSpace(os.Getenv(name))
+	if value == "" {
+		return false
+	}
+	switch strings.ToLower(value) {
+	case "1", "true", "yes", "y", "on":
+		return true
+	default:
+		return false
+	}
+}
+
 // GetLogger returns the singleton SugaredLogger instance
 func GetLogger() *zap.SugaredLogger {
 	return logger
@@ -99,6 +112,7 @@ type Config struct {
 	Development DevelopmentConfig `mapstructure:"development"`
 	Debug       DebugConfig       `mapstructure:"debug"`
 	Live        LiveConfig        `mapstructure:"live"`
+	Deploy      DeployConfig      `mapstructure:"deploy"`
 	Directories map[string]string `mapstructure:"directories"`
 	Plugins     PluginsConfig     `mapstructure:"plugins"`
 	System      SystemConfig      `mapstructure:"system"`
@@ -153,6 +167,43 @@ type ServerConfig struct {
 type RateLimitConfig struct {
 	RequestsPerSecond int `mapstructure:"requests_per_second"`
 	Burst             int `mapstructure:"burst"`
+}
+
+type DeployConfig struct {
+	HMACSecret string             `mapstructure:"hmac_secret"`
+	Remote     DeployRemoteConfig `mapstructure:"remote"`
+	Local      DeployLocalConfig  `mapstructure:"local"`
+	Client     DeployClientConfig `mapstructure:"client"`
+}
+
+type DeployRemoteConfig struct {
+	APIEnabled  bool   `mapstructure:"api_enabled"`
+	APIBind     string `mapstructure:"api_bind"`
+	APIPort     int    `mapstructure:"api_port"`
+	Root        string `mapstructure:"root"`
+	PortStart   int    `mapstructure:"port_start"`
+	LogsEnabled bool   `mapstructure:"logs_enabled"`
+	Binary      string `mapstructure:"binary"`
+}
+
+type DeployLocalConfig struct {
+	Bind       string `mapstructure:"bind"`
+	Port       int    `mapstructure:"port"`
+	ModulesDir string `mapstructure:"modules_dir"`
+	BuildRoot  string `mapstructure:"build_root"`
+}
+
+type DeployClientConfig struct {
+	Target  string                        `mapstructure:"target"`
+	Targets map[string]DeployClientTarget `mapstructure:"targets"`
+}
+
+type DeployClientTarget struct {
+	Host string `mapstructure:"host"`
+	User string `mapstructure:"user"`
+	Port int    `mapstructure:"port"`
+	Root string `mapstructure:"root"`
+	API  string `mapstructure:"api"`
 }
 
 var (
@@ -257,6 +308,22 @@ func loadHyperBricksConfiguration() *Config {
 				Duration: 10 * time.Minute, // Default cache duration
 			},
 		},
+		Deploy: DeployConfig{
+			Remote: DeployRemoteConfig{
+				APIEnabled:  true,
+				APIBind:     "127.0.0.1",
+				APIPort:     9090,
+				Root:        "deploy",
+				PortStart:   8080,
+				LogsEnabled: true,
+			},
+			Local: DeployLocalConfig{
+				Bind:       "127.0.0.1",
+				Port:       9091,
+				ModulesDir: "modules",
+				BuildRoot:  "deploy",
+			},
+		},
 	}
 
 	// Decode the parsed config into the struct
@@ -266,6 +333,9 @@ func loadHyperBricksConfiguration() *Config {
 	}
 	if int(commands.Port) != 8080 {
 		config.Server.Port = int(commands.Port)
+	}
+	if commands.Production || envTrue("HB_DEPLOY_PRODUCTION") || envTrue("HB_PRODUCTION") {
+		config.Mode = LIVE_MODE
 	}
 
 	// Validate mode

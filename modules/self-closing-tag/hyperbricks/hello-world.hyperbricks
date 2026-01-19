@@ -6,5 +6,5 @@ page {
     image.width = 100
     image.loading = lazy
     image.id = img_
-    image.title = sometitle
+    image.title = sometitle!
 }
