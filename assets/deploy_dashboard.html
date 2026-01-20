@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hyperbricks Deploy Dashboard</title>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("hb-theme");
+          var prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+          var theme = stored || (prefersLight ? "light" : "dark");
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {}
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
@@ -13,77 +23,92 @@
     <div class="shell">
       <header class="hero">
         <div class="hero-bar">
-          <div class="badge">Deploy API</div>
-          <div class="menu">
-            <button id="menuToggle" class="ghost" type="button">Menu</button>
-            <div id="menuPanel" class="menu-panel hidden">
-              <div class="menu-section remote-only">
-                <div class="menu-title">Connection</div>
-                <div class="connect menu-connect">
-                  <div class="connect-row">
-                    <div class="field">
-                      <label for="baseUrl">API Base</label>
-                      <input id="baseUrl" placeholder="http://127.0.0.1:9090" />
+          <div class="badge">Deploy | Remote</div>
+          <div class="hero-actions">
+            <button id="themeToggle" class="icon-toggle theme-toggle" type="button" aria-pressed="true" aria-label="Toggle theme">
+              <svg class="theme-icon theme-icon-dark" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 14.5A8 8 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <svg class="theme-icon theme-icon-light hidden" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="menu">
+              <button id="menuToggle" class="ghost" type="button">Menu</button>
+              <div id="menuPanel" class="menu-panel hidden">
+                <div class="menu-section remote-only">
+                  <div class="menu-title">Connection</div>
+                  <div class="connect menu-connect">
+                    <div class="connect-row">
+                      <div class="field">
+                        <label for="baseUrl">API Base</label>
+                        <input id="baseUrl" placeholder="http://127.0.0.1:9090" />
+                      </div>
+                      <div class="field">
+                        <label for="secret">HMAC Secret</label>
+                        <input id="secret" type="password" placeholder="Enter shared secret" />
+                      </div>
                     </div>
-                    <div class="field">
-                      <label for="secret">HMAC Secret</label>
-                      <input id="secret" type="password" placeholder="Enter shared secret" />
+                    <div class="actions-row">
+                      <button id="loadModules">Load Modules</button>
+                      <button id="refreshStatus" class="secondary" disabled>Refresh Status</button>
+                      <button id="clearSecret" class="ghost" type="button">Clear Secret</button>
                     </div>
-                  </div>
-                  <div class="actions-row">
-                    <button id="loadModules">Load Modules</button>
-                    <button id="refreshStatus" class="secondary" disabled>Refresh Status</button>
-                    <button id="clearSecret" class="ghost" type="button">Clear Secret</button>
-                  </div>
-                  <div class="note-row">
-                    <span class="note">Timestamp and nonce are generated per request.</span>
-                    <span id="signerMode" class="note"></span>
+                    <div class="note-row">
+                      <span class="note">Timestamp and nonce are generated per request.</span>
+                      <span id="signerMode" class="note"></span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="menu-section local-only">
-                <div class="menu-title">Connection</div>
-                <div class="connect menu-connect">
-                  <div class="connect-row">
-                    <div class="field">
-                      <label for="localApiBase">Local API</label>
-                      <input id="localApiBase" readonly />
+                <div class="menu-section local-only">
+                  <div class="menu-title">Connection</div>
+                  <div class="connect menu-connect">
+                    <div class="connect-row">
+                      <div class="field">
+                        <label for="localApiBase">Local API</label>
+                        <input id="localApiBase" readonly />
+                      </div>
+                      <div class="field">
+                        <label for="localTargetName">Target</label>
+                        <input id="localTargetName" readonly />
+                      </div>
                     </div>
-                    <div class="field">
-                      <label for="localTargetName">Target</label>
-                      <input id="localTargetName" readonly />
+                    <div class="connect-row">
+                      <div class="field">
+                        <label for="localTargetApi">Remote API</label>
+                        <input id="localTargetApi" readonly />
+                      </div>
+                      <div class="field">
+                        <label for="localTargetRoot">Remote Root</label>
+                        <input id="localTargetRoot" readonly />
+                      </div>
                     </div>
-                  </div>
-                  <div class="connect-row">
-                    <div class="field">
-                      <label for="localTargetApi">Remote API</label>
-                      <input id="localTargetApi" readonly />
+                    <div class="note-row">
+                      <span class="note">Local mode uses deploy.client for push/sync.</span>
                     </div>
-                    <div class="field">
-                      <label for="localTargetRoot">Remote Root</label>
-                      <input id="localTargetRoot" readonly />
-                    </div>
-                  </div>
-                  <div class="note-row">
-                    <span class="note">Local mode uses deploy.client for push/sync.</span>
                   </div>
                 </div>
+                <div class="menu-divider"></div>
+                <button id="killAllProcesses" class="danger menu-action remote-only" type="button">Kill all hyperbricks (except API)</button>
               </div>
-              <div class="menu-divider"></div>
-              <button id="killAllProcesses" class="danger menu-action remote-only" type="button">Kill all hyperbricks (except API)</button>
             </div>
           </div>
         </div>
         <div class="hero-brand">
-          <img class="hero-logo" src="/assets/logo.png" alt="Hyperbricks logo" />
+          <img class="hero-logo" src="/assets/logo_blue.png" alt="Hyperbricks logo" data-logo-dark="/assets/logo_blue.png" data-logo-light="/assets/logo_black.png" />
           <div class="hero-text">
-            <h1>Hyperbricks Deploy Dashboard</h1>
-            <p>Signed browser client for deploy management.</p>
+            <p>Client for deploy management.</p>
           </div>
         </div>
       </header>
 
-      <div class="grid">
+      <div class="view-toggle">
+        <button id="viewModules" class="toggle active" type="button">Modules</button>
+        <button id="viewPlugins" class="toggle ghost" type="button">Plugins</button>
+      </div>
+
+      <div id="modulesView" class="grid">
         <section class="panel status">
           <h2>Server Status</h2>
           <div class="status-grid">
@@ -124,13 +149,14 @@
                   <th>Build</th>
                   <th>Version</th>
                   <th>Built</th>
-                  <th>Mode</th>
+                  <th class="remote-only">Mode</th>
+                  <th class="remote-only">Status</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody id="buildRows">
                 <tr>
-                  <td colspan="5" class="note">Select a module to load builds.</td>
+                  <td colspan="6" class="note">Select a module to load builds.</td>
                 </tr>
               </tbody>
             </table>
@@ -140,6 +166,70 @@
         <section class="panel log">
           <h2>Activity</h2>
           <pre id="activity">Ready.</pre>
+        </section>
+      </div>
+
+      <div id="pluginsView" class="grid hidden">
+        <section class="panel plugins-global">
+          <div class="panel-header">
+            <h2>Global Plugins</h2>
+            <div class="actions-row">
+              <button id="refreshGlobalPlugins" class="secondary" type="button">Refresh</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Plugin</th>
+                  <th>Version</th>
+                  <th>Status</th>
+                  <th>Config</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="globalPluginRows">
+                <tr>
+                  <td colspan="5" class="note">Load plugins to see the global index.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel plugins-custom">
+          <div class="panel-header">
+            <h2>Custom Plugins</h2>
+            <div class="actions-row">
+              <div class="field">
+                <label for="pluginModule">Module</label>
+                <select id="pluginModule"></select>
+              </div>
+              <div class="field remote-only">
+                <label for="pluginBuild">Build</label>
+                <select id="pluginBuild"></select>
+              </div>
+              <button id="loadCustomPlugins" class="secondary" type="button">Load</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Plugin</th>
+                  <th>Version</th>
+                  <th>Status</th>
+                  <th>Config</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="customPluginRows">
+                <tr>
+                  <td colspan="5" class="note">Select a module to load custom plugins.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
     </div>
@@ -168,7 +258,17 @@
         activity: document.getElementById("activity"),
         menuToggle: document.getElementById("menuToggle"),
         menuPanel: document.getElementById("menuPanel"),
-        killAll: document.getElementById("killAllProcesses")
+        killAll: document.getElementById("killAllProcesses"),
+        modulesView: document.getElementById("modulesView"),
+        pluginsView: document.getElementById("pluginsView"),
+        viewModules: document.getElementById("viewModules"),
+        viewPlugins: document.getElementById("viewPlugins"),
+        globalPluginRows: document.getElementById("globalPluginRows"),
+        refreshGlobalPlugins: document.getElementById("refreshGlobalPlugins"),
+        customPluginRows: document.getElementById("customPluginRows"),
+        pluginModule: document.getElementById("pluginModule"),
+        pluginBuild: document.getElementById("pluginBuild"),
+        loadCustomPlugins: document.getElementById("loadCustomPlugins")
       };
 
       const mode = (document.body.dataset.mode || "remote").toLowerCase();
@@ -182,7 +282,11 @@
         runningBuild: "",
         currentBuild: "",
         selectionToken: 0,
-        logsEnabled: !isLocalMode
+        logsEnabled: !isLocalMode,
+        view: "modules",
+        pluginModule: "",
+        pluginBuild: "",
+        buildCounts: {}
       };
       document.body.classList.add(isLocalMode ? "mode-local" : "mode-remote");
 
@@ -190,6 +294,69 @@
         secret: "hbDeploySecret",
         module: "hbDeployModule"
       };
+
+      const icons = {
+        more: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="5" r="2" fill="currentColor"></circle>
+          <circle cx="12" cy="12" r="2" fill="currentColor"></circle>
+          <circle cx="12" cy="19" r="2" fill="currentColor"></circle>
+        </svg>`,
+        install: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+        </svg>`,
+        rebuild: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 12a8 8 0 0 1 14.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <path d="M18 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>`,
+        compile: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+        </svg>`,
+        remove: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <path d="M9 7V5h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <rect x="6" y="7" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+          <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+        </svg>`,
+        start: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 5l12 7-12 7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+        </svg>`,
+        restart: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 12a8 8 0 0 1 14.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <path d="M18 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M20 12a8 8 0 0 1-14.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <path d="M6 20v-5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>`,
+        stop: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="6" y="6" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+        </svg>`,
+        link: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10 13a5 5 0 0 1 0-7l2-2a5 5 0 0 1 7 7l-1 1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <path d="M14 11a5 5 0 0 1 0 7l-2 2a5 5 0 0 1-7-7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+        </svg>`,
+        dashboard: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+          <rect x="13" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+          <rect x="3" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+          <rect x="13" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+        </svg>`,
+        details: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"></circle>
+          <path d="M12 10v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <circle cx="12" cy="7" r="1" fill="currentColor"></circle>
+        </svg>`,
+        delete: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <path d="M9 7V5h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <rect x="6" y="7" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+          <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+        </svg>`,
+        push: `<svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 19V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <path d="M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>`
+      };
+
+      let rowMenuCounter = 0;
 
       let serverStatusTimer = null;
 
@@ -263,6 +430,15 @@
           }
         }
         return "just now";
+      }
+
+      function buildTimestamp(value) {
+        if (!value) {
+          return 0;
+        }
+        const date = new Date(value);
+        const time = date.getTime();
+        return Number.isNaN(time) ? 0 : time;
       }
 
       function copyText(value) {
@@ -617,6 +793,114 @@
           .replace(/>/g, "&gt;");
       }
 
+      function renderRowMenu(items) {
+        const menuId = "rowMenu-" + (rowMenuCounter += 1);
+        const menuItems = (items || []).map((item) => {
+          const classes = ["row-menu-item", item.className || ""].filter(Boolean).join(" ");
+          const attrs = item.attrs || "";
+          const disabledAttr = item.disabled ? " disabled" : "";
+          const icon = item.icon || "";
+          const label = item.label || "";
+          return `<button class="${classes}"${attrs} data-action="${item.action}"${disabledAttr} type="button">${icon}<span>${label}</span></button>`;
+        }).join("");
+        return `
+          <div class="row-menu">
+            <button class="row-menu-toggle icon-toggle" data-menu="${menuId}" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Row actions">
+              ${icons.more}
+            </button>
+            <div id="${menuId}" class="row-menu-panel hidden">
+              ${menuItems}
+            </div>
+          </div>
+        `;
+      }
+
+      function ensureRowMenuPortal() {
+        let portal = document.getElementById("rowMenuPortal");
+        if (!portal) {
+          portal = document.createElement("div");
+          portal.id = "rowMenuPortal";
+          document.body.appendChild(portal);
+        }
+        return portal;
+      }
+
+      function closeRowMenus() {
+        document.querySelectorAll(".row-menu-panel").forEach((panel) => {
+          panel.classList.add("hidden");
+          panel.classList.remove("is-floating");
+          panel.style.top = "";
+          panel.style.left = "";
+          panel.style.visibility = "";
+          if (panel._rowMenuParent) {
+            panel._rowMenuParent.appendChild(panel);
+            panel._rowMenuParent = null;
+          }
+        });
+        document.querySelectorAll(".row-menu-toggle").forEach((button) => {
+          button.setAttribute("aria-expanded", "false");
+        });
+      }
+
+      function openRowMenu(panel, button) {
+        if (!panel || !button) {
+          return;
+        }
+        closeRowMenus();
+        const portal = ensureRowMenuPortal();
+        if (!panel._rowMenuParent) {
+          panel._rowMenuParent = panel.parentElement;
+        }
+        portal.appendChild(panel);
+        panel.classList.remove("hidden");
+        panel.classList.add("is-floating");
+        panel.style.visibility = "hidden";
+        panel.style.left = "0px";
+        panel.style.top = "0px";
+        const toggleRect = button.getBoundingClientRect();
+        const panelRect = panel.getBoundingClientRect();
+        let top = toggleRect.bottom + 6;
+        if (top + panelRect.height > window.innerHeight - 8) {
+          top = Math.max(8, toggleRect.top - panelRect.height - 6);
+        }
+        let left = toggleRect.right - panelRect.width;
+        if (left < 8) {
+          left = 8;
+        }
+        if (left + panelRect.width > window.innerWidth - 8) {
+          left = Math.max(8, window.innerWidth - panelRect.width - 8);
+        }
+        panel.style.top = top + "px";
+        panel.style.left = left + "px";
+        panel.style.visibility = "visible";
+        button.setAttribute("aria-expanded", "true");
+      }
+
+      function wireRowMenus(container) {
+        if (!container) {
+          return;
+        }
+        container.querySelectorAll(".row-menu-toggle").forEach((button) => {
+          button.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const menuId = button.dataset.menu || "";
+            const panel = menuId ? document.getElementById(menuId) : null;
+            if (!panel) {
+              return;
+            }
+            const isOpen = !panel.classList.contains("hidden");
+            if (isOpen) {
+              closeRowMenus();
+              return;
+            }
+            openRowMenu(panel, button);
+          });
+        });
+        container.querySelectorAll(".row-menu-panel").forEach((panel) => {
+          panel.addEventListener("click", (event) => event.stopPropagation());
+        });
+      }
+
       function metaValue(value, options) {
         const opts = options || {};
         const raw = value ? String(value) : "";
@@ -917,15 +1201,12 @@
         }
         const badge = document.querySelector(".badge");
         if (badge) {
-          badge.textContent = "Deploy Local";
+          badge.textContent = "Deploy | Local";
         }
-        const title = document.querySelector(".hero-text h1");
-        if (title) {
-          title.textContent = "Hyperbricks Local Dashboard";
-        }
+       
         const subtitle = document.querySelector(".hero-text p");
         if (subtitle) {
-          subtitle.textContent = "Local build and push dashboard.";
+          subtitle.textContent = "Local build manager.";
         }
       }
 
@@ -1047,6 +1328,48 @@
         }, 30000);
       }
 
+      function canAutoLoadPlugins() {
+        if (isLocalMode) {
+          return true;
+        }
+        return !!getSecret();
+      }
+
+      function canAutoLoadCustomPlugins() {
+        const module = state.pluginModule || state.selectedModule || "";
+        if (!module) {
+          return false;
+        }
+        if (isLocalMode) {
+          return true;
+        }
+        const buildId = state.pluginBuild || state.currentBuild || "";
+        return !!buildId;
+      }
+
+      async function autoLoadPlugins() {
+        if (!canAutoLoadPlugins()) {
+          return;
+        }
+        if (!state.modules.length) {
+          await loadModules();
+        }
+        await loadGlobalPlugins();
+        if (canAutoLoadCustomPlugins()) {
+          await loadCustomPlugins();
+        }
+      }
+
+      function autoLoadCustomPlugins() {
+        if (!canAutoLoadPlugins()) {
+          return;
+        }
+        if (!canAutoLoadCustomPlugins()) {
+          return;
+        }
+        loadCustomPlugins().catch(handleError);
+      }
+
       async function findRunningModule(modules) {
         for (const module of modules) {
           try {
@@ -1061,23 +1384,718 @@
         return "";
       }
 
+      function setView(view) {
+        const target = view === "plugins" ? "plugins" : "modules";
+        state.view = target;
+        const showModules = target === "modules";
+        if (ui.modulesView) {
+          ui.modulesView.classList.toggle("hidden", !showModules);
+        }
+        if (ui.pluginsView) {
+          ui.pluginsView.classList.toggle("hidden", showModules);
+        }
+        if (ui.viewModules) {
+          ui.viewModules.classList.toggle("active", showModules);
+          ui.viewModules.classList.toggle("ghost", !showModules);
+        }
+        if (ui.viewPlugins) {
+          ui.viewPlugins.classList.toggle("active", !showModules);
+          ui.viewPlugins.classList.toggle("ghost", showModules);
+        }
+        if (!showModules) {
+          renderPluginModules();
+          renderPluginBuilds();
+          autoLoadPlugins().catch(handleError);
+        }
+      }
+
+      function pluginShortName(fullName) {
+        const text = String(fullName || "");
+        const idx = text.lastIndexOf("/");
+        return idx >= 0 ? text.slice(idx + 1) : text;
+      }
+
+      function toCamelCase(value) {
+        const text = String(value || "");
+        let out = "";
+        let upperNext = true;
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i];
+          if (ch === "-" || ch === "_") {
+            upperNext = true;
+            continue;
+          }
+          if (upperNext) {
+            out += ch.toUpperCase();
+            upperNext = false;
+          } else {
+            out += ch;
+          }
+        }
+        return out;
+      }
+
+      function pluginBinaryBase(meta) {
+        if (meta && typeof meta.binary === "string" && meta.binary.trim()) {
+          return meta.binary.trim().replace(/\.so$/, "");
+        }
+        const source = meta && typeof meta.source === "string" ? meta.source.trim() : "";
+        if (!source) {
+          return "";
+        }
+        const trimmed = source.endsWith(".go") ? source.slice(0, -3) : source;
+        return toCamelCase(trimmed);
+      }
+
+      function pluginConfigName(meta, version) {
+        const base = pluginBinaryBase(meta);
+        if (!base || !version) {
+          return "";
+        }
+        return base + "@" + version;
+      }
+
+      function splitConfigName(configName) {
+        const text = String(configName || "");
+        const idx = text.lastIndexOf("@");
+        if (idx === -1) {
+          return { name: text, version: "" };
+        }
+        return { name: text.slice(0, idx), version: text.slice(idx + 1) };
+      }
+
+      function compareVersion(a, b) {
+        const split = (value) => {
+          const raw = String(value || "").trim().replace(/^v/, "");
+          const parts = raw.split("-");
+          const main = parts[0] || "";
+          const pre = parts.slice(1).join("-") || "";
+          const nums = main.split(".").map((item) => {
+            const num = parseInt(item, 10);
+            return Number.isNaN(num) ? item : num;
+          });
+          return { nums: nums, pre: pre };
+        };
+        const va = split(a);
+        const vb = split(b);
+        const max = Math.max(va.nums.length, vb.nums.length);
+        for (let i = 0; i < max; i++) {
+          const na = va.nums[i] === undefined ? 0 : va.nums[i];
+          const nb = vb.nums[i] === undefined ? 0 : vb.nums[i];
+          if (typeof na === "number" && typeof nb === "number") {
+            if (na !== nb) {
+              return na - nb;
+            }
+          } else {
+            const sa = String(na);
+            const sb = String(nb);
+            if (sa !== sb) {
+              return sa < sb ? -1 : 1;
+            }
+          }
+        }
+        if (va.pre && !vb.pre) {
+          return -1;
+        }
+        if (!va.pre && vb.pre) {
+          return 1;
+        }
+        if (va.pre === vb.pre) {
+          return 0;
+        }
+        return va.pre < vb.pre ? -1 : 1;
+      }
+
+      function formatPluginStatus(status) {
+        const value = String(status || "").trim();
+        if (!value) {
+          return "-";
+        }
+        if (value === "source-missing") {
+          return "source missing";
+        }
+        return value.replace(/_/g, " ");
+      }
+
+      function setPluginRowsMessage(container, message) {
+        if (!container) {
+          return;
+        }
+        container.innerHTML = "<tr><td colspan=\"5\" class=\"note\">" + message + "</td></tr>";
+      }
+
+      function wireCopyButtons(container) {
+        if (!container) {
+          return;
+        }
+        container.querySelectorAll(".copy-btn").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (button.disabled) {
+              return;
+            }
+            const value = button.dataset.copy || "";
+            copyText(value)
+              .then(() => setActivity("Copied to clipboard."))
+              .catch(() => setActivity("Copy failed.", true));
+          });
+        });
+      }
+
+      function renderPluginModules() {
+        if (!ui.pluginModule) {
+          return;
+        }
+        ui.pluginModule.innerHTML = "";
+        if (!state.modules.length) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "Load modules first";
+          option.disabled = true;
+          option.selected = true;
+          ui.pluginModule.appendChild(option);
+          state.pluginModule = "";
+          return;
+        }
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Select module";
+        placeholder.disabled = true;
+        ui.pluginModule.appendChild(placeholder);
+        state.modules.forEach((module) => {
+          const option = document.createElement("option");
+          option.value = module;
+          option.textContent = module;
+          ui.pluginModule.appendChild(option);
+        });
+        const current = state.pluginModule || state.selectedModule || "";
+        if (current && state.modules.includes(current)) {
+          ui.pluginModule.value = current;
+          state.pluginModule = current;
+        } else {
+          ui.pluginModule.value = "";
+          placeholder.selected = true;
+          state.pluginModule = "";
+        }
+      }
+
+      function renderPluginBuilds() {
+        if (!ui.pluginBuild) {
+          return;
+        }
+        ui.pluginBuild.innerHTML = "";
+        if (!state.selectedModule || !state.builds.length) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = state.selectedModule ? "No builds" : "Select module";
+          option.disabled = true;
+          option.selected = true;
+          ui.pluginBuild.appendChild(option);
+          state.pluginBuild = "";
+          return;
+        }
+        const buildIds = [];
+        state.builds.forEach((build) => {
+          const buildId = build.build_id;
+          if (!buildId) {
+            return;
+          }
+          buildIds.push(buildId);
+          const option = document.createElement("option");
+          const shortId = shortenValue(buildId);
+          const label = build.moduleversion ? shortId + " / " + build.moduleversion : shortId;
+          option.value = buildId;
+          option.textContent = label;
+          option.title = buildId;
+          ui.pluginBuild.appendChild(option);
+        });
+        if (!buildIds.length) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "No builds";
+          option.disabled = true;
+          option.selected = true;
+          ui.pluginBuild.appendChild(option);
+          state.pluginBuild = "";
+          return;
+        }
+        let selected = state.pluginBuild;
+        if (!selected || !buildIds.includes(selected)) {
+          selected = state.currentBuild || state.runningBuild || buildIds[0];
+        }
+        ui.pluginBuild.value = selected;
+        state.pluginBuild = selected;
+      }
+
+      async function loadGlobalPlugins() {
+        setActivity("Loading global plugins...");
+        setPluginRowsMessage(ui.globalPluginRows, "Loading global plugins...");
+        const responses = await Promise.all([
+          apiRequest("GET", apiPath("/plugins/global/index")),
+          apiRequest("GET", apiPath("/plugins/global"))
+        ]);
+        const index = responses[0] ? responses[0].plugins : {};
+        const installed = responses[1] ? responses[1].plugins : [];
+        renderGlobalPlugins(index, installed);
+        setActivity("Global plugins updated.");
+      }
+
+      function renderGlobalPlugins(index, installed) {
+        if (!ui.globalPluginRows) {
+          return;
+        }
+        const installedList = Array.isArray(installed) ? installed : [];
+        const installedMap = new Map();
+        installedList.forEach((entry) => {
+          if (entry && entry.config_name) {
+            installedMap.set(entry.config_name, entry);
+          }
+        });
+        const rows = [];
+        const seen = new Set();
+        const indexEntries = index && typeof index === "object" ? Object.entries(index) : [];
+        indexEntries.forEach(([fullName, versions]) => {
+          const shortName = pluginShortName(fullName);
+          const versionEntries = versions && typeof versions === "object" ? Object.entries(versions) : [];
+          versionEntries.forEach(([version, meta]) => {
+            const configName = pluginConfigName(meta, version);
+            const status = configName && installedMap.has(configName) ? "installed" : (configName ? "missing" : "unknown");
+            rows.push({
+              name: shortName || fullName,
+              version: version || (meta && meta.version) || "",
+              configName: configName,
+              status: status,
+              actionName: shortName || fullName,
+              description: meta && meta.description,
+              fromIndex: true
+            });
+            if (configName) {
+              seen.add(configName);
+            }
+          });
+        });
+        installedList.forEach((entry) => {
+          if (!entry || !entry.config_name || seen.has(entry.config_name)) {
+            return;
+          }
+          const parts = splitConfigName(entry.config_name);
+          rows.push({
+            name: entry.name || parts.name,
+            version: entry.version || parts.version,
+            configName: entry.config_name,
+            status: "installed",
+            actionName: entry.name || parts.name,
+            description: "",
+            fromIndex: false
+          });
+          seen.add(entry.config_name);
+        });
+        if (!rows.length) {
+          setPluginRowsMessage(ui.globalPluginRows, "No plugins found.");
+          return;
+        }
+        rows.sort((a, b) => {
+          const nameCmp = String(a.name || "").localeCompare(String(b.name || ""));
+          if (nameCmp !== 0) {
+            return nameCmp;
+          }
+          return compareVersion(b.version, a.version);
+        });
+        ui.globalPluginRows.innerHTML = "";
+        rows.forEach((entry) => {
+          const row = document.createElement("tr");
+          const pluginName = entry.name || "-";
+          const version = entry.version || "-";
+          const statusText = formatPluginStatus(entry.status);
+          const statusClass = entry.status === "installed" ? "status-pill status-installed" : "status-pill";
+          const configName = entry.configName || "";
+          const configText = configName || "-";
+          const configTitle = configName ? ` title="${escapeAttr(configName)}"` : "";
+          const copyDisabled = configName ? "" : " disabled";
+          const pluginTitle = entry.description ? ` title="${escapeAttr(entry.description)}"` : "";
+          const actionName = entry.actionName || "";
+          const actionDisabled = !(actionName && entry.version);
+          const actionAttr = actionName ? ` data-plugin="${escapeAttr(actionName)}" data-version="${escapeAttr(entry.version || "")}"` : "";
+          const actionItems = [];
+          if (entry.status === "installed") {
+            if (entry.fromIndex) {
+              actionItems.push({
+                action: "rebuild",
+                label: "Rebuild",
+                icon: icons.rebuild,
+                attrs: actionAttr,
+                disabled: actionDisabled
+              });
+            }
+            actionItems.push({
+              action: "remove",
+              label: "Remove",
+              icon: icons.remove,
+              className: "danger",
+              attrs: actionAttr,
+              disabled: actionDisabled
+            });
+          } else {
+            actionItems.push({
+              action: "install",
+              label: "Install",
+              icon: icons.install,
+              attrs: actionAttr,
+              disabled: actionDisabled
+            });
+          }
+          const actionMenu = renderRowMenu(actionItems);
+          row.innerHTML = `
+            <td data-label="Plugin"${pluginTitle}>${escapeAttr(pluginName)}</td>
+            <td data-label="Version">${escapeAttr(version)}</td>
+            <td data-label="Status"><span class="${statusClass}">${escapeAttr(statusText)}</span></td>
+            <td data-label="Config">
+              <div class="value-row">
+                <span class="mono wrap"${configTitle}>${escapeAttr(configText)}</span>
+                <button class="copy-btn" data-copy="${escapeAttr(configName)}"${copyDisabled} type="button">Copy</button>
+              </div>
+            </td>
+            <td data-label="Action">
+              <div class="row-actions">
+                ${actionMenu}
+              </div>
+            </td>
+          `;
+          ui.globalPluginRows.appendChild(row);
+        });
+        wireCopyButtons(ui.globalPluginRows);
+        wireRowMenus(ui.globalPluginRows);
+        ui.globalPluginRows.querySelectorAll("button[data-action]").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (button.disabled) {
+              return;
+            }
+            closeRowMenus();
+            const action = button.dataset.action || "";
+            const name = button.dataset.plugin || "";
+            const version = button.dataset.version || "";
+            if (!action || !name || !version) {
+              setActivity("Missing plugin details for action.", true);
+              return;
+            }
+            button.disabled = true;
+            runGlobalPluginAction(action, name, version)
+              .catch(handleError)
+              .finally(() => {
+                button.disabled = false;
+              });
+          });
+        });
+      }
+
+      async function runGlobalPluginAction(action, name, version) {
+        if (action === "remove") {
+          const confirmText = "Remove plugin " + name + "@" + version + "?";
+          if (!confirm(confirmText)) {
+            return;
+          }
+        }
+        const actionLabel = action === "install"
+          ? "Installing " + name + "@" + version
+          : action === "rebuild"
+            ? "Rebuilding " + name + "@" + version
+            : "Removing " + name + "@" + version;
+        const ok = await runPluginTask(
+          actionLabel,
+          () => apiRequest("POST", apiPath("/plugins/global/" + action), { name: name, version: version })
+        );
+        if (ok) {
+          await loadGlobalPlugins();
+        }
+      }
+
+      async function loadCustomPlugins() {
+        const module = state.pluginModule || state.selectedModule || "";
+        if (!module) {
+          setActivity("Select a module first.", true);
+          return;
+        }
+        let buildId = "";
+        if (!isLocalMode) {
+          buildId = state.pluginBuild || state.currentBuild || "";
+          if (!buildId) {
+            setActivity("Select a build first.", true);
+            return;
+          }
+        }
+        setActivity("Loading custom plugins for " + module + "...");
+        setPluginRowsMessage(ui.customPluginRows, "Loading custom plugins...");
+        const params = new URLSearchParams({ module: module });
+        if (!isLocalMode) {
+          params.set("build_id", buildId);
+        }
+        const data = await apiRequest("GET", apiPath("/plugins/custom?" + params.toString()));
+        renderCustomPlugins(data.plugins || []);
+        setActivity("Custom plugins loaded.");
+      }
+
+      function renderCustomPlugins(plugins) {
+        if (!ui.customPluginRows) {
+          return;
+        }
+        const list = Array.isArray(plugins) ? plugins : [];
+        if (!list.length) {
+          setPluginRowsMessage(ui.customPluginRows, "No plugins configured for this build.");
+          return;
+        }
+        ui.customPluginRows.innerHTML = "";
+        list.forEach((plugin) => {
+          const configName = plugin.config_name || "";
+          const pluginName = plugin.name || configName || "-";
+          const version = plugin.version || "-";
+          const statusText = formatPluginStatus(plugin.status);
+          const statusClass = plugin.status === "installed" ? "status-pill status-installed" : "status-pill";
+          const sourcePath = plugin.source_path || "";
+          const hasSource = !!String(sourcePath || "").trim();
+          const hasConfig = !!String(configName || "").trim();
+          const canCompile = hasSource && hasConfig;
+          const canRemove = hasConfig && plugin.status === "installed";
+          const actionLabel = plugin.status === "installed" ? "Rebuild" : "Compile";
+          const actionText = !hasSource ? "Missing source" : (hasConfig ? actionLabel : "Missing config");
+          const actionDisabled = !canCompile;
+          const pluginTitle = sourcePath ? ` title="${escapeAttr(sourcePath)}"` : "";
+          const configTitle = configName ? ` title="${escapeAttr(configName)}"` : "";
+          const copyDisabled = configName ? "" : " disabled";
+          const moduleName = plugin.module || state.pluginModule || state.selectedModule || "";
+          const buildId = plugin.build_id || state.pluginBuild || "";
+          const actionAttr = ` data-plugin="${escapeAttr(configName)}" data-module="${escapeAttr(moduleName)}" data-build="${escapeAttr(buildId)}" data-status="${escapeAttr(plugin.status || "")}"`;
+          const actionItems = [
+            {
+              action: "compile",
+              label: actionText,
+              icon: icons.compile,
+              attrs: actionAttr,
+              disabled: actionDisabled
+            }
+          ];
+          if (canRemove) {
+            actionItems.push({
+              action: "remove",
+              label: "Remove",
+              icon: icons.remove,
+              className: "danger",
+              attrs: actionAttr,
+              disabled: false
+            });
+          }
+          const actionMenu = renderRowMenu(actionItems);
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td data-label="Plugin"${pluginTitle}>${escapeAttr(pluginName)}</td>
+            <td data-label="Version">${escapeAttr(version)}</td>
+            <td data-label="Status"><span class="${statusClass}">${escapeAttr(statusText)}</span></td>
+            <td data-label="Config">
+              <div class="value-row">
+                <span class="mono wrap"${configTitle}>${escapeAttr(configName || "-")}</span>
+                <button class="copy-btn" data-copy="${escapeAttr(configName)}"${copyDisabled} type="button">Copy</button>
+              </div>
+            </td>
+            <td data-label="Action">
+              <div class="row-actions">
+                ${actionMenu}
+              </div>
+            </td>
+          `;
+          ui.customPluginRows.appendChild(row);
+        });
+        wireCopyButtons(ui.customPluginRows);
+        wireRowMenus(ui.customPluginRows);
+        ui.customPluginRows.querySelectorAll("button[data-action=\"compile\"]").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (button.disabled) {
+              return;
+            }
+            closeRowMenus();
+            const configName = button.dataset.plugin || "";
+            if (!configName) {
+              setActivity("Missing plugin config name.", true);
+              return;
+            }
+            const module = button.dataset.module || state.pluginModule || state.selectedModule || "";
+            const buildId = button.dataset.build || state.pluginBuild || "";
+            const plugin = {
+              config_name: configName,
+              module: module,
+              build_id: buildId,
+              status: button.dataset.status || ""
+            };
+            button.disabled = true;
+            compileCustomPlugin(plugin)
+              .catch(handleError)
+              .finally(() => {
+                button.disabled = false;
+              });
+          });
+        });
+        ui.customPluginRows.querySelectorAll("button[data-action=\"remove\"]").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (button.disabled) {
+              return;
+            }
+            closeRowMenus();
+            const configName = button.dataset.plugin || "";
+            if (!configName) {
+              setActivity("Missing plugin config name.", true);
+              return;
+            }
+            const module = button.dataset.module || state.pluginModule || state.selectedModule || "";
+            const buildId = button.dataset.build || state.pluginBuild || "";
+            const plugin = {
+              config_name: configName,
+              module: module,
+              build_id: buildId
+            };
+            button.disabled = true;
+            removeCustomPlugin(plugin)
+              .catch(handleError)
+              .finally(() => {
+                button.disabled = false;
+              });
+          });
+        });
+      }
+
+      async function compileCustomPlugin(plugin) {
+        const module = plugin.module || state.pluginModule || state.selectedModule || "";
+        if (!module) {
+          setActivity("Select a module first.", true);
+          return;
+        }
+        if (!plugin.config_name) {
+          setActivity("Missing plugin config name.", true);
+          return;
+        }
+        let buildId = plugin.build_id || state.pluginBuild || "";
+        if (!isLocalMode && !buildId) {
+          setActivity("Select a build first.", true);
+          return;
+        }
+        const verb = plugin.status === "installed" ? "Rebuilding" : "Compiling";
+        const label = verb + " " + plugin.config_name;
+        const body = {
+          module: module,
+          plugin: plugin.config_name
+        };
+        if (!isLocalMode) {
+          body.build_id = buildId;
+        }
+        const ok = await runPluginTask(label, () => apiRequest("POST", apiPath("/plugins/custom/compile"), body));
+        if (ok) {
+          await loadCustomPlugins();
+        }
+      }
+
+      async function removeCustomPlugin(plugin) {
+        const module = plugin.module || state.pluginModule || state.selectedModule || "";
+        if (!module) {
+          setActivity("Select a module first.", true);
+          return;
+        }
+        if (!plugin.config_name) {
+          setActivity("Missing plugin config name.", true);
+          return;
+        }
+        let buildId = plugin.build_id || state.pluginBuild || "";
+        if (!isLocalMode && !buildId) {
+          setActivity("Select a build first.", true);
+          return;
+        }
+        const confirmText = "Remove binary for " + plugin.config_name + "?";
+        if (!confirm(confirmText)) {
+          return;
+        }
+        const label = "Removing " + plugin.config_name;
+        const body = {
+          module: module,
+          plugin: plugin.config_name
+        };
+        if (!isLocalMode) {
+          body.build_id = buildId;
+        }
+        const ok = await runPluginTask(label, () => apiRequest("POST", apiPath("/plugins/custom/remove"), body));
+        if (ok) {
+          await loadCustomPlugins();
+        }
+      }
+
+      function sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      async function runPluginTask(label, startRequest) {
+        try {
+          setActivity(label + "...");
+          const task = await startRequest();
+          const taskId = task.task_id || task.id || "";
+          if (!taskId) {
+            setActivity("Plugin task ID missing.", true);
+            return false;
+          }
+          return await waitForPluginTask(taskId, label);
+        } catch (err) {
+          setActivity(err.message || String(err), true);
+          return false;
+        }
+      }
+
+      async function waitForPluginTask(taskId, label) {
+        let lastStatus = "";
+        while (true) {
+          const data = await apiRequest("GET", apiPath("/plugins/tasks/" + taskId));
+          const status = data.status || "";
+          if (status && status !== lastStatus) {
+            lastStatus = status;
+            setActivity(label + " (" + status + ")...");
+          }
+          if (status === "done") {
+            setActivity(label + " complete.");
+            return true;
+          }
+          if (status === "error") {
+            const log = await fetchPluginTaskLogs(taskId);
+            const message = data.message || "Plugin task failed.";
+            const output = log ? stripAnsi(log) : "";
+            setActivity(output ? message + "\n" + output : message, true);
+            return false;
+          }
+          await sleep(1000);
+        }
+      }
+
+      async function fetchPluginTaskLogs(taskId) {
+        try {
+          const data = await apiRequest("GET", apiPath("/plugins/tasks/" + taskId + "/logs"));
+          return data.log || "";
+        } catch (err) {
+          return "";
+        }
+      }
+
       function renderModules() {
         ui.moduleList.innerHTML = "";
         state.modules.forEach((module) => {
           const item = document.createElement("li");
           item.className = "module-item" + (module === state.selectedModule ? " active" : "");
-          item.innerHTML = "<span>" + module + "</span><span class=\"mono\">select</span>";
+          const count = typeof state.buildCounts[module] === "number" ? state.buildCounts[module] : null;
+          const countLabel = count === null ? "—" : (String(count) + " builds");
+          item.innerHTML = "<span>" + module + "</span><span class=\"module-count\">" + countLabel + "</span>";
           item.addEventListener("click", () => selectModule(module));
           ui.moduleList.appendChild(item);
         });
+        renderPluginModules();
       }
 
       function renderBuilds() {
         ui.buildRows.innerHTML = "";
         if (!state.builds.length) {
           const row = document.createElement("tr");
-          row.innerHTML = "<td colspan=\"5\" class=\"note\">No builds found.</td>";
+          row.innerHTML = "<td colspan=\"6\" class=\"note\">No builds found.</td>";
           ui.buildRows.appendChild(row);
+          renderPluginBuilds();
           return;
         }
         state.builds.forEach((build) => {
@@ -1090,84 +2108,77 @@
           const isProduction = !!build.production;
           const modeDefaultSelected = isProduction ? "" : " selected";
           const modeProductionSelected = isProduction ? " selected" : "";
-          const detailsDisabled = buildId === "-" ? " disabled" : "";
-          const iconDisabled = buildId === "-" ? " disabled" : "";
-          const actionDisabled = buildId === "-" ? " disabled" : "";
-          const actionButtons = isRunning
-            ? `
-                <a class="icon-btn${actionDisabled}" data-action="restart" data-build="${buildId}" href="#" title="Restart" aria-label="Restart">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 12a8 8 0 0 1 14.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M18 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M20 12a8 8 0 0 1-14.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M6 20v-5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </a>
-                <button class="danger" data-action="stop" data-build="${buildId}">Stop</button>
-              `
-            : `
-                <a class="icon-btn${actionDisabled}" data-action="start" data-build="${buildId}" href="#" title="Start" aria-label="Start">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M7 5l12 7-12 7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                  </svg>
-                </a>
-              `;
-          const remoteControls = `
-                ${actionButtons}
-                <a class="icon-btn${iconDisabled}" data-action="link" data-build="${buildId}" href="#" title="Open runtime" aria-label="Open runtime">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M10 13a5 5 0 0 1 0-7l2-2a5 5 0 0 1 7 7l-1 1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M14 11a5 5 0 0 1 0 7l-2 2a5 5 0 0 1-7-7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                </a>
-                <a class="icon-btn${iconDisabled}" data-action="dashboard" data-build="${buildId}" href="#" title="Open dashboard" aria-label="Open dashboard">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <rect x="3" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <rect x="13" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <rect x="3" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <rect x="13" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-                </a>
-                <a class="icon-btn${detailsDisabled}" data-action="details" data-build="${buildId}" href="#" title="Show details" aria-label="Show details">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 10v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <circle cx="12" cy="7" r="1" fill="currentColor"/>
-                  </svg>
-                </a>
-                <a class="icon-btn danger${iconDisabled}" data-action="delete" data-build="${buildId}" href="#" title="Delete build" aria-label="Delete build">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 7h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M9 7V5h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <rect x="6" y="7" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                </a>
-              `;
-          const localControls = `
-                <a class="icon-btn${iconDisabled}" data-action="push" data-build="${buildId}" href="#" title="Push build" aria-label="Push build">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 19V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </a>
-                <a class="icon-btn${detailsDisabled}" data-action="details" data-build="${buildId}" href="#" title="Show details" aria-label="Show details">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 10v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <circle cx="12" cy="7" r="1" fill="currentColor"/>
-                  </svg>
-                </a>
-                <a class="icon-btn danger${iconDisabled}" data-action="delete" data-build="${buildId}" href="#" title="Delete build" aria-label="Delete build">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 7h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M9 7V5h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <rect x="6" y="7" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                </a>
-              `;
-          const actionControls = isLocalMode ? localControls : remoteControls;
+          const isDisabled = buildId === "-";
+          const buildAttr = ` data-build="${escapeAttr(buildId)}"`;
+          const detailsDisabled = isDisabled ? " disabled" : "";
+          const actionItems = [];
+          if (!isLocalMode) {
+            if (isRunning) {
+              actionItems.push({
+                action: "restart",
+                label: "Restart",
+                icon: icons.restart,
+                attrs: buildAttr,
+                disabled: isDisabled
+              });
+              actionItems.push({
+                action: "stop",
+                label: "Stop",
+                icon: icons.stop,
+                className: "danger",
+                attrs: buildAttr,
+                disabled: isDisabled
+              });
+            } else {
+              actionItems.push({
+                action: "start",
+                label: "Start",
+                icon: icons.start,
+                attrs: buildAttr,
+                disabled: isDisabled
+              });
+            }
+          }
+          if (isLocalMode) {
+            actionItems.push({
+              action: "push",
+              label: "Push build",
+              icon: icons.push,
+              attrs: buildAttr,
+              disabled: isDisabled
+            });
+          } else {
+            actionItems.push({
+              action: "link",
+              label: "Open runtime",
+              icon: icons.link,
+              attrs: buildAttr,
+              disabled: isDisabled
+            });
+            actionItems.push({
+              action: "dashboard",
+              label: "Open dashboard",
+              icon: icons.dashboard,
+              attrs: buildAttr,
+              disabled: isDisabled
+            });
+          }
+          actionItems.push({
+            action: "details",
+            label: "Details",
+            icon: icons.details,
+            attrs: buildAttr,
+            disabled: isDisabled
+          });
+          actionItems.push({
+            action: "delete",
+            label: "Delete build",
+            icon: icons.delete,
+            className: "danger",
+            attrs: buildAttr,
+            disabled: isDisabled
+          });
+          const actionMenu = renderRowMenu(actionItems);
           row.innerHTML = `
             <td data-label="Build">
               <div class="value-row">
@@ -1177,37 +2188,40 @@
             </td>
             <td data-label="Version">${build.moduleversion || "-"}</td>
             <td data-label="Built" title="${builtTitle}">${builtAt}</td>
-            <td data-label="Mode">
+            <td data-label="Mode" class="remote-only">
               <select class="mode-select" data-action="mode" data-build="${buildId}">
                 <option value="default"${modeDefaultSelected}>Default</option>
                 <option value="production"${modeProductionSelected}>Production</option>
               </select>
             </td>
+            <td data-label="Status" class="remote-only">
+              <span class="status-pill ${isRunning ? "status-installed" : ""}">${isRunning ? "running" : "stopped"}</span>
+            </td>
             <td data-label="Action">
-              <div class="actions-row">
-                ${actionControls}
+              <div class="row-actions">
+                <button class="icon-toggle" data-action="details" data-build="${escapeAttr(buildId)}"${detailsDisabled} type="button" aria-label="Details">
+                  ${icons.details}
+                </button>
+                ${actionMenu}
               </div>
             </td>
           `;
           const detailsRow = document.createElement("tr");
           detailsRow.className = "details-row hidden";
           detailsRow.innerHTML = `
-            <td colspan="5">
+            <td colspan="6">
               <div class="build-details" data-build="${buildId}">
                 <span class="note">Open details to load build status.</span>
               </div>
             </td>
           `;
-          row.querySelectorAll("button[data-action], a[data-action]").forEach((element) => {
+          row.querySelectorAll("button[data-action]").forEach((element) => {
             const action = element.dataset.action;
-            element.addEventListener("click", (event) => {
-              if (element.classList.contains("disabled") || element.disabled) {
-                event.preventDefault();
+            element.addEventListener("click", () => {
+              if (element.disabled) {
                 return;
               }
-              if (element.tagName === "A") {
-                event.preventDefault();
-              }
+              closeRowMenus();
               if (action === "start") {
                 activateBuild(buildId).catch(handleError);
               } else if (action === "restart") {
@@ -1244,6 +2258,8 @@
           ui.buildRows.appendChild(row);
           ui.buildRows.appendChild(detailsRow);
         });
+        wireRowMenus(ui.buildRows);
+        renderPluginBuilds();
       }
 
       function updateStatus(status) {
@@ -1259,8 +2275,13 @@
         const data = await apiRequest("GET", apiPath("/modules"));
         state.modules = data.modules || [];
         state.selectedModule = "";
+        state.pluginModule = "";
+        state.pluginBuild = "";
+        state.buildCounts = {};
         renderModules();
-        ui.buildRows.innerHTML = "<tr><td colspan=\"5\" class=\"note\">Select a module to load builds.</td></tr>";
+        renderPluginBuilds();
+        setPluginRowsMessage(ui.customPluginRows, "Select a module to load custom plugins.");
+        ui.buildRows.innerHTML = "<tr><td colspan=\"6\" class=\"note\">Select a module to load builds.</td></tr>";
         updateStatus({ module: "", current: "", port: "-", versions: "-" });
         ui.refreshStatus.disabled = true;
         state.runningBuild = "";
@@ -1285,12 +2306,19 @@
 
       async function selectModule(module) {
         state.selectedModule = module;
+        state.pluginModule = module;
+        state.pluginBuild = "";
         saveModule(module);
         renderModules();
         state.builds = [];
+        renderPluginBuilds();
         state.runningBuild = "";
         state.currentBuild = "";
-        ui.buildRows.innerHTML = "<tr><td colspan=\"5\" class=\"note\">Loading builds...</td></tr>";
+        setPluginRowsMessage(
+          ui.customPluginRows,
+          isLocalMode ? "Press Load to view custom plugins." : "Select a build to load custom plugins."
+        );
+        ui.buildRows.innerHTML = "<tr><td colspan=\"6\" class=\"note\">Loading builds...</td></tr>";
         ui.refreshStatus.disabled = true;
         updateRollbackTarget();
         const token = state.selectionToken + 1;
@@ -1319,7 +2347,17 @@
           return;
         }
         state.builds = data.versions || [];
+        state.builds.sort((a, b) => {
+          const aTime = buildTimestamp(a && a.built_at);
+          const bTime = buildTimestamp(b && b.built_at);
+          if (aTime === bTime) {
+            return String(b && b.build_id || "").localeCompare(String(a && a.build_id || ""));
+          }
+          return bTime - aTime;
+        });
+        state.buildCounts[module] = state.builds.length;
         renderBuilds();
+        renderModules();
         updateRollbackTarget();
         setActivity("Builds updated.");
       }
@@ -1560,6 +2598,51 @@
 
       function wireEvents() {
         ui.loadModules.addEventListener("click", () => loadModules().catch(handleError));
+        if (ui.viewModules) {
+          ui.viewModules.addEventListener("click", () => setView("modules"));
+        }
+        if (ui.viewPlugins) {
+          ui.viewPlugins.addEventListener("click", () => setView("plugins"));
+        }
+        if (ui.refreshGlobalPlugins) {
+          ui.refreshGlobalPlugins.addEventListener("click", () => loadGlobalPlugins().catch(handleError));
+        }
+        if (ui.loadCustomPlugins) {
+          ui.loadCustomPlugins.addEventListener("click", () => loadCustomPlugins().catch(handleError));
+        }
+        if (ui.pluginModule) {
+          ui.pluginModule.addEventListener("change", () => {
+            const module = ui.pluginModule.value;
+            state.pluginModule = module;
+            state.pluginBuild = "";
+            const message = module
+              ? (isLocalMode ? "Press Load to view custom plugins." : "Select a build to load custom plugins.")
+              : "Select a module to load custom plugins.";
+            setPluginRowsMessage(ui.customPluginRows, message);
+            if (module && module !== state.selectedModule) {
+              selectModule(module)
+                .then(() => {
+                  if (state.view === "plugins") {
+                    autoLoadCustomPlugins();
+                  }
+                })
+                .catch(handleError);
+              return;
+            }
+            if (state.view === "plugins") {
+              autoLoadCustomPlugins();
+            }
+          });
+        }
+        if (ui.pluginBuild) {
+          ui.pluginBuild.addEventListener("change", () => {
+            state.pluginBuild = ui.pluginBuild.value;
+            setPluginRowsMessage(ui.customPluginRows, "Press Load to view custom plugins.");
+            if (state.view === "plugins") {
+              autoLoadCustomPlugins();
+            }
+          });
+        }
         ui.refreshStatus.addEventListener("click", () => {
           const module = state.selectedModule;
           const token = state.selectionToken;
@@ -1611,7 +2694,12 @@
               .catch(handleError);
           });
         }
-        document.addEventListener("click", closeMenu);
+        document.addEventListener("click", () => {
+          closeMenu();
+          closeRowMenus();
+        });
+        window.addEventListener("resize", closeRowMenus);
+        window.addEventListener("scroll", closeRowMenus, true);
       }
 
       function handleError(err) {
@@ -1628,6 +2716,7 @@
         }
         updateSignerMode();
         applyModeLabels();
+        setView(state.view);
         updateRollbackTarget();
         startServerStatusTick();
         if (isLocalMode) {
@@ -1641,6 +2730,72 @@
 
       wireEvents();
       initDefaults();
+    </script>
+    <script>
+      (function () {
+        const storageKey = "hb-theme";
+        const themeToggle = document.getElementById("themeToggle");
+        const logos = document.querySelectorAll(".hero-logo[data-logo-light]");
+        const media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
+
+        function readStoredTheme() {
+          try {
+            return localStorage.getItem(storageKey);
+          } catch (e) {
+            return null;
+          }
+        }
+
+        function storeTheme(theme) {
+          try {
+            localStorage.setItem(storageKey, theme);
+          } catch (e) {}
+        }
+
+        function applyTheme(theme) {
+          document.documentElement.setAttribute("data-theme", theme);
+          if (themeToggle) {
+            const isDark = theme === "dark";
+            themeToggle.setAttribute("aria-pressed", isDark ? "true" : "false");
+            themeToggle.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+            const darkIcon = themeToggle.querySelector(".theme-icon-dark");
+            const lightIcon = themeToggle.querySelector(".theme-icon-light");
+            if (darkIcon && lightIcon) {
+              darkIcon.classList.toggle("hidden", isDark);
+              lightIcon.classList.toggle("hidden", !isDark);
+            }
+          }
+          logos.forEach((logo) => {
+            const next = theme === "light" ? logo.dataset.logoLight : logo.dataset.logoDark;
+            if (next) {
+              logo.src = next;
+            }
+          });
+        }
+
+        const storedTheme = readStoredTheme();
+        const systemTheme = media && media.matches ? "light" : "dark";
+        const initialTheme = storedTheme || systemTheme;
+        applyTheme(initialTheme);
+
+        if (themeToggle) {
+          themeToggle.addEventListener("click", () => {
+            const current = document.documentElement.getAttribute("data-theme") || "dark";
+            const next = current === "dark" ? "light" : "dark";
+            storeTheme(next);
+            applyTheme(next);
+          });
+        }
+
+        if (media) {
+          media.addEventListener("change", (event) => {
+            if (readStoredTheme()) {
+              return;
+            }
+            applyTheme(event.matches ? "light" : "dark");
+          });
+        }
+      })();
     </script>
   </body>
 </html>

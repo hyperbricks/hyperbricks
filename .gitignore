@@ -19,12 +19,16 @@ TO_DO.md
 CHANGES.md
 REFERENCE.generated.md
 alpine-hyperbricks-compile.md
+docs/PLUGIN_REFACTOR_WORKDOCUMENT.md
+docs/PLUGIN_REFACTOR.md
+deploy.hyperbricks
 *.pdf
 .gitignore
 .env
 deploy/
 exports/
-
 /hyperbricks/
 rendered/
 logs/
+design/
+concept/

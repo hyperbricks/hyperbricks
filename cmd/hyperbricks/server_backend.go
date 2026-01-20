@@ -155,6 +155,16 @@ func statusServer() {
 		w.Write(assets.Logo)
 	})
 
+	http.HandleFunc("/assets/logo_blue.png", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", mime.TypeByExtension(".png"))
+		w.Write(assets.Logo_Blue)
+	})
+
+	http.HandleFunc("/assets/logo_black.png", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", mime.TypeByExtension(".png"))
+		w.Write(assets.Logo_Black)
+	})
+
 	http.HandleFunc("/assets/dashboard.css", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", mime.TypeByExtension(".css"))
 		w.Header().Set("Cache-Control", "no-store")

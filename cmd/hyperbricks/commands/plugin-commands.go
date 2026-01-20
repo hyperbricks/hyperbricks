@@ -25,6 +25,7 @@ type PluginMeta struct {
 	Plugin                string   `json:"plugin"`
 	Version               string   `json:"version"`
 	Source                string   `json:"source"`
+	Binary                string   `json:"binary,omitempty"`
 	CompatibleHyperbricks []string `json:"compatible_hyperbricks"`
 	Description           string   `json:"description"`
 }
@@ -122,8 +123,8 @@ func PluginListCommand() *cobra.Command {
 
 				if compatible != nil {
 					shortName := pluginShortName(name)
-					camel := toCamelCase(strings.TrimSuffix(compatible.Source, ".go"))
-					soName := fmt.Sprintf("%s@%s.so", camel, compatible.Version)
+					binaryBase := pluginBinaryBase(*compatible, compatible.Source)
+					soName := fmt.Sprintf("%s@%s.so", binaryBase, compatible.Version)
 					soPath := filepath.Join("./bin/plugins", soName)
 
 					installed := "no"
@@ -313,13 +314,25 @@ func PluginInstallCommand() *cobra.Command {
 			// Build the plugin after cloning
 			fmt.Println("Building plugin...")
 			source := meta.Source
-			if err := buildPlugin(source, pluginShort, ver); err != nil {
+			if strings.TrimSpace(source) == "" {
+				fmt.Println("Warning: 'source' field is missing in manifest.json")
+				return
+			}
+			configName, outputName := pluginOutputNames(meta, source, "", ver)
+			sourceDir := pluginSourceDirFor("", pluginShort, ver)
+			if err := buildPlugin(pluginBuildSpec{
+				SourceDir:   sourceDir,
+				SourceFile:  source,
+				OutputName:  outputName,
+				DisplayName: pluginShort,
+			}); err != nil {
 				fmt.Printf("Build failed: %v\n", err)
 				return
 			}
 
 			fmt.Println("Installing plugin...")
 			fmt.Printf("Plugin \"%s\" (%s) installed successfully.\n", pluginName, ver)
+			fmt.Printf("Config name: %s\n", configName)
 		},
 	}
 
@@ -329,9 +342,11 @@ func PluginInstallCommand() *cobra.Command {
 
 // Build or rebuild a plugin from source (syntax: <name>@<version>)
 func PluginBuildCommand() *cobra.Command {
-	return &cobra.Command{
+	var pluginBuildModule string
+
+	cmd := &cobra.Command{
 		Use:   "build <name>@<version>",
-		Short: "Build or rebuild a plugin from source in ./plugin/<name>/<version> to ./bin/plugins/",
+		Short: "Build or rebuild a plugin from source in ./plugins or modules/<module>/plugins",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			pluginArg := args[0]
@@ -342,7 +357,8 @@ func PluginBuildCommand() *cobra.Command {
 			}
 			name, version := parts[0], parts[1]
 
-			manifestPath := fmt.Sprintf("./plugins/%s/%s/manifest.json", name, version)
+			module := strings.TrimSpace(pluginBuildModule)
+			manifestPath := pluginManifestPathFor(module, name, version)
 			manifestData, err := os.ReadFile(manifestPath)
 			if err != nil {
 				fmt.Printf("Warning: manifest.json not found at '%s'\n", manifestPath)
@@ -361,26 +377,50 @@ func PluginBuildCommand() *cobra.Command {
 			}
 
 			source := meta.Source
+			configName, outputName := pluginOutputNames(meta, source, module, version)
+			sourceDir := pluginSourceDirFor(module, name, version)
 
 			fmt.Println("Building:", name, "Version:", version)
-			if err := buildPlugin(source, name, version); err != nil {
+			if err := buildPlugin(pluginBuildSpec{
+				SourceDir:   sourceDir,
+				SourceFile:  source,
+				OutputName:  outputName,
+				DisplayName: name,
+			}); err != nil {
 				fmt.Printf("Build failed: %v\n", err)
+				return
 			}
+			fmt.Printf("Config name: %s\n", configName)
 		},
 	}
+	cmd.Flags().StringVarP(&pluginBuildModule, "module", "m", "", "Module name for custom plugins")
+	return cmd
 }
 
-func buildPlugin(source, pluginShortName, version string) error {
-	fmt.Printf("Building plugin: %s@%s\n", pluginShortName, version)
-	pluginDir := "./bin/plugins"
+type pluginBuildSpec struct {
+	SourceDir   string
+	SourceFile  string
+	OutputName  string
+	DisplayName string
+	LogWriter   io.Writer
+}
+
+func buildPlugin(spec pluginBuildSpec) error {
+	writer := spec.LogWriter
+	if writer == nil {
+		writer = os.Stdout
+	}
+	fmt.Fprintf(writer, "Building plugin: %s\n", spec.DisplayName)
+	pluginDir := filepath.Join(".", "bin", "plugins")
 	if err := os.MkdirAll(pluginDir, 0755); err != nil {
 		return fmt.Errorf("failed to create plugin directory: %v", err)
 	}
 
-	// Absolute source dir and filename
-	pluginSourceDir := filepath.Join("plugins", pluginShortName, version)
-	pluginSourceFile := source
-	pluginSourcePath := filepath.Join(pluginSourceDir, pluginSourceFile)
+	pluginSourceDir := spec.SourceDir
+	if abs, err := filepath.Abs(pluginSourceDir); err == nil {
+		pluginSourceDir = abs
+	}
+	pluginSourcePath := filepath.Join(pluginSourceDir, spec.SourceFile)
 	if _, err := os.Stat(pluginSourcePath); os.IsNotExist(err) {
 		return fmt.Errorf("plugin source file %s does not exist", pluginSourcePath)
 	}
@@ -400,7 +440,7 @@ func buildPlugin(source, pluginShortName, version string) error {
 	re := regexp.MustCompile(`(github.com/hyperbricks/hyperbricks\s+)v[\w\.\-]+`)
 	newGoMod := re.ReplaceAll(gomodData, []byte("${1}v"+mainVersion))
 	if string(newGoMod) != string(gomodData) {
-		fmt.Printf("Patching %s go.mod hyperbricks dependency to v%s\n", pluginShortName, mainVersion)
+		fmt.Fprintf(writer, "Patching %s go.mod hyperbricks dependency to v%s\n", spec.DisplayName, mainVersion)
 		err = os.WriteFile(gomodPath, newGoMod, 0644)
 		if err != nil {
 			return fmt.Errorf("failed to write patched go.mod: %v", err)
@@ -410,31 +450,34 @@ func buildPlugin(source, pluginShortName, version string) error {
 	// Run `go mod tidy` inside the plugin source dir
 	tidyCmd := exec.Command("go", "mod", "tidy")
 	tidyCmd.Dir = pluginSourceDir
-	tidyCmd.Stdout = os.Stdout
-	tidyCmd.Stderr = os.Stderr
+	tidyCmd.Stdout = writer
+	tidyCmd.Stderr = writer
 	if err := tidyCmd.Run(); err != nil {
 		return fmt.Errorf("failed to run go mod tidy: %v", err)
 	}
 
-	// Output path: relative from pluginSourceDir to bin/plugins
-	camel := toCamelCase(strings.TrimSuffix(source, ".go"))
-	outputRelPath := filepath.ToSlash(filepath.Join("..", "..", "..", "bin", "plugins", fmt.Sprintf("%s@%s.so", camel, version)))
+	outputPath := filepath.Join(pluginDir, spec.OutputName)
+	if abs, err := filepath.Abs(outputPath); err == nil {
+		outputPath = abs
+	}
 
-	// Build from inside the plugin source dir, using relative source and output paths
-	buildCmd := exec.Command("go", "build", "-buildmode=plugin", "-o", outputRelPath, pluginSourceFile)
+	// Build from inside the plugin source dir, using absolute output path
+	buildCmd := exec.Command("go", "build", "-buildmode=plugin", "-o", outputPath, spec.SourceFile)
 	buildCmd.Dir = pluginSourceDir
-	buildCmd.Stdout = os.Stdout
-	buildCmd.Stderr = os.Stderr
+	buildCmd.Stdout = writer
+	buildCmd.Stderr = writer
 	if err := buildCmd.Run(); err != nil {
 		return fmt.Errorf("failed to build plugin: %v", err)
 	}
-	fmt.Println("Build successful:", outputRelPath)
+	fmt.Fprintf(writer, "Build successful: %s\n", outputPath)
 	return nil
 }
 
 // Remove a locally installed plugin
 func PluginRemoveCommand() *cobra.Command {
-	return &cobra.Command{
+	var pluginRemoveModule string
+
+	cmd := &cobra.Command{
 		Use:   "remove <name>@<version>",
 		Short: "Remove a locally installed plugin",
 		Args:  cobra.ExactArgs(1),
@@ -447,21 +490,34 @@ func PluginRemoveCommand() *cobra.Command {
 			}
 			pluginShort := parts[0]
 			version := parts[1]
-			camel := toCamelCase(pluginShort)
-			soName := fmt.Sprintf("%s@%s.so", camel, version)
-			soPath := filepath.Join("./bin/plugins", soName)
+			module := strings.TrimSpace(pluginRemoveModule)
+
+			var meta PluginMeta
+			manifestPath := pluginManifestPathFor(module, pluginShort, version)
+			if manifestData, err := os.ReadFile(manifestPath); err == nil {
+				_ = json.Unmarshal(manifestData, &meta)
+			}
+
+			source := meta.Source
+			if source == "" {
+				source = pluginShort + ".go"
+			}
+			configName, outputName := pluginOutputNames(meta, source, module, version)
+			soPath := filepath.Join("./bin/plugins", outputName)
 
 			if _, err := os.Stat(soPath); os.IsNotExist(err) {
-				fmt.Printf("Plugin \"%s\" (%s) is not installed.\n", pluginShort, version)
+				fmt.Printf("Plugin \"%s\" (%s) is not installed.\n", configName, version)
 				return
 			}
 			if err := os.Remove(soPath); err != nil {
-				fmt.Printf("Failed to remove plugin \"%s\": %v\n", soName, err)
+				fmt.Printf("Failed to remove plugin \"%s\": %v\n", outputName, err)
 				return
 			}
-			fmt.Printf("Plugin \"%s\" (%s) removed.\n", pluginShort, version)
+			fmt.Printf("Plugin \"%s\" (%s) removed.\n", configName, version)
 		},
 	}
+	cmd.Flags().StringVarP(&pluginRemoveModule, "module", "m", "", "Module name for custom plugins")
+	return cmd
 }
 
 // Update a plugin to latest compatible version (placeholder)
@@ -553,6 +609,48 @@ func copyDir(src, dst string) error {
 		_, err = io.Copy(out, in)
 		return err
 	})
+}
+
+func pluginSourceDirFor(module string, pluginShortName string, version string) string {
+	if strings.TrimSpace(module) == "" {
+		return filepath.Join("plugins", pluginShortName, version)
+	}
+	return filepath.Join("modules", module, "plugins", pluginShortName, version)
+}
+
+func pluginManifestPathFor(module string, pluginShortName string, version string) string {
+	return filepath.Join(pluginSourceDirFor(module, pluginShortName, version), "manifest.json")
+}
+
+func pluginBinaryBase(meta PluginMeta, source string) string {
+	if strings.TrimSpace(meta.Binary) != "" {
+		base := strings.TrimSpace(meta.Binary)
+		return strings.TrimSuffix(base, ".so")
+	}
+	return toCamelCase(strings.TrimSuffix(source, ".go"))
+}
+
+func pluginOutputNames(meta PluginMeta, source string, module string, version string) (string, string) {
+	base := pluginBinaryBase(meta, source)
+	if strings.TrimSpace(module) != "" {
+		base = fmt.Sprintf("%s__%s", base, module)
+	}
+	configName := fmt.Sprintf("%s@%s", base, version)
+	return configName, configName + ".so"
+}
+
+type PluginBuildSpec = pluginBuildSpec
+
+func BuildPlugin(spec PluginBuildSpec) error {
+	return buildPlugin(spec)
+}
+
+func PluginOutputNames(meta PluginMeta, source string, module string, version string) (string, string) {
+	return pluginOutputNames(meta, source, module, version)
+}
+
+func FetchPluginIndex() (map[string]map[string]PluginMeta, error) {
+	return fetchPluginIndex()
 }
 
 // Returns the current Hyperbricks version as semver string

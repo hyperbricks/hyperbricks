@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
@@ -95,6 +96,9 @@ type deployLocalServer struct {
 	buildRoot  string
 	syncMu     sync.Mutex
 	syncState  map[string]remoteSyncState
+	workingDir string
+	binaryPath string
+	pluginTasks *pluginTaskStore
 }
 
 type localSyncRequest struct {
@@ -138,6 +142,15 @@ func startDeployLocalServer() error {
 		modulesDir: modulesDir,
 		buildRoot:  buildRoot,
 		syncState:  make(map[string]remoteSyncState),
+		workingDir: "",
+		binaryPath: "",
+		pluginTasks: newPluginTaskStore(),
+	}
+	if wd, err := os.Getwd(); err == nil {
+		api.workingDir = wd
+	}
+	if exe, err := os.Executable(); err == nil {
+		api.binaryPath = exe
 	}
 
 	mux := http.NewServeMux()
@@ -145,8 +158,12 @@ func startDeployLocalServer() error {
 	mux.HandleFunc("/local/modules", api.handleModules)
 	mux.HandleFunc("/local/modules/", api.handleModuleRoutes)
 	mux.HandleFunc("/local/remote/sync", api.handleRemoteSync)
+	mux.HandleFunc("/local/plugins", api.handlePluginRoutes)
+	mux.HandleFunc("/local/plugins/", api.handlePluginRoutes)
 	mux.HandleFunc("/assets/dashboard.css", serveDashboardCSS)
 	mux.HandleFunc("/assets/logo.png", serveDashboardLogo)
+	mux.HandleFunc("/assets/logo_blue.png", serveDashboardLogoBlue)
+	mux.HandleFunc("/assets/logo_black.png", serveDashboardLogoBlack)
 	mux.HandleFunc("/", api.serveLocalDashboard)
 
 	addr := fmt.Sprintf("%s:%d", bind, port)
@@ -320,6 +337,298 @@ func (api *deployLocalServer) handleModuleRoutes(w http.ResponseWriter, r *http.
 	}
 
 	writeError(w, http.StatusNotFound, errors.New("not found"))
+}
+
+func (api *deployLocalServer) handlePluginRoutes(w http.ResponseWriter, r *http.Request) {
+	trimmed := strings.TrimPrefix(r.URL.Path, "/local/")
+	trimmed = strings.Trim(trimmed, "/")
+	parts := strings.Split(trimmed, "/")
+	if len(parts) < 1 || parts[0] != "plugins" {
+		writeError(w, http.StatusNotFound, errors.New("not found"))
+		return
+	}
+	segments := parts[1:]
+	if len(segments) == 0 {
+		writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+		return
+	}
+
+	switch segments[0] {
+	case "global":
+		api.handleLocalGlobalPluginRoutes(w, r, segments[1:])
+	case "custom":
+		api.handleLocalCustomPluginRoutes(w, r, segments[1:])
+	case "tasks":
+		api.handleLocalPluginTaskRoutes(w, r, segments[1:])
+	default:
+		writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+	}
+}
+
+func (api *deployLocalServer) handleLocalGlobalPluginRoutes(w http.ResponseWriter, r *http.Request, segments []string) {
+	if len(segments) == 0 && r.Method == http.MethodGet {
+		api.handleLocalGlobalPluginsList(w)
+		return
+	}
+	if len(segments) == 1 && segments[0] == "index" && r.Method == http.MethodGet {
+		api.handleLocalGlobalPluginsIndex(w)
+		return
+	}
+	if len(segments) == 1 && r.Method == http.MethodPost {
+		switch segments[0] {
+		case "install", "rebuild", "remove":
+			api.handleLocalGlobalPluginAction(w, r, segments[0])
+			return
+		}
+	}
+	writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+}
+
+func (api *deployLocalServer) handleLocalCustomPluginRoutes(w http.ResponseWriter, r *http.Request, segments []string) {
+	if len(segments) == 0 && r.Method == http.MethodGet {
+		api.handleLocalCustomPluginsList(w, r)
+		return
+	}
+	if len(segments) == 1 && segments[0] == "compile" && r.Method == http.MethodPost {
+		api.handleLocalCustomPluginCompile(w, r)
+		return
+	}
+	if len(segments) == 1 && segments[0] == "remove" && r.Method == http.MethodPost {
+		api.handleLocalCustomPluginRemove(w, r)
+		return
+	}
+	writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+}
+
+func (api *deployLocalServer) handleLocalPluginTaskRoutes(w http.ResponseWriter, r *http.Request, segments []string) {
+	if len(segments) < 1 {
+		writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+		return
+	}
+	taskID := segments[0]
+	if len(segments) == 2 && segments[1] == "logs" && r.Method == http.MethodGet {
+		api.handleLocalPluginTaskLogs(w, taskID)
+		return
+	}
+	if len(segments) == 1 && r.Method == http.MethodGet {
+		api.handleLocalPluginTaskStatus(w, taskID)
+		return
+	}
+	writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+}
+
+func (api *deployLocalServer) handleLocalGlobalPluginsIndex(w http.ResponseWriter) {
+	index, err := commands.FetchPluginIndex()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"plugins": index,
+	})
+}
+
+func (api *deployLocalServer) handleLocalGlobalPluginsList(w http.ResponseWriter) {
+	pluginDir := filepath.Join(api.workingDir, "bin", "plugins")
+	plugins, err := listPluginBinaries(pluginDir, false)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"plugins": plugins,
+	})
+}
+
+func (api *deployLocalServer) handleLocalGlobalPluginAction(w http.ResponseWriter, r *http.Request, action string) {
+	var req pluginGlobalRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	req.Name = strings.TrimSpace(req.Name)
+	req.Version = strings.TrimSpace(req.Version)
+	if req.Name == "" || req.Version == "" {
+		writeError(w, http.StatusBadRequest, errors.New("name and version are required"))
+		return
+	}
+
+	var cmdAction string
+	switch action {
+	case "install":
+		cmdAction = "install"
+	case "rebuild":
+		cmdAction = "build"
+	case "remove":
+		cmdAction = "remove"
+	default:
+		writeError(w, http.StatusNotFound, errors.New("unknown action"))
+		return
+	}
+
+	args := []string{"plugin", cmdAction, fmt.Sprintf("%s@%s", req.Name, req.Version)}
+	task := api.runPluginCommandTask(args)
+	writeJSON(w, http.StatusOK, task.snapshot())
+}
+
+func (api *deployLocalServer) handleLocalCustomPluginsList(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	module := strings.TrimSpace(query.Get("module"))
+	if module == "" {
+		writeError(w, http.StatusBadRequest, errors.New("module is required"))
+		return
+	}
+
+	configPath := filepath.Join(api.modulesDir, module, "package.hyperbricks")
+	pluginRoot := filepath.Join(api.modulesDir, module, "plugins")
+	pluginDir := filepath.Join(api.workingDir, "bin", "plugins")
+
+	configNames, err := readPluginConfigNames(configPath)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	sourceEntries, err := scanPluginSourceEntries(pluginRoot, module)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	plugins := make([]pluginListEntry, 0, len(configNames))
+	moduleSuffix := "__" + module
+	for _, configName := range configNames {
+		base, version := splitConfigName(configName)
+		if !strings.HasSuffix(base, moduleSuffix) {
+			continue
+		}
+		entry, ok := sourceEntries[configName]
+		outputName := configName + ".so"
+		sourcePath := ""
+		status := "source-missing"
+		if ok {
+			outputName = entry.OutputName
+			sourcePath = entry.SourceDir
+			status = "missing"
+			if pluginBinaryExists(pluginDir, entry.OutputName) {
+				status = "installed"
+			}
+		}
+		if !ok && pluginBinaryExists(pluginDir, outputName) {
+			status = "installed"
+		}
+		plugins = append(plugins, pluginListEntry{
+			Name:       base,
+			Version:    version,
+			BinaryName: outputName,
+			ConfigName: configName,
+			Kind:       "custom",
+			Module:     module,
+			SourcePath: sourcePath,
+			BinaryPath: filepath.Join("bin", "plugins", outputName),
+			Status:     status,
+		})
+	}
+
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"plugins": plugins,
+	})
+}
+
+func (api *deployLocalServer) handleLocalCustomPluginCompile(w http.ResponseWriter, r *http.Request) {
+	var req pluginCustomCompileRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	req.Module = strings.TrimSpace(req.Module)
+	req.Plugin = strings.TrimSpace(req.Plugin)
+	if req.Module == "" || req.Plugin == "" {
+		writeError(w, http.StatusBadRequest, errors.New("module and plugin are required"))
+		return
+	}
+
+	pluginRoot := filepath.Join(api.modulesDir, req.Module, "plugins")
+	sourceEntries, err := scanPluginSourceEntries(pluginRoot, req.Module)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	entry, ok := sourceEntries[req.Plugin]
+	if !ok {
+		writeError(w, http.StatusNotFound, errors.New("plugin source not found"))
+		return
+	}
+
+	task := api.pluginTasks.newTask()
+	go func() {
+		task.start()
+		var buffer bytes.Buffer
+		spec := commands.PluginBuildSpec{
+			SourceDir:   entry.SourceDir,
+			SourceFile:  entry.Meta.Source,
+			OutputName:  entry.OutputName,
+			DisplayName: entry.ConfigName,
+			LogWriter:   &buffer,
+		}
+		err := commands.BuildPlugin(spec)
+		task.finish(err, buffer.String())
+	}()
+
+	writeJSON(w, http.StatusOK, task.snapshot())
+}
+
+func (api *deployLocalServer) handleLocalCustomPluginRemove(w http.ResponseWriter, r *http.Request) {
+	var req pluginCustomRemoveRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	req.Module = strings.TrimSpace(req.Module)
+	req.Plugin = strings.TrimSpace(req.Plugin)
+	if req.Module == "" || req.Plugin == "" {
+		writeError(w, http.StatusBadRequest, errors.New("module and plugin are required"))
+		return
+	}
+
+	task := api.pluginTasks.newTask()
+	go func() {
+		task.start()
+		_, err := removePluginBinary(api.workingDir, req.Plugin)
+		task.finish(err, "")
+	}()
+
+	writeJSON(w, http.StatusOK, task.snapshot())
+}
+
+func (api *deployLocalServer) handleLocalPluginTaskStatus(w http.ResponseWriter, taskID string) {
+	task, ok := api.pluginTasks.get(taskID)
+	if !ok {
+		writeError(w, http.StatusNotFound, errors.New("task not found"))
+		return
+	}
+	writeJSON(w, http.StatusOK, task.snapshot())
+}
+
+func (api *deployLocalServer) handleLocalPluginTaskLogs(w http.ResponseWriter, taskID string) {
+	task, ok := api.pluginTasks.get(taskID)
+	if !ok {
+		writeError(w, http.StatusNotFound, errors.New("task not found"))
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"task_id": taskID,
+		"log":     task.logText(),
+	})
+}
+
+func (api *deployLocalServer) runPluginCommandTask(args []string) *pluginTask {
+	task := api.pluginTasks.newTask()
+	go func() {
+		task.start()
+		output, err := runCommand(api.binaryPath, api.workingDir, args)
+		task.finish(err, output)
+	}()
+	return task
 }
 
 func (api *deployLocalServer) handleModuleStatus(w http.ResponseWriter, module string) {
