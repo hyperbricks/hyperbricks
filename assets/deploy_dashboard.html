@@ -83,7 +83,12 @@
         </div>
       </header>
 
-      <div class="grid">
+      <div class="view-toggle">
+        <button id="viewModules" class="toggle active" type="button">Modules</button>
+        <button id="viewPlugins" class="toggle ghost" type="button">Plugins</button>
+      </div>
+
+      <div id="modulesView" class="grid">
         <section class="panel status">
           <h2>Server Status</h2>
           <div class="status-grid">
@@ -142,6 +147,70 @@
           <pre id="activity">Ready.</pre>
         </section>
       </div>
+
+      <div id="pluginsView" class="grid hidden">
+        <section class="panel plugins-global">
+          <div class="panel-header">
+            <h2>Global Plugins</h2>
+            <div class="actions-row">
+              <button id="refreshGlobalPlugins" class="secondary" type="button">Refresh</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Plugin</th>
+                  <th>Version</th>
+                  <th>Status</th>
+                  <th>Config</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="globalPluginRows">
+                <tr>
+                  <td colspan="5" class="note">Load plugins to see the global index.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel plugins-custom">
+          <div class="panel-header">
+            <h2>Custom Plugins</h2>
+            <div class="actions-row">
+              <div class="field">
+                <label for="pluginModule">Module</label>
+                <select id="pluginModule"></select>
+              </div>
+              <div class="field remote-only">
+                <label for="pluginBuild">Build</label>
+                <select id="pluginBuild"></select>
+              </div>
+              <button id="loadCustomPlugins" class="secondary" type="button">Load</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Plugin</th>
+                  <th>Version</th>
+                  <th>Status</th>
+                  <th>Config</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="customPluginRows">
+                <tr>
+                  <td colspan="5" class="note">Select a module to load custom plugins.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
 
     <script>
@@ -168,7 +237,17 @@
         activity: document.getElementById("activity"),
         menuToggle: document.getElementById("menuToggle"),
         menuPanel: document.getElementById("menuPanel"),
-        killAll: document.getElementById("killAllProcesses")
+        killAll: document.getElementById("killAllProcesses"),
+        modulesView: document.getElementById("modulesView"),
+        pluginsView: document.getElementById("pluginsView"),
+        viewModules: document.getElementById("viewModules"),
+        viewPlugins: document.getElementById("viewPlugins"),
+        globalPluginRows: document.getElementById("globalPluginRows"),
+        refreshGlobalPlugins: document.getElementById("refreshGlobalPlugins"),
+        customPluginRows: document.getElementById("customPluginRows"),
+        pluginModule: document.getElementById("pluginModule"),
+        pluginBuild: document.getElementById("pluginBuild"),
+        loadCustomPlugins: document.getElementById("loadCustomPlugins")
       };
 
       const mode = (document.body.dataset.mode || "remote").toLowerCase();
@@ -182,7 +261,10 @@
         runningBuild: "",
         currentBuild: "",
         selectionToken: 0,
-        logsEnabled: !isLocalMode
+        logsEnabled: !isLocalMode,
+        view: "modules",
+        pluginModule: "",
+        pluginBuild: ""
       };
       document.body.classList.add(isLocalMode ? "mode-local" : "mode-remote");
 
@@ -1061,6 +1143,657 @@
         return "";
       }
 
+      function setView(view) {
+        const target = view === "plugins" ? "plugins" : "modules";
+        state.view = target;
+        const showModules = target === "modules";
+        if (ui.modulesView) {
+          ui.modulesView.classList.toggle("hidden", !showModules);
+        }
+        if (ui.pluginsView) {
+          ui.pluginsView.classList.toggle("hidden", showModules);
+        }
+        if (ui.viewModules) {
+          ui.viewModules.classList.toggle("active", showModules);
+          ui.viewModules.classList.toggle("ghost", !showModules);
+        }
+        if (ui.viewPlugins) {
+          ui.viewPlugins.classList.toggle("active", !showModules);
+          ui.viewPlugins.classList.toggle("ghost", showModules);
+        }
+        if (!showModules) {
+          renderPluginModules();
+          renderPluginBuilds();
+        }
+      }
+
+      function pluginShortName(fullName) {
+        const text = String(fullName || "");
+        const idx = text.lastIndexOf("/");
+        return idx >= 0 ? text.slice(idx + 1) : text;
+      }
+
+      function toCamelCase(value) {
+        const text = String(value || "");
+        let out = "";
+        let upperNext = true;
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i];
+          if (ch === "-" || ch === "_") {
+            upperNext = true;
+            continue;
+          }
+          if (upperNext) {
+            out += ch.toUpperCase();
+            upperNext = false;
+          } else {
+            out += ch;
+          }
+        }
+        return out;
+      }
+
+      function pluginBinaryBase(meta) {
+        if (meta && typeof meta.binary === "string" && meta.binary.trim()) {
+          return meta.binary.trim().replace(/\.so$/, "");
+        }
+        const source = meta && typeof meta.source === "string" ? meta.source.trim() : "";
+        if (!source) {
+          return "";
+        }
+        const trimmed = source.endsWith(".go") ? source.slice(0, -3) : source;
+        return toCamelCase(trimmed);
+      }
+
+      function pluginConfigName(meta, version) {
+        const base = pluginBinaryBase(meta);
+        if (!base || !version) {
+          return "";
+        }
+        return base + "@" + version;
+      }
+
+      function splitConfigName(configName) {
+        const text = String(configName || "");
+        const idx = text.lastIndexOf("@");
+        if (idx === -1) {
+          return { name: text, version: "" };
+        }
+        return { name: text.slice(0, idx), version: text.slice(idx + 1) };
+      }
+
+      function compareVersion(a, b) {
+        const split = (value) => {
+          const raw = String(value || "").trim().replace(/^v/, "");
+          const parts = raw.split("-");
+          const main = parts[0] || "";
+          const pre = parts.slice(1).join("-") || "";
+          const nums = main.split(".").map((item) => {
+            const num = parseInt(item, 10);
+            return Number.isNaN(num) ? item : num;
+          });
+          return { nums: nums, pre: pre };
+        };
+        const va = split(a);
+        const vb = split(b);
+        const max = Math.max(va.nums.length, vb.nums.length);
+        for (let i = 0; i < max; i++) {
+          const na = va.nums[i] === undefined ? 0 : va.nums[i];
+          const nb = vb.nums[i] === undefined ? 0 : vb.nums[i];
+          if (typeof na === "number" && typeof nb === "number") {
+            if (na !== nb) {
+              return na - nb;
+            }
+          } else {
+            const sa = String(na);
+            const sb = String(nb);
+            if (sa !== sb) {
+              return sa < sb ? -1 : 1;
+            }
+          }
+        }
+        if (va.pre && !vb.pre) {
+          return -1;
+        }
+        if (!va.pre && vb.pre) {
+          return 1;
+        }
+        if (va.pre === vb.pre) {
+          return 0;
+        }
+        return va.pre < vb.pre ? -1 : 1;
+      }
+
+      function formatPluginStatus(status) {
+        const value = String(status || "").trim();
+        if (!value) {
+          return "-";
+        }
+        if (value === "source-missing") {
+          return "source missing";
+        }
+        return value.replace(/_/g, " ");
+      }
+
+      function setPluginRowsMessage(container, message) {
+        if (!container) {
+          return;
+        }
+        container.innerHTML = "<tr><td colspan=\"5\" class=\"note\">" + message + "</td></tr>";
+      }
+
+      function wireCopyButtons(container) {
+        if (!container) {
+          return;
+        }
+        container.querySelectorAll(".copy-btn").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (button.disabled) {
+              return;
+            }
+            const value = button.dataset.copy || "";
+            copyText(value)
+              .then(() => setActivity("Copied to clipboard."))
+              .catch(() => setActivity("Copy failed.", true));
+          });
+        });
+      }
+
+      function renderPluginModules() {
+        if (!ui.pluginModule) {
+          return;
+        }
+        ui.pluginModule.innerHTML = "";
+        if (!state.modules.length) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "Load modules first";
+          option.disabled = true;
+          option.selected = true;
+          ui.pluginModule.appendChild(option);
+          state.pluginModule = "";
+          return;
+        }
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Select module";
+        placeholder.disabled = true;
+        ui.pluginModule.appendChild(placeholder);
+        state.modules.forEach((module) => {
+          const option = document.createElement("option");
+          option.value = module;
+          option.textContent = module;
+          ui.pluginModule.appendChild(option);
+        });
+        const current = state.pluginModule || state.selectedModule || "";
+        if (current && state.modules.includes(current)) {
+          ui.pluginModule.value = current;
+          state.pluginModule = current;
+        } else {
+          ui.pluginModule.value = "";
+          placeholder.selected = true;
+          state.pluginModule = "";
+        }
+      }
+
+      function renderPluginBuilds() {
+        if (!ui.pluginBuild) {
+          return;
+        }
+        ui.pluginBuild.innerHTML = "";
+        if (!state.selectedModule || !state.builds.length) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = state.selectedModule ? "No builds" : "Select module";
+          option.disabled = true;
+          option.selected = true;
+          ui.pluginBuild.appendChild(option);
+          state.pluginBuild = "";
+          return;
+        }
+        const buildIds = [];
+        state.builds.forEach((build) => {
+          const buildId = build.build_id;
+          if (!buildId) {
+            return;
+          }
+          buildIds.push(buildId);
+          const option = document.createElement("option");
+          const shortId = shortenValue(buildId);
+          const label = build.moduleversion ? shortId + " / " + build.moduleversion : shortId;
+          option.value = buildId;
+          option.textContent = label;
+          option.title = buildId;
+          ui.pluginBuild.appendChild(option);
+        });
+        if (!buildIds.length) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "No builds";
+          option.disabled = true;
+          option.selected = true;
+          ui.pluginBuild.appendChild(option);
+          state.pluginBuild = "";
+          return;
+        }
+        let selected = state.pluginBuild;
+        if (!selected || !buildIds.includes(selected)) {
+          selected = state.currentBuild || state.runningBuild || buildIds[0];
+        }
+        ui.pluginBuild.value = selected;
+        state.pluginBuild = selected;
+      }
+
+      async function loadGlobalPlugins() {
+        setActivity("Loading global plugins...");
+        setPluginRowsMessage(ui.globalPluginRows, "Loading global plugins...");
+        const responses = await Promise.all([
+          apiRequest("GET", apiPath("/plugins/global/index")),
+          apiRequest("GET", apiPath("/plugins/global"))
+        ]);
+        const index = responses[0] ? responses[0].plugins : {};
+        const installed = responses[1] ? responses[1].plugins : [];
+        renderGlobalPlugins(index, installed);
+        setActivity("Global plugins updated.");
+      }
+
+      function renderGlobalPlugins(index, installed) {
+        if (!ui.globalPluginRows) {
+          return;
+        }
+        const installedList = Array.isArray(installed) ? installed : [];
+        const installedMap = new Map();
+        installedList.forEach((entry) => {
+          if (entry && entry.config_name) {
+            installedMap.set(entry.config_name, entry);
+          }
+        });
+        const rows = [];
+        const seen = new Set();
+        const indexEntries = index && typeof index === "object" ? Object.entries(index) : [];
+        indexEntries.forEach(([fullName, versions]) => {
+          const shortName = pluginShortName(fullName);
+          const versionEntries = versions && typeof versions === "object" ? Object.entries(versions) : [];
+          versionEntries.forEach(([version, meta]) => {
+            const configName = pluginConfigName(meta, version);
+            const status = configName && installedMap.has(configName) ? "installed" : (configName ? "missing" : "unknown");
+            rows.push({
+              name: shortName || fullName,
+              version: version || (meta && meta.version) || "",
+              configName: configName,
+              status: status,
+              actionName: shortName || fullName,
+              description: meta && meta.description,
+              fromIndex: true
+            });
+            if (configName) {
+              seen.add(configName);
+            }
+          });
+        });
+        installedList.forEach((entry) => {
+          if (!entry || !entry.config_name || seen.has(entry.config_name)) {
+            return;
+          }
+          const parts = splitConfigName(entry.config_name);
+          rows.push({
+            name: entry.name || parts.name,
+            version: entry.version || parts.version,
+            configName: entry.config_name,
+            status: "installed",
+            actionName: entry.name || parts.name,
+            description: "",
+            fromIndex: false
+          });
+          seen.add(entry.config_name);
+        });
+        if (!rows.length) {
+          setPluginRowsMessage(ui.globalPluginRows, "No plugins found.");
+          return;
+        }
+        rows.sort((a, b) => {
+          const nameCmp = String(a.name || "").localeCompare(String(b.name || ""));
+          if (nameCmp !== 0) {
+            return nameCmp;
+          }
+          return compareVersion(b.version, a.version);
+        });
+        ui.globalPluginRows.innerHTML = "";
+        rows.forEach((entry) => {
+          const row = document.createElement("tr");
+          const pluginName = entry.name || "-";
+          const version = entry.version || "-";
+          const statusText = formatPluginStatus(entry.status);
+          const configName = entry.configName || "";
+          const configText = configName || "-";
+          const configTitle = configName ? ` title="${escapeAttr(configName)}"` : "";
+          const copyDisabled = configName ? "" : " disabled";
+          const pluginTitle = entry.description ? ` title="${escapeAttr(entry.description)}"` : "";
+          const actionName = entry.actionName || "";
+          const actionDisabled = actionName && entry.version ? "" : " disabled";
+          const actionAttr = actionName ? ` data-plugin="${escapeAttr(actionName)}" data-version="${escapeAttr(entry.version || "")}"` : "";
+          let actionButtons = "";
+          if (entry.status === "installed") {
+            if (entry.fromIndex) {
+              actionButtons = `
+                <button class="secondary"${actionAttr} data-action="rebuild"${actionDisabled} type="button">Rebuild</button>
+                <button class="danger"${actionAttr} data-action="remove"${actionDisabled} type="button">Remove</button>
+              `;
+            } else {
+              actionButtons = `<button class="danger"${actionAttr} data-action="remove"${actionDisabled} type="button">Remove</button>`;
+            }
+          } else {
+            actionButtons = `<button${actionAttr} data-action="install"${actionDisabled} type="button">Install</button>`;
+          }
+          row.innerHTML = `
+            <td data-label="Plugin"${pluginTitle}>${escapeAttr(pluginName)}</td>
+            <td data-label="Version">${escapeAttr(version)}</td>
+            <td data-label="Status">${escapeAttr(statusText)}</td>
+            <td data-label="Config">
+              <div class="value-row">
+                <span class="mono wrap"${configTitle}>${escapeAttr(configText)}</span>
+                <button class="copy-btn" data-copy="${escapeAttr(configName)}"${copyDisabled} type="button">Copy</button>
+              </div>
+            </td>
+            <td data-label="Action">
+              <div class="actions-row">
+                ${actionButtons}
+              </div>
+            </td>
+          `;
+          ui.globalPluginRows.appendChild(row);
+        });
+        wireCopyButtons(ui.globalPluginRows);
+        ui.globalPluginRows.querySelectorAll("button[data-action]").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (button.disabled) {
+              return;
+            }
+            const action = button.dataset.action || "";
+            const name = button.dataset.plugin || "";
+            const version = button.dataset.version || "";
+            if (!action || !name || !version) {
+              setActivity("Missing plugin details for action.", true);
+              return;
+            }
+            button.disabled = true;
+            runGlobalPluginAction(action, name, version)
+              .catch(handleError)
+              .finally(() => {
+                button.disabled = false;
+              });
+          });
+        });
+      }
+
+      async function runGlobalPluginAction(action, name, version) {
+        if (action === "remove") {
+          const confirmText = "Remove plugin " + name + "@" + version + "?";
+          if (!confirm(confirmText)) {
+            return;
+          }
+        }
+        const actionLabel = action === "install"
+          ? "Installing " + name + "@" + version
+          : action === "rebuild"
+            ? "Rebuilding " + name + "@" + version
+            : "Removing " + name + "@" + version;
+        const ok = await runPluginTask(
+          actionLabel,
+          () => apiRequest("POST", apiPath("/plugins/global/" + action), { name: name, version: version })
+        );
+        if (ok) {
+          await loadGlobalPlugins();
+        }
+      }
+
+      async function loadCustomPlugins() {
+        const module = state.pluginModule || state.selectedModule || "";
+        if (!module) {
+          setActivity("Select a module first.", true);
+          return;
+        }
+        let buildId = "";
+        if (!isLocalMode) {
+          buildId = state.pluginBuild || state.currentBuild || "";
+          if (!buildId) {
+            setActivity("Select a build first.", true);
+            return;
+          }
+        }
+        setActivity("Loading custom plugins for " + module + "...");
+        setPluginRowsMessage(ui.customPluginRows, "Loading custom plugins...");
+        const params = new URLSearchParams({ module: module });
+        if (!isLocalMode) {
+          params.set("build_id", buildId);
+        }
+        const data = await apiRequest("GET", apiPath("/plugins/custom?" + params.toString()));
+        renderCustomPlugins(data.plugins || []);
+        setActivity("Custom plugins loaded.");
+      }
+
+      function renderCustomPlugins(plugins) {
+        if (!ui.customPluginRows) {
+          return;
+        }
+        const list = Array.isArray(plugins) ? plugins : [];
+        if (!list.length) {
+          setPluginRowsMessage(ui.customPluginRows, "No plugins configured for this build.");
+          return;
+        }
+        ui.customPluginRows.innerHTML = "";
+        list.forEach((plugin) => {
+          const configName = plugin.config_name || "";
+          const pluginName = plugin.name || configName || "-";
+          const version = plugin.version || "-";
+          const statusText = formatPluginStatus(plugin.status);
+          const sourcePath = plugin.source_path || "";
+          const hasSource = !!String(sourcePath || "").trim();
+          const hasConfig = !!String(configName || "").trim();
+          const canCompile = hasSource && hasConfig;
+          const canRemove = hasConfig && plugin.status === "installed";
+          const actionLabel = plugin.status === "installed" ? "Rebuild" : "Compile";
+          const actionText = !hasSource ? "Missing source" : (hasConfig ? actionLabel : "Missing config");
+          const actionDisabled = canCompile ? "" : " disabled";
+          const pluginTitle = sourcePath ? ` title="${escapeAttr(sourcePath)}"` : "";
+          const configTitle = configName ? ` title="${escapeAttr(configName)}"` : "";
+          const copyDisabled = configName ? "" : " disabled";
+          const moduleName = plugin.module || state.pluginModule || state.selectedModule || "";
+          const buildId = plugin.build_id || state.pluginBuild || "";
+          const actionAttr = ` data-plugin="${escapeAttr(configName)}" data-module="${escapeAttr(moduleName)}" data-build="${escapeAttr(buildId)}" data-status="${escapeAttr(plugin.status || "")}"`;
+          const removeButton = canRemove
+            ? `<button class="danger"${actionAttr} data-action="remove" type="button">Remove</button>`
+            : "";
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td data-label="Plugin"${pluginTitle}>${escapeAttr(pluginName)}</td>
+            <td data-label="Version">${escapeAttr(version)}</td>
+            <td data-label="Status">${escapeAttr(statusText)}</td>
+            <td data-label="Config">
+              <div class="value-row">
+                <span class="mono wrap"${configTitle}>${escapeAttr(configName || "-")}</span>
+                <button class="copy-btn" data-copy="${escapeAttr(configName)}"${copyDisabled} type="button">Copy</button>
+              </div>
+            </td>
+            <td data-label="Action">
+              <div class="actions-row">
+                <button class="secondary"${actionAttr} data-action="compile"${actionDisabled} type="button">${actionText}</button>
+                ${removeButton}
+              </div>
+            </td>
+          `;
+          ui.customPluginRows.appendChild(row);
+        });
+        wireCopyButtons(ui.customPluginRows);
+        ui.customPluginRows.querySelectorAll("button[data-action=\"compile\"]").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (button.disabled) {
+              return;
+            }
+            const configName = button.dataset.plugin || "";
+            if (!configName) {
+              setActivity("Missing plugin config name.", true);
+              return;
+            }
+            const module = button.dataset.module || state.pluginModule || state.selectedModule || "";
+            const buildId = button.dataset.build || state.pluginBuild || "";
+            const plugin = {
+              config_name: configName,
+              module: module,
+              build_id: buildId,
+              status: button.dataset.status || ""
+            };
+            button.disabled = true;
+            compileCustomPlugin(plugin)
+              .catch(handleError)
+              .finally(() => {
+                button.disabled = false;
+              });
+          });
+        });
+        ui.customPluginRows.querySelectorAll("button[data-action=\"remove\"]").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (button.disabled) {
+              return;
+            }
+            const configName = button.dataset.plugin || "";
+            if (!configName) {
+              setActivity("Missing plugin config name.", true);
+              return;
+            }
+            const module = button.dataset.module || state.pluginModule || state.selectedModule || "";
+            const buildId = button.dataset.build || state.pluginBuild || "";
+            const plugin = {
+              config_name: configName,
+              module: module,
+              build_id: buildId
+            };
+            button.disabled = true;
+            removeCustomPlugin(plugin)
+              .catch(handleError)
+              .finally(() => {
+                button.disabled = false;
+              });
+          });
+        });
+      }
+
+      async function compileCustomPlugin(plugin) {
+        const module = plugin.module || state.pluginModule || state.selectedModule || "";
+        if (!module) {
+          setActivity("Select a module first.", true);
+          return;
+        }
+        if (!plugin.config_name) {
+          setActivity("Missing plugin config name.", true);
+          return;
+        }
+        let buildId = plugin.build_id || state.pluginBuild || "";
+        if (!isLocalMode && !buildId) {
+          setActivity("Select a build first.", true);
+          return;
+        }
+        const verb = plugin.status === "installed" ? "Rebuilding" : "Compiling";
+        const label = verb + " " + plugin.config_name;
+        const body = {
+          module: module,
+          plugin: plugin.config_name
+        };
+        if (!isLocalMode) {
+          body.build_id = buildId;
+        }
+        const ok = await runPluginTask(label, () => apiRequest("POST", apiPath("/plugins/custom/compile"), body));
+        if (ok) {
+          await loadCustomPlugins();
+        }
+      }
+
+      async function removeCustomPlugin(plugin) {
+        const module = plugin.module || state.pluginModule || state.selectedModule || "";
+        if (!module) {
+          setActivity("Select a module first.", true);
+          return;
+        }
+        if (!plugin.config_name) {
+          setActivity("Missing plugin config name.", true);
+          return;
+        }
+        let buildId = plugin.build_id || state.pluginBuild || "";
+        if (!isLocalMode && !buildId) {
+          setActivity("Select a build first.", true);
+          return;
+        }
+        const confirmText = "Remove binary for " + plugin.config_name + "?";
+        if (!confirm(confirmText)) {
+          return;
+        }
+        const label = "Removing " + plugin.config_name;
+        const body = {
+          module: module,
+          plugin: plugin.config_name
+        };
+        if (!isLocalMode) {
+          body.build_id = buildId;
+        }
+        const ok = await runPluginTask(label, () => apiRequest("POST", apiPath("/plugins/custom/remove"), body));
+        if (ok) {
+          await loadCustomPlugins();
+        }
+      }
+
+      function sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      async function runPluginTask(label, startRequest) {
+        try {
+          setActivity(label + "...");
+          const task = await startRequest();
+          const taskId = task.task_id || task.id || "";
+          if (!taskId) {
+            setActivity("Plugin task ID missing.", true);
+            return false;
+          }
+          return await waitForPluginTask(taskId, label);
+        } catch (err) {
+          setActivity(err.message || String(err), true);
+          return false;
+        }
+      }
+
+      async function waitForPluginTask(taskId, label) {
+        let lastStatus = "";
+        while (true) {
+          const data = await apiRequest("GET", apiPath("/plugins/tasks/" + taskId));
+          const status = data.status || "";
+          if (status && status !== lastStatus) {
+            lastStatus = status;
+            setActivity(label + " (" + status + ")...");
+          }
+          if (status === "done") {
+            setActivity(label + " complete.");
+            return true;
+          }
+          if (status === "error") {
+            const log = await fetchPluginTaskLogs(taskId);
+            const message = data.message || "Plugin task failed.";
+            const output = log ? stripAnsi(log) : "";
+            setActivity(output ? message + "\n" + output : message, true);
+            return false;
+          }
+          await sleep(1000);
+        }
+      }
+
+      async function fetchPluginTaskLogs(taskId) {
+        try {
+          const data = await apiRequest("GET", apiPath("/plugins/tasks/" + taskId + "/logs"));
+          return data.log || "";
+        } catch (err) {
+          return "";
+        }
+      }
+
       function renderModules() {
         ui.moduleList.innerHTML = "";
         state.modules.forEach((module) => {
@@ -1070,6 +1803,7 @@
           item.addEventListener("click", () => selectModule(module));
           ui.moduleList.appendChild(item);
         });
+        renderPluginModules();
       }
 
       function renderBuilds() {
@@ -1078,6 +1812,7 @@
           const row = document.createElement("tr");
           row.innerHTML = "<td colspan=\"5\" class=\"note\">No builds found.</td>";
           ui.buildRows.appendChild(row);
+          renderPluginBuilds();
           return;
         }
         state.builds.forEach((build) => {
@@ -1244,6 +1979,7 @@
           ui.buildRows.appendChild(row);
           ui.buildRows.appendChild(detailsRow);
         });
+        renderPluginBuilds();
       }
 
       function updateStatus(status) {
@@ -1259,7 +1995,11 @@
         const data = await apiRequest("GET", apiPath("/modules"));
         state.modules = data.modules || [];
         state.selectedModule = "";
+        state.pluginModule = "";
+        state.pluginBuild = "";
         renderModules();
+        renderPluginBuilds();
+        setPluginRowsMessage(ui.customPluginRows, "Select a module to load custom plugins.");
         ui.buildRows.innerHTML = "<tr><td colspan=\"5\" class=\"note\">Select a module to load builds.</td></tr>";
         updateStatus({ module: "", current: "", port: "-", versions: "-" });
         ui.refreshStatus.disabled = true;
@@ -1285,11 +2025,18 @@
 
       async function selectModule(module) {
         state.selectedModule = module;
+        state.pluginModule = module;
+        state.pluginBuild = "";
         saveModule(module);
         renderModules();
         state.builds = [];
+        renderPluginBuilds();
         state.runningBuild = "";
         state.currentBuild = "";
+        setPluginRowsMessage(
+          ui.customPluginRows,
+          isLocalMode ? "Press Load to view custom plugins." : "Select a build to load custom plugins."
+        );
         ui.buildRows.innerHTML = "<tr><td colspan=\"5\" class=\"note\">Loading builds...</td></tr>";
         ui.refreshStatus.disabled = true;
         updateRollbackTarget();
@@ -1560,6 +2307,38 @@
 
       function wireEvents() {
         ui.loadModules.addEventListener("click", () => loadModules().catch(handleError));
+        if (ui.viewModules) {
+          ui.viewModules.addEventListener("click", () => setView("modules"));
+        }
+        if (ui.viewPlugins) {
+          ui.viewPlugins.addEventListener("click", () => setView("plugins"));
+        }
+        if (ui.refreshGlobalPlugins) {
+          ui.refreshGlobalPlugins.addEventListener("click", () => loadGlobalPlugins().catch(handleError));
+        }
+        if (ui.loadCustomPlugins) {
+          ui.loadCustomPlugins.addEventListener("click", () => loadCustomPlugins().catch(handleError));
+        }
+        if (ui.pluginModule) {
+          ui.pluginModule.addEventListener("change", () => {
+            const module = ui.pluginModule.value;
+            state.pluginModule = module;
+            state.pluginBuild = "";
+            const message = module
+              ? (isLocalMode ? "Press Load to view custom plugins." : "Select a build to load custom plugins.")
+              : "Select a module to load custom plugins.";
+            setPluginRowsMessage(ui.customPluginRows, message);
+            if (module && module !== state.selectedModule) {
+              selectModule(module).catch(handleError);
+            }
+          });
+        }
+        if (ui.pluginBuild) {
+          ui.pluginBuild.addEventListener("change", () => {
+            state.pluginBuild = ui.pluginBuild.value;
+            setPluginRowsMessage(ui.customPluginRows, "Press Load to view custom plugins.");
+          });
+        }
         ui.refreshStatus.addEventListener("click", () => {
           const module = state.selectedModule;
           const token = state.selectionToken;
@@ -1628,6 +2407,7 @@
         }
         updateSignerMode();
         applyModeLabels();
+        setView(state.view);
         updateRollbackTarget();
         startServerStatusTick();
         if (isLocalMode) {

@@ -149,6 +149,25 @@ header.hero p {
   grid-template-columns: 1fr;
 }
 
+.view-toggle {
+  margin-top: 9px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.view-toggle button {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  box-shadow: none;
+}
+
+.view-toggle button.active {
+  background: var(--accent);
+  color: #111111;
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -628,6 +647,11 @@ th {
   .routes,
   .logs,
   .plugins {
+    grid-column: span 12;
+  }
+
+  .plugins-global,
+  .plugins-custom {
     grid-column: span 12;
   }
 

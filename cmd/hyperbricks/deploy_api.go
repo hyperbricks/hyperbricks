@@ -65,6 +65,23 @@ type deployBuildProductionRequest struct {
 	Production bool `json:"production"`
 }
 
+type pluginGlobalRequest struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+}
+
+type pluginCustomCompileRequest struct {
+	Module  string `json:"module"`
+	BuildID string `json:"build_id"`
+	Plugin  string `json:"plugin"`
+}
+
+type pluginCustomRemoveRequest struct {
+	Module  string `json:"module"`
+	BuildID string `json:"build_id"`
+	Plugin  string `json:"plugin"`
+}
+
 type deployAPI struct {
 	root        string
 	secret      string
@@ -74,6 +91,7 @@ type deployAPI struct {
 	binaryPath  string
 	workingDir  string
 	nonceStore  *deployNonceStore
+	pluginTasks *pluginTaskStore
 }
 
 type deployProcess struct {
@@ -198,6 +216,7 @@ func startDeployAPIServer() error {
 		binaryPath:  binaryPath,
 		workingDir:  workingDir,
 		nonceStore:  newDeployNonceStore(),
+		pluginTasks: newPluginTaskStore(),
 	}
 
 	mux := http.NewServeMux()
@@ -413,6 +432,11 @@ func (api *deployAPI) handleDeploy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if segments[1] == "plugins" {
+		api.handlePluginRoutes(w, r, segments[2:])
+		return
+	}
+
 	if segments[1] != "modules" {
 		writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
 		return
@@ -491,6 +515,295 @@ func (api *deployAPI) handleAPIStatus(w http.ResponseWriter) {
 		"version":      version,
 		"logs_enabled": api.logsEnabled,
 	})
+}
+
+func (api *deployAPI) handlePluginRoutes(w http.ResponseWriter, r *http.Request, segments []string) {
+	if len(segments) == 0 {
+		writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+		return
+	}
+	switch segments[0] {
+	case "global":
+		api.handleGlobalPluginRoutes(w, r, segments[1:])
+	case "custom":
+		api.handleCustomPluginRoutes(w, r, segments[1:])
+	case "tasks":
+		api.handlePluginTaskRoutes(w, r, segments[1:])
+	default:
+		writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+	}
+}
+
+func (api *deployAPI) handleGlobalPluginRoutes(w http.ResponseWriter, r *http.Request, segments []string) {
+	if len(segments) == 0 && r.Method == http.MethodGet {
+		api.handleGlobalPluginsList(w)
+		return
+	}
+	if len(segments) == 1 && segments[0] == "index" && r.Method == http.MethodGet {
+		api.handleGlobalPluginsIndex(w)
+		return
+	}
+	if len(segments) == 1 && r.Method == http.MethodPost {
+		switch segments[0] {
+		case "install", "rebuild", "remove":
+			api.handleGlobalPluginAction(w, r, segments[0])
+			return
+		}
+	}
+	writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+}
+
+func (api *deployAPI) handleCustomPluginRoutes(w http.ResponseWriter, r *http.Request, segments []string) {
+	if len(segments) == 0 && r.Method == http.MethodGet {
+		api.handleCustomPluginsList(w, r)
+		return
+	}
+	if len(segments) == 1 && segments[0] == "compile" && r.Method == http.MethodPost {
+		api.handleCustomPluginCompile(w, r)
+		return
+	}
+	if len(segments) == 1 && segments[0] == "remove" && r.Method == http.MethodPost {
+		api.handleCustomPluginRemove(w, r)
+		return
+	}
+	writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+}
+
+func (api *deployAPI) handlePluginTaskRoutes(w http.ResponseWriter, r *http.Request, segments []string) {
+	if len(segments) < 1 {
+		writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+		return
+	}
+	taskID := segments[0]
+	if len(segments) == 2 && segments[1] == "logs" && r.Method == http.MethodGet {
+		api.handlePluginTaskLogs(w, taskID)
+		return
+	}
+	if len(segments) == 1 && r.Method == http.MethodGet {
+		api.handlePluginTaskStatus(w, taskID)
+		return
+	}
+	writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+}
+
+func (api *deployAPI) handleGlobalPluginsIndex(w http.ResponseWriter) {
+	index, err := commands.FetchPluginIndex()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"plugins": index,
+	})
+}
+
+func (api *deployAPI) handleGlobalPluginsList(w http.ResponseWriter) {
+	pluginDir := filepath.Join(api.workingDir, "bin", "plugins")
+	plugins, err := listPluginBinaries(pluginDir, false)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"plugins": plugins,
+	})
+}
+
+func (api *deployAPI) handleGlobalPluginAction(w http.ResponseWriter, r *http.Request, action string) {
+	var req pluginGlobalRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	req.Name = strings.TrimSpace(req.Name)
+	req.Version = strings.TrimSpace(req.Version)
+	if req.Name == "" || req.Version == "" {
+		writeError(w, http.StatusBadRequest, errors.New("name and version are required"))
+		return
+	}
+
+	var cmdAction string
+	switch action {
+	case "install":
+		cmdAction = "install"
+	case "rebuild":
+		cmdAction = "build"
+	case "remove":
+		cmdAction = "remove"
+	default:
+		writeError(w, http.StatusNotFound, errors.New("unknown action"))
+		return
+	}
+
+	args := []string{"plugin", cmdAction, fmt.Sprintf("%s@%s", req.Name, req.Version)}
+	task := api.runPluginCommandTask(args)
+	writeJSON(w, http.StatusOK, task.snapshot())
+}
+
+func (api *deployAPI) handleCustomPluginsList(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	module := strings.TrimSpace(query.Get("module"))
+	buildID := strings.TrimSpace(query.Get("build_id"))
+	if module == "" || buildID == "" {
+		writeError(w, http.StatusBadRequest, errors.New("module and build_id are required"))
+		return
+	}
+
+	runtimeDir := filepath.Join(api.root, module, "runtime", buildID)
+	configPath := filepath.Join(runtimeDir, "package.hyperbricks")
+	pluginRoot := filepath.Join(runtimeDir, "plugins")
+	pluginDir := filepath.Join(api.workingDir, "bin", "plugins")
+
+	configNames, err := readPluginConfigNames(configPath)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	sourceEntries, err := scanPluginSourceEntries(pluginRoot, module)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	plugins := make([]pluginListEntry, 0, len(configNames))
+	moduleSuffix := "__" + module
+	for _, configName := range configNames {
+		base, version := splitConfigName(configName)
+		if !strings.HasSuffix(base, moduleSuffix) {
+			continue
+		}
+		entry, ok := sourceEntries[configName]
+		outputName := configName + ".so"
+		sourcePath := ""
+		status := "source-missing"
+		if ok {
+			outputName = entry.OutputName
+			sourcePath = entry.SourceDir
+			status = "missing"
+			if pluginBinaryExists(pluginDir, entry.OutputName) {
+				status = "installed"
+			}
+		}
+		if !ok && pluginBinaryExists(pluginDir, outputName) {
+			status = "installed"
+		}
+		plugins = append(plugins, pluginListEntry{
+			Name:       base,
+			Version:    version,
+			BinaryName: outputName,
+			ConfigName: configName,
+			Kind:       "custom",
+			Module:     module,
+			BuildID:    buildID,
+			SourcePath: sourcePath,
+			BinaryPath: filepath.Join("bin", "plugins", outputName),
+			Status:     status,
+		})
+	}
+
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"plugins": plugins,
+	})
+}
+
+func (api *deployAPI) handleCustomPluginCompile(w http.ResponseWriter, r *http.Request) {
+	var req pluginCustomCompileRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	req.Module = strings.TrimSpace(req.Module)
+	req.BuildID = strings.TrimSpace(req.BuildID)
+	req.Plugin = strings.TrimSpace(req.Plugin)
+	if req.Module == "" || req.BuildID == "" || req.Plugin == "" {
+		writeError(w, http.StatusBadRequest, errors.New("module, build_id, and plugin are required"))
+		return
+	}
+
+	runtimeDir := filepath.Join(api.root, req.Module, "runtime", req.BuildID)
+	pluginRoot := filepath.Join(runtimeDir, "plugins")
+	sourceEntries, err := scanPluginSourceEntries(pluginRoot, req.Module)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	entry, ok := sourceEntries[req.Plugin]
+	if !ok {
+		writeError(w, http.StatusNotFound, errors.New("plugin source not found"))
+		return
+	}
+
+	task := api.pluginTasks.newTask()
+	go func() {
+		task.start()
+		var buffer bytes.Buffer
+		spec := commands.PluginBuildSpec{
+			SourceDir:   entry.SourceDir,
+			SourceFile:  entry.Meta.Source,
+			OutputName:  entry.OutputName,
+			DisplayName: entry.ConfigName,
+			LogWriter:   &buffer,
+		}
+		err := commands.BuildPlugin(spec)
+		task.finish(err, buffer.String())
+	}()
+
+	writeJSON(w, http.StatusOK, task.snapshot())
+}
+
+func (api *deployAPI) handleCustomPluginRemove(w http.ResponseWriter, r *http.Request) {
+	var req pluginCustomRemoveRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	req.Module = strings.TrimSpace(req.Module)
+	req.BuildID = strings.TrimSpace(req.BuildID)
+	req.Plugin = strings.TrimSpace(req.Plugin)
+	if req.Module == "" || req.BuildID == "" || req.Plugin == "" {
+		writeError(w, http.StatusBadRequest, errors.New("module, build_id, and plugin are required"))
+		return
+	}
+
+	task := api.pluginTasks.newTask()
+	go func() {
+		task.start()
+		_, err := removePluginBinary(api.workingDir, req.Plugin)
+		task.finish(err, "")
+	}()
+
+	writeJSON(w, http.StatusOK, task.snapshot())
+}
+
+func (api *deployAPI) handlePluginTaskStatus(w http.ResponseWriter, taskID string) {
+	task, ok := api.pluginTasks.get(taskID)
+	if !ok {
+		writeError(w, http.StatusNotFound, errors.New("task not found"))
+		return
+	}
+	writeJSON(w, http.StatusOK, task.snapshot())
+}
+
+func (api *deployAPI) handlePluginTaskLogs(w http.ResponseWriter, taskID string) {
+	task, ok := api.pluginTasks.get(taskID)
+	if !ok {
+		writeError(w, http.StatusNotFound, errors.New("task not found"))
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"task_id": taskID,
+		"log":     task.logText(),
+	})
+}
+
+func (api *deployAPI) runPluginCommandTask(args []string) *pluginTask {
+	task := api.pluginTasks.newTask()
+	go func() {
+		task.start()
+		output, err := runCommand(api.binaryPath, api.workingDir, args)
+		task.finish(err, output)
+	}()
+	return task
 }
 
 func (api *deployAPI) handleModuleBuilds(w http.ResponseWriter, module string) {
