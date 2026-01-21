@@ -1,0 +1,18 @@
+services:
+  hyperbricks-deploy:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        TAILWIND_VERSION: "4.1.10"
+    ports:
+      - "9090:9090"
+      - "8080-8100:8080-8100"
+      - "2222:22"
+    environment:
+      HB_DEPLOY_SECRET: "change-me"
+    volumes:
+      - ./data/deploy:/opt/hyperbricks/deploy
+      - ./deploy.hyperbricks:/opt/hyperbricks/deploy.hyperbricks:ro
+      - ./ssh/authorized_keys:/etc/hyperbricks/authorized_keys:ro
+    restart: unless-stopped
