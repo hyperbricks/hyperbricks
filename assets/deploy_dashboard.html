@@ -129,7 +129,7 @@
                   <th>Build</th>
                   <th>Version</th>
                   <th>Built</th>
-                  <th>Mode</th>
+                  <th class="remote-only">Mode</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -1129,6 +1129,48 @@
         }, 30000);
       }
 
+      function canAutoLoadPlugins() {
+        if (isLocalMode) {
+          return true;
+        }
+        return !!getSecret();
+      }
+
+      function canAutoLoadCustomPlugins() {
+        const module = state.pluginModule || state.selectedModule || "";
+        if (!module) {
+          return false;
+        }
+        if (isLocalMode) {
+          return true;
+        }
+        const buildId = state.pluginBuild || state.currentBuild || "";
+        return !!buildId;
+      }
+
+      async function autoLoadPlugins() {
+        if (!canAutoLoadPlugins()) {
+          return;
+        }
+        if (!state.modules.length) {
+          await loadModules();
+        }
+        await loadGlobalPlugins();
+        if (canAutoLoadCustomPlugins()) {
+          await loadCustomPlugins();
+        }
+      }
+
+      function autoLoadCustomPlugins() {
+        if (!canAutoLoadPlugins()) {
+          return;
+        }
+        if (!canAutoLoadCustomPlugins()) {
+          return;
+        }
+        loadCustomPlugins().catch(handleError);
+      }
+
       async function findRunningModule(modules) {
         for (const module of modules) {
           try {
@@ -1164,6 +1206,7 @@
         if (!showModules) {
           renderPluginModules();
           renderPluginBuilds();
+          autoLoadPlugins().catch(handleError);
         }
       }
 
@@ -1912,7 +1955,7 @@
             </td>
             <td data-label="Version">${build.moduleversion || "-"}</td>
             <td data-label="Built" title="${builtTitle}">${builtAt}</td>
-            <td data-label="Mode">
+            <td data-label="Mode" class="remote-only">
               <select class="mode-select" data-action="mode" data-build="${buildId}">
                 <option value="default"${modeDefaultSelected}>Default</option>
                 <option value="production"${modeProductionSelected}>Production</option>
@@ -2329,7 +2372,17 @@
               : "Select a module to load custom plugins.";
             setPluginRowsMessage(ui.customPluginRows, message);
             if (module && module !== state.selectedModule) {
-              selectModule(module).catch(handleError);
+              selectModule(module)
+                .then(() => {
+                  if (state.view === "plugins") {
+                    autoLoadCustomPlugins();
+                  }
+                })
+                .catch(handleError);
+              return;
+            }
+            if (state.view === "plugins") {
+              autoLoadCustomPlugins();
             }
           });
         }
@@ -2337,6 +2390,9 @@
           ui.pluginBuild.addEventListener("change", () => {
             state.pluginBuild = ui.pluginBuild.value;
             setPluginRowsMessage(ui.customPluginRows, "Press Load to view custom plugins.");
+            if (state.view === "plugins") {
+              autoLoadCustomPlugins();
+            }
           });
         }
         ui.refreshStatus.addEventListener("click", () => {
