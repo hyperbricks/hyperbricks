@@ -10,7 +10,7 @@ myconf {
 # this is the main hyperbricks configuration object. Use hyperbricks, not other objects.
 hyperbricks {
     # live, development or debug mode
-    mode = live
+    mode = development
 
     # settings for debugging hyperbricks in go env
     debug {
@@ -27,7 +27,7 @@ hyperbricks {
         frontend_errors = false
 
          # shows dashboard in development mode
-        dashboard = false
+        dashboard = true
     }
 
     live {

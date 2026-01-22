@@ -162,6 +162,8 @@ func startDeployLocalServer() error {
 	mux.HandleFunc("/local/plugins/", api.handlePluginRoutes)
 	mux.HandleFunc("/assets/dashboard.css", serveDashboardCSS)
 	mux.HandleFunc("/assets/logo.png", serveDashboardLogo)
+	mux.HandleFunc("/assets/logo_blue.png", serveDashboardLogoBlue)
+	mux.HandleFunc("/assets/logo_black.png", serveDashboardLogoBlack)
 	mux.HandleFunc("/", api.serveLocalDashboard)
 
 	addr := fmt.Sprintf("%s:%d", bind, port)

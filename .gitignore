@@ -21,6 +21,7 @@ REFERENCE.generated.md
 alpine-hyperbricks-compile.md
 docs/PLUGIN_REFACTOR_WORKDOCUMENT.md
 docs/PLUGIN_REFACTOR.md
+deploy.hyperbricks
 *.pdf
 .gitignore
 .env
@@ -29,5 +30,5 @@ exports/
 /hyperbricks/
 rendered/
 logs/
-deploy.hyperbricks
 design/
+concept/

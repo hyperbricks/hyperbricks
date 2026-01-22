@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content="hyperbricks cms">
     <title>Dashboard</title>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("hb-theme");
+          var prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+          var theme = stored || (prefersLight ? "light" : "dark");
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {}
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
@@ -14,9 +24,20 @@
   <body>
     <div class="shell">
       <header id="top_section" class="hero">
-        <div class="badge">Runtime</div>
+        <div class="hero-bar">
+          <div class="badge">Runtime</div>
+          <button id="themeToggle" class="icon-toggle theme-toggle" type="button" aria-pressed="true" aria-label="Toggle theme">
+            <svg class="theme-icon theme-icon-dark" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 14.5A8 8 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <svg class="theme-icon theme-icon-light hidden" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
         <div class="hero-brand">
-          <img class="hero-logo" src="/assets/logo.png" alt="Hyperbricks logo" />
+          <img class="hero-logo" src="/assets/logo_blue.png" alt="Hyperbricks logo" data-logo-dark="/assets/logo_blue.png" data-logo-light="/assets/logo_black.png" />
           <div class="hero-text">
             <h1>Hyperbricks Dashboard</h1>
             <p>Live module status and system metrics.</p>
@@ -317,6 +338,72 @@
           minusIcon.classList.add('hidden');
         }
       });
+    </script>
+    <script>
+      (function () {
+        const storageKey = "hb-theme";
+        const themeToggle = document.getElementById("themeToggle");
+        const logos = document.querySelectorAll(".hero-logo[data-logo-light]");
+        const media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
+
+        function readStoredTheme() {
+          try {
+            return localStorage.getItem(storageKey);
+          } catch (e) {
+            return null;
+          }
+        }
+
+        function storeTheme(theme) {
+          try {
+            localStorage.setItem(storageKey, theme);
+          } catch (e) {}
+        }
+
+        function applyTheme(theme) {
+          document.documentElement.setAttribute("data-theme", theme);
+          if (themeToggle) {
+            const isDark = theme === "dark";
+            themeToggle.setAttribute("aria-pressed", isDark ? "true" : "false");
+            themeToggle.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+            const darkIcon = themeToggle.querySelector(".theme-icon-dark");
+            const lightIcon = themeToggle.querySelector(".theme-icon-light");
+            if (darkIcon && lightIcon) {
+              darkIcon.classList.toggle("hidden", isDark);
+              lightIcon.classList.toggle("hidden", !isDark);
+            }
+          }
+          logos.forEach((logo) => {
+            const next = theme === "light" ? logo.dataset.logoLight : logo.dataset.logoDark;
+            if (next) {
+              logo.src = next;
+            }
+          });
+        }
+
+        const storedTheme = readStoredTheme();
+        const systemTheme = media && media.matches ? "light" : "dark";
+        const initialTheme = storedTheme || systemTheme;
+        applyTheme(initialTheme);
+
+        if (themeToggle) {
+          themeToggle.addEventListener("click", () => {
+            const current = document.documentElement.getAttribute("data-theme") || "dark";
+            const next = current === "dark" ? "light" : "dark";
+            storeTheme(next);
+            applyTheme(next);
+          });
+        }
+
+        if (media) {
+          media.addEventListener("change", (event) => {
+            if (readStoredTheme()) {
+              return;
+            }
+            applyTheme(event.matches ? "light" : "dark");
+          });
+        }
+      })();
     </script>
   </body>
 </html>

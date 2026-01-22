@@ -13,7 +13,7 @@ var (
 var RootCmd = &cobra.Command{
 	Use:   "hyperbricks", // Set the correct command name
 	Short: "Hyperbricks CLI",
-	Long:  `Hyperbricks is a powerful headless cms for managing hypermedia.`,
+	Long:  `Hyperbricks is a Web App Build System for managing hypermedia.`,
 }
 
 // RegisterSubcommands adds all subcommands to the root command
