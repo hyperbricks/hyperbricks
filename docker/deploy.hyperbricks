@@ -1,0 +1,19 @@
+# Deploy config (remote runtime API)
+deploy {
+  # shared HMAC secret (set via env)
+  hmac_secret = {{ENV:HB_DEPLOY_SECRET}}
+
+  remote {
+    # enable deploy api daemon
+    api_enabled = true
+    api_bind = 0.0.0.0 
+    # api_bind controls exposure:
+    # - localhost/LAN: use SSH tunnel (127.0.0.1) or LAN access (0.0.0.0)
+    # - WAN: bind to public IP and put HTTPS in front (reverse proxy)
+    api_port = 9090
+    root = deploy
+    port_start = 8080
+    logs_enabled = true
+    # binary = /usr/local/bin/hyperbricks
+  }
+}

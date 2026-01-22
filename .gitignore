@@ -21,7 +21,8 @@ REFERENCE.generated.md
 alpine-hyperbricks-compile.md
 docs/PLUGIN_REFACTOR_WORKDOCUMENT.md
 docs/PLUGIN_REFACTOR.md
-deploy.hyperbricks
+
+docker/ssh/authorized_keys
 *.pdf
 .gitignore
 .env
