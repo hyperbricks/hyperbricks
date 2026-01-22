@@ -1,6 +1,6 @@
 **Licence:** MIT  
-**Version:** v0.7.4-alpha  
-**Build time:** 2026-01-13T18:20:52Z
+**Version:** v0.7.7-alpha  
+**Build time:** 2026-01-22T15:36:50Z
 
 ## Build Status
 
@@ -25,6 +25,19 @@ With HyperBricks, you can:
 
 ** [esbuild](https://esbuild.github.io/) is a third-party go library,
 An extremely fast bundler for the web
+
+<br>
+
+## Docs
+
+- [Introduction](docs/INTRODUCTION.md)
+- [Quickstart](docs/QUICKSTART.md)
+- [Routing](docs/ROUTING.md)
+- [Reference](docs/REFERENCE.md)
+- [Deploy Guide](docs/DEPLOY.md)
+- [Plugins](docs/PLUGINS.md)
+- [Docker Deploy](docs/DOCKER.md)
+- [API Render](docs/API_RENDER.md)
 
 ---
 

@@ -223,6 +223,8 @@ func startDeployAPIServer() error {
 	mux.Handle("/deploy/", api.wrapAuth(api.handleDeploy))
 	mux.HandleFunc("/assets/dashboard.css", serveDashboardCSS)
 	mux.HandleFunc("/assets/logo.png", serveDashboardLogo)
+	mux.HandleFunc("/assets/logo_blue.png", serveDashboardLogoBlue)
+	mux.HandleFunc("/assets/logo_black.png", serveDashboardLogoBlack)
 	mux.HandleFunc("/", serveDeployDashboard)
 
 	addr := fmt.Sprintf("%s:%d", bind, port)
@@ -273,6 +275,30 @@ func serveDashboardLogo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(assets.Logo)
+}
+
+func serveDashboardLogoBlue(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", mime.TypeByExtension(".png"))
+	w.Header().Set("Cache-Control", "no-store")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(assets.Logo_Blue)
+}
+
+func serveDashboardLogoBlack(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", mime.TypeByExtension(".png"))
+	w.Header().Set("Cache-Control", "no-store")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(assets.Logo_Black)
 }
 
 func loadDeployConfig(path string) (shared.DeployConfig, error) {
