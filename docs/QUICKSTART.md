@@ -1,9 +1,5 @@
 # Quickstart
 
-This is the shortest path to “I have a page” + “I can update part of it with HTMX” using **one `<HYPERMEDIA>` route** and **one `<FRAGMENT>` route**.
-
----
-
 ## 1) Install
 
 Requires Go **1.23.2+**.
@@ -149,15 +145,3 @@ hyperbricks static -m someproject
 ```
 
 Static output is written to `modules/someproject/rendered/` (by default). Serve that folder however you like.
-
----
-
-## 8) Rules that save time (you’ll hit these fast)
-
-* **Ordering:** items render in **alphanumeric** key order (`.1`, `.10`, `.20`, …).
-* **Subfolders:** configs in subfolders aren’t auto-loaded — use `@import` if you split files into folders.
-* **Typeless values:** strings don’t require quotes; types are detected by `<TYPE>`.
-
----
-
-If you want, paste your current `package.hyperbricks` (or tell me your intended folder layout), and I’ll adapt this Quickstart so it matches your module defaults (paths, plugins enabled, head markers, etc.).
