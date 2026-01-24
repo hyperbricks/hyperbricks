@@ -2,7 +2,7 @@ module github.com/hyperbricks/plugins/myplugin
 
 go 1.23.4
 
-require github.com/hyperbricks/hyperbricks v0.7.9-alpha
+require github.com/hyperbricks/hyperbricks v0.8.0-alpha
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
