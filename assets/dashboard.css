@@ -326,8 +326,8 @@ header.hero p {
 }
 
 .view-toggle button {
-  background: var(--panel);
-  color: var(--ink);
+  background: transparent;
+  color: var(--muted);
   border: 1px solid transparent;
   border-bottom: none;
   border-radius: var(--r-1) var(--r-1) 0 0;
@@ -341,6 +341,12 @@ header.hero p {
   background: var(--panel);
   border-color: var(--line);
   border-bottom-color: var(--panel);
+}
+
+.view-toggle button.ghost {
+  color: var(--muted);
+  background: transparent;
+  border-color: transparent;
 }
 
 .panel {
@@ -688,6 +694,14 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--fs-1);
+}
+
+tr.build-row-dev {
+  background: var(--md-sys-color-surface-container-low);
+}
+
+tr.build-row-dev td {
+  /* border-bottom-color: color-mix(in srgb, var(--line) 60%, var(--accent) 40%); */
 }
 
 th,
@@ -1067,16 +1081,16 @@ th {
   }
 
   tr {
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     border: 1px solid var(--line);
     border-radius: 12px;
     background: var(--panel-2);
-    padding: 8px;
+    padding: 6px;
   }
 
   td {
     border: none;
-    padding: 8px 4px;
+    padding: 6px 2px;
   }
 
   td::before {
@@ -1090,7 +1104,9 @@ th {
   }
 
   .value-row {
+    flex-direction: column;
     align-items: flex-start;
+    gap: 4px;
   }
 
   .details-grid {

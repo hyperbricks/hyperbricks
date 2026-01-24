@@ -227,7 +227,7 @@ func loadHyperBricksConfiguration() *Config {
 	if err != nil {
 		GetLogger().Errorf("Failed to get working directory", "error", err)
 	}
-	fmt.Println("loading " + Module)
+
 	configFilePath := filepath.Join(dir, Module)
 
 	// Read the configuration file
@@ -352,7 +352,7 @@ func loadHyperBricksConfiguration() *Config {
 		GetLogger().Warn("Setting mode not recognised, setting to live (production) mode")
 		config.Mode = LIVE_MODE
 	}
-
+	fmt.Println("loaded " + Module)
 	return &config
 }
 

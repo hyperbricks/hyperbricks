@@ -91,7 +91,7 @@ hyperbricks {
 
     plugins {
         # run "hyperbricks plugin help" and "hyperbricks plugin list" for options
-        enabled = [ MarkdownPlugin@1.0.0, MyPlugin__test-004-plugins@1.0.0, RenderMapPlugin__test-004-plugins@1.0.0, InheritMapPlugin__test-004-plugins@1.0.0 ]
+        enabled = [ MarkdownPlugin@2.0.0, TailwindcssPlugin@2.0.0, MyPlugin__test-004-plugins@1.0.0, RenderMapPlugin__test-004-plugins@1.0.0, InheritMapPlugin__test-004-plugins@1.0.0 ]
      }
 
     directories {
