@@ -54,4 +54,4 @@ page.50.data.title = Article from inherited template
 page.50.data.content = <<[
     # Article content from inherited map
 ]>>
-page.50.data.image = {{RESOURCES}}/images/GitHub_Logo_White.png
+page.50.data.image = {{RESOURCES}}/images/GitHub_Logo.png
