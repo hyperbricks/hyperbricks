@@ -35,7 +35,7 @@
               </svg>
             </button>
             <div class="menu">
-              <button id="menuToggle" class="ghost" type="button">Menu</button>
+              <button id="menuToggle" class="ghost" type="button">Settings</button>
               <div id="menuPanel" class="menu-panel hidden">
                 <div class="menu-section remote-only">
                   <div class="menu-title">Connection</div>
@@ -149,8 +149,8 @@
                   <th>Build</th>
                   <th>Version</th>
                   <th>Built</th>
-                  <th class="remote-only">Mode</th>
-                  <th class="remote-only">Status</th>
+                  <th>Mode</th>
+                  <th>Status</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -170,6 +170,23 @@
       </div>
 
       <div id="pluginsView" class="grid hidden">
+        <section class="panel status">
+          <h2>Server Status</h2>
+          <div class="status-grid">
+            <div class="status-card">
+              <span>API</span>
+              <strong id="apiStatusPlugins">offline</strong>
+            </div>
+            <div class="status-card">
+              <span>Last Check</span>
+              <strong id="apiTimePlugins">-</strong>
+            </div>
+            <div class="status-card">
+              <span>Hyperbricks</span>
+              <strong id="apiVersionPlugins">-</strong>
+            </div>
+          </div>
+        </section>
         <section class="panel plugins-global">
           <div class="panel-header">
             <h2>Global Plugins</h2>
@@ -231,6 +248,11 @@
             </table>
           </div>
         </section>
+
+        <section class="panel log">
+          <h2>Activity</h2>
+          <pre id="pluginActivity">Ready.</pre>
+        </section>
       </div>
     </div>
 
@@ -247,6 +269,9 @@
         apiStatus: document.getElementById("apiStatus"),
         apiTime: document.getElementById("apiTime"),
         apiVersion: document.getElementById("apiVersion"),
+        apiStatusPlugins: document.getElementById("apiStatusPlugins"),
+        apiTimePlugins: document.getElementById("apiTimePlugins"),
+        apiVersionPlugins: document.getElementById("apiVersionPlugins"),
         signerMode: document.getElementById("signerMode"),
         loadModules: document.getElementById("loadModules"),
         refreshStatus: document.getElementById("refreshStatus"),
@@ -256,6 +281,7 @@
         rollbackModule: document.getElementById("rollbackModule"),
         rollbackTarget: document.getElementById("rollbackTarget"),
         activity: document.getElementById("activity"),
+        pluginActivity: document.getElementById("pluginActivity"),
         menuToggle: document.getElementById("menuToggle"),
         menuPanel: document.getElementById("menuPanel"),
         killAll: document.getElementById("killAllProcesses"),
@@ -292,7 +318,8 @@
 
       const storageKeys = {
         secret: "hbDeploySecret",
-        module: "hbDeployModule"
+        module: "hbDeployModule",
+        view: "hbDeployView"
       };
 
       const icons = {
@@ -361,8 +388,12 @@
       let serverStatusTimer = null;
 
       function setActivity(message, isError) {
-        ui.activity.textContent = message;
-        ui.activity.style.color = isError ? "var(--danger)" : "var(--ink)";
+        const color = isError ? "var(--danger)" : "var(--ink)";
+        const targets = [ui.activity, ui.pluginActivity].filter(Boolean);
+        targets.forEach((target) => {
+          target.textContent = message;
+          target.style.color = color;
+        });
       }
 
       function isSelectionCurrent(token, module) {
@@ -740,8 +771,19 @@
       }
 
       function setApiStatus(stateText) {
-        ui.apiStatus.textContent = stateText;
-        ui.apiTime.textContent = new Date().toLocaleTimeString();
+        const timeText = new Date().toLocaleTimeString();
+        if (ui.apiStatus) {
+          ui.apiStatus.textContent = stateText;
+        }
+        if (ui.apiTime) {
+          ui.apiTime.textContent = timeText;
+        }
+        if (ui.apiStatusPlugins) {
+          ui.apiStatusPlugins.textContent = stateText;
+        }
+        if (ui.apiTimePlugins) {
+          ui.apiTimePlugins.textContent = timeText;
+        }
       }
 
       function findRollbackTarget(builds, currentBuild) {
@@ -936,19 +978,19 @@
 
       function buildDetailsHTML(module, buildId, data) {
         const localMode = isLocalMode;
-        const running = !localMode && !!data.running;
-        const portValue = !localMode ? (data.port || "") : "";
+        const running = !!data.running;
+        const portValue = data.port || "";
         const portText = portValue ? String(portValue) : "-";
         const moduleName = data.module || module || "-";
         const buildValue = data.build_id || buildId || "-";
         const buildShort = shortenValue(buildValue);
         const buildTitle = buildValue && buildShort !== buildValue ? ` title="${escapeAttr(buildValue)}"` : "";
-        const stateText = localMode ? (data.remote_status || "local") : (running ? "running" : "stopped");
-        const link = !localMode && running && portValue ? moduleLinkFromPort(portValue) : "";
+        const stateText = running ? "running" : "stopped";
+        const link = running && portValue ? moduleLinkFromPort(portValue) : "";
         const dash = link ? link + "/dashboard" : "";
         const builtRaw = data.built_at || "";
         const builtDisplay = builtRaw ? formatDate(builtRaw) : "-";
-        const logsEnabled = !localMode && state.logsEnabled !== false;
+        const logsEnabled = state.logsEnabled !== false;
         const logPanel = logsEnabled
           ? `
             <div class="log-panel" data-log-build="${buildValue}">
@@ -963,18 +1005,20 @@
               <span class="note log-note hidden">Log output truncated.</span>
             </div>
           `
-          : (localMode ? "" : `<span class="note">Logs disabled in deploy config.</span>`);
+          : `<span class="note">Logs disabled in deploy config.</span>`;
+        const linkMeta = `
+              ${metaLink("Module Link", link)}
+              ${metaLink("Module Dashboard", dash)}
+            `;
         const remoteMeta = localMode
           ? `
+              ${linkMeta}
               ${metaRow("Pushed At", metaValue(data.pushed_at || "-"))}
               ${metaRow("Remote Target", metaValue(data.remote_target || "-"))}
               ${metaRow("Remote Status", metaValue(data.remote_status || (data.pushed_at ? "unknown" : "local")))}
               ${metaRow("Remote Checked", metaValue(data.remote_checked_at || "-"))}
             `
-          : `
-              ${metaLink("Module Link", link)}
-              ${metaLink("Module Dashboard", dash)}
-            `;
+          : linkMeta;
         return `
           <div class="details-shell">
             <div class="status-grid details-grid">
@@ -1026,7 +1070,7 @@
             return;
           }
           container.innerHTML = buildDetailsHTML(module, buildId, data);
-          if (!isLocalMode && state.logsEnabled !== false) {
+          if (state.logsEnabled !== false) {
             wireBuildLogs(container, buildId, data.running);
           }
         } catch (err) {
@@ -1058,9 +1102,6 @@
       }
 
       function wireBuildLogs(container, buildId, running) {
-        if (isLocalMode) {
-          return;
-        }
         const panel = container.querySelector(".log-panel");
         if (!panel) {
           return;
@@ -1106,9 +1147,6 @@
       }
 
       async function loadBuildLogs(buildId, panel) {
-        if (isLocalMode) {
-          return;
-        }
         const module = state.selectedModule;
         const token = state.selectionToken;
         if (!module || !panel) {
@@ -1152,10 +1190,6 @@
       }
 
       async function openBuildLink(buildId, suffix, label) {
-        if (isLocalMode) {
-          setActivity("Links are available in remote mode only.", true);
-          return;
-        }
         const module = state.selectedModule;
         const token = state.selectionToken;
         if (!module || !buildId || buildId === "-") {
@@ -1315,8 +1349,11 @@
         if (ui.apiVersion) {
           ui.apiVersion.textContent = (data.version || "").trim() || "-";
         }
+        if (ui.apiVersionPlugins) {
+          ui.apiVersionPlugins.textContent = (data.version || "").trim() || "-";
+        }
         setLocalConnectionDetails(data);
-        state.logsEnabled = !isLocalMode && data.logs_enabled !== false;
+        state.logsEnabled = data.logs_enabled !== false;
       }
 
       function startServerStatusTick() {
@@ -1387,6 +1424,9 @@
       function setView(view) {
         const target = view === "plugins" ? "plugins" : "modules";
         state.view = target;
+        try {
+          localStorage.setItem(storageKeys.view, target);
+        } catch (e) {}
         const showModules = target === "modules";
         if (ui.modulesView) {
           ui.modulesView.classList.toggle("hidden", !showModules);
@@ -1595,6 +1635,9 @@
         }
         const buildIds = [];
         state.builds.forEach((build) => {
+          if (build.is_dev) {
+            return;
+          }
           const buildId = build.build_id;
           if (!buildId) {
             return;
@@ -1626,9 +1669,11 @@
         state.pluginBuild = selected;
       }
 
-      async function loadGlobalPlugins() {
-        setActivity("Loading global plugins...");
-        setPluginRowsMessage(ui.globalPluginRows, "Loading global plugins...");
+      async function loadGlobalPlugins(silent) {
+        if (!silent) {
+          setActivity("Loading global plugins...");
+          setPluginRowsMessage(ui.globalPluginRows, "Loading global plugins...");
+        }
         const responses = await Promise.all([
           apiRequest("GET", apiPath("/plugins/global/index")),
           apiRequest("GET", apiPath("/plugins/global"))
@@ -1636,7 +1681,9 @@
         const index = responses[0] ? responses[0].plugins : {};
         const installed = responses[1] ? responses[1].plugins : [];
         renderGlobalPlugins(index, installed);
-        setActivity("Global plugins updated.");
+        if (!silent) {
+          setActivity("Global plugins updated.");
+        }
       }
 
       function renderGlobalPlugins(index, installed) {
@@ -1804,11 +1851,11 @@
           () => apiRequest("POST", apiPath("/plugins/global/" + action), { name: name, version: version })
         );
         if (ok) {
-          await loadGlobalPlugins();
+          await loadGlobalPlugins(true);
         }
       }
 
-      async function loadCustomPlugins() {
+      async function loadCustomPlugins(silent) {
         const module = state.pluginModule || state.selectedModule || "";
         if (!module) {
           setActivity("Select a module first.", true);
@@ -1822,15 +1869,19 @@
             return;
           }
         }
-        setActivity("Loading custom plugins for " + module + "...");
-        setPluginRowsMessage(ui.customPluginRows, "Loading custom plugins...");
+        if (!silent) {
+          setActivity("Loading custom plugins for " + module + "...");
+          setPluginRowsMessage(ui.customPluginRows, "Loading custom plugins...");
+        }
         const params = new URLSearchParams({ module: module });
         if (!isLocalMode) {
           params.set("build_id", buildId);
         }
         const data = await apiRequest("GET", apiPath("/plugins/custom?" + params.toString()));
         renderCustomPlugins(data.plugins || []);
-        setActivity("Custom plugins loaded.");
+        if (!silent) {
+          setActivity("Custom plugins loaded.");
+        }
       }
 
       function renderCustomPlugins(plugins) {
@@ -1985,7 +2036,7 @@
         }
         const ok = await runPluginTask(label, () => apiRequest("POST", apiPath("/plugins/custom/compile"), body));
         if (ok) {
-          await loadCustomPlugins();
+          await loadCustomPlugins(true);
         }
       }
 
@@ -2018,7 +2069,7 @@
         }
         const ok = await runPluginTask(label, () => apiRequest("POST", apiPath("/plugins/custom/remove"), body));
         if (ok) {
-          await loadCustomPlugins();
+          await loadCustomPlugins(true);
         }
       }
 
@@ -2052,7 +2103,9 @@
             setActivity(label + " (" + status + ")...");
           }
           if (status === "done") {
-            setActivity(label + " complete.");
+            const log = await fetchPluginTaskLogs(taskId);
+            const output = log ? stripAnsi(log) : "";
+            setActivity(output ? label + " complete.\n" + output : label + " complete.");
             return true;
           }
           if (status === "error") {
@@ -2100,8 +2153,9 @@
         }
         state.builds.forEach((build) => {
           const row = document.createElement("tr");
+          const isDev = !!build.is_dev;
           const buildId = build.build_id || "-";
-          const buildShort = shortenValue(buildId);
+          const buildShort = isDev ? "source module" : shortenValue(buildId);
           const builtAt = formatRelativeTime(build.built_at || "");
           const builtTitle = build.built_at ? formatDate(build.built_at) : "";
           const isRunning = state.runningBuild && buildId === state.runningBuild;
@@ -2109,60 +2163,63 @@
           const modeDefaultSelected = isProduction ? "" : " selected";
           const modeProductionSelected = isProduction ? " selected" : "";
           const isDisabled = buildId === "-";
+          const modeDisabled = (isDev || isDisabled) ? " disabled" : "";
           const buildAttr = ` data-build="${escapeAttr(buildId)}"`;
           const detailsDisabled = isDisabled ? " disabled" : "";
-          const actionItems = [];
-          if (!isLocalMode) {
-            if (isRunning) {
-              actionItems.push({
-                action: "restart",
-                label: "Restart",
-                icon: icons.restart,
-                attrs: buildAttr,
-                disabled: isDisabled
-              });
-              actionItems.push({
-                action: "stop",
-                label: "Stop",
-                icon: icons.stop,
-                className: "danger",
-                attrs: buildAttr,
-                disabled: isDisabled
-              });
-            } else {
-              actionItems.push({
-                action: "start",
-                label: "Start",
-                icon: icons.start,
-                attrs: buildAttr,
-                disabled: isDisabled
-              });
-            }
+          if (isDev) {
+            row.classList.add("build-row-dev");
           }
-          if (isLocalMode) {
+          const actionItems = [];
+          if (isRunning) {
             actionItems.push({
-              action: "push",
-              label: "Push build",
-              icon: icons.push,
+              action: "restart",
+              label: "Restart",
+              icon: icons.restart,
+              attrs: buildAttr,
+              disabled: isDisabled
+            });
+            actionItems.push({
+              action: "stop",
+              label: "Stop",
+              icon: icons.stop,
+              className: "danger",
               attrs: buildAttr,
               disabled: isDisabled
             });
           } else {
             actionItems.push({
-              action: "link",
-              label: "Open runtime",
-              icon: icons.link,
-              attrs: buildAttr,
-              disabled: isDisabled
-            });
-            actionItems.push({
-              action: "dashboard",
-              label: "Open dashboard",
-              icon: icons.dashboard,
+              action: "start",
+              label: "Start",
+              icon: icons.start,
               attrs: buildAttr,
               disabled: isDisabled
             });
           }
+          if (isLocalMode) {
+            if (!isDev) {
+              actionItems.push({
+                action: "push",
+                label: "Push build",
+                icon: icons.push,
+                attrs: buildAttr,
+                disabled: isDisabled
+              });
+            }
+          }
+          actionItems.push({
+            action: "link",
+            label: "Open runtime",
+            icon: icons.link,
+            attrs: buildAttr,
+            disabled: isDisabled
+          });
+          actionItems.push({
+            action: "dashboard",
+            label: "Open dashboard",
+            icon: icons.dashboard,
+            attrs: buildAttr,
+            disabled: isDisabled
+          });
           actionItems.push({
             action: "details",
             label: "Details",
@@ -2170,14 +2227,16 @@
             attrs: buildAttr,
             disabled: isDisabled
           });
-          actionItems.push({
-            action: "delete",
-            label: "Delete build",
-            icon: icons.delete,
-            className: "danger",
-            attrs: buildAttr,
-            disabled: isDisabled
-          });
+          if (!isDev) {
+            actionItems.push({
+              action: "delete",
+              label: "Delete build",
+              icon: icons.delete,
+              className: "danger",
+              attrs: buildAttr,
+              disabled: isDisabled
+            });
+          }
           const actionMenu = renderRowMenu(actionItems);
           row.innerHTML = `
             <td data-label="Build">
@@ -2186,15 +2245,15 @@
                 <button class="copy-btn" data-copy="${buildId}" type="button">Copy</button>
               </div>
             </td>
-            <td data-label="Version">${build.moduleversion || "-"}</td>
+            <td data-label="Version">${isDev ? (build.moduleversion || "dev") : (build.moduleversion || "-")}</td>
             <td data-label="Built" title="${builtTitle}">${builtAt}</td>
-            <td data-label="Mode" class="remote-only">
-              <select class="mode-select" data-action="mode" data-build="${buildId}">
+            <td data-label="Mode">
+              <select class="mode-select" data-action="mode" data-build="${buildId}"${modeDisabled}>
                 <option value="default"${modeDefaultSelected}>Default</option>
                 <option value="production"${modeProductionSelected}>Production</option>
               </select>
             </td>
-            <td data-label="Status" class="remote-only">
+            <td data-label="Status">
               <span class="status-pill ${isRunning ? "status-installed" : ""}">${isRunning ? "running" : "stopped"}</span>
             </td>
             <td data-label="Action">
@@ -2348,6 +2407,11 @@
         }
         state.builds = data.versions || [];
         state.builds.sort((a, b) => {
+          const aDev = !!(a && a.is_dev);
+          const bDev = !!(b && b.is_dev);
+          if (aDev !== bDev) {
+            return aDev ? -1 : 1;
+          }
           const aTime = buildTimestamp(a && a.built_at);
           const bTime = buildTimestamp(b && b.built_at);
           if (aTime === bTime) {
@@ -2355,7 +2419,7 @@
           }
           return bTime - aTime;
         });
-        state.buildCounts[module] = state.builds.length;
+        state.buildCounts[module] = state.builds.filter((build) => !build.is_dev).length;
         renderBuilds();
         renderModules();
         updateRollbackTarget();
@@ -2713,6 +2777,10 @@
         const savedSecret = localStorage.getItem(storageKeys.secret);
         if (savedSecret) {
           ui.secret.value = savedSecret;
+        }
+        const savedView = localStorage.getItem(storageKeys.view);
+        if (savedView === "plugins" || savedView === "modules") {
+          state.view = savedView;
         }
         updateSignerMode();
         applyModeLabels();

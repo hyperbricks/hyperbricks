@@ -35,8 +35,10 @@ type deployLocalConfig struct {
 }
 
 type deployLocalRemoteConfig struct {
-	Root    string `mapstructure:"root"`
-	APIPort int    `mapstructure:"api_port"`
+	Root        string `mapstructure:"root"`
+	APIPort     int    `mapstructure:"api_port"`
+	PortStart   int    `mapstructure:"port_start"`
+	LogsEnabled bool   `mapstructure:"logs_enabled"`
 }
 
 type deployLocalSettings struct {
@@ -82,6 +84,7 @@ type localBuildRowResponse struct {
 	localBuildRow
 	RemoteStatus    string `json:"remote_status,omitempty"`
 	RemoteCheckedAt string `json:"remote_checked_at,omitempty"`
+	IsDev           bool   `json:"is_dev,omitempty"`
 }
 
 type remoteSyncState struct {
@@ -91,13 +94,15 @@ type remoteSyncState struct {
 }
 
 type deployLocalServer struct {
-	cfg        deployLocalConfig
-	modulesDir string
-	buildRoot  string
-	syncMu     sync.Mutex
-	syncState  map[string]remoteSyncState
-	workingDir string
-	binaryPath string
+	cfg         deployLocalConfig
+	modulesDir  string
+	buildRoot   string
+	portStart   int
+	logsEnabled bool
+	syncMu      sync.Mutex
+	syncState   map[string]remoteSyncState
+	workingDir  string
+	binaryPath  string
 	pluginTasks *pluginTaskStore
 }
 
@@ -136,14 +141,21 @@ func startDeployLocalServer() error {
 	if buildRoot == "" {
 		buildRoot = "deploy"
 	}
+	portStart := cfg.Remote.PortStart
+	if portStart == 0 {
+		portStart = 8080
+	}
+	logsEnabled := cfg.Remote.LogsEnabled
 
 	api := &deployLocalServer{
-		cfg:        cfg,
-		modulesDir: modulesDir,
-		buildRoot:  buildRoot,
-		syncState:  make(map[string]remoteSyncState),
-		workingDir: "",
-		binaryPath: "",
+		cfg:         cfg,
+		modulesDir:  modulesDir,
+		buildRoot:   buildRoot,
+		portStart:   portStart,
+		logsEnabled: logsEnabled,
+		syncState:   make(map[string]remoteSyncState),
+		workingDir:  "",
+		binaryPath:  "",
 		pluginTasks: newPluginTaskStore(),
 	}
 	if wd, err := os.Getwd(); err == nil {
@@ -192,8 +204,10 @@ func loadDeployLocalConfig(path string) (deployLocalConfig, error) {
 			BuildRoot:  "deploy",
 		},
 		Remote: deployLocalRemoteConfig{
-			Root:    "deploy",
-			APIPort: 9090,
+			Root:        "deploy",
+			APIPort:     9090,
+			PortStart:   8080,
+			LogsEnabled: true,
 		},
 	}
 
@@ -263,7 +277,7 @@ func (api *deployLocalServer) handleStatus(w http.ResponseWriter, r *http.Reques
 	payload := map[string]interface{}{
 		"mode":         "local",
 		"version":      version,
-		"logs_enabled": false,
+		"logs_enabled": api.logsEnabled,
 		"target":       api.defaultTargetName(),
 	}
 	if name := api.defaultTargetName(); name != "" {
@@ -315,6 +329,18 @@ func (api *deployLocalServer) handleModuleRoutes(w http.ResponseWriter, r *http.
 		api.handleModuleBuild(w, module)
 		return
 	}
+	if len(pathParts) == 3 && pathParts[2] == "activate" && r.Method == http.MethodPost {
+		api.handleModuleActivate(w, r, module)
+		return
+	}
+	if len(pathParts) == 3 && pathParts[2] == "restart" && r.Method == http.MethodPost {
+		api.handleModuleRestart(w, module)
+		return
+	}
+	if len(pathParts) == 3 && pathParts[2] == "stop" && r.Method == http.MethodPost {
+		api.handleModuleStop(w, module)
+		return
+	}
 	if len(pathParts) == 4 && pathParts[2] == "push" && r.Method == http.MethodPost {
 		api.handleModulePush(w, r, module, pathParts[3])
 		return
@@ -325,6 +351,10 @@ func (api *deployLocalServer) handleModuleRoutes(w http.ResponseWriter, r *http.
 	}
 	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "status" && r.Method == http.MethodGet {
 		api.handleBuildStatus(w, module, pathParts[3])
+		return
+	}
+	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "logs" && r.Method == http.MethodGet {
+		api.handleBuildLogs(w, r, module, pathParts[3])
 		return
 	}
 	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "production" && r.Method == http.MethodPost {
@@ -423,6 +453,7 @@ func (api *deployLocalServer) handleLocalGlobalPluginsIndex(w http.ResponseWrite
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
+	index = commands.FilterPluginIndexByHyperbricks(index, commands.HyperbricksSemver())
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"plugins": index,
 	})
@@ -638,11 +669,31 @@ func (api *deployLocalServer) handleModuleStatus(w http.ResponseWriter, module s
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
+	port := 0
+	running := false
+	runningBuild := ""
+	if proc, ok := api.readProcess(module); ok {
+		if isProcessRunning(proc.PID) {
+			running = true
+			runningBuild = proc.BuildID
+			port = proc.Port
+		} else {
+			api.clearProcess(module)
+		}
+	}
+	if port == 0 && index.Current != "" {
+		port = api.readRuntimePort(module, index.Current)
+		if port == 0 && index.Port > 0 {
+			port = index.Port
+		}
+	}
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"module":        module,
 		"current":       index.Current,
-		"running":       false,
-		"running_build": "",
+		"port":          port,
+		"versions":      len(index.Versions),
+		"running":       running,
+		"running_build": runningBuild,
 	})
 }
 
@@ -654,6 +705,9 @@ func (api *deployLocalServer) handleModuleBuilds(w http.ResponseWriter, module s
 		return
 	}
 	annotated, checkedAt := api.annotateBuilds(module, index.Versions)
+	if devRow, ok := api.devBuildRow(module); ok {
+		annotated = append([]localBuildRowResponse{devRow}, annotated...)
+	}
 	payload := map[string]interface{}{
 		"module":   module,
 		"current":  index.Current,
@@ -666,6 +720,22 @@ func (api *deployLocalServer) handleModuleBuilds(w http.ResponseWriter, module s
 }
 
 func (api *deployLocalServer) handleBuildStatus(w http.ResponseWriter, module string, buildID string) {
+	buildID = strings.TrimSpace(buildID)
+	if buildID == "" {
+		writeError(w, http.StatusBadRequest, errors.New("build_id is required"))
+		return
+	}
+
+	if api.isDevBuildID(buildID) {
+		status, err := api.devBuildStatus(module)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, status)
+		return
+	}
+
 	indexPath := api.indexPath(module)
 	index, err := loadLocalBuildIndex(indexPath)
 	if err != nil {
@@ -678,10 +748,47 @@ func (api *deployLocalServer) handleBuildStatus(w http.ResponseWriter, module st
 		return
 	}
 	status := api.annotateBuildRow(module, row)
-	writeJSON(w, http.StatusOK, status)
+	running := false
+	port := 0
+	if proc, ok := api.readBuildProcessFile(module, buildID); ok {
+		if isProcessRunning(proc.PID) {
+			running = true
+			port = proc.Port
+		} else {
+			api.clearBuildProcess(module, buildID)
+		}
+	}
+	if port == 0 {
+		port = api.readRuntimePort(module, buildID)
+		if port == 0 && buildID == index.Current && index.Port > 0 {
+			port = index.Port
+		}
+	}
+
+	payload := map[string]interface{}{
+		"module":            module,
+		"build_id":          buildID,
+		"running":           running,
+		"port":              port,
+		"moduleversion":     status.ModuleVersion,
+		"commit":            status.Commit,
+		"built_at":          status.BuiltAt,
+		"source_hash":       status.SourceHash,
+		"format":            status.Format,
+		"production":        status.Production,
+		"pushed_at":         status.PushedAt,
+		"remote_target":     status.RemoteTarget,
+		"remote_status":     status.RemoteStatus,
+		"remote_checked_at": status.RemoteCheckedAt,
+	}
+	writeJSON(w, http.StatusOK, payload)
 }
 
 func (api *deployLocalServer) handleBuildProduction(w http.ResponseWriter, r *http.Request, module string, buildID string) {
+	if api.isDevBuildID(buildID) {
+		writeError(w, http.StatusBadRequest, errors.New("cannot set production on dev build"))
+		return
+	}
 	body, err := readJSONBody(r)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
@@ -731,6 +838,10 @@ func (api *deployLocalServer) handleBuildDelete(w http.ResponseWriter, module st
 	buildID = strings.TrimSpace(buildID)
 	if buildID == "" {
 		writeError(w, http.StatusBadRequest, errors.New("build_id is required"))
+		return
+	}
+	if api.isDevBuildID(buildID) {
+		writeError(w, http.StatusBadRequest, errors.New("cannot delete dev build"))
 		return
 	}
 	if strings.Contains(buildID, "..") || strings.Contains(buildID, "/") || strings.Contains(buildID, "\\") {

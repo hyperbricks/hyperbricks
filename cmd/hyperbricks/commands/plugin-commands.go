@@ -664,6 +664,45 @@ func getHyperbricksSemver() string {
 	return ver
 }
 
+// HyperbricksSemver returns the current Hyperbricks version as a semver string.
+func HyperbricksSemver() string {
+	return getHyperbricksSemver()
+}
+
+// FilterPluginIndexByHyperbricks returns only plugin versions compatible with the given Hyperbricks version.
+func FilterPluginIndexByHyperbricks(plugins map[string]map[string]PluginMeta, hbVersion string) map[string]map[string]PluginMeta {
+	version := strings.TrimPrefix(strings.TrimSpace(hbVersion), "v")
+	hbVer, err := semver.NewVersion(version)
+	if err != nil {
+		return plugins
+	}
+
+	filtered := make(map[string]map[string]PluginMeta)
+	for name, versions := range plugins {
+		for ver, meta := range versions {
+			if len(meta.CompatibleHyperbricks) == 0 {
+				continue
+			}
+			for _, compat := range meta.CompatibleHyperbricks {
+				constraints, err := semver.NewConstraint(compat)
+				if err != nil {
+					continue
+				}
+				if constraints.Check(hbVer) {
+					entry, ok := filtered[name]
+					if !ok {
+						entry = make(map[string]PluginMeta)
+						filtered[name] = entry
+					}
+					entry[ver] = meta
+					break
+				}
+			}
+		}
+	}
+	return filtered
+}
+
 // Returns the plugin's short name (right of last '/')
 func pluginShortName(fullName string) string {
 	if ix := strings.LastIndex(fullName, "/"); ix >= 0 {

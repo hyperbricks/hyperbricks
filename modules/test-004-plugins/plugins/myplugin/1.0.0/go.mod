@@ -2,7 +2,7 @@ module github.com/hyperbricks/plugins/myplugin
 
 go 1.23.4
 
-require github.com/hyperbricks/hyperbricks v0.7.7-alpha
+require github.com/hyperbricks/hyperbricks v0.7.8-alpha
 
 replace github.com/hyperbricks/hyperbricks => ../../../../..
 

@@ -618,6 +618,7 @@ func (api *deployAPI) handleGlobalPluginsIndex(w http.ResponseWriter) {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
+	index = commands.FilterPluginIndexByHyperbricks(index, commands.HyperbricksSemver())
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"plugins": index,
 	})
