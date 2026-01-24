@@ -111,6 +111,8 @@ func (cr *HeadRenderer) Render(instance interface{}, ctx context.Context) (strin
 	if config.Items == nil {
 		// js and css always shows up at 100 so user can choose to add before or after
 		config.Items = make(map[string]interface{})
+	} else {
+		config.Items = shared.CloneMapDeep(config.Items)
 	}
 
 	renderedHeadContent := headbuilder.String()

@@ -110,6 +110,10 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 		})
 	}
 
+	if config.Values != nil {
+		config.Values = shared.CloneMapDeep(config.Values)
+	}
+
 	// Attempt to get the params of current request from the context and add it to the template values...
 	if ctx != nil {
 		req, ok := ctx.Value(shared.Request).(*http.Request)

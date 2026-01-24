@@ -36,7 +36,6 @@ func MenuConfigGetName() string {
 type MenuRenderer struct {
 	TemplateProvider     func(templateName string) (string, bool)
 	HyperMediasBySection map[string][]composite.HyperMediaConfig
-	CurrentRoute         string
 }
 
 var _ shared.ComponentRenderer = (*MenuRenderer)(nil)
@@ -153,7 +152,14 @@ func (mr *MenuRenderer) Render(instance interface{}, ctx context.Context) (strin
 	}
 
 	var menuItems []string
-	currentRoute := mr.CurrentRoute
+	currentRoute := ""
+	if ctx != nil {
+		if v := ctx.Value(shared.CurrentRoute); v != nil {
+			if s, ok := v.(string); ok {
+				currentRoute = s
+			}
+		}
+	}
 
 	for _, page := range pages {
 		var buf strings.Builder
