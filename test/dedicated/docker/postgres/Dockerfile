@@ -1,5 +1,5 @@
-# Use the official PostgreSQL Alpine image
-FROM postgres:12.3-alpine
+# Use the official PostgreSQL Alpine image (PostgREST requires PG >= 13)
+FROM postgres:15-alpine
 
 # Install build dependencies
 RUN apk add --no-cache \
