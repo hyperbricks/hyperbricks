@@ -10,6 +10,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
 )
 
 type PluginRenderer struct {
@@ -67,7 +68,7 @@ func (r *PluginRenderer) Render(instance interface{}, ctx context.Context) (stri
 		return renderedContent, errors
 	}
 
-	return renderAndWrap(pluginRenderer, config, instance, ctx, errors)
+	return r.renderAndWrap(pluginRenderer, config, instance, ctx, errors)
 }
 
 func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context) (string, []error) {
@@ -156,18 +157,117 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 	// Store hot-loaded plugin so it's available next time
 	r.RenderManager.SetPlugin(config.PluginName, renderer)
 
-	return renderAndWrap(renderer, config, instance, ctx, errors)
+	return r.renderAndWrap(renderer, config, instance, ctx, errors)
 }
 
-func renderAndWrap(r shared.PluginRenderer, config PluginConfig, instance interface{}, ctx context.Context, errs []error) (string, []error) {
+func (r *PluginRenderer) renderAndWrap(pluginRenderer shared.PluginRenderer, config PluginConfig, instance interface{}, ctx context.Context, errs []error) (string, []error) {
 	var builder strings.Builder
 
 	if ctx == nil && commands.RenderStatic {
 		ctx = context.Background()
 	}
-	renderedContent, renderErrs := r.Render(instance, ctx)
+	renderedValue, renderErrs := pluginRenderer.Render(instance, ctx)
 	if renderErrs != nil {
 		errs = append(errs, renderErrs...)
+	}
+
+	renderedContent := ""
+	switch value := renderedValue.(type) {
+	case string:
+		renderedContent = value
+	case map[string]interface{}:
+		componentType, ok := value["@type"].(string)
+		if !ok || componentType == "" {
+			errs = append(errs, shared.ComponentError{
+				Hash:     shared.GenerateHash(),
+				Key:      config.HyperBricksKey,
+				Path:     config.HyperBricksPath,
+				File:     config.HyperBricksFile,
+				Type:     PluginRenderGetName(),
+				Rejected: true,
+				Err:      "plugin returned map without @type",
+			})
+			renderedContent = "<!-- plugin returned map without @type -->"
+			break
+		}
+
+		if r.RenderManager == nil {
+			errs = append(errs, shared.ComponentError{
+				Hash:     shared.GenerateHash(),
+				Key:      config.HyperBricksKey,
+				Path:     config.HyperBricksPath,
+				File:     config.HyperBricksFile,
+				Type:     PluginRenderGetName(),
+				Rejected: true,
+				Err:      "plugin render manager is nil",
+			})
+			renderedContent = "<!-- plugin render manager is nil -->"
+			break
+		}
+
+		renderedHTML, nestedErrs := r.RenderManager.Render(componentType, value, ctx)
+		if nestedErrs != nil {
+			errs = append(errs, nestedErrs...)
+		}
+		renderedContent = renderedHTML
+	case typefactory.TypeRequest:
+		if r.RenderManager == nil {
+			errs = append(errs, shared.ComponentError{
+				Hash:     shared.GenerateHash(),
+				Key:      config.HyperBricksKey,
+				Path:     config.HyperBricksPath,
+				File:     config.HyperBricksFile,
+				Type:     PluginRenderGetName(),
+				Rejected: true,
+				Err:      "plugin render manager is nil",
+			})
+			renderedContent = "<!-- plugin render manager is nil -->"
+			break
+		}
+
+		renderedHTML, nestedErrs := r.RenderManager.Render(value.TypeName, value.Data, ctx)
+		if nestedErrs != nil {
+			errs = append(errs, nestedErrs...)
+		}
+		renderedContent = renderedHTML
+	case *typefactory.TypeRequest:
+		if value == nil {
+			renderedContent = ""
+			break
+		}
+
+		if r.RenderManager == nil {
+			errs = append(errs, shared.ComponentError{
+				Hash:     shared.GenerateHash(),
+				Key:      config.HyperBricksKey,
+				Path:     config.HyperBricksPath,
+				File:     config.HyperBricksFile,
+				Type:     PluginRenderGetName(),
+				Rejected: true,
+				Err:      "plugin render manager is nil",
+			})
+			renderedContent = "<!-- plugin render manager is nil -->"
+			break
+		}
+
+		renderedHTML, nestedErrs := r.RenderManager.Render(value.TypeName, value.Data, ctx)
+		if nestedErrs != nil {
+			errs = append(errs, nestedErrs...)
+		}
+		renderedContent = renderedHTML
+	case nil:
+		renderedContent = ""
+	default:
+		errs = append(errs, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      config.HyperBricksKey,
+			Path:     config.HyperBricksPath,
+			File:     config.HyperBricksFile,
+			Type:     PluginRenderGetName(),
+			Rejected: true,
+			Err:      fmt.Sprintf("plugin returned unsupported type: %T", renderedValue),
+		})
+		renderedContent = fmt.Sprintf("<!-- plugin returned unsupported type: %T -->", renderedValue)
 	}
 
 	builder.WriteString(wrapPluginHTML(config, renderedContent))

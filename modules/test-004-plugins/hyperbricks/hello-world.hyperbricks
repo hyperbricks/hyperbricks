@@ -1,0 +1,57 @@
+article = <TREE>
+article {
+
+    10 = <TEXT>
+    10.@bind = title
+    10.value = Hello World
+
+    15 = <PLUGIN>
+    15.plugin = MarkdownPlugin@1.0.0
+    15.data.class = md
+    15.data.content = <<[
+        # Welcome this is **Markdown** content. dsfsafas s
+    ]>>
+    15.@bind = content
+
+    20 = <IMAGE>
+    20.@bind = image
+    20.src = {{RESOURCES}}/images/GitHub_Logo.png
+    20.height = 100
+    20.quality = 100
+    20.class = article_image
+    20.alt = article alt 
+    20.enclose = <a href="index.html">|</a>
+}
+
+
+page = <HYPERMEDIA>
+page.route = index
+page.10 = <TEXT>    
+page.10.value = HELLO WORLD!
+page.10.enclose = <p>|</p>
+
+page.20 = <PLUGIN>
+page.20.plugin = MyPlugin__test-004-plugins@1.0.0
+page.20.data.message = Hello from the test plugin
+page.20.enclose = <p>|</p>
+
+page.30 = <PLUGIN>
+page.30.plugin = RenderMapPlugin__test-004-plugins@1.0.0
+page.30.data.mode = map
+page.30.data.message = Hello from map return
+page.30.data.enclose = <p>|</p>
+
+page.40 = <PLUGIN>
+page.40.plugin = RenderMapPlugin__test-004-plugins@1.0.0
+page.40.data.mode = request
+page.40.data.message = Hello from TypeRequest return
+page.40.data.enclose = <p>|</p>
+
+page.50 = <PLUGIN>
+page.50.plugin = InheritMapPlugin__test-004-plugins@1.0.0
+page.50.data.template < article
+page.50.data.title = Article from inherited template
+page.50.data.content = <<[
+    # Article content from inherited map
+]>>
+page.50.data.image = {{RESOURCES}}/images/GitHub_Logo_White.png
