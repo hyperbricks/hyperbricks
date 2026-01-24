@@ -6,7 +6,7 @@ article {
     10.value = Hello World
 
     15 = <PLUGIN>
-    15.plugin = MarkdownPlugin@1.0.0
+    15.plugin = MarkdownPlugin@2.0.0
     15.data.class = md
     15.data.content = <<[
         # Welcome this is **Markdown** content. dsfsafas s
@@ -54,4 +54,4 @@ page.50.data.title = Article from inherited template
 page.50.data.content = <<[
     # Article content from inherited map
 ]>>
-page.50.data.image = {{RESOURCES}}/images/GitHub_Logo.png
+page.50.data.image = {{RESOURCES}}/images/GitHub_Logo_White.png
