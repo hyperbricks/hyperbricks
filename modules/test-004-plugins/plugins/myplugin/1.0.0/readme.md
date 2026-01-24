@@ -1,0 +1,8 @@
+Very basic plugin example.
+
+**Example config:**
+```
+my_plugin = <PLUGIN>
+my_plugin.plugin = MyPlugin
+my_plugin.data.message = Hello World!
+```

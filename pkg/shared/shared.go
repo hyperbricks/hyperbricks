@@ -16,7 +16,7 @@ type PluginConfig map[string]interface{}
 
 // RenderPlugin defines the interface for dynamic plugins.
 type PluginRenderer interface {
-	Render(data interface{}, ctx context.Context) (string, []error)
+	Render(data interface{}, ctx context.Context) (any, []error)
 }
 
 type Renderer interface {

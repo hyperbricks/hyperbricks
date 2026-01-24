@@ -1,0 +1,10 @@
+{
+  "plugin": "github.com/hyperbricks/plugins/renderplugin",
+  "source": "render_plugin.go",
+  "version": "1.0.0",
+  "binary": "RenderMapPlugin",
+  "compatible_hyperbricks": [
+    ">=0.5.0-alpha"
+  ],
+  "description": "Test plugin returning HTML, map, or TypeRequest"
+}
