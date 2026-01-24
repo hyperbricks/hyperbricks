@@ -22,7 +22,7 @@ api_set_token_render {
 
     setcookie =  <<[token={{.Data.accessToken}}]>>
     #debugpanel = false
-	#debug = true
+	debug = true
 	#enclose = <div class="userlist">|</div>
 }
 ==== expected json ====

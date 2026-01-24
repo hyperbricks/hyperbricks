@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
@@ -212,8 +211,19 @@ func renderStaticContentFromConfig(config map[string]interface{}, routeOverride 
 		configCopy[key] = value
 	}
 
+	route := ""
 	if strings.TrimSpace(routeOverride) != "" {
-		configCopy["route"] = strings.TrimSpace(routeOverride)
+		route = strings.TrimSpace(routeOverride)
+		configCopy["route"] = route
+	} else if routeValue, ok := configCopy["route"].(string); ok {
+		route = routeValue
+	}
+
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if route != "" {
+		ctx = context.WithValue(ctx, shared.CurrentRoute, route)
 	}
 
 	var htmlContent strings.Builder
@@ -356,6 +366,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 	ctx = context.WithValue(ctx, shared.RequestBody, r.Body) // Store body data in context
 	ctx = context.WithValue(ctx, shared.FormData, r.Form)    // Store form data in context
 	ctx = context.WithValue(ctx, shared.Request, r)
+	ctx = context.WithValue(ctx, shared.CurrentRoute, route)
 
 	//TO-DO: I know this is 'not how to do this', but because it stays within the concurrent proof HTTP lifecycle it is a practical solution for passing the ResponseWriter around
 	ctx = context.WithValue(ctx, shared.ResponseWriter, w)
@@ -507,7 +518,6 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 		route = "index"
 	}
 
-	rm.GetRenderComponent("<MENU>").(*component.MenuRenderer).CurrentRoute = route
 	logging.GetLogger().Debugw("Received request for route", "route", route)
 
 	var htmlContent strings.Builder

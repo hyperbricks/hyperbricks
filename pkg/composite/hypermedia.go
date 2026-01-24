@@ -239,6 +239,8 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 
 		if config.Head == nil {
 			config.Head = make(map[string]interface{})
+		} else {
+			config.Head = shared.CloneMapDeep(config.Head)
 		}
 
 		//head := shared.StructToMap(config.Head)
@@ -261,6 +263,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 	outputHtml := ""
 	// TEMPLATE?
 	if config.Template != nil {
+		config.Template = shared.CloneMapDeep(config.Template)
 		config.Template["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
 		config.Template["hyperbrickspath"] = config.Composite.Meta.HyperBricksKey + ".template"
 
@@ -283,6 +286,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 
 		// TREE
 		if config.Composite.Items != nil {
+			config.Composite.Items = shared.CloneMapDeep(config.Composite.Items)
 			config.Composite.Items["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
 			config.Composite.Items["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
 		}

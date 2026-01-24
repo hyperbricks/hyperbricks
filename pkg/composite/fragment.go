@@ -108,6 +108,7 @@ func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (s
 	outputHtml := ""
 	// TEMPLATE?
 	if config.Template != nil {
+		config.Template = shared.CloneMapDeep(config.Template)
 		// TO-DO: INSERT HEAD to TEMPLATE VALUES....
 		config.Template["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
 		config.Template["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey + ".template"
@@ -120,6 +121,8 @@ func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (s
 
 		if config.Composite.Items == nil {
 			config.Composite.Items = make(map[string]interface{})
+		} else {
+			config.Composite.Items = shared.CloneMapDeep(config.Composite.Items)
 		}
 		// TREE
 		config.Composite.Items["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
