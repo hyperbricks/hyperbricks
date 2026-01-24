@@ -2,9 +2,7 @@ module github.com/hyperbricks/plugins/inheritplugin
 
 go 1.23.4
 
-require github.com/hyperbricks/hyperbricks v0.7.8-alpha
-
-replace github.com/hyperbricks/hyperbricks => ../../../../..
+require github.com/hyperbricks/hyperbricks v0.7.9-alpha
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
