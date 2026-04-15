@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
@@ -14,21 +16,32 @@ import (
 )
 
 // Global server instance
-var server *http.Server
+var (
+	server   *http.Server
+	serverMu sync.Mutex
+)
 
 // StopServer gracefully shuts down the HTTP server.
-func StopServer(ctx context.Context) {
-	logging.GetLogger().Infow("Shutting down the server gracefully...")
-	if err := server.Shutdown(ctx); err != nil {
-		logging.GetLogger().Fatalw("Server Shutdown Failed", "error", err)
+func StopServer(ctx context.Context) error {
+	serverMu.Lock()
+	activeServer := server
+	serverMu.Unlock()
+
+	if activeServer == nil {
+		return nil
 	}
+
+	logging.GetLogger().Infow("Shutting down the server gracefully...")
+	if err := activeServer.Shutdown(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	return nil
 }
 
 // StartServer initializes and starts the HTTP server based on the selected mode.
 func StartServer(ctx context.Context) {
 	hbConfig := getHyperBricksConfiguration()
 
-	var server *http.Server
 	var listener net.Listener
 	var err error
 
@@ -62,22 +75,38 @@ func StartServer(ctx context.Context) {
 		}
 	}
 
-	// Run server in a separate Goroutine
+	serverMu.Lock()
+	activeServer := server
+	serverMu.Unlock()
+
 	go func() {
-		// ANSI escape code for green text
-		green := "\033[32m"
-		// ANSI escape code to reset the text color
-		reset := "\033[0m"
+		<-ctx.Done()
 
-		// Print a green dot using a Unicode bullet character
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
 
-		log.Printf("%s Server running in %s mode at http://%s", green+"●"+reset, hbConfig.Mode, shared.Location)
-		if os.Getenv("HB_NO_KEYBOARD") == "" {
-			log.Printf("Press 'q', ESC or Ctrl+C to stop the server...")
-		}
-		// Start the HTTP server
-		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
-			log.Fatal("Server error:", err)
+		if err := StopServer(shutdownCtx); err != nil {
+			logging.GetLogger().Errorw("Server Shutdown Failed", "error", err)
 		}
 	}()
+
+	// ANSI escape code for green text
+	green := "\033[32m"
+	// ANSI escape code to reset the text color
+	reset := "\033[0m"
+
+	log.Printf("%s Server running in %s mode at http://%s", green+"●"+reset, hbConfig.Mode, shared.Location)
+	if os.Getenv("HB_NO_KEYBOARD") == "" {
+		log.Printf("Press 'q', ESC or Ctrl+C to stop the server...")
+	}
+
+	if err := activeServer.Serve(listener); err != nil && err != http.ErrServerClosed {
+		log.Fatal("Server error:", err)
+	}
+
+	serverMu.Lock()
+	if server == activeServer {
+		server = nil
+	}
+	serverMu.Unlock()
 }

@@ -3,8 +3,11 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"path"
@@ -16,6 +19,11 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/yosssi/gohtml"
+)
+
+const (
+	liveCacheRenderedAtHeader = "X-Hyperbricks-Rendered-At"
+	liveCacheExpiresAtHeader  = "X-Hyperbricks-Cache-Expires-At"
 )
 
 func resolveBeautify(config map[string]interface{}, defaultValue bool) bool {
@@ -147,6 +155,104 @@ func headerContentType(headers map[string]string) string {
 		}
 	}
 	return ""
+}
+
+func applyLiveCacheMetadataHeaders(headers map[string]string, renderedAt string, expiresAt string) map[string]string {
+	if headers == nil {
+		headers = make(map[string]string)
+	}
+	headers[liveCacheRenderedAtHeader] = renderedAt
+	headers[liveCacheExpiresAtHeader] = expiresAt
+	return headers
+}
+
+func resolveLiveCacheKey(route string, r *http.Request) (string, bool) {
+	if r == nil {
+		return route, true
+	}
+
+	signature, hasVariant, err := requestVariantSignature(r)
+	if err != nil {
+		logging.GetLogger().Warnw("Failed to build live-mode cache key", "route", route, "error", err)
+		return "", false
+	}
+
+	if !hasVariant {
+		return route, true
+	}
+
+	return route + "|" + signature, true
+}
+
+func requestVariantSignature(r *http.Request) (string, bool, error) {
+	var variant bytes.Buffer
+	hasVariant := false
+
+	if r.Method != "" && r.Method != http.MethodGet && r.Method != http.MethodHead {
+		hasVariant = true
+		variant.WriteString("method=")
+		variant.WriteString(r.Method)
+		variant.WriteByte('\n')
+	}
+
+	if r.URL != nil {
+		if query := r.URL.Query().Encode(); query != "" {
+			hasVariant = true
+			variant.WriteString("query=")
+			variant.WriteString(query)
+			variant.WriteByte('\n')
+		}
+	}
+
+	if auth := strings.TrimSpace(r.Header.Get("Authorization")); auth != "" {
+		hasVariant = true
+		variant.WriteString("authorization=")
+		variant.WriteString(auth)
+		variant.WriteByte('\n')
+	}
+
+	if cookie := strings.TrimSpace(r.Header.Get("Cookie")); cookie != "" {
+		hasVariant = true
+		variant.WriteString("cookie=")
+		variant.WriteString(cookie)
+		variant.WriteByte('\n')
+	}
+
+	body, err := cloneRequestBody(r)
+	if err != nil {
+		return "", false, err
+	}
+	if len(body) > 0 {
+		hasVariant = true
+		variant.WriteString("body=")
+		variant.Write(body)
+		variant.WriteByte('\n')
+	}
+
+	if !hasVariant {
+		return "", false, nil
+	}
+
+	sum := sha256.Sum256(variant.Bytes())
+	return hex.EncodeToString(sum[:]), true, nil
+}
+
+func cloneRequestBody(r *http.Request) ([]byte, error) {
+	if r == nil || r.Body == nil || r.Body == http.NoBody {
+		return nil, nil
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := r.Body.Close(); err != nil {
+		return nil, err
+	}
+
+	r.Body = io.NopCloser(bytes.NewReader(body))
+	return body, nil
 }
 
 func resolveRoute(route string, routing shared.RoutingConfig) (string, bool) {
@@ -572,10 +678,17 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheE
 
 	hbConfig := getHyperBricksConfiguration()
 	cacheDuration := hbConfig.Live.CacheTime
+	cacheKey, cacheable := resolveLiveCacheKey(route, r)
 
-	htmlCacheMutex.RLock()
-	cacheEntry, found := htmlCache[route]
-	htmlCacheMutex.RUnlock()
+	var (
+		cacheEntry CacheEntry
+		found      bool
+	)
+	if cacheable {
+		htmlCacheMutex.RLock()
+		cacheEntry, found = htmlCache[cacheKey]
+		htmlCacheMutex.RUnlock()
+	}
 
 	if found && time.Since(cacheEntry.Timestamp) <= cacheDuration.Duration {
 		logging.GetLogger().Debugw("Cache hit for route", "route", route)
@@ -595,11 +708,10 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheE
 
 	renderContent := renderContent(w, route, r)
 	if !renderContent.NoCache {
-		renderContent.Content += fmt.Sprintf("\n<!-- Rendered at: %s -->", renderTime)
-		renderContent.Content += fmt.Sprintf("\n<!-- Cache expires at: %s -->", expirationTime)
-		if renderContent.Content != "" {
+		if cacheable && renderContent.Content != "" {
+			renderContent.Headers = applyLiveCacheMetadataHeaders(renderContent.Headers, renderTime, expirationTime)
 			htmlCacheMutex.Lock()
-			htmlCache[route] = CacheEntry{
+			htmlCache[cacheKey] = CacheEntry{
 				Content:     renderContent.Content,
 				Timestamp:   now,
 				ContentType: renderContent.ContentType,

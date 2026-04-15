@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -14,7 +15,7 @@ var (
 	KeyboardEnabled bool = false
 )
 
-func keyboardActions() {
+func keyboardActions(cancel context.CancelFunc) {
 	if os.Getenv("HB_NO_KEYBOARD") != "" {
 		return
 	}
@@ -84,17 +85,13 @@ func keyboardActions() {
 				logging.GetLogger().Warn(yellowTrueColor, "....Reloading configurations....", reset)
 				PreProcessAndPopulateHyperbricksConfigurations()
 			}
-			// Place your action here
+		// Place your action here
 		case <-disabled:
 			KeyboardEnabled = false
 			return
 		case <-done:
 			fmt.Println("Exiting program.")
 			cancel()
-			if err := keyboard.Close(); err != nil {
-				log.Printf("Failed to close keyboard: %v", err)
-			}
-			os.Exit(1)
 			return
 		}
 	}

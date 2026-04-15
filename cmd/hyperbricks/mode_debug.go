@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 
@@ -44,8 +43,8 @@ func debug_mode() {
 	// Initialize the logger
 	logging.GetLogger().Debug("Application started in debug mode...")
 
-	shutdownChan := make(chan struct{})
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	// Use a WaitGroup to wait for the server to shut down
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -53,12 +52,10 @@ func debug_mode() {
 	// Start the server in a separate goroutine
 	go func() {
 		defer wg.Done()
-		initialisation(ctx, cancel)
+		initialisation(ctx)
 	}()
 
-	<-shutdownChan
-
-	cancel()
+	waitForShutdown(ctx, cancel)
 
 	// Wait for the server to finish
 	wg.Wait()

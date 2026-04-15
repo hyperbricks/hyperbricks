@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/database"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
-	"github.com/hyperbricks/hyperbricks/pkg/shared"
 
 	"go.uber.org/zap"
 )
@@ -55,8 +53,8 @@ func development_mode_init() {
 
 func development_mode() {
 	hbConfig := getHyperBricksConfiguration()
-	shutdownChan := make(chan struct{})
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	// Use a WaitGroup to wait for the server to shut down
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -64,21 +62,19 @@ func development_mode() {
 	// Start the server in a separate goroutine
 	go func() {
 		defer wg.Done()
-		initialisation(ctx, cancel)
+		initialisation(ctx)
 
-		// while we're at it, better to use shared.Location for logging the dashboad route (development mode only)
-		if hbConfig.Development.Dashboard {
-			logging.GetLogger().Info(fmt.Sprintf("dashboard: [http://%s/%s] initialized", shared.Location, "dashboard"))
-		}
 	}()
-	keyboardActions()
-	<-shutdownChan
-
-	database.GetDB().Close()
-	cancel()
+	if hbConfig.Development.Dashboard {
+		logging.GetLogger().Info("Dashboard route registered at /dashboard")
+	}
+	waitForShutdown(ctx, cancel)
 
 	// Wait for the server to finish
 	wg.Wait()
+	if err := database.CloseDB(); err != nil {
+		logging.GetLogger().Warnw("Failed to close database", "error", err)
+	}
 	fmt.Print("\033[H\033[2J")
 	logging.GetLogger().Info("Application exited")
 

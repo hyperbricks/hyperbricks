@@ -1,10 +1,16 @@
 #!/bin/bash
-# Run the Go test
-echo "Running all test..."
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+cd "${REPO_ROOT}"
+
+echo "Running all tests..."
 
 go test ./test/main -v
-scripts/run_api_fragment_render_tests_docker.sh
-scripts/run_template_tests.sh
-scripts/run_marker_tests.sh
-scripts/build_docs.sh
-scripts/test_headers_module.sh
+bash "${SCRIPT_DIR}/run_api_fragment_render_tests_docker.sh"
+bash "${SCRIPT_DIR}/run_template_tests.sh"
+bash "${SCRIPT_DIR}/run_marker_tests.sh"
+bash "${SCRIPT_DIR}/build_docs.sh"
+bash "${SCRIPT_DIR}/test_headers_module.sh"

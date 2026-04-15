@@ -54,6 +54,24 @@ When serving static files (for example after `hyperbricks static`):
 Note: `/index.html` still redirects to `/` (Go's file server behavior), and
 `/` serves the index file directly to avoid redirect loops.
 
+## Live-Mode cache headers
+
+When `hyperbricks start` serves a route in live mode and the response is
+cacheable, Hyperbricks adds cache metadata as HTTP response headers:
+
+- `X-Hyperbricks-Rendered-At`
+- `X-Hyperbricks-Cache-Expires-At`
+
+These headers describe when the cached response was rendered and when that
+cache entry expires.
+
+Notes:
+
+- They are response metadata, not routing config.
+- They are sent in headers instead of being appended to the HTML body.
+- On a cache hit, the same cached header values are returned again.
+- In development mode, these headers are not added.
+
 ## Configuration reference
 
 Example block:

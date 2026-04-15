@@ -1,95 +1,231 @@
 #!/bin/bash
-
-set -e
+set -euo pipefail
+set +m
 
 echo "Running docker CACHE AND PATH MARKER test..."
 
-# Define an array of routes to check
-ROUTES=("http://localhost:8085/test_001" "http://localhost:8085/test_002" "http://localhost:8085/test_003")  # Add more routes as needed
+MODULE="markers-test"
+PORT="8085"
+HB_CMD="${HB_CMD:-go run ./cmd/hyperbricks}"
+LOG_FILE="/tmp/hyperbricks-marker-tests.log"
 
-# Define the path to expected result files
+ROUTES=(
+  "http://localhost:${PORT}/test_001"
+  "http://localhost:${PORT}/test_002"
+  "http://localhost:${PORT}/test_003"
+)
+
 EXPECTED_FILES=(
   "test/dedicated/cache-path-marker-tests/expected_result-001.html"
   "test/dedicated/cache-path-marker-tests/expected_result-002.html"
   "test/dedicated/cache-path-marker-tests/expected_result-003.html"
-  # Add more expected files here
 )
 
-# Function to normalize the HTML content by removing extra whitespace
+PROCESS_PID=""
+
+command_exists() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+ensure_module_dirs() {
+  local module="$1"
+  local module_dir="modules/${module}"
+
+  mkdir -p \
+    "${module_dir}/static" \
+    "${module_dir}/resources" \
+    "${module_dir}/templates" \
+    "${module_dir}/rendered" \
+    "./bin/plugins"
+}
+
+ensure_port_available() {
+  local port="$1"
+
+  if ! command_exists lsof; then
+    return 0
+  fi
+
+  local listeners
+  listeners=$(lsof -nP -iTCP:"${port}" -sTCP:LISTEN 2>/dev/null | awk 'NR>1 {print $1 ":" $2}' || true)
+  if [[ -z "${listeners}" ]]; then
+    return 0
+  fi
+
+  local blocked=""
+  for entry in ${listeners}; do
+    local cmd="${entry%%:*}"
+    local pid="${entry##*:}"
+    if [[ "${cmd}" == hyperbric* ]]; then
+      echo "Port ${port} in use by ${cmd} (pid ${pid}); stopping it..."
+      kill "${pid}" >/dev/null 2>&1 || true
+      for _ in $(seq 1 10); do
+        if ! kill -0 "${pid}" >/dev/null 2>&1; then
+          break
+        fi
+        sleep 0.2
+      done
+      if kill -0 "${pid}" >/dev/null 2>&1; then
+        kill -9 "${pid}" >/dev/null 2>&1 || true
+      fi
+    else
+      echo "Port ${port} in use by ${cmd} (pid ${pid}). Stop it and re-run."
+      blocked="yes"
+    fi
+  done
+
+  if [[ -n "${blocked}" ]]; then
+    exit 1
+  fi
+}
+
+stop_listener_port() {
+  local port="$1"
+
+  if ! command_exists lsof; then
+    return 0
+  fi
+
+  local listeners
+  listeners=$(lsof -nP -iTCP:"${port}" -sTCP:LISTEN 2>/dev/null | awk 'NR>1 {print $1 ":" $2}' || true)
+  if [[ -z "${listeners}" ]]; then
+    return 0
+  fi
+
+  for entry in ${listeners}; do
+    local cmd="${entry%%:*}"
+    local pid="${entry##*:}"
+    if [[ "${cmd}" == hyperbric* ]]; then
+      kill "${pid}" >/dev/null 2>&1 || true
+      for _ in $(seq 1 10); do
+        if ! kill -0 "${pid}" >/dev/null 2>&1; then
+          break
+        fi
+        sleep 0.2
+      done
+      if kill -0 "${pid}" >/dev/null 2>&1; then
+        kill -9 "${pid}" >/dev/null 2>&1 || true
+      fi
+    fi
+  done
+}
+
+cleanup() {
+  if [[ -n "${PROCESS_PID:-}" ]] && kill -0 "${PROCESS_PID}" >/dev/null 2>&1; then
+    kill "${PROCESS_PID}" >/dev/null 2>&1 || true
+    for _ in $(seq 1 10); do
+      if ! kill -0 "${PROCESS_PID}" >/dev/null 2>&1; then
+        wait "${PROCESS_PID}" 2>/dev/null || true
+        PROCESS_PID=""
+        break
+      fi
+      sleep 0.2
+    done
+    if [[ -n "${PROCESS_PID:-}" ]] && kill -0 "${PROCESS_PID}" >/dev/null 2>&1; then
+      kill -9 "${PROCESS_PID}" >/dev/null 2>&1 || true
+      wait "${PROCESS_PID}" 2>/dev/null || true
+    fi
+  fi
+  PROCESS_PID=""
+  stop_listener_port "${PORT}"
+}
+trap cleanup EXIT
+
+wait_for_server() {
+  local url="$1"
+  local log_file="$2"
+  local max_checks=120
+
+  for _ in $(seq 1 "${max_checks}"); do
+    if ! kill -0 "${PROCESS_PID}" >/dev/null 2>&1; then
+      echo "Hyperbricks exited before it became ready."
+      if [[ -s "${log_file}" ]]; then
+        tail -n 50 "${log_file}"
+      fi
+      return 1
+    fi
+    if curl -s "${url}" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 0.5
+  done
+
+  echo "Timed out waiting for ${url}"
+  if [[ -s "${log_file}" ]]; then
+    tail -n 50 "${log_file}"
+  fi
+  return 1
+}
+
+fetch_route() {
+  local url="$1"
+  local log_file="$2"
+
+  if ! curl -fsS "${url}"; then
+    echo "Failed to get a response from hyperbricks at ${url}."
+    if [[ -s "${log_file}" ]]; then
+      tail -n 50 "${log_file}"
+    fi
+    return 1
+  fi
+}
+
 normalize_html() {
   echo "$1" | tr -s '[:space:]' ' ' | sed 's/[[:space:]]*$//g'
 }
 
-# Start hyperbricks in the background and capture its PID
+ensure_module_dirs "${MODULE}"
+ensure_port_available "${PORT}"
+
 echo "Starting hyperbricks..."
-go run ./cmd/hyperbricks start -m markers-test -p 8085 > /tmp/hyperbricks.log 2>&1 &
+${HB_CMD} start -m "${MODULE}" -p "${PORT}" > "${LOG_FILE}" 2>&1 &
 PROCESS_PID=$!
+disown "${PROCESS_PID}" >/dev/null 2>&1 || true
 
-# Function to kill the process if the script exits or fails
-trap "kill -9 $PROCESS_PID > /dev/null 2>&1" EXIT
-
-echo "Hyperbricks process started with PID $PROCESS_PID."
-
-# Wait for hyperbricks to be fully ready
+echo "Hyperbricks process started with PID ${PROCESS_PID}."
 echo "Waiting for hyperbricks to be ready..."
-sleep 2
+wait_for_server "${ROUTES[0]}" "${LOG_FILE}"
 
-# Flag to track test results
-ALL_TESTS_PASSED=true
+all_tests_passed=true
 
-# Loop through all routes with their index
 for idx in "${!ROUTES[@]}"; do
-  ROUTE="${ROUTES[$idx]}"
-  EXPECTED_FILE="${EXPECTED_FILES[$idx]}"  # Get the corresponding expected file by index
+  route="${ROUTES[$idx]}"
+  expected_file="${EXPECTED_FILES[$idx]}"
 
-  echo "Testing route: $ROUTE"
-  
-  RESPONSE=$(curl -s "$ROUTE")
+  echo "Testing route: ${route}"
 
-  # If still no response, print logs and exit
-  if [ -z "$RESPONSE" ]; then
-    echo "Failed to get a response from hyperbricks at $ROUTE."
-    cat /tmp/hyperbricks.log
-    exit 1
-  fi
+  response="$(fetch_route "${route}" "${LOG_FILE}")"
+  expected_result="$(cat "${expected_file}")"
 
-  # Read the expected result from the file
-  EXPECTED_RESULT=$(cat "$EXPECTED_FILE")
+  expected_result_normalized="$(normalize_html "${expected_result}")"
+  response_normalized="$(normalize_html "${response}")"
 
-  # Normalize both actual and expected responses
-  EXPECTED_RESULT_NORMALIZED=$(normalize_html "$EXPECTED_RESULT")
-  RESPONSE_NORMALIZED=$(normalize_html "$RESPONSE")
-
-  # Perform the comparison between normalized actual and expected responses
-  if [[ "$RESPONSE_NORMALIZED" == "$EXPECTED_RESULT_NORMALIZED" ]]; then
-    echo "PASS: HTML structure matches the expected template from $EXPECTED_FILE."
+  if [[ "${response_normalized}" == "${expected_result_normalized}" ]]; then
+    echo "PASS: HTML structure matches the expected template from ${expected_file}."
   else
-    echo "FAIL: HTML structure does not match the expected template from $EXPECTED_FILE."
+    echo "FAIL: HTML structure does not match the expected template from ${expected_file}."
     echo "Expected HTML structure (normalized):"
-    echo "$EXPECTED_RESULT_NORMALIZED"
+    echo "${expected_result_normalized}"
     echo "Actual HTML structure (normalized):"
-    echo "$RESPONSE_NORMALIZED"
-    ALL_TESTS_PASSED=false
+    echo "${response_normalized}"
+    all_tests_passed=false
   fi
 done
 
-# Kill hyperbricks processes on port 8085
-echo "Killing hyperbricks processes on port 8085..."
-ps aux | grep 'hyperbricks' | grep -v grep | awk '{print $2}' | xargs kill -9
-
 echo "Waiting for exiting hyperbricks..."
-sleep 1
+cleanup
+sleep 0.5
 
-# Check if the tests passed
-if $ALL_TESTS_PASSED; then
+if [[ "${all_tests_passed}" == "true" ]]; then
   echo "All tests passed successfully!"
 else
   echo "Some tests failed."
+  exit 1
 fi
 
-# Check if port 8085 is in use
-if lsof -i :8085 > /dev/null; then
-  echo "Port 8085 is in use."
-else
-  echo "Everything cleaned"
+if command_exists lsof && lsof -nP -iTCP:"${PORT}" -sTCP:LISTEN >/dev/null 2>&1; then
+  echo "Port ${PORT} is in use."
+  exit 1
 fi
+
+echo "Everything cleaned"

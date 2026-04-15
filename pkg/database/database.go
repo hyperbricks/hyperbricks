@@ -28,3 +28,11 @@ func GetDB() *sql.DB {
 
 	return db
 }
+
+// CloseDB closes the singleton database connection if it was initialized.
+func CloseDB() error {
+	if db == nil {
+		return nil
+	}
+	return db.Close()
+}
