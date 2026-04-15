@@ -102,16 +102,7 @@ func isTestRun() bool {
 	return false
 }
 
-// Package-level channel declaration
-var (
-	ctx    context.Context
-	cancel context.CancelFunc
-)
-
-func initialisation(passedCtx context.Context, passedCancel context.CancelFunc) {
-	ctx = passedCtx
-	cancel = passedCancel
-
+func initialisation(ctx context.Context) {
 	basic_initialisation()
 
 	hbConfig := getHyperBricksConfiguration()

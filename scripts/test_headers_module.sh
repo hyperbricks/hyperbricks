@@ -247,9 +247,43 @@ assert_routing_paths() {
   assert_status "${base_url}/missing" "404"
 }
 
-extract_rendered_at() {
-  local body_file="$1"
-  grep -o "Rendered at: [^<]*" "${body_file}" | head -n 1 || true
+CACHE_RENDERED_AT_HEADER="X-Hyperbricks-Rendered-At"
+CACHE_EXPIRES_AT_HEADER="X-Hyperbricks-Cache-Expires-At"
+
+extract_header_value() {
+  local headers_file="$1"
+  local header_name="$2"
+  awk -F': ' -v header="${header_name}" 'tolower($1) == tolower(header) {print $2; exit}' "${headers_file}" | tr -d '\r' || true
+}
+
+assert_header_absent() {
+  local headers_file="$1"
+  local header_name="$2"
+  if grep -qi "^${header_name}:" "${headers_file}"; then
+    echo "Unexpected header present: ${header_name}"
+    cat "${headers_file}"
+    exit 1
+  fi
+}
+
+assert_cache_metadata_headers() {
+  local headers_file="$1"
+
+  local rendered_at
+  rendered_at=$(extract_header_value "${headers_file}" "${CACHE_RENDERED_AT_HEADER}")
+  if [[ -z "${rendered_at}" ]]; then
+    echo "Missing live cache metadata header: ${CACHE_RENDERED_AT_HEADER}"
+    cat "${headers_file}"
+    exit 1
+  fi
+
+  local expires_at
+  expires_at=$(extract_header_value "${headers_file}" "${CACHE_EXPIRES_AT_HEADER}")
+  if [[ -z "${expires_at}" ]]; then
+    echo "Missing live cache metadata header: ${CACHE_EXPIRES_AT_HEADER}"
+    cat "${headers_file}"
+    exit 1
+  fi
 }
 
 assert_header() {
@@ -303,11 +337,8 @@ test_module_dev() {
 
   assert_routing_paths "${base_url}" "${route_body_file}"
 
-  if grep -q "Rendered at:" "${body_file}"; then
-    echo "Unexpected cache marker in development mode"
-    cat "${body_file}"
-    exit 1
-  fi
+  assert_header_absent "${headers_file}" "${CACHE_RENDERED_AT_HEADER}"
+  assert_header_absent "${headers_file}" "${CACHE_EXPIRES_AT_HEADER}"
 
   stop_server
 }
@@ -332,11 +363,13 @@ test_module_live() {
   assert_cookie "${headers_file}" "prefs=${cookie_tag}; Path=/; Max-Age=31536000; SameSite=Lax"
   assert_body "${body_file}"
 
+  assert_cache_metadata_headers "${headers_file}"
+
   local first_rendered_at
-  first_rendered_at=$(extract_rendered_at "${body_file}")
+  first_rendered_at=$(extract_header_value "${headers_file}" "${CACHE_RENDERED_AT_HEADER}")
   if [[ -z "${first_rendered_at}" ]]; then
-    echo "Missing cache marker in live mode response"
-    cat "${body_file}"
+    echo "Missing cache rendered-at header in live mode response"
+    cat "${headers_file}"
     exit 1
   fi
 
@@ -349,9 +382,10 @@ test_module_live() {
   assert_cookie "${headers_file}" "session=${cookie_tag}; Path=/; HttpOnly"
   assert_cookie "${headers_file}" "prefs=${cookie_tag}; Path=/; Max-Age=31536000; SameSite=Lax"
   assert_body "${body_file}"
+  assert_cache_metadata_headers "${headers_file}"
 
   local second_rendered_at
-  second_rendered_at=$(extract_rendered_at "${body_file}")
+  second_rendered_at=$(extract_header_value "${headers_file}" "${CACHE_RENDERED_AT_HEADER}")
   if [[ "${first_rendered_at}" != "${second_rendered_at}" ]]; then
     echo "Cache miss detected; rendered timestamp changed"
     echo "First: ${first_rendered_at}"
