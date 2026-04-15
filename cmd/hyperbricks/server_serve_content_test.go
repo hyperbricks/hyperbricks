@@ -65,6 +65,30 @@ func cachedEntry(route string) (CacheEntry, bool) {
 	return entry, ok
 }
 
+func TestResolveNoCacheValue(t *testing.T) {
+	tests := []struct {
+		name  string
+		input interface{}
+		want  bool
+	}{
+		{name: "bool true", input: true, want: true},
+		{name: "bool false", input: false, want: false},
+		{name: "string true", input: "true", want: true},
+		{name: "string false", input: "false", want: false},
+		{name: "string uppercase false", input: "FALSE", want: false},
+		{name: "string invalid", input: "not-a-bool", want: false},
+		{name: "missing value", input: nil, want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := resolveNoCacheValue(tt.input); got != tt.want {
+				t.Fatalf("resolveNoCacheValue(%v) = %v, want %v", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestServeContent_LiveMode_DoesNotLeakRequestSensitiveContent(t *testing.T) {
 	setupLiveModeServeContentTest(t)
 
@@ -162,6 +186,62 @@ func TestServeContent_LiveMode_StillCachesRequestInsensitiveRoute(t *testing.T) 
 	}
 	if strings.Contains(secondWriter.Body.String(), "Rendered at") || strings.Contains(secondWriter.Body.String(), "Cache expires at") {
 		t.Fatalf("expected cached HTML response body not to include cache comments, got %q", secondWriter.Body.String())
+	}
+}
+
+func TestServeContent_LiveMode_HonorsExplicitNoCacheTrue(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	setTestRouteConfig("nocache-true", map[string]interface{}{
+		"@type":   composite.FragmentConfigGetName(),
+		"route":   "nocache-true",
+		"nocache": "true",
+		"template": map[string]interface{}{
+			"@type":  composite.TemplateConfigGetName(),
+			"inline": `uncached-content`,
+			"values": map[string]interface{}{
+				"seed": "x",
+			},
+		},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/nocache-true", nil)
+	ServeContent(writer, request)
+
+	if _, found := cachedEntry("nocache-true"); found {
+		t.Fatalf("expected nocache=true route not to be stored in live cache")
+	}
+	if writer.Header().Get(liveCacheRenderedAtHeader) != "" || writer.Header().Get(liveCacheExpiresAtHeader) != "" {
+		t.Fatalf("expected nocache=true response not to include cache metadata headers, got rendered=%q expires=%q", writer.Header().Get(liveCacheRenderedAtHeader), writer.Header().Get(liveCacheExpiresAtHeader))
+	}
+}
+
+func TestServeContent_LiveMode_HonorsExplicitNoCacheFalse(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	setTestRouteConfig("nocache-false", map[string]interface{}{
+		"@type":   composite.FragmentConfigGetName(),
+		"route":   "nocache-false",
+		"nocache": "false",
+		"template": map[string]interface{}{
+			"@type":  composite.TemplateConfigGetName(),
+			"inline": `cached-content`,
+			"values": map[string]interface{}{
+				"seed": "x",
+			},
+		},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/nocache-false", nil)
+	ServeContent(writer, request)
+
+	if _, found := cachedEntry("nocache-false"); !found {
+		t.Fatalf("expected nocache=false route to remain cacheable")
+	}
+	if writer.Header().Get(liveCacheRenderedAtHeader) == "" || writer.Header().Get(liveCacheExpiresAtHeader) == "" {
+		t.Fatalf("expected nocache=false response to include cache metadata headers, got rendered=%q expires=%q", writer.Header().Get(liveCacheRenderedAtHeader), writer.Header().Get(liveCacheExpiresAtHeader))
 	}
 }
 

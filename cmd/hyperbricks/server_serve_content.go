@@ -45,6 +45,20 @@ func resolveBeautify(config map[string]interface{}, defaultValue bool) bool {
 	return defaultValue
 }
 
+func resolveNoCacheValue(raw interface{}) bool {
+	switch value := raw.(type) {
+	case bool:
+		return value
+	case string:
+		parsed, err := strconv.ParseBool(strings.TrimSpace(value))
+		if err == nil {
+			return parsed
+		}
+	}
+
+	return false
+}
+
 func extractResponseHeaders(raw map[string]interface{}) map[string]string {
 	value, ok := raw["headers"]
 	if !ok || value == nil {
@@ -420,9 +434,8 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 		}
 	}
 
-	if _, ok := _config["nocache"].(string); ok {
-		nocache = true
-		// logging.GetLogger().Debugf("NoCache = true: %s from %s", val, route)
+	if rawNoCache, ok := _config["nocache"]; ok {
+		nocache = resolveNoCacheValue(rawNoCache)
 	}
 	var contentType = ""
 	if ct, ok := _config["content_type"].(string); ok {
