@@ -32,6 +32,7 @@ func RegisterSubcommands() {
 	RootCmd.AddCommand(NewSelectCommand())
 	RootCmd.AddCommand(NewMakeStaticCommand())
 	RootCmd.AddCommand(PluginCommand())
+	RootCmd.AddCommand(InitStarterCommand())
 	RootCmd.AddCommand(NewBuildCommand())
 
 }

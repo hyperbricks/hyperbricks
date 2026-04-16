@@ -7,15 +7,16 @@ Usage:
   hyperbricks [command]
 
 Available Commands:
-  build       Build a Hypermedia Runtime Archive
-  completion  Generate the autocompletion script for the specified shell
-  help        Help about any command
-  init        Create package.hyperbricks and required directories
-  plugin      Hyperbricks plugin manager
-  select      Select a hyperbricks module
-  start       Start server
-  static      Render static content
-  version     Show version
+  build        Build a Hypermedia Runtime Archive
+  completion   Generate the autocompletion script for the specified shell
+  help         Help about any command
+  init         Create package.hyperbricks and required directories
+  init-starter Initialize a module from a HyperBricks starter repo
+  plugin       Hyperbricks plugin manager
+  select       Select a hyperbricks module
+  start        Start server
+  static       Render static content
+  version      Show version
 
 Flags:
   -h, --help              help for hyperbricks
@@ -44,6 +45,7 @@ hyperbricks [command]
 | `build`      | Build a runtime archive (`.hra`/`.zip`)     |
 | `help`       | Help on any command                        |
 | `init`       | Create config and folders for a new module |
+| `init-starter` | List and install official HyperBricks starters |
 | `select`     | Select the active module                   |
 | `plugin`     | Plugin management commands                 |
 | `start`      | Start the server                           |
@@ -84,7 +86,34 @@ someproject/
 Always run Hyperbricks CLI from the **project root** (parent of `modules/`).
 
 
-### 3. Start the Project
+### 3. Initialize from an Official Starter
+
+List starters compatible with your installed HyperBricks version:
+
+```bash
+hyperbricks init-starter list
+```
+
+Install the latest compatible version of a starter into a module:
+
+```bash
+hyperbricks init-starter get hello-world -m someproject
+```
+
+Pin a specific starter version:
+
+```bash
+hyperbricks init-starter get hello-world@1.0.0 -m someproject
+```
+
+Notes:
+
+* If `@version` is omitted, HyperBricks installs the latest compatible starter version.
+* The starter is downloaded from the official `hyperbricks-starters` catalog.
+* The target module directory must be missing or empty.
+
+
+### 4. Start the Project
 
 ```bash
 hyperbricks start -m someproject
@@ -99,13 +128,13 @@ hyperbricks start --help
 ```
 
 
-### 4. Render Static Output
+### 5. Render Static Output
 
 ```bash
 hyperbricks static -m someproject
 ```
 
-### 5. Build Deploy Archives (`.hra` / `.zip`)
+### 6. Build Deploy Archives (`.hra` / `.zip`)
 
 Create a deployable archive for a module:
 
@@ -122,7 +151,7 @@ Common flags:
 * `--push` — build then push to the default deploy target
 * `--target <name>` — pick a deploy target when using `--push`
 
-### 6. Deploy Runtime / Dashboards
+### 7. Deploy Runtime / Dashboards
 
 Run a module from the deploy folder:
 
@@ -140,7 +169,7 @@ hyperbricks start --deploy-init-config local|remote # Creates deploy config file
 
 Deploy configuration lives in `deploy.hyperbricks` at the project root.
 
-### 7. Docker Deploy (optional)
+### 8. Docker Deploy (optional)
 
 Spin up the deploy API + SSH using the included Docker setup:
 
