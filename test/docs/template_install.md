@@ -100,10 +100,13 @@ server {
     read_timeout = 5s
     write_timeout = 10s
     idle_timeout = 20s
+    keep_alives_enabled = true
 }
 ```
 
-Adjust timeout values based on traffic level. High-traffic blogs may prefer higher values (see commented examples).
+If these settings are omitted, HyperBricks uses the same defaults shown above: `read_timeout = 5s`, `write_timeout = 10s`, `idle_timeout = 20s`, and `keep_alives_enabled = true`.
+
+Adjust timeout values based on traffic level. Keep-alives are enabled by default for normal web traffic; only disable them when you explicitly want one-request-per-connection behavior.
 
 ---
 

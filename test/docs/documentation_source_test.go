@@ -471,7 +471,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	if err != nil {
 		log.Fatalf("Error parsing template: %v", err)
 	}
-	renderStaticFile(tmpl, data, "../../REFERENCE.md")
+	renderStaticFile(tmpl, data, "../../docs/REFERENCE.md")
 
 	// Parse the HTML template
 	tmpl, err = template.New("main").Funcs(funcMap).ParseFiles("readme.md")

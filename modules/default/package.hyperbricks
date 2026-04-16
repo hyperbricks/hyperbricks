@@ -35,7 +35,15 @@ hyperbricks {
         # parses a duration string. 
         # such as "300ms", "-1.5h" or "2h45m". 
         # Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
-        cache = 10s
+        #
+        # Starter profile: Small public site (default)
+        cache = 30s
+        #
+        # Starter profile: Balanced production app
+        # cache = 15s
+        #
+        # Starter profile: Heavy pages or slower clients
+        # cache = 10s
     }
 
     server {
@@ -43,15 +51,23 @@ hyperbricks {
         port = 8080
         beautify = true
 
-        # Low traffic (~50-500 daily visitors).
-        # read_timeout = 5s
-        # write_timeout =  10s
-        # idle_timeout = 20s
+        # Starter profile: Small public site (default)
+        read_timeout = 5s
+        write_timeout = 10s
+        idle_timeout = 20s
+        keep_alives_enabled = true
 
-        #High-Traffic Blog
-        read_timeout= 10s
-        write_timeout= 15s
-        idle_timeout= 30s
+        # Starter profile: Balanced production app
+        # read_timeout = 10s
+        # write_timeout = 15s
+        # idle_timeout = 30s
+        # keep_alives_enabled = true
+
+        # Starter profile: Heavy pages or slower clients
+        # read_timeout = 15s
+        # write_timeout = 30s
+        # idle_timeout = 60s
+        # keep_alives_enabled = true
     }
 
     system {
