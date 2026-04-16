@@ -155,13 +155,14 @@ type RoutingConfig struct {
 
 // ServerConfig with defaults.
 type ServerConfig struct {
-	Port            int           `mapstructure:"port"`
-	Beautify        bool          `mapstructure:"beautify"`
-	SelfClosingTags bool          `mapstructure:"self_closing_tags"`
-	ReadTimeout     time.Duration `mapstructure:"read_timeout"`
-	WriteTimeout    time.Duration `mapstructure:"write_timeout"`
-	IdleTimeout     time.Duration `mapstructure:"idle_timeout"`
-	Routing         RoutingConfig `mapstructure:"routing"`
+	Port              int           `mapstructure:"port"`
+	Beautify          bool          `mapstructure:"beautify"`
+	SelfClosingTags   bool          `mapstructure:"self_closing_tags"`
+	ReadTimeout       time.Duration `mapstructure:"read_timeout"`
+	WriteTimeout      time.Duration `mapstructure:"write_timeout"`
+	IdleTimeout       time.Duration `mapstructure:"idle_timeout"`
+	KeepAlivesEnabled bool          `mapstructure:"keep_alives_enabled"`
+	Routing           RoutingConfig `mapstructure:"routing"`
 }
 
 type RateLimitConfig struct {
@@ -264,9 +265,10 @@ func loadHyperBricksConfiguration() *Config {
 			SelfClosingTags: true,
 
 			// Default Low traffic (~50-500 daily visitors).
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
-			IdleTimeout:  20 * time.Second,
+			ReadTimeout:       5 * time.Second,
+			WriteTimeout:      10 * time.Second,
+			IdleTimeout:       20 * time.Second,
+			KeepAlivesEnabled: true,
 
 			Routing: RoutingConfig{
 				CleanURLs:  true,

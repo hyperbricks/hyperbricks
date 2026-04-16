@@ -51,29 +51,17 @@ func StartServer(ctx context.Context) {
 		log.Fatal("Failed to start listener:", err)
 	}
 
-	switch hbConfig.Mode {
-	case shared.LIVE_MODE:
-		// High-performance settings for production (cache enabled)
-		server = &http.Server{
-			Addr:           fmt.Sprintf(":%d", hbConfig.Server.Port),
-			ReadTimeout:    0,                // No read timeout (cached responses)
-			WriteTimeout:   0,                // No write timeout (fast processing)
-			IdleTimeout:    60 * time.Second, // Keep connections alive for efficiency
-			MaxHeaderBytes: 65536,            // 64KB headers for high-throughput requests
-		}
-
-		// Ensure we don’t keep too many idle connections
-		server.SetKeepAlivesEnabled(false)
-
-	case shared.DEVELOPMENT_MODE, shared.DEBUG_MODE:
-		// More relaxed settings for development
-		server = &http.Server{
-			Addr:         fmt.Sprintf(":%d", hbConfig.Server.Port),
-			ReadTimeout:  hbConfig.Server.ReadTimeout,
-			WriteTimeout: hbConfig.Server.WriteTimeout,
-			IdleTimeout:  hbConfig.Server.IdleTimeout,
-		}
+	server = &http.Server{
+		Addr:         fmt.Sprintf(":%d", hbConfig.Server.Port),
+		ReadTimeout:  hbConfig.Server.ReadTimeout,
+		WriteTimeout: hbConfig.Server.WriteTimeout,
+		IdleTimeout:  hbConfig.Server.IdleTimeout,
 	}
+	if hbConfig.Mode == shared.LIVE_MODE {
+		// Keep the smaller live-mode header limit, but honor configured transport settings.
+		server.MaxHeaderBytes = 65536
+	}
+	server.SetKeepAlivesEnabled(hbConfig.Server.KeepAlivesEnabled)
 
 	serverMu.Lock()
 	activeServer := server
