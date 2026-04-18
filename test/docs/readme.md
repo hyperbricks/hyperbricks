@@ -41,8 +41,6 @@ An extremely fast bundler for the web
 
 ---
 
-<br>
-
-{{include "template_disclaimer_note.md"}}
+{{include "template_end_note.md"}}
 
 {{end}}
