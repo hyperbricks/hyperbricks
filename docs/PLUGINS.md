@@ -46,9 +46,26 @@ used in:
 
 ### How the binary name is derived
 
+- The `binary` field is optional. If present, it overrides the base name that
+  would otherwise be derived from the Go source file.
 - If the manifest includes `binary`, that value is used (without `.so`).
 - Otherwise the name is derived from the Go source file by converting to
   CamelCase and stripping `.go`.
+
+For example, `upload_plugin.go` would normally produce `UploadPlugin`, but
+`"binary": "Upload"` forces the base name to `Upload`.
+
+This affects:
+
+- the compiled output name
+- the config name used in `plugins.enabled`
+- the `plugin = "..."` value used in Hyperbricks configs
+
+It does not affect source discovery. Hyperbricks still looks for plugin source
+at:
+
+- `plugins/<name>/<version>/manifest.json`
+- `modules/<module>/plugins/<name>/<version>/manifest.json`
 
 ### Examples
 
