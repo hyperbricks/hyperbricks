@@ -56,6 +56,28 @@ server {
 
 That means the values in `package.hyperbricks` are the values the live server actually uses.
 
+## Where `nocache` must be set
+
+If you want live mode to skip cache headers and skip storing the response in the live cache, set `nocache = true` on the routed root object itself.
+
+That usually means the top-level `<HYPERMEDIA>` or `<FRAGMENT>` that owns the route.
+
+Setting `nocache` only inside a nested template or child component is not enough, because the live cache decision is made from the root route config.
+
+Example:
+
+```hyperbricks
+page = <HYPERMEDIA>
+page.route = cacheTest
+page.nocache = true
+```
+
+```hyperbricks
+fragment = <FRAGMENT>
+fragment.route = cacheTest
+fragment.nocache = true
+```
+
 ## Defaults when omitted
 
 If you do not set these values in `package.hyperbricks`, HyperBricks uses these runtime defaults:
