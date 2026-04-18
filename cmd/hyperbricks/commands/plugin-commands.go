@@ -208,7 +208,8 @@ func PluginListCommand() *cobra.Command {
 				fmt.Println("")
 				fmt.Println("\033[1;33mTo enable plugins, they must be compiled for the currently installed version of Hyperbricks.\033[0m")
 				fmt.Println("\033[0;36mThis can be done automatically using:\033[0m")
-				fmt.Println("\033[1;32m hyperbricks plugin install <name>@<plugin_version>\033[0m \n")
+				fmt.Println("\033[1;32m hyperbricks plugin install <name>@<plugin_version>\033[0m")
+				fmt.Println("")
 				fmt.Println("\033[0;36m# To preload the plugin, add the binary name (without the .so extension) to your package.hyperbricks\033[0m")
 				fmt.Println("\033[0;36m# under the `plugins.enabled` array:\033[0m")
 				fmt.Println("\033[0;36m# Plugin binaries are named as <name>@<plugin_version> for clarity.\033[0m")
@@ -224,7 +225,7 @@ func PluginListCommand() *cobra.Command {
 						fmt.Print(",")
 					}
 				}
-				fmt.Println("\033[1;34m ]\n}\033[0m\n")
+				fmt.Print("\033[1;34m ]\n}\033[0m\n\n")
 			} else {
 				fmt.Println("\033[1;33m\n# No compatible plugins currently installed. Use \033[1;32m`plugin build`\033[1;33m or \033[1;32m`plugin install`\033[1;33m to add them!\033[0m")
 			}
