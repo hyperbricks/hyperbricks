@@ -31,7 +31,7 @@ Use "hyperbricks [command] --help" for more information about a command.
 |_| |_|\__, | .__/ \___|_|  |____/|_|  |_|\___|_|\_\___/
        |___/|_|                                        
 
-v0.7.6-alpha
+vx.x.x-xxxxx
 ```
 
 ### Commands

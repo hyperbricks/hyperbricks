@@ -1,6 +1,6 @@
 **Licence:** MIT  
-**Version:** v0.8.4-alpha  
-**Build time:** 2026-04-18T12:55:28Z
+**Version:** v1.0.0-beta  
+**Build time:** 2026-04-18T19:07:49Z
 
 ## Build Status
 
@@ -40,12 +40,6 @@ An extremely fast bundler for the web
 - [API Render](docs/API_RENDER.md)
 
 ---
-
-<br>
-
-## Disclaimer
-
-This project is a personal experiment, initially built for my own use. You’re welcome to use it however you like, but please be aware that it’s currently in an alpha stage and not recommended for production environments.
 
 The project is released under the [MIT License](https://github.com/hyperbricks/hyperbricks/blob/main/LICENSE) and provided “as-is,” without any warranties or guarantees.
 
