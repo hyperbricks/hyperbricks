@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -65,6 +66,19 @@ func cachedEntry(route string) (CacheEntry, bool) {
 	return entry, ok
 }
 
+type trackingReadCloser struct {
+	readCalls int
+}
+
+func (r *trackingReadCloser) Read(p []byte) (int, error) {
+	r.readCalls++
+	return 0, io.EOF
+}
+
+func (r *trackingReadCloser) Close() error {
+	return nil
+}
+
 func TestResolveNoCacheValue(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -84,6 +98,51 @@ func TestResolveNoCacheValue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := resolveNoCacheValue(tt.input); got != tt.want {
 				t.Fatalf("resolveNoCacheValue(%v) = %v, want %v", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestResolveConfiguredNoCache(t *testing.T) {
+	tests := []struct {
+		name   string
+		config map[string]interface{}
+		want   bool
+	}{
+		{
+			name: "explicit nocache true",
+			config: map[string]interface{}{
+				"nocache": true,
+			},
+			want: true,
+		},
+		{
+			name: "explicit nocache false",
+			config: map[string]interface{}{
+				"nocache": false,
+			},
+			want: false,
+		},
+		{
+			name: "api fragment render is forced nocache",
+			config: map[string]interface{}{
+				"@type": composite.ApiFragmentRenderConfigGetName(),
+			},
+			want: true,
+		},
+		{
+			name: "plain fragment remains cacheable by default",
+			config: map[string]interface{}{
+				"@type": composite.FragmentConfigGetName(),
+			},
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := resolveConfiguredNoCache(tt.config); got != tt.want {
+				t.Fatalf("resolveConfiguredNoCache(%#v) = %v, want %v", tt.config, got, tt.want)
 			}
 		})
 	}
@@ -214,6 +273,40 @@ func TestServeContent_LiveMode_HonorsExplicitNoCacheTrue(t *testing.T) {
 	}
 	if writer.Header().Get(liveCacheRenderedAtHeader) != "" || writer.Header().Get(liveCacheExpiresAtHeader) != "" {
 		t.Fatalf("expected nocache=true response not to include cache metadata headers, got rendered=%q expires=%q", writer.Header().Get(liveCacheRenderedAtHeader), writer.Header().Get(liveCacheExpiresAtHeader))
+	}
+}
+
+func TestServeContent_LiveMode_SkipsRequestSignatureForNoCacheRoute(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	setTestRouteConfig("nocache-body", map[string]interface{}{
+		"@type":   composite.FragmentConfigGetName(),
+		"route":   "nocache-body",
+		"nocache": true,
+		"template": map[string]interface{}{
+			"@type":  composite.TemplateConfigGetName(),
+			"inline": `uncached-body`,
+			"values": map[string]interface{}{
+				"seed": "x",
+			},
+		},
+	})
+
+	body := &trackingReadCloser{}
+	request := httptest.NewRequest(http.MethodGet, "/nocache-body", nil)
+	request.Body = body
+
+	writer := httptest.NewRecorder()
+	ServeContent(writer, request)
+
+	if body.readCalls != 0 {
+		t.Fatalf("expected nocache route to skip request-body cache signature reads, got %d reads", body.readCalls)
+	}
+	if _, found := cachedEntry("nocache-body"); found {
+		t.Fatalf("expected nocache route to remain out of live cache")
+	}
+	if !strings.Contains(writer.Body.String(), "uncached-body") {
+		t.Fatalf("expected nocache route to render content, got %q", writer.Body.String())
 	}
 }
 

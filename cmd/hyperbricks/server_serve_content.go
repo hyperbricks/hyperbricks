@@ -59,6 +59,36 @@ func resolveNoCacheValue(raw interface{}) bool {
 	return false
 }
 
+func resolveConfiguredNoCache(config map[string]interface{}) bool {
+	if config == nil {
+		return false
+	}
+
+	if rawNoCache, ok := config["nocache"]; ok && resolveNoCacheValue(rawNoCache) {
+		return true
+	}
+
+	configType, _ := config["@type"].(string)
+	return configType == composite.ApiFragmentRenderConfigGetName()
+}
+
+func routeConfiguredNoCache(route string) bool {
+	if route == "favicon.ico" {
+		return false
+	}
+
+	config, found := getConfig(route)
+	if !found {
+		var fallbackFound bool
+		config, fallbackFound = getConfig("404")
+		if !fallbackFound {
+			return false
+		}
+	}
+
+	return resolveConfiguredNoCache(config)
+}
+
 func extractResponseHeaders(raw map[string]interface{}) map[string]string {
 	value, ok := raw["headers"]
 	if !ok || value == nil {
@@ -434,9 +464,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 		}
 	}
 
-	if rawNoCache, ok := _config["nocache"]; ok {
-		nocache = resolveNoCacheValue(rawNoCache)
-	}
+	nocache = resolveConfiguredNoCache(_config)
 	var contentType = ""
 	if ct, ok := _config["content_type"].(string); ok {
 		contentType = ct
@@ -461,9 +489,6 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 
 	if configCopy["@type"].(string) == composite.ApiFragmentRenderConfigGetName() {
 		configCopy["hx_response"] = w
-
-		// No Caching!!! This is very important because of secret user-specific tokens
-		nocache = true
 	}
 
 	// ============ START OF API CONTEXT AND TOKEN CAPTURE ============
@@ -691,6 +716,21 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheE
 
 	hbConfig := getHyperBricksConfiguration()
 	cacheDuration := hbConfig.Live.CacheTime
+
+	if routeConfiguredNoCache(route) {
+		logging.GetLogger().Debugw("Skipping live cache for nocache route", "route", route)
+		renderContent := renderContent(w, route, r)
+		now := time.Now()
+		return CacheEntry{
+			Content:     renderContent.Content,
+			Timestamp:   now,
+			ContentType: renderContent.ContentType,
+			Status:      renderContent.Status,
+			Headers:     renderContent.Headers,
+			Cookies:     renderContent.Cookies,
+		}
+	}
+
 	cacheKey, cacheable := resolveLiveCacheKey(route, r)
 
 	var (

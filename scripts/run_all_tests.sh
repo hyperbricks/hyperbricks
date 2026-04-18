@@ -8,6 +8,7 @@ cd "${REPO_ROOT}"
 
 echo "Running all tests..."
 
+go test ./cmd/hyperbricks/...
 go test ./test/main -v
 bash "${SCRIPT_DIR}/run_api_fragment_render_tests_docker.sh"
 bash "${SCRIPT_DIR}/run_template_tests.sh"
