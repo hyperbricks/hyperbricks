@@ -1,5 +1,7 @@
 # Routing
 
+For HTMX fragment routing and canonical browser URLs, see [HTMX Fragments and Canonical URLs](HTMX_FRAGMENTS.md).
+
 This document explains how Hyperbricks resolves routes and how to configure
 clean URLs (like `/help`) for `.html` content (like `help.html`).
 
