@@ -99,7 +99,8 @@ func registerRenderers() {
 	}
 	apiFragmentRenderer := &composite.ApiFragmentRenderer{
 		CompositeRenderer: renderer.CompositeRenderer{
-			RenderManager: rm,
+			RenderManager:    rm,
+			TemplateProvider: templateProvider,
 		},
 	}
 
@@ -157,6 +158,7 @@ func registerRenderers() {
 
 func linkRendererResources() {
 	rm.GetRenderComponent(composite.TemplateConfigGetName()).(*composite.TemplateRenderer).TemplateProvider = parser.GetTemplate
+	rm.GetRenderComponent(composite.ApiFragmentRenderConfigGetName()).(*composite.ApiFragmentRenderer).TemplateProvider = parser.GetTemplate
 	rm.GetRenderComponent(component.APIConfigGetName()).(*component.APIRenderer).TemplateProvider = parser.GetTemplate
 	rm.GetRenderComponent(component.LocalJSONConfigGetName()).(*component.LocalJSONRenderer).TemplateProvider = parser.GetTemplate
 	rm.GetRenderComponent(component.MenuConfigGetName()).(*component.MenuRenderer).TemplateProvider = parser.GetTemplate
