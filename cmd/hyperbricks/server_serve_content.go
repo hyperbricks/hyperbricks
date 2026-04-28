@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
@@ -562,6 +563,29 @@ func cloneRequestBody(r *http.Request) ([]byte, error) {
 	return body, nil
 }
 
+func routeNeedsAPIRequestContext(node interface{}) bool {
+	switch typed := node.(type) {
+	case map[string]interface{}:
+		if configType, ok := typed["@type"].(string); ok {
+			if configType == component.APIConfigGetName() || configType == composite.ApiFragmentRenderConfigGetName() {
+				return true
+			}
+		}
+		for _, value := range typed {
+			if routeNeedsAPIRequestContext(value) {
+				return true
+			}
+		}
+	case []interface{}:
+		for _, value := range typed {
+			if routeNeedsAPIRequestContext(value) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func resolveRoute(route string, routing shared.RoutingConfig) (string, bool) {
 	routing = normalizeRoutingConfig(routing)
 	route = strings.Trim(route, "/")
@@ -760,19 +784,20 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 	}
 
 	// ============ START OF API CONTEXT AND TOKEN CAPTURE ============
-	requestBodyBytes, err := cloneRequestBody(r)
-	if err != nil {
-		fmt.Println("Failed to clone request body:", err)
-	}
+	var requestBodyReader io.ReadCloser = http.NoBody
+	needsAPIRequestContext := routeNeedsAPIRequestContext(configCopy)
+	if needsAPIRequestContext {
+		requestBodyBytes, err := cloneRequestBody(r)
+		if err != nil {
+			fmt.Println("Failed to clone request body:", err)
+		} else if requestBodyBytes != nil {
+			requestBodyReader = io.NopCloser(bytes.NewReader(requestBodyBytes))
+		}
 
-	// Parse form data before using r.Form
-	if err := r.ParseForm(); err != nil {
-		fmt.Println("Failed to parse form data:", err)
-	}
-
-	requestBodyReader := io.NopCloser(bytes.NewReader(requestBodyBytes))
-	if requestBodyBytes == nil {
-		requestBodyReader = http.NoBody
+		// Parse form data before using r.Form.
+		if err := r.ParseForm(); err != nil {
+			fmt.Println("Failed to parse form data:", err)
+		}
 	}
 
 	// Store JWT token in request context
