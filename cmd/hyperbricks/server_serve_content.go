@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -18,6 +19,8 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/shared/apiutil"
+	"github.com/mitchellh/mapstructure"
 	"github.com/yosssi/gohtml"
 )
 
@@ -25,6 +28,252 @@ const (
 	liveCacheRenderedAtHeader = "X-Hyperbricks-Rendered-At"
 	liveCacheExpiresAtHeader  = "X-Hyperbricks-Cache-Expires-At"
 )
+
+func resolveHyperMediaGuard(config map[string]interface{}) (composite.HyperMediaGuardConfig, bool) {
+	if config == nil {
+		return composite.HyperMediaGuardConfig{}, false
+	}
+	configType, _ := config["@type"].(string)
+	if configType != composite.HyperMediaConfigGetName() {
+		return composite.HyperMediaGuardConfig{}, false
+	}
+	rawGuard, ok := config["guard"]
+	if !ok || rawGuard == nil {
+		return composite.HyperMediaGuardConfig{}, false
+	}
+	var guard composite.HyperMediaGuardConfig
+	if err := mapstructure.Decode(rawGuard, &guard); err != nil {
+		return composite.HyperMediaGuardConfig{}, false
+	}
+	if !guard.Enabled {
+		return composite.HyperMediaGuardConfig{}, false
+	}
+	return guard, true
+}
+
+func requestUsesHTMX(r *http.Request) bool {
+	if r == nil {
+		return false
+	}
+	return strings.EqualFold(strings.TrimSpace(r.Header.Get("HX-Request")), "true")
+}
+
+func resolveGuardToken(r *http.Request, guard *composite.HyperMediaGuardConfig) string {
+	if r == nil {
+		return ""
+	}
+	if guard != nil {
+		if cookieName := strings.TrimSpace(guard.Auth.Cookie); cookieName != "" {
+			if cookie, err := r.Cookie(cookieName); err == nil {
+				return strings.TrimSpace(cookie.Value)
+			}
+		}
+	}
+	headerName := "Authorization"
+	scheme := "Bearer"
+	if guard != nil {
+		if trimmed := strings.TrimSpace(guard.Auth.Header); trimmed != "" {
+			headerName = trimmed
+		}
+		if trimmed := strings.TrimSpace(guard.Auth.Scheme); trimmed != "" {
+			scheme = trimmed
+		}
+	}
+	headerValue := strings.TrimSpace(r.Header.Get(headerName))
+	if headerValue == "" {
+		return ""
+	}
+	if strings.EqualFold(headerName, "Authorization") {
+		prefix := scheme + " "
+		if strings.HasPrefix(headerValue, prefix) {
+			return strings.TrimSpace(strings.TrimPrefix(headerValue, prefix))
+		}
+		return ""
+	}
+	if scheme != "" {
+		prefix := scheme + " "
+		if strings.HasPrefix(headerValue, prefix) {
+			return strings.TrimSpace(strings.TrimPrefix(headerValue, prefix))
+		}
+	}
+	return headerValue
+}
+
+func guardPlaceholderValues(r *http.Request) map[string]string {
+	values := map[string]string{}
+	if r == nil {
+		return values
+	}
+	for key, vals := range r.URL.Query() {
+		if len(vals) > 0 {
+			values[key] = vals[0]
+		}
+	}
+	if err := r.ParseForm(); err == nil {
+		for key, vals := range r.Form {
+			if len(vals) > 0 {
+				values[key] = vals[0]
+			}
+		}
+	}
+	return values
+}
+
+func applyGuardPlaceholders(input string, values map[string]string) string {
+	result := input
+	for key, value := range values {
+		re := regexp.MustCompile(`\$\b` + regexp.QuoteMeta(key) + `\b`)
+		result = re.ReplaceAllString(result, value)
+	}
+	return result
+}
+
+func missingGuardQueryKeys(r *http.Request, guard composite.HyperMediaGuardConfig) []string {
+	if len(guard.Require.Query) == 0 || r == nil {
+		return nil
+	}
+	query := r.URL.Query()
+	missing := make([]string, 0)
+	for key, raw := range guard.Require.Query {
+		if !resolveNoCacheValue(raw) {
+			continue
+		}
+		if strings.TrimSpace(query.Get(key)) == "" {
+			missing = append(missing, key)
+		}
+	}
+	return missing
+}
+
+func guardDeniedResponse(r *http.Request, action composite.HyperMediaGuardActionConfig, fallbackStatus int, fallbackContent string) RenderContent {
+	headers := map[string]string{
+		"Cache-Control": "no-store",
+		"Vary":          "Cookie, Authorization, HX-Request",
+	}
+	status := action.Status
+	if requestUsesHTMX(r) {
+		target := strings.TrimSpace(action.HxRedirect)
+		if target == "" {
+			target = strings.TrimSpace(action.Redirect)
+		}
+		if target != "" {
+			headers["HX-Redirect"] = target
+		}
+		if status == 0 {
+			status = fallbackStatus
+		}
+	} else {
+		target := strings.TrimSpace(action.Redirect)
+		if target != "" {
+			headers["Location"] = target
+			if status == 0 {
+				status = http.StatusSeeOther
+			}
+		}
+		if status == 0 {
+			status = fallbackStatus
+		}
+	}
+	if fallbackContent == "" {
+		fallbackContent = http.StatusText(status)
+	}
+	return RenderContent{
+		Content:     fallbackContent,
+		NoCache:     true,
+		ContentType: "text/plain; charset=utf-8",
+		Status:      status,
+		Headers:     headers,
+	}
+}
+
+func authorizeHyperMediaGuard(r *http.Request, guard composite.HyperMediaGuardConfig, token string) (int, error) {
+	if guard.Authorize == nil || strings.TrimSpace(guard.Authorize.Endpoint) == "" {
+		return http.StatusOK, nil
+	}
+	values := guardPlaceholderValues(r)
+	endpoint := applyGuardPlaceholders(strings.TrimSpace(guard.Authorize.Endpoint), values)
+	body := applyGuardPlaceholders(guard.Authorize.Body, values)
+	method := strings.ToUpper(strings.TrimSpace(guard.Authorize.Method))
+	if method == "" {
+		if body != "" {
+			method = http.MethodPost
+		} else {
+			method = http.MethodGet
+		}
+	}
+	req, err := http.NewRequest(method, endpoint, strings.NewReader(body))
+	if err != nil {
+		return 0, err
+	}
+	for key, value := range guard.Authorize.Headers {
+		req.Header.Set(strings.TrimSpace(key), applyGuardPlaceholders(value, values))
+	}
+	if body != "" && req.Header.Get("Content-Type") == "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	if token != "" && req.Header.Get("Authorization") == "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+	resp, err := apiutil.NewHTTPClient().Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
+	return resp.StatusCode, nil
+}
+
+func evaluateHyperMediaGuard(config map[string]interface{}, r *http.Request) (*RenderContent, string) {
+	guard, enabled := resolveHyperMediaGuard(config)
+	if !enabled {
+		return nil, resolveGuardToken(r, nil)
+	}
+	token := resolveGuardToken(r, &guard)
+	if guard.Require.Authenticated && token == "" {
+		response := guardDeniedResponse(r, guard.OnUnauthenticated, http.StatusUnauthorized, "authentication required")
+		return &response, token
+	}
+	if missing := missingGuardQueryKeys(r, guard); len(missing) > 0 {
+		response := guardDeniedResponse(r, guard.OnForbidden, http.StatusForbidden, "missing required query keys")
+		return &response, token
+	}
+	status, err := authorizeHyperMediaGuard(r, guard, token)
+	if err != nil {
+		response := RenderContent{
+			Content:     "guard authorization failed",
+			NoCache:     true,
+			ContentType: "text/plain; charset=utf-8",
+			Status:      http.StatusBadGateway,
+			Headers: map[string]string{
+				"Cache-Control": "no-store",
+				"Vary":          "Cookie, Authorization, HX-Request",
+			},
+		}
+		return &response, token
+	}
+	switch {
+	case status >= 200 && status < 300:
+		return nil, token
+	case status == http.StatusUnauthorized:
+		response := guardDeniedResponse(r, guard.OnUnauthenticated, http.StatusUnauthorized, "authentication required")
+		return &response, token
+	case status == http.StatusForbidden:
+		response := guardDeniedResponse(r, guard.OnForbidden, http.StatusForbidden, "forbidden")
+		return &response, token
+	default:
+		response := RenderContent{
+			Content:     "guard authorization rejected the request",
+			NoCache:     true,
+			ContentType: "text/plain; charset=utf-8",
+			Status:      http.StatusBadGateway,
+			Headers: map[string]string{
+				"Cache-Control": "no-store",
+				"Vary":          "Cookie, Authorization, HX-Request",
+			},
+		}
+		return &response, token
+	}
+}
 
 func resolveBeautify(config map[string]interface{}, defaultValue bool) bool {
 	raw, ok := config["beautify"]
@@ -69,7 +318,11 @@ func resolveConfiguredNoCache(config map[string]interface{}) bool {
 	}
 
 	configType, _ := config["@type"].(string)
-	return configType == composite.ApiFragmentRenderConfigGetName()
+	if configType == composite.ApiFragmentRenderConfigGetName() {
+		return true
+	}
+	_, guardEnabled := resolveHyperMediaGuard(config)
+	return guardEnabled
 }
 
 func routeConfiguredNoCache(route string) bool {
@@ -464,6 +717,11 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 		}
 	}
 
+	guardResponse, jwtToken := evaluateHyperMediaGuard(_config, r)
+	if guardResponse != nil {
+		return *guardResponse
+	}
+
 	nocache = resolveConfiguredNoCache(_config)
 	var contentType = ""
 	if ct, ok := _config["content_type"].(string); ok {
@@ -492,14 +750,6 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 	}
 
 	// ============ START OF API CONTEXT AND TOKEN CAPTURE ============
-	// Extract JWT token from the Authorization header for authentication if needed
-	authHeader := r.Header.Get("Authorization")
-
-	var jwtToken string
-	if strings.HasPrefix(authHeader, "Bearer ") {
-		jwtToken = strings.TrimPrefix(authHeader, "Bearer ")
-	}
-
 	// Parse form data before using r.Form
 	if err := r.ParseForm(); err != nil {
 		fmt.Println("Failed to parse form data:", err)

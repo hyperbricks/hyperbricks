@@ -9,7 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -32,6 +32,7 @@ type PluginMeta struct {
 
 var (
 	RequestedHyperbricksVersion string
+	RequestedHyperbricksPath    string
 )
 
 const pluginIndexURL = "https://raw.githubusercontent.com/hyperbricks/hyperbricks-plugins/main/plugins.index.json"
@@ -51,8 +52,22 @@ func PluginCommand() *cobra.Command {
 	return cmd
 }
 
+func goToolPath() string {
+	if goroot := strings.TrimSpace(runtime.GOROOT()); goroot != "" {
+		candidate := filepath.Join(goroot, "bin", "go")
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate
+		}
+	}
+	return "go"
+}
+
+func goToolCommand(args ...string) *exec.Cmd {
+	return exec.Command(goToolPath(), args...)
+}
+
 func extractHyperbricksVersionFromBinary(soPath string) (string, error) {
-	cmd := exec.Command("go", "version", "-m", soPath)
+	cmd := goToolCommand("version", "-m", soPath)
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to inspect binary: %v", err)
@@ -337,7 +352,20 @@ func PluginInstallCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&RequestedHyperbricksVersion, "hyperbricks-version", "v", "", "Specify the Hyperbricks version to check compatibility against")
+	cmd.Flags().StringVarP(
+		&RequestedHyperbricksVersion,
+		"hyperbricks-version",
+		"v",
+		"",
+		"Specify the Hyperbricks version to build against",
+	)
+
+	cmd.Flags().StringVar(
+		&RequestedHyperbricksPath,
+		"hyperbricks-path",
+		"",
+		"Use a local Hyperbricks checkout when building plugins",
+	)
 	return cmd
 }
 
@@ -412,6 +440,7 @@ func buildPlugin(spec pluginBuildSpec) error {
 		writer = os.Stdout
 	}
 	fmt.Fprintf(writer, "Building plugin: %s\n", spec.DisplayName)
+	fmt.Fprintf(writer, "Using Go toolchain: %s\n", goToolPath())
 	pluginDir := filepath.Join(".", "bin", "plugins")
 	if err := os.MkdirAll(pluginDir, 0755); err != nil {
 		return fmt.Errorf("failed to create plugin directory: %v", err)
@@ -426,30 +455,64 @@ func buildPlugin(spec pluginBuildSpec) error {
 		return fmt.Errorf("plugin source file %s does not exist", pluginSourcePath)
 	}
 
-	// === PATCH plugin go.mod with current hyperbricks version ===
-	mainVersion := getHyperbricksSemver()
-	if RequestedHyperbricksVersion != "" {
-		mainVersion = RequestedHyperbricksVersion
+	localHyperbricksPath := strings.TrimSpace(RequestedHyperbricksPath)
+	if localHyperbricksPath == "" {
+		localHyperbricksPath = strings.TrimSpace(os.Getenv("HYPERBRICKS_LOCAL_PATH"))
 	}
 
-	gomodPath := filepath.Join(pluginSourceDir, "go.mod")
-	gomodData, err := os.ReadFile(gomodPath)
-	if err != nil {
-		return fmt.Errorf("failed to read plugin go.mod: %v", err)
-	}
-	// Replace hyperbricks version line (works even if in require block)
-	re := regexp.MustCompile(`(github.com/hyperbricks/hyperbricks\s+)v[\w\.\-]+`)
-	newGoMod := re.ReplaceAll(gomodData, []byte("${1}v"+mainVersion))
-	if string(newGoMod) != string(gomodData) {
-		fmt.Fprintf(writer, "Patching %s go.mod hyperbricks dependency to v%s\n", spec.DisplayName, mainVersion)
-		err = os.WriteFile(gomodPath, newGoMod, 0644)
+	if localHyperbricksPath != "" {
+		absLocalPath, err := filepath.Abs(localHyperbricksPath)
 		if err != nil {
-			return fmt.Errorf("failed to write patched go.mod: %v", err)
+			return fmt.Errorf("failed to resolve local Hyperbricks path: %v", err)
 		}
+
+		if _, err := os.Stat(filepath.Join(absLocalPath, "go.mod")); err != nil {
+			return fmt.Errorf("local Hyperbricks path does not contain go.mod: %s", absLocalPath)
+		}
+
+		fmt.Fprintf(writer, "Using local Hyperbricks checkout: %s\n", absLocalPath)
+
+		reqCmd := goToolCommand("mod", "edit", "-require=github.com/hyperbricks/hyperbricks@v0.0.0")
+		reqCmd.Dir = pluginSourceDir
+		reqCmd.Stdout = writer
+		reqCmd.Stderr = writer
+		if err := reqCmd.Run(); err != nil {
+			return fmt.Errorf("failed to set local Hyperbricks require: %v", err)
+		}
+
+		replaceCmd := goToolCommand("mod", "edit", "-replace=github.com/hyperbricks/hyperbricks="+absLocalPath)
+		replaceCmd.Dir = pluginSourceDir
+		replaceCmd.Stdout = writer
+		replaceCmd.Stderr = writer
+		if err := replaceCmd.Run(); err != nil {
+			return fmt.Errorf("failed to set local Hyperbricks replace: %v", err)
+		}
+	} else {
+		mainVersion := getHyperbricksSemver()
+		if RequestedHyperbricksVersion != "" {
+			mainVersion = RequestedHyperbricksVersion
+		}
+		mainVersion = strings.TrimPrefix(strings.TrimSpace(mainVersion), "v")
+
+		fmt.Fprintf(writer, "Patching %s go.mod Hyperbricks dependency to v%s\n", spec.DisplayName, mainVersion)
+
+		reqCmd := goToolCommand("mod", "edit", "-require=github.com/hyperbricks/hyperbricks@v"+mainVersion)
+		reqCmd.Dir = pluginSourceDir
+		reqCmd.Stdout = writer
+		reqCmd.Stderr = writer
+		if err := reqCmd.Run(); err != nil {
+			return fmt.Errorf("failed to set Hyperbricks version: %v", err)
+		}
+
+		dropReplaceCmd := goToolCommand("mod", "edit", "-dropreplace=github.com/hyperbricks/hyperbricks")
+		dropReplaceCmd.Dir = pluginSourceDir
+		dropReplaceCmd.Stdout = writer
+		dropReplaceCmd.Stderr = writer
+		_ = dropReplaceCmd.Run()
 	}
 
 	// Run `go mod tidy` inside the plugin source dir
-	tidyCmd := exec.Command("go", "mod", "tidy")
+	tidyCmd := goToolCommand("mod", "tidy")
 	tidyCmd.Dir = pluginSourceDir
 	tidyCmd.Stdout = writer
 	tidyCmd.Stderr = writer
@@ -463,7 +526,7 @@ func buildPlugin(spec pluginBuildSpec) error {
 	}
 
 	// Build from inside the plugin source dir, using absolute output path
-	buildCmd := exec.Command("go", "build", "-buildmode=plugin", "-o", outputPath, spec.SourceFile)
+	buildCmd := goToolCommand("build", "-buildmode=plugin", "-o", outputPath, spec.SourceFile)
 	buildCmd.Dir = pluginSourceDir
 	buildCmd.Stdout = writer
 	buildCmd.Stderr = writer
