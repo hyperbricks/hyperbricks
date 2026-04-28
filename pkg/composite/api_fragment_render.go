@@ -407,18 +407,18 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 
 	filtered := FilterAllowedQueryParams(clientReq, allowed)
 
-	if len(filtered) == 0 && config.QueryParams == nil {
-		// Ensure endpoint.RawQuery remains empty
-		endpoint.RawQuery = ""
-	} else {
-		params := filtered
-		if config.QueryParams != nil {
-			for key, value := range config.QueryParams {
-				params.Add(key, value)
-			}
+	params := endpoint.Query()
+	for key, values := range filtered {
+		for _, value := range values {
+			params.Add(key, value)
 		}
-		endpoint.RawQuery = params.Encode()
 	}
+	if config.QueryParams != nil {
+		for key, value := range config.QueryParams {
+			params.Add(key, value)
+		}
+	}
+	endpoint.RawQuery = params.Encode()
 
 	// Create request
 	req, err := http.NewRequest(config.Method, endpoint.String(), strings.NewReader(config.Body))
