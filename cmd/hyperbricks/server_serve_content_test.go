@@ -137,6 +137,16 @@ func TestResolveConfiguredNoCache(t *testing.T) {
 			},
 			want: false,
 		},
+		{
+			name: "guarded hypermedia is forced nocache",
+			config: map[string]interface{}{
+				"@type": composite.HyperMediaConfigGetName(),
+				"guard": map[string]interface{}{
+					"enabled": true,
+				},
+			},
+			want: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -381,5 +391,161 @@ func TestServeContent_LiveMode_DoesNotAppendHTMLCacheCommentsToJSON(t *testing.T
 	}
 	if strings.Contains(entry.Content, "Rendered at") || strings.Contains(entry.Content, "Cache expires at") {
 		t.Fatalf("expected cached JSON body not to include HTML cache comments, got %q", entry.Content)
+	}
+}
+
+func TestServeContent_HyperMediaGuardRedirectsUnauthenticated(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	setTestRouteConfig("guarded", map[string]interface{}{
+		"@type": composite.HyperMediaConfigGetName(),
+		"route": "guarded",
+		"guard": map[string]interface{}{
+			"enabled": true,
+			"auth": map[string]interface{}{
+				"cookie": "token",
+			},
+			"require": map[string]interface{}{
+				"authenticated": true,
+			},
+			"on_unauthenticated": map[string]interface{}{
+				"redirect": "/login",
+			},
+		},
+		"template": map[string]interface{}{
+			"@type":  composite.TemplateConfigGetName(),
+			"inline": `protected`,
+		},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/guarded", nil)
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusSeeOther {
+		t.Fatalf("expected 303 redirect, got %d", writer.Code)
+	}
+	if got := writer.Header().Get("Location"); got != "/login" {
+		t.Fatalf("expected Location /login, got %q", got)
+	}
+	if strings.Contains(writer.Body.String(), "protected") {
+		t.Fatalf("expected protected content not to render, got %q", writer.Body.String())
+	}
+	if _, found := cachedEntry("guarded"); found {
+		t.Fatalf("expected guarded route to bypass live cache")
+	}
+}
+
+func TestServeContent_HyperMediaGuardUsesHxRedirectForHTMX(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	setTestRouteConfig("guarded-hx", map[string]interface{}{
+		"@type": composite.HyperMediaConfigGetName(),
+		"route": "guarded-hx",
+		"guard": map[string]interface{}{
+			"enabled": true,
+			"auth": map[string]interface{}{
+				"cookie": "token",
+			},
+			"require": map[string]interface{}{
+				"authenticated": true,
+			},
+			"on_unauthenticated": map[string]interface{}{
+				"redirect": "/login",
+			},
+		},
+		"template": map[string]interface{}{
+			"@type":  composite.TemplateConfigGetName(),
+			"inline": `protected`,
+		},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/guarded-hx", nil)
+	request.Header.Set("HX-Request", "true")
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 for HTMX guard response, got %d", writer.Code)
+	}
+	if got := writer.Header().Get("HX-Redirect"); got != "/login" {
+		t.Fatalf("expected HX-Redirect /login, got %q", got)
+	}
+	if got := writer.Header().Get("Location"); got != "" {
+		t.Fatalf("expected no Location header for HTMX redirect, got %q", got)
+	}
+}
+
+func TestServeContent_HyperMediaGuardAuthorizesBeforeRender(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	authz := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if got := r.Header.Get("Authorization"); got != "Bearer test-token" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		body, _ := io.ReadAll(r.Body)
+		if !strings.Contains(string(body), `"project_slug":"alpha"`) {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer authz.Close()
+
+	setTestRouteConfig("guarded-authz", map[string]interface{}{
+		"@type": composite.HyperMediaConfigGetName(),
+		"route": "guarded-authz",
+		"guard": map[string]interface{}{
+			"enabled": true,
+			"auth": map[string]interface{}{
+				"cookie": "token",
+			},
+			"require": map[string]interface{}{
+				"authenticated": true,
+				"query": map[string]interface{}{
+					"project": true,
+				},
+			},
+			"authorize": map[string]interface{}{
+				"endpoint": authz.URL,
+				"method":   "POST",
+				"body":     `{"project_slug":"$project"}`,
+			},
+			"on_unauthenticated": map[string]interface{}{
+				"redirect": "/login",
+			},
+			"on_forbidden": map[string]interface{}{
+				"redirect": "/forbidden",
+			},
+		},
+		"template": map[string]interface{}{
+			"@type":  composite.TemplateConfigGetName(),
+			"inline": `authorized`,
+		},
+	})
+
+	request := httptest.NewRequest(http.MethodGet, "/guarded-authz?project=alpha", nil)
+	request.AddCookie(&http.Cookie{Name: "token", Value: "test-token"})
+	writer := httptest.NewRecorder()
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusOK {
+		t.Fatalf("expected 200 for authorized request, got %d", writer.Code)
+	}
+	if !strings.Contains(writer.Body.String(), "authorized") {
+		t.Fatalf("expected protected content to render, got %q", writer.Body.String())
+	}
+
+	forbiddenWriter := httptest.NewRecorder()
+	forbiddenRequest := httptest.NewRequest(http.MethodGet, "/guarded-authz", nil)
+	forbiddenRequest.AddCookie(&http.Cookie{Name: "token", Value: "test-token"})
+	ServeContent(forbiddenWriter, forbiddenRequest)
+
+	if forbiddenWriter.Code != http.StatusSeeOther {
+		t.Fatalf("expected 303 for missing required query key, got %d", forbiddenWriter.Code)
+	}
+	if got := forbiddenWriter.Header().Get("Location"); got != "/forbidden" {
+		t.Fatalf("expected Location /forbidden, got %q", got)
 	}
 }
