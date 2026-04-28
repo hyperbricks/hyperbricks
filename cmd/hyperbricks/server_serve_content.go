@@ -42,7 +42,17 @@ func resolveHyperMediaGuard(config map[string]interface{}) (composite.HyperMedia
 		return composite.HyperMediaGuardConfig{}, false
 	}
 	var guard composite.HyperMediaGuardConfig
-	if err := mapstructure.Decode(rawGuard, &guard); err != nil {
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		WeaklyTypedInput: true,
+		Result:           &guard,
+		TagName:          "mapstructure",
+	})
+	if err != nil {
+		logging.GetLogger().Warnw("guard resolver: decoder setup failed", "route", config["route"], "error", err)
+		return composite.HyperMediaGuardConfig{}, false
+	}
+	if err := decoder.Decode(rawGuard); err != nil {
+		logging.GetLogger().Warnw("guard resolver: decode failed", "route", config["route"], "error", err)
 		return composite.HyperMediaGuardConfig{}, false
 	}
 	if !guard.Enabled {
@@ -257,7 +267,7 @@ func evaluateHyperMediaGuard(config map[string]interface{}, r *http.Request) (*R
 	case status == http.StatusUnauthorized:
 		response := guardDeniedResponse(r, guard.OnUnauthenticated, http.StatusUnauthorized, "authentication required")
 		return &response, token
-	case status == http.StatusForbidden:
+	case status == http.StatusForbidden || status == http.StatusNotAcceptable:
 		response := guardDeniedResponse(r, guard.OnForbidden, http.StatusForbidden, "forbidden")
 		return &response, token
 	default:
@@ -750,15 +760,25 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 	}
 
 	// ============ START OF API CONTEXT AND TOKEN CAPTURE ============
+	requestBodyBytes, err := cloneRequestBody(r)
+	if err != nil {
+		fmt.Println("Failed to clone request body:", err)
+	}
+
 	// Parse form data before using r.Form
 	if err := r.ParseForm(); err != nil {
 		fmt.Println("Failed to parse form data:", err)
 	}
 
+	requestBodyReader := io.NopCloser(bytes.NewReader(requestBodyBytes))
+	if requestBodyBytes == nil {
+		requestBodyReader = http.NoBody
+	}
+
 	// Store JWT token in request context
 	ctx := context.WithValue(r.Context(), shared.JwtKey, jwtToken)
-	ctx = context.WithValue(ctx, shared.RequestBody, r.Body) // Store body data in context
-	ctx = context.WithValue(ctx, shared.FormData, r.Form)    // Store form data in context
+	ctx = context.WithValue(ctx, shared.RequestBody, requestBodyReader) // Store a readable body copy in context
+	ctx = context.WithValue(ctx, shared.FormData, r.Form)               // Store form data in context
 	ctx = context.WithValue(ctx, shared.Request, r)
 	ctx = context.WithValue(ctx, shared.CurrentRoute, route)
 
