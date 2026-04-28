@@ -337,10 +337,11 @@ func PluginInstallCommand() *cobra.Command {
 			configName, outputName := pluginOutputNames(meta, source, "", ver)
 			sourceDir := pluginSourceDirFor("", pluginShort, ver)
 			if err := buildPlugin(pluginBuildSpec{
-				SourceDir:   sourceDir,
-				SourceFile:  source,
-				OutputName:  outputName,
-				DisplayName: pluginShort,
+				SourceDir:          sourceDir,
+				SourceFile:         source,
+				OutputName:         outputName,
+				DisplayName:        pluginShort,
+				ExpectedModulePath: expectedModulePathForBuild("", pluginShort),
 			}); err != nil {
 				fmt.Printf("Build failed: %v\n", err)
 				return
@@ -411,10 +412,11 @@ func PluginBuildCommand() *cobra.Command {
 
 			fmt.Println("Building:", name, "Version:", version)
 			if err := buildPlugin(pluginBuildSpec{
-				SourceDir:   sourceDir,
-				SourceFile:  source,
-				OutputName:  outputName,
-				DisplayName: name,
+				SourceDir:          sourceDir,
+				SourceFile:         source,
+				OutputName:         outputName,
+				DisplayName:        name,
+				ExpectedModulePath: expectedModulePathForBuild(module, name),
 			}); err != nil {
 				fmt.Printf("Build failed: %v\n", err)
 				return
@@ -427,11 +429,56 @@ func PluginBuildCommand() *cobra.Command {
 }
 
 type pluginBuildSpec struct {
-	SourceDir   string
-	SourceFile  string
-	OutputName  string
-	DisplayName string
-	LogWriter   io.Writer
+	SourceDir          string
+	SourceFile         string
+	OutputName         string
+	DisplayName        string
+	ExpectedModulePath string
+	LogWriter          io.Writer
+}
+
+func expectedBuiltInPluginModulePath(pluginShortName string) string {
+	pluginShortName = strings.TrimSpace(pluginShortName)
+	if pluginShortName == "" {
+		return ""
+	}
+	return "github.com/hyperbricks/plugins/" + pluginShortName
+}
+
+func expectedModulePathForBuild(module string, pluginShortName string) string {
+	if strings.TrimSpace(module) != "" {
+		return ""
+	}
+	return expectedBuiltInPluginModulePath(pluginShortName)
+}
+
+func declaredModulePath(goModPath string) (string, error) {
+	data, err := os.ReadFile(goModPath)
+	if err != nil {
+		return "", err
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "module ") {
+			return strings.TrimSpace(strings.TrimPrefix(trimmed, "module ")), nil
+		}
+	}
+	return "", fmt.Errorf("module directive not found in %s", goModPath)
+}
+
+func extractMainModulePathFromBinary(soPath string) (string, error) {
+	cmd := goToolCommand("version", "-m", soPath)
+	output, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("failed to inspect binary: %v", err)
+	}
+	for _, line := range strings.Split(string(output), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) >= 2 && fields[0] == "path" {
+			return strings.TrimSpace(fields[1]), nil
+		}
+	}
+	return "", fmt.Errorf("main module path not found in binary metadata")
 }
 
 func buildPlugin(spec pluginBuildSpec) error {
@@ -453,6 +500,14 @@ func buildPlugin(spec pluginBuildSpec) error {
 	pluginSourcePath := filepath.Join(pluginSourceDir, spec.SourceFile)
 	if _, err := os.Stat(pluginSourcePath); os.IsNotExist(err) {
 		return fmt.Errorf("plugin source file %s does not exist", pluginSourcePath)
+	}
+	goModPath := filepath.Join(pluginSourceDir, "go.mod")
+	declaredPath, err := declaredModulePath(goModPath)
+	if err != nil {
+		return fmt.Errorf("failed to read plugin module path: %v", err)
+	}
+	if expected := strings.TrimSpace(spec.ExpectedModulePath); expected != "" && declaredPath != expected {
+		return fmt.Errorf("plugin module path mismatch: expected %s, found %s in %s", expected, declaredPath, goModPath)
 	}
 
 	localHyperbricksPath := strings.TrimSpace(RequestedHyperbricksPath)
@@ -526,7 +581,7 @@ func buildPlugin(spec pluginBuildSpec) error {
 	}
 
 	// Build from inside the plugin source dir, using absolute output path
-	buildCmd := goToolCommand("build", "-buildmode=plugin", "-o", outputPath, spec.SourceFile)
+	buildCmd := goToolCommand("build", "-buildmode=plugin", "-o", outputPath, ".")
 	buildCmd.Dir = pluginSourceDir
 	buildCmd.Stdout = writer
 	buildCmd.Stderr = writer
