@@ -269,26 +269,30 @@ func processRequest(ctx context.Context, config APIConfig) (string, error) {
 		}
 	}
 
-	// inside for-loop:
-	for key, value := range mergedData {
-		var strValue string
-		if s, ok := value.(string); ok {
-			// Safely escape using JSON
-			escaped, _ := json.Marshal(s)
-			strValue = strings.Trim(string(escaped), `"`)
-		} else {
-			strValue = fmt.Sprintf("%v", value)
-		}
-
-		// Safe replacement: match exact $key boundary
-		re := regexp.MustCompile(`\$\b` + regexp.QuoteMeta(key) + `\b`)
-		bodyMap = re.ReplaceAllString(bodyMap, strValue)
-	}
+	bodyMap = replaceAPIBodyPlaceholders(bodyMap, mergedData)
 
 	if config.Debug {
 		fmt.Printf("Updated body map string: %s\n", bodyMap)
 	}
 	return bodyMap, nil
+}
+
+func replaceAPIBodyPlaceholders(templateBody string, mergedData map[string]interface{}) string {
+	re := regexp.MustCompile(`\$([A-Za-z0-9_]+)\b`)
+	return re.ReplaceAllStringFunc(templateBody, func(match string) string {
+		key := strings.TrimPrefix(match, "$")
+		value, ok := mergedData[key]
+		if !ok {
+			return match
+		}
+
+		if s, ok := value.(string); ok {
+			escaped, _ := json.Marshal(s)
+			return strings.Trim(string(escaped), `"`)
+		}
+
+		return fmt.Sprintf("%v", value)
+	})
 }
 
 // Updated fetchDataFromAPI function using a shared HTTP client helper

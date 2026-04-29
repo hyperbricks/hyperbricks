@@ -1,6 +1,6 @@
 **Licence:** MIT  
-**Version:** v1.0.0-beta  
-**Build time:** 2026-04-18T19:07:49Z
+**Version:** v1.0.1-beta  
+**Build time:** 2026-04-29T11:59:01Z
 
 ## Build Status
 
@@ -2524,6 +2524,8 @@ hypermedia.10 {
 
 
 
+
+
 **Properties**
 
 
@@ -3186,6 +3188,47 @@ HTTP cookies to include when serving this hypermedia
 hypermedia = <HYPERMEDIA>
 hypermedia {
     cookies = [session=abc; Path=/; HttpOnly; Secure, prefs=dark; Path=/; Max-Age=31536000; SameSite=Lax]
+}
+
+````
+
+**Expected Result**
+
+````html
+<!DOCTYPE html>
+<html>
+  <body></body>
+</html>
+````
+
+
+
+
+
+
+
+
+
+
+
+### guard
+
+**Description**  
+Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA behavior remains unchanged
+
+
+**Example**
+````properties
+hypermedia = <HYPERMEDIA>
+hypermedia.guard {
+    enabled = true
+    auth.cookie = session
+    require.authenticated = true
+    on_unauthenticated.redirect = /login
+    on_unauthenticated.hx_redirect = /login
+    on_unauthenticated.status = 401
+    on_forbidden.redirect = /denied
+    on_forbidden.status = 403
 }
 
 ````

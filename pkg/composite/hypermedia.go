@@ -65,7 +65,7 @@ type HyperMediaConfig struct {
 	Head               map[string]interface{} `mapstructure:"head" description:"Configurations for the head section of the hypermedia" example:"{!{hypermedia-head.hyperbricks}}"`
 	Headers            map[string]string      `mapstructure:"headers" description:"HTTP response headers to include when serving this hypermedia" example:"{!{hypermedia-headers.hyperbricks}}"`
 	Cookies            []string               `mapstructure:"cookies" description:"Set-Cookie values to include when serving this hypermedia" example:"{!{hypermedia-cookies.hyperbricks}}"`
-	Guard              HyperMediaGuardConfig  `mapstructure:"guard" description:"Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA behavior remains unchanged"`
+	Guard              *HyperMediaGuardConfig `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA behavior remains unchanged" example:"{!{hypermedia-guard.hyperbricks}}"`
 	ContentType        string                 `mapstructure:"content_type" description:"content type header definition"`
 }
 
