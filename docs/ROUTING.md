@@ -1,6 +1,8 @@
 # Routing
 
-For HTMX fragment routing and canonical browser URLs, see [HTMX Fragments and Canonical URLs](HTMX_FRAGMENTS.md).
+For HTMX fragment routing and canonical browser URLs, see [HTMX Fragments and Canonical URLs](HTMX_FRAGMENTS_AND_CANONICAL_URLS.md).
+
+For optional pre-render authorization on route-owning composites, see [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md).
 
 This document explains how Hyperbricks resolves routes and how to configure
 clean URLs (like `/help`) for `.html` content (like `help.html`).
@@ -44,6 +46,18 @@ When `hyperbricks start` serves a request, it resolves routes like this:
 5) If request has no extension, try adding each extension from `extensions`
 
 This keeps URLs clean while still letting you define explicit `.html` routes.
+
+## Route guards
+
+After HyperBricks resolves a route, the owning root composite may optionally evaluate `guard { ... }` before any rendering starts.
+
+Supported route owners are:
+
+- `<HYPERMEDIA>`
+- `<FRAGMENT>`
+- `<API_FRAGMENT_RENDER>`
+
+If a guard denies the request, HyperBricks returns the configured denial response before page rendering, fragment child execution, or upstream API proxy work begins. See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md).
 
 ## Resolution order (static file server)
 

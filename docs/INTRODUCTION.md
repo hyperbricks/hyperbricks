@@ -63,6 +63,8 @@ Some composite components are **Root Types**. Root types initiate frontend outpu
 * `<FRAGMENT>` — HTMX-powered partial responses
 * `<API_FRAGMENT_RENDER>` — authenticated API fragment proxy (returns HTMX-ready responses)
 
+These route-owning composites may also declare an optional `guard { ... }` block to deny a request before rendering starts. See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md).
+
 A minimal root looks like this:
 
 ```hyperbricks

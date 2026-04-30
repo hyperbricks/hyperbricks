@@ -32,6 +32,7 @@ HyperBricks renders HTML directly from APIs. Use `<API_RENDER>` for cacheable/pu
 * Can apply upstream auth (JWT, Basic, cookies)
 * HTMX response headers via `response { ... }`
 * `setcookie` sets client cookie based on response data when `.Status == 200`
+* Can declare optional `guard { ... }` to deny the route before any upstream API call is made
 
 ---
 
@@ -43,9 +44,12 @@ HyperBricks renders HTML directly from APIs. Use `<API_RENDER>` for cacheable/pu
 * [Hypermedia Systems](https://hypermedia.systems/book/contents/)
 * [Go html/template](https://pkg.go.dev/html/template)
 * [Sprig Template Functions](https://masterminds.github.io/sprig/)
+* [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md)
 
 
 <img src="assets/api_fragment_render.svg" alt="Direct HTMX OOB via HyperBricks &lt;API_FRAGMENT_RENDER&gt;" width="100%" />
+
+Note: this sequence diagram shows the allow path. If `<API_FRAGMENT_RENDER>.guard` is configured and denies the request, HyperBricks returns the configured denial response before any upstream API call is made. See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md).
 
 
 ## Key differences
@@ -91,6 +95,7 @@ HyperBricks renders HTML directly from APIs. Use `<API_RENDER>` for cacheable/pu
 | Property            | Description                                                                                                       |                       |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------- |
 | route               | Fragment route (URL segment).                                                                                     |                       |
+| guard { ... }       | Optional pre-render route guard. If denied, HyperBricks does not call the upstream `endpoint`. See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md). |                       |
 | title               | Optional fragment title.                                                                                          |                       |
 | section             | Logical grouping section.                                                                                         |                       |
 | index               | Sort key for menus.                                                                                               |                       |
@@ -178,6 +183,18 @@ endpoint = {{ENV:API_URL}}/rpc/login_user
 * Multi-value form fields are stringified. *(If you add joiners later, document the syntax.)*
 
 ---
+
+## Route guard
+
+`<API_FRAGMENT_RENDER>` is a route-owning root component, so it may declare an optional `guard { ... }` block.
+
+If configured and enabled:
+
+* the guard runs after route resolution but before any upstream API request
+* denied requests do not execute the API proxy path
+* HTMX requests may use `HX-Redirect` through the guard response settings
+
+See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md) for the shared contract used by `<HYPERMEDIA>`, `<FRAGMENT>`, and `<API_FRAGMENT_RENDER>`.
 
 ## Authentication behavior
 

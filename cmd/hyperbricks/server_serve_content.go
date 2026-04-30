@@ -30,19 +30,28 @@ const (
 	liveCacheExpiresAtHeader  = "X-Hyperbricks-Cache-Expires-At"
 )
 
-func resolveHyperMediaGuard(config map[string]interface{}) (composite.HyperMediaGuardConfig, bool) {
+func routeSupportsGuard(configType string) bool {
+	switch configType {
+	case composite.HyperMediaConfigGetName(), composite.FragmentConfigGetName(), composite.ApiFragmentRenderConfigGetName():
+		return true
+	default:
+		return false
+	}
+}
+
+func resolveRouteGuard(config map[string]interface{}) (composite.RouteGuardConfig, bool) {
 	if config == nil {
-		return composite.HyperMediaGuardConfig{}, false
+		return composite.RouteGuardConfig{}, false
 	}
 	configType, _ := config["@type"].(string)
-	if configType != composite.HyperMediaConfigGetName() {
-		return composite.HyperMediaGuardConfig{}, false
+	if !routeSupportsGuard(configType) {
+		return composite.RouteGuardConfig{}, false
 	}
 	rawGuard, ok := config["guard"]
 	if !ok || rawGuard == nil {
-		return composite.HyperMediaGuardConfig{}, false
+		return composite.RouteGuardConfig{}, false
 	}
-	var guard composite.HyperMediaGuardConfig
+	var guard composite.RouteGuardConfig
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		WeaklyTypedInput: true,
 		Result:           &guard,
@@ -50,14 +59,14 @@ func resolveHyperMediaGuard(config map[string]interface{}) (composite.HyperMedia
 	})
 	if err != nil {
 		logging.GetLogger().Warnw("guard resolver: decoder setup failed", "route", config["route"], "error", err)
-		return composite.HyperMediaGuardConfig{}, false
+		return composite.RouteGuardConfig{}, false
 	}
 	if err := decoder.Decode(rawGuard); err != nil {
 		logging.GetLogger().Warnw("guard resolver: decode failed", "route", config["route"], "error", err)
-		return composite.HyperMediaGuardConfig{}, false
+		return composite.RouteGuardConfig{}, false
 	}
 	if !guard.Enabled {
-		return composite.HyperMediaGuardConfig{}, false
+		return composite.RouteGuardConfig{}, false
 	}
 	return guard, true
 }
@@ -69,7 +78,7 @@ func requestUsesHTMX(r *http.Request) bool {
 	return strings.EqualFold(strings.TrimSpace(r.Header.Get("HX-Request")), "true")
 }
 
-func resolveGuardToken(r *http.Request, guard *composite.HyperMediaGuardConfig) string {
+func resolveGuardToken(r *http.Request, guard *composite.RouteGuardConfig) string {
 	if r == nil {
 		return ""
 	}
@@ -139,7 +148,7 @@ func applyGuardPlaceholders(input string, values map[string]string) string {
 	return result
 }
 
-func missingGuardQueryKeys(r *http.Request, guard composite.HyperMediaGuardConfig) []string {
+func missingGuardQueryKeys(r *http.Request, guard composite.RouteGuardConfig) []string {
 	if len(guard.Require.Query) == 0 || r == nil {
 		return nil
 	}
@@ -156,7 +165,7 @@ func missingGuardQueryKeys(r *http.Request, guard composite.HyperMediaGuardConfi
 	return missing
 }
 
-func guardDeniedResponse(r *http.Request, action composite.HyperMediaGuardActionConfig, fallbackStatus int, fallbackContent string) RenderContent {
+func guardDeniedResponse(r *http.Request, action composite.RouteGuardActionConfig, fallbackStatus int, fallbackContent string) RenderContent {
 	headers := map[string]string{
 		"Cache-Control": "no-store",
 		"Vary":          "Cookie, Authorization, HX-Request",
@@ -197,7 +206,7 @@ func guardDeniedResponse(r *http.Request, action composite.HyperMediaGuardAction
 	}
 }
 
-func authorizeHyperMediaGuard(r *http.Request, guard composite.HyperMediaGuardConfig, token string) (int, error) {
+func authorizeRouteGuard(r *http.Request, guard composite.RouteGuardConfig, token string) (int, error) {
 	if guard.Authorize == nil || strings.TrimSpace(guard.Authorize.Endpoint) == "" {
 		return http.StatusOK, nil
 	}
@@ -234,8 +243,8 @@ func authorizeHyperMediaGuard(r *http.Request, guard composite.HyperMediaGuardCo
 	return resp.StatusCode, nil
 }
 
-func evaluateHyperMediaGuard(config map[string]interface{}, r *http.Request) (*RenderContent, string) {
-	guard, enabled := resolveHyperMediaGuard(config)
+func evaluateRouteGuard(config map[string]interface{}, r *http.Request) (*RenderContent, string) {
+	guard, enabled := resolveRouteGuard(config)
 	if !enabled {
 		return nil, resolveGuardToken(r, nil)
 	}
@@ -248,7 +257,7 @@ func evaluateHyperMediaGuard(config map[string]interface{}, r *http.Request) (*R
 		response := guardDeniedResponse(r, guard.OnForbidden, http.StatusForbidden, "missing required query keys")
 		return &response, token
 	}
-	status, err := authorizeHyperMediaGuard(r, guard, token)
+	status, err := authorizeRouteGuard(r, guard, token)
 	if err != nil {
 		response := RenderContent{
 			Content:     "guard authorization failed",
@@ -332,7 +341,7 @@ func resolveConfiguredNoCache(config map[string]interface{}) bool {
 	if configType == composite.ApiFragmentRenderConfigGetName() {
 		return true
 	}
-	_, guardEnabled := resolveHyperMediaGuard(config)
+	_, guardEnabled := resolveRouteGuard(config)
 	return guardEnabled
 }
 
@@ -751,7 +760,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 		}
 	}
 
-	guardResponse, jwtToken := evaluateHyperMediaGuard(_config, r)
+	guardResponse, jwtToken := evaluateRouteGuard(_config, r)
 	if guardResponse != nil {
 		return *guardResponse
 	}

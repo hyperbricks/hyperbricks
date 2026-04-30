@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
@@ -473,6 +474,175 @@ func TestServeContent_HyperMediaGuardUsesHxRedirectForHTMX(t *testing.T) {
 	}
 	if got := writer.Header().Get("Location"); got != "" {
 		t.Fatalf("expected no Location header for HTMX redirect, got %q", got)
+	}
+}
+
+func TestServeContent_FragmentGuardDeniesBeforeRender(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	setTestRouteConfig("guarded-fragment", map[string]interface{}{
+		"@type": composite.FragmentConfigGetName(),
+		"route": "guarded-fragment",
+		"guard": map[string]interface{}{
+			"enabled": true,
+			"auth": map[string]interface{}{
+				"cookie": "token",
+			},
+			"require": map[string]interface{}{
+				"authenticated": true,
+			},
+			"on_unauthenticated": map[string]interface{}{
+				"redirect": "/login",
+			},
+		},
+		"10": map[string]interface{}{
+			"@type": component.HTMLConfigGetName(),
+			"value": "protected-fragment",
+		},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/guarded-fragment", nil)
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusSeeOther {
+		t.Fatalf("expected 303 redirect, got %d", writer.Code)
+	}
+	if got := writer.Header().Get("Location"); got != "/login" {
+		t.Fatalf("expected Location /login, got %q", got)
+	}
+	if strings.Contains(writer.Body.String(), "protected-fragment") {
+		t.Fatalf("expected guarded fragment content not to render, got %q", writer.Body.String())
+	}
+	if _, found := cachedEntry("guarded-fragment"); found {
+		t.Fatalf("expected guarded fragment route to bypass live cache")
+	}
+}
+
+func TestServeContent_FragmentGuardUsesHxRedirectForHTMX(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	setTestRouteConfig("guarded-fragment-hx", map[string]interface{}{
+		"@type": composite.FragmentConfigGetName(),
+		"route": "guarded-fragment-hx",
+		"guard": map[string]interface{}{
+			"enabled": true,
+			"auth": map[string]interface{}{
+				"cookie": "token",
+			},
+			"require": map[string]interface{}{
+				"authenticated": true,
+			},
+			"on_unauthenticated": map[string]interface{}{
+				"redirect": "/login",
+			},
+		},
+		"10": map[string]interface{}{
+			"@type": component.HTMLConfigGetName(),
+			"value": "protected-fragment",
+		},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/guarded-fragment-hx", nil)
+	request.Header.Set("HX-Request", "true")
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 for HTMX fragment guard response, got %d", writer.Code)
+	}
+	if got := writer.Header().Get("HX-Redirect"); got != "/login" {
+		t.Fatalf("expected HX-Redirect /login, got %q", got)
+	}
+	if strings.Contains(writer.Body.String(), "protected-fragment") {
+		t.Fatalf("expected guarded fragment content not to render, got %q", writer.Body.String())
+	}
+}
+
+func TestServeContent_APIFragmentGuardDeniesBeforeUpstreamCall(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	called := 0
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called++
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"ok":true}`))
+	}))
+	defer upstream.Close()
+
+	setTestRouteConfig("guarded-api-fragment", map[string]interface{}{
+		"@type":    composite.ApiFragmentRenderConfigGetName(),
+		"route":    "guarded-api-fragment",
+		"method":   "GET",
+		"endpoint": upstream.URL,
+		"inline":   `denied`,
+		"guard": map[string]interface{}{
+			"enabled": true,
+			"auth": map[string]interface{}{
+				"cookie": "token",
+			},
+			"require": map[string]interface{}{
+				"authenticated": true,
+			},
+			"on_unauthenticated": map[string]interface{}{
+				"redirect": "/login",
+			},
+		},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/guarded-api-fragment", nil)
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusSeeOther {
+		t.Fatalf("expected 303 redirect, got %d", writer.Code)
+	}
+	if called != 0 {
+		t.Fatalf("expected denied API fragment guard not to call upstream, got %d calls", called)
+	}
+}
+
+func TestServeContent_APIFragmentGuardAllowsAuthorizedRequest(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	called := 0
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called++
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"message":"allowed"}`))
+	}))
+	defer upstream.Close()
+
+	setTestRouteConfig("guarded-api-fragment-allowed", map[string]interface{}{
+		"@type":    composite.ApiFragmentRenderConfigGetName(),
+		"route":    "guarded-api-fragment-allowed",
+		"method":   "GET",
+		"endpoint": upstream.URL,
+		"inline":   `{{ index .Data "message" }}`,
+		"guard": map[string]interface{}{
+			"enabled": true,
+			"auth": map[string]interface{}{
+				"cookie": "token",
+			},
+			"require": map[string]interface{}{
+				"authenticated": true,
+			},
+		},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/guarded-api-fragment-allowed", nil)
+	request.AddCookie(&http.Cookie{Name: "token", Value: "test-token"})
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusOK {
+		t.Fatalf("expected 200 for authorized API fragment guard request, got %d", writer.Code)
+	}
+	if called != 1 {
+		t.Fatalf("expected authorized API fragment guard to call upstream once, got %d calls", called)
+	}
+	if !strings.Contains(writer.Body.String(), "allowed") {
+		t.Fatalf("expected authorized API fragment content to render, got %q", writer.Body.String())
 	}
 }
 

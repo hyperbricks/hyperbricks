@@ -1,0 +1,117 @@
+==== hyperbricks config {!{api_fragment}} ====
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://example.com/fragment
+    method = GET
+    route = protected-api-fragment
+    guard {
+        enabled = true
+        auth {
+            cookie = token
+        }
+        require {
+            authenticated = true
+            query {
+                project = true
+            }
+        }
+        authorize {
+            endpoint = https://example.com/authorize?project=$project
+            method = GET
+            headers {
+                Accept = application/json
+            }
+        }
+        on_unauthenticated {
+            redirect = /login
+            hx_redirect = /login
+            status = 401
+        }
+        on_forbidden {
+            redirect = /forbidden
+            hx_redirect = /forbidden
+            status = 403
+        }
+    }
+}
+==== explainer ====
+Optional pre-render route guard. When omitted or disabled, current API_FRAGMENT_RENDER behavior remains unchanged
+==== expected json ====
+{
+  "ConfigType": "<API_FRAGMENT_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "Items": null,
+  "Endpoint": "https://example.com/fragment",
+  "Method": "GET",
+  "Headers": null,
+  "Body": "",
+  "Template": "",
+  "Inline": "",
+  "Values": null,
+  "Username": "",
+  "Password": "",
+  "Status": 0,
+  "SetCookie": "",
+  "AllowedQueryKeys": null,
+  "QueryParams": null,
+  "JwtSecret": "",
+  "JwtClaims": null,
+  "Debug": false,
+  "DebugPanel": false,
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "protected-api-fragment",
+  "Section": "",
+  "Enclose": "",
+  "NoCache": false,
+  "Index": 0,
+  "Guard": {
+    "Enabled": true,
+    "Auth": {
+      "Cookie": "token",
+      "Header": "",
+      "Scheme": ""
+    },
+    "Require": {
+      "Authenticated": true,
+      "Query": {
+        "project": "true"
+      }
+    },
+    "Authorize": {
+      "Endpoint": "https://example.com/authorize?project=$project",
+      "Method": "GET",
+      "Headers": {
+        "Accept": "application/json"
+      },
+      "Body": ""
+    },
+    "OnUnauthenticated": {
+      "Redirect": "/login",
+      "HxRedirect": "/login",
+      "Status": 401
+    },
+    "OnForbidden": {
+      "Redirect": "/forbidden",
+      "HxRedirect": "/forbidden",
+      "Status": 403
+    }
+  }
+}
+==== expected output ====

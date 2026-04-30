@@ -33,6 +33,7 @@ type ApiFragmentRenderConfig struct {
 	Enclose            string              `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{api-fragment-render-enclose.hyperbricks}}"`
 	NoCache            bool                `mapstructure:"nocache" exclude:"true"` // description:"Explicitly deisable cache" example:"{!{api-fragment-render-nocache.hyperbricks}}"`
 	Index              int                 `mapstructure:"index" description:"Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
+	Guard              *RouteGuardConfig   `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current API_FRAGMENT_RENDER behavior remains unchanged"`
 }
 
 type APIConfig struct {
