@@ -40,17 +40,17 @@ var (
 )
 
 type ComponentErrorTemplate struct {
-	Hash string
-	Type string
-	File string
-	Path string
-	Key  string
-	Err  string
+	Hash string `json:"hash"`
+	Type string `json:"type"`
+	File string `json:"file"`
+	Path string `json:"path"`
+	Key  string `json:"key"`
+	Err  string `json:"err"`
 }
 
 type RenderDiagnostics struct {
-	RequestID string
-	Route     string
-	CreatedAt time.Time
-	Errors    []ComponentErrorTemplate
+	RequestID string                   `json:"request_id"`
+	Route     string                   `json:"route"`
+	CreatedAt time.Time                `json:"created_at"`
+	Errors    []ComponentErrorTemplate `json:"errors"`
 }

@@ -818,11 +818,8 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 
 	//TO-DO: I know this is 'not how to do this', but because it stays within the concurrent proof HTTP lifecycle it is a practical solution for passing the ResponseWriter around
 	ctx = context.WithValue(ctx, shared.ResponseWriter, w)
-	var handledCapture *shared.HandledResponseCapture
-	if configCopy["@type"].(string) == component.PluginRenderGetName() {
-		handledCapture = &shared.HandledResponseCapture{}
-		ctx = context.WithValue(ctx, shared.HandledResponseCaptureKey, handledCapture)
-	}
+	handledCapture := &shared.HandledResponseCapture{}
+	ctx = context.WithValue(ctx, shared.HandledResponseCaptureKey, handledCapture)
 	// ============ END OF API CONTEXT AND TOKEN CAPTURE ============
 
 	var htmlContent strings.Builder
