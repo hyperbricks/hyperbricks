@@ -721,6 +721,7 @@ type RenderContent struct {
 	Cookies     []string
 	RequestID   string
 	ErrorCount  int
+	Handled     *shared.HandledResponse
 }
 
 func renderContent(w http.ResponseWriter, route string, r *http.Request, requestID string) RenderContent {
@@ -817,6 +818,11 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 
 	//TO-DO: I know this is 'not how to do this', but because it stays within the concurrent proof HTTP lifecycle it is a practical solution for passing the ResponseWriter around
 	ctx = context.WithValue(ctx, shared.ResponseWriter, w)
+	var handledCapture *shared.HandledResponseCapture
+	if configCopy["@type"].(string) == component.PluginRenderGetName() {
+		handledCapture = &shared.HandledResponseCapture{}
+		ctx = context.WithValue(ctx, shared.HandledResponseCaptureKey, handledCapture)
+	}
 	// ============ END OF API CONTEXT AND TOKEN CAPTURE ============
 
 	var htmlContent strings.Builder
@@ -836,6 +842,10 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 		recordRenderDiagnostics(requestID, route, renderErrors)
 	}
 
+	if handledCapture != nil && handledCapture.Response != nil {
+		return renderHandledContent(requestID, status, contentType, headers, cookies, nocache, len(renderErrors), handledCapture.Response)
+	}
+
 	return RenderContent{
 		Content:     output.String(),
 		NoCache:     nocache,
@@ -847,6 +857,86 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 		ErrorCount:  len(renderErrors),
 	}
 
+}
+
+func renderHandledContent(requestID string, defaultStatus int, defaultContentType string, defaultHeaders map[string]string, defaultCookies []string, defaultNoCache bool, errorCount int, handled *shared.HandledResponse) RenderContent {
+	if handled == nil {
+		return RenderContent{
+			NoCache:    true,
+			RequestID:  requestID,
+			ErrorCount: errorCount,
+		}
+	}
+
+	status := handled.Status
+	if status == 0 {
+		status = defaultStatus
+	}
+	if status == 0 {
+		status = http.StatusOK
+	}
+
+	contentType := strings.TrimSpace(handled.ContentType)
+	if contentType == "" {
+		contentType = strings.TrimSpace(defaultContentType)
+	}
+
+	headers := cloneStringMap(defaultHeaders)
+	if headers == nil && len(handled.Headers) > 0 {
+		headers = make(map[string]string, len(handled.Headers))
+	}
+	for key, value := range handled.Headers {
+		headers[key] = value
+	}
+
+	cookies := append([]string(nil), defaultCookies...)
+	if len(handled.Cookies) > 0 {
+		cookies = append(cookies, handled.Cookies...)
+	}
+
+	return RenderContent{
+		NoCache:     true,
+		ContentType: contentType,
+		Status:      status,
+		Headers:     headers,
+		Cookies:     cookies,
+		RequestID:   requestID,
+		ErrorCount:  errorCount,
+		Handled:     cloneHandledResponseData(handled),
+	}
+}
+
+func cloneStringMap(source map[string]string) map[string]string {
+	if len(source) == 0 {
+		return nil
+	}
+	cloned := make(map[string]string, len(source))
+	for key, value := range source {
+		cloned[key] = value
+	}
+	return cloned
+}
+
+func cloneHandledResponseData(response *shared.HandledResponse) *shared.HandledResponse {
+	if response == nil {
+		return nil
+	}
+
+	cloned := &shared.HandledResponse{
+		Status:      response.Status,
+		ContentType: response.ContentType,
+		NoCache:     response.NoCache,
+	}
+	if len(response.Body) > 0 {
+		cloned.Body = append([]byte(nil), response.Body...)
+	}
+	if len(response.Headers) > 0 {
+		cloned.Headers = cloneStringMap(response.Headers)
+	}
+	if len(response.Cookies) > 0 {
+		cloned.Cookies = append([]string(nil), response.Cookies...)
+	}
+	return cloned
 }
 
 // errorTemplate is the embedded Go template as a string
@@ -1013,48 +1103,49 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.GetLogger().Debugw("Received request for route", "route", route)
-	var htmlContent strings.Builder
 	if hbConfig.Mode == shared.LIVE_MODE {
 		cacheEntry := handleLiveMode(w, route, r, requestID)
-		htmlContent.WriteString(cacheEntry.Content)
-		applyResponseHeaders(cacheEntry.Headers, w)
-		applyResponseCookies(cacheEntry.Cookies, w)
-		if cacheEntry.ContentType != "" {
-			w.Header().Set("Content-Type", cacheEntry.ContentType)
-		} else {
-			w.Header().Set("Content-Type", "text/html")
+		if !writeRenderResponse(w, route, requestID, cacheEntry.Content, cacheEntry.Handled, cacheEntry.Headers, cacheEntry.Cookies, cacheEntry.ContentType, cacheEntry.Status, cacheEntry.ErrorCount) {
+			return
 		}
-		status := cacheEntry.Status
-		if status == 0 {
-			status = http.StatusOK
-		}
-		w.Header().Set(requestIDHeader, requestID)
-		w.Header().Set(renderErrorCountHeader, strconv.Itoa(cacheEntry.ErrorCount))
-		w.WriteHeader(status)
 	} else {
 		renderContent := handleDeveloperMode(w, route, r, requestID)
-		htmlContent.WriteString(renderContent.Content)
-		applyResponseHeaders(renderContent.Headers, w)
-		applyResponseCookies(renderContent.Cookies, w)
-		if renderContent.ContentType != "" {
-			w.Header().Set("Content-Type", renderContent.ContentType)
-		} else {
-			w.Header().Set("Content-Type", "text/html")
+		if !writeRenderResponse(w, route, requestID, renderContent.Content, renderContent.Handled, renderContent.Headers, renderContent.Cookies, renderContent.ContentType, renderContent.Status, renderContent.ErrorCount) {
+			return
 		}
-		status := renderContent.Status
-		if status == 0 {
-			status = http.StatusOK
-		}
-		w.Header().Set(requestIDHeader, requestID)
-		w.Header().Set(renderErrorCountHeader, strconv.Itoa(renderContent.ErrorCount))
-		w.WriteHeader(status)
+	}
+}
+
+func writeRenderResponse(w http.ResponseWriter, route string, requestID string, content string, handled *shared.HandledResponse, headers map[string]string, cookies []string, contentType string, status int, errorCount int) bool {
+	applyResponseHeaders(headers, w)
+	applyResponseCookies(cookies, w)
+	if contentType != "" {
+		w.Header().Set("Content-Type", contentType)
+	} else {
+		w.Header().Set("Content-Type", "text/html")
+	}
+	w.Header().Set(requestIDHeader, requestID)
+	w.Header().Set(renderErrorCountHeader, strconv.Itoa(errorCount))
+	if status == 0 {
+		status = http.StatusOK
 	}
 
-	if _, err := fmt.Fprint(w, htmlContent.String()); err != nil {
-		logging.GetLogger().Errorw("Error writing response", "route", route, "error", err)
-	} else {
-		logging.GetLogger().Debugw("Served request", "route", route)
+	body := []byte(content)
+	if handled != nil {
+		body = handled.Body
 	}
+
+	w.WriteHeader(status)
+	if len(body) == 0 {
+		logging.GetLogger().Debugw("Served request", "route", route)
+		return true
+	}
+	if _, err := w.Write(body); err != nil {
+		logging.GetLogger().Errorw("Error writing response", "route", route, "error", err)
+		return false
+	}
+	logging.GetLogger().Debugw("Served request", "route", route)
+	return true
 }
 
 // RENDER WITHOUT CACHE
@@ -1081,6 +1172,7 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request, reques
 			Headers:     renderContent.Headers,
 			Cookies:     renderContent.Cookies,
 			ErrorCount:  renderContent.ErrorCount,
+			Handled:     cloneHandledResponseData(renderContent.Handled),
 		}
 	}
 
@@ -1138,5 +1230,6 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request, reques
 		Headers:     renderContent.Headers,
 		Cookies:     renderContent.Cookies,
 		ErrorCount:  renderContent.ErrorCount,
+		Handled:     cloneHandledResponseData(renderContent.Handled),
 	}
 }

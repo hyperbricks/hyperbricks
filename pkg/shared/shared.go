@@ -11,6 +11,7 @@ const Request contextKey = "request"
 const FormData contextKey = "formData"
 const ResponseWriter contextKey = "ResponseWriter"
 const CurrentRoute contextKey = "currentRoute"
+const HandledResponseCaptureKey contextKey = "handledResponseCapture"
 
 // PluginConfig is a generic configuration map for plugins.
 type PluginConfig map[string]interface{}
@@ -18,6 +19,19 @@ type PluginConfig map[string]interface{}
 // RenderPlugin defines the interface for dynamic plugins.
 type PluginRenderer interface {
 	Render(data interface{}, ctx context.Context) (any, []error)
+}
+
+type HandledResponse struct {
+	Status      int
+	ContentType string
+	Headers     map[string]string
+	Cookies     []string
+	Body        []byte
+	NoCache     bool
+}
+
+type HandledResponseCapture struct {
+	Response *HandledResponse
 }
 
 type Renderer interface {

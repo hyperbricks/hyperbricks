@@ -6,6 +6,7 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 type CacheEntry struct {
@@ -16,6 +17,7 @@ type CacheEntry struct {
 	Headers     map[string]string
 	Cookies     []string
 	ErrorCount  int
+	Handled     *shared.HandledResponse
 }
 
 var (
