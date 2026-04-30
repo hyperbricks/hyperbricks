@@ -31,7 +31,8 @@ HyperBricks renders HTML directly from APIs. Use `<API_RENDER>` for cacheable/pu
 * Bi-directional proxy: filters queries, forwards form/body
 * Can apply upstream auth (JWT, Basic, cookies)
 * HTMX response headers via `response { ... }`
-* `setcookie` sets client cookie based on response data when `.Status == 200`
+* `setcookie` sets one client cookie based on response data when the upstream response is any `2xx`
+* `setcookies` sets multiple client cookies, one `Set-Cookie` header per entry, on any `2xx` upstream response
 * Can declare optional `guard { ... }` to deny the route before any upstream API call is made
 
 ---
@@ -63,7 +64,7 @@ Note: this sequence diagram shows the allow path. If `<API_FRAGMENT_RENDER>.guar
 | Request body mapping                | Yes                         | Yes                                    |
 | Transform via `inline`/`template`   | Yes                         | Yes                                    |
 | HTMX response headers               | No                          | Yes via `response { ... }`             |
-| `setcookie` back to client          | No (unused in current code) | Yes (200 only)                         |
+| `setcookie` / `setcookies` back to client | No (unused in current code) | Yes (any `2xx`)                   |
 
 ---
 
@@ -111,7 +112,8 @@ Note: this sequence diagram shows the allow path. If `<API_FRAGMENT_RENDER>.guar
 | username / password | Basic Auth credentials for upstream.                                                                              |                       |
 | jwtsecret           | Secret for generating a JWT (overrides cookie token).                                                             |                       |
 | jwtclaims           | Claims map; `exp` is seconds offset.                                                                              |                       |
-| setcookie           | Template that becomes `Set-Cookie` when `.Status == 200`.                                                         |                       |
+| setcookie           | Legacy shorthand for one template that becomes `Set-Cookie` when the upstream response is any `2xx`.             |                       |
+| setcookies          | Optional list of templates; each entry becomes its own `Set-Cookie` header when the upstream response is any `2xx`. |                    |
 | debug               | Adds debug comments.                                                                                              |                       |
 | debugpanel          | Enables front-end error panel (non-LIVE mode and global flag on).                                                 |                       |
 | enclose             | Wrap final HTML with `before                                                                                      | after` (see Enclose). |
@@ -244,7 +246,7 @@ Configure inside `response { ... }` on fragments.
 
 * New cookie jar per outgoing request; shared transport for pooling. Prevents cookie leakage between users.
 * If a `token` cookie exists on the client request, it becomes `Authorization: Bearer <token>` to the upstream unless `jwtsecret` overrides.
-* `setcookie` runs only when `.Status == 200` on fragments. Prefer `HttpOnly; Secure; SameSite=Lax; Path=/` and set expiry/Max-Age.
+* `setcookie` and `setcookies` run on any upstream `2xx` status on fragments, including `204 No Content`. Prefer `HttpOnly; Secure; SameSite=Lax; Path=/` and set expiry/Max-Age.
 * `querykeys` allowlist prevents accidental forwarding of sensitive client params.
 * Sanitize any dynamic values you reflect into headers or cookies.
 
@@ -266,3 +268,4 @@ Configure inside `response { ... }` on fragments.
 * Placeholder matching uses word boundaries; avoid dashes in `$key` names. 
 * Fragment rendering assumes `Request` and `ResponseWriter` are present in context.
 * `<API_RENDER>` exposes `setcookie` in the struct but does not send it.
+* Use `setcookies` when one route must emit multiple `Set-Cookie` headers, such as clearing both an auth token and a legacy session cookie during logout.

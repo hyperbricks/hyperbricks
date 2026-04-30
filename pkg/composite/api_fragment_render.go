@@ -37,17 +37,18 @@ type ApiFragmentRenderConfig struct {
 }
 
 type APIConfig struct {
-	Endpoint  string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-fragment-endpoint.hyperbricks}}"`
-	Method    string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-fragment-method.hyperbricks}}"`
-	Headers   map[string]string      `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-fragment-headers.hyperbricks}}"`
-	Body      string                 `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-render-fragment-body.hyperbricks}}"`
-	Template  string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-fragment-template.hyperbricks}}"`
-	Inline    string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{api-render-fragment-inline.hyperbricks}}"`
-	Values    map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-fragment-values.hyperbricks}}"`
-	Username  string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-fragment-username.hyperbricks}}"`
-	Password  string                 `mapstructure:"password" description:"Password for basic auth" example:"{!{api-render-fragment-password.hyperbricks}}"`
-	Status    int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
-	SetCookie string                 `mapstructure:"setcookie" description:"Set template for cookie" example:"{!{api-render-fragment-setcookie.hyperbricks}}"`
+	Endpoint   string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-fragment-endpoint.hyperbricks}}"`
+	Method     string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-fragment-method.hyperbricks}}"`
+	Headers    map[string]string      `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-fragment-headers.hyperbricks}}"`
+	Body       string                 `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-render-fragment-body.hyperbricks}}"`
+	Template   string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-fragment-template.hyperbricks}}"`
+	Inline     string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{api-render-fragment-inline.hyperbricks}}"`
+	Values     map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-fragment-values.hyperbricks}}"`
+	Username   string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-fragment-username.hyperbricks}}"`
+	Password   string                 `mapstructure:"password" description:"Password for basic auth" example:"{!{api-render-fragment-password.hyperbricks}}"`
+	Status     int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
+	SetCookie  string                 `mapstructure:"setcookie" description:"Legacy shorthand for one Set-Cookie response template. Applied on any 2xx upstream response." example:"{!{api-render-fragment-setcookie.hyperbricks}}"`
+	SetCookies []string               `mapstructure:"setcookies" json:",omitempty" description:"Optional list of Set-Cookie response templates. Each entry becomes its own Set-Cookie header on any 2xx upstream response." example:"{!{api-render-fragment-setcookies.hyperbricks}}"`
 	// PassCookie       string                 `mapstructure:"passcookie" description:"Pass a cookie in eindpoint request" example:"{!{api-render-setcookie.hyperbricks}}"`
 	AllowedQueryKeys []string          `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-fragment-querykeys.hyperbricks}}"`
 	QueryParams      map[string]string `mapstructure:"queryparams" description:"Set proxy query key in the confifuration" example:"{!{api-render-fragment-queryparams.hyperbricks}}"`
@@ -248,27 +249,14 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 	// }
 
 	writer := ctx.Value(shared.ResponseWriter).(http.ResponseWriter)
-	if config.SetCookie != "" && status == 200 {
-
-		// tmplItem, err := template.New("item").Parse(config.SetCookie)
-		// if err != nil {
-		// 	errors = append(errors, fmt.Errorf("failed to parse 'item' template: %w", err))
-		// }
-
-		// var buf strings.Builder
-		// err = tmplItem.Execute(&buf, responseData)
-		// if err != nil {
-		// 	errors = append(errors, fmt.Errorf("failed to execute template: %w", err))
-		// }
-
-		cookie, _errors := applyApiFragmentTemplate(config.SetCookie, responseData, config)
-		config.SetCookie = cookie
-		if _errors != nil {
-			errors = append(errors, _errors...)
-		} else {
-			if writer != nil {
-				writer.Header().Set("Set-Cookie", cookie)
+	if writer != nil && status >= http.StatusOK && status < http.StatusMultipleChoices {
+		for _, cookieTemplate := range collectResponseCookieTemplates(config) {
+			cookie, _errors := applyApiFragmentTemplate(cookieTemplate, responseData, config)
+			if _errors != nil {
+				errors = append(errors, _errors...)
+				continue
 			}
+			writer.Header().Add("Set-Cookie", cookie)
 		}
 	}
 	hbconfig := shared.GetHyperBricksConfiguration()
@@ -297,6 +285,20 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 	}
 
 	return builder.String(), errors
+}
+
+func collectResponseCookieTemplates(config ApiFragmentRenderConfig) []string {
+	templates := make([]string, 0, 1+len(config.SetCookies))
+	if strings.TrimSpace(config.SetCookie) != "" {
+		templates = append(templates, config.SetCookie)
+	}
+	for _, cookie := range config.SetCookies {
+		if strings.TrimSpace(cookie) == "" {
+			continue
+		}
+		templates = append(templates, cookie)
+	}
+	return templates
 }
 
 func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string, error) {
