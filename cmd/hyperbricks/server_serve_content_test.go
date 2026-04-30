@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -13,6 +15,37 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
+
+type handledResponseTestPlugin struct {
+	calls       *int32
+	status      int
+	contentType string
+	headers     map[string]string
+	cookies     []string
+	body        []byte
+}
+
+func (p handledResponseTestPlugin) Render(_ interface{}, _ context.Context) (any, []error) {
+	if p.calls != nil {
+		atomic.AddInt32(p.calls, 1)
+	}
+
+	headers := map[string]string(nil)
+	if len(p.headers) > 0 {
+		headers = make(map[string]string, len(p.headers))
+		for key, value := range p.headers {
+			headers[key] = value
+		}
+	}
+
+	return shared.HandledResponse{
+		Status:      p.status,
+		ContentType: p.contentType,
+		Headers:     headers,
+		Cookies:     append([]string(nil), p.cookies...),
+		Body:        append([]byte(nil), p.body...),
+	}, nil
+}
 
 func setupLiveModeServeContentTest(t *testing.T) {
 	t.Helper()
@@ -871,6 +904,95 @@ func TestServeContent_DevelopmentLeavesBodyCleanWhenNoRenderErrors(t *testing.T)
 	}
 	if got := writer.Header().Get(requestIDHeader); got == "" {
 		t.Fatalf("expected request id header to be set")
+	}
+}
+
+func TestServeContent_DevelopmentHandledPluginResponseWritesRawBody(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+
+	setTestRouteConfig("handled-plugin", map[string]interface{}{
+		"@type":  component.PluginRenderGetName(),
+		"route":  "handled-plugin",
+		"plugin": "handled_test",
+	})
+
+	var calls int32
+	rm.SetPlugin("handled_test", handledResponseTestPlugin{
+		calls:       &calls,
+		status:      http.StatusCreated,
+		contentType: "application/octet-stream",
+		headers: map[string]string{
+			"X-Handled-Test": "1",
+		},
+		cookies: []string{"preview=1; Path=/; HttpOnly"},
+		body:    []byte{0x00, 0x41, 0x42, 0x43},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/handled-plugin", nil)
+	ServeContent(writer, request)
+
+	response := writer.Result()
+	if response.StatusCode != http.StatusCreated {
+		t.Fatalf("status = %d, want %d", response.StatusCode, http.StatusCreated)
+	}
+	if got := response.Header.Get("Content-Type"); got != "application/octet-stream" {
+		t.Fatalf("content type = %q, want application/octet-stream", got)
+	}
+	if got := response.Header.Get("X-Handled-Test"); got != "1" {
+		t.Fatalf("X-Handled-Test = %q, want 1", got)
+	}
+	if cookies := response.Header.Values("Set-Cookie"); len(cookies) != 1 || cookies[0] != "preview=1; Path=/; HttpOnly" {
+		t.Fatalf("Set-Cookie = %v, want [preview=1; Path=/; HttpOnly]", cookies)
+	}
+	if got := response.Header.Get(requestIDHeader); got == "" {
+		t.Fatal("missing request id header")
+	}
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		t.Fatalf("ReadAll body: %v", err)
+	}
+	if want := []byte{0x00, 0x41, 0x42, 0x43}; string(body) != string(want) {
+		t.Fatalf("body = %v, want %v", body, want)
+	}
+	if got := atomic.LoadInt32(&calls); got != 1 {
+		t.Fatalf("plugin calls = %d, want 1", got)
+	}
+}
+
+func TestServeContent_LiveModeHandledPluginResponseBypassesCache(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	setTestRouteConfig("handled-live", map[string]interface{}{
+		"@type":  component.PluginRenderGetName(),
+		"route":  "handled-live",
+		"plugin": "handled_live_test",
+	})
+
+	var calls int32
+	rm.SetPlugin("handled_live_test", handledResponseTestPlugin{
+		calls:       &calls,
+		status:      http.StatusOK,
+		contentType: "text/plain; charset=utf-8",
+		body:        []byte("runtime-proxy"),
+	})
+
+	firstWriter := httptest.NewRecorder()
+	firstRequest := httptest.NewRequest(http.MethodGet, "/handled-live", nil)
+	ServeContent(firstWriter, firstRequest)
+
+	secondWriter := httptest.NewRecorder()
+	secondRequest := httptest.NewRequest(http.MethodGet, "/handled-live", nil)
+	ServeContent(secondWriter, secondRequest)
+
+	if got := atomic.LoadInt32(&calls); got != 2 {
+		t.Fatalf("plugin calls = %d, want 2", got)
+	}
+	if _, ok := cachedEntry("handled-live"); ok {
+		t.Fatal("handled live response should not be cached")
+	}
+	if body := secondWriter.Body.String(); body != "runtime-proxy" {
+		t.Fatalf("second body = %q, want runtime-proxy", body)
 	}
 }
 

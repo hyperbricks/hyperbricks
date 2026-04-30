@@ -162,6 +162,7 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 
 func (r *PluginRenderer) renderAndWrap(pluginRenderer shared.PluginRenderer, config PluginConfig, instance interface{}, ctx context.Context, errs []error) (string, []error) {
 	var builder strings.Builder
+	var handledResponse *shared.HandledResponse
 
 	if ctx == nil && commands.RenderStatic {
 		ctx = context.Background()
@@ -173,6 +174,10 @@ func (r *PluginRenderer) renderAndWrap(pluginRenderer shared.PluginRenderer, con
 
 	renderedContent := ""
 	switch value := renderedValue.(type) {
+	case shared.HandledResponse:
+		handledResponse = cloneHandledResponse(&value)
+	case *shared.HandledResponse:
+		handledResponse = cloneHandledResponse(value)
 	case string:
 		renderedContent = value
 	case map[string]interface{}:
@@ -270,8 +275,50 @@ func (r *PluginRenderer) renderAndWrap(pluginRenderer shared.PluginRenderer, con
 		renderedContent = fmt.Sprintf("<!-- plugin returned unsupported type: %T -->", renderedValue)
 	}
 
+	if handledResponse != nil {
+		if capture, _ := ctx.Value(shared.HandledResponseCaptureKey).(*shared.HandledResponseCapture); capture != nil {
+			capture.Response = handledResponse
+			return "", errs
+		}
+		errs = append(errs, shared.ComponentError{
+			Hash:     shared.GenerateHash(),
+			Key:      config.HyperBricksKey,
+			Path:     config.HyperBricksPath,
+			File:     config.HyperBricksFile,
+			Type:     PluginRenderGetName(),
+			Rejected: true,
+			Err:      "plugin returned handled response without an active capture context",
+		})
+		return "<!-- plugin returned handled response without capture context -->", errs
+	}
+
 	builder.WriteString(wrapPluginHTML(config, renderedContent))
 	return builder.String(), errs
+}
+
+func cloneHandledResponse(response *shared.HandledResponse) *shared.HandledResponse {
+	if response == nil {
+		return nil
+	}
+
+	cloned := &shared.HandledResponse{
+		Status:      response.Status,
+		ContentType: response.ContentType,
+		NoCache:     response.NoCache,
+	}
+	if len(response.Body) > 0 {
+		cloned.Body = append([]byte(nil), response.Body...)
+	}
+	if len(response.Cookies) > 0 {
+		cloned.Cookies = append([]string(nil), response.Cookies...)
+	}
+	if len(response.Headers) > 0 {
+		cloned.Headers = make(map[string]string, len(response.Headers))
+		for key, value := range response.Headers {
+			cloned.Headers[key] = value
+		}
+	}
+	return cloned
 }
 
 func wrapPluginHTML(config PluginConfig, renderedContent string) string {
