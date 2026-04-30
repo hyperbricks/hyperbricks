@@ -960,6 +960,49 @@ func TestServeContent_DevelopmentHandledPluginResponseWritesRawBody(t *testing.T
 	}
 }
 
+func TestServeContent_DevelopmentHandledNestedPluginResponseWritesRawBody(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+
+	setTestRouteConfig("handled-nested-plugin", map[string]interface{}{
+		"@type": composite.FragmentConfigGetName(),
+		"route": "handled-nested-plugin",
+		"10": map[string]interface{}{
+			"@type":  component.PluginRenderGetName(),
+			"plugin": "handled_nested_test",
+		},
+	})
+
+	var calls int32
+	rm.SetPlugin("handled_nested_test", handledResponseTestPlugin{
+		calls:       &calls,
+		status:      http.StatusAccepted,
+		contentType: "application/octet-stream",
+		body:        []byte{0x52, 0x54},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/handled-nested-plugin", nil)
+	handler(writer, request)
+
+	response := writer.Result()
+	if response.StatusCode != http.StatusAccepted {
+		t.Fatalf("status = %d, want %d", response.StatusCode, http.StatusAccepted)
+	}
+	if got := response.Header.Get(renderErrorCountHeader); got != "0" {
+		t.Fatalf("render error count = %q, want 0", got)
+	}
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		t.Fatalf("ReadAll body: %v", err)
+	}
+	if want := []byte{0x52, 0x54}; string(body) != string(want) {
+		t.Fatalf("body = %v, want %v", body, want)
+	}
+	if got := atomic.LoadInt32(&calls); got != 1 {
+		t.Fatalf("plugin calls = %d, want 1", got)
+	}
+}
+
 func TestServeContent_LiveModeHandledPluginResponseBypassesCache(t *testing.T) {
 	setupLiveModeServeContentTest(t)
 
@@ -1034,5 +1077,49 @@ func TestServeContent_DevelopmentRecordsDiagnosticsSeparately(t *testing.T) {
 	}
 	if len(diagnostics.Errors) == 0 {
 		t.Fatalf("expected recorded diagnostics, got %d", len(diagnostics.Errors))
+	}
+}
+
+func TestRenderDiagnosticsEndpointReturnsRecordedRequest(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+
+	setTestRouteConfig("missing-plugin", map[string]interface{}{
+		"@type":  component.PluginRenderGetName(),
+		"route":  "missing-plugin",
+		"plugin": "DoesNotExist@1.0.0",
+	})
+
+	sourceWriter := httptest.NewRecorder()
+	sourceRequest := httptest.NewRequest(http.MethodGet, "/missing-plugin", nil)
+	handler(sourceWriter, sourceRequest)
+
+	requestID := sourceWriter.Header().Get(requestIDHeader)
+	if requestID == "" {
+		t.Fatal("expected request id header to be set")
+	}
+
+	diagnosticsWriter := httptest.NewRecorder()
+	diagnosticsRequest := httptest.NewRequest(http.MethodGet, "/__hyperbricks/render-diagnostics?request_id="+requestID, nil)
+	handler(diagnosticsWriter, diagnosticsRequest)
+
+	if diagnosticsWriter.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", diagnosticsWriter.Code)
+	}
+	if got := diagnosticsWriter.Header().Get("Content-Type"); !strings.HasPrefix(got, "application/json") {
+		t.Fatalf("content type = %q, want application/json", got)
+	}
+
+	var payload RenderDiagnostics
+	if err := json.Unmarshal(diagnosticsWriter.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("Unmarshal diagnostics payload: %v", err)
+	}
+	if payload.RequestID != requestID {
+		t.Fatalf("request id = %q, want %q", payload.RequestID, requestID)
+	}
+	if payload.Route != "missing-plugin" {
+		t.Fatalf("route = %q, want missing-plugin", payload.Route)
+	}
+	if len(payload.Errors) == 0 {
+		t.Fatal("expected at least one recorded error")
 	}
 }
