@@ -15,6 +15,7 @@ type CacheEntry struct {
 	Timestamp   time.Time
 	Headers     map[string]string
 	Cookies     []string
+	ErrorCount  int
 }
 
 var (
@@ -29,4 +30,25 @@ var (
 	htmlCache        = make(map[string]CacheEntry)
 	htmlCacheMutex   sync.RWMutex
 	hyperBricksArray = &parser.HyperScriptStringArray{}
+
+	renderDiagnosticsMutex sync.RWMutex
+	renderDiagnostics      = make(map[string]RenderDiagnostics)
+	renderDiagnosticsOrder []string
+	renderDiagnosticsSeq   int64 = 0
 )
+
+type ComponentErrorTemplate struct {
+	Hash string
+	Type string
+	File string
+	Path string
+	Key  string
+	Err  string
+}
+
+type RenderDiagnostics struct {
+	RequestID string
+	Route     string
+	CreatedAt time.Time
+	Errors    []ComponentErrorTemplate
+}

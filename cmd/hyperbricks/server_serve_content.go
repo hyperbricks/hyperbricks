@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/component"
@@ -28,6 +29,9 @@ import (
 const (
 	liveCacheRenderedAtHeader = "X-Hyperbricks-Rendered-At"
 	liveCacheExpiresAtHeader  = "X-Hyperbricks-Cache-Expires-At"
+	requestIDHeader           = "X-Hyperbricks-Request-ID"
+	renderErrorCountHeader    = "X-Hyperbricks-Render-Error-Count"
+	maxRenderDiagnostics      = 200
 )
 
 func routeSupportsGuard(configType string) bool {
@@ -674,7 +678,7 @@ func renderStaticContentFromConfig(config map[string]interface{}, routeOverride 
 
 	var htmlContent strings.Builder
 
-	renderOutput, renderErrors := rm.Render(configCopy["@type"].(string), configCopy, ctx)
+	renderOutput, _ := rm.Render(configCopy["@type"].(string), configCopy, ctx)
 
 	htmlContent.WriteString(renderOutput)
 	var output strings.Builder
@@ -683,15 +687,6 @@ func renderStaticContentFromConfig(config map[string]interface{}, routeOverride 
 		output.WriteString(gohtml.Format(htmlContent.String()))
 	} else {
 		output.WriteString(htmlContent.String())
-	}
-
-	// only render errors in debug or development mode...
-	if hbConfig.Mode != shared.LIVE_MODE {
-		if hbConfig.Development.FrontendErrors {
-			output.WriteString(FrontEndErrorRender(renderErrors))
-		} else {
-			output.WriteString(HandleRenderErrors(renderErrors))
-		}
 	}
 
 	return output.String()
@@ -724,9 +719,11 @@ type RenderContent struct {
 	Status      int
 	Headers     map[string]string
 	Cookies     []string
+	RequestID   string
+	ErrorCount  int
 }
 
-func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderContent {
+func renderContent(w http.ResponseWriter, route string, r *http.Request, requestID string) RenderContent {
 	hbConfig := getHyperBricksConfiguration()
 	nocache := false
 	status := http.StatusOK
@@ -748,6 +745,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 					NoCache:     false,
 					ContentType: "",
 					Status:      http.StatusNoContent,
+					RequestID:   requestID,
 				}
 			}
 			logging.GetLogger().Info("Config not found for route: ", route)
@@ -756,6 +754,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 				NoCache:     false,
 				ContentType: "",
 				Status:      http.StatusNotFound,
+				RequestID:   requestID,
 			}
 		}
 	}
@@ -833,13 +832,8 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 		output.WriteString(htmlContent.String())
 	}
 
-	// only render errors in debug or development mode...
 	if hbConfig.Mode != shared.LIVE_MODE {
-		if hbConfig.Development.FrontendErrors {
-			output.WriteString(FrontEndErrorRender(renderErrors))
-		} else {
-			output.WriteString(HandleRenderErrors(renderErrors))
-		}
+		recordRenderDiagnostics(requestID, route, renderErrors)
 	}
 
 	return RenderContent{
@@ -849,18 +843,10 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request) RenderC
 		Status:      status,
 		Headers:     headers,
 		Cookies:     cookies,
+		RequestID:   requestID,
+		ErrorCount:  len(renderErrors),
 	}
 
-}
-
-// ComponentErrorTemplate represents the structure for rendering errors
-type ComponentErrorTemplate struct {
-	Hash string
-	Type string
-	File string
-	Path string
-	Key  string
-	Err  string
 }
 
 // errorTemplate is the embedded Go template as a string
@@ -938,7 +924,10 @@ func FrontEndErrorRender(renderErrors []error) string {
 }
 
 func HandleRenderErrors(renderErrors []error) string {
-	errors := "\n"
+	if len(renderErrors) == 0 {
+		return ""
+	}
+	errors := ""
 	for e := range renderErrors {
 
 		componentError, ok := renderErrors[e].(shared.ComponentError)
@@ -956,8 +945,65 @@ func HandleRenderErrors(renderErrors []error) string {
 	return ""
 }
 
+func nextRenderRequestID() string {
+	sequence := atomic.AddInt64(&renderDiagnosticsSeq, 1)
+	return fmt.Sprintf("hb-%d", sequence)
+}
+
+func recordRenderDiagnostics(requestID string, route string, renderErrors []error) {
+	if len(renderErrors) == 0 {
+		return
+	}
+
+	diagnostics := RenderDiagnostics{
+		RequestID: requestID,
+		Route:     route,
+		CreatedAt: time.Now().UTC(),
+		Errors:    collectRenderDiagnostics(renderErrors),
+	}
+
+	renderDiagnosticsMutex.Lock()
+	renderDiagnostics[requestID] = diagnostics
+	renderDiagnosticsOrder = append(renderDiagnosticsOrder, requestID)
+	for len(renderDiagnosticsOrder) > maxRenderDiagnostics {
+		oldest := renderDiagnosticsOrder[0]
+		renderDiagnosticsOrder = renderDiagnosticsOrder[1:]
+		delete(renderDiagnostics, oldest)
+	}
+	renderDiagnosticsMutex.Unlock()
+
+	logging.GetLogger().Errorw("Render diagnostics recorded", "request_id", requestID, "route", route, "error_count", len(diagnostics.Errors))
+}
+
+func collectRenderDiagnostics(renderErrors []error) []ComponentErrorTemplate {
+	diagnostics := make([]ComponentErrorTemplate, 0, len(renderErrors))
+	for _, err := range renderErrors {
+		if componentError, ok := err.(shared.ComponentError); ok {
+			diagnostics = append(diagnostics, ComponentErrorTemplate{
+				Hash: componentError.Hash,
+				File: componentError.File,
+				Type: componentError.Type,
+				Path: componentError.Path,
+				Key:  componentError.Key,
+				Err:  componentError.Err,
+			})
+			continue
+		}
+
+		diagnostics = append(diagnostics, ComponentErrorTemplate{
+			File: "Unknown",
+			Type: "Unknown",
+			Path: "Unknown",
+			Key:  "Unknown",
+			Err:  fmt.Sprintf("%v", err),
+		})
+	}
+	return diagnostics
+}
+
 func ServeContent(w http.ResponseWriter, r *http.Request) {
 	hbConfig := getHyperBricksConfiguration()
+	requestID := nextRenderRequestID()
 
 	route := strings.Trim(r.URL.Path, "/")
 	if resolvedRoute, ok := resolveRoute(route, hbConfig.Server.Routing); ok {
@@ -967,10 +1013,9 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.GetLogger().Debugw("Received request for route", "route", route)
-
 	var htmlContent strings.Builder
 	if hbConfig.Mode == shared.LIVE_MODE {
-		cacheEntry := handleLiveMode(w, route, r)
+		cacheEntry := handleLiveMode(w, route, r, requestID)
 		htmlContent.WriteString(cacheEntry.Content)
 		applyResponseHeaders(cacheEntry.Headers, w)
 		applyResponseCookies(cacheEntry.Cookies, w)
@@ -983,9 +1028,11 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 		if status == 0 {
 			status = http.StatusOK
 		}
+		w.Header().Set(requestIDHeader, requestID)
+		w.Header().Set(renderErrorCountHeader, strconv.Itoa(cacheEntry.ErrorCount))
 		w.WriteHeader(status)
 	} else {
-		renderContent := handleDeveloperMode(w, route, r)
+		renderContent := handleDeveloperMode(w, route, r, requestID)
 		htmlContent.WriteString(renderContent.Content)
 		applyResponseHeaders(renderContent.Headers, w)
 		applyResponseCookies(renderContent.Cookies, w)
@@ -998,8 +1045,9 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 		if status == 0 {
 			status = http.StatusOK
 		}
+		w.Header().Set(requestIDHeader, requestID)
+		w.Header().Set(renderErrorCountHeader, strconv.Itoa(renderContent.ErrorCount))
 		w.WriteHeader(status)
-
 	}
 
 	if _, err := fmt.Fprint(w, htmlContent.String()); err != nil {
@@ -1010,20 +1058,20 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 }
 
 // RENDER WITHOUT CACHE
-func handleDeveloperMode(w http.ResponseWriter, route string, r *http.Request) RenderContent {
+func handleDeveloperMode(w http.ResponseWriter, route string, r *http.Request, requestID string) RenderContent {
 	logging.GetLogger().Debugw("Developer mode active. Rendering fresh content:", route)
-	return renderContent(w, route, r)
+	return renderContent(w, route, r, requestID)
 }
 
 // RENDER WITH CACHE
-func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheEntry {
+func handleLiveMode(w http.ResponseWriter, route string, r *http.Request, requestID string) CacheEntry {
 
 	hbConfig := getHyperBricksConfiguration()
 	cacheDuration := hbConfig.Live.CacheTime
 
 	if routeConfiguredNoCache(route) {
 		logging.GetLogger().Debugw("Skipping live cache for nocache route", "route", route)
-		renderContent := renderContent(w, route, r)
+		renderContent := renderContent(w, route, r, requestID)
 		now := time.Now()
 		return CacheEntry{
 			Content:     renderContent.Content,
@@ -1032,6 +1080,7 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheE
 			Status:      renderContent.Status,
 			Headers:     renderContent.Headers,
 			Cookies:     renderContent.Cookies,
+			ErrorCount:  renderContent.ErrorCount,
 		}
 	}
 
@@ -1063,7 +1112,7 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheE
 	expirationTime := now.Add(cacheDuration.Duration).Format("2006-01-02 15:04:05 (-07:00)")
 	renderTime := time.Now().Format("2006-01-02 15:04:05 (-07:00)")
 
-	renderContent := renderContent(w, route, r)
+	renderContent := renderContent(w, route, r, requestID)
 	if !renderContent.NoCache {
 		if cacheable && renderContent.Content != "" {
 			renderContent.Headers = applyLiveCacheMetadataHeaders(renderContent.Headers, renderTime, expirationTime)
@@ -1075,6 +1124,7 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheE
 				Status:      renderContent.Status,
 				Headers:     renderContent.Headers,
 				Cookies:     renderContent.Cookies,
+				ErrorCount:  renderContent.ErrorCount,
 			}
 			htmlCacheMutex.Unlock()
 			logging.GetLogger().Debugw("Updated cache for route", "route", route)
@@ -1087,5 +1137,6 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request) CacheE
 		Status:      renderContent.Status,
 		Headers:     renderContent.Headers,
 		Cookies:     renderContent.Cookies,
+		ErrorCount:  renderContent.ErrorCount,
 	}
 }
