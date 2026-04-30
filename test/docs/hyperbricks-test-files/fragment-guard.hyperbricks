@@ -1,0 +1,102 @@
+==== hyperbricks config {!{fragment}} ====
+fragment = <FRAGMENT>
+fragment {
+    route = protected-fragment
+    guard {
+        enabled = true
+        auth {
+            cookie = token
+        }
+        require {
+            authenticated = true
+            query {
+                project = true
+            }
+        }
+        authorize {
+            endpoint = https://example.com/authorize?project=$project
+            method = GET
+            headers {
+                Accept = application/json
+            }
+        }
+        on_unauthenticated {
+            redirect = /login
+            hx_redirect = /login
+            status = 401
+        }
+        on_forbidden {
+            redirect = /forbidden
+            hx_redirect = /forbidden
+            status = 403
+        }
+    }
+}
+==== explainer ====
+Optional pre-render route guard. When omitted or disabled, current FRAGMENT behavior remains unchanged
+==== expected json ====
+{
+  "ConfigType": "<FRAGMENT>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "protected-fragment",
+  "Section": "",
+  "Items": null,
+  "Enclose": "",
+  "Template": null,
+  "Static": "",
+  "Cache": "",
+  "NoCache": false,
+  "Index": 0,
+  "ContentType": "",
+  "Guard": {
+    "Enabled": true,
+    "Auth": {
+      "Cookie": "token",
+      "Header": "",
+      "Scheme": ""
+    },
+    "Require": {
+      "Authenticated": true,
+      "Query": {
+        "project": "true"
+      }
+    },
+    "Authorize": {
+      "Endpoint": "https://example.com/authorize?project=$project",
+      "Method": "GET",
+      "Headers": {
+        "Accept": "application/json"
+      },
+      "Body": ""
+    },
+    "OnUnauthenticated": {
+      "Redirect": "/login",
+      "HxRedirect": "/login",
+      "Status": 401
+    },
+    "OnForbidden": {
+      "Redirect": "/forbidden",
+      "HxRedirect": "/forbidden",
+      "Status": 403
+    }
+  }
+}
+==== expected output ====

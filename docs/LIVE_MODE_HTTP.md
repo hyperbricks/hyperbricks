@@ -60,7 +60,9 @@ That means the values in `package.hyperbricks` are the values the live server ac
 
 If you want live mode to skip cache headers and skip storing the response in the live cache, set `nocache = true` on the routed root object itself.
 
-That usually means the top-level `<HYPERMEDIA>` or `<FRAGMENT>` that owns the route.
+That means the top-level route owner that owns the response, such as `<HYPERMEDIA>`, `<FRAGMENT>`, or `<API_FRAGMENT_RENDER>`.
+
+Routes that use `guard { ... }` are also treated as non-cacheable request paths, because access decisions are request-specific. See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md).
 
 Setting `nocache` only inside a nested template or child component is not enough, because the live cache decision is made from the root route config.
 

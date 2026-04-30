@@ -10,39 +10,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type HyperMediaGuardConfig struct {
-	Enabled           bool                            `mapstructure:"enabled" description:"Enable route guarding before the page is rendered"`
-	Auth              HyperMediaGuardAuthConfig       `mapstructure:"auth" description:"Authentication token extraction settings"`
-	Require           HyperMediaGuardRequireConfig    `mapstructure:"require" description:"Additional route requirements"`
-	Authorize         *HyperMediaGuardAuthorizeConfig `mapstructure:"authorize" description:"Optional upstream authorization check performed before rendering"`
-	OnUnauthenticated HyperMediaGuardActionConfig     `mapstructure:"on_unauthenticated" description:"Response behavior when authentication is missing or invalid"`
-	OnForbidden       HyperMediaGuardActionConfig     `mapstructure:"on_forbidden" description:"Response behavior when authorization fails"`
-}
-
-type HyperMediaGuardAuthConfig struct {
-	Cookie string `mapstructure:"cookie" description:"Cookie name used to resolve the request token"`
-	Header string `mapstructure:"header" description:"Header name used to resolve the request token, defaults to Authorization"`
-	Scheme string `mapstructure:"scheme" description:"Optional header scheme, defaults to Bearer for Authorization headers"`
-}
-
-type HyperMediaGuardRequireConfig struct {
-	Authenticated bool                   `mapstructure:"authenticated" description:"Require an authenticated request before rendering"`
-	Query         map[string]interface{} `mapstructure:"query" description:"Required query keys, set each key to true to enforce presence"`
-}
-
-type HyperMediaGuardAuthorizeConfig struct {
-	Endpoint string            `mapstructure:"endpoint" description:"Optional authorization endpoint called before rendering"`
-	Method   string            `mapstructure:"method" description:"HTTP method for the authorization endpoint"`
-	Headers  map[string]string `mapstructure:"headers" description:"Optional headers sent to the authorization endpoint"`
-	Body     string            `mapstructure:"body" description:"Optional request body with $key placeholder interpolation from the incoming request"`
-}
-
-type HyperMediaGuardActionConfig struct {
-	Redirect   string `mapstructure:"redirect" description:"Full-page redirect target used for non-HTMX requests"`
-	HxRedirect string `mapstructure:"hx_redirect" description:"HTMX redirect target used for HX requests; defaults to redirect when omitted"`
-	Status     int    `mapstructure:"status" description:"Override HTTP status code for this denied response"`
-}
-
 // HyperMediaConfig represents configuration hypermedia.
 type HyperMediaConfig struct {
 	shared.Composite   `mapstructure:",squash"`
@@ -65,7 +32,7 @@ type HyperMediaConfig struct {
 	Head               map[string]interface{} `mapstructure:"head" description:"Configurations for the head section of the hypermedia" example:"{!{hypermedia-head.hyperbricks}}"`
 	Headers            map[string]string      `mapstructure:"headers" description:"HTTP response headers to include when serving this hypermedia" example:"{!{hypermedia-headers.hyperbricks}}"`
 	Cookies            []string               `mapstructure:"cookies" description:"Set-Cookie values to include when serving this hypermedia" example:"{!{hypermedia-cookies.hyperbricks}}"`
-	Guard              *HyperMediaGuardConfig `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA behavior remains unchanged" example:"{!{hypermedia-guard.hyperbricks}}"`
+	Guard              *RouteGuardConfig      `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA behavior remains unchanged" example:"{!{hypermedia-guard.hyperbricks}}"`
 	ContentType        string                 `mapstructure:"content_type" description:"content type header definition"`
 }
 

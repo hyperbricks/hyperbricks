@@ -45,6 +45,7 @@ type FragmentConfig struct {
 	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly deisable cache" example:"{!{fragment-nocache.hyperbricks}}"`
 	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
 	ContentType        string                 `mapstructure:"content_type" description:"content type header definition"`
+	Guard              *RouteGuardConfig      `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current FRAGMENT behavior remains unchanged"`
 }
 
 // FragmentConfigGetName returns the HyperBricks type associated with the FragmentConfig.
