@@ -3,12 +3,12 @@ api_fragment = <API_FRAGMENT_RENDER>
 api_fragment {
     endpoint = https://api.example.com/rpc/logout
     method = POST
-    route = auth-logout
-    inline = <<[<p>Logged out</p>]>>
-    setcookie = token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0
+    route = auth-logout-all
+    inline = <<[<p>Logged out everywhere</p>]>>
+    setcookies = [token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0, hb_composer_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0]
 }
 ==== explainer ====
-Legacy shorthand for one Set-Cookie response template
+Multiple Set-Cookie response templates
 ==== expected json ====
 {
   "ConfigType": "<API_FRAGMENT_RENDER>",
@@ -22,12 +22,16 @@ Legacy shorthand for one Set-Cookie response template
   "Headers": null,
   "Body": "",
   "Template": "",
-  "Inline": "<p>Logged out</p>",
+  "Inline": "<p>Logged out everywhere</p>",
   "Values": null,
   "Username": "",
   "Password": "",
   "Status": 0,
-  "SetCookie": "token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
+  "SetCookie": "",
+  "SetCookies": [
+    "token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
+    "hb_composer_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
+  ],
   "AllowedQueryKeys": null,
   "QueryParams": null,
   "JwtSecret": "",
@@ -49,11 +53,11 @@ Legacy shorthand for one Set-Cookie response template
   "MetaDocDescription": "",
   "HxResponseWriter": null,
   "Title": "",
-  "Route": "auth-logout",
+  "Route": "auth-logout-all",
   "Section": "",
   "Enclose": "",
   "NoCache": false,
   "Index": 0
 }
 ==== expected output ====
-<p>Logged out</p>
+<p>Logged out everywhere</p>

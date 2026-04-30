@@ -646,6 +646,76 @@ func TestServeContent_APIFragmentGuardAllowsAuthorizedRequest(t *testing.T) {
 	}
 }
 
+func TestServeContent_APIFragmentRenderSetCookieOnNoContentResponse(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer upstream.Close()
+
+	setTestRouteConfig("api-fragment-logout", map[string]interface{}{
+		"@type":     composite.ApiFragmentRenderConfigGetName(),
+		"route":     "api-fragment-logout",
+		"method":    "POST",
+		"endpoint":  upstream.URL,
+		"inline":    `logged-out`,
+		"setcookie": `token=; Path=/; HttpOnly; Max-Age=0`,
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/api-fragment-logout", nil)
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusOK {
+		t.Fatalf("expected served fragment response to remain 200, got %d", writer.Code)
+	}
+	if got := writer.Header().Values("Set-Cookie"); len(got) != 1 || got[0] != "token=; Path=/; HttpOnly; Max-Age=0" {
+		t.Fatalf("expected single logout cookie on 204 upstream response, got %v", got)
+	}
+}
+
+func TestServeContent_APIFragmentRenderSetCookiesAddsMultipleHeaders(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer upstream.Close()
+
+	setTestRouteConfig("api-fragment-logout-all", map[string]interface{}{
+		"@type":      composite.ApiFragmentRenderConfigGetName(),
+		"route":      "api-fragment-logout-all",
+		"method":     "POST",
+		"endpoint":   upstream.URL,
+		"inline":     `logged-out`,
+		"setcookie":  `token=; Path=/; HttpOnly; Max-Age=0`,
+		"setcookies": []interface{}{`hb_composer_session=; Path=/; HttpOnly; Max-Age=0`, `theme=light; Path=/; Max-Age=300`},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/api-fragment-logout-all", nil)
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusOK {
+		t.Fatalf("expected served fragment response to remain 200, got %d", writer.Code)
+	}
+	got := writer.Header().Values("Set-Cookie")
+	want := []string{
+		"token=; Path=/; HttpOnly; Max-Age=0",
+		"hb_composer_session=; Path=/; HttpOnly; Max-Age=0",
+		"theme=light; Path=/; Max-Age=300",
+	}
+	if len(got) != len(want) {
+		t.Fatalf("expected %d Set-Cookie headers, got %d: %v", len(want), len(got), got)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("expected Set-Cookie[%d] = %q, got %q", i, want[i], got[i])
+		}
+	}
+}
+
 func TestServeContent_HyperMediaGuardAuthorizesBeforeRender(t *testing.T) {
 	setupLiveModeServeContentTest(t)
 
