@@ -54,6 +54,60 @@ func setupLiveModeServeContentTest(t *testing.T) {
 	})
 }
 
+func setupDevelopmentModeServeContentTest(t *testing.T, frontendErrors bool) {
+	t.Helper()
+
+	shared.Init_configuration()
+	hbConfig := shared.GetHyperBricksConfiguration()
+
+	oldMode := hbConfig.Mode
+	oldFrontendErrors := hbConfig.Development.FrontendErrors
+	oldConfigs := configs
+	oldRM := rm
+
+	htmlCacheMutex.Lock()
+	oldHTMLCache := htmlCache
+	htmlCache = make(map[string]CacheEntry)
+	htmlCacheMutex.Unlock()
+
+	renderDiagnosticsMutex.Lock()
+	oldRenderDiagnostics := renderDiagnostics
+	oldRenderDiagnosticsOrder := renderDiagnosticsOrder
+	renderDiagnostics = make(map[string]RenderDiagnostics)
+	renderDiagnosticsOrder = nil
+	renderDiagnosticsMutex.Unlock()
+
+	configMutex.Lock()
+	configs = make(map[string]map[string]interface{})
+	configMutex.Unlock()
+
+	renderDiagnosticsSeq = 0
+
+	hbConfig.Mode = shared.DEVELOPMENT_MODE
+	hbConfig.Development.FrontendErrors = frontendErrors
+
+	initializeComponents()
+
+	t.Cleanup(func() {
+		hbConfig.Mode = oldMode
+		hbConfig.Development.FrontendErrors = oldFrontendErrors
+		rm = oldRM
+
+		configMutex.Lock()
+		configs = oldConfigs
+		configMutex.Unlock()
+
+		htmlCacheMutex.Lock()
+		htmlCache = oldHTMLCache
+		htmlCacheMutex.Unlock()
+
+		renderDiagnosticsMutex.Lock()
+		renderDiagnostics = oldRenderDiagnostics
+		renderDiagnosticsOrder = oldRenderDiagnosticsOrder
+		renderDiagnosticsMutex.Unlock()
+	})
+}
+
 func setTestRouteConfig(route string, config map[string]interface{}) {
 	configMutex.Lock()
 	defer configMutex.Unlock()
@@ -787,5 +841,76 @@ func TestServeContent_HyperMediaGuardAuthorizesBeforeRender(t *testing.T) {
 	}
 	if got := forbiddenWriter.Header().Get("Location"); got != "/forbidden" {
 		t.Fatalf("expected Location /forbidden, got %q", got)
+	}
+}
+
+func TestServeContent_DevelopmentLeavesBodyCleanWhenNoRenderErrors(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+
+	setTestRouteConfig("clean-dev", map[string]interface{}{
+		"@type": composite.HyperMediaConfigGetName(),
+		"route": "clean-dev",
+		"10": map[string]interface{}{
+			"@type": component.HTMLConfigGetName(),
+			"value": "<main>clean output</main>",
+		},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/clean-dev", nil)
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", writer.Code)
+	}
+	if got := writer.Body.String(); !strings.Contains(got, "<main>clean output</main>") {
+		t.Fatalf("expected clean rendered content in body, got %q", got)
+	}
+	if got := writer.Header().Get(renderErrorCountHeader); got != "0" {
+		t.Fatalf("expected render error count 0, got %q", got)
+	}
+	if got := writer.Header().Get(requestIDHeader); got == "" {
+		t.Fatalf("expected request id header to be set")
+	}
+}
+
+func TestServeContent_DevelopmentRecordsDiagnosticsSeparately(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+
+	setTestRouteConfig("missing-plugin", map[string]interface{}{
+		"@type":  component.PluginRenderGetName(),
+		"route":  "missing-plugin",
+		"plugin": "DoesNotExist@1.0.0",
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/missing-plugin", nil)
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", writer.Code)
+	}
+	requestID := writer.Header().Get(requestIDHeader)
+	if requestID == "" {
+		t.Fatalf("expected request id header to be set")
+	}
+	if got := writer.Header().Get(renderErrorCountHeader); got == "0" || got == "" {
+		t.Fatalf("expected non-zero render error count, got %q", got)
+	}
+	if strings.Contains(writer.Body.String(), "<!-- Error:") {
+		t.Fatalf("expected body not to contain appended render diagnostics, got %q", writer.Body.String())
+	}
+
+	renderDiagnosticsMutex.RLock()
+	diagnostics, ok := renderDiagnostics[requestID]
+	renderDiagnosticsMutex.RUnlock()
+	if !ok {
+		t.Fatalf("expected diagnostics to be recorded for request %q", requestID)
+	}
+	if diagnostics.Route != "missing-plugin" {
+		t.Fatalf("expected diagnostics route missing-plugin, got %q", diagnostics.Route)
+	}
+	if len(diagnostics.Errors) == 0 {
+		t.Fatalf("expected recorded diagnostics, got %d", len(diagnostics.Errors))
 	}
 }
