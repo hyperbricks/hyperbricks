@@ -93,6 +93,16 @@ func Random(args ...interface{}) interface{} {
 // Create a FuncMap with a custom function
 var FuncMap = template.FuncMap{
 	"random": Random,
+	"safe": func(value interface{}) template.HTML {
+		switch typed := value.(type) {
+		case template.HTML:
+			return typed
+		case string:
+			return template.HTML(typed)
+		default:
+			return template.HTML(fmt.Sprintf("%v", typed))
+		}
+	},
 	"valueOrEmpty": func(value interface{}) string {
 		if value == nil {
 			return ""
