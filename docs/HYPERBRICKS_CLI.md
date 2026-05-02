@@ -127,6 +127,69 @@ To see CLI options:
 hyperbricks start --help
 ```
 
+Preview gateway flags:
+
+```bash
+hyperbricks start -m hyperbricks-composer --port 8080 \
+  --preview-gateway \
+  --preview-domain preview.local \
+  --preview-resolver http://127.0.0.1:8080/runtime-bridge/resolve-preview
+```
+
+The preview gateway matches hosts under the configured preview domain before
+normal route rendering and proxies the original path/query to a runtime target
+returned by the resolver. It is intended for project/version preview origins
+such as `test-001--current.preview.local`.
+
+The resolver must be an internal trusted endpoint. It receives the original
+preview host/path and returns a loopback or private runtime target after doing
+its own access check. Example resolver request:
+
+```json
+{
+  "host": "test-001--current.preview.local",
+  "method": "GET",
+  "path": "/about",
+  "raw_query": "tab=preview"
+}
+```
+
+Example resolver response:
+
+```json
+{
+  "allowed": true,
+  "target": "http://127.0.0.1:18200",
+  "project": "test-001",
+  "preview": "current",
+  "cache_ttl_seconds": 5
+}
+```
+
+The same feature can be configured in `package.hyperbricks`:
+
+```hyperbricks
+hyperbricks {
+  server {
+    preview_gateway {
+      enabled = true
+      domain = preview.local
+      resolver = http://127.0.0.1:8080/runtime-bridge/resolve-preview
+    }
+  }
+}
+```
+
+CLI flags override config values. The gateway is disabled by default and startup
+fails if it is enabled without both a preview domain and resolver.
+
+For local development, make sure preview hosts resolve to the HyperBricks
+server. For example, add a wildcard DNS entry, use a local DNS resolver, or add
+explicit `/etc/hosts` entries such as:
+
+```text
+127.0.0.1 test-001--current.preview.local
+```
 
 ### 5. Render Static Output
 

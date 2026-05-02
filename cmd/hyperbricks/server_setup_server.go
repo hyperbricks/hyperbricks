@@ -41,6 +41,9 @@ func StopServer(ctx context.Context) error {
 // StartServer initializes and starts the HTTP server based on the selected mode.
 func StartServer(ctx context.Context) {
 	hbConfig := getHyperBricksConfiguration()
+	if err := validatePreviewGatewayConfig(hbConfig.Server.PreviewGateway); err != nil {
+		log.Fatal("Invalid preview gateway config:", err)
+	}
 
 	var listener net.Listener
 	var err error

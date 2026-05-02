@@ -153,16 +153,23 @@ type RoutingConfig struct {
 	Extensions []string `mapstructure:"extensions"`
 }
 
+type PreviewGatewayConfig struct {
+	Enabled  bool   `mapstructure:"enabled"`
+	Domain   string `mapstructure:"domain"`
+	Resolver string `mapstructure:"resolver"`
+}
+
 // ServerConfig with defaults.
 type ServerConfig struct {
-	Port              int           `mapstructure:"port"`
-	Beautify          bool          `mapstructure:"beautify"`
-	SelfClosingTags   bool          `mapstructure:"self_closing_tags"`
-	ReadTimeout       time.Duration `mapstructure:"read_timeout"`
-	WriteTimeout      time.Duration `mapstructure:"write_timeout"`
-	IdleTimeout       time.Duration `mapstructure:"idle_timeout"`
-	KeepAlivesEnabled bool          `mapstructure:"keep_alives_enabled"`
-	Routing           RoutingConfig `mapstructure:"routing"`
+	Port              int                  `mapstructure:"port"`
+	Beautify          bool                 `mapstructure:"beautify"`
+	SelfClosingTags   bool                 `mapstructure:"self_closing_tags"`
+	ReadTimeout       time.Duration        `mapstructure:"read_timeout"`
+	WriteTimeout      time.Duration        `mapstructure:"write_timeout"`
+	IdleTimeout       time.Duration        `mapstructure:"idle_timeout"`
+	KeepAlivesEnabled bool                 `mapstructure:"keep_alives_enabled"`
+	Routing           RoutingConfig        `mapstructure:"routing"`
+	PreviewGateway    PreviewGatewayConfig `mapstructure:"preview_gateway"`
 }
 
 type RateLimitConfig struct {
@@ -335,6 +342,15 @@ func loadHyperBricksConfiguration() *Config {
 	}
 	if int(commands.Port) != 8080 {
 		config.Server.Port = int(commands.Port)
+	}
+	if commands.StartPreviewGateway {
+		config.Server.PreviewGateway.Enabled = true
+	}
+	if strings.TrimSpace(commands.StartPreviewDomain) != "" {
+		config.Server.PreviewGateway.Domain = strings.TrimSpace(commands.StartPreviewDomain)
+	}
+	if strings.TrimSpace(commands.StartPreviewResolver) != "" {
+		config.Server.PreviewGateway.Resolver = strings.TrimSpace(commands.StartPreviewResolver)
 	}
 	if commands.Production || envTrue("HB_DEPLOY_PRODUCTION") || envTrue("HB_PRODUCTION") {
 		config.Mode = LIVE_MODE
