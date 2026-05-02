@@ -15,17 +15,20 @@ type Config struct {
 }
 
 var (
-	StartMode         bool
-	StartModule       string
-	StartDeploy       bool
-	StartDeployDir    string
-	StartBuildID      string
-	StartDeployRemote bool
-	StartDeployLocal  bool
-	StartDeployInit   string
-	Port              int32
-	Production        bool
-	Debug             bool
+	StartMode            bool
+	StartModule          string
+	StartDeploy          bool
+	StartDeployDir       string
+	StartBuildID         string
+	StartDeployRemote    bool
+	StartDeployLocal     bool
+	StartDeployInit      string
+	StartPreviewGateway  bool
+	StartPreviewDomain   string
+	StartPreviewResolver string
+	Port                 int32
+	Production           bool
+	Debug                bool
 )
 
 func GetModule() string {
@@ -111,6 +114,9 @@ func NewStartCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&StartDeployRemote, "deploy-remote", false, "Start deploy API daemon (remote)")
 	cmd.Flags().BoolVar(&StartDeployLocal, "deploy-local", false, "Start local deploy dashboard")
 	cmd.Flags().StringVar(&StartDeployInit, "deploy-init-config", "", "Create a default deploy.hyperbricks (local or remote)")
+	cmd.Flags().BoolVar(&StartPreviewGateway, "preview-gateway", false, "Enable host-based preview gateway before normal route rendering")
+	cmd.Flags().StringVar(&StartPreviewDomain, "preview-domain", "", "Preview host suffix to match, for example preview.local")
+	cmd.Flags().StringVar(&StartPreviewResolver, "preview-resolver", "", "Resolver endpoint used by the preview gateway")
 	cmd.Flags().Int32VarP(&Port, "port", "p", 8080, "port")
 	cmd.Flags().BoolVarP(&Production, "production", "P", false, "set production mode")
 	cmd.Flags().BoolVarP(&Debug, "debug", "d", false, "debug")

@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -17,7 +18,9 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
@@ -46,6 +49,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 func Test_All_Dedicated_Tests(t *testing.T) {
+	startDedicatedAPIFixtures(t)
 
 	// Initialize shared configuration settings.
 	shared.Init_configuration()
@@ -229,6 +233,7 @@ func Test_All_Dedicated_Tests(t *testing.T) {
 					fmt.Println("Error:", err)
 					return
 				}
+				parsed.HyperbricksConfig = normalizeDedicatedFixtureURLs(parsed.HyperbricksConfig)
 
 				//fmt.Println("Hyperbricks Config:")
 				//fmt.Println(parsed.HyperbricksConfig)
@@ -345,6 +350,232 @@ func Test_All_Dedicated_Tests(t *testing.T) {
 
 func HyperBrickInitialisation() {
 
+}
+
+func normalizeDedicatedFixtureURLs(config string) string {
+	replacer := strings.NewReplacer(
+		"http://localhost:8090", "http://127.0.0.1:8090",
+		"http://localhost:3000", "http://127.0.0.1:3000",
+	)
+	return replacer.Replace(config)
+}
+
+const dedicatedJWTSecret = "a-string-secret-at-least-256-bits-long"
+
+func startDedicatedAPIFixtures(t *testing.T) {
+	t.Helper()
+
+	startDedicatedServer(t, ":8090", dedicatedEchoMux())
+	startDedicatedServer(t, ":3000", dedicatedPostgRESTMux())
+}
+
+func startDedicatedServer(t *testing.T, address string, handler http.Handler) {
+	t.Helper()
+
+	listener, err := net.Listen("tcp", address)
+	if err != nil {
+		if dedicatedFixtureAvailable(address) {
+			t.Logf("using existing dedicated fixture server on %s", address)
+			return
+		}
+		t.Fatalf("failed to start dedicated fixture server on %s: %v", address, err)
+	}
+
+	server := &http.Server{
+		Handler:      handler,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
+	}
+
+	go func() {
+		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
+			t.Errorf("dedicated fixture server on %s failed: %v", address, err)
+		}
+	}()
+
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		if err := server.Shutdown(ctx); err != nil {
+			t.Errorf("failed to shut down dedicated fixture server on %s: %v", address, err)
+		}
+	})
+}
+
+func dedicatedFixtureAvailable(address string) bool {
+	baseURL := dedicatedFixtureBaseURL(address)
+	if baseURL == "" {
+		return false
+	}
+
+	switch address {
+	case ":8090":
+		resp, err := http.Get(baseURL + "/echo/query?code=fixture")
+		if err != nil {
+			return false
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return false
+		}
+		var payload struct {
+			QueryParams map[string]interface{} `json:"queryParams"`
+		}
+		if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+			return false
+		}
+		return payload.QueryParams["code"] == "fixture"
+	case ":3000":
+		req, err := http.NewRequest(http.MethodGet, baseURL+"/tasks", nil)
+		if err != nil {
+			return false
+		}
+		req.Header.Set("Authorization", "Bearer dedicated-fixture-probe")
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return false
+		}
+		defer resp.Body.Close()
+		return resp.StatusCode < http.StatusInternalServerError
+	default:
+		return false
+	}
+}
+
+func dedicatedFixtureBaseURL(address string) string {
+	if strings.HasPrefix(address, ":") {
+		return "http://127.0.0.1" + address
+	}
+	host, port, err := net.SplitHostPort(address)
+	if err != nil {
+		return ""
+	}
+	if host == "" || host == "::" || host == "0.0.0.0" {
+		host = "127.0.0.1"
+	}
+	return "http://" + net.JoinHostPort(host, port)
+}
+
+func dedicatedEchoMux() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/validate", dedicatedValidateToken)
+	mux.HandleFunc("/validate/body", dedicatedValidateBody)
+	mux.HandleFunc("/echo/query", dedicatedEchoQuery)
+	mux.HandleFunc("/echo/data", dedicatedEchoData)
+	mux.HandleFunc("/echo/token/validate", dedicatedEchoTokenValidation)
+	return mux
+}
+
+func dedicatedPostgRESTMux() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/rpc/create_user", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+	mux.HandleFunc("/rpc/login_user", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`"dedicated-test-token"`))
+	})
+	mux.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.Method {
+		case http.MethodPost:
+			w.WriteHeader(http.StatusCreated)
+			_, _ = w.Write([]byte(`{"id":1,"title":"Dit is een test"}`))
+		case http.MethodGet:
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`[{"id":1,"title":"Dit is een test"}]`))
+		default:
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	return mux
+}
+
+func dedicatedValidateToken(w http.ResponseWriter, r *http.Request) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader != "Bearer 12345abcdef" {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"message":"Token is valid"}`))
+}
+
+func dedicatedValidateBody(w http.ResponseWriter, r *http.Request) {
+	var bodyData map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&bodyData); err != nil {
+		bodyData = map[string]interface{}{}
+	}
+	if bodyData["password"] != "mysupersecretpassword" {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"message":"Token is not valid"}`))
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"message":"Token is valid"}`))
+}
+
+func dedicatedEchoQuery(w http.ResponseWriter, r *http.Request) {
+	paramsMap := make(map[string]interface{})
+	for key, values := range r.URL.Query() {
+		if len(values) == 1 {
+			paramsMap[key] = values[0]
+		} else {
+			paramsMap[key] = values
+		}
+	}
+	response := map[string]interface{}{
+		"queryParams": paramsMap,
+		"valid":       len(paramsMap) > 0,
+		"message":     "",
+	}
+	if len(paramsMap) == 0 {
+		response["message"] = "No query parameters provided"
+	}
+	writeDedicatedJSON(w, http.StatusOK, response)
+}
+
+func dedicatedEchoData(w http.ResponseWriter, r *http.Request) {
+	var bodyData map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&bodyData); err != nil {
+		http.Error(w, `{"message":"Invalid JSON payload"}`, http.StatusBadRequest)
+		return
+	}
+	writeDedicatedJSON(w, http.StatusOK, bodyData)
+}
+
+func dedicatedEchoTokenValidation(w http.ResponseWriter, r *http.Request) {
+	authHeader := r.Header.Get("Authorization")
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(dedicatedJWTSecret), nil
+	})
+	writeDedicatedJSON(w, http.StatusOK, map[string]interface{}{
+		"token":  tokenString,
+		"valid":  err == nil && token.Valid,
+		"claims": claims,
+		"error":  errorString(err),
+	})
+}
+
+func writeDedicatedJSON(w http.ResponseWriter, status int, payload interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(payload)
+}
+
+func errorString(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
 }
 
 // stripAllWhitespace removes all whitespace characters from the input string.
