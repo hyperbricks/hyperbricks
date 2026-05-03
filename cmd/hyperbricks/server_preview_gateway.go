@@ -270,9 +270,14 @@ func proxyPreviewRequest(w http.ResponseWriter, r *http.Request, target *url.URL
 	originalDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
-		req.URL.Path = singleJoiningSlash(target.Path, r.URL.Path)
+		if strings.TrimSpace(target.RawQuery) != "" {
+			req.URL.Path = target.Path
+			req.URL.RawQuery = target.RawQuery
+		} else {
+			req.URL.Path = singleJoiningSlash(target.Path, r.URL.Path)
+			req.URL.RawQuery = r.URL.RawQuery
+		}
 		req.URL.RawPath = ""
-		req.URL.RawQuery = r.URL.RawQuery
 		req.Host = target.Host
 		req.Header.Set("X-Forwarded-Host", originalHost)
 		req.Header.Set("X-Hyperbricks-Preview-Host", originalHost)
