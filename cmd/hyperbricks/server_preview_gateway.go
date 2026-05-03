@@ -27,13 +27,14 @@ type previewGatewayResolveRequest struct {
 }
 
 type previewGatewayResolveResponse struct {
-	Allowed         bool   `json:"allowed"`
-	Target          string `json:"target"`
-	Project         string `json:"project,omitempty"`
-	Preview         string `json:"preview,omitempty"`
-	CacheTTLSeconds int    `json:"cache_ttl_seconds,omitempty"`
-	Status          int    `json:"status,omitempty"`
-	Message         string `json:"message,omitempty"`
+	Allowed         bool     `json:"allowed"`
+	Target          string   `json:"target"`
+	Project         string   `json:"project,omitempty"`
+	Preview         string   `json:"preview,omitempty"`
+	CacheTTLSeconds int      `json:"cache_ttl_seconds,omitempty"`
+	Status          int      `json:"status,omitempty"`
+	Message         string   `json:"message,omitempty"`
+	SetCookies      []string `json:"set_cookies,omitempty"`
 }
 
 func handlePreviewGateway(w http.ResponseWriter, r *http.Request) bool {
@@ -63,6 +64,18 @@ func handlePreviewGateway(w http.ResponseWriter, r *http.Request) bool {
 		return true
 	}
 
+	for _, cookie := range resolution.SetCookies {
+		cookie = strings.TrimSpace(cookie)
+		if cookie != "" {
+			w.Header().Add("Set-Cookie", cookie)
+		}
+	}
+	if len(resolution.SetCookies) > 0 && r.URL.Query().Has("preview_token") {
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, previewGatewayCleanURL(r), http.StatusFound)
+		return true
+	}
+
 	target, err := parseAndValidatePreviewTarget(resolution.Target)
 	if err != nil {
 		logging.GetLogger().Warnw("preview gateway rejected target", "host", r.Host, "target", resolution.Target, "error", err)
@@ -72,6 +85,20 @@ func handlePreviewGateway(w http.ResponseWriter, r *http.Request) bool {
 
 	proxyPreviewRequest(w, r, target)
 	return true
+}
+
+func previewGatewayCleanURL(r *http.Request) string {
+	if r == nil || r.URL == nil {
+		return "/"
+	}
+	cleanURL := *r.URL
+	query := cleanURL.Query()
+	query.Del("preview_token")
+	cleanURL.RawQuery = query.Encode()
+	if cleanURL.Path == "" {
+		cleanURL.Path = "/"
+	}
+	return cleanURL.RequestURI()
 }
 
 func validatePreviewGatewayConfig(config shared.PreviewGatewayConfig) error {
@@ -110,7 +137,12 @@ func previewGatewayMatches(config shared.PreviewGatewayConfig, r *http.Request) 
 	if host == "" {
 		return false
 	}
-	return strings.EqualFold(host, domain) || strings.HasSuffix(strings.ToLower(host), "."+strings.ToLower(domain))
+	host = strings.ToLower(host)
+	if strings.EqualFold(host, domain) || !strings.HasSuffix(host, "."+strings.ToLower(domain)) {
+		return false
+	}
+	label := strings.TrimSuffix(host, "."+strings.ToLower(domain))
+	return strings.Contains(label, "--")
 }
 
 func normalizePreviewDomain(domain string) string {

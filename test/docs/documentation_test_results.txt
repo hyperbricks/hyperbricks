@@ -1,6 +1,6 @@
 === RUN   Test_TestAndDocumentationRender
 loaded 
-&{live {info ./logs/hyperbricks.log} {0 false true 5s 10s 20s true {true [index.html index.htm] [html htm]}} {5 10} {false false false false} {} {10m0s} { {true 127.0.0.1 9090 deploy 8080 true } {127.0.0.1 9091 modules deploy} { map[]}} map[hyperbricks:modules/default/hyperbricks plugins:bin/plugins render:modules/default/rendered resources:modules/default/resources static:modules/default/static templates:modules/default/templates] {[] map[]} {10s}}
+&{live {info ./logs/hyperbricks.log} {0 false true 5s 10s 20s true {true [index.html index.htm] [html htm]} {false  }} {5 10} {false false false false} {} {10m0s} { {true 127.0.0.1 9090 deploy 8080 true } {127.0.0.1 9091 modules deploy} { map[]}} map[hyperbricks:modules/default/hyperbricks plugins:bin/plugins render:modules/default/rendered resources:modules/default/resources static:modules/default/static templates:modules/default/templates] {[] map[]} {10s}}
 
 ======= Processing type: Fragment =======
 === RUN   Test_TestAndDocumentationRender/fragment-response
@@ -34,34 +34,34 @@ Embedded Field: HxResponse (mapped as: response)
 
 ======= Processing type: ApiFragmentRender =======
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-endpoint
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:02 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-method
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:02 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-headers
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:02 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-body
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:02 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-template
-2026/04/30 11:08:34 [error parsing template: template: hyperbricks-generic-template:1: function "main_section" not defined]
+2026/05/03 01:24:03 [error parsing template: template: hyperbricks-generic-template:1: function "main_section" not defined]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-inline
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-values
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-username
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-password
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-setcookie
-2026/04/30 11:08:34 [failed to fetch data from API: error making HTTP request: Post "https://api.example.com/rpc/logout": dial tcp: lookup api.example.com: no such host]
+2026/05/03 01:24:03 [failed to fetch data from API: error making HTTP request: Post "https://api.example.com/rpc/logout": dial tcp: lookup api.example.com: no such host]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-setcookies
-2026/04/30 11:08:34 [failed to fetch data from API: error making HTTP request: Post "https://api.example.com/rpc/logout": dial tcp: lookup api.example.com: no such host]
+2026/05/03 01:24:03 [failed to fetch data from API: error making HTTP request: Post "https://api.example.com/rpc/logout": dial tcp: lookup api.example.com: no such host]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-querykeys
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-queryparams
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-jwtsecret
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-jwtclaims
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-debug
 Updated body map string: 
 HTTP Request:
@@ -73,11 +73,11 @@ Accept-Encoding: gzip
 
 HTTP Response:
 HTTP/2.0 404 Not Found
-Age: 11618
+Age: 12614
 Cf-Cache-Status: HIT
-Cf-Ray: 9f456714fb950a54-AMS
+Cf-Ray: 9f5ac6f7dfba66d6-AMS
 Content-Type: text/html
-Date: Thu, 30 Apr 2026 09:08:34 GMT
+Date: Sat, 02 May 2026 23:24:03 GMT
 Server: cloudflare
 
 
@@ -88,7 +88,7 @@ HyperBricks Response:
   "Body": {},
   "Flushed": false
 }
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-debugpanel
 Updated body map string: 
 HTTP Request:
@@ -100,11 +100,11 @@ Accept-Encoding: gzip
 
 HTTP Response:
 HTTP/2.0 404 Not Found
-Age: 11618
+Age: 12614
 Cf-Cache-Status: HIT
-Cf-Ray: 9f4567151ba50a54-AMS
+Cf-Ray: 9f5ac6f7ffca66d6-AMS
 Content-Type: text/html
-Date: Thu, 30 Apr 2026 09:08:34 GMT
+Date: Sat, 02 May 2026 23:24:03 GMT
 Server: cloudflare
 
 
@@ -115,22 +115,22 @@ HyperBricks Response:
   "Body": {},
   "Flushed": false
 }
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-response
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-@doc
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-title
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-route
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-section
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-enclose
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-index
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-guard
-2026/04/30 11:08:34 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 
 
 ======= Processing type: Hypermedia =======
@@ -169,9 +169,9 @@ HyperBricks Response:
 === RUN   Test_TestAndDocumentationRender/template-template
 === RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-2026/04/30 11:08:34 [.template or a .inline is required]
+2026/05/03 01:24:03 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-2026/04/30 11:08:34 [.template or a .inline is required]
+2026/05/03 01:24:03 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
 
@@ -249,19 +249,19 @@ HyperBricks Response:
 
 ======= Processing type: Plugin =======
 === RUN   Test_TestAndDocumentationRender/plugin-attributes
-2026/04/30 11:08:35 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
+2026/05/03 01:24:03 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
 ]
 === RUN   Test_TestAndDocumentationRender/plugin-enclose
-2026/04/30 11:08:35 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
+2026/05/03 01:24:03 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
 ]
 === RUN   Test_TestAndDocumentationRender/plugin-plugin
-2026/04/30 11:08:35 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
+2026/05/03 01:24:03 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
 ]
 === RUN   Test_TestAndDocumentationRender/plugin-classes
-2026/04/30 11:08:35 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
+2026/05/03 01:24:03 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
 ]
 === RUN   Test_TestAndDocumentationRender/plugin-data
-2026/04/30 11:08:35 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
+2026/05/03 01:24:03 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
 ]
 
 
@@ -283,32 +283,32 @@ HyperBricks Response:
 
 ======= Processing type: Api_Render =======
 === RUN   Test_TestAndDocumentationRender/api_render-enclose
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-endpoint
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-method
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-headers
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-body
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-template
-2026/04/30 11:08:35 [error parsing template: template: hyperbricks-generic-template:1: function "main_section" not defined]
+2026/05/03 01:24:04 [error parsing template: template: hyperbricks-generic-template:1: function "main_section" not defined]
 === RUN   Test_TestAndDocumentationRender/api_render-inline
 === RUN   Test_TestAndDocumentationRender/api_render-values
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-username
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-password
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-querykeys
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-queryparams
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-jwtsecret
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-jwtclaims
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-debug
 Updated body map string: 
 HTTP Request:
@@ -320,15 +320,15 @@ Accept-Encoding: gzip
 
 HTTP Response:
 HTTP/2.0 404 Not Found
-Age: 11619
+Age: 12615
 Cf-Cache-Status: HIT
-Cf-Ray: 9f45671b4ec40a54-AMS
+Cf-Ray: 9f5ac6fdfb3e66d6-AMS
 Content-Type: text/html
-Date: Thu, 30 Apr 2026 09:08:35 GMT
+Date: Sat, 02 May 2026 23:24:04 GMT
 Server: cloudflare
 
 
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-debugpanel
 Updated body map string: 
 HTTP Request:
@@ -340,22 +340,22 @@ Accept-Encoding: gzip
 
 HTTP Response:
 HTTP/2.0 404 Not Found
-Age: 11619
+Age: 12615
 Cf-Cache-Status: HIT
-Cf-Ray: 9f45671b7ed20a54-AMS
+Cf-Ray: 9f5ac6fe1b4a66d6-AMS
 Content-Type: text/html
-Date: Thu, 30 Apr 2026 09:08:35 GMT
+Date: Sat, 02 May 2026 23:24:04 GMT
 Server: cloudflare
 
 
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/api_render-@doc
-2026/04/30 11:08:35 [failed to load template file '': open : no such file or directory]
-2026/04/30 11:08:35 Version: v1.0.1-beta
-2026/04/30 11:08:35 Build Time: 2026-04-30T09:08:33Z
-2026/04/30 11:08:35 Static HTML file generated at ../../docs/REFERENCE.md
-2026/04/30 11:08:35 Static HTML file generated at ../../README.md
---- PASS: Test_TestAndDocumentationRender (1.51s)
+2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
+2026/05/03 01:24:04 Version: v1.0.2-beta
+2026/05/03 01:24:04 Build Time: 2026-05-02T23:24:02Z
+2026/05/03 01:24:04 Static HTML file generated at ../../docs/REFERENCE.md
+2026/05/03 01:24:04 Static HTML file generated at ../../README.md
+--- PASS: Test_TestAndDocumentationRender (1.40s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
     --- PASS: Test_TestAndDocumentationRender/fragment-beautify (0.00s)
@@ -381,8 +381,8 @@ Server: cloudflare
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_settle (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-endpoint (0.08s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-method (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-endpoint (0.05s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-method (0.01s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-headers (0.02s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-body (0.02s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-template (0.02s)
@@ -390,7 +390,7 @@ Server: cloudflare
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-values (0.02s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-username (0.02s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-password (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-setcookie (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-setcookie (0.01s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-setcookies (0.00s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-querykeys (0.02s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-queryparams (0.02s)
@@ -521,4 +521,4 @@ Server: cloudflare
     --- PASS: Test_TestAndDocumentationRender/api_render-debugpanel (0.02s)
     --- PASS: Test_TestAndDocumentationRender/api_render-@doc (0.02s)
 PASS
-ok  	command-line-arguments	1.864s
+ok  	command-line-arguments	1.646s
