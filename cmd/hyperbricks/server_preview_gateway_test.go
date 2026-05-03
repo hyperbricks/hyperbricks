@@ -37,6 +37,11 @@ func TestPreviewGatewayMatchesPreviewHost(t *testing.T) {
 	if previewGatewayMatches(config, req) {
 		t.Fatal("expected non-preview host to miss")
 	}
+
+	req = httptest.NewRequest(http.MethodGet, "http://composer.preview.local/about", nil)
+	if previewGatewayMatches(config, req) {
+		t.Fatal("expected non-preview app host below preview domain to miss")
+	}
 }
 
 func TestHandlePreviewGatewayProxiesOriginalPathAndQuery(t *testing.T) {
@@ -134,6 +139,42 @@ func TestHandlePreviewGatewayDeniedResolverResponse(t *testing.T) {
 	}
 	if !strings.Contains(recorder.Body.String(), "forbidden") {
 		t.Fatalf("body = %q, want forbidden message", recorder.Body.String())
+	}
+}
+
+func TestHandlePreviewGatewaySetsCookieAndRedirectsTokenURL(t *testing.T) {
+	resolver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode(previewGatewayResolveResponse{
+			Allowed: true,
+			Target:  "http://127.0.0.1:19191",
+			SetCookies: []string{
+				"token=session-token; Domain=.preview.local; Path=/; HttpOnly; SameSite=Lax",
+			},
+		})
+	}))
+	defer resolver.Close()
+
+	withPreviewGatewayConfig(t, shared.PreviewGatewayConfig{
+		Enabled:  true,
+		Domain:   "preview.local",
+		Resolver: resolver.URL,
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "http://test-001--current.preview.local/about?preview_token=abc&x=1", nil)
+	req.Host = "test-001--current.preview.local"
+	recorder := httptest.NewRecorder()
+
+	if !handlePreviewGateway(recorder, req) {
+		t.Fatal("expected preview gateway to handle request")
+	}
+	if recorder.Code != http.StatusFound {
+		t.Fatalf("status = %d, want 302", recorder.Code)
+	}
+	if location := recorder.Header().Get("Location"); location != "/about?x=1" {
+		t.Fatalf("Location = %q, want clean URL", location)
+	}
+	if cookies := recorder.Header().Values("Set-Cookie"); len(cookies) != 1 || !strings.Contains(cookies[0], "Domain=.preview.local") {
+		t.Fatalf("Set-Cookie = %v", cookies)
 	}
 }
 
