@@ -40,6 +40,6 @@ JavaScript files to include
   "Cookies": null
 }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><script src="main.js"></script>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><script src="main.js"></script>
 <script src="helpers.js"></script>
 </head><body></body></html> 

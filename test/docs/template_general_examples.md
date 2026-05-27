@@ -211,7 +211,7 @@ html result:
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <title>Structured Page</title>
 </head>
 

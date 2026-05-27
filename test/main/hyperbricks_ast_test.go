@@ -271,8 +271,8 @@ This is a multiline text.]>>
         1 = <TEXT>
         1.value = custom text /* Inline multi-line comment */
        
-        6 < page.10
-        7 < content
+        6 <<< page.10
+        7 <<< content
     }
     someArray = [a, b, c, d]
     `
@@ -323,6 +323,55 @@ This is a multiline text.]>>
 	// Compare the parsed config with the expected config using reflect.DeepEqual
 	if !reflect.DeepEqual(parsedConfig, expected) {
 		t.Errorf("Test failed!\nExpected:\n%#v\nGot:\n%#v", expected, parsedConfig)
+	}
+}
+
+func TestParseHyperScriptReferenceOperator(t *testing.T) {
+	input := `
+    source = <TEXT>
+    source.value = Base text
+
+    modern <<< source
+
+    literal = <TEXT>
+    literal.value = <<[target <<< source
+target < source]>>
+    `
+	parser.KnownTypes["<TEXT>"] = true
+
+	parsedConfig := parser.ParseHyperScript(parser.StripComments(input))
+
+	expectedSource := map[string]interface{}{
+		"@type": "<TEXT>",
+		"value": "Base text",
+	}
+	expected := map[string]interface{}{
+		"source": expectedSource,
+		"modern": expectedSource,
+		"literal": map[string]interface{}{
+			"@type": "<TEXT>",
+			"value": "target <<< source\ntarget < source",
+		},
+	}
+
+	if !reflect.DeepEqual(parsedConfig, expected) {
+		t.Errorf("Test failed!\nExpected:\n%#v\nGot:\n%#v", expected, parsedConfig)
+	}
+}
+
+func TestParseHyperScriptRejectsLegacyReferenceOperator(t *testing.T) {
+	input := `
+    source = <TEXT>
+    source.value = Base text
+
+    legacy < source
+    `
+	parser.KnownTypes["<TEXT>"] = true
+
+	parsedConfig := parser.ParseHyperScript(parser.StripComments(input))
+
+	if _, ok := parsedConfig["legacy"]; ok {
+		t.Fatalf("legacy reference operator should not parse: %#v", parsedConfig)
 	}
 }
 

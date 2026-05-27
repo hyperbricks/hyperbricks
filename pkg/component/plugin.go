@@ -7,7 +7,6 @@ import (
 	"plugin"
 	"strings"
 
-	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
@@ -21,9 +20,9 @@ var _ shared.ComponentRenderer = (*PluginRenderer)(nil)
 
 type PluginConfig struct {
 	shared.Component `mapstructure:",squash"`
-	PluginName       string                 `mapstructure:"plugin"  description:"Name of the plugin for lookup"`
-	Classes          []string               `mapstructure:"classes" description:"Optional CSS classes for the link" example:"{!{plugin-classes.hyperbricks}}"`
-	Data             map[string]interface{} `mapstructure:"data"`
+	PluginName       string                 `mapstructure:"plugin"  description:"Name of the plugin to render"`
+	Classes          []string               `mapstructure:"classes" description:"Optional CSS classes for the plugin output wrapper" example:"{!{plugin-classes.hyperbricks}}"`
+	Data             map[string]interface{} `mapstructure:"data" description:"Plugin-specific data passed to the renderer"`
 }
 
 func PluginRenderGetName() string {
@@ -164,7 +163,7 @@ func (r *PluginRenderer) renderAndWrap(pluginRenderer shared.PluginRenderer, con
 	var builder strings.Builder
 	var handledResponse *shared.HandledResponse
 
-	if ctx == nil && commands.RenderStatic {
+	if ctx == nil {
 		ctx = context.Background()
 	}
 	renderedValue, renderErrs := pluginRenderer.Render(instance, ctx)

@@ -13,7 +13,7 @@ local_json_test {
     debug = false
 }
 ==== explainer ====
-The enclosing HTML element for the header divided by |
+Wrap rendered output using prefix|suffix syntax
 ==== expected json ====
 {
   "ConfigType": "<JSON_RENDER>",

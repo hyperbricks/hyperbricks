@@ -88,11 +88,13 @@ func Test_Struct_Link_Validation(t *testing.T) {
 
 	// returns nil or ValidationErrors ( []FieldError )
 	errors := shared.Validate(apiConfig)
-
-	for _, err := range errors {
-		e := err.(shared.ComponentError)
-		fmt.Println(e.Err)
+	if len(errors) != 2 {
+		t.Fatalf("expected 2 validation errors, got %d: %v", len(errors), errors)
 	}
+
+	messages := componentErrorMessages(t, errors)
+	assertContainsValidationMessage(t, messages, "Endpoint: is required")
+	assertContainsValidationMessage(t, messages, "Method: is required")
 
 }
 
@@ -136,13 +138,38 @@ func Test_Struct_User_Validation(t *testing.T) {
 
 	// returns nil or ValidationErrors ( []FieldError )
 	errors := shared.Validate(user)
-	if errors != nil {
-		for _, err := range errors {
-			e := err.(shared.ComponentError)
-			fmt.Println(e.Err)
-		}
+	if len(errors) != 1 {
+		t.Fatalf("expected 1 validation error, got %d: %v", len(errors), errors)
 	}
 
+	messages := componentErrorMessages(t, errors)
+	assertContainsValidationMessage(t, messages, "City: is required")
+
+}
+
+func componentErrorMessages(t *testing.T, errors []error) []string {
+	t.Helper()
+
+	messages := make([]string, 0, len(errors))
+	for _, err := range errors {
+		componentErr, ok := err.(shared.ComponentError)
+		if !ok {
+			t.Fatalf("expected shared.ComponentError, got %T: %v", err, err)
+		}
+		messages = append(messages, strings.TrimSpace(componentErr.Err))
+	}
+	return messages
+}
+
+func assertContainsValidationMessage(t *testing.T, messages []string, want string) {
+	t.Helper()
+
+	for _, message := range messages {
+		if message == want {
+			return
+		}
+	}
+	t.Fatalf("expected validation message %q in %v", want, messages)
 }
 
 func Test_AnotherMapstructureEmbedding(t *testing.T) {
@@ -462,7 +489,7 @@ func Test_BasicHyperMediaRenderChain(t *testing.T) {
 
 	expect := `<!DOCTYPE html><html><head><script>
         console.log("Hello World")
-        </script><meta name="generator" content="hyperbricks cms"><title>test title</title>
+        </script><meta name="generator" content="hyperbricks runtime"><title>test title</title>
         </head><body><a href="#LINK_10">LINK_10</a><a href="#LINK_20_10">LINK_20_10</a><!-- begin raw value -->no_type<!-- end raw value --><a href="#LINK_30">LINK_30</a><a href="#LINK_40">LINK_40</a></body></html>`
 
 	fmt.Printf("result: %s\n\n\n", _normalizeString(result))
@@ -603,7 +630,7 @@ func Test_BasicPageWithTemplateRenderChain(t *testing.T) {
 		t.Errorf("expected errors")
 	}
 
-	expect := `<!DOCTYPE html><html><head><!-- begin raw value -->AQUACADABRA<!-- end raw value --><meta name="generator" content="hyperbricks cms"><title>test title</title> </head><body><div id="val_b">BBBBB</div><div id="val_a">AAAAA</div><div id="d"></div></body></html>`
+	expect := `<!DOCTYPE html><html><head><!-- begin raw value -->AQUACADABRA<!-- end raw value --><meta name="generator" content="hyperbricks runtime"><title>test title</title> </head><body><div id="val_b">BBBBB</div><div id="val_a">AAAAA</div><div id="d"></div></body></html>`
 
 	fmt.Printf("result: %s\n\n\n", _normalizeString(result))
 	if _normalizeString(result) != _normalizeString(expect) {

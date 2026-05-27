@@ -7,13 +7,16 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/hyperbricks/hyperbricks/pkg/component"
@@ -21,14 +24,18 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	"github.com/hyperbricks/hyperbricks/pkg/render"
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
+	hbschema "github.com/hyperbricks/hyperbricks/pkg/schema"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
 	"github.com/yosssi/gohtml"
 )
 
 var (
-	versionFlag   = flag.String("version", "dev", "override version in tests")
-	buildTimeFlag = flag.String("buildtime", "undefined", "override build time in tests")
+	versionFlag        = flag.String("version", "dev", "override version in tests")
+	buildTimeFlag      = flag.String("buildtime", "undefined", "override build time in tests")
+	updateDocsFlag     = flag.Bool("update-docs", false, "write generated README and REFERENCE docs")
+	updateFixturesFlag = flag.Bool("update-fixtures", false, "create missing documentation fixture stubs")
+	docRenderDebugFlag = flag.Bool("doc-render-debug", false, "print non-fatal renderer output while generating docs")
 )
 
 // These variables will be set at build time
@@ -107,6 +114,48 @@ func findFieldByName(val reflect.Value, fieldName string) reflect.Value {
 	return reflect.Value{}
 }
 
+func sourceTypesToDocument() []DocumentationTypeStructI {
+	defs := hbschema.Definitions()
+	types := make([]DocumentationTypeStructI, 0, len(defs))
+	for _, def := range defs {
+		types = append(types, DocumentationTypeStructI{
+			Name:            def.Name,
+			TypeDescription: sourceDocTypeDescription(def),
+			Embedded:        sourceDocEmbedded(def),
+			ExcludeFields:   sourceDocExcludeFields(def),
+			ConfigType:      def.Token,
+			ConfigCategory:  string(def.Category),
+			Config:          reflect.New(def.ConfigType).Elem().Interface(),
+		})
+	}
+	return types
+}
+
+func sourceDocTypeDescription(def hbschema.Definition) string {
+	if def.Description != "" {
+		return def.Description
+	}
+	return "Basic type description here....."
+}
+
+func sourceDocEmbedded(def hbschema.Definition) map[string]string {
+	if def.Token == "<FRAGMENT>" {
+		return map[string]string{"HxResponse": "response"}
+	}
+	return map[string]string{}
+}
+
+func sourceDocExcludeFields(def hbschema.Definition) []string {
+	switch def.Token {
+	case "<HTML>", "<TEXT>", "<MENU>", "<API_RENDER>":
+		return []string{"attributes"}
+	case "<STYLES>":
+		return []string{"attributes", "enclose"}
+	default:
+		return nil
+	}
+}
+
 func Test_TestAndDocumentationRender(t *testing.T) {
 
 	flag.Parse()
@@ -114,159 +163,15 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	Version = *versionFlag
 	BuildTime = *buildTimeFlag
 
-	types := []DocumentationTypeStructI{
-		{
-			Name:            "Fragment",
-			TypeDescription: "Basic type description here.....",
-			Embedded: map[string]string{
-				"HxResponse": "response",
-			},
-			ConfigType:     "<FRAGMENT>",
-			ConfigCategory: "composite",
-			Config:         composite.FragmentConfig{},
-		},
-		{
-			Name:            "ApiFragmentRender",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<API_FRAGMENT_RENDER>",
-			ConfigCategory:  "composite",
-			Config:          composite.ApiFragmentRenderConfig{},
-		},
-		{
-			Name:            "Hypermedia",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<HYPERMEDIA>",
-			ConfigCategory:  "composite",
-			Config:          composite.HyperMediaConfig{},
-		},
-		{
-			Name:            "Head",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<HEAD>",
-			ConfigCategory:  "composite",
-			Config:          composite.HeadConfig{},
-		},
-		{
-			Name:            "Template",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<TEMPLATE>",
-			ConfigCategory:  "composite",
-			Config:          composite.TemplateConfig{},
-		},
-		{
-			Name:            "Tree",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<TREE>",
-			ConfigCategory:  "composite",
-			Config:          composite.TreeConfig{},
-		},
-		{
-			Name:            "Html",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ExcludeFields: []string{
-				"attributes",
-			},
-			ConfigType:     "<HTML>",
-			ConfigCategory: "component",
-			Config:         component.HTMLConfig{},
-		},
-		{
-			Name:            "Css",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<CSS>",
-			ConfigCategory:  "resources",
-			Config:          component.CssConfig{},
-		},
-		{
-			Name:            "Javascript",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<JS>",
-			ConfigCategory:  "resources",
-			Config:          component.JavaScriptConfig{},
-		},
-		{
-			Name:            "Image",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<IMAGE>",
-			ConfigCategory:  "resources",
-			Config:          component.SingleImageConfig{},
-		},
-		{
-			Name:            "Images",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ExcludeFields: []string{
-				"is_static",
-			},
-			ConfigType:     "<IMAGES>",
-			ConfigCategory: "resources",
-			Config:         component.MultipleImagesConfig{},
-		},
-		{
-			Name:            "Json",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<JSON>",
-			ConfigCategory:  "data",
-			Config:          component.LocalJSONConfig{},
-		},
-		{
-			Name:            "Plugin",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<PLUGIN>",
-			ConfigCategory:  "component",
-			Config:          component.PluginConfig{},
-		},
-		{
-			Name:            "Text",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ExcludeFields: []string{
-				"attributes",
-			},
-			ConfigType:     "<TEXT>",
-			ConfigCategory: "component",
-			Config:         component.TextConfig{},
-		},
-		{
-			Name:            "Menu",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ExcludeFields: []string{
-				"attributes",
-			},
-			ConfigType:     "<MENU>",
-			ConfigCategory: "menu",
-			Config:         component.MenuConfig{},
-		},
-		{
-			Name:            "Api_Render",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ExcludeFields: []string{
-				"attributes",
-			},
-			ConfigType:     "<API_RENDER>",
-			ConfigCategory: "data",
-			Config:         component.APIConfig{},
-		},
-	}
+	types := sourceTypesToDocument()
 
 	// Initialize shared configuration settings.
 	shared.Init_configuration()
 	conf := shared.GetHyperBricksConfiguration()
+	testOutputRoot := t.TempDir()
+	conf.Directories["static"] = filepath.Join(testOutputRoot, "static")
+	conf.Directories["render"] = filepath.Join(testOutputRoot, "rendered")
 
-	fmt.Printf("%v", conf)
 	// Create a new RenderManager instance and register the FragmentRenderer.
 	rm := render.NewRenderManager()
 
@@ -300,6 +205,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 			TemplateProvider: templateProvider,
 		},
 	}
+	rm.SetPlugin("example", documentationExamplePlugin{})
 
 	rm.RegisterComponent(component.PluginRenderGetName(), pluginRenderer, reflect.TypeOf(component.PluginConfig{}))
 
@@ -413,7 +319,7 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 
 	categorizedDocs := make(map[string]map[string][]FieldDoc)
 	for _, cfg := range types {
-		fmt.Printf("\n\n======= Processing type: %s =======\n", cfg.Name)
+		fmt.Printf("\n\n--- Processing type: %s ---\n", cfg.Name)
 		var fields []FieldDoc
 		// Process non-embedded fields first
 		val := reflect.ValueOf(cfg.Config)
@@ -464,6 +370,28 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 		"html": func(input string) (template.HTML, error) {
 			return template.HTML(input), nil // Mark as safe HTML
 		},
+		"trimHTML": func(input any) template.HTML {
+			return template.HTML(strings.TrimSpace(fmt.Sprint(input)))
+		},
+		"trimText": func(input any) string {
+			return strings.TrimSpace(fmt.Sprint(input))
+		},
+		"hasTypeDoc": func(fields []FieldDoc) bool {
+			for _, field := range fields {
+				if field.Mapstructure == "@doc" {
+					return true
+				}
+			}
+			return false
+		},
+		"typeDescription": func(fields []FieldDoc) string {
+			for _, field := range fields {
+				if field.TypeDescription != "" {
+					return field.TypeDescription
+				}
+			}
+			return ""
+		},
 	}
 
 	// Parse the HTML template
@@ -471,7 +399,11 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	if err != nil {
 		log.Fatalf("Error parsing template: %v", err)
 	}
-	renderStaticFile(tmpl, data, "../../docs/REFERENCE.md")
+	referencePath := filepath.Join(t.TempDir(), "REFERENCE.md")
+	if *updateDocsFlag {
+		referencePath = "../../docs/REFERENCE.md"
+	}
+	renderStaticFile(t, tmpl, data, referencePath)
 
 	// Parse the HTML template
 	tmpl, err = template.New("main").Funcs(funcMap).ParseFiles("readme.md")
@@ -480,7 +412,11 @@ func Test_TestAndDocumentationRender(t *testing.T) {
 	}
 
 	// Generate the static HTML file
-	renderStaticFile(tmpl, data, "../../README.md")
+	readmePath := filepath.Join(t.TempDir(), "README.md")
+	if *updateDocsFlag {
+		readmePath = "../../README.md"
+	}
+	renderStaticFile(t, tmpl, data, readmePath)
 
 }
 func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStructI, t *testing.T, rm *render.RenderManager, _fields []FieldDoc) []FieldDoc {
@@ -606,8 +542,8 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStructI, t 
 				}
 
 				ctx := createMockContext()
-				result, errr := rm.Render(request.TypeName, scopeData, ctx)
-				if errr != nil {
+				result, errr := renderDocumentationExample(t, rm, request.TypeName, scopeData, ctx)
+				if len(errr) > 0 && *docRenderDebugFlag {
 					log.Printf("%v", errr)
 				}
 
@@ -649,7 +585,7 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStructI, t 
 					TypeLink:        strings.ToLower(fmt.Sprintf("### %s", request.TypeName)),
 					TypeAnchor:      strings.ToLower(fmt.Sprintf(`### %s`, request.TypeName)),
 					Mapstructure:    field.Tag.Get("mapstructure"),
-					Description:     parsed.Explainer, //field.Tag.Get("description")
+					Description:     sourceFieldDescription(parsed.Explainer, field.Tag.Get("description")),
 					MoreDetails:     parsed.MoreDetails,
 					Category:        cfg.ConfigCategory,
 					CategoryLink:    template.HTML(strings.ToLower(fmt.Sprintf("### %s %s", cfg.Name, field.Tag.Get("mapstructure")))),
@@ -667,6 +603,19 @@ func processFieldsWithSquash(val reflect.Value, cfg DocumentationTypeStructI, t 
 	return fields
 }
 
+type documentationExamplePlugin struct{}
+
+func (documentationExamplePlugin) Render(data interface{}, ctx context.Context) (any, []error) {
+	return "Plugin example", nil
+}
+
+func sourceFieldDescription(explainer string, fallback string) string {
+	if strings.TrimSpace(explainer) != "" {
+		return explainer
+	}
+	return fallback
+}
+
 func IsExcludedField(tag string, excludeFields []string) bool {
 	for _, field := range excludeFields {
 		if field == tag {
@@ -676,20 +625,60 @@ func IsExcludedField(tag string, excludeFields []string) bool {
 	return false
 }
 
-func renderStaticFile(tmpl *template.Template, data interface{}, outputPath string) {
-	// Create the static output file
-	outputFile, err := os.Create(outputPath)
-	if err != nil {
-		log.Fatalf("Error creating output file: %v", err)
-	}
-	defer outputFile.Close()
+func renderStaticFile(t testing.TB, tmpl *template.Template, data interface{}, outputPath string) {
+	t.Helper()
 
-	// Execute the template and write to the file
-	if err := tmpl.Execute(outputFile, data); err != nil {
-		log.Fatalf("Error rendering template to file: %v", err)
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, data); err != nil {
+		t.Fatalf("Error rendering template to file: %v", err)
 	}
 
-	log.Printf("Static HTML file generated at %s", outputPath)
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		t.Fatalf("Error creating output directory: %v", err)
+	}
+
+	if err := os.WriteFile(outputPath, []byte(compactMarkdownOutsideCodeFences(buf.String())), 0644); err != nil {
+		t.Fatalf("Error writing output file: %v", err)
+	}
+
+	t.Logf("Static Markdown file generated at %s", outputPath)
+}
+
+func compactMarkdownOutsideCodeFences(content string) string {
+	var out strings.Builder
+	inFence := false
+	blankRun := 0
+
+	for _, rawLine := range strings.SplitAfter(content, "\n") {
+		line, hasNewline := strings.CutSuffix(rawLine, "\n")
+		line = strings.TrimSuffix(line, "\r")
+		line = strings.TrimRight(line, " \t")
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "```") {
+			inFence = !inFence
+			blankRun = 0
+			out.WriteString(line)
+			if hasNewline {
+				out.WriteString("\n")
+			}
+			continue
+		}
+		if !inFence && trimmed == "" {
+			blankRun++
+			if blankRun <= 2 {
+				out.WriteString("\n")
+			}
+			continue
+		}
+
+		blankRun = 0
+		out.WriteString(line)
+		if hasNewline {
+			out.WriteString("\n")
+		}
+	}
+
+	return strings.TrimRight(out.String(), "\n") + "\n"
 }
 
 // ParseContent parses the provided content string into its respective parts.
@@ -786,6 +775,10 @@ func _checkAndReadFile(input string, description string) string {
 
 		// Check if file exists, create if not
 		if _, err := os.Stat(fileFullPath); os.IsNotExist(err) {
+			if !*updateFixturesFlag {
+				input = strings.ReplaceAll(input, match[0], "no example yet")
+				continue
+			}
 			//fmt.Printf("File %s does not exist. Creating it...\n", fileFullPath)
 			f, createErr := os.Create(fileFullPath)
 			if createErr != nil {
@@ -908,6 +901,73 @@ func JSONDeepEqual(a, b interface{}) (bool, error) {
 
 	// Use DeepEqual on the normalized data
 	return reflect.DeepEqual(aJSON, bJSON), nil
+}
+
+func renderDocumentationExample(t *testing.T, rm *render.RenderManager, rendererType string, data map[string]interface{}, ctx context.Context) (string, []error) {
+	t.Helper()
+
+	if *docRenderDebugFlag {
+		return rm.Render(rendererType, data, ctx)
+	}
+
+	return discardDocumentationRenderOutput(t, func() (string, []error) {
+		return rm.Render(rendererType, data, ctx)
+	})
+}
+
+func discardDocumentationRenderOutput(t *testing.T, renderFn func() (string, []error)) (result string, errs []error) {
+	t.Helper()
+
+	originalStdout := os.Stdout
+	originalStderr := os.Stderr
+	originalLogOutput := log.Writer()
+
+	stdoutReader, stdoutWriter, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("capture documentation render stdout: %v", err)
+	}
+	stderrReader, stderrWriter, err := os.Pipe()
+	if err != nil {
+		_ = stdoutReader.Close()
+		_ = stdoutWriter.Close()
+		t.Fatalf("capture documentation render stderr: %v", err)
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		_, _ = io.Copy(io.Discard, stdoutReader)
+	}()
+	go func() {
+		defer wg.Done()
+		_, _ = io.Copy(io.Discard, stderrReader)
+	}()
+
+	restored := false
+	restore := func() {
+		if restored {
+			return
+		}
+		log.SetOutput(originalLogOutput)
+		os.Stdout = originalStdout
+		os.Stderr = originalStderr
+		restored = true
+	}
+	defer func() {
+		restore()
+		_ = stdoutWriter.Close()
+		_ = stderrWriter.Close()
+		wg.Wait()
+		_ = stdoutReader.Close()
+		_ = stderrReader.Close()
+	}()
+
+	os.Stdout = stdoutWriter
+	os.Stderr = stderrWriter
+	log.SetOutput(stderrWriter)
+
+	return renderFn()
 }
 
 func createMockContext() context.Context {

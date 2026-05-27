@@ -37,5 +37,5 @@ Path to the favicon for the hypermedia document
   "Cookies": null
 }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="/images/icon.ico">
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><link rel="icon" type="image/x-icon" href="/images/icon.ico">
         </head><body></body></html> 

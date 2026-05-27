@@ -127,30 +127,57 @@ To see CLI options:
 hyperbricks start --help
 ```
 
-Preview gateway flags:
+Runtime gateway flags:
 
 ```bash
-hyperbricks start -m hyperbricks-composer --port 8080 \
-  --preview-gateway \
-  --preview-domain preview.local \
-  --preview-resolver http://127.0.0.1:8080/runtime-bridge/resolve-preview
+hyperbricks start -m my-module --port 8080 \
+  --runtime-gateway \
+  --runtime-domain runtime.local \
+  --runtime-resolver http://127.0.0.1:8080/resolve-runtime
 ```
 
-The preview gateway matches hosts under the configured preview domain before
+The runtime gateway matches subhosts under the configured runtime domain before
 normal route rendering and proxies the original path/query to a runtime target
-returned by the resolver. It is intended for project/version preview origins
-such as `test-001--current.preview.local`.
+returned by the resolver. It is intended for virtual runtime, live, staging, or
+deployment origins such as `test-001--current.runtime.local` or
+`test-001.live.local`.
+
+You can configure multiple gateway domains with a comma-separated CLI value:
+
+```bash
+hyperbricks start -m my-module --port 8080 \
+  --runtime-gateway \
+  --runtime-domain live.local,runtime.local \
+  --runtime-resolver http://127.0.0.1:8080/resolve-runtime
+```
+
+Flat host suffixes are also supported when the runtime key is part of the
+left-hand host label instead of a dotted subdomain:
+
+```bash
+hyperbricks start -m my-module --port 8080 \
+  --runtime-gateway \
+  --runtime-host-suffix -runtime.hyperbricks.eu,-live.hyperbricks.eu \
+  --runtime-resolver http://127.0.0.1:8080/resolve-runtime
+```
+
+This matches hosts such as `test-001-runtime.hyperbricks.eu` while leaving
+`runtime.hyperbricks.eu` untouched.
+
+The bare configured domains themselves are not intercepted. For example,
+`runtime.local` is not a gateway request, but `test-001.runtime.local` is.
+Host semantics are owned by the resolver, not by HyperBricks core.
 
 The resolver must be an internal trusted endpoint. It receives the original
-preview host/path and returns a loopback or private runtime target after doing
+runtime host/path and returns a loopback or private runtime target after doing
 its own access check. Example resolver request:
 
 ```json
 {
-  "host": "test-001--current.preview.local",
+  "host": "test-001--current.runtime.local",
   "method": "GET",
   "path": "/about",
-  "raw_query": "tab=preview"
+  "raw_query": "tab=runtime"
 }
 ```
 
@@ -161,7 +188,7 @@ Example resolver response:
   "allowed": true,
   "target": "http://127.0.0.1:18200",
   "project": "test-001",
-  "preview": "current",
+  "variant": "current",
   "cache_ttl_seconds": 5
 }
 ```
@@ -171,24 +198,33 @@ The same feature can be configured in `package.hyperbricks`:
 ```hyperbricks
 hyperbricks {
   server {
-    preview_gateway {
+    runtime_gateway {
       enabled = true
-      domain = preview.local
-      resolver = http://127.0.0.1:8080/runtime-bridge/resolve-preview
+      domain = runtime.local
+      domains = live.local,runtime.local
+      host_suffix = -runtime.hyperbricks.eu
+      host_suffixes = -live.hyperbricks.eu,-staging.hyperbricks.eu
+      resolver = http://127.0.0.1:8080/resolve-runtime
     }
   }
 }
 ```
 
-CLI flags override config values. The gateway is disabled by default and startup
-fails if it is enabled without both a preview domain and resolver.
+`domain` is kept for single-domain and backwards-compatible setups. `domains`
+can be used by integrations that need more than one gateway suffix.
+`host_suffix` and `host_suffixes` are the config equivalents of
+`--runtime-host-suffix`. CLI flags override config values. The gateway is
+disabled by default and startup fails if it is enabled without at least one
+runtime domain or host suffix and a resolver.
 
-For local development, make sure preview hosts resolve to the HyperBricks
+See also: [Runtime Gateway](RUNTIME_GATEWAY.md).
+
+For local development, make sure runtime hosts resolve to the HyperBricks
 server. For example, add a wildcard DNS entry, use a local DNS resolver, or add
 explicit `/etc/hosts` entries such as:
 
 ```text
-127.0.0.1 test-001--current.preview.local
+127.0.0.1 test-001--current.runtime.local
 ```
 
 ### 5. Render Static Output
@@ -291,12 +327,13 @@ Output includes:
 
 Example output:
 ```
-Name         Plugin Version  Available Versions  Compatible Hyperbricks  Installed-         --------------  ------------------  ----------------------  ---------
-esbuild      1.0.0           1.0.0               >=0.5.0-alpha           yes
-loremipsum   1.0.0           1.0.0               >=0.5.0-alpha           yes
-markdown     1.0.0           1.0.0               >=0.5.0-alpha           yes
-myplugin     1.0.0           1.0.0               >=0.5.0-alpha           no
-tailwindcss  1.0.0           1.0.0               >=0.5.0-alpha           yes
+Name         Plugin Version  Available Versions  Compatible Hyperbricks  Installed
+----         --------------  ------------------  ----------------------  ---------
+esbuild      1.0.0           1.0.0               >=1.1.0-beta            yes
+loremipsum   1.0.0           1.0.0               >=1.1.0-beta            yes
+markdown     1.0.0           1.0.0               >=1.1.0-beta            yes
+myplugin     1.0.0           1.0.0               >=1.1.0-beta            no
+tailwindcss  1.0.0           1.0.0               >=1.1.0-beta            yes
 ```
 
 To enable plugins, they must be compiled for the currently installed version of Hyperbricks.
@@ -305,9 +342,9 @@ This can be done automatically using:
 hyperbricks plugin install <name>@<plugin_version>
 ```
 
-* To preload the plugin, add the binary name to your package.hyperbricks (exclude .so)
+* To preload the plugin, add the config name to your package.hyperbricks (exclude `.so`)
 * under the `plugins.enabled` array.
-* Binary names are CamelCase and include the version: `<Binary>@<version>.so`.
+* Binary files are CamelCase and include the version: `<Binary>@<version>.so`.
 
 ```
 plugins {

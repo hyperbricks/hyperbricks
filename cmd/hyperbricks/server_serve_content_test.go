@@ -6,6 +6,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -47,7 +50,16 @@ func (p handledResponseTestPlugin) Render(_ interface{}, _ context.Context) (any
 	}, nil
 }
 
-func setupLiveModeServeContentTest(t *testing.T) {
+type staticContextTestPlugin struct {
+	ctx context.Context
+}
+
+func (p *staticContextTestPlugin) Render(_ interface{}, ctx context.Context) (any, []error) {
+	p.ctx = ctx
+	return "static plugin output", nil
+}
+
+func setupLiveModeServeContentTest(t testing.TB) {
 	t.Helper()
 
 	shared.Init_configuration()
@@ -87,7 +99,7 @@ func setupLiveModeServeContentTest(t *testing.T) {
 	})
 }
 
-func setupDevelopmentModeServeContentTest(t *testing.T, frontendErrors bool) {
+func setupDevelopmentModeServeContentTest(t testing.TB, frontendErrors bool) {
 	t.Helper()
 
 	shared.Init_configuration()
@@ -152,6 +164,40 @@ func cachedEntry(route string) (CacheEntry, bool) {
 	defer htmlCacheMutex.RUnlock()
 	entry, ok := htmlCache[route]
 	return entry, ok
+}
+
+func TestMakeStaticProvidesContextToPluginRender(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+
+	plugin := &staticContextTestPlugin{}
+	rm.SetPlugin("static_context_test", plugin)
+
+	renderDir := t.TempDir()
+	err := makeStatic(map[string]map[string]interface{}{
+		"plugin": {
+			"@type":  component.PluginRenderGetName(),
+			"route":  "plugin.html",
+			"plugin": "static_context_test",
+		},
+	}, renderDir)
+	if err != nil {
+		t.Fatalf("makeStatic returned error: %v", err)
+	}
+
+	if plugin.ctx == nil {
+		t.Fatal("plugin context is nil, want static render context")
+	}
+	if route, _ := plugin.ctx.Value(shared.CurrentRoute).(string); route != "plugin.html" {
+		t.Fatalf("current route = %q, want plugin.html", route)
+	}
+
+	body, err := os.ReadFile(filepath.Join(renderDir, "plugin.html"))
+	if err != nil {
+		t.Fatalf("failed to read rendered static file: %v", err)
+	}
+	if string(body) != "static plugin output" {
+		t.Fatalf("static file body = %q, want plugin output", string(body))
+	}
 }
 
 type trackingReadCloser struct {
@@ -343,6 +389,64 @@ func TestServeContent_LiveMode_StillCachesRequestInsensitiveRoute(t *testing.T) 
 	}
 	if strings.Contains(secondWriter.Body.String(), "Rendered at") || strings.Contains(secondWriter.Body.String(), "Cache expires at") {
 		t.Fatalf("expected cached HTML response body not to include cache comments, got %q", secondWriter.Body.String())
+	}
+}
+
+func TestServeContent_LiveMode_UsesETagForNotModified(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	setTestRouteConfig("etag-static", map[string]interface{}{
+		"@type": composite.FragmentConfigGetName(),
+		"route": "etag-static",
+		"template": map[string]interface{}{
+			"@type":  composite.TemplateConfigGetName(),
+			"inline": `etag-content`,
+			"values": map[string]interface{}{
+				"seed": "x",
+			},
+		},
+	})
+
+	firstWriter := httptest.NewRecorder()
+	firstRequest := httptest.NewRequest(http.MethodGet, "/etag-static", nil)
+	ServeContent(firstWriter, firstRequest)
+
+	etag := firstWriter.Header().Get("ETag")
+	if etag == "" {
+		t.Fatalf("expected first cacheable response to include ETag")
+	}
+	if firstWriter.Body.String() != "etag-content" {
+		t.Fatalf("first body = %q, want etag-content", firstWriter.Body.String())
+	}
+
+	notModifiedWriter := httptest.NewRecorder()
+	notModifiedRequest := httptest.NewRequest(http.MethodGet, "/etag-static", nil)
+	notModifiedRequest.Header.Set("If-None-Match", `"different", W/`+etag)
+	ServeContent(notModifiedWriter, notModifiedRequest)
+
+	if notModifiedWriter.Code != http.StatusNotModified {
+		t.Fatalf("expected 304 for matching ETag, got %d", notModifiedWriter.Code)
+	}
+	if body := notModifiedWriter.Body.String(); body != "" {
+		t.Fatalf("expected empty 304 body, got %q", body)
+	}
+	if got := notModifiedWriter.Header().Get("ETag"); got != etag {
+		t.Fatalf("expected 304 to keep ETag %q, got %q", etag, got)
+	}
+	if got := notModifiedWriter.Header().Get(renderErrorCountHeader); got != "0" {
+		t.Fatalf("expected render error count 0 on 304, got %q", got)
+	}
+
+	changedWriter := httptest.NewRecorder()
+	changedRequest := httptest.NewRequest(http.MethodGet, "/etag-static", nil)
+	changedRequest.Header.Set("If-None-Match", `"different"`)
+	ServeContent(changedWriter, changedRequest)
+
+	if changedWriter.Code != http.StatusOK {
+		t.Fatalf("expected 200 for non-matching ETag, got %d", changedWriter.Code)
+	}
+	if changedWriter.Body.String() != "etag-content" {
+		t.Fatalf("expected body on non-matching ETag, got %q", changedWriter.Body.String())
 	}
 }
 
@@ -777,7 +881,7 @@ func TestServeContent_APIFragmentRenderSetCookiesAddsMultipleHeaders(t *testing.
 		"endpoint":   upstream.URL,
 		"inline":     `logged-out`,
 		"setcookie":  `token=; Path=/; HttpOnly; Max-Age=0`,
-		"setcookies": []interface{}{`hb_composer_session=; Path=/; HttpOnly; Max-Age=0`, `theme=light; Path=/; Max-Age=300`},
+		"setcookies": []interface{}{`runtime_session=; Path=/; HttpOnly; Max-Age=0`, `theme=light; Path=/; Max-Age=300`},
 	})
 
 	writer := httptest.NewRecorder()
@@ -790,7 +894,7 @@ func TestServeContent_APIFragmentRenderSetCookiesAddsMultipleHeaders(t *testing.
 	got := writer.Header().Values("Set-Cookie")
 	want := []string{
 		"token=; Path=/; HttpOnly; Max-Age=0",
-		"hb_composer_session=; Path=/; HttpOnly; Max-Age=0",
+		"runtime_session=; Path=/; HttpOnly; Max-Age=0",
 		"theme=light; Path=/; Max-Age=300",
 	}
 	if len(got) != len(want) {
@@ -899,6 +1003,9 @@ func TestServeContent_DevelopmentLeavesBodyCleanWhenNoRenderErrors(t *testing.T)
 	if got := writer.Body.String(); !strings.Contains(got, "<main>clean output</main>") {
 		t.Fatalf("expected clean rendered content in body, got %q", got)
 	}
+	if got, want := writer.Header().Get("Content-Length"), strconv.Itoa(writer.Body.Len()); got != want {
+		t.Fatalf("expected Content-Length %q, got %q", want, got)
+	}
 	if got := writer.Header().Get(renderErrorCountHeader); got != "0" {
 		t.Fatalf("expected render error count 0, got %q", got)
 	}
@@ -924,7 +1031,7 @@ func TestServeContent_DevelopmentHandledPluginResponseWritesRawBody(t *testing.T
 		headers: map[string]string{
 			"X-Handled-Test": "1",
 		},
-		cookies: []string{"preview=1; Path=/; HttpOnly"},
+		cookies: []string{"runtime_gateway=1; Path=/; HttpOnly"},
 		body:    []byte{0x00, 0x41, 0x42, 0x43},
 	})
 
@@ -939,11 +1046,14 @@ func TestServeContent_DevelopmentHandledPluginResponseWritesRawBody(t *testing.T
 	if got := response.Header.Get("Content-Type"); got != "application/octet-stream" {
 		t.Fatalf("content type = %q, want application/octet-stream", got)
 	}
+	if got := response.Header.Get("Content-Length"); got != "4" {
+		t.Fatalf("content length = %q, want 4", got)
+	}
 	if got := response.Header.Get("X-Handled-Test"); got != "1" {
 		t.Fatalf("X-Handled-Test = %q, want 1", got)
 	}
-	if cookies := response.Header.Values("Set-Cookie"); len(cookies) != 1 || cookies[0] != "preview=1; Path=/; HttpOnly" {
-		t.Fatalf("Set-Cookie = %v, want [preview=1; Path=/; HttpOnly]", cookies)
+	if cookies := response.Header.Values("Set-Cookie"); len(cookies) != 1 || cookies[0] != "runtime_gateway=1; Path=/; HttpOnly" {
+		t.Fatalf("Set-Cookie = %v, want [runtime_gateway=1; Path=/; HttpOnly]", cookies)
 	}
 	if got := response.Header.Get(requestIDHeader); got == "" {
 		t.Fatal("missing request id header")

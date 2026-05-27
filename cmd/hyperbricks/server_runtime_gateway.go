@@ -17,36 +17,36 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
-const previewGatewayTimeout = 2 * time.Second
+const runtimeGatewayTimeout = 2 * time.Second
 
-type previewGatewayResolveRequest struct {
+type runtimeGatewayResolveRequest struct {
 	Host     string `json:"host"`
 	Method   string `json:"method"`
 	Path     string `json:"path"`
 	RawQuery string `json:"raw_query"`
 }
 
-type previewGatewayResolveResponse struct {
+type runtimeGatewayResolveResponse struct {
 	Allowed         bool     `json:"allowed"`
 	Target          string   `json:"target"`
 	Project         string   `json:"project,omitempty"`
-	Preview         string   `json:"preview,omitempty"`
+	Variant         string   `json:"variant,omitempty"`
 	CacheTTLSeconds int      `json:"cache_ttl_seconds,omitempty"`
 	Status          int      `json:"status,omitempty"`
 	Message         string   `json:"message,omitempty"`
 	SetCookies      []string `json:"set_cookies,omitempty"`
 }
 
-func handlePreviewGateway(w http.ResponseWriter, r *http.Request) bool {
-	config := getHyperBricksConfiguration().Server.PreviewGateway
-	if !previewGatewayMatches(config, r) {
+func handleRuntimeGateway(w http.ResponseWriter, r *http.Request) bool {
+	config := getHyperBricksConfiguration().Server.RuntimeGateway
+	if !runtimeGatewayMatches(config, r) {
 		return false
 	}
 
-	resolution, err := resolvePreviewGatewayTarget(r.Context(), config, r)
+	resolution, err := resolveRuntimeGatewayTarget(r.Context(), config, r)
 	if err != nil {
-		logging.GetLogger().Warnw("preview gateway resolver failed", "host", r.Host, "error", err)
-		http.Error(w, "preview resolver failed", http.StatusBadGateway)
+		logging.GetLogger().Warnw("runtime gateway resolver failed", "host", r.Host, "error", err)
+		http.Error(w, "runtime resolver failed", http.StatusBadGateway)
 		return true
 	}
 
@@ -70,30 +70,30 @@ func handlePreviewGateway(w http.ResponseWriter, r *http.Request) bool {
 			w.Header().Add("Set-Cookie", cookie)
 		}
 	}
-	if len(resolution.SetCookies) > 0 && r.URL.Query().Has("preview_token") {
+	if len(resolution.SetCookies) > 0 && r.URL.Query().Has("runtime_token") {
 		w.Header().Set("Cache-Control", "no-store")
-		http.Redirect(w, r, previewGatewayCleanURL(r), http.StatusFound)
+		http.Redirect(w, r, runtimeGatewayCleanURL(r), http.StatusFound)
 		return true
 	}
 
-	target, err := parseAndValidatePreviewTarget(resolution.Target)
+	target, err := parseAndValidateRuntimeTarget(resolution.Target)
 	if err != nil {
-		logging.GetLogger().Warnw("preview gateway rejected target", "host", r.Host, "target", resolution.Target, "error", err)
-		http.Error(w, "preview target rejected", http.StatusBadGateway)
+		logging.GetLogger().Warnw("runtime gateway rejected target", "host", r.Host, "target", resolution.Target, "error", err)
+		http.Error(w, "runtime target rejected", http.StatusBadGateway)
 		return true
 	}
 
-	proxyPreviewRequest(w, r, target)
+	proxyRuntimeRequest(w, r, target)
 	return true
 }
 
-func previewGatewayCleanURL(r *http.Request) string {
+func runtimeGatewayCleanURL(r *http.Request) string {
 	if r == nil || r.URL == nil {
 		return "/"
 	}
 	cleanURL := *r.URL
 	query := cleanURL.Query()
-	query.Del("preview_token")
+	query.Del("runtime_token")
 	cleanURL.RawQuery = query.Encode()
 	if cleanURL.Path == "" {
 		cleanURL.Path = "/"
@@ -101,36 +101,95 @@ func previewGatewayCleanURL(r *http.Request) string {
 	return cleanURL.RequestURI()
 }
 
-func validatePreviewGatewayConfig(config shared.PreviewGatewayConfig) error {
+func validateRuntimeGatewayConfig(config shared.RuntimeGatewayConfig) error {
 	if !config.Enabled {
 		return nil
 	}
-	if normalizePreviewDomain(config.Domain) == "" {
-		return fmt.Errorf("preview gateway requires preview domain")
+	if len(runtimeGatewayDomains(config)) == 0 && len(runtimeGatewayHostSuffixes(config)) == 0 {
+		return fmt.Errorf("runtime gateway requires runtime domain or host suffix")
 	}
 	resolver := strings.TrimSpace(config.Resolver)
 	if resolver == "" {
-		return fmt.Errorf("preview gateway requires preview resolver")
+		return fmt.Errorf("runtime gateway requires runtime resolver")
 	}
 	parsed, err := url.Parse(resolver)
 	if err != nil {
-		return fmt.Errorf("preview resolver is invalid: %w", err)
+		return fmt.Errorf("runtime resolver is invalid: %w", err)
 	}
 	if parsed.Scheme != "http" && parsed.Scheme != "https" {
-		return fmt.Errorf("preview resolver must use http or https")
+		return fmt.Errorf("runtime resolver must use http or https")
 	}
 	if parsed.Host == "" {
-		return fmt.Errorf("preview resolver host is empty")
+		return fmt.Errorf("runtime resolver host is empty")
 	}
 	return nil
 }
 
-func previewGatewayMatches(config shared.PreviewGatewayConfig, r *http.Request) bool {
+func runtimeGatewayDomains(config shared.RuntimeGatewayConfig) []string {
+	values := make([]string, 0, 1+len(config.Domains))
+	appendDomain := func(value string) {
+		for _, item := range strings.Split(value, ",") {
+			domain := normalizeRuntimeDomain(item)
+			if domain == "" {
+				continue
+			}
+			duplicate := false
+			for _, existing := range values {
+				if existing == domain {
+					duplicate = true
+					break
+				}
+			}
+			if duplicate {
+				continue
+			}
+			values = append(values, domain)
+		}
+	}
+
+	appendDomain(config.Domain)
+	for _, domain := range config.Domains {
+		appendDomain(domain)
+	}
+	return values
+}
+
+func runtimeGatewayHostSuffixes(config shared.RuntimeGatewayConfig) []string {
+	values := make([]string, 0, 1+len(config.HostSuffixes))
+	appendSuffix := func(value string) {
+		for _, item := range strings.Split(value, ",") {
+			suffix := normalizeRuntimeHostSuffix(item)
+			if suffix == "" {
+				continue
+			}
+			duplicate := false
+			for _, existing := range values {
+				if existing == suffix {
+					duplicate = true
+					break
+				}
+			}
+			if duplicate {
+				continue
+			}
+			values = append(values, suffix)
+		}
+	}
+
+	appendSuffix(config.HostSuffix)
+	for _, suffix := range config.HostSuffixes {
+		appendSuffix(suffix)
+	}
+	return values
+}
+
+func runtimeGatewayMatches(config shared.RuntimeGatewayConfig, r *http.Request) bool {
 	if !config.Enabled || r == nil {
 		return false
 	}
-	domain := normalizePreviewDomain(config.Domain)
-	if domain == "" || strings.TrimSpace(config.Resolver) == "" {
+	domains := runtimeGatewayDomains(config)
+	suffixes := runtimeGatewayHostSuffixes(config)
+	if (len(domains) == 0 && len(suffixes) == 0) || strings.TrimSpace(config.Resolver) == "" {
 		return false
 	}
 	host := requestHostWithoutPort(r.Host)
@@ -138,18 +197,37 @@ func previewGatewayMatches(config shared.PreviewGatewayConfig, r *http.Request) 
 		return false
 	}
 	host = strings.ToLower(host)
-	if strings.EqualFold(host, domain) || !strings.HasSuffix(host, "."+strings.ToLower(domain)) {
-		return false
+	for _, domain := range domains {
+		if strings.EqualFold(host, domain) {
+			continue
+		}
+		if strings.HasSuffix(host, "."+strings.ToLower(domain)) {
+			return true
+		}
 	}
-	label := strings.TrimSuffix(host, "."+strings.ToLower(domain))
-	return strings.Contains(label, "--")
+	for _, suffix := range suffixes {
+		if len(host) > len(suffix) && strings.HasSuffix(host, suffix) {
+			return true
+		}
+	}
+	return false
 }
 
-func normalizePreviewDomain(domain string) string {
+func normalizeRuntimeDomain(domain string) string {
 	domain = strings.TrimSpace(strings.ToLower(domain))
 	domain = strings.TrimPrefix(domain, "*.")
 	domain = strings.TrimPrefix(domain, ".")
 	return strings.TrimSuffix(domain, ".")
+}
+
+func normalizeRuntimeHostSuffix(suffix string) string {
+	suffix = strings.TrimSpace(strings.ToLower(suffix))
+	suffix = strings.TrimPrefix(suffix, "*")
+	suffix = strings.TrimSuffix(suffix, ".")
+	if suffix == "." {
+		return ""
+	}
+	return suffix
 }
 
 func requestHostWithoutPort(host string) string {
@@ -164,13 +242,13 @@ func requestHostWithoutPort(host string) string {
 	return strings.TrimSuffix(strings.ToLower(host), ".")
 }
 
-func resolvePreviewGatewayTarget(ctx context.Context, config shared.PreviewGatewayConfig, r *http.Request) (previewGatewayResolveResponse, error) {
+func resolveRuntimeGatewayTarget(ctx context.Context, config shared.RuntimeGatewayConfig, r *http.Request) (runtimeGatewayResolveResponse, error) {
 	resolverURL := strings.TrimSpace(config.Resolver)
 	if resolverURL == "" {
-		return previewGatewayResolveResponse{}, fmt.Errorf("preview resolver is empty")
+		return runtimeGatewayResolveResponse{}, fmt.Errorf("runtime resolver is empty")
 	}
 
-	payload := previewGatewayResolveRequest{
+	payload := runtimeGatewayResolveRequest{
 		Host:     r.Host,
 		Method:   r.Method,
 		Path:     r.URL.Path,
@@ -178,15 +256,15 @@ func resolvePreviewGatewayTarget(ctx context.Context, config shared.PreviewGatew
 	}
 	body, err := json.Marshal(payload)
 	if err != nil {
-		return previewGatewayResolveResponse{}, err
+		return runtimeGatewayResolveResponse{}, err
 	}
 
-	resolveCtx, cancel := context.WithTimeout(ctx, previewGatewayTimeout)
+	resolveCtx, cancel := context.WithTimeout(ctx, runtimeGatewayTimeout)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(resolveCtx, http.MethodPost, resolverURL, bytes.NewReader(body))
 	if err != nil {
-		return previewGatewayResolveResponse{}, err
+		return runtimeGatewayResolveResponse{}, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	if cookie := strings.TrimSpace(r.Header.Get("Cookie")); cookie != "" {
@@ -201,34 +279,34 @@ func resolvePreviewGatewayTarget(ctx context.Context, config shared.PreviewGatew
 
 	resp, err := apiHTTPClient().Do(req)
 	if err != nil {
-		return previewGatewayResolveResponse{}, err
+		return runtimeGatewayResolveResponse{}, err
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if err != nil {
-		return previewGatewayResolveResponse{}, err
+		return runtimeGatewayResolveResponse{}, err
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return previewGatewayResolveResponse{
+		return runtimeGatewayResolveResponse{
 			Allowed: false,
 			Status:  resp.StatusCode,
 			Message: strings.TrimSpace(string(respBody)),
 		}, nil
 	}
 
-	var resolution previewGatewayResolveResponse
+	var resolution runtimeGatewayResolveResponse
 	if err := json.Unmarshal(respBody, &resolution); err != nil {
-		return previewGatewayResolveResponse{}, err
+		return runtimeGatewayResolveResponse{}, err
 	}
 	return resolution, nil
 }
 
 func apiHTTPClient() *http.Client {
-	return &http.Client{Timeout: previewGatewayTimeout}
+	return &http.Client{Timeout: runtimeGatewayTimeout}
 }
 
-func parseAndValidatePreviewTarget(rawTarget string) (*url.URL, error) {
+func parseAndValidateRuntimeTarget(rawTarget string) (*url.URL, error) {
 	target, err := url.Parse(strings.TrimSpace(rawTarget))
 	if err != nil {
 		return nil, err
@@ -239,13 +317,13 @@ func parseAndValidatePreviewTarget(rawTarget string) (*url.URL, error) {
 	if target.Host == "" {
 		return nil, fmt.Errorf("target host is empty")
 	}
-	if !previewTargetHostAllowed(target.Hostname()) {
+	if !runtimeTargetHostAllowed(target.Hostname()) {
 		return nil, fmt.Errorf("target host is not loopback or private")
 	}
 	return target, nil
 }
 
-func previewTargetHostAllowed(host string) bool {
+func runtimeTargetHostAllowed(host string) bool {
 	host = strings.TrimSpace(host)
 	if host == "" {
 		return false
@@ -260,7 +338,7 @@ func previewTargetHostAllowed(host string) bool {
 	return ip.IsLoopback() || ip.IsPrivate()
 }
 
-func proxyPreviewRequest(w http.ResponseWriter, r *http.Request, target *url.URL) {
+func proxyRuntimeRequest(w http.ResponseWriter, r *http.Request, target *url.URL) {
 	originalHost := r.Host
 	originalProto := "http"
 	if r.TLS != nil {
@@ -280,21 +358,21 @@ func proxyPreviewRequest(w http.ResponseWriter, r *http.Request, target *url.URL
 		req.URL.RawPath = ""
 		req.Host = target.Host
 		req.Header.Set("X-Forwarded-Host", originalHost)
-		req.Header.Set("X-Hyperbricks-Preview-Host", originalHost)
+		req.Header.Set("X-Hyperbricks-Runtime-Host", originalHost)
 		req.Header.Set("X-Forwarded-Proto", originalProto)
 	}
 	proxy.ModifyResponse = func(resp *http.Response) error {
-		rewritePreviewLocationHeader(resp, target, originalHost, originalProto)
+		rewriteRuntimeLocationHeader(resp, target, originalHost, originalProto)
 		return nil
 	}
 	proxy.ErrorHandler = func(rw http.ResponseWriter, req *http.Request, err error) {
-		logging.GetLogger().Warnw("preview gateway proxy failed", "host", originalHost, "target", target.String(), "error", err)
-		http.Error(rw, "preview proxy failed", http.StatusBadGateway)
+		logging.GetLogger().Warnw("runtime gateway proxy failed", "host", originalHost, "target", target.String(), "error", err)
+		http.Error(rw, "runtime proxy failed", http.StatusBadGateway)
 	}
 	proxy.ServeHTTP(w, r)
 }
 
-func rewritePreviewLocationHeader(resp *http.Response, target *url.URL, originalHost string, originalProto string) {
+func rewriteRuntimeLocationHeader(resp *http.Response, target *url.URL, originalHost string, originalProto string) {
 	location := strings.TrimSpace(resp.Header.Get("Location"))
 	if location == "" || target == nil || originalHost == "" {
 		return

@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
 
 	"github.com/mitchellh/mapstructure"
@@ -153,10 +152,13 @@ type RoutingConfig struct {
 	Extensions []string `mapstructure:"extensions"`
 }
 
-type PreviewGatewayConfig struct {
-	Enabled  bool   `mapstructure:"enabled"`
-	Domain   string `mapstructure:"domain"`
-	Resolver string `mapstructure:"resolver"`
+type RuntimeGatewayConfig struct {
+	Enabled      bool     `mapstructure:"enabled"`
+	Domain       string   `mapstructure:"domain"`
+	Domains      []string `mapstructure:"domains"`
+	HostSuffix   string   `mapstructure:"host_suffix"`
+	HostSuffixes []string `mapstructure:"host_suffixes"`
+	Resolver     string   `mapstructure:"resolver"`
 }
 
 // ServerConfig with defaults.
@@ -169,7 +171,7 @@ type ServerConfig struct {
 	IdleTimeout       time.Duration        `mapstructure:"idle_timeout"`
 	KeepAlivesEnabled bool                 `mapstructure:"keep_alives_enabled"`
 	Routing           RoutingConfig        `mapstructure:"routing"`
-	PreviewGateway    PreviewGatewayConfig `mapstructure:"preview_gateway"`
+	RuntimeGateway    RuntimeGatewayConfig `mapstructure:"runtime_gateway"`
 }
 
 type RateLimitConfig struct {
@@ -244,7 +246,8 @@ func loadHyperBricksConfiguration() *Config {
 		GetLogger().Info("Failed to read config file", "path", configFilePath, "error", err)
 	}
 
-	moduleDir := filepath.ToSlash(commands.GetModuleRoot())
+	runtimeOptions := GetRuntimeOptions()
+	moduleDir := runtimeModuleRoot(runtimeOptions)
 	rootPattern := regexp.MustCompile(`{{MODULE_PATH}}`)
 	_config := rootPattern.ReplaceAllString(string(configContent), moduleDir)
 	if strings.TrimSpace(moduleDir) != "" {
@@ -340,19 +343,22 @@ func loadHyperBricksConfiguration() *Config {
 	if err != nil {
 		GetLogger().Errorf("Failed to decode configuration", "error", err)
 	}
-	if int(commands.Port) != 8080 {
-		config.Server.Port = int(commands.Port)
+	if runtimeOptions.PortOverride {
+		config.Server.Port = runtimeOptions.Port
 	}
-	if commands.StartPreviewGateway {
-		config.Server.PreviewGateway.Enabled = true
+	if runtimeOptions.RuntimeGatewayEnabled {
+		config.Server.RuntimeGateway.Enabled = true
 	}
-	if strings.TrimSpace(commands.StartPreviewDomain) != "" {
-		config.Server.PreviewGateway.Domain = strings.TrimSpace(commands.StartPreviewDomain)
+	if strings.TrimSpace(runtimeOptions.RuntimeGatewayDomain) != "" {
+		config.Server.RuntimeGateway.Domain = strings.TrimSpace(runtimeOptions.RuntimeGatewayDomain)
 	}
-	if strings.TrimSpace(commands.StartPreviewResolver) != "" {
-		config.Server.PreviewGateway.Resolver = strings.TrimSpace(commands.StartPreviewResolver)
+	if strings.TrimSpace(runtimeOptions.RuntimeGatewayHostSuffix) != "" {
+		config.Server.RuntimeGateway.HostSuffix = strings.TrimSpace(runtimeOptions.RuntimeGatewayHostSuffix)
 	}
-	if commands.Production || envTrue("HB_DEPLOY_PRODUCTION") || envTrue("HB_PRODUCTION") {
+	if strings.TrimSpace(runtimeOptions.RuntimeGatewayResolver) != "" {
+		config.Server.RuntimeGateway.Resolver = strings.TrimSpace(runtimeOptions.RuntimeGatewayResolver)
+	}
+	if runtimeOptions.Production || envTrue("HB_DEPLOY_PRODUCTION") || envTrue("HB_PRODUCTION") {
 		config.Mode = LIVE_MODE
 	}
 

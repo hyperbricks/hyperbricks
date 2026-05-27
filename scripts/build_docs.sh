@@ -1,38 +1,46 @@
 #!/bin/bash
+set -euo pipefail
 
-go test ./test/docs/documentation_source_test.go -v \
--args -version="$(cat ./assets/version.md | tr -d \n)" \
-        -buildtime="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  > ./test/docs/documentation_test_results.txt
-# cp ./docs/hyperbricks-reference-$(cat assets/version.md | tr -d \n).md ./README.md
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+RESULTS_FILE="${REPO_ROOT}/test/docs/documentation_test_results.txt"
 
-matches=$(grep -iF "PASS:" ./test/docs/documentation_test_results.txt);
+cd "${REPO_ROOT}"
+
+version="$(tr -d '\n' < ./assets/version.md)"
+buildtime="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+go test ./test/docs -run '^Test_TestAndDocumentationRender$' -v \
+  -args -update-docs -version="${version}" -buildtime="${buildtime}" \
+  > "${RESULTS_FILE}"
+
+matches=$(grep -iF "PASS:" "${RESULTS_FILE}" || true)
 
 if [ -z "$matches" ]; then
-    pass_num_matches=0;
+    pass_num_matches=0
 else
-    pass_num_matches=$(echo "$matches" | wc -l);
+    pass_num_matches=$(printf '%s\n' "$matches" | wc -l)
 fi
 echo "$matches"
 
-matches=$(grep -iF "FAIL:" ./test/docs/documentation_test_results.txt);
+matches=$(grep -iF "FAIL:" "${RESULTS_FILE}" || true)
 
 if [ -z "$matches" ]; then
-    num_matches=0;
+    num_matches=0
 else
-    num_matches=$(echo "$matches" | wc -l);
+    num_matches=$(printf '%s\n' "$matches" | wc -l)
 fi
 echo "$matches"
-echo "${pass_num_matches} tests passing";
-echo "${num_matches} tests failing";
+echo "${pass_num_matches} tests passing"
+echo "${num_matches} tests failing"
 
 
-matches=$(grep -iF ": Test_TestAndDocumentationRender" ./test/docs/documentation_test_results.txt);
+matches=$(grep -iF ": Test_TestAndDocumentationRender" "${RESULTS_FILE}" || true)
 
 if [ -z "$matches" ]; then
-    total_num_matches=0;
+    total_num_matches=0
 else
-    total_num_matches=$(echo "$matches" | wc -l);
+    total_num_matches=$(printf '%s\n' "$matches" | wc -l)
 fi
 
-echo "${total_num_matches} tests in total";
+echo "${total_num_matches} tests in total"

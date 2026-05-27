@@ -3,6 +3,7 @@ package composite
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -18,17 +19,81 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/shared/apiutil"
 )
 
+// TemplateOptions is the reusable template field set used by <TEMPLATE> and
+// template-bearing composites.
+type TemplateOptions struct {
+	Template         string                 `mapstructure:"template" json:"template,omitempty" description:"Loads contents of a template file in the modules template directory" example:"{!{template-template.hyperbricks}}"`
+	Inline           string                 `mapstructure:"inline" json:"inline,omitempty" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{template-inline.hyperbricks}}"`
+	AllowedQueryKeys []string               `mapstructure:"querykeys" json:"querykeys,omitempty" description:"Set allowed proxy query keys" example:"{!{template-querykeys.hyperbricks}}"`
+	QueryParams      map[string]string      `mapstructure:"queryparams" json:"queryparams,omitempty" description:"Set proxy query keys in the configuration" example:"{!{template-queryparams.hyperbricks}}"`
+	Values           map[string]interface{} `mapstructure:"values" json:"values,omitempty" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks}}"`
+	Enclose          string                 `mapstructure:"enclose" json:"enclose,omitempty" description:"Enclosing property for the template rendered output" example:"{!{template-enclose.hyperbricks}}"`
+}
+
+// ToRenderMap converts typed template options back into the map shape expected
+// by the existing <TEMPLATE> renderer path.
+func (opts *TemplateOptions) ToRenderMap() map[string]interface{} {
+	if opts == nil {
+		return nil
+	}
+
+	out := make(map[string]interface{})
+	if opts.Template != "" {
+		out["template"] = opts.Template
+	}
+	if opts.Inline != "" {
+		out["inline"] = opts.Inline
+	}
+	if opts.AllowedQueryKeys != nil {
+		out["querykeys"] = append([]string(nil), opts.AllowedQueryKeys...)
+	}
+	if opts.QueryParams != nil {
+		queryParams := make(map[string]string, len(opts.QueryParams))
+		for key, value := range opts.QueryParams {
+			queryParams[key] = value
+		}
+		out["queryparams"] = queryParams
+	}
+	if opts.Values != nil {
+		out["values"] = shared.CloneMapDeep(opts.Values)
+	}
+	if opts.Enclose != "" {
+		out["enclose"] = opts.Enclose
+	}
+	return out
+}
+
 // TemplateConfig represents the configuration for a TEMPLATE type.
 type TemplateConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	MetaDocDescription string            `mapstructure:"@doc" description:"TEMPLATE description" example:"{!{template-@doc.hyperbricks}}"`
-	Template           string            `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{template-template.hyperbricks}}"`
-	Inline             string            `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* TEmplate goes here */ ]>>" example:"{!{template-inline.hyperbricks}}"`
-	AllowedQueryKeys   []string          `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{template-querykeys.hyperbricks}}"`
-	QueryParams        map[string]string `mapstructure:"queryparams" description:"Set proxy query key in the confifuration" example:"{!{template-queryparams.hyperbricks}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Template-backed component that binds scalar values and value-mounted bricks into generated HTML." example:"{!{template-@doc.hyperbricks}}"`
+	TemplateOptions    `mapstructure:",squash"`
+}
 
-	Values  map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks}}"`
-	Enclose string                 `mapstructure:"enclose" description:"Enclosing property for the template rendered output" example:"{!{template-enclose.hyperbricks}}"`
+// MarshalJSON preserves the historical top-level <TEMPLATE> JSON shape while
+// allowing TemplateOptions to marshal as lowercase nested template maps.
+func (config TemplateConfig) MarshalJSON() ([]byte, error) {
+	type templateConfigJSON struct {
+		shared.Composite
+		MetaDocDescription string
+		Template           string
+		Inline             string
+		AllowedQueryKeys   []string
+		QueryParams        map[string]string
+		Values             map[string]interface{}
+		Enclose            string
+	}
+
+	return json.Marshal(templateConfigJSON{
+		Composite:          config.Composite,
+		MetaDocDescription: config.MetaDocDescription,
+		Template:           config.TemplateOptions.Template,
+		Inline:             config.TemplateOptions.Inline,
+		AllowedQueryKeys:   config.TemplateOptions.AllowedQueryKeys,
+		QueryParams:        config.TemplateOptions.QueryParams,
+		Values:             config.TemplateOptions.Values,
+		Enclose:            config.TemplateOptions.Enclose,
+	})
 }
 
 type TemplateRenderer struct {
@@ -56,18 +121,26 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 	var templatebuilder strings.Builder
 	var errors []error
 
-	// Decode the instance into TemplateConfig without type assertion
 	var config TemplateConfig
-	err := mapstructure.Decode(instance, &config)
-	if err != nil {
-		return "", append(errors, shared.ComponentError{
-			Hash: shared.GenerateHash(),
-			File: config.Composite.Meta.HyperBricksFile,
-			Path: config.Composite.Meta.HyperBricksPath,
-			Key:  config.Composite.Meta.HyperBricksKey,
-			Type: "<TEMPLATE>",
-			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
-		})
+	switch typed := instance.(type) {
+	case TemplateConfig:
+		config = typed
+	case *TemplateConfig:
+		if typed != nil {
+			config = *typed
+		}
+	default:
+		err := mapstructure.Decode(instance, &config)
+		if err != nil {
+			return "", append(errors, shared.ComponentError{
+				Hash: shared.GenerateHash(),
+				File: config.Composite.Meta.HyperBricksFile,
+				Path: config.Composite.Meta.HyperBricksPath,
+				Key:  config.Composite.Meta.HyperBricksKey,
+				Type: "<TEMPLATE>",
+				Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
+			})
+		}
 	}
 	// appending validation errors
 	errors = append(errors, config.Validate()...)
@@ -110,10 +183,6 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 		})
 	}
 
-	if config.Values != nil {
-		config.Values = shared.CloneMapDeep(config.Values)
-	}
-
 	// Attempt to get the params of current request from the context and add it to the template values...
 	if ctx != nil {
 		req, ok := ctx.Value(shared.Request).(*http.Request)
@@ -126,6 +195,7 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 			filtered := FilterAllowedQueryParams(req, allowed)
 			// Ensure config.Values exists and has a valid "Params" map
 			if config.Values != nil {
+				config.Values = shared.CloneMapDeep(config.Values)
 				config.Values["Params"] = make(map[string]interface{})
 				if params, ok := config.Values["Params"].(map[string]interface{}); ok && params != nil {
 					for key, values := range filtered {
@@ -192,7 +262,7 @@ func applyTemplate(templateStr string, data map[string]interface{}, config Templ
 	var errors []error
 
 	// Parse the template string
-	tmpl, err := shared.GenericTemplate().Parse(templateStr)
+	tmpl, err := shared.ParsedGenericTemplate(templateStr)
 	if err != nil {
 		errors = append(errors, fmt.Errorf("error parsing template: %v", err))
 		return "", errors

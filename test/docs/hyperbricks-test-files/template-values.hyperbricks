@@ -18,7 +18,7 @@ myComponent {
 fragment = <FRAGMENT>
 fragment.content = <TREE>
 fragment.content {
-    10 < myComponent
+    10 <<< myComponent
     enclose = <div class="sometext">|</div>
 }
 ==== explainer ====

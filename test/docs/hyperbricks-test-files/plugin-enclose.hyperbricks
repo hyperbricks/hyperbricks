@@ -5,7 +5,7 @@ plugin {
     enclose = <div>|</div>
 }
 ==== explainer ====
-The enclosing HTML element for the header divided by |
+Wrap rendered output using prefix|suffix syntax
 ==== expected json ====
 {
   "ConfigType": "<PLUGIN>",
@@ -20,4 +20,4 @@ The enclosing HTML element for the header divided by |
   "Data": null
 }
 ==== expected output ====
-<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+<div>Plugin example</div>

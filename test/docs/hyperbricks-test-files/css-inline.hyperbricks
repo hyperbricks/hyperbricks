@@ -48,5 +48,5 @@ Use inline to define css in a multiline block <<[ /* css goes here */ ]>>
 body {
     background-color: lightblue;
 }
-    
-</style><meta name="generator" content="hyperbricks cms"></head><body></body></html> 
+
+</style><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

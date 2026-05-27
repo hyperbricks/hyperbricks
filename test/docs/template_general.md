@@ -354,7 +354,7 @@ myComponent {
 fragment = <FRAGMENT>
 fragment.content = <TREE>
 fragment.content {
-    10 < myComponent
+    10 <<< myComponent
     10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
     enclose = <div class="youtube_video">|</div>
 }
@@ -371,7 +371,7 @@ Predefined hyperscripts can be imported and reused:
 fragment = <FRAGMENT>
 fragment.content = <TREE>
 fragment.content {
-    10 < myComponent
+    10 <<< myComponent
     10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
     enclose = <div class="youtube_video">|</div>
 }

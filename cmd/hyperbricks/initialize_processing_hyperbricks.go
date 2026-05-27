@@ -155,20 +155,35 @@ func processScript(
 
 		switch typeValue {
 		case composite.FragmentConfigGetName(), composite.ApiFragmentRenderConfigGetName():
-			fragmentConfig, err := decodeFragmentConfig(obj)
-			if err != nil {
-				logger.Warnw("Error decoding HyperMediaConfig", "error", err)
+			fragmentRouteConfig := routeMetadataConfig{}
+			if typeValue == composite.FragmentConfigGetName() {
+				fragmentConfig, err := decodeFragmentConfig(obj)
+				if err != nil {
+					logger.Warnw("Error decoding FragmentConfig", "file", filename, "key", key, "type", typeValue, "error", err)
+					continue
+				}
+				fragmentRouteConfig = routeMetadataConfig{
+					Title:   fragmentConfig.Title,
+					Route:   fragmentConfig.Route,
+					Section: fragmentConfig.Section,
+				}
+			} else {
+				var err error
+				fragmentRouteConfig, err = decodeRouteMetadataConfig(obj)
+				if err != nil {
+					logger.Warnw("Error decoding API fragment route metadata", "file", filename, "key", key, "type", typeValue, "error", err)
+					continue
+				}
+			}
+			if fragmentRouteConfig.Route == "" {
 				continue
 			}
-			if fragmentConfig.Route == "" {
-				continue
-			}
-			fragmentConfig.Route = ensureUniqueRoute(fragmentConfig.Route, filename, tempConfigs)
-			obj["route"] = fragmentConfig.Route
+			fragmentRouteConfig.Route = ensureUniqueRoute(fragmentRouteConfig.Route, filename, tempConfigs)
+			obj["route"] = fragmentRouteConfig.Route
 			hyperMediaConfig := composite.HyperMediaConfig{
-				Section: fragmentConfig.Section,
-				Title:   fragmentConfig.Title,
-				Route:   fragmentConfig.Route,
+				Section: fragmentRouteConfig.Section,
+				Title:   fragmentRouteConfig.Title,
+				Route:   fragmentRouteConfig.Route,
 			}
 			tempHyperMediasBySection[hyperMediaConfig.Section] = append(
 				tempHyperMediasBySection[hyperMediaConfig.Section],
@@ -181,10 +196,10 @@ func processScript(
 			}
 			obj["hyperbricksfile"] = filename
 			obj["hyperbrickskey"] = key
-			tempConfigs[fragmentConfig.Route] = obj
+			tempConfigs[fragmentRouteConfig.Route] = obj
 
 			// --- Map filename to route here
-			filenameToRoutes[filename] = append(filenameToRoutes[filename], fragmentConfig.Route)
+			filenameToRoutes[filename] = append(filenameToRoutes[filename], fragmentRouteConfig.Route)
 
 		case composite.HyperMediaConfigGetName():
 			hyperMediaConfig, err := decodeHyperMediaConfig(obj)
@@ -237,6 +252,12 @@ func printFilenameToRoutesMapping(filenameToRoutes map[string][]string) {
 	logging.GetLogger().Info("==============================")
 }
 
+type routeMetadataConfig struct {
+	Title   string `mapstructure:"title"`
+	Route   string `mapstructure:"route"`
+	Section string `mapstructure:"section"`
+}
+
 func decodeHyperMediaConfig(v map[string]interface{}) (composite.HyperMediaConfig, error) {
 	var hypermediaInfo composite.HyperMediaConfig
 	decoder, err := createDecoder(&hypermediaInfo)
@@ -255,6 +276,16 @@ func decodeFragmentConfig(v map[string]interface{}) (composite.FragmentConfig, e
 	}
 	err = decoder.Decode(v)
 	return fragmentConfig, err
+}
+
+func decodeRouteMetadataConfig(v map[string]interface{}) (routeMetadataConfig, error) {
+	var routeConfig routeMetadataConfig
+	decoder, err := createDecoder(&routeConfig)
+	if err != nil {
+		return routeConfig, err
+	}
+	err = decoder.Decode(v)
+	return routeConfig, err
 }
 
 // createDecoder creates a mapstructure decoder with the necessary hooks.

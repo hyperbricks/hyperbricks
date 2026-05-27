@@ -49,7 +49,7 @@ page.40.data.enclose = <p>|</p>
 
 page.50 = <PLUGIN>
 page.50.plugin = InheritMapPlugin__test-004-plugins@1.0.0
-page.50.data.template < article
+page.50.data.template <<< article
 page.50.data.title = Article from inherited template
 page.50.data.content = <<[
     # Article content from inherited map

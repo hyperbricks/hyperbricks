@@ -15,13 +15,13 @@ import (
 type HxResponse struct {
 	HxTemplateResult     string // just for output of the parsed template
 	HxLocation           string `mapstructure:"hx_location" header:"HX-Location"  description:"allows you to do a client-side redirect that does not do a full page reload" `
-	HxPushedUrl          string `mapstructure:"hx_push_url" header:"HX-Push-Url" description:"pushes a new url into the history stack"`
+	HxPushedUrl          string `mapstructure:"hx_push_url" header:"HX-Push-Url" description:"Pushes a new URL into the history stack"`
 	HxRedirect           string `mapstructure:"hx_redirect" header:"HX-Redirect" description:"can be used to do a client-side redirect to a new location"`
 	HxRefresh            string `mapstructure:"hx_refresh" header:"HX-Refresh" description:"if set to 'true' the client-side will do a full refresh of the page"`
-	HxReplaceUrl         string `mapstructure:"hx_replace_url" header:"HX-Replace-Url" description:"replaces the current url in the location bar"`
+	HxReplaceUrl         string `mapstructure:"hx_replace_url" header:"HX-Replace-Url" description:"Replaces the current URL in the location bar"`
 	HxReswap             string `mapstructure:"hx_reswap" header:"HX-Reswap" description:"allows you to specify how the response will be swapped"`
-	HxRetarget           string `mapstructure:"hx_retarget" header:"HX-Retarget" description:"a css selector that updates the target of the content update"`
-	HxReselect           string `mapstructure:"hx_reselect" header:"HX-Reselect" description:"a css selector that allows you to choose which part of the response is used to be swapped in"`
+	HxRetarget           string `mapstructure:"hx_retarget" header:"HX-Retarget" description:"CSS selector that updates the target of the content update"`
+	HxReselect           string `mapstructure:"hx_reselect" header:"HX-Reselect" description:"CSS selector that selects which part of the response is swapped in"`
 	HxTrigger            string `mapstructure:"hx_trigger" header:"HX-Trigger" description:"allows you to trigger client-side events"`
 	HxTriggerafterSettle string `mapstructure:"hx_trigger_after_settle"  header:"HX-Trigger-After-Settle" description:"allows you to trigger client-side events after the settle step"`
 	HxTriggerafterSwap   string `mapstructure:"hx_trigger_after_swap"  header:"HX-Trigger-After-Swap" description:"allows you to trigger client-side events after the swap step"`
@@ -39,10 +39,10 @@ type FragmentConfig struct {
 	Section            string                 `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{fragment-section.hyperbricks}}"`
 	Items              map[string]interface{} `mapstructure:",remain"`
 	Enclose            string                 `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{fragment-enclose.hyperbricks}}"`
-	Template           map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks}}"`
+	Template           *TemplateOptions       `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks}}"`
 	Static             string                 `mapstructure:"static" description:"Static file path associated with the fragment" example:"{!{fragment-static.hyperbricks}}"`
 	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{fragment-cache.hyperbricks}}"`
-	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly deisable cache" example:"{!{fragment-nocache.hyperbricks}}"`
+	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly disable cache" example:"{!{fragment-nocache.hyperbricks}}"`
 	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
 	ContentType        string                 `mapstructure:"content_type" description:"content type header definition"`
 	Guard              *RouteGuardConfig      `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current FRAGMENT behavior remains unchanged"`
@@ -82,12 +82,21 @@ func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (s
 	var templatebuilder strings.Builder
 	var treebuilder strings.Builder
 
-	err := mapstructure.Decode(instance, &config)
-	if err != nil {
-		return "", append(errors, shared.ComponentError{
-			Hash: shared.GenerateHash(),
-			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
-		})
+	switch typed := instance.(type) {
+	case FragmentConfig:
+		config = typed
+	case *FragmentConfig:
+		if typed != nil {
+			config = *typed
+		}
+	default:
+		err := mapstructure.Decode(instance, &config)
+		if err != nil {
+			return "", append(errors, shared.ComponentError{
+				Hash: shared.GenerateHash(),
+				Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
+			})
+		}
 	}
 
 	if config.ConfigType != "<FRAGMENT>" {
@@ -109,12 +118,12 @@ func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (s
 	outputHtml := ""
 	// TEMPLATE?
 	if config.Template != nil {
-		config.Template = shared.CloneMapDeep(config.Template)
+		templateConfig := config.Template.ToRenderMap()
 		// TO-DO: INSERT HEAD to TEMPLATE VALUES....
-		config.Template["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
-		config.Template["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey + ".template"
+		templateConfig["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
+		templateConfig["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey + ".template"
 
-		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template, ctx)
+		result, errr := pr.RenderManager.Render("<TEMPLATE>", templateConfig, ctx)
 		errors = append(errors, errr...)
 		templatebuilder.WriteString(result)
 		outputHtml = shared.EncloseContent(config.Enclose, templatebuilder.String())

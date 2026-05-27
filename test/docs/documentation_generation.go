@@ -23,8 +23,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hyperbricks/hyperbricks/pkg/component"
-	"github.com/hyperbricks/hyperbricks/pkg/composite"
+	hbschema "github.com/hyperbricks/hyperbricks/pkg/schema"
 )
 
 // Flags
@@ -95,138 +94,47 @@ func main() {
 	fmt.Printf("Wrote %s\n", *outPathFlag)
 }
 
-// ----------------- Types to document (edit here) -----------------
+// ----------------- Types to document -----------------
 
 func typesToDocument() []DocumentationTypeStructII {
-	return []DocumentationTypeStructII{
-		// Composites
-		{
-			Name:            "Fragment",
-			TypeDescription: "A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.",
-			Embedded:        map[string]string{"HxResponse": "response"},
-			ConfigType:      "<FRAGMENT>",
-			ConfigCategory:  "composite",
-			Config:          composite.FragmentConfig{},
-		},
-		{
-			Name:            "Hypermedia",
-			TypeDescription: "HYPERMEDIA description",
-			Embedded:        map[string]string{},
-			ConfigType:      "<HYPERMEDIA>",
-			ConfigCategory:  "composite",
-			Config:          composite.HyperMediaConfig{},
-		},
-		{
-			Name:            "Head",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<HEAD>",
-			ConfigCategory:  "composite",
-			Config:          composite.HeadConfig{},
-		},
-		{
-			Name:            "Template",
-			TypeDescription: "TEMPLATE description",
-			Embedded:        map[string]string{},
-			ConfigType:      "<TEMPLATE>",
-			ConfigCategory:  "composite",
-			Config:          composite.TemplateConfig{},
-		},
-		{
-			Name:            "Tree",
-			TypeDescription: "Tree composite element can render types in alphanumeric order. Tree elements can have nested types.",
-			Embedded:        map[string]string{},
-			ConfigType:      "<TREE>",
-			ConfigCategory:  "composite",
-			Config:          composite.TreeConfig{},
-		},
-		{
-			Name:            "ApiFragmentRender",
-			TypeDescription: "A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.",
-			Embedded:        map[string]string{"HxResponse": "response"},
-			ConfigType:      "<API_FRAGMENT_RENDER>",
-			ConfigCategory:  "composite",
-			Config:          composite.ApiFragmentRenderConfig{},
-		},
+	defs := hbschema.Definitions()
+	types := make([]DocumentationTypeStructII, 0, len(defs))
+	for _, def := range defs {
+		types = append(types, DocumentationTypeStructII{
+			Name:            def.Name,
+			TypeDescription: docTypeDescription(def),
+			Embedded:        docEmbedded(def),
+			ExcludeFields:   docExcludeFields(def),
+			ConfigType:      def.Token,
+			ConfigCategory:  string(def.Category),
+			Config:          zeroValue(def.ConfigType).Interface(),
+		})
+	}
+	return types
+}
 
-		// Components (resources/data/menu show under Components)
-		{
-			Name:            "Html",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ExcludeFields:   []string{"attributes"},
-			ConfigType:      "<HTML>",
-			ConfigCategory:  "component",
-			Config:          component.HTMLConfig{},
-		},
-		{
-			Name:            "Text",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ExcludeFields:   []string{"attributes"},
-			ConfigType:      "<TEXT>",
-			ConfigCategory:  "component",
-			Config:          component.TextConfig{},
-		},
-		{
-			Name:            "Css",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<CSS>",
-			ConfigCategory:  "resources",
-			Config:          component.CssConfig{},
-		},
-		{
-			Name:            "Javascript",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<JS>",
-			ConfigCategory:  "resources",
-			Config:          component.JavaScriptConfig{},
-		},
-		{
-			Name:            "Image",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<IMAGE>",
-			ConfigCategory:  "resources",
-			Config:          component.SingleImageConfig{},
-		},
-		{
-			Name:            "Images",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ExcludeFields:   []string{"is_static"},
-			ConfigType:      "<IMAGES>",
-			ConfigCategory:  "resources",
-			Config:          component.MultipleImagesConfig{},
-		},
-		{
-			Name:            "Json",
-			TypeDescription: "Basic type description here.....",
-			Embedded:        map[string]string{},
-			ConfigType:      "<JSON>",
-			ConfigCategory:  "data",
-			Config:          component.LocalJSONConfig{},
-		},
-		{
-			Name:            "Api_Render",
-			TypeDescription: "<API_RENDER> description",
-			Embedded:        map[string]string{},
-			ExcludeFields:   []string{"attributes"},
-			ConfigType:      "<API_RENDER>",
-			ConfigCategory:  "data",
-			Config:          component.APIConfig{},
-		},
-		{
-			Name:            "Menu",
-			TypeDescription: "MENU description",
-			Embedded:        map[string]string{},
-			ExcludeFields:   []string{"attributes"},
-			ConfigType:      "<MENU>",
-			ConfigCategory:  "menu",
-			Config:          component.MenuConfig{},
-		},
+func docTypeDescription(def hbschema.Definition) string {
+	if def.Description != "" {
+		return def.Description
+	}
+	return "Basic type description here....."
+}
+
+func docEmbedded(def hbschema.Definition) map[string]string {
+	if def.Token == "<FRAGMENT>" {
+		return map[string]string{"HxResponse": "response"}
+	}
+	return map[string]string{}
+}
+
+func docExcludeFields(def hbschema.Definition) []string {
+	switch def.Token {
+	case "<HTML>", "<TEXT>", "<MENU>", "<API_RENDER>":
+		return []string{"attributes"}
+	case "<STYLES>":
+		return []string{"attributes", "enclose"}
+	default:
+		return nil
 	}
 }
 

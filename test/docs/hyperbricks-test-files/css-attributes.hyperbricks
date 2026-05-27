@@ -49,4 +49,4 @@ Extra attributes like id, data-role, data-action, media
   body {
       background-color: red;
   }
-  </style><meta name="generator" content="hyperbricks cms"></head><body></body></html>
+  </style><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

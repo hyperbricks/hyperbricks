@@ -47,7 +47,7 @@ Extra attributes like id, data-role, data-action, media
   body {
       background-color: red;
   }
-  </style><meta name="generator" content="hyperbricks cms"></head><body></body></html>==== hyperbricks config {!{head}} ====
+  </style><meta name="generator" content="hyperbricks runtime"></head><body></body></html>==== hyperbricks config {!{head}} ====
 head = <HEAD>
 head {
     10 = <CSS>
@@ -87,7 +87,7 @@ A custom <style> tag definition |. Will override extraAttributes.
 body {
     background-color: red;
 }
-</style><meta name="generator" content="hyperbricks cms"></head>==== hyperbricks config {!{hypermedia}} ====
+</style><meta name="generator" content="hyperbricks runtime"></head>==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.head {
     10 = <CSS>
@@ -136,7 +136,7 @@ file overrides link and inline, it loads contents of a file and renders it in a 
 body {
     background-color: red;
 }
-</style><meta name="generator" content="hyperbricks cms"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+</style><meta name="generator" content="hyperbricks runtime"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.head {
     10 = <CSS>
@@ -184,8 +184,8 @@ Use inline to define css in a multiline block <<[ /* css goes here */ ]>>
 body {
     background-color: lightblue;
 }
-    
-</style><meta name="generator" content="hyperbricks cms"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+
+</style><meta name="generator" content="hyperbricks runtime"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.head = <HEAD>
 hypermedia.head {
@@ -226,7 +226,7 @@ Use link for a link tag to a css file.
     }
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><link rel="stylesheet" href="styles.css"><meta name="generator" content="hyperbricks cms"></head><body></body></html>==== hyperbricks config {!{fragment}} ====
+<!DOCTYPE html><html><head><link rel="stylesheet" href="styles.css"><meta name="generator" content="hyperbricks runtime"></head><body></body></html>==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment.response.hx_trigger = myEvent
 fragment.10 = <TEMPLATE>
@@ -236,7 +236,7 @@ fragment.10 {
         <p>{{text}}</p>
         {{image}}
 ]>>
-    
+
     values {
         header = SOME HEADER
         text = <TEXT>
@@ -372,7 +372,7 @@ Enclosing property using the pipe symbol |
     "Index": 0
   }
 ==== expected output ====
-<div><p>TEST HTML</p></div> 
+<div><p>TEST HTML</p></div>
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
@@ -719,13 +719,13 @@ A css selector that updates the target of the content update
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	
+
 }
 ==== explainer ====
 Set Cookies in <FRAGMENT>
 ==== expected json ====
 {
-	
+
 }
 ==== expected output ====
 <div>this test fails</div>
@@ -1092,7 +1092,7 @@ fragment {
 	static = some_static_file.extension
 }
 ==== explainer ====
-Static file path associated with the fragment, this will only work for a hx-get (GET) request. 
+Static file path associated with the fragment, this will only work for a hx-get (GET) request.
 ==== expected json ====
 {
     "ConfigType": "<FRAGMENT>",
@@ -1136,7 +1136,7 @@ fragment {
             <div>{{content}}</div>
 
         ]>>
-      
+
         values {
             content = <HTML>
             content.value = <p>SOME HTML CONTENT</p>
@@ -1228,7 +1228,7 @@ The title of the fragment, only used in the context of the <MENU> component. For
     "NoCache": false,
     "Index": 0
   }
-  
+
 ==== expected output ====
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
@@ -1270,7 +1270,7 @@ CSS files to include
     }
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="stylesheet" href="style.css">
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><link rel="stylesheet" href="style.css">
         <link rel="stylesheet" href="morestyles.css">
         </head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
@@ -1309,7 +1309,7 @@ Path to the favicon for the hypermedia document
     }
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="/images/icon.ico">
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><link rel="icon" type="image/x-icon" href="/images/icon.ico">
         </head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.head = <HEAD>
@@ -1350,7 +1350,7 @@ JavaScript files to include
     }
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><script src="main.js"></script>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><script src="main.js"></script>
 <script src="helpers.js"></script>
 </head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
@@ -1397,7 +1397,7 @@ Metadata for the head section
 ==== expected output ====
 <!DOCTYPE html><html>
 <head>
-<meta name="generator" content="hyperbricks cms">
+<meta name="generator" content="hyperbricks runtime">
 <meta name="a" content="b">
 <meta name="b" content="c">
 </head>
@@ -1438,11 +1438,11 @@ The title of the hypermedia document
     }
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>Home</title>
         </head><body></body></html> ==== hyperbricks config {!{html}} ====
 html = <HTML>
 html.value = <<[
-        <p>HTML TEST</p>    
+        <p>HTML TEST</p>
     ]>>
 html.enclose = <div>|</div>
 }
@@ -1464,7 +1464,7 @@ The enclosing HTML element for the header divided by |
 <div><p>HTML TEST</p></div>==== hyperbricks config {!{html}} ====
 html = <HTML>
 html.value = <<[
-        <p>HTML TEST</p>    
+        <p>HTML TEST</p>
     ]>>
 html.trimspace = true
 }
@@ -1485,7 +1485,7 @@ Property trimspace filters (if set to true true),  all leading and trailing whit
 ==== expected output ====
 <p>HTML TEST</p>==== hyperbricks config {!{html}} ====
 html = <HTML>
-html.value = <p>HTML TEST</p>    
+html.value = <p>HTML TEST</p>
 }
 ==== explainer ====
 The raw HTML content
@@ -1532,7 +1532,7 @@ hypermedia.10 {
 }
 
 ==== explainer ====
-HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use <FRAGMENT> to utilize hx-[method] (GET,POST etc) requests.  
+HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use <FRAGMENT> to utilize hx-[method] (GET,POST etc) requests.
 ==== expected json ====
 {
   "ConfigType": "<HYPERMEDIA>",
@@ -1580,8 +1580,8 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
 .content {
     color:green;
 }
-    
-</style><meta name="generator" content="hyperbricks cms"></head><body><p>SOME CONTENT</p></body></html> 
+
+</style><meta name="generator" content="hyperbricks runtime"></head><body><p>SOME CONTENT</p></body></html>
 ==== more details ====
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
@@ -1698,9 +1698,9 @@ Alternative Doctype for the HTML document
     "HtmlTag": "",
     "Head": null
   }
-  
+
 ==== expected output ====
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html><body></body></html> 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html><body></body></html>
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
@@ -1776,7 +1776,7 @@ Path to the favicon for the hypermedia
     "Head": null
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="icon" type="image/x-icon" href="static/favicon.ico"></head><body></body></html> 
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><link rel="icon" type="image/x-icon" href="static/favicon.ico"></head><body></body></html>
 ==== more details ====
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
@@ -1801,8 +1801,8 @@ hypermedia.head {
     ]>>
 
     20 = <HTML>
-    20.value = <meta name="generator" content="hyperbricks cms">
-     
+    20.value = <meta name="generator" content="hyperbricks runtime">
+
 }
 hypermedia.10 = <HTML>
 hypermedia.10.value = <p>some HTML</p>
@@ -1838,7 +1838,7 @@ Builds header content. See <HEADER> for details
     },
     "20": {
       "@type": "<HTML>",
-      "value": "<meta name=\"generator\" content=\"hyperbricks cms\">"
+      "value": "<meta name=\"generator\" content=\"hyperbricks runtime\">"
     },
     "999": {
       "@type": "<HTML>",
@@ -1861,18 +1861,18 @@ Builds header content. See <HEADER> for details
 }
 
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><!-- 999 overrides default generator meta tag --><meta name="a" content="b">
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><!-- 999 overrides default generator meta tag --><meta name="a" content="b">
         <meta name="b" content="c">
         <link rel="stylesheet" href="styles.css">
         <link rel="stylesheet" href="xxxx">
         <script src="styles.css"></script>
         <script src="xxxx"></script>
         <style>
-        
+
         body {
             padding:10px;
         }
-            
+
         </style></head><body><p>some HTML</p></body></html>==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.htmltag = <html lang="en">
@@ -1904,7 +1904,7 @@ The opening HTML tag with attributes
     "Head": null
   }
 ==== expected output ====
-<!DOCTYPE html><html lang="en"><body></body></html> 
+<!DOCTYPE html><html lang="en"><body></body></html>
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia {
@@ -1936,9 +1936,9 @@ Index number is a sort order option for the hypermedia defined in the section fi
     "Doctype": "",
     "HtmlTag": "",
     "Head": null
-  } 
+  }
 ==== expected output ====
-<!DOCTYPE html><html><body></body></html> 
+<!DOCTYPE html><html><body></body></html>
 ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.route = index
@@ -2166,7 +2166,7 @@ The title of the hypermedia site
     "Head": null
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title></head><body></body></html> ==== hyperbricks config {!{image}} ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>Home</title></head><body></body></html> ==== hyperbricks config {!{image}} ====
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
@@ -2200,7 +2200,7 @@ image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
 image.attributes {
-  usemap = #catmap 
+  usemap = #catmap
 }
 ==== explainer ====
 Extra attributes like loading, data-role, data-action etc
@@ -2359,7 +2359,7 @@ image.width = 310
 image.height = 310
 image.is_static = true
 ==== explainer ====
-Flag indicating if the image is static, if so the img will not be scaled and has to be present in the configured static image directory. See package.hyperbricks in the module for settings. 
+Flag indicating if the image is static, if so the img will not be scaled and has to be present in the configured static image directory. See package.hyperbricks in the module for settings.
 ```
 #conveys this logic:
 destDir := hbConfig.Directories["static"] + "/images/"
@@ -2417,7 +2417,7 @@ Lazy loading strategy (e.g., 'lazy', 'eager')
     "IsStatic": false
   }
 ==== expected output ====
-<img src="static/images/cute_cat_w320_h320.jpg" width="320" height="320" loading="lazy" /> 
+<img src="static/images/cute_cat_w320_h320.jpg" width="320" height="320" loading="lazy" />
 ==== hyperbricks config {!{image}} ====
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
@@ -2481,7 +2481,7 @@ The source URL of the image
     "IsStatic": false
   }
 ==== expected output ====
-<div id="#logo"><img src="static/images/cute_cat_w300_h300.jpg" width="300" height="300" loading="lazy" /></div> 
+<div id="#logo"><img src="static/images/cute_cat_w300_h300.jpg" width="300" height="300" loading="lazy" /></div>
 ==== hyperbricks config {!{image}} ====
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
@@ -2510,7 +2510,7 @@ The title attribute of the image
     "IsStatic": false
   }
 ==== expected output ====
-<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="Some Cute Cat!" /> 
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="Some Cute Cat!" />
 ==== hyperbricks config {!{image}} ====
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
@@ -2545,7 +2545,7 @@ The width of the image (can be a number or percentage)
     "IsStatic": false
   }
 ==== expected output ====
-<div id="#logo"><img src="static/images/cute_cat_w300_h300.jpg" width="300" height="300" loading="lazy" /></div> 
+<div id="#logo"><img src="static/images/cute_cat_w300_h300.jpg" width="300" height="300" loading="lazy" /></div>
 ==== hyperbricks config {!{images}} ====
 images = <IMAGES>
 images.directory = hyperbricks-test-files/assets/
@@ -2577,10 +2577,10 @@ Alternative text for the image
     "Quality": 0,
     "Loading": "lazy"
   }
-  
+
 ==== expected output ====
 <img src="static/images/cute_cat_w100_h10.jpg" width="100" height="10" alt="gallery image" class="galleryimage bordered" id="#galleryimage_0" loading="lazy" />
-<img src="static/images/same_cute_cat_w100_h10.jpg" width="100" height="10" alt="gallery image" class="galleryimage bordered" id="#galleryimage_1" loading="lazy" /> 
+<img src="static/images/same_cute_cat_w100_h10.jpg" width="100" height="10" alt="gallery image" class="galleryimage bordered" id="#galleryimage_1" loading="lazy" />
 ==== hyperbricks config {!{images}} ====
 images = <IMAGES>
 images.directory = hyperbricks-test-files/assets/
@@ -2588,7 +2588,7 @@ images.width = 100
 images.loading = lazy
 images.id = #galleryimage_
 images.attributes {
-    decoding = async 
+    decoding = async
 }
 ==== explainer ====
 Extra attributes like id, data-role, data-action
@@ -2625,7 +2625,7 @@ images.loading = lazy
 images.id = #galleryimage_
 images.class = galleryimage bordered
 images.attributes {
-    decoding = async 
+    decoding = async
 }
 ==== explainer ====
 CSS class for styling the image
@@ -2686,7 +2686,7 @@ The directory path containing the images
   "IsStatic": false
 }
 ==== expected output ====
-<div id="#gallery"><img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" /></div> 
+<div id="#gallery"><img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" /></div>
 ==== hyperbricks config {!{image}} ====
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
@@ -2720,7 +2720,7 @@ Use the pipe symbol | to enclose the ````<IMG>```` tag.
   "IsStatic": false
 }
 ==== expected output ====
-<div id="#gallery"><img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" /></div> 
+<div id="#gallery"><img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" /></div>
 ==== hyperbricks config {!{image}} ====
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
@@ -2755,7 +2755,7 @@ images.width = 100
 images.loading = lazy
 images.id = #img_
 images.attributes {
-    decoding = async 
+    decoding = async
 }
 ==== explainer ====
 Id of images with a index added to it
@@ -2874,10 +2874,10 @@ The title attribute of the image
     "Quality": 0,
     "Loading": "lazy"
   }
-  
+
 ==== expected output ====
 <img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="sometitle" id="#img_0" loading="lazy" />
-<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" title="sometitle" id="#img_1" loading="lazy" /> 
+<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" title="sometitle" id="#img_1" loading="lazy" />
 ==== hyperbricks config {!{image}} ====
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
@@ -2941,7 +2941,7 @@ Extra attributes like id, data-role, data-action, type
 ==== expected output ====
 <head><script type="text/javascript">
 console.log("Hello World!")
-</script><meta name="generator" content="hyperbricks cms"></head>
+</script><meta name="generator" content="hyperbricks runtime"></head>
 ==== hyperbricks config {!{head}} ====
 head = <HEAD>
 head {
@@ -2980,7 +2980,7 @@ The enclosing HTML element for the header divided by |
 ==== expected output ====
 <head><script defer></script>
         console.log("Hello World!")
-        </script defer></script><meta name="generator" content="hyperbricks cms"></head>==== hyperbricks config {!{hypermedia}} ====
+        </script defer></script><meta name="generator" content="hyperbricks runtime"></head>==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.head {
     10 = <JAVASCRIPT>
@@ -3027,7 +3027,7 @@ File overrides link and inline, it loads contents of a file and renders it in a 
 ==== expected output ====
 <!DOCTYPE html><html><head><script type="text/javascript">
         console.log("Hello World!")
-        </script><meta name="generator" content="hyperbricks cms"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+        </script><meta name="generator" content="hyperbricks runtime"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.head {
     10 = <JAVASCRIPT>
@@ -3074,7 +3074,7 @@ Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here
 ==== expected output ====
 <!DOCTYPE html><html><head><script type="text/javascript">
 console.log("Hello World!")
-</script><meta name="generator" content="hyperbricks cms"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
+</script><meta name="generator" content="hyperbricks runtime"></head><body></body></html> ==== hyperbricks config {!{hypermedia}} ====
 hypermedia = <HYPERMEDIA>
 hypermedia.head {
     10 = <JAVASCRIPT>
@@ -3119,7 +3119,7 @@ Use link for a script tag with a src attribute
     }
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><script src="hyperbricks-test-files/assets/main.js"></script><meta name="generator" content="hyperbricks cms"></head><body></body></html> ==== hyperbricks config {!{local_json_test}} ====
+<!DOCTYPE html><html><head><script src="hyperbricks-test-files/assets/main.js"></script><meta name="generator" content="hyperbricks runtime"></head><body></body></html> ==== hyperbricks config {!{local_json_test}} ====
 local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
@@ -3150,7 +3150,7 @@ Extra attributes like id, data-role, data-action
     "Values": null,
     "Template": ""
   }
-  
+
 ==== expected output ====
 <h1>Quotes</h1>
 <ul>
@@ -3197,7 +3197,7 @@ Debug the response data
     },
     "Debug": false
   }
-  
+
 ==== expected output ====
 <h1>Quotes!</h1>
 <ul>
@@ -3237,7 +3237,7 @@ The enclosing HTML element for the header divided by |
     "Values": null,
     "Debug": false
   }
-  
+
 ==== expected output ====
 <h1>Quotes</h1>
 <ul>
@@ -3277,7 +3277,7 @@ Path to the local JSON file
     "Values": null,
     "Debug": false
   }
-  
+
 ==== expected output ====
 <h1>Quotes</h1>
 <ul>
@@ -3317,7 +3317,7 @@ Use inline to define the template in a multiline block <<[ /* Template code goes
     "Values": null,
     "Debug": false
   }
-  
+
 ==== expected output ====
 <h1>Quotes</h1>
 <ul>
@@ -3359,7 +3359,7 @@ Template for rendering output
     "Values": null,
     "Debug": false
   }
-  
+
 ==== expected output ====
 <h1>Quotes</h1>
 <ul>
@@ -3406,7 +3406,7 @@ Key-value pairs for template rendering
     },
     "Debug": false
   }
-  
+
 ==== expected output ====
 <h1>Quotes!</h1>
 <ul>
@@ -3418,13 +3418,13 @@ Key-value pairs for template rendering
 </ul>==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	
+
 }
 ==== explainer ====
 Optional CSS classes for the link
 ==== expected json ====
 {
-	
+
 }
 ==== expected output ====
 <div>this test fails</div>
@@ -3483,7 +3483,7 @@ Template for the active menu item.
     "Head": null
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>DOCUMENT_3</title>
 </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
@@ -3538,7 +3538,7 @@ Extra attributes like id, data-role, data-action
     "Head": null
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>DOCUMENT_3</title>
 </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
@@ -3595,7 +3595,7 @@ The enclosing HTML element for the header divided by |
     "Head": null
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>DOCUMENT_3</title>
 </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
@@ -3652,7 +3652,7 @@ Template for regular menu items.
     "Head": null
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>DOCUMENT_3</title>
 </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
@@ -3709,7 +3709,7 @@ The order of items in the menu ('asc' or 'desc').
     "Head": null
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>DOCUMENT_3</title>
 </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
@@ -3766,7 +3766,7 @@ The section of the menu to display.
     "Head": null
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>DOCUMENT_3</title>
 </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{hm_3}} ====
@@ -3823,71 +3823,71 @@ The field to sort menu items by ('title', 'route', or 'index').
     "Head": null
   }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>DOCUMENT_3</title>
 </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	
+
 }
 ==== explainer ====
 Extra attributes like id, data-role, data-action
 ==== expected json ====
 {
-	
+
 }
 ==== expected output ====
 <div>this test fails</div>
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	
+
 }
 ==== explainer ====
 Optional CSS classes for the link
 ==== expected json ====
 {
-	
+
 }
 ==== expected output ====
 <div>this test fails</div>
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	
+
 }
 ==== explainer ====
 
 ==== expected json ====
 {
-	
+
 }
 ==== expected output ====
 <div>this test fails</div>
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	
+
 }
 ==== explainer ====
 The enclosing HTML element for the header divided by |
 ==== expected json ====
 {
-	
+
 }
 ==== expected output ====
 <div>this test fails</div>
 ==== hyperbricks config {!{fragment}} ====
 fragment = <FRAGMENT>
 fragment {
-	
+
 }
 ==== explainer ====
 
 ==== expected json ====
 {
-	
+
 }
 ==== expected output ====
 <div>this test fails</div>
@@ -3960,9 +3960,9 @@ fragment.content {
 ==== expected output ====
  <div class="youtube_video">
         <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-            
+
         <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-            </div> 
+            </div>
 ==== more details ======== hyperbricks config {!{myComponent}} ====
 myComponent = <TEMPLATE>
 myComponent {
@@ -3999,15 +3999,15 @@ Enclosing property for the template rendered output divided by |
     "Enclose": "<div id=\"image-container\">|</div>"
   }
 ==== expected output ====
-<div id="image-container"><img src="img_girl.jpg" alt="Girl in a jacket" width="500" height="600"></div> 
+<div id="image-container"><img src="img_girl.jpg" alt="Girl in a jacket" width="500" height="600"></div>
 ==== hyperbricks config {!{fragment}} ====
 myComponent = <TEMPLATE>
 myComponent {
-    
+
     inline = <<[
         <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
     ]>>
-  
+
     values {
         width = 300
         height = 400
@@ -4073,7 +4073,7 @@ myComponent {
     inline = <<[
         <iframe width="{{width}}" height="{{height}}" src="{{src}}"></iframe>
     ]>>
-  
+
     values {
         width = 300
         height = 400
@@ -4193,7 +4193,7 @@ Key-value pairs for template rendering
 <div class="sometext">
 <h1>hello world!</h1>
 <p>some text</p>
-    </div> 
+    </div>
 ==== more details ======== hyperbricks config {!{text}} ====
 text = <TEXT>
 text {
@@ -4252,7 +4252,7 @@ fragment {
         20 {
             1 = <HTML>
             1.value = <p>SOME NESTED HTML --- 20-1</p>
-            
+
             2 = <HTML>
             2.value = <p>SOME NESTED HTML --- 20-2</p>
         }
@@ -4312,7 +4312,7 @@ fragment {
         20 {
             1 = <HTML>
             1.value = <p>SOME NESTED HTML --- 20-1</p>
-            
+
             2 = <HTML>
             2.value = <p>SOME NESTED HTML --- 20-2</p>
         }
@@ -4355,4 +4355,4 @@ Enclosing tag using the pipe symbol |
     "Index": 0
   }
 ==== expected output ====
-<div><p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p></div> 
+<div><p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p></div>

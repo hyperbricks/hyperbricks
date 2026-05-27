@@ -165,17 +165,16 @@ func bodyHandler(w http.ResponseWriter, r *http.Request) {
 	var bodyData map[string]interface{}
 	err = json.Unmarshal(bodyBytes, &bodyData)
 	if err != nil {
-		bodyData = make(map[string]interface{})
-		fmt.Errorf("invalid or no JSON payload in body: %w", err)
-	} else {
+		http.Error(w, `{"message": "Invalid JSON payload"}`, http.StatusBadRequest)
+		return
+	}
 
-		// Merge body data with conflicts resolved
-		for key, value := range bodyData {
-			if _, exists := mergedData[key]; exists {
-				mergedData["body_"+key] = value
-			} else {
-				mergedData[key] = value
-			}
+	// Merge body data with conflicts resolved
+	for key, value := range bodyData {
+		if _, exists := mergedData[key]; exists {
+			mergedData["body_"+key] = value
+		} else {
+			mergedData[key] = value
 		}
 	}
 	if mergedData["password"] == "mysupersecretpassword" {

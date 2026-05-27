@@ -1,8 +1,8 @@
 === RUN   Test_TestAndDocumentationRender
 loaded 
-&{live {info ./logs/hyperbricks.log} {0 false true 5s 10s 20s true {true [index.html index.htm] [html htm]} {false  }} {5 10} {false false false false} {} {10m0s} { {true 127.0.0.1 9090 deploy 8080 true } {127.0.0.1 9091 modules deploy} { map[]}} map[hyperbricks:modules/default/hyperbricks plugins:bin/plugins render:modules/default/rendered resources:modules/default/resources static:modules/default/static templates:modules/default/templates] {[] map[]} {10s}}
 
-======= Processing type: Fragment =======
+
+--- Processing type: Fragment ---
 === RUN   Test_TestAndDocumentationRender/fragment-response
 === RUN   Test_TestAndDocumentationRender/fragment-@doc
 === RUN   Test_TestAndDocumentationRender/fragment-beautify
@@ -32,108 +32,35 @@ Embedded Field: HxResponse (mapped as: response)
 === RUN   Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap
 
 
-======= Processing type: ApiFragmentRender =======
+--- Processing type: ApiFragmentRender ---
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-endpoint
-2026/05/03 01:24:02 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-method
-2026/05/03 01:24:02 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-headers
-2026/05/03 01:24:02 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-body
-2026/05/03 01:24:02 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-template
-2026/05/03 01:24:03 [error parsing template: template: hyperbricks-generic-template:1: function "main_section" not defined]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-inline
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-values
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-username
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-password
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-setcookie
-2026/05/03 01:24:03 [failed to fetch data from API: error making HTTP request: Post "https://api.example.com/rpc/logout": dial tcp: lookup api.example.com: no such host]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-setcookies
-2026/05/03 01:24:03 [failed to fetch data from API: error making HTTP request: Post "https://api.example.com/rpc/logout": dial tcp: lookup api.example.com: no such host]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-querykeys
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-queryparams
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-jwtsecret
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-jwtclaims
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-debug
-Updated body map string: 
-HTTP Request:
-GET /fragment HTTP/1.1
-Host: example.com
-User-Agent: Go-http-client/1.1
-Accept-Encoding: gzip
-
-
-HTTP Response:
-HTTP/2.0 404 Not Found
-Age: 12614
-Cf-Cache-Status: HIT
-Cf-Ray: 9f5ac6f7dfba66d6-AMS
-Content-Type: text/html
-Date: Sat, 02 May 2026 23:24:03 GMT
-Server: cloudflare
-
-
-HyperBricks Response:
-{
-  "Code": 200,
-  "HeaderMap": {},
-  "Body": {},
-  "Flushed": false
-}
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-debugpanel
-Updated body map string: 
-HTTP Request:
-GET /fragment HTTP/1.1
-Host: example.com
-User-Agent: Go-http-client/1.1
-Accept-Encoding: gzip
-
-
-HTTP Response:
-HTTP/2.0 404 Not Found
-Age: 12614
-Cf-Cache-Status: HIT
-Cf-Ray: 9f5ac6f7ffca66d6-AMS
-Content-Type: text/html
-Date: Sat, 02 May 2026 23:24:03 GMT
-Server: cloudflare
-
-
-HyperBricks Response:
-{
-  "Code": 200,
-  "HeaderMap": {},
-  "Body": {},
-  "Flushed": false
-}
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-response
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-@doc
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-title
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-route
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-section
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-enclose
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-index
 === RUN   Test_TestAndDocumentationRender/apifragmentrender-guard
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
 
 
-======= Processing type: Hypermedia =======
+--- Processing type: Hypermedia ---
 === RUN   Test_TestAndDocumentationRender/hypermedia-@doc
 === RUN   Test_TestAndDocumentationRender/hypermedia-beautify
 === RUN   Test_TestAndDocumentationRender/hypermedia-title
@@ -156,7 +83,7 @@ HyperBricks Response:
 === RUN   Test_TestAndDocumentationRender/hypermedia-content_type
 
 
-======= Processing type: Head =======
+--- Processing type: Head ---
 === RUN   Test_TestAndDocumentationRender/head-title
 === RUN   Test_TestAndDocumentationRender/head-favicon
 === RUN   Test_TestAndDocumentationRender/head-meta
@@ -164,31 +91,35 @@ HyperBricks Response:
 === RUN   Test_TestAndDocumentationRender/head-js
 
 
-======= Processing type: Template =======
+--- Processing type: Template ---
 === RUN   Test_TestAndDocumentationRender/template-@doc
 === RUN   Test_TestAndDocumentationRender/template-template
 === RUN   Test_TestAndDocumentationRender/template-inline
 === RUN   Test_TestAndDocumentationRender/template-querykeys
-2026/05/03 01:24:03 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-queryparams
-2026/05/03 01:24:03 [.template or a .inline is required]
 === RUN   Test_TestAndDocumentationRender/template-values
 === RUN   Test_TestAndDocumentationRender/template-enclose
 
 
-======= Processing type: Tree =======
+--- Processing type: Tree ---
 === RUN   Test_TestAndDocumentationRender/tree-@doc
 === RUN   Test_TestAndDocumentationRender/tree-enclose
 
 
-======= Processing type: Html =======
+--- Processing type: Html ---
 === RUN   Test_TestAndDocumentationRender/html-enclose
 === RUN   Test_TestAndDocumentationRender/html-@doc
 === RUN   Test_TestAndDocumentationRender/html-value
 === RUN   Test_TestAndDocumentationRender/html-trimspace
 
 
-======= Processing type: Css =======
+--- Processing type: Text ---
+=== RUN   Test_TestAndDocumentationRender/text-enclose
+=== RUN   Test_TestAndDocumentationRender/text-@doc
+=== RUN   Test_TestAndDocumentationRender/text-value
+
+
+--- Processing type: Css ---
 === RUN   Test_TestAndDocumentationRender/css-attributes
 === RUN   Test_TestAndDocumentationRender/css-enclose
 === RUN   Test_TestAndDocumentationRender/css-@doc
@@ -197,7 +128,7 @@ HyperBricks Response:
 === RUN   Test_TestAndDocumentationRender/css-file
 
 
-======= Processing type: Javascript =======
+--- Processing type: Javascript ---
 === RUN   Test_TestAndDocumentationRender/javascript-attributes
 === RUN   Test_TestAndDocumentationRender/javascript-enclose
 === RUN   Test_TestAndDocumentationRender/javascript-@doc
@@ -206,7 +137,7 @@ HyperBricks Response:
 === RUN   Test_TestAndDocumentationRender/javascript-file
 
 
-======= Processing type: Image =======
+--- Processing type: Image ---
 === RUN   Test_TestAndDocumentationRender/image-attributes
 === RUN   Test_TestAndDocumentationRender/image-enclose
 === RUN   Test_TestAndDocumentationRender/image-@doc
@@ -221,7 +152,7 @@ HyperBricks Response:
 === RUN   Test_TestAndDocumentationRender/image-loading
 
 
-======= Processing type: Images =======
+--- Processing type: Images ---
 === RUN   Test_TestAndDocumentationRender/images-attributes
 === RUN   Test_TestAndDocumentationRender/images-enclose
 === RUN   Test_TestAndDocumentationRender/images-@doc
@@ -236,7 +167,7 @@ HyperBricks Response:
 === RUN   Test_TestAndDocumentationRender/images-loading
 
 
-======= Processing type: Json =======
+--- Processing type: Json ---
 === RUN   Test_TestAndDocumentationRender/json-attributes
 === RUN   Test_TestAndDocumentationRender/json-enclose
 === RUN   Test_TestAndDocumentationRender/json-@doc
@@ -247,31 +178,27 @@ HyperBricks Response:
 === RUN   Test_TestAndDocumentationRender/json-debug
 
 
-======= Processing type: Plugin =======
-=== RUN   Test_TestAndDocumentationRender/plugin-attributes
-2026/05/03 01:24:03 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
-]
-=== RUN   Test_TestAndDocumentationRender/plugin-enclose
-2026/05/03 01:24:03 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
-]
-=== RUN   Test_TestAndDocumentationRender/plugin-plugin
-2026/05/03 01:24:03 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
-]
-=== RUN   Test_TestAndDocumentationRender/plugin-classes
-2026/05/03 01:24:03 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
-]
-=== RUN   Test_TestAndDocumentationRender/plugin-data
-2026/05/03 01:24:03 [plugin example is not preloaded, make sure it is preloaded in production. Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed
-]
+--- Processing type: Api_Render ---
+=== RUN   Test_TestAndDocumentationRender/api_render-enclose
+=== RUN   Test_TestAndDocumentationRender/api_render-endpoint
+=== RUN   Test_TestAndDocumentationRender/api_render-method
+=== RUN   Test_TestAndDocumentationRender/api_render-headers
+=== RUN   Test_TestAndDocumentationRender/api_render-body
+=== RUN   Test_TestAndDocumentationRender/api_render-template
+=== RUN   Test_TestAndDocumentationRender/api_render-inline
+=== RUN   Test_TestAndDocumentationRender/api_render-values
+=== RUN   Test_TestAndDocumentationRender/api_render-username
+=== RUN   Test_TestAndDocumentationRender/api_render-password
+=== RUN   Test_TestAndDocumentationRender/api_render-querykeys
+=== RUN   Test_TestAndDocumentationRender/api_render-queryparams
+=== RUN   Test_TestAndDocumentationRender/api_render-jwtsecret
+=== RUN   Test_TestAndDocumentationRender/api_render-jwtclaims
+=== RUN   Test_TestAndDocumentationRender/api_render-debug
+=== RUN   Test_TestAndDocumentationRender/api_render-debugpanel
+=== RUN   Test_TestAndDocumentationRender/api_render-@doc
 
 
-======= Processing type: Text =======
-=== RUN   Test_TestAndDocumentationRender/text-enclose
-=== RUN   Test_TestAndDocumentationRender/text-@doc
-=== RUN   Test_TestAndDocumentationRender/text-value
-
-
-======= Processing type: Menu =======
+--- Processing type: Menu ---
 === RUN   Test_TestAndDocumentationRender/menu-enclose
 === RUN   Test_TestAndDocumentationRender/menu-section
 === RUN   Test_TestAndDocumentationRender/menu-order
@@ -281,83 +208,24 @@ HyperBricks Response:
 === RUN   Test_TestAndDocumentationRender/menu-enclose#01
 
 
-======= Processing type: Api_Render =======
-=== RUN   Test_TestAndDocumentationRender/api_render-enclose
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-endpoint
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-method
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-headers
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-body
-2026/05/03 01:24:03 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-template
-2026/05/03 01:24:04 [error parsing template: template: hyperbricks-generic-template:1: function "main_section" not defined]
-=== RUN   Test_TestAndDocumentationRender/api_render-inline
-=== RUN   Test_TestAndDocumentationRender/api_render-values
-2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-username
-2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-password
-2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-querykeys
-2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-queryparams
-2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-jwtsecret
-2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-jwtclaims
-2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-debug
-Updated body map string: 
-HTTP Request:
-GET /api HTTP/1.1
-Host: example.com
-User-Agent: Go-http-client/1.1
-Accept-Encoding: gzip
+--- Processing type: Plugin ---
+=== RUN   Test_TestAndDocumentationRender/plugin-attributes
+=== RUN   Test_TestAndDocumentationRender/plugin-enclose
+=== RUN   Test_TestAndDocumentationRender/plugin-plugin
+=== RUN   Test_TestAndDocumentationRender/plugin-classes
+=== RUN   Test_TestAndDocumentationRender/plugin-data
 
 
-HTTP Response:
-HTTP/2.0 404 Not Found
-Age: 12615
-Cf-Cache-Status: HIT
-Cf-Ray: 9f5ac6fdfb3e66d6-AMS
-Content-Type: text/html
-Date: Sat, 02 May 2026 23:24:04 GMT
-Server: cloudflare
-
-
-2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-debugpanel
-Updated body map string: 
-HTTP Request:
-GET /api HTTP/1.1
-Host: example.com
-User-Agent: Go-http-client/1.1
-Accept-Encoding: gzip
-
-
-HTTP Response:
-HTTP/2.0 404 Not Found
-Age: 12615
-Cf-Cache-Status: HIT
-Cf-Ray: 9f5ac6fe1b4a66d6-AMS
-Content-Type: text/html
-Date: Sat, 02 May 2026 23:24:04 GMT
-Server: cloudflare
-
-
-2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
-=== RUN   Test_TestAndDocumentationRender/api_render-@doc
-2026/05/03 01:24:04 [failed to load template file '': open : no such file or directory]
-2026/05/03 01:24:04 Version: v1.0.2-beta
-2026/05/03 01:24:04 Build Time: 2026-05-02T23:24:02Z
-2026/05/03 01:24:04 Static HTML file generated at ../../docs/REFERENCE.md
-2026/05/03 01:24:04 Static HTML file generated at ../../README.md
---- PASS: Test_TestAndDocumentationRender (1.40s)
+--- Processing type: Style ---
+=== RUN   Test_TestAndDocumentationRender/style-file
+2026/05/26 20:53:27 Version: v1.1.0-beta
+2026/05/26 20:53:27 Build Time: 2026-05-26T18:53:23Z
+=== NAME  Test_TestAndDocumentationRender
+    documentation_source_test.go:406: Static Markdown file generated at ../../docs/REFERENCE.md
+    documentation_source_test.go:419: Static Markdown file generated at ../../README.md
+--- PASS: Test_TestAndDocumentationRender (1.75s)
     --- PASS: Test_TestAndDocumentationRender/fragment-response (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.05s)
+    --- PASS: Test_TestAndDocumentationRender/fragment-@doc (0.06s)
     --- PASS: Test_TestAndDocumentationRender/fragment-beautify (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-title (0.00s)
     --- PASS: Test_TestAndDocumentationRender/fragment-route (0.00s)
@@ -383,27 +251,27 @@ Server: cloudflare
     --- PASS: Test_TestAndDocumentationRender/fragment-hx_trigger_after_swap (0.00s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-endpoint (0.05s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-method (0.01s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-headers (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-body (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-template (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-headers (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-body (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-template (0.01s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-inline (0.02s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-values (0.02s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-username (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-password (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-setcookie (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-password (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-setcookie (0.00s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-setcookies (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-querykeys (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-queryparams (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-jwtsecret (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-jwtclaims (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-querykeys (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-queryparams (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-jwtsecret (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-jwtclaims (0.01s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-debug (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-debugpanel (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-response (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-@doc (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-title (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-route (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-section (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-enclose (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-debugpanel (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-response (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-@doc (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-title (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-route (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-section (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/apifragmentrender-enclose (0.01s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-index (0.00s)
     --- PASS: Test_TestAndDocumentationRender/apifragmentrender-guard (0.02s)
     --- PASS: Test_TestAndDocumentationRender/hypermedia-@doc (0.00s)
@@ -444,6 +312,9 @@ Server: cloudflare
     --- PASS: Test_TestAndDocumentationRender/html-@doc (0.00s)
     --- PASS: Test_TestAndDocumentationRender/html-value (0.00s)
     --- PASS: Test_TestAndDocumentationRender/html-trimspace (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/text-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/text-@doc (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/text-value (0.00s)
     --- PASS: Test_TestAndDocumentationRender/css-attributes (0.00s)
     --- PASS: Test_TestAndDocumentationRender/css-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/css-@doc (0.00s)
@@ -456,30 +327,30 @@ Server: cloudflare
     --- PASS: Test_TestAndDocumentationRender/javascript-inline (0.00s)
     --- PASS: Test_TestAndDocumentationRender/javascript-link (0.00s)
     --- PASS: Test_TestAndDocumentationRender/javascript-file (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/image-attributes (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-enclose (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-@doc (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-src (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-width (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-height (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-alt (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-title (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-id (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-class (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-quality (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/image-loading (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-attributes (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-enclose (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-@doc (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-directory (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-width (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-height (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/images-id (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-class (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-alt (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-title (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-quality (0.03s)
-    --- PASS: Test_TestAndDocumentationRender/images-loading (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/image-attributes (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/image-enclose (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/image-@doc (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/image-src (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/image-width (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/image-height (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/image-alt (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/image-title (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/image-id (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/image-class (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/image-quality (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/image-loading (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/images-attributes (0.06s)
+    --- PASS: Test_TestAndDocumentationRender/images-enclose (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-@doc (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-directory (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-width (0.04s)
+    --- PASS: Test_TestAndDocumentationRender/images-height (0.03s)
+    --- PASS: Test_TestAndDocumentationRender/images-id (0.07s)
+    --- PASS: Test_TestAndDocumentationRender/images-class (0.06s)
+    --- PASS: Test_TestAndDocumentationRender/images-alt (0.06s)
+    --- PASS: Test_TestAndDocumentationRender/images-title (0.06s)
+    --- PASS: Test_TestAndDocumentationRender/images-quality (0.06s)
+    --- PASS: Test_TestAndDocumentationRender/images-loading (0.06s)
     --- PASS: Test_TestAndDocumentationRender/json-attributes (0.00s)
     --- PASS: Test_TestAndDocumentationRender/json-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/json-@doc (0.00s)
@@ -488,14 +359,23 @@ Server: cloudflare
     --- PASS: Test_TestAndDocumentationRender/json-inline (0.00s)
     --- PASS: Test_TestAndDocumentationRender/json-values (0.00s)
     --- PASS: Test_TestAndDocumentationRender/json-debug (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/plugin-attributes (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/plugin-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/plugin-plugin (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/plugin-classes (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/plugin-data (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/text-enclose (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/text-@doc (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/text-value (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-endpoint (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-method (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-headers (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-body (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-template (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-inline (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-values (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-username (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-password (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-querykeys (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-queryparams (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-jwtsecret (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-jwtclaims (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-debugpanel (0.01s)
+    --- PASS: Test_TestAndDocumentationRender/api_render-@doc (0.02s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-section (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-order (0.00s)
@@ -503,22 +383,11 @@ Server: cloudflare
     --- PASS: Test_TestAndDocumentationRender/menu-active (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-item (0.00s)
     --- PASS: Test_TestAndDocumentationRender/menu-enclose#01 (0.00s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-enclose (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-endpoint (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-method (0.01s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-headers (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-body (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-template (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-inline (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-values (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-username (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-password (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-querykeys (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-queryparams (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-jwtsecret (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-jwtclaims (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-debug (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-debugpanel (0.02s)
-    --- PASS: Test_TestAndDocumentationRender/api_render-@doc (0.02s)
+    --- PASS: Test_TestAndDocumentationRender/plugin-attributes (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/plugin-enclose (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/plugin-plugin (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/plugin-classes (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/plugin-data (0.00s)
+    --- PASS: Test_TestAndDocumentationRender/style-file (0.00s)
 PASS
-ok  	command-line-arguments	1.646s
+ok  	github.com/hyperbricks/hyperbricks/test/docs	2.084s

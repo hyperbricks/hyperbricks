@@ -10,8 +10,8 @@ type Meta struct {
 }
 
 type CompositeRendererConfig struct {
-	Meta     `mapstructure:",squash"`
-	Items    map[string]interface{} `mapstructure:",remain"`
+	Meta  `mapstructure:",squash"`
+	Items map[string]interface{} `mapstructure:",remain"`
 }
 
 type Composite = CompositeRendererConfig
@@ -20,7 +20,7 @@ type Composite = CompositeRendererConfig
 type ComponentRendererConfig struct {
 	Meta            `mapstructure:",squash"` // Embedding RendererConfig
 	ExtraAttributes map[string]interface{}   `mapstructure:"attributes" description:"Extra attributes like id, data-role, data-action"`
-	Enclose         string                   `mapstructure:"enclose" description:"The enclosing HTML element for the header divided by |"`
+	Enclose         string                   `mapstructure:"enclose" description:"Wrap rendered output using prefix|suffix syntax"`
 }
 
 type Component = ComponentRendererConfig

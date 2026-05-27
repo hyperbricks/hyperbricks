@@ -37,5 +37,5 @@ The title of the hypermedia document
   "Cookies": null
 }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>Home</title>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>Home</title>
         </head><body></body></html> 

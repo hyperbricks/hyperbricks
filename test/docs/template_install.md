@@ -140,11 +140,11 @@ Control traffic with configurable request and burst limits. Adjust for your traf
 ```ini
 plugins {
     # Example:
-    # enabled = [ plugin.so , otherplugin.so ]
+    # enabled = [ MyPlugin@1.0.0, OtherPlugin@1.0.0 ]
 }
 ```
 
-Enable plugins by listing their exact `.so` filenames. Use `hyperbricks plugin help` and `hyperbricks plugin list` for details.
+Enable plugins by listing their exact config names without the `.so` suffix. Use `hyperbricks plugin help` and `hyperbricks plugin list` for details.
 See plugin section on how to create and/or install plugins for Hyperbricks.
 
 ---
@@ -428,23 +428,23 @@ Example output:
 ```
 Name         Plugin Version  Available Versions  Compatible Hyperbricks  Installed
 ----         --------------  ------------------  ----------------------  ---------
-esbuild      1.0.0           1.0.0               >=0.5.0-alpha           yes
-loremipsum   1.0.0           1.0.0               >=0.5.0-alpha           yes
-markdown     1.0.0           1.0.0               >=0.5.0-alpha           yes
-myplugin     1.0.0           1.0.0               >=0.5.0-alpha           no
-tailwindcss  1.0.0           1.0.0               >=0.5.0-alpha           yes
+esbuild      1.0.0           1.0.0               >=1.1.0-beta            yes
+loremipsum   1.0.0           1.0.0               >=1.1.0-beta            yes
+markdown     1.0.0           1.0.0               >=1.1.0-beta            yes
+myplugin     1.0.0           1.0.0               >=1.1.0-beta            no
+tailwindcss  1.0.0           1.0.0               >=1.1.0-beta            yes
 ```
 
 To enable plugins, they must be compiled for the currently installed version of Hyperbricks.
 This can be done automatically using:
  hyperbricks plugin install <name>@<plugin_version> 
 
-* To preload the plugin, add the binary .so name to your package.hyperbricks
-* under the `plugins.enabled` array:
-* Plugin binaries are named as <name>@<plugin_version>.so for clarity.
+* To preload the plugin, add the config name to your package.hyperbricks
+* under the `plugins.enabled` array.
+* Plugin binaries are compiled as `<Binary>@<plugin_version>.so`, but runtime config omits `.so`.
 ```
 plugins {
-  enabled = [ EsbuildPlugin@1.0.0.so, LoremIpsumPlugin@1.0.0.so, MarkdownPlugin@1.0.0.so, TailwindcssPlugin@1.0.0.so ]
+  enabled = [ EsbuildPlugin@1.0.0, LoremIpsumPlugin@1.0.0, MarkdownPlugin@1.0.0, TailwindcssPlugin@1.0.0 ]
 }
 ```
 ---
@@ -509,17 +509,17 @@ hyperbricks plugin update markdown
 
 ## Using Installed Plugins
 
-To enable a plugin in your module, add its `.so` filename to the `plugins.enabled` list in `package.hyperbricks`.
+To enable a plugin in your module, add its config name without `.so` to the `plugins.enabled` list in `package.hyperbricks`.
 
 Example:
 
 ```ini
 plugins {
-    enabled = [ Markdown@1.0.0.so ]
+    enabled = [ Markdown@1.0.0 ]
 }
 ```
 
-> Plugin binary filenames follow the format `<CamelCaseName>@<version>.so`.
+> Plugin binary filenames follow the format `<CamelCaseName>@<version>.so`; config names omit the `.so` suffix.
 
 ---
 

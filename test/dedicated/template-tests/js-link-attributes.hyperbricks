@@ -15,4 +15,4 @@ hypermedia.head {
 ==== explainer ====
 Script tag with src should include allowed attributes in stable order.
 ==== expected output ====
-<!DOCTYPE html><html><head><script src="main.js" async="true" defer="true" type="module" integrity="sha256-xyz" crossorigin="anonymous" referrerpolicy="no-referrer"></script><meta name="generator" content="hyperbricks cms"></head><body></body></html>
+<!DOCTYPE html><html><head><script src="main.js" async="true" defer="true" type="module" integrity="sha256-xyz" crossorigin="anonymous" referrerpolicy="no-referrer"></script><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

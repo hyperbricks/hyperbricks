@@ -1,0 +1,4644 @@
+{
+  "version": "1",
+  "types": [
+    {
+      "name": "ApiFragmentRender",
+      "token": "<API_FRAGMENT_RENDER>",
+      "category": "composite",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/composite.ApiFragmentRenderConfig",
+      "description": "Request-time API fragment that forwards to an upstream endpoint and renders the response.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "route",
+            "label": "Route",
+            "fields": [
+              "title",
+              "route",
+              "section",
+              "enclose",
+              "index"
+            ]
+          },
+          {
+            "key": "api",
+            "label": "API",
+            "fields": [
+              "endpoint",
+              "method",
+              "headers",
+              "body",
+              "username",
+              "password",
+              "jwtsecret",
+              "jwtclaims"
+            ]
+          },
+          {
+            "key": "template",
+            "label": "Template",
+            "description": "Template source, query proxy, value map, and enclosure fields.",
+            "collapsed": true,
+            "fields": [
+              "template",
+              "inline",
+              "querykeys",
+              "queryparams",
+              "values"
+            ]
+          },
+          {
+            "key": "response",
+            "label": "Response",
+            "collapsed": true,
+            "fields": [
+              "response.hx_location",
+              "response.hx_push_url",
+              "response.hx_redirect",
+              "response.hx_refresh",
+              "response.hx_replace_url",
+              "response.hx_reswap",
+              "response.hx_retarget",
+              "response.hx_reselect",
+              "response.hx_trigger",
+              "response.hx_trigger_after_settle",
+              "response.hx_trigger_after_swap"
+            ]
+          },
+          {
+            "key": "guard",
+            "label": "Guard",
+            "collapsed": true,
+            "fields": [
+              "guard.enabled",
+              "guard.auth.cookie",
+              "guard.auth.header",
+              "guard.auth.scheme",
+              "guard.require.authenticated",
+              "guard.require.query",
+              "guard.authorize.endpoint",
+              "guard.authorize.method",
+              "guard.authorize.headers",
+              "guard.authorize.body",
+              "guard.on_unauthenticated.redirect",
+              "guard.on_unauthenticated.hx_redirect",
+              "guard.on_unauthenticated.status",
+              "guard.on_forbidden.redirect",
+              "guard.on_forbidden.hx_redirect",
+              "guard.on_forbidden.status"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "body",
+          "key": "body",
+          "go_name": "Body",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Raw request body. Use a scalar string value; nested objects are not parsed for this field.",
+          "example": "{!{api-render-fragment-body.hyperbricks}}",
+          "authoring": {
+            "label": "Body",
+            "control": "textarea",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "debug",
+          "key": "debug",
+          "go_name": "Debug",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Debug the response data",
+          "example": "{!{api-render-fragment-debug.hyperbricks}}",
+          "authoring": {
+            "label": "Debug",
+            "control": "checkbox",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "debugpanel",
+          "key": "debugpanel",
+          "go_name": "DebugPanel",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks",
+          "example": "{!{api-render-fragment-debug.hyperbricks}}",
+          "authoring": {
+            "label": "Debugpanel",
+            "control": "checkbox",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrapping property for the fragment rendered output",
+          "example": "{!{api-fragment-render-enclose.hyperbricks}}",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "endpoint",
+          "key": "endpoint",
+          "go_name": "Endpoint",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The API endpoint",
+          "example": "{!{api-render-fragment-endpoint.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Endpoint",
+            "control": "text",
+            "group": "api",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "guard.auth.cookie",
+          "key": "cookie",
+          "go_name": "Cookie",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Cookie name used to resolve the request token",
+          "authoring": {
+            "label": "Cookie",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.auth.header",
+          "key": "header",
+          "go_name": "Header",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Header name used to resolve the request token, defaults to Authorization",
+          "authoring": {
+            "label": "Header",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.auth.scheme",
+          "key": "scheme",
+          "go_name": "Scheme",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional header scheme, defaults to Bearer for Authorization headers",
+          "authoring": {
+            "label": "Scheme",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.body",
+          "key": "body",
+          "go_name": "Body",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional request body with $key placeholder interpolation from the incoming request",
+          "authoring": {
+            "label": "Body",
+            "control": "textarea",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.endpoint",
+          "key": "endpoint",
+          "go_name": "Endpoint",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional authorization endpoint called before rendering",
+          "authoring": {
+            "label": "Endpoint",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "Optional headers sent to the authorization endpoint",
+          "authoring": {
+            "label": "Headers",
+            "control": "key-value",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.method",
+          "key": "method",
+          "go_name": "Method",
+          "go_type": "string",
+          "kind": "string",
+          "description": "HTTP method for the authorization endpoint",
+          "authoring": {
+            "label": "Method",
+            "control": "http-method",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.enabled",
+          "key": "enabled",
+          "go_name": "Enabled",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Enable route guarding before the route is rendered",
+          "authoring": {
+            "label": "Enabled",
+            "control": "checkbox",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_forbidden.hx_redirect",
+          "key": "hx_redirect",
+          "go_name": "HxRedirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "authoring": {
+            "label": "HX Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_forbidden.redirect",
+          "key": "redirect",
+          "go_name": "Redirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Full-page redirect target used for non-HTMX requests",
+          "authoring": {
+            "label": "Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_forbidden.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Override HTTP status code for this denied response",
+          "authoring": {
+            "label": "Status",
+            "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.hx_redirect",
+          "key": "hx_redirect",
+          "go_name": "HxRedirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "authoring": {
+            "label": "HX Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.redirect",
+          "key": "redirect",
+          "go_name": "Redirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Full-page redirect target used for non-HTMX requests",
+          "authoring": {
+            "label": "Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Override HTTP status code for this denied response",
+          "authoring": {
+            "label": "Status",
+            "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.require.authenticated",
+          "key": "authenticated",
+          "go_name": "Authenticated",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Require an authenticated request before rendering",
+          "authoring": {
+            "label": "Authenticated",
+            "control": "checkbox",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.require.query",
+          "key": "query",
+          "go_name": "Query",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Required query keys, set each key to true to enforce presence",
+          "authoring": {
+            "label": "Query",
+            "control": "key-value",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "Optional HTTP headers for API requests",
+          "example": "{!{api-render-fragment-headers.hyperbricks}}",
+          "authoring": {
+            "label": "Headers",
+            "control": "key-value",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "index",
+          "key": "index",
+          "go_name": "Index",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation",
+          "example": "{!{fragment-index.hyperbricks}}",
+          "authoring": {
+            "label": "Index",
+            "control": "number",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "inline",
+          "key": "inline",
+          "go_name": "Inline",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>",
+          "example": "{!{api-render-fragment-inline.hyperbricks}}",
+          "authoring": {
+            "label": "Inline",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "jwtclaims",
+          "key": "jwtclaims",
+          "go_name": "JwtClaims",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "JWT claims to include when signing the bearer token",
+          "example": "{!{api-render-fragment-jwt-claims.hyperbricks}}",
+          "authoring": {
+            "label": "JWT claims",
+            "control": "key-value",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "jwtsecret",
+          "key": "jwtsecret",
+          "go_name": "JwtSecret",
+          "go_type": "string",
+          "kind": "string",
+          "description": "When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request",
+          "example": "{!{api-render-fragment-jwt-secret.hyperbricks}}",
+          "authoring": {
+            "label": "JWT secret",
+            "control": "text",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "method",
+          "key": "method",
+          "go_name": "Method",
+          "go_type": "string",
+          "kind": "string",
+          "description": "HTTP method to use for API calls, GET POST PUT DELETE etc...",
+          "example": "{!{api-render-fragment-method.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Method",
+            "control": "http-method",
+            "group": "api",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "password",
+          "key": "password",
+          "go_name": "Password",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Password for basic auth",
+          "example": "{!{api-render-fragment-password.hyperbricks}}",
+          "authoring": {
+            "label": "Password",
+            "control": "text",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "querykeys",
+          "key": "querykeys",
+          "go_name": "AllowedQueryKeys",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "Set allowed proxy query keys",
+          "example": "{!{api-render-fragment-querykeys.hyperbricks}}",
+          "authoring": {
+            "label": "Query keys",
+            "control": "list",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "queryparams",
+          "key": "queryparams",
+          "go_name": "QueryParams",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "Set proxy query keys in the configuration",
+          "example": "{!{api-render-fragment-queryparams.hyperbricks}}",
+          "authoring": {
+            "label": "Query params",
+            "control": "key-value",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_location",
+          "key": "hx_location",
+          "go_name": "HxLocation",
+          "go_type": "string",
+          "kind": "string",
+          "description": "allows you to do a client-side redirect that does not do a full page reload",
+          "header": "HX-Location",
+          "authoring": {
+            "label": "HX Location",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_push_url",
+          "key": "hx_push_url",
+          "go_name": "HxPushedUrl",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Pushes a new URL into the history stack",
+          "header": "HX-Push-Url",
+          "authoring": {
+            "label": "HX Push URL",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_redirect",
+          "key": "hx_redirect",
+          "go_name": "HxRedirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "can be used to do a client-side redirect to a new location",
+          "header": "HX-Redirect",
+          "authoring": {
+            "label": "HX Redirect",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_refresh",
+          "key": "hx_refresh",
+          "go_name": "HxRefresh",
+          "go_type": "string",
+          "kind": "string",
+          "description": "if set to 'true' the client-side will do a full refresh of the page",
+          "header": "HX-Refresh",
+          "authoring": {
+            "label": "HX Refresh",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_replace_url",
+          "key": "hx_replace_url",
+          "go_name": "HxReplaceUrl",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Replaces the current URL in the location bar",
+          "header": "HX-Replace-Url",
+          "authoring": {
+            "label": "HX Replace URL",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_reselect",
+          "key": "hx_reselect",
+          "go_name": "HxReselect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "CSS selector that selects which part of the response is swapped in",
+          "header": "HX-Reselect",
+          "authoring": {
+            "label": "HX Reselect",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_reswap",
+          "key": "hx_reswap",
+          "go_name": "HxReswap",
+          "go_type": "string",
+          "kind": "string",
+          "description": "allows you to specify how the response will be swapped",
+          "header": "HX-Reswap",
+          "authoring": {
+            "label": "HX Reswap",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_retarget",
+          "key": "hx_retarget",
+          "go_name": "HxRetarget",
+          "go_type": "string",
+          "kind": "string",
+          "description": "CSS selector that updates the target of the content update",
+          "header": "HX-Retarget",
+          "authoring": {
+            "label": "HX Retarget",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_trigger",
+          "key": "hx_trigger",
+          "go_name": "HxTrigger",
+          "go_type": "string",
+          "kind": "string",
+          "description": "allows you to trigger client-side events",
+          "header": "HX-Trigger",
+          "authoring": {
+            "label": "HX Trigger",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_trigger_after_settle",
+          "key": "hx_trigger_after_settle",
+          "go_name": "HxTriggerafterSettle",
+          "go_type": "string",
+          "kind": "string",
+          "description": "allows you to trigger client-side events after the settle step",
+          "header": "HX-Trigger-After-Settle",
+          "authoring": {
+            "label": "HX Trigger After Settle",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_trigger_after_swap",
+          "key": "hx_trigger_after_swap",
+          "go_name": "HxTriggerafterSwap",
+          "go_type": "string",
+          "kind": "string",
+          "description": "allows you to trigger client-side events after the swap step",
+          "header": "HX-Trigger-After-Swap",
+          "authoring": {
+            "label": "HX Trigger After Swap",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "route",
+          "key": "route",
+          "go_name": "Route",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The route (URL-friendly identifier) for the fragment",
+          "example": "{!{api-fragment-render-route.hyperbricks}}",
+          "authoring": {
+            "label": "Route",
+            "control": "route",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "section",
+          "key": "section",
+          "go_name": "Section",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The section the fragment belongs to",
+          "example": "{!{api-fragment-render-section.hyperbricks}}",
+          "authoring": {
+            "label": "Section",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "setcookie",
+          "key": "setcookie",
+          "go_name": "SetCookie",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Legacy shorthand for one Set-Cookie response template. Applied on any 2xx upstream response.",
+          "example": "{!{api-render-fragment-setcookie.hyperbricks}}",
+          "authoring": {
+            "label": "Setcookie",
+            "control": "text",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "setcookies",
+          "key": "setcookies",
+          "go_name": "SetCookies",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "Optional list of Set-Cookie response templates. Each entry becomes its own Set-Cookie header on any 2xx upstream response.",
+          "example": "{!{api-render-fragment-setcookies.hyperbricks}}",
+          "authoring": {
+            "label": "Setcookies",
+            "control": "list",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template",
+          "key": "template",
+          "go_name": "Template",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Loads contents of a template file in the modules template directory",
+          "example": "{!{api-render-fragment-template.hyperbricks}}",
+          "authoring": {
+            "label": "Template",
+            "control": "template-asset",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "title",
+          "key": "title",
+          "go_name": "Title",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The title of the fragment",
+          "example": "{!{api-fragment-render-title.hyperbricks}}",
+          "authoring": {
+            "label": "Title",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "username",
+          "key": "username",
+          "go_name": "Username",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Username for basic auth",
+          "example": "{!{api-render-fragment-username.hyperbricks}}",
+          "authoring": {
+            "label": "Username",
+            "control": "text",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "values",
+          "key": "values",
+          "go_name": "Values",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Key-value pairs for template rendering",
+          "example": "{!{api-render-fragment-values.hyperbricks}}",
+          "value_dynamic": true,
+          "authoring": {
+            "label": "Values",
+            "control": "template-values",
+            "group": "template",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Api_Render",
+      "token": "<API_RENDER>",
+      "category": "data",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.APIConfig",
+      "description": "Remote API fetcher that renders the upstream response through a template.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "api",
+            "label": "API",
+            "fields": [
+              "endpoint",
+              "method",
+              "headers",
+              "body",
+              "username",
+              "password",
+              "jwtsecret",
+              "jwtclaims"
+            ]
+          },
+          {
+            "key": "template",
+            "label": "Template",
+            "description": "Template source, query proxy, value map, and enclosure fields.",
+            "collapsed": true,
+            "fields": [
+              "template",
+              "inline",
+              "querykeys",
+              "queryparams",
+              "values"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "body",
+          "key": "body",
+          "go_name": "Body",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Raw request body. Use a scalar string value; nested objects are not parsed for this field.",
+          "example": "{!{api-render-body.hyperbricks}}",
+          "authoring": {
+            "label": "Body",
+            "control": "textarea",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "debug",
+          "key": "debug",
+          "go_name": "Debug",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Debug the response data",
+          "example": "{!{api-render-debug.hyperbricks}}",
+          "authoring": {
+            "label": "Debug",
+            "control": "checkbox",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "debugpanel",
+          "key": "debugpanel",
+          "go_name": "DebugPanel",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks",
+          "example": "{!{api-render-debug.hyperbricks}}",
+          "authoring": {
+            "label": "Debugpanel",
+            "control": "checkbox",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "endpoint",
+          "key": "endpoint",
+          "go_name": "Endpoint",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The API endpoint",
+          "example": "{!{api-render-endpoint.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Endpoint",
+            "control": "text",
+            "group": "api",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "Optional HTTP headers for API requests",
+          "example": "{!{api-render-headers.hyperbricks}}",
+          "authoring": {
+            "label": "Headers",
+            "control": "key-value",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "inline",
+          "key": "inline",
+          "go_name": "Inline",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>",
+          "example": "{!{api-render-inline.hyperbricks}}",
+          "authoring": {
+            "label": "Inline",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "jwtclaims",
+          "key": "jwtclaims",
+          "go_name": "JwtClaims",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "JWT claims to include when signing the bearer token",
+          "example": "{!{api-render-jwt-claims.hyperbricks}}",
+          "authoring": {
+            "label": "JWT claims",
+            "control": "key-value",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "jwtsecret",
+          "key": "jwtsecret",
+          "go_name": "JwtSecret",
+          "go_type": "string",
+          "kind": "string",
+          "description": "When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request",
+          "example": "{!{api-render-jwt-secret.hyperbricks}}",
+          "authoring": {
+            "label": "JWT secret",
+            "control": "text",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "method",
+          "key": "method",
+          "go_name": "Method",
+          "go_type": "string",
+          "kind": "string",
+          "description": "HTTP method to use for API calls, GET POST PUT DELETE etc...",
+          "example": "{!{api-render-method.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Method",
+            "control": "http-method",
+            "group": "api",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "password",
+          "key": "password",
+          "go_name": "Password",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Password for basic auth",
+          "example": "{!{api-render-password.hyperbricks}}",
+          "authoring": {
+            "label": "Password",
+            "control": "text",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "querykeys",
+          "key": "querykeys",
+          "go_name": "AllowedQueryKeys",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "Set allowed proxy query keys",
+          "example": "{!{api-render-querykeys.hyperbricks}}",
+          "authoring": {
+            "label": "Query keys",
+            "control": "list",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "queryparams",
+          "key": "queryparams",
+          "go_name": "QueryParams",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "Set proxy query keys in the configuration",
+          "example": "{!{api-render-queryparams.hyperbricks}}",
+          "authoring": {
+            "label": "Query params",
+            "control": "key-value",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template",
+          "key": "template",
+          "go_name": "Template",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Loads contents of a template file in the modules template directory",
+          "example": "{!{api-render-template.hyperbricks}}",
+          "authoring": {
+            "label": "Template",
+            "control": "template-asset",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "username",
+          "key": "username",
+          "go_name": "Username",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Username for basic auth",
+          "example": "{!{api-render-username.hyperbricks}}",
+          "authoring": {
+            "label": "Username",
+            "control": "text",
+            "group": "api",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "values",
+          "key": "values",
+          "go_name": "Values",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Key-value pairs for template rendering",
+          "example": "{!{api-render-values.hyperbricks}}",
+          "value_dynamic": true,
+          "authoring": {
+            "label": "Values",
+            "control": "template-values",
+            "group": "template",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Css",
+      "token": "<CSS>",
+      "category": "resources",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.CssConfig",
+      "description": "Stylesheet leaf that can emit inline CSS or link to a stylesheet.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "source",
+            "label": "Source",
+            "fields": [
+              "inline",
+              "link",
+              "file"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "file",
+          "key": "file",
+          "go_name": "File",
+          "go_type": "string",
+          "kind": "string",
+          "description": "file overrides link and inline, it loads contents of a file and renders it in a style tag.",
+          "example": "{!{css-file.hyperbricks}}",
+          "authoring": {
+            "label": "File",
+            "control": "asset",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "inline",
+          "key": "inline",
+          "go_name": "Inline",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Use inline to define css in a multiline block <<[ /* css goes here */ ]>>",
+          "example": "{!{css-inline.hyperbricks}}",
+          "authoring": {
+            "label": "Inline",
+            "control": "textarea",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "link",
+          "key": "link",
+          "go_name": "Link",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Use link for a link tag",
+          "example": "{!{css-link.hyperbricks}}",
+          "authoring": {
+            "label": "Link",
+            "control": "asset",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fragment",
+      "token": "<FRAGMENT>",
+      "category": "composite",
+      "child_model": "tree",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/composite.FragmentConfig",
+      "description": "A <FRAGMENT> dynamically renders part of an HTML page, allowing updates without a full page reload.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "route",
+            "label": "Route",
+            "fields": [
+              "title",
+              "route",
+              "section",
+              "static",
+              "cache",
+              "nocache",
+              "index",
+              "content_type",
+              "enclose"
+            ]
+          },
+          {
+            "key": "template",
+            "label": "Template",
+            "description": "Template source, query proxy, value map, and enclosure fields.",
+            "collapsed": true,
+            "fields": [
+              "template.template",
+              "template.inline",
+              "template.querykeys",
+              "template.queryparams",
+              "template.values",
+              "template.enclose"
+            ]
+          },
+          {
+            "key": "response",
+            "label": "Response",
+            "collapsed": true,
+            "fields": [
+              "response.hx_location",
+              "response.hx_push_url",
+              "response.hx_redirect",
+              "response.hx_refresh",
+              "response.hx_replace_url",
+              "response.hx_reswap",
+              "response.hx_retarget",
+              "response.hx_reselect",
+              "response.hx_trigger",
+              "response.hx_trigger_after_settle",
+              "response.hx_trigger_after_swap"
+            ]
+          },
+          {
+            "key": "guard",
+            "label": "Guard",
+            "collapsed": true,
+            "fields": [
+              "guard.enabled",
+              "guard.auth.cookie",
+              "guard.auth.header",
+              "guard.auth.scheme",
+              "guard.require.authenticated",
+              "guard.require.query",
+              "guard.authorize.endpoint",
+              "guard.authorize.method",
+              "guard.authorize.headers",
+              "guard.authorize.body",
+              "guard.on_unauthenticated.redirect",
+              "guard.on_unauthenticated.hx_redirect",
+              "guard.on_unauthenticated.status",
+              "guard.on_forbidden.redirect",
+              "guard.on_forbidden.hx_redirect",
+              "guard.on_forbidden.status"
+            ]
+          }
+        ],
+        "slots": [
+          {
+            "key": "body",
+            "label": "Body",
+            "model": "tree",
+            "default": true,
+            "placement_kinds": [
+              "owned",
+              "inherited"
+            ],
+            "description": "Ordered child bricks rendered below this composite."
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "beautify",
+          "key": "beautify",
+          "go_name": "Beautify",
+          "go_type": "*bool",
+          "kind": "bool",
+          "json_name": "Beautify",
+          "description": "Override server.beautify for this object when rendered directly",
+          "authoring": {
+            "label": "Beautify",
+            "control": "checkbox",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache",
+          "key": "cache",
+          "go_name": "Cache",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Cache expire string",
+          "example": "{!{fragment-cache.hyperbricks}}",
+          "authoring": {
+            "label": "Cache",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "content_type",
+          "key": "content_type",
+          "go_name": "ContentType",
+          "go_type": "string",
+          "kind": "string",
+          "description": "content type header definition",
+          "authoring": {
+            "label": "Content type",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrapping property for the fragment rendered output",
+          "example": "{!{fragment-enclose.hyperbricks}}",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.auth.cookie",
+          "key": "cookie",
+          "go_name": "Cookie",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Cookie name used to resolve the request token",
+          "authoring": {
+            "label": "Cookie",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.auth.header",
+          "key": "header",
+          "go_name": "Header",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Header name used to resolve the request token, defaults to Authorization",
+          "authoring": {
+            "label": "Header",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.auth.scheme",
+          "key": "scheme",
+          "go_name": "Scheme",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional header scheme, defaults to Bearer for Authorization headers",
+          "authoring": {
+            "label": "Scheme",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.body",
+          "key": "body",
+          "go_name": "Body",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional request body with $key placeholder interpolation from the incoming request",
+          "authoring": {
+            "label": "Body",
+            "control": "textarea",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.endpoint",
+          "key": "endpoint",
+          "go_name": "Endpoint",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional authorization endpoint called before rendering",
+          "authoring": {
+            "label": "Endpoint",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "Optional headers sent to the authorization endpoint",
+          "authoring": {
+            "label": "Headers",
+            "control": "key-value",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.method",
+          "key": "method",
+          "go_name": "Method",
+          "go_type": "string",
+          "kind": "string",
+          "description": "HTTP method for the authorization endpoint",
+          "authoring": {
+            "label": "Method",
+            "control": "http-method",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.enabled",
+          "key": "enabled",
+          "go_name": "Enabled",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Enable route guarding before the route is rendered",
+          "authoring": {
+            "label": "Enabled",
+            "control": "checkbox",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_forbidden.hx_redirect",
+          "key": "hx_redirect",
+          "go_name": "HxRedirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "authoring": {
+            "label": "HX Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_forbidden.redirect",
+          "key": "redirect",
+          "go_name": "Redirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Full-page redirect target used for non-HTMX requests",
+          "authoring": {
+            "label": "Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_forbidden.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Override HTTP status code for this denied response",
+          "authoring": {
+            "label": "Status",
+            "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.hx_redirect",
+          "key": "hx_redirect",
+          "go_name": "HxRedirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "authoring": {
+            "label": "HX Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.redirect",
+          "key": "redirect",
+          "go_name": "Redirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Full-page redirect target used for non-HTMX requests",
+          "authoring": {
+            "label": "Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Override HTTP status code for this denied response",
+          "authoring": {
+            "label": "Status",
+            "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.require.authenticated",
+          "key": "authenticated",
+          "go_name": "Authenticated",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Require an authenticated request before rendering",
+          "authoring": {
+            "label": "Authenticated",
+            "control": "checkbox",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.require.query",
+          "key": "query",
+          "go_name": "Query",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Required query keys, set each key to true to enforce presence",
+          "authoring": {
+            "label": "Query",
+            "control": "key-value",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "index",
+          "key": "index",
+          "go_name": "Index",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation",
+          "example": "{!{fragment-index.hyperbricks}}",
+          "authoring": {
+            "label": "Index",
+            "control": "number",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "nocache",
+          "key": "nocache",
+          "go_name": "NoCache",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Explicitly disable cache",
+          "example": "{!{fragment-nocache.hyperbricks}}",
+          "authoring": {
+            "label": "No cache",
+            "control": "checkbox",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_location",
+          "key": "hx_location",
+          "go_name": "HxLocation",
+          "go_type": "string",
+          "kind": "string",
+          "description": "allows you to do a client-side redirect that does not do a full page reload",
+          "header": "HX-Location",
+          "authoring": {
+            "label": "HX Location",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_push_url",
+          "key": "hx_push_url",
+          "go_name": "HxPushedUrl",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Pushes a new URL into the history stack",
+          "header": "HX-Push-Url",
+          "authoring": {
+            "label": "HX Push URL",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_redirect",
+          "key": "hx_redirect",
+          "go_name": "HxRedirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "can be used to do a client-side redirect to a new location",
+          "header": "HX-Redirect",
+          "authoring": {
+            "label": "HX Redirect",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_refresh",
+          "key": "hx_refresh",
+          "go_name": "HxRefresh",
+          "go_type": "string",
+          "kind": "string",
+          "description": "if set to 'true' the client-side will do a full refresh of the page",
+          "header": "HX-Refresh",
+          "authoring": {
+            "label": "HX Refresh",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_replace_url",
+          "key": "hx_replace_url",
+          "go_name": "HxReplaceUrl",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Replaces the current URL in the location bar",
+          "header": "HX-Replace-Url",
+          "authoring": {
+            "label": "HX Replace URL",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_reselect",
+          "key": "hx_reselect",
+          "go_name": "HxReselect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "CSS selector that selects which part of the response is swapped in",
+          "header": "HX-Reselect",
+          "authoring": {
+            "label": "HX Reselect",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_reswap",
+          "key": "hx_reswap",
+          "go_name": "HxReswap",
+          "go_type": "string",
+          "kind": "string",
+          "description": "allows you to specify how the response will be swapped",
+          "header": "HX-Reswap",
+          "authoring": {
+            "label": "HX Reswap",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_retarget",
+          "key": "hx_retarget",
+          "go_name": "HxRetarget",
+          "go_type": "string",
+          "kind": "string",
+          "description": "CSS selector that updates the target of the content update",
+          "header": "HX-Retarget",
+          "authoring": {
+            "label": "HX Retarget",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_trigger",
+          "key": "hx_trigger",
+          "go_name": "HxTrigger",
+          "go_type": "string",
+          "kind": "string",
+          "description": "allows you to trigger client-side events",
+          "header": "HX-Trigger",
+          "authoring": {
+            "label": "HX Trigger",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_trigger_after_settle",
+          "key": "hx_trigger_after_settle",
+          "go_name": "HxTriggerafterSettle",
+          "go_type": "string",
+          "kind": "string",
+          "description": "allows you to trigger client-side events after the settle step",
+          "header": "HX-Trigger-After-Settle",
+          "authoring": {
+            "label": "HX Trigger After Settle",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.hx_trigger_after_swap",
+          "key": "hx_trigger_after_swap",
+          "go_name": "HxTriggerafterSwap",
+          "go_type": "string",
+          "kind": "string",
+          "description": "allows you to trigger client-side events after the swap step",
+          "header": "HX-Trigger-After-Swap",
+          "authoring": {
+            "label": "HX Trigger After Swap",
+            "control": "text",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "route",
+          "key": "route",
+          "go_name": "Route",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The route (URL-friendly identifier) for the fragment",
+          "example": "{!{fragment-route.hyperbricks}}",
+          "authoring": {
+            "label": "Route",
+            "control": "route",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "section",
+          "key": "section",
+          "go_name": "Section",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The section the fragment belongs to",
+          "example": "{!{fragment-section.hyperbricks}}",
+          "authoring": {
+            "label": "Section",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "static",
+          "key": "static",
+          "go_name": "Static",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Static file path associated with the fragment",
+          "example": "{!{fragment-static.hyperbricks}}",
+          "authoring": {
+            "label": "Static",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "json_name": "enclose",
+          "description": "Enclosing property for the template rendered output",
+          "example": "{!{template-enclose.hyperbricks}}",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.inline",
+          "key": "inline",
+          "go_name": "Inline",
+          "go_type": "string",
+          "kind": "string",
+          "json_name": "inline",
+          "description": "Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>",
+          "example": "{!{template-inline.hyperbricks}}",
+          "authoring": {
+            "label": "Inline",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.querykeys",
+          "key": "querykeys",
+          "go_name": "AllowedQueryKeys",
+          "go_type": "[]string",
+          "kind": "list",
+          "json_name": "querykeys",
+          "description": "Set allowed proxy query keys",
+          "example": "{!{template-querykeys.hyperbricks}}",
+          "authoring": {
+            "label": "Query keys",
+            "control": "list",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.queryparams",
+          "key": "queryparams",
+          "go_name": "QueryParams",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "json_name": "queryparams",
+          "description": "Set proxy query keys in the configuration",
+          "example": "{!{template-queryparams.hyperbricks}}",
+          "authoring": {
+            "label": "Query params",
+            "control": "key-value",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.template",
+          "key": "template",
+          "go_name": "Template",
+          "go_type": "string",
+          "kind": "string",
+          "json_name": "template",
+          "description": "Loads contents of a template file in the modules template directory",
+          "example": "{!{template-template.hyperbricks}}",
+          "authoring": {
+            "label": "Template",
+            "control": "template-asset",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.values",
+          "key": "values",
+          "go_name": "Values",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "json_name": "values",
+          "description": "Key-value pairs for template rendering",
+          "example": "{!{template-values.hyperbricks}}",
+          "value_dynamic": true,
+          "authoring": {
+            "label": "Values",
+            "control": "template-values",
+            "group": "template",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "title",
+          "key": "title",
+          "go_name": "Title",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The title of the fragment",
+          "example": "{!{fragment-title.hyperbricks}}",
+          "authoring": {
+            "label": "Title",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Head",
+      "token": "<HEAD>",
+      "category": "composite",
+      "child_model": "head",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/composite.HeadConfig",
+      "description": "Document head helper that assembles title, meta, CSS, and JavaScript.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "head",
+            "label": "Head",
+            "fields": [
+              "title",
+              "favicon",
+              "meta",
+              "css",
+              "js"
+            ]
+          }
+        ],
+        "slots": [
+          {
+            "key": "head",
+            "label": "Head",
+            "model": "head",
+            "default": true,
+            "placement_kinds": [
+              "owned",
+              "inherited"
+            ],
+            "description": "Ordered child bricks rendered as document head content."
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "css",
+          "key": "css",
+          "go_name": "Css",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "CSS files to include",
+          "example": "{!{head-css.hyperbricks}}",
+          "authoring": {
+            "label": "CSS",
+            "control": "list",
+            "group": "head",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "favicon",
+          "key": "favicon",
+          "go_name": "Favicon",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Path to the favicon for the hypermedia document",
+          "example": "{!{head-favicon.hyperbricks}}",
+          "authoring": {
+            "label": "Favicon",
+            "control": "asset",
+            "group": "head",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "js",
+          "key": "js",
+          "go_name": "Js",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "JavaScript files to include",
+          "example": "{!{head-js.hyperbricks}}",
+          "authoring": {
+            "label": "JS",
+            "control": "list",
+            "group": "head",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "meta",
+          "key": "meta",
+          "go_name": "MetaData",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "Metadata for the head section",
+          "example": "{!{head-meta.hyperbricks}}",
+          "authoring": {
+            "label": "Meta",
+            "control": "key-value",
+            "group": "head",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "title",
+          "key": "title",
+          "go_name": "Title",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The title of the hypermedia document",
+          "example": "{!{head-title.hyperbricks}}",
+          "authoring": {
+            "label": "Title",
+            "control": "text",
+            "group": "head",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Html",
+      "token": "<HTML>",
+      "category": "component",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.HTMLConfig",
+      "description": "Raw HTML snippet for leaf content or small escaped blocks.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "content",
+            "label": "Content",
+            "fields": [
+              "value",
+              "trimspace",
+              "enclose",
+              "attributes"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "group": "content",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "content",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "trimspace",
+          "key": "trimspace",
+          "go_name": "TrimSpace",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "TrimSpace filters all leading and trailing white space removed, as defined by Unicode.",
+          "example": "{!{html-trimspace.hyperbricks}}",
+          "authoring": {
+            "label": "Trim space",
+            "control": "checkbox",
+            "group": "content",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "value",
+          "key": "value",
+          "go_name": "Value",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The raw HTML content",
+          "example": "{!{html-value.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Value",
+            "control": "textarea",
+            "group": "content",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hypermedia",
+      "token": "<HYPERMEDIA>",
+      "category": "composite",
+      "child_model": "tree",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/composite.HyperMediaConfig",
+      "description": "Route-owning page shell that renders the main HyperBricks document.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "route",
+            "label": "Route",
+            "fields": [
+              "title",
+              "route",
+              "section",
+              "static",
+              "cache",
+              "nocache",
+              "index",
+              "content_type"
+            ]
+          },
+          {
+            "key": "document",
+            "label": "Document",
+            "fields": [
+              "doctype",
+              "htmltag",
+              "bodytag",
+              "enclose",
+              "favicon",
+              "head",
+              "headers",
+              "cookies"
+            ]
+          },
+          {
+            "key": "template",
+            "label": "Template",
+            "description": "Template source, query proxy, value map, and enclosure fields.",
+            "collapsed": true,
+            "fields": [
+              "template.template",
+              "template.inline",
+              "template.querykeys",
+              "template.queryparams",
+              "template.values",
+              "template.enclose"
+            ]
+          },
+          {
+            "key": "guard",
+            "label": "Guard",
+            "collapsed": true,
+            "fields": [
+              "guard.enabled",
+              "guard.auth.cookie",
+              "guard.auth.header",
+              "guard.auth.scheme",
+              "guard.require.authenticated",
+              "guard.require.query",
+              "guard.authorize.endpoint",
+              "guard.authorize.method",
+              "guard.authorize.headers",
+              "guard.authorize.body",
+              "guard.on_unauthenticated.redirect",
+              "guard.on_unauthenticated.hx_redirect",
+              "guard.on_unauthenticated.status",
+              "guard.on_forbidden.redirect",
+              "guard.on_forbidden.hx_redirect",
+              "guard.on_forbidden.status"
+            ]
+          }
+        ],
+        "slots": [
+          {
+            "key": "head",
+            "label": "Head",
+            "model": "head",
+            "placement_kinds": [
+              "owned",
+              "inherited"
+            ],
+            "description": "Ordered child bricks rendered as document head content."
+          },
+          {
+            "key": "body",
+            "label": "Body",
+            "model": "tree",
+            "default": true,
+            "placement_kinds": [
+              "owned",
+              "inherited"
+            ],
+            "description": "Ordered child bricks rendered below this composite."
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "beautify",
+          "key": "beautify",
+          "go_name": "Beautify",
+          "go_type": "*bool",
+          "kind": "bool",
+          "json_name": "Beautify",
+          "description": "Override server.beautify for this object when rendered directly",
+          "authoring": {
+            "label": "Beautify",
+            "control": "checkbox",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "bodytag",
+          "key": "bodytag",
+          "go_name": "BodyTag",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Special body enclose with use of |. Please note that this will not work when a <HYPERMEDIA>.template is configured. In that case, you have to add the bodytag in the template.",
+          "example": "{!{hypermedia-bodytag.hyperbricks}}",
+          "authoring": {
+            "label": "Body tag",
+            "control": "text",
+            "group": "document",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache",
+          "key": "cache",
+          "go_name": "Cache",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Cache expire string",
+          "example": "{!{hypermedia-cache.hyperbricks}}",
+          "authoring": {
+            "label": "Cache",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "content_type",
+          "key": "content_type",
+          "go_name": "ContentType",
+          "go_type": "string",
+          "kind": "string",
+          "description": "content type header definition",
+          "authoring": {
+            "label": "Content type",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cookies",
+          "key": "cookies",
+          "go_name": "Cookies",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "Set-Cookie values to include when serving this hypermedia",
+          "example": "{!{hypermedia-cookies.hyperbricks}}",
+          "authoring": {
+            "label": "Cookies",
+            "control": "list",
+            "group": "document",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "doctype",
+          "key": "doctype",
+          "go_name": "Doctype",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Alternative Doctype for the HTML document",
+          "example": "{!{hypermedia-doctype.hyperbricks}}",
+          "authoring": {
+            "label": "Doctype",
+            "control": "text",
+            "group": "document",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Enclosure of the property for the hypermedia",
+          "example": "{!{hypermedia-enclose.hyperbricks}}",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "document",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "favicon",
+          "key": "favicon",
+          "go_name": "Favicon",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Path to the favicon for the hypermedia",
+          "example": "{!{hypermedia-favicon.hyperbricks}}",
+          "authoring": {
+            "label": "Favicon",
+            "control": "asset",
+            "group": "document",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.auth.cookie",
+          "key": "cookie",
+          "go_name": "Cookie",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Cookie name used to resolve the request token",
+          "authoring": {
+            "label": "Cookie",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.auth.header",
+          "key": "header",
+          "go_name": "Header",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Header name used to resolve the request token, defaults to Authorization",
+          "authoring": {
+            "label": "Header",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.auth.scheme",
+          "key": "scheme",
+          "go_name": "Scheme",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional header scheme, defaults to Bearer for Authorization headers",
+          "authoring": {
+            "label": "Scheme",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.body",
+          "key": "body",
+          "go_name": "Body",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional request body with $key placeholder interpolation from the incoming request",
+          "authoring": {
+            "label": "Body",
+            "control": "textarea",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.endpoint",
+          "key": "endpoint",
+          "go_name": "Endpoint",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional authorization endpoint called before rendering",
+          "authoring": {
+            "label": "Endpoint",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "Optional headers sent to the authorization endpoint",
+          "authoring": {
+            "label": "Headers",
+            "control": "key-value",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.authorize.method",
+          "key": "method",
+          "go_name": "Method",
+          "go_type": "string",
+          "kind": "string",
+          "description": "HTTP method for the authorization endpoint",
+          "authoring": {
+            "label": "Method",
+            "control": "http-method",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.enabled",
+          "key": "enabled",
+          "go_name": "Enabled",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Enable route guarding before the route is rendered",
+          "authoring": {
+            "label": "Enabled",
+            "control": "checkbox",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_forbidden.hx_redirect",
+          "key": "hx_redirect",
+          "go_name": "HxRedirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "authoring": {
+            "label": "HX Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_forbidden.redirect",
+          "key": "redirect",
+          "go_name": "Redirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Full-page redirect target used for non-HTMX requests",
+          "authoring": {
+            "label": "Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_forbidden.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Override HTTP status code for this denied response",
+          "authoring": {
+            "label": "Status",
+            "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.hx_redirect",
+          "key": "hx_redirect",
+          "go_name": "HxRedirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "authoring": {
+            "label": "HX Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.redirect",
+          "key": "redirect",
+          "go_name": "Redirect",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Full-page redirect target used for non-HTMX requests",
+          "authoring": {
+            "label": "Redirect",
+            "control": "text",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Override HTTP status code for this denied response",
+          "authoring": {
+            "label": "Status",
+            "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.require.authenticated",
+          "key": "authenticated",
+          "go_name": "Authenticated",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Require an authenticated request before rendering",
+          "authoring": {
+            "label": "Authenticated",
+            "control": "checkbox",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.require.query",
+          "key": "query",
+          "go_name": "Query",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Required query keys, set each key to true to enforce presence",
+          "authoring": {
+            "label": "Query",
+            "control": "key-value",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "head",
+          "key": "head",
+          "go_name": "Head",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Configurations for the head section of the hypermedia",
+          "example": "{!{hypermedia-head.hyperbricks}}",
+          "authoring": {
+            "label": "Head",
+            "control": "key-value",
+            "group": "document",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers to include when serving this hypermedia",
+          "example": "{!{hypermedia-headers.hyperbricks}}",
+          "authoring": {
+            "label": "Headers",
+            "control": "key-value",
+            "group": "document",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "htmltag",
+          "key": "htmltag",
+          "go_name": "HtmlTag",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The opening HTML tag with attributes",
+          "example": "{!{hypermedia-htmltag.hyperbricks}}",
+          "authoring": {
+            "label": "HTML tag",
+            "control": "text",
+            "group": "document",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "index",
+          "key": "index",
+          "go_name": "Index",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options",
+          "example": "{!{hypermedia-index.hyperbricks}}",
+          "authoring": {
+            "label": "Index",
+            "control": "number",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "nocache",
+          "key": "nocache",
+          "go_name": "NoCache",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Explicitly disable cache",
+          "example": "{!{hypermedia-nocache.hyperbricks}}",
+          "authoring": {
+            "label": "No cache",
+            "control": "checkbox",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "route",
+          "key": "route",
+          "go_name": "Route",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The route (URL-friendly identifier) for the hypermedia",
+          "example": "{!{hypermedia-route.hyperbricks}}",
+          "authoring": {
+            "label": "Route",
+            "control": "route",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "section",
+          "key": "section",
+          "go_name": "Section",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The section the hypermedia belongs to. This can be used with the component <MENU> for example.",
+          "example": "{!{hypermedia-section.hyperbricks}}",
+          "authoring": {
+            "label": "Section",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "static",
+          "key": "static",
+          "go_name": "Static",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Static file path associated with the hypermedia, for rendering out the hypermedia to static files.",
+          "example": "{!{hypermedia-static.hyperbricks}}",
+          "authoring": {
+            "label": "Static",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "json_name": "enclose",
+          "description": "Enclosing property for the template rendered output",
+          "example": "{!{template-enclose.hyperbricks}}",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.inline",
+          "key": "inline",
+          "go_name": "Inline",
+          "go_type": "string",
+          "kind": "string",
+          "json_name": "inline",
+          "description": "Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>",
+          "example": "{!{template-inline.hyperbricks}}",
+          "authoring": {
+            "label": "Inline",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.querykeys",
+          "key": "querykeys",
+          "go_name": "AllowedQueryKeys",
+          "go_type": "[]string",
+          "kind": "list",
+          "json_name": "querykeys",
+          "description": "Set allowed proxy query keys",
+          "example": "{!{template-querykeys.hyperbricks}}",
+          "authoring": {
+            "label": "Query keys",
+            "control": "list",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.queryparams",
+          "key": "queryparams",
+          "go_name": "QueryParams",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "json_name": "queryparams",
+          "description": "Set proxy query keys in the configuration",
+          "example": "{!{template-queryparams.hyperbricks}}",
+          "authoring": {
+            "label": "Query params",
+            "control": "key-value",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.template",
+          "key": "template",
+          "go_name": "Template",
+          "go_type": "string",
+          "kind": "string",
+          "json_name": "template",
+          "description": "Loads contents of a template file in the modules template directory",
+          "example": "{!{template-template.hyperbricks}}",
+          "authoring": {
+            "label": "Template",
+            "control": "template-asset",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template.values",
+          "key": "values",
+          "go_name": "Values",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "json_name": "values",
+          "description": "Key-value pairs for template rendering",
+          "example": "{!{template-values.hyperbricks}}",
+          "value_dynamic": true,
+          "authoring": {
+            "label": "Values",
+            "control": "template-values",
+            "group": "template",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "title",
+          "key": "title",
+          "go_name": "Title",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The title of the hypermedia site",
+          "example": "{!{hypermedia-title.hyperbricks}}",
+          "authoring": {
+            "label": "Title",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Image",
+      "token": "<IMAGE>",
+      "category": "resources",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.SingleImageConfig",
+      "description": "Single image renderer with optional optimization and HTML output.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "image",
+            "label": "Image",
+            "fields": [
+              "src",
+              "width",
+              "height",
+              "alt",
+              "title",
+              "id",
+              "class",
+              "quality",
+              "loading"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "alt",
+          "key": "alt",
+          "go_name": "Alt",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Alternative text for the image",
+          "example": "{!{image-alt.hyperbricks}}",
+          "authoring": {
+            "label": "Alt text",
+            "control": "text",
+            "group": "image",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "class",
+          "key": "class",
+          "go_name": "Class",
+          "go_type": "string",
+          "kind": "string",
+          "description": "CSS class for styling the image",
+          "example": "{!{image-class.hyperbricks}}",
+          "authoring": {
+            "label": "Class",
+            "control": "text",
+            "group": "image",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "height",
+          "key": "height",
+          "go_name": "Height",
+          "go_type": "int",
+          "kind": "int",
+          "description": "The height of the image (can be a number or percentage)",
+          "example": "{!{image-height.hyperbricks}}",
+          "validate": "min=1",
+          "authoring": {
+            "label": "Height",
+            "control": "number",
+            "group": "image",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "id",
+          "key": "id",
+          "go_name": "Id",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Id of image",
+          "example": "{!{image-id.hyperbricks}}",
+          "authoring": {
+            "label": "ID",
+            "control": "text",
+            "group": "image",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "loading",
+          "key": "loading",
+          "go_name": "Loading",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Lazy loading strategy (e.g., 'lazy', 'eager')",
+          "example": "{!{image-loading.hyperbricks}}",
+          "authoring": {
+            "label": "Loading",
+            "control": "text",
+            "group": "image",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "quality",
+          "key": "quality",
+          "go_name": "Quality",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Image quality for optimization",
+          "example": "{!{image-quality.hyperbricks}}",
+          "authoring": {
+            "label": "Quality",
+            "control": "number",
+            "group": "image",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "src",
+          "key": "src",
+          "go_name": "Src",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The source URL of the image",
+          "example": "{!{image-src.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Source",
+            "control": "asset",
+            "group": "image",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "title",
+          "key": "title",
+          "go_name": "Title",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The title attribute of the image",
+          "example": "{!{image-title.hyperbricks}}",
+          "authoring": {
+            "label": "Title",
+            "control": "text",
+            "group": "image",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "width",
+          "key": "width",
+          "go_name": "Width",
+          "go_type": "int",
+          "kind": "int",
+          "description": "The width of the image (can be a number or percentage)",
+          "example": "{!{image-width.hyperbricks}}",
+          "validate": "min=1",
+          "authoring": {
+            "label": "Width",
+            "control": "number",
+            "group": "image",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Images",
+      "token": "<IMAGES>",
+      "category": "resources",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.MultipleImagesConfig",
+      "description": "Multiple image renderer for a directory of images.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "images",
+            "label": "Images",
+            "fields": [
+              "directory",
+              "width",
+              "height",
+              "id",
+              "class",
+              "alt",
+              "title",
+              "quality",
+              "loading"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "alt",
+          "key": "alt",
+          "go_name": "Alt",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Alternative text for the image",
+          "example": "{!{images-alt.hyperbricks}}",
+          "authoring": {
+            "label": "Alt text",
+            "control": "text",
+            "group": "images",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "class",
+          "key": "class",
+          "go_name": "Class",
+          "go_type": "string",
+          "kind": "string",
+          "description": "CSS class for styling the image",
+          "example": "{!{images-class.hyperbricks}}",
+          "authoring": {
+            "label": "Class",
+            "control": "text",
+            "group": "images",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "directory",
+          "key": "directory",
+          "go_name": "Directory",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The directory path containing the images",
+          "example": "{!{images-directory.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Directory",
+            "control": "asset",
+            "group": "images",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "height",
+          "key": "height",
+          "go_name": "Height",
+          "go_type": "int",
+          "kind": "int",
+          "description": "The height of the images (can be a number or percentage)",
+          "example": "{!{images-height.hyperbricks}}",
+          "validate": "min=1",
+          "authoring": {
+            "label": "Height",
+            "control": "number",
+            "group": "images",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "id",
+          "key": "id",
+          "go_name": "Id",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Id of images with a index added to it",
+          "example": "{!{images-id.hyperbricks}}",
+          "authoring": {
+            "label": "ID",
+            "control": "text",
+            "group": "images",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "loading",
+          "key": "loading",
+          "go_name": "Loading",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Lazy loading strategy (e.g., 'lazy', 'eager')",
+          "example": "{!{images-loading.hyperbricks}}",
+          "authoring": {
+            "label": "Loading",
+            "control": "text",
+            "group": "images",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "quality",
+          "key": "quality",
+          "go_name": "Quality",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Image quality for optimization",
+          "example": "{!{images-quality.hyperbricks}}",
+          "authoring": {
+            "label": "Quality",
+            "control": "number",
+            "group": "images",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "title",
+          "key": "title",
+          "go_name": "Title",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The title attribute of the image",
+          "example": "{!{images-title.hyperbricks}}",
+          "authoring": {
+            "label": "Title",
+            "control": "text",
+            "group": "images",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "width",
+          "key": "width",
+          "go_name": "Width",
+          "go_type": "int",
+          "kind": "int",
+          "description": "The width of the images (can be a number or percentage)",
+          "example": "{!{images-width.hyperbricks}}",
+          "validate": "min=1",
+          "authoring": {
+            "label": "Width",
+            "control": "number",
+            "group": "images",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Javascript",
+      "token": "<JS>",
+      "aliases": [
+        "<JAVASCRIPT>"
+      ],
+      "category": "resources",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.JSConfig",
+      "description": "JavaScript leaf that can emit inline script or link to a script file.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "source",
+            "label": "Source",
+            "fields": [
+              "inline",
+              "link",
+              "file"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "file",
+          "key": "file",
+          "go_name": "File",
+          "go_type": "string",
+          "kind": "string",
+          "description": "File overrides link and inline, it loads contents of a file and renders it in a script tag.",
+          "example": "{!{javascript-file.hyperbricks}}",
+          "authoring": {
+            "label": "File",
+            "control": "asset",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "inline",
+          "key": "inline",
+          "go_name": "Inline",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here */ ]>>",
+          "example": "{!{javascript-inline.hyperbricks}}",
+          "authoring": {
+            "label": "Inline",
+            "control": "textarea",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "link",
+          "key": "link",
+          "go_name": "Link",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Use link for a script tag with a src attribute",
+          "example": "{!{javascript-link.hyperbricks}}",
+          "authoring": {
+            "label": "Link",
+            "control": "asset",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Json",
+      "token": "<JSON_RENDER>",
+      "aliases": [
+        "<JSON>"
+      ],
+      "category": "data",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.LocalJSONConfig",
+      "description": "Local JSON renderer that loads a file and feeds it into a template.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "source",
+            "label": "Source",
+            "fields": [
+              "file",
+              "template",
+              "inline",
+              "values",
+              "debug"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "debug",
+          "key": "debug",
+          "go_name": "Debug",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Debug the response data",
+          "example": "{!{json-debug.hyperbricks}}",
+          "authoring": {
+            "label": "Debug",
+            "control": "checkbox",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "file",
+          "key": "file",
+          "go_name": "FilePath",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Path to the local JSON file",
+          "example": "{!{json-file.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "File",
+            "control": "asset",
+            "group": "source",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "inline",
+          "key": "inline",
+          "go_name": "Inline",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Use inline to define the template in a multiline block <<[ /* Template code goes here */ ]>>",
+          "example": "{!{json-inline.hyperbricks}}",
+          "authoring": {
+            "label": "Inline",
+            "control": "textarea",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template",
+          "key": "template",
+          "go_name": "Template",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Loads contents of a template file in the modules template directory",
+          "example": "{!{json-template.hyperbricks}}",
+          "authoring": {
+            "label": "Template",
+            "control": "template-asset",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "values",
+          "key": "values",
+          "go_name": "Values",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Key-value pairs for template rendering",
+          "example": "{!{json-values.hyperbricks}}",
+          "value_dynamic": true,
+          "authoring": {
+            "label": "Values",
+            "control": "template-values",
+            "group": "source",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Menu",
+      "token": "<MENU>",
+      "category": "menu",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.MenuConfig",
+      "description": "Menu renderer that sorts and formats page links by section.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "menu",
+            "label": "Menu",
+            "fields": [
+              "section",
+              "order",
+              "sort",
+              "active",
+              "item",
+              "enclose"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "active",
+          "key": "active",
+          "go_name": "Active",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Template for the active menu item.",
+          "example": "{!{menu-active.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Active",
+            "control": "textarea",
+            "group": "menu",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "menu",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Template to enclose the menu items.",
+          "example": "{!{menu-enclose.hyperbricks}}",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "menu",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "item",
+          "key": "item",
+          "go_name": "Item",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Template for regular menu items.",
+          "example": "{!{menu-item.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Item",
+            "control": "textarea",
+            "group": "menu",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "order",
+          "key": "order",
+          "go_name": "Order",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The order of items in the menu ('asc' or 'desc').",
+          "example": "{!{menu-order.hyperbricks}}",
+          "validate": "oneof=asc desc",
+          "authoring": {
+            "label": "Order",
+            "control": "text",
+            "group": "menu",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "section",
+          "key": "section",
+          "go_name": "Section",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The section of the menu to display.",
+          "example": "{!{menu-section.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Section",
+            "control": "text",
+            "group": "menu",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "sort",
+          "key": "sort",
+          "go_name": "Sort",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The field to sort menu items by ('title', 'route', or 'index').",
+          "example": "{!{menu-sort.hyperbricks}}",
+          "validate": "oneof=title route index",
+          "authoring": {
+            "label": "Sort",
+            "control": "text",
+            "group": "menu",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Plugin",
+      "token": "<PLUGIN>",
+      "category": "component",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.PluginConfig",
+      "description": "Plugin renderer that delegates output to a loaded HyperBricks plugin.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "plugin",
+            "label": "Plugin",
+            "fields": [
+              "plugin",
+              "classes",
+              "data"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "classes",
+          "key": "classes",
+          "go_name": "Classes",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "Optional CSS classes for the plugin output wrapper",
+          "example": "{!{plugin-classes.hyperbricks}}",
+          "authoring": {
+            "label": "Classes",
+            "control": "list",
+            "group": "plugin",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "data",
+          "key": "data",
+          "go_name": "Data",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Plugin-specific data passed to the renderer",
+          "authoring": {
+            "label": "Data",
+            "control": "key-value",
+            "group": "plugin",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "plugin",
+          "key": "plugin",
+          "go_name": "PluginName",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Name of the plugin to render",
+          "authoring": {
+            "label": "Plugin",
+            "control": "text",
+            "group": "plugin",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Style",
+      "token": "<STYLES>",
+      "category": "resources",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.StyleConfig",
+      "description": "Stylesheet file renderer for project style assets.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "source",
+            "label": "Source",
+            "fields": [
+              "file"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "file",
+          "key": "file",
+          "go_name": "File",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Path to the CSS file",
+          "example": "{!{styles-file.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "File",
+            "control": "asset",
+            "group": "source",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Template",
+      "token": "<TEMPLATE>",
+      "category": "component",
+      "child_model": "values",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/composite.TemplateConfig",
+      "description": "Template-backed component that binds scalar values and value-mounted bricks into generated HTML.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "template",
+            "label": "Template",
+            "description": "Template source, query proxy, value map, and enclosure fields.",
+            "collapsed": true,
+            "fields": [
+              "template",
+              "inline",
+              "querykeys",
+              "queryparams",
+              "values",
+              "enclose"
+            ]
+          }
+        ],
+        "slots": [
+          {
+            "key": "values",
+            "label": "Values",
+            "model": "values",
+            "default": true,
+            "path_key_required": true,
+            "placement_kinds": [
+              "owned",
+              "inherited"
+            ],
+            "description": "Value-mounted bricks rendered at values.<key>; normal body children are not allowed."
+          }
+        ],
+        "rules": [
+          {
+            "key": "template_value_mounts_only",
+            "description": "Use value rows for scalar values, inherited value references, reusable brick references, or inline owned bricks mounted at values.<key>."
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "json_name": "enclose",
+          "description": "Enclosing property for the template rendered output",
+          "example": "{!{template-enclose.hyperbricks}}",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "inline",
+          "key": "inline",
+          "go_name": "Inline",
+          "go_type": "string",
+          "kind": "string",
+          "json_name": "inline",
+          "description": "Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>",
+          "example": "{!{template-inline.hyperbricks}}",
+          "authoring": {
+            "label": "Inline",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "querykeys",
+          "key": "querykeys",
+          "go_name": "AllowedQueryKeys",
+          "go_type": "[]string",
+          "kind": "list",
+          "json_name": "querykeys",
+          "description": "Set allowed proxy query keys",
+          "example": "{!{template-querykeys.hyperbricks}}",
+          "authoring": {
+            "label": "Query keys",
+            "control": "list",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "queryparams",
+          "key": "queryparams",
+          "go_name": "QueryParams",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "json_name": "queryparams",
+          "description": "Set proxy query keys in the configuration",
+          "example": "{!{template-queryparams.hyperbricks}}",
+          "authoring": {
+            "label": "Query params",
+            "control": "key-value",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "template",
+          "key": "template",
+          "go_name": "Template",
+          "go_type": "string",
+          "kind": "string",
+          "json_name": "template",
+          "description": "Loads contents of a template file in the modules template directory",
+          "example": "{!{template-template.hyperbricks}}",
+          "authoring": {
+            "label": "Template",
+            "control": "template-asset",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "values",
+          "key": "values",
+          "go_name": "Values",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "json_name": "values",
+          "description": "Key-value pairs for template rendering",
+          "example": "{!{template-values.hyperbricks}}",
+          "value_dynamic": true,
+          "authoring": {
+            "label": "Values",
+            "control": "template-values",
+            "group": "template",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Text",
+      "token": "<TEXT>",
+      "category": "component",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.TextConfig",
+      "description": "Plain text leaf node.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "content",
+            "label": "Content",
+            "fields": [
+              "value",
+              "enclose",
+              "attributes"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "group": "content",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "content",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "value",
+          "key": "value",
+          "go_name": "Value",
+          "go_type": "string",
+          "kind": "string",
+          "description": "The paragraph content",
+          "example": "{!{text-value.hyperbricks}}",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Value",
+            "control": "textarea",
+            "group": "content",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tree",
+      "token": "<TREE>",
+      "category": "composite",
+      "child_model": "tree",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/composite.TreeConfig",
+      "description": "Ordered container that renders nested child items in key order.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "tree",
+            "label": "Tree",
+            "fields": [
+              "enclose"
+            ]
+          }
+        ],
+        "slots": [
+          {
+            "key": "body",
+            "label": "Body",
+            "model": "tree",
+            "default": true,
+            "placement_kinds": [
+              "owned",
+              "inherited"
+            ],
+            "description": "Ordered child bricks rendered below this composite."
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrapping property for the tree",
+          "example": "{!{tree-enclose.hyperbricks}}",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "tree",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

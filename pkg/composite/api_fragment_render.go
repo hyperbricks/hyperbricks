@@ -31,7 +31,7 @@ type ApiFragmentRenderConfig struct {
 	Route              string              `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{api-fragment-render-route.hyperbricks}}"`
 	Section            string              `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{api-fragment-render-section.hyperbricks}}"`
 	Enclose            string              `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{api-fragment-render-enclose.hyperbricks}}"`
-	NoCache            bool                `mapstructure:"nocache" exclude:"true"` // description:"Explicitly deisable cache" example:"{!{api-fragment-render-nocache.hyperbricks}}"`
+	NoCache            bool                `mapstructure:"nocache" exclude:"true"` // description:"Explicitly disable cache" example:"{!{api-fragment-render-nocache.hyperbricks}}"`
 	Index              int                 `mapstructure:"index" description:"Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
 	Guard              *RouteGuardConfig   `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current API_FRAGMENT_RENDER behavior remains unchanged"`
 }
@@ -40,7 +40,7 @@ type APIConfig struct {
 	Endpoint   string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-fragment-endpoint.hyperbricks}}"`
 	Method     string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-fragment-method.hyperbricks}}"`
 	Headers    map[string]string      `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-fragment-headers.hyperbricks}}"`
-	Body       string                 `mapstructure:"body" description:"Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request." example:"{!{api-render-fragment-body.hyperbricks}}"`
+	Body       string                 `mapstructure:"body" description:"Raw request body. Use a scalar string value; nested objects are not parsed for this field." example:"{!{api-render-fragment-body.hyperbricks}}"`
 	Template   string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-fragment-template.hyperbricks}}"`
 	Inline     string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{api-render-fragment-inline.hyperbricks}}"`
 	Values     map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-fragment-values.hyperbricks}}"`
@@ -51,11 +51,11 @@ type APIConfig struct {
 	SetCookies []string               `mapstructure:"setcookies" json:",omitempty" description:"Optional list of Set-Cookie response templates. Each entry becomes its own Set-Cookie header on any 2xx upstream response." example:"{!{api-render-fragment-setcookies.hyperbricks}}"`
 	// PassCookie       string                 `mapstructure:"passcookie" description:"Pass a cookie in eindpoint request" example:"{!{api-render-setcookie.hyperbricks}}"`
 	AllowedQueryKeys []string          `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-fragment-querykeys.hyperbricks}}"`
-	QueryParams      map[string]string `mapstructure:"queryparams" description:"Set proxy query key in the confifuration" example:"{!{api-render-fragment-queryparams.hyperbricks}}"`
+	QueryParams      map[string]string `mapstructure:"queryparams" description:"Set proxy query keys in the configuration" example:"{!{api-render-fragment-queryparams.hyperbricks}}"`
 	JwtSecret        string            `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-fragment-jwt-secret.hyperbricks}}"`
-	JwtClaims        map[string]string `mapstructure:"jwtclaims" description:"jwt claim map" example:"{!{api-render-fragment-jwt-claims.hyperbricks}}"`
+	JwtClaims        map[string]string `mapstructure:"jwtclaims" description:"JWT claims to include when signing the bearer token" example:"{!{api-render-fragment-jwt-claims.hyperbricks}}"`
 	Debug            bool              `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-fragment-debug.hyperbricks}}"`
-	DebugPanel       bool              `mapstructure:"debugpanel" description:"Add frontendpanel code, this only works when frontend_errors is set to true in modules package.hyperbricks" example:"{!{api-render-fragment-debug.hyperbricks}}"`
+	DebugPanel       bool              `mapstructure:"debugpanel" description:"Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks" example:"{!{api-render-fragment-debug.hyperbricks}}"`
 }
 
 // FragmentConfigGetName returns the HyperBricks type associated with the FragmentConfig.

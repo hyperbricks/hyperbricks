@@ -37,6 +37,7 @@ func init() {
 	}
 
 	shared.Init_configuration()
+	applyCommandRuntimeOptions()
 
 	orangeTrueColor := "\033[38;2;255;165;0m"
 	reset := "\033[0m"
@@ -91,6 +92,22 @@ func init() {
 		development_mode_init()
 	}
 
+}
+
+func applyCommandRuntimeOptions() {
+	shared.SetRuntimeOptions(shared.RuntimeOptions{
+		ModuleRoot: commands.GetModuleRoot(),
+
+		Port:         int(commands.Port),
+		PortOverride: commands.Port != 8080,
+
+		Production: commands.Production,
+
+		RuntimeGatewayEnabled:    commands.StartRuntimeGateway,
+		RuntimeGatewayDomain:     commands.StartRuntimeDomain,
+		RuntimeGatewayHostSuffix: commands.StartRuntimeHostSuffix,
+		RuntimeGatewayResolver:   commands.StartRuntimeResolver,
+	})
 }
 
 func isTestRun() bool {

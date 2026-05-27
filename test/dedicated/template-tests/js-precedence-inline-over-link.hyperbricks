@@ -12,4 +12,4 @@ Inline JavaScript should take precedence over link when both are set.
 ==== expected output ====
 <!DOCTYPE html><html><head><script>
 console.log('inline');
-</script><meta name="generator" content="hyperbricks cms"></head><body></body></html>
+</script><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

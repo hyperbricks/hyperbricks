@@ -14,6 +14,19 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
+var (
+	templateMarkerPattern  = regexp.MustCompile(`\{\{TEMPLATE:(.*?)\}\}`)
+	importDirectivePattern = regexp.MustCompile(`@import\s+['"]([^'"]+)['"]`)
+	macroBlockPattern      = regexp.MustCompile(`(?s)@macro\s+as\s*\(([^)]+)\)\s*{([\s\S]+?)}\s*=\s*<<<\[(.*?)\]>>>`)
+	macroVariablePattern   = regexp.MustCompile(`\{\{\{\.([a-zA-Z0-9_]+)\}\}\}`)
+)
+
+var pathMarkerReplacerCache struct {
+	sync.RWMutex
+	key      [7]string
+	replacer *strings.Replacer
+}
+
 // GetHyperScriptFiles returns a sorted list of .hyperbricks files in the specified directory.
 func GetHyperScriptFiles(baseUrl string) ([]string, error) {
 	files, err := filepath.Glob(baseUrl + "/*.hyperbricks")
@@ -136,9 +149,8 @@ func PreprocessHyperScript(hyperBricks string) (string, error) {
 	// ===============
 	// CACHE MARKERS
 	// ===============
-	templateRegex := regexp.MustCompile(`\{\{TEMPLATE:(.*?)\}\}`)
-	processed = templateRegex.ReplaceAllStringFunc(processed, func(token string) string {
-		matches := templateRegex.FindStringSubmatch(token)
+	processed = templateMarkerPattern.ReplaceAllStringFunc(processed, func(token string) string {
+		matches := templateMarkerPattern.FindStringSubmatch(token)
 
 		if len(matches) != 2 {
 			return token
@@ -238,34 +250,49 @@ func parseFileToken(input string, start int) (int, string, string, bool) {
 }
 
 func applyPathMarkers(input string) string {
-	moduleRootDirPattern := regexp.MustCompile(`{{MODULE_ROOT}}`)
-	input = moduleRootDirPattern.ReplaceAllString(input, core.ModuleDirectories.ModulesRoot)
+	key := [7]string{
+		core.ModuleDirectories.ModulesRoot,
+		core.ModuleDirectories.Root,
+		core.ModuleDirectories.ModuleDir,
+		core.ModuleDirectories.ResourcesDir,
+		core.ModuleDirectories.TemplateDir,
+		core.ModuleDirectories.StaticDir,
+		core.ModuleDirectories.HyperbricksDir,
+	}
 
-	rootDirPattern := regexp.MustCompile(`{{ROOT}}`)
-	input = rootDirPattern.ReplaceAllString(input, core.ModuleDirectories.Root)
+	pathMarkerReplacerCache.RLock()
+	if pathMarkerReplacerCache.replacer != nil && pathMarkerReplacerCache.key == key {
+		replacer := pathMarkerReplacerCache.replacer
+		pathMarkerReplacerCache.RUnlock()
+		return replacer.Replace(input)
+	}
+	pathMarkerReplacerCache.RUnlock()
 
-	moduleDirPattern := regexp.MustCompile(`{{MODULE}}`)
-	input = moduleDirPattern.ReplaceAllString(input, core.ModuleDirectories.ModuleDir)
+	replacer := strings.NewReplacer(
+		"{{MODULE_ROOT}}", key[0],
+		"{{ROOT}}", key[1],
+		"{{MODULE}}", key[2],
+		"{{RESOURCES}}", key[3],
+		"{{TEMPLATES}}", key[4],
+		"{{STATIC}}", key[5],
+		"{{HYPERBRICKS}}", key[6],
+	)
 
-	rootPattern := regexp.MustCompile(`{{RESOURCES}}`)
-	input = rootPattern.ReplaceAllString(input, core.ModuleDirectories.ResourcesDir)
+	pathMarkerReplacerCache.Lock()
+	if pathMarkerReplacerCache.replacer != nil && pathMarkerReplacerCache.key == key {
+		replacer = pathMarkerReplacerCache.replacer
+	} else {
+		pathMarkerReplacerCache.key = key
+		pathMarkerReplacerCache.replacer = replacer
+	}
+	pathMarkerReplacerCache.Unlock()
 
-	templatePattern := regexp.MustCompile(`{{TEMPLATES}}`)
-	input = templatePattern.ReplaceAllString(input, core.ModuleDirectories.TemplateDir)
-
-	staticPattern := regexp.MustCompile(`{{STATIC}}`)
-	input = staticPattern.ReplaceAllString(input, core.ModuleDirectories.StaticDir)
-
-	hyperBricksPattern := regexp.MustCompile(`{{HYPERBRICKS}}`)
-	input = hyperBricksPattern.ReplaceAllString(input, core.ModuleDirectories.HyperbricksDir)
-
-	return input
+	return replacer.Replace(input)
 }
 
 // processImports recursively processes @import directives to include external HyperBricks files.
 func processImports(hyperBricks, baseDir string, importedFiles map[string]bool) (string, error) {
-	importRegex := regexp.MustCompile(`@import\s+['"]([^'"]+)['"]`)
-	matches := importRegex.FindAllStringSubmatch(hyperBricks, -1)
+	matches := importDirectivePattern.FindAllStringSubmatch(hyperBricks, -1)
 
 	for _, match := range matches {
 		if len(match) != 2 {
@@ -307,8 +334,7 @@ func processImports(hyperBricks, baseDir string, importedFiles map[string]bool) 
 // Now supports <<<[ ... ]>>> blocks and {{{.var}}} macro replacements.
 func processMacroBlocks(input string) (string, error) {
 	// Regex for @macro as (..){..} = <<<[ ... ]>>>
-	macroPattern := regexp.MustCompile(`(?s)@macro\s+as\s*\(([^)]+)\)\s*{([\s\S]+?)}\s*=\s*<<<\[(.*?)\]>>>`)
-	matches := macroPattern.FindAllStringSubmatch(input, -1)
+	matches := macroBlockPattern.FindAllStringSubmatch(input, -1)
 
 	if len(matches) == 0 {
 		return input, nil
@@ -359,9 +385,8 @@ func processMacroBlocks(input string) (string, error) {
 
 // replaceTripleBraces replaces all {{{.var}}} in the template with their values from row.
 func replaceTripleBraces(template string, row map[string]string) string {
-	re := regexp.MustCompile(`\{\{\{\.([a-zA-Z0-9_]+)\}\}\}`)
-	return re.ReplaceAllStringFunc(template, func(m string) string {
-		key := re.FindStringSubmatch(m)[1]
+	return macroVariablePattern.ReplaceAllStringFunc(template, func(m string) string {
+		key := macroVariablePattern.FindStringSubmatch(m)[1]
 		if val, ok := row[key]; ok {
 			return val
 		}

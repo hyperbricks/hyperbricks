@@ -1,5 +1,5 @@
 ==== hyperbricks config {!{fragment}} ====
-# Use the a TEMPLATE:filepath (relative from templates folder defined in module's package.hyperbricks) directive like this:
+# Use a TEMPLATE:filepath directive, relative to the templates folder defined in the module's package.hyperbricks:
 template = youtube.tmpl
 
 # Or use the inline notation:
@@ -22,15 +22,15 @@ myComponent {
 fragment = <FRAGMENT>
 fragment.content = <TREE>
 fragment.content {
-    10 < myComponent
+    10 <<< myComponent
     10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
 
-    20 < myComponent
+    20 <<< myComponent
 
     enclose = <div class="youtube_video">|</div>
 }
 ==== explainer ====
-<TEMPLATE> can be used nested in <FRAGMENT> or <HYPERMEDIA> types. It uses golang's standard html/template library.
+<TEMPLATE> can be used nested in <FRAGMENT> or <HYPERMEDIA> types. It uses Go's standard html/template library.
 ==== expected json ====
 {
   "ConfigType": "<FRAGMENT>",
