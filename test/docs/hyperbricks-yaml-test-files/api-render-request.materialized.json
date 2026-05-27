@@ -1,0 +1,37 @@
+{
+  "quote_feed": {
+    "@type": "<API_RENDER>",
+    "body": "{\"topic\":\"$topic\",\"limit\":\"$limit\"}\n",
+    "endpoint": "https://example.com/api/quotes",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    "inline": "{{ range .Data }}<p>{{ .quote }}</p>{{ end }}\n",
+    "jwtclaims": {
+      "aud": "fixture"
+    },
+    "jwtsecret": "local-secret",
+    "method": "POST",
+    "querykeys": [
+      "topic",
+      "limit"
+    ],
+    "queryparams": {
+      "limit": "3",
+      "topic": "focus"
+    },
+    "values": {
+      "fallback": [
+        {
+          "body": "No quotes were returned.",
+          "title": "Empty state"
+        },
+        {
+          "body": "The upstream request failed.",
+          "title": "Error state"
+        }
+      ]
+    }
+  }
+}

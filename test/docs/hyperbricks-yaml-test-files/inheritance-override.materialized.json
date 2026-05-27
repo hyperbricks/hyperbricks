@@ -1,0 +1,35 @@
+{
+  "base_card": {
+    "@type": "<TEMPLATE>",
+    "template": "{{TEMPLATE:cards/card.html}}",
+    "values": {
+      "body": "Base body",
+      "theme": {
+        "density": "compact",
+        "tone": "neutral"
+      },
+      "title": "Base title",
+      "width": "320"
+    }
+  },
+  "page": {
+    "@order": [
+      "featured_card"
+    ],
+    "@type": "<HYPERMEDIA>",
+    "featured_card": {
+      "@type": "<TEMPLATE>",
+      "template": "{{TEMPLATE:cards/card.html}}",
+      "values": {
+        "body": "Base body",
+        "theme": {
+          "density": "compact",
+          "tone": "strong"
+        },
+        "title": "Overridden title",
+        "width": "320"
+      }
+    },
+    "route": "inheritance-override"
+  }
+}

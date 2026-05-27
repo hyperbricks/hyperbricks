@@ -1,0 +1,69 @@
+==== hyperbricks yaml {!{page}} ====
+page:
+  - type: hypermedia
+  - route: reserved-name-collision
+
+  - head:
+      - type: head
+      - title: Reserved names fixture
+      - css:
+          - "{{RESOURCES}}/css/base.css"
+      - js:
+          - "{{RESOURCES}}/js/app.js"
+
+      - css_component:
+          - type: css
+          - inline: |
+              .reserved-name-fixture {
+                display: block;
+              }
+
+      - js_component:
+          - type: javascript
+          - inline: |
+              console.log("reserved-name fixture");
+==== explainer ====
+Reserved runtime field names such as css and js remain properties; custom component children use non-colliding names.
+==== expected json ====
+{
+  "@order": [
+    "head"
+  ],
+  "@type": "<HYPERMEDIA>",
+  "head": {
+    "@order": [
+      "css_component",
+      "js_component"
+    ],
+    "@type": "<HEAD>",
+    "css": [
+      "{{RESOURCES}}/css/base.css"
+    ],
+    "css_component": {
+      "@type": "<CSS>",
+      "inline": ".reserved-name-fixture {\n  display: block;\n}\n"
+    },
+    "js": [
+      "{{RESOURCES}}/js/app.js"
+    ],
+    "js_component": {
+      "@type": "<JAVASCRIPT>",
+      "inline": "console.log(\"reserved-name fixture\");\n"
+    },
+    "title": "Reserved names fixture"
+  },
+  "route": "reserved-name-collision"
+}
+==== expected output ====
+<!DOCTYPE html><html><head><style>
+.reserved-name-fixture {
+  display: block;
+}
+
+</style><script>
+console.log("reserved-name fixture");
+
+</script><meta name="generator" content="hyperbricks runtime"><title>Reserved names fixture</title>
+<link rel="stylesheet" href="{{RESOURCES}}/css/base.css">
+<script src="{{RESOURCES}}/js/app.js"></script>
+</head><body></body></html>

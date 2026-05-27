@@ -1,0 +1,60 @@
+==== hyperbricks yaml {!{fragment}} ====
+fragment:
+  - type: fragment
+  - template_10:
+      - type: template
+      - inline: |2
+          <h2>{{.header}}</h2>
+          <p>{{.text}}</p>
+          {{.image}}
+      - values:
+          header: SOME HEADER
+          image:
+            - type: image
+            - src: hyperbricks-test-files/assets/cute_cat.jpg
+            - width: "800"
+          text:
+            - type: text
+            - value: some text
+  - response:
+      hx_trigger: myEvent
+==== explainer ====
+A FRAGMENT dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+==== expected json ====
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "ContentType": "",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "myEvent",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<h2>SOME HEADER</h2>
+<p>some text</p>
+<img src="static/images/cute_cat_w800_h800.jpg" width="800" height="800" />

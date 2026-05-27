@@ -1,0 +1,58 @@
+==== hyperbricks yaml {!{api_fragment}} ====
+api_fragment:
+  - type: api_fragment_render
+  - endpoint: https://api.example.com/rpc/logout
+  - inline: <p>Logged out</p>
+  - method: POST
+  - route: auth-logout
+  - setcookie: token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0
+==== explainer ====
+Legacy shorthand for one Set-Cookie response template
+==== expected json ====
+{
+  "AllowedQueryKeys": null,
+  "Body": "",
+  "ConfigCategory": "",
+  "ConfigType": "<API_FRAGMENT_RENDER>",
+  "Debug": false,
+  "DebugPanel": false,
+  "Enclose": "",
+  "Endpoint": "https://api.example.com/rpc/logout",
+  "Headers": null,
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Inline": "<p>Logged out</p>",
+  "Items": null,
+  "JwtClaims": null,
+  "JwtSecret": "",
+  "MetaDocDescription": "",
+  "Method": "POST",
+  "NoCache": false,
+  "Password": "",
+  "QueryParams": null,
+  "Route": "auth-logout",
+  "Section": "",
+  "SetCookie": "token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
+  "Status": 0,
+  "Template": "",
+  "Title": "",
+  "Username": "",
+  "Values": null
+}
+
+==== expected output ====

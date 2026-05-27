@@ -1,0 +1,98 @@
+==== hyperbricks yaml {!{page}} ====
+# The YAML parser ignores this comment.
+page:
+  - type: <HYPERMEDIA>
+  - route: "{{VAR:route}}"
+  - title: "{{CONF:site.title}}"
+  - guard:
+      enabled: true
+      auth:
+        cookie: hb_session
+      require:
+        authenticated: true
+  - hero:
+      - type: <HTML>
+      - value: |
+          # This comment stays because it is inside the block scalar.
+          {{FILE:{{RESOURCES}}/hero.html}}
+  - cta:
+      - type: <TEXT>
+      - value: "{{ENV:CTA_TEXT}}"
+==== explainer ====
+Pipeline fixture for the YAML source model. It shows preprocessing first, then materialization, then the runtime-facing Items pass.
+==== expected preprocessed yaml ====
+# The YAML parser ignores this comment.
+page:
+  - type: <HYPERMEDIA>
+  - route: "pipeline"
+  - title: "Pipeline Page"
+  - guard:
+      enabled: true
+      auth:
+        cookie: hb_session
+      require:
+        authenticated: true
+  - hero:
+      - type: <HTML>
+      - value: |
+          # This comment stays because it is inside the block scalar.
+          <section class="from-file">
+            <p>File body</p>
+          </section>
+  - cta:
+      - type: <TEXT>
+      - value: "Start now"
+==== expected materialized json ====
+{
+  "@type": "<HYPERMEDIA>",
+  "@order": [
+    "hero",
+    "cta"
+  ],
+  "route": "pipeline",
+  "title": "Pipeline Page",
+  "guard": {
+    "enabled": "true",
+    "auth": {
+      "cookie": "hb_session"
+    },
+    "require": {
+      "authenticated": "true"
+    }
+  },
+  "hero": {
+    "@type": "<HTML>",
+    "value": "# This comment stays because it is inside the block scalar.\n<section class=\"from-file\">\n  <p>File body</p>\n</section>\n"
+  },
+  "cta": {
+    "@type": "<TEXT>",
+    "value": "Start now"
+  }
+}
+==== expected runtime json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "Route": "pipeline",
+  "Title": "Pipeline Page",
+  "Items": {
+    "@order": [
+      "hero",
+      "cta"
+    ],
+    "hero": {
+      "@type": "<HTML>",
+      "value": "# This comment stays because it is inside the block scalar.\n<section class=\"from-file\">\n  <p>File body</p>\n</section>\n"
+    },
+    "cta": {
+      "@type": "<TEXT>",
+      "value": "Start now"
+    }
+  }
+}
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>Pipeline Page</title>
+</head><body># This comment stays because it is inside the block scalar.
+<section class="from-file">
+  <p>File body</p>
+</section>
+Start now</body></html>

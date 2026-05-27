@@ -1,0 +1,23 @@
+==== hyperbricks yaml {!{html}} ====
+html:
+  - type: html
+  - trimspace: "true"
+  - value: "\n<p>HTML TEST</p>    \n    "
+==== explainer ====
+Property trimspace filters, when set to true, all leading and trailing white space removed, as defined by Unicode.
+==== expected json ====
+{
+  "ConfigCategory": "",
+  "ConfigType": "<HTML>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "MetaDocDescription": "",
+  "TrimSpace": true,
+  "Value": "\n<p>HTML TEST</p>    \n    "
+}
+
+==== expected output ====
+<p>HTML TEST</p>

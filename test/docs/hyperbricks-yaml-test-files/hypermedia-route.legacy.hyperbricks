@@ -1,0 +1,12 @@
+page = <HYPERMEDIA>
+page.route = index
+page.static = index.html
+page.title = YAML Route Fixture
+page.section = main
+page.index = 10
+page.bodytag = <body data-page="yaml-route">|</body>
+page.headers.X-HyperBricks-Fixture = yaml
+page.cookies = [fixture=ok; Path=/; SameSite=Lax]
+
+page.hero = <HTML>
+page.hero.value = <h1>Route fixture</h1>

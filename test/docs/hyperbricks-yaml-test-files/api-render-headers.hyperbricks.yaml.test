@@ -1,0 +1,40 @@
+==== hyperbricks yaml {!{api_render}} ====
+api_render:
+  - type: api_render
+  - endpoint: https://example.com/api
+  - headers:
+      Accept: application/json
+  - method: GET
+==== explainer ====
+Optional HTTP headers for API requests
+==== expected json ====
+{
+  "AllowedQueryKeys": null,
+  "Body": "",
+  "ConfigCategory": "",
+  "ConfigType": "<API_RENDER>",
+  "Debug": false,
+  "DebugPanel": false,
+  "Enclose": "",
+  "Endpoint": "https://example.com/api",
+  "ExtraAttributes": null,
+  "Headers": {
+    "Accept": "application/json"
+  },
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "",
+  "JwtClaims": null,
+  "JwtSecret": "",
+  "MetaDocDescription": "",
+  "Method": "GET",
+  "Password": "",
+  "QueryParams": null,
+  "Status": 0,
+  "Template": "",
+  "Username": "",
+  "Values": null
+}
+
+==== expected output ====

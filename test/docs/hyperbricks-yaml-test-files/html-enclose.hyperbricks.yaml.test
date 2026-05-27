@@ -1,0 +1,23 @@
+==== hyperbricks yaml {!{html}} ====
+html:
+  - type: html
+  - enclose: <div>|</div>
+  - value: "\n<p>HTML TEST</p>    \n    "
+==== explainer ====
+Wrap rendered output using prefix|suffix syntax
+==== expected json ====
+{
+  "ConfigCategory": "",
+  "ConfigType": "<HTML>",
+  "Enclose": "<div>|</div>",
+  "ExtraAttributes": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "MetaDocDescription": "",
+  "TrimSpace": false,
+  "Value": "\n<p>HTML TEST</p>    \n    "
+}
+
+==== expected output ====
+<div><p>HTML TEST</p></div>

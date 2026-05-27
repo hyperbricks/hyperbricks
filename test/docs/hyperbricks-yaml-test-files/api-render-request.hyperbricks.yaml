@@ -1,0 +1,26 @@
+quote_feed:
+  - type: api_render
+  - endpoint: https://example.com/api/quotes
+  - method: POST
+  - headers:
+      Content-Type: application/json
+      Accept: application/json
+  - body: |
+      {"topic":"$topic","limit":"$limit"}
+  - querykeys:
+      - topic
+      - limit
+  - queryparams:
+      topic: focus
+      limit: "3"
+  - jwtsecret: local-secret
+  - jwtclaims:
+      aud: fixture
+  - inline: |
+      {{ range .Data }}<p>{{ .quote }}</p>{{ end }}
+  - values:
+      fallback:
+        - title: Empty state
+          body: No quotes were returned.
+        - title: Error state
+          body: The upstream request failed.

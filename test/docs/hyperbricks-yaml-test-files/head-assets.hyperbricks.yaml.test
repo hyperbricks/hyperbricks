@@ -1,0 +1,78 @@
+==== hyperbricks yaml {!{page}} ====
+page:
+  - type: hypermedia
+  - route: head-assets
+
+  - head:
+      - type: head
+      - title: YAML Head Fixture
+      - favicon: "{{RESOURCES}}/favicon.svg"
+      - meta:
+          description: Head properties stay properties.
+      - css:
+          - "{{RESOURCES}}/css/base.css"
+      - js:
+          - "{{RESOURCES}}/js/app.js"
+
+      - inline_styles:
+          - type: css
+          - inline: |
+              .fixture {
+                color: green;
+              }
+
+      - inline_script:
+          - type: javascript
+          - inline: |
+              console.log("yaml head fixture");
+==== explainer ====
+HEAD keeps reserved css/js fields as properties while non-colliding named children remain ordered components.
+==== expected json ====
+{
+  "@order": [
+    "head"
+  ],
+  "@type": "<HYPERMEDIA>",
+  "head": {
+    "@order": [
+      "inline_styles",
+      "inline_script"
+    ],
+    "@type": "<HEAD>",
+    "css": [
+      "{{RESOURCES}}/css/base.css"
+    ],
+    "favicon": "{{RESOURCES}}/favicon.svg",
+    "inline_script": {
+      "@type": "<JAVASCRIPT>",
+      "inline": "console.log(\"yaml head fixture\");\n"
+    },
+    "inline_styles": {
+      "@type": "<CSS>",
+      "inline": ".fixture {\n  color: green;\n}\n"
+    },
+    "js": [
+      "{{RESOURCES}}/js/app.js"
+    ],
+    "meta": {
+      "description": "Head properties stay properties."
+    },
+    "title": "YAML Head Fixture"
+  },
+  "route": "head-assets"
+}
+==== expected output ====
+<!DOCTYPE html><html><head><style>
+.fixture {
+  color: green;
+}
+
+</style><script>
+console.log("yaml head fixture");
+
+</script><meta name="generator" content="hyperbricks runtime"><link rel="icon" type="image/x-icon" href="{{RESOURCES}}/favicon.svg">
+<title>YAML Head Fixture</title>
+<meta name="description" content="Head properties stay properties.">
+<link rel="stylesheet" href="{{RESOURCES}}/css/base.css">
+<script src="{{RESOURCES}}/js/app.js"></script>
+</head><body></body></html>

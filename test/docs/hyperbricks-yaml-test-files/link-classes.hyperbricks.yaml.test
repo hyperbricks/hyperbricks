@@ -1,0 +1,11 @@
+==== hyperbricks yaml {!{fragment}} ====
+fragment:
+  - type: fragment
+==== explainer ====
+Optional CSS classes for the link
+==== expected json ====
+{
+  "@type": "<FRAGMENT>"
+}
+
+==== expected output ====

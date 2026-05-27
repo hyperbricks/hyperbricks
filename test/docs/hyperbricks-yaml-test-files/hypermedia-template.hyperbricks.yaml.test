@@ -1,0 +1,49 @@
+==== hyperbricks yaml {!{hypermedia}} ====
+hypermedia:
+  - type: hypermedia
+  - template:
+      inline: "\n<div>{{.content}}</div>\n        "
+      values:
+        content:
+          - type: html
+          - value: <p>SOME HTML CONTENT</p>
+==== explainer ====
+Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions.
+==== expected json ====
+{
+  "BodyTag": "",
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "ContentType": "",
+  "Cookies": null,
+  "Doctype": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Head": null,
+  "Headers": null,
+  "HtmlTag": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": {
+    "inline": "\n<div>{{.content}}</div>\n        ",
+    "values": {
+      "content": {
+        "@type": "<HTML>",
+        "value": "<p>SOME HTML CONTENT</p>"
+      }
+    }
+  },
+  "Title": ""
+}
+
+==== expected output ====
+<div><p>SOME HTML CONTENT</p></div>

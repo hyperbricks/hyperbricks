@@ -1,0 +1,33 @@
+==== hyperbricks yaml {!{image}} ====
+image:
+  - type: image
+  - height: "320"
+  - quality: "1"
+  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - width: "320"
+==== explainer ====
+Image quality for optimization, bigger is better.
+==== expected json ====
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 320,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "MetaDocDescription": "",
+  "Quality": 1,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 320
+}
+
+==== expected output ====
+<img src="static/images/cute_cat_w320_h320.jpg" width="320" height="320" /> 

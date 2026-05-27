@@ -1,0 +1,31 @@
+==== hyperbricks yaml {!{image}} ====
+image:
+  - type: image
+  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - width: "330"
+==== explainer ====
+The width of the images (can be a number or percentage)
+==== expected json ====
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "MetaDocDescription": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 330
+}
+
+==== expected output ====
+<img src="static/images/cute_cat_w330_h330.jpg" width="330" height="330" /> 

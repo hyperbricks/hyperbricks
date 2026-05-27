@@ -1,0 +1,11 @@
+page = <HYPERMEDIA>
+page.route = ordered-children
+
+page.zeta = <HTML>
+page.zeta.value = <p>Renders first by source order.</p>
+
+page.alpha = <HTML>
+page.alpha.value = <p>Renders second, not first alphabetically.</p>
+
+page.middle = <HTML>
+page.middle.value = <p>Renders third.</p>

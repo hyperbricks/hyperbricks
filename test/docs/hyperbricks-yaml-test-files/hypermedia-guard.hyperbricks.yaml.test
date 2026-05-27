@@ -1,0 +1,71 @@
+==== hyperbricks yaml {!{hypermedia}} ====
+hypermedia:
+  - type: hypermedia
+  - guard:
+      auth:
+        cookie: session
+      enabled: "true"
+      on_forbidden:
+        redirect: /denied
+        status: "403"
+      on_unauthenticated:
+        hx_redirect: /login
+        redirect: /login
+        status: "401"
+      require:
+        authenticated: "true"
+==== explainer ====
+Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA behavior remains unchanged
+==== expected json ====
+{
+  "BodyTag": "",
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "ContentType": "",
+  "Cookies": null,
+  "Doctype": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Guard": {
+    "Auth": {
+      "Cookie": "session",
+      "Header": "",
+      "Scheme": ""
+    },
+    "Authorize": null,
+    "Enabled": true,
+    "OnForbidden": {
+      "HxRedirect": "",
+      "Redirect": "/denied",
+      "Status": 403
+    },
+    "OnUnauthenticated": {
+      "HxRedirect": "/login",
+      "Redirect": "/login",
+      "Status": 401
+    },
+    "Require": {
+      "Authenticated": true,
+      "Query": null
+    }
+  },
+  "Head": null,
+  "Headers": null,
+  "HtmlTag": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<!DOCTYPE html><html><body></body></html>

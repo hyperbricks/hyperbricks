@@ -1,0 +1,22 @@
+==== hyperbricks config {!{text}} ====
+text = <TEXT>
+text {
+	value = SOME VALUE
+    enclose = <span>|</span>
+}
+==== explainer ====
+
+==== expected json ====
+{
+    "ConfigType": "<TEXT>",
+    "ConfigCategory": "",
+    "HyperBricksKey": "",
+    "HyperBricksPath": "",
+    "HyperBricksFile": "",
+    "ExtraAttributes": null,
+    "Enclose": "<span>|</span>",
+    "MetaDocDescription": "",
+    "Value": "SOME VALUE"
+  }
+==== expected output ====
+<span>SOME VALUE</span> 

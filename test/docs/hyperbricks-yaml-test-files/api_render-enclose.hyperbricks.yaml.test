@@ -1,0 +1,37 @@
+==== hyperbricks yaml {!{api_render}} ====
+api_render:
+  - type: api_render
+  - enclose: <div>|</div>
+  - endpoint: https://example.com/api
+  - method: GET
+==== explainer ====
+Wrap rendered output using prefix|suffix syntax
+==== expected json ====
+{
+  "AllowedQueryKeys": null,
+  "Body": "",
+  "ConfigCategory": "",
+  "ConfigType": "<API_RENDER>",
+  "Debug": false,
+  "DebugPanel": false,
+  "Enclose": "<div>|</div>",
+  "Endpoint": "https://example.com/api",
+  "ExtraAttributes": null,
+  "Headers": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "",
+  "JwtClaims": null,
+  "JwtSecret": "",
+  "MetaDocDescription": "",
+  "Method": "GET",
+  "Password": "",
+  "QueryParams": null,
+  "Status": 0,
+  "Template": "",
+  "Username": "",
+  "Values": null
+}
+
+==== expected output ====

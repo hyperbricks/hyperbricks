@@ -1,0 +1,55 @@
+==== hyperbricks yaml {!{fragment}} ====
+fragment:
+  - type: fragment
+  - template:
+      inline: "\n<div>{{.content}}</div>\n\n        "
+      values:
+        content:
+          - type: html
+          - value: <p>SOME HTML CONTENT</p>
+==== explainer ====
+Template configurations for rendering the fragment. (This will disable rendering any content added to the alpha numeric items that are added to the fragment root object.) See <TEMPLATE> for more details using templates.
+==== expected json ====
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "ContentType": "",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": {
+    "inline": "\n<div>{{.content}}</div>\n\n        ",
+    "values": {
+      "content": {
+        "@type": "<HTML>",
+        "value": "<p>SOME HTML CONTENT</p>"
+      }
+    }
+  },
+  "Title": ""
+}
+
+==== expected output ====
+<div><p>SOME HTML CONTENT</p></div>

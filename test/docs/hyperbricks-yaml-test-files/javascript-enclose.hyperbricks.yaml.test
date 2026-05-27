@@ -1,0 +1,42 @@
+==== hyperbricks yaml {!{head}} ====
+head:
+  - type: head
+  - javascript_10:
+      - type: javascript
+      - attributes:
+          type: text/javascript
+      - enclose: <script defer></script>
+      - file: hyperbricks-test-files/assets/main.js
+==== explainer ====
+Wrap rendered output using prefix|suffix syntax
+==== expected json ====
+{
+  "ConfigCategory": "",
+  "ConfigType": "<HEAD>",
+  "Css": null,
+  "Favicon": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Items": {
+    "@order": [
+      "javascript_10"
+    ],
+    "javascript_10": {
+      "@type": "<JAVASCRIPT>",
+      "attributes": {
+        "type": "text/javascript"
+      },
+      "enclose": "<script defer></script>",
+      "file": "hyperbricks-test-files/assets/main.js"
+    }
+  },
+  "Js": null,
+  "MetaData": null,
+  "Title": ""
+}
+
+==== expected output ====
+<head><script defer></script>
+        console.log("Hello World!")
+        </script defer></script><meta name="generator" content="hyperbricks runtime"></head>

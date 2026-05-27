@@ -1,0 +1,36 @@
+==== hyperbricks yaml {!{myComponent}} ====
+myComponent:
+  - type: template
+  - enclose: <div id="image-container">|</div>
+  - inline: "\n<img src=\"{{.src}}\" alt=\"{{.alt}}\" width=\"{{.width}}\" height=\"{{.height}}\">\n    "
+  - values:
+      alt: Girl in a jacket
+      height: "600"
+      src: img_girl.jpg
+      width: "500"
+==== explainer ====
+Enclosing property for the template rendered output divided by |
+==== expected json ====
+{
+  "AllowedQueryKeys": null,
+  "ConfigCategory": "",
+  "ConfigType": "<TEMPLATE>",
+  "Enclose": "<div id=\"image-container\">|</div>",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "\n<img src=\"{{.src}}\" alt=\"{{.alt}}\" width=\"{{.width}}\" height=\"{{.height}}\">\n    ",
+  "Items": null,
+  "MetaDocDescription": "",
+  "QueryParams": null,
+  "Template": "",
+  "Values": {
+    "alt": "Girl in a jacket",
+    "height": "600",
+    "src": "img_girl.jpg",
+    "width": "500"
+  }
+}
+
+==== expected output ====
+<div id="image-container"><img src="img_girl.jpg" alt="Girl in a jacket" width="500" height="600"></div> 

@@ -1,0 +1,39 @@
+==== hyperbricks yaml {!{myComponent}} ====
+myComponent:
+  - type: template
+  - querykeys:
+      - somequeryparameter
+  - queryparams:
+      somequeryparameter: helloworld
+  - values:
+      height: "400"
+      src: https://www.youtube.com/embed/tgbNymZ7vqY
+      width: "300"
+==== explainer ====
+The inline template used for rendering.
+==== expected json ====
+{
+  "AllowedQueryKeys": [
+    "somequeryparameter"
+  ],
+  "ConfigCategory": "",
+  "ConfigType": "<TEMPLATE>",
+  "Enclose": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "",
+  "Items": null,
+  "MetaDocDescription": "",
+  "QueryParams": {
+    "somequeryparameter": "helloworld"
+  },
+  "Template": "",
+  "Values": {
+    "height": "400",
+    "src": "https://www.youtube.com/embed/tgbNymZ7vqY",
+    "width": "300"
+  }
+}
+
+==== expected output ====

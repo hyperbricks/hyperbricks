@@ -1,0 +1,87 @@
+==== hyperbricks yaml {!{hypermedia}} ====
+css:
+  - type: html
+  - value: |2
+      <style>
+          body {
+              padding:20px;
+          }
+      </style>
+hypermedia:
+  - type: hypermedia
+  - tree_10:
+      - type: tree
+      - html_1:
+          - type: html
+          - value: <p>SOME CONTENT</p>
+  - head:
+      - type: head
+      - html_10:
+          - type: html
+          - value: |2
+              <style>
+                  body {
+                      padding:20px;
+                  }
+              </style>
+      - css_20:
+          - type: css
+          - inline: "\n.content {\n    color:green;\n}\n    "
+==== explainer ====
+HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use <FRAGMENT> to utilize hx-[method] (GET,POST etc) requests.
+==== expected json ====
+{
+  "BodyTag": "",
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "ContentType": "",
+  "Cookies": null,
+  "Doctype": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Head": {
+    "@order": [
+      "html_10",
+      "css_20"
+    ],
+    "@type": "<HEAD>",
+    "css_20": {
+      "@type": "<CSS>",
+      "inline": "\n.content {\n    color:green;\n}\n    "
+    },
+    "html_10": {
+      "@type": "<HTML>",
+      "value": "<style>\n    body {\n        padding:20px;\n    }\n</style>\n"
+    }
+  },
+  "Headers": null,
+  "HtmlTag": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<!DOCTYPE html><html><head>
+<style>
+    body {
+        padding:20px;
+    }
+</style>
+<style>
+
+.content {
+    color:green;
+}
+
+</style><meta name="generator" content="hyperbricks runtime"></head><body><p>SOME CONTENT</p></body></html>

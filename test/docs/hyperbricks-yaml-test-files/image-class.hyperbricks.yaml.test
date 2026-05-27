@@ -1,0 +1,33 @@
+==== hyperbricks yaml {!{image}} ====
+image:
+  - type: image
+  - class: aclass bclass cclass
+  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - title: Some Cute Cat!
+  - width: "100"
+==== explainer ====
+CSS class for styling the image
+==== expected json ====
+{
+  "Alt": "",
+  "Class": "aclass bclass cclass",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "MetaDocDescription": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "Some Cute Cat!",
+  "Width": 100
+}
+
+==== expected output ====
+<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="Some Cute Cat!" class="aclass bclass cclass" /> 

@@ -1,0 +1,14 @@
+fragment:
+  - type: fragment
+  - route: fragments/status
+  - title: YAML Fragment Fixture
+  - nocache: true
+  - response:
+      hx_trigger: fixture-updated
+      hx_target: "#status"
+      hx_reswap: outerHTML
+
+  - body:
+      - type: html
+      - value: |
+          <div id="status">Updated</div>

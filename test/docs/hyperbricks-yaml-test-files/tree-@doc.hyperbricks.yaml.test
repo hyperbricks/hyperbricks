@@ -1,0 +1,59 @@
+==== hyperbricks yaml {!{fragment}} ====
+fragment:
+  - type: fragment
+  - tree_10:
+      - type: tree
+      - tree_10:
+          - type: tree
+          - html_1:
+              - type: html
+              - value: <p>SOME NESTED HTML --- 10-1</p>
+          - html_2:
+              - type: html
+              - value: <p>SOME NESTED HTML --- 10-2</p>
+      - tree_20:
+          - type: tree
+          - html_1:
+              - type: html
+              - value: <p>SOME NESTED HTML --- 20-1</p>
+          - html_2:
+              - type: html
+              - value: <p>SOME NESTED HTML --- 20-2</p>
+==== explainer ====
+TREE description
+==== expected json ====
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "ContentType": "",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<p>SOME NESTED HTML --- 10-1</p><p>SOME NESTED HTML --- 10-2</p><p>SOME NESTED HTML --- 20-1</p><p>SOME NESTED HTML --- 20-2</p>

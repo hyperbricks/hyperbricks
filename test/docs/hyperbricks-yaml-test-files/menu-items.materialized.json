@@ -1,0 +1,25 @@
+{
+  "about": {
+    "@type": "<HYPERMEDIA>",
+    "index": "20",
+    "route": "about",
+    "section": "main",
+    "title": "About"
+  },
+  "home": {
+    "@type": "<HYPERMEDIA>",
+    "index": "10",
+    "route": "index",
+    "section": "main",
+    "title": "Home"
+  },
+  "main_menu": {
+    "@type": "<MENU>",
+    "active": "<strong>{{.Title}}</strong>",
+    "enclose": "<nav>|</nav>",
+    "item": "<a href=\"/{{.Route}}\">{{.Title}}</a>",
+    "order": "asc",
+    "section": "main",
+    "sort": "index"
+  }
+}

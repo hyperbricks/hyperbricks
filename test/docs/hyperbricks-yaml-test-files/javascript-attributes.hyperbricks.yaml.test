@@ -1,0 +1,40 @@
+==== hyperbricks yaml {!{head}} ====
+head:
+  - type: head
+  - javascript_10:
+      - type: javascript
+      - attributes:
+          type: text/javascript
+      - file: hyperbricks-test-files/assets/main.js
+==== explainer ====
+Extra attributes like id, data-role, data-action, type
+==== expected json ====
+{
+  "ConfigCategory": "",
+  "ConfigType": "<HEAD>",
+  "Css": null,
+  "Favicon": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Items": {
+    "@order": [
+      "javascript_10"
+    ],
+    "javascript_10": {
+      "@type": "<JAVASCRIPT>",
+      "attributes": {
+        "type": "text/javascript"
+      },
+      "file": "hyperbricks-test-files/assets/main.js"
+    }
+  },
+  "Js": null,
+  "MetaData": null,
+  "Title": ""
+}
+
+==== expected output ====
+<head><script type="text/javascript">
+console.log("Hello World!")
+</script><meta name="generator" content="hyperbricks runtime"></head>

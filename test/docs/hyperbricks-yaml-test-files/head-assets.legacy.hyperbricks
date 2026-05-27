@@ -1,0 +1,21 @@
+page = <HYPERMEDIA>
+page.route = head-assets
+
+page.head = <HEAD>
+page.head.title = YAML Head Fixture
+page.head.favicon = {{RESOURCES}}/favicon.svg
+page.head.meta.description = Head properties stay properties.
+page.head.css = [{{RESOURCES}}/css/base.css]
+page.head.js = [{{RESOURCES}}/js/app.js]
+
+page.head.inline_styles = <CSS>
+page.head.inline_styles.inline = <<[
+.fixture {
+  color: green;
+}
+]>>
+
+page.head.inline_script = <JAVASCRIPT>
+page.head.inline_script.inline = <<[
+console.log("yaml head fixture");
+]>>

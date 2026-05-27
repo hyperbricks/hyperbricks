@@ -1,0 +1,42 @@
+==== hyperbricks config {!{hypermedia}} ====
+hypermedia = <HYPERMEDIA>
+hypermedia {
+    headers {
+        X-Frame-Options = DENY
+        Content-Security-Policy = default-src 'self'
+    }
+}
+==== explainer ====
+HTTP response headers to include when serving this hypermedia
+==== expected json ====
+{
+  "ConfigType": "<HYPERMEDIA>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "MetaDocDescription": "",
+  "Title": "",
+  "Route": "",
+  "Section": "",
+  "Items": null,
+  "BodyTag": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Template": null,
+  "Cache": "",
+  "NoCache": false,
+  "Static": "",
+  "Index": 0,
+  "Doctype": "",
+  "HtmlTag": "",
+  "Head": null,
+  "ContentType": "",
+  "Headers": {
+    "X-Frame-Options": "DENY",
+    "Content-Security-Policy": "default-src 'self'"
+  },
+  "Cookies": null
+}
+==== expected output ====
+<!DOCTYPE html><html><body></body></html>
