@@ -1,0 +1,9 @@
+imports:
+  - "partials/site.hyperbricks.yaml"
+
+patterns_index:
+  - inherit: "pattern_site_page"
+  - route: index
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/index.html}}"

@@ -1,0 +1,18 @@
+{{ if kindIs "slice" .Data }}
+  {{ $row := index .Data 0 }}
+  <div class="write-feedback" data-state="success">
+    <strong>Mock RPC call succeeded</strong>
+    <p class="mt-2">{{ index $row "message" }}</p>
+    <code class="write-code">saved_path={{ index $row "saved_path" }}
+project={{ index $row "project_slug" }}
+updated_at={{ index $row "updated_at" }}</code>
+  </div>
+{{ else }}
+  <div class="write-feedback" data-state="error">
+    <strong>Mock RPC call returned an error payload</strong>
+    <p class="mt-2">{{ index .Data "message" }}</p>
+    <code class="write-code">code={{ index .Data "code" }}
+hint={{ index .Data "hint" }}
+details={{ index .Data "details" }}</code>
+  </div>
+{{ end }}

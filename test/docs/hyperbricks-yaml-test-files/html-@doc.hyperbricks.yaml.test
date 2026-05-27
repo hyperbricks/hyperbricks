@@ -2,7 +2,7 @@
 html:
   - type: html
   - enclose: <div>|</div>
-  - value: |2
+  - value: |
       <p>HTML TEST</p>
 ==== explainer ====
 Component for rendering all your single or multiline snippets.

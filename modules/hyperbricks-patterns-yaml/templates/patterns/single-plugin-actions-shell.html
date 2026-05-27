@@ -1,0 +1,41 @@
+<main class="workflow-demo-shell">
+  <header class="page-header">
+    <nav class="page-topnav">
+      <a href="/index" class="page-link">← Pattern index</a>
+      <a href="/docs" class="page-link-muted">Docs</a>
+    </nav>
+    <p class="page-kicker">Workflow Plugin Pattern</p>
+    <h1 class="page-title">{{ .page_title }}</h1>
+    <p class="page-lead max-w-[72ch]">{{ .page_intro }}</p>
+  </header>
+
+  <section class="workflow-demo-grid">
+    <aside class="workflow-demo-card page-copy">
+      <div class="workflow-demo-note">
+        <strong>Routes</strong><br>
+        <span class="workflow-demo-code">/workflow-actions-demo/landing</span><br>
+        <span class="workflow-demo-code">/workflow-actions-demo/lookup</span><br>
+        <span class="workflow-demo-code">/workflow-actions-demo/signup</span><br>
+        <span class="workflow-demo-code">/workflow-actions-demo/complete</span>
+      </div>
+
+      <div class="workflow-demo-note">
+        <strong>One place owns the workflow logic</strong><br>
+        Every route in this demo points to the same plugin. The route name changes, and the plugin receives a different action value for each step.
+      </div>
+
+      <div class="workflow-demo-note">
+        <strong>Why this helps</strong><br>
+        You can keep each step easy to read in HyperBricks without scattering one workflow across several unrelated plugins.
+      </div>
+    </aside>
+
+    <section class="workflow-demo-card">
+      <div
+        id="workflow-demo-stage"
+        hx-get="/workflow-actions-demo/landing"
+        hx-trigger="load"
+        hx-swap="innerHTML"></div>
+    </section>
+  </section>
+</main>

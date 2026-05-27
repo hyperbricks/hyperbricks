@@ -1,0 +1,7 @@
+{
+  "plugin": "github.com/hyperbricks/plugins/template-config-demo",
+  "source":"template_config_demo_plugin.go",
+ "version": "2.0.0",
+  "compatible_hyperbricks": [">=0.7.8-alpha"],
+  "description": "Hyperbricks template config demo plugin"
+}

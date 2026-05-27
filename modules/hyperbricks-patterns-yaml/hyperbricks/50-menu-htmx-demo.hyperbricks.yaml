@@ -1,0 +1,110 @@
+imports:
+  - "partials/site.hyperbricks.yaml"
+
+menu_htmx_demo_shell:
+  - inherit: "pattern_site_page"
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/menu-htmx-shell.html}}"
+      - values:
+          nav:
+            - type: menu
+            - section: menu_htmx_demo_pages
+            - sort: index
+            - order: asc
+            - active: |
+                <a href="/{{ .Route }}" 
+                  class="menu-demo-link-active" 
+                  aria-current="page">{{ .Title }}</a>
+            - item: |
+                <a class="menu-demo-link" 
+                    href="/{{ .Route }}" 
+                    hx-get="/{{ .Route }}" 
+                    hx-select="#menu-demo-panel > *"
+                    hx-select-oob="#menu-demo-sidebar-shell:outerHTML"
+                    hx-target="#menu-demo-panel" 
+                    hx-swap="innerHTML" 
+                    hx-push-url="/{{ .Route }}">{{ .Title }}</a>
+            - enclose: "<nav class=\"menu-demo-nav\">|</nav>"
+          content:
+            - type: tree
+
+menu_htmx_demo_intro_panel:
+  - type: tree
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/menu-htmx-intro.html}}"
+
+menu_htmx_demo_doc1_panel:
+  - type: tree
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/menu-htmx-doc1.html}}"
+
+menu_htmx_demo_doc2_panel:
+  - type: tree
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/menu-htmx-doc2.html}}"
+
+menu_htmx_demo_doc3_panel:
+  - type: tree
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/menu-htmx-doc3.html}}"
+
+app_menu_htmx_demo:
+  - inherit: "menu_htmx_demo_shell"
+  - route: menu-demo
+  - title: MENU HTMX DEMO
+  - section: menu_htmx_demo_pages
+  - index: 10
+  - template_10:
+      - values:
+          page_title: HTMX Enabled MENU
+          page_intro: "The menu itself is rendered by <MENU>. Each item is a real canonical page link, but HTMX swaps only the content panel when JavaScript is active."
+          current_route: /menu-demo
+          content:
+            - inherit: "menu_htmx_demo_intro_panel.template_10"
+
+app_menu_htmx_demo_doc1:
+  - inherit: "menu_htmx_demo_shell"
+  - route: menu-demo/doc-1
+  - title: DOCUMENT 1
+  - section: menu_htmx_demo_pages
+  - index: 20
+  - template_10:
+      - values:
+          page_title: HTMX Enabled MENU
+          page_intro: Document 1 is its own page route. The same route is also used by the HTMX menu link as the fetch source.
+          current_route: /menu-demo/doc-1
+          content:
+            - inherit: "menu_htmx_demo_doc1_panel.template_10"
+
+app_menu_htmx_demo_doc2:
+  - inherit: "menu_htmx_demo_shell"
+  - route: menu-demo/doc-2
+  - title: DOCUMENT 2
+  - section: menu_htmx_demo_pages
+  - index: 30
+  - template_10:
+      - values:
+          page_title: HTMX Enabled MENU
+          page_intro: "Document 2 shows the same pattern with a second canonical route, no separate fragment endpoint required for the menu itself."
+          current_route: /menu-demo/doc-2
+          content:
+            - inherit: "menu_htmx_demo_doc2_panel.template_10"
+
+app_menu_htmx_demo_doc3:
+  - inherit: "menu_htmx_demo_shell"
+  - route: menu-demo/doc-3
+  - title: DOCUMENT 3
+  - section: menu_htmx_demo_pages
+  - index: 40
+  - template_10:
+      - values:
+          page_title: HTMX Enabled MENU
+          page_intro: "Document 3 completes the set. Without HTMX, these links still behave as ordinary page navigation."
+          current_route: /menu-demo/doc-3
+          content:
+            - inherit: "menu_htmx_demo_doc3_panel.template_10"

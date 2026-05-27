@@ -11,6 +11,11 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+const (
+	headGeneratorItemKey = "generator"
+	headPayloadItemKey   = "payload"
+)
+
 // HeadConfig represents the configuration for the head section.
 type HeadConfig struct {
 	shared.Composite `mapstructure:",squash"`
@@ -118,27 +123,12 @@ func (cr *HeadRenderer) Render(instance interface{}, ctx context.Context) (strin
 	}
 
 	if config.Items == nil {
-		// js and css always shows up at 100 so user can choose to add before or after
 		config.Items = make(map[string]interface{})
 	} else {
 		config.Items = shared.CloneMapDeep(config.Items)
 	}
 
-	renderedHeadContent := headbuilder.String()
-	if config.Items["999"] == nil {
-		config.Items["999"] = map[string]interface{}{
-			"@type": "<HTML>",
-			"value": `<meta name="generator" content="hyperbricks runtime">`,
-		}
-	}
-
-	// check if css and js is not empty
-	if renderedHeadContent != "" {
-		config.Items["1000"] = map[string]interface{}{
-			"@type": "<HTML>",
-			"value": headbuilder.String(),
-		}
-	}
+	addGeneratedHeadItems(config.Items, headbuilder.String())
 	config.Items["hyperbrickskey"] = config.Composite.Meta.HyperBricksKey
 	config.Items["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
 	config.Items["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
@@ -149,6 +139,42 @@ func (cr *HeadRenderer) Render(instance interface{}, ctx context.Context) (strin
 	errors = append(errors, errr...)
 
 	return result, errors
+}
+
+func addGeneratedHeadItems(items map[string]interface{}, renderedHeadContent string) {
+	if items[headGeneratorItemKey] == nil {
+		items[headGeneratorItemKey] = map[string]interface{}{
+			"@type": "<HTML>",
+			"value": `<meta name="generator" content="hyperbricks runtime">`,
+		}
+	}
+	if renderedHeadContent != "" && items[headPayloadItemKey] == nil {
+		items[headPayloadItemKey] = map[string]interface{}{
+			"@type": "<HTML>",
+			"value": renderedHeadContent,
+		}
+	}
+	appendGeneratedHeadItemsToOrder(items)
+}
+
+func appendGeneratedHeadItemsToOrder(items map[string]interface{}) {
+	order := extractTreeOrder(items["@order"])
+	if len(order) == 0 {
+		return
+	}
+
+	seen := make(map[string]bool, len(order)+2)
+	for _, key := range order {
+		seen[key] = true
+	}
+	for _, key := range []string{headGeneratorItemKey, headPayloadItemKey} {
+		if seen[key] || items[key] == nil {
+			continue
+		}
+		order = append(order, key)
+		seen[key] = true
+	}
+	items["@order"] = order
 }
 
 func renderMeta(meta map[string]string) string {

@@ -1,0 +1,59 @@
+<main class="page-shell">
+  <header class="page-header">
+    <p class="page-kicker">HyperBricks Patterns</p>
+    <h1 class="page-title page-title-large">Pattern demos with real routes</h1>
+    <p class="page-lead">
+      This module collects small, runnable examples. The main demo shows canonical page routes, explicit fragment targets, and a plugin-rendered panel inside the same HTMX flow.
+    </p>
+    <p class="mt-4 leading-7">
+      <a href="/docs" class="page-link">Open the documentation page →</a>
+    </p>
+  </header>
+
+  <section class="pattern-index-grid">
+    <a href="/status-demo" class="pattern-index-card">
+      <strong class="pattern-index-title">HTMX canonical landing</strong>
+      <span class="pattern-index-copy">Open the landing route and inspect how fragment requests differ from page URLs.</span>
+    </a>
+    <a href="/status-demo/summary" class="pattern-index-card">
+      <strong class="pattern-index-title">Summary canonical page</strong>
+      <span class="pattern-index-copy">Direct page fallback for the summary panel.</span>
+    </a>
+    <a href="/status-demo/settings" class="pattern-index-card">
+      <strong class="pattern-index-title">Settings canonical page</strong>
+      <span class="pattern-index-copy">Separate page URL with the same fragment architecture.</span>
+    </a>
+    <a href="/status-demo/plugin" class="pattern-index-card">
+      <strong class="pattern-index-title">Plugin panel integration</strong>
+      <span class="pattern-index-copy">See the template-config plugin rendered through a canonical fragment route.</span>
+    </a>
+    <a href="/guarded-demo" class="pattern-index-card">
+      <strong class="pattern-index-title">Guarded page demo</strong>
+      <span class="pattern-index-copy">Login through an HTMX plugin endpoint, then hit a route protected by native guard.</span>
+    </a>
+    <a href="/api-fragment-write-demo" class="pattern-index-card">
+      <strong class="pattern-index-title">API fragment write demo</strong>
+      <span class="pattern-index-copy">See a save action proxy through API_FRAGMENT_RENDER, render feedback, and trigger a secondary fragment refresh.</span>
+    </a>
+    <a href="/menu-demo" class="pattern-index-card">
+      <strong class="pattern-index-title">MENU + HTMX demo</strong>
+      <span class="pattern-index-copy">A real MENU component renders canonical page links that are enhanced with HTMX panel swapping.</span>
+    </a>
+    <a href="/section-rail-demo" class="pattern-index-card">
+      <strong class="pattern-index-title">Config-driven section rail</strong>
+      <span class="pattern-index-copy">A structured config map drives labels, fragment routes, swap targets, and subsection anchors for a left rail.</span>
+    </a>
+    <a href="/single-plugin-actions-demo" class="pattern-index-card">
+      <strong class="pattern-index-title">Single plugin, many actions</strong>
+      <span class="pattern-index-copy">Several explicit workflow routes share one plugin owner, with data.action choosing the branch.</span>
+    </a>
+    <a href="/plugin-vs-api-route-split" class="pattern-index-card">
+      <strong class="pattern-index-title">Plugin vs API route split</strong>
+      <span class="pattern-index-copy">Shows the practical boundary between thin RPC-style API routes and plugin-owned request orchestration.</span>
+    </a>
+    <a href="/docs" class="pattern-index-card">
+      <strong class="pattern-index-title">Documentation</strong>
+      <span class="pattern-index-copy">Browse the pattern catalog, route list, and recommended order from one Markdown-based docs page.</span>
+    </a>
+  </section>
+</main>

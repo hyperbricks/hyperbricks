@@ -1,0 +1,12 @@
+tailwind:
+  - type: plugin
+  - plugin: "TailwindcssPlugin@2.0.0"
+  - data:
+      input_css: "{{MODULE}}/resources/css/base.css"
+      output_css: "{{MODULE}}/static/css/styles.css"
+      signal: "false"
+      minify: "true"
+      debug: "true"
+      cache: "false"
+      binairy: /Users/robbertstreng/go/bin/tailwindcss
+      enclose: "<link rel=\"stylesheet\" href=\"/|\">"

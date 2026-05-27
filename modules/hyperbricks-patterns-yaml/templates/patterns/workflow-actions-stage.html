@@ -1,0 +1,91 @@
+<section class="workflow-demo-stage">
+  {{ if .error_message }}
+  <div class="workflow-demo-alert" data-level="error">{{ .error_message }}</div>
+  {{ end }}
+
+  {{ if ne .stage "success" }}
+  <div class="workflow-demo-copy">
+    <h3 class="page-copy-subtitle">{{ .stage_title }}</h3>
+    <p class="page-copy-text">{{ .stage_intro }}</p>
+  </div>
+  {{ end }}
+
+  {{ if eq .stage "lookup" }}
+  <form class="workflow-demo-form form-grid" hx-post="/workflow-actions-demo/lookup" hx-target="#workflow-demo-stage" hx-swap="innerHTML">
+    <label>
+      <span>Email</span>
+      <input type="email" name="email" value="{{ .email }}" placeholder="alex@member.test">
+    </label>
+    <div class="workflow-demo-actions">
+      <button class="workflow-demo-button" type="submit">Lookup member</button>
+    </div>
+  </form>
+  <div class="workflow-demo-note">
+    <strong>Try these:</strong><br>
+    <span class="workflow-demo-code">alex@member.test</span> -> goes to the existing member step<br>
+    <span class="workflow-demo-code">new@prospect.test</span> -> goes to the signup step
+  </div>
+  {{ end }}
+
+  {{ if eq .stage "existing" }}
+  <div class="workflow-demo-note">
+    <strong>Matched account</strong><br>
+    <span class="workflow-demo-code">{{ .email }}</span>
+  </div>
+  <form hx-post="/workflow-actions-demo/complete" hx-target="#workflow-demo-stage" hx-swap="innerHTML">
+    <input type="hidden" name="flow" value="existing">
+    <input type="hidden" name="email" value="{{ .email }}">
+    <div class="workflow-demo-actions">
+      <button class="workflow-demo-button" type="submit">Confirm existing member</button>
+      <button class="workflow-demo-button" data-variant="secondary" type="button" hx-get="/workflow-actions-demo/landing" hx-target="#workflow-demo-stage" hx-swap="innerHTML">Start over</button>
+    </div>
+  </form>
+  {{ end }}
+
+  {{ if eq .stage "signup" }}
+  <form class="workflow-demo-form form-grid" hx-post="/workflow-actions-demo/signup" hx-target="#workflow-demo-stage" hx-swap="innerHTML">
+    <label>
+      <span>Email</span>
+      <input type="email" name="email" value="{{ .email }}" readonly>
+    </label>
+    <label>
+      <span>Display name</span>
+      <input type="text" name="name" value="{{ .name }}" placeholder="Alex Pattern">
+    </label>
+    <div class="workflow-demo-actions">
+      <button class="workflow-demo-button" type="submit">Continue signup</button>
+      <button class="workflow-demo-button" data-variant="secondary" type="button" hx-get="/workflow-actions-demo/landing" hx-target="#workflow-demo-stage" hx-swap="innerHTML">Start over</button>
+    </div>
+  </form>
+  {{ end }}
+
+  {{ if eq .stage "signup_confirm" }}
+  <div class="workflow-demo-note">
+    <strong>Pending registration</strong><br>
+    <span class="workflow-demo-code">{{ .email }}</span><br>
+    <span class="workflow-demo-code">{{ .name }}</span>
+  </div>
+  <form hx-post="/workflow-actions-demo/complete" hx-target="#workflow-demo-stage" hx-swap="innerHTML">
+    <input type="hidden" name="flow" value="signup">
+    <input type="hidden" name="email" value="{{ .email }}">
+    <input type="hidden" name="name" value="{{ .name }}">
+    <div class="workflow-demo-actions">
+      <button class="workflow-demo-button" type="submit">Create new member</button>
+      <button class="workflow-demo-button" data-variant="secondary" type="button" hx-get="/workflow-actions-demo/landing" hx-target="#workflow-demo-stage" hx-swap="innerHTML">Start over</button>
+    </div>
+  </form>
+  {{ end }}
+
+  {{ if eq .stage "success" }}
+  <div class="workflow-demo-alert" data-level="success">
+    <strong>{{ .success_title }}</strong><br>{{ .success_message }}
+  </div>
+  <div class="workflow-demo-note">
+    <strong>Pattern takeaway</strong><br>
+    The steps stay separate in the routing layer, while one plugin keeps the workflow rules together.
+  </div>
+  <div class="workflow-demo-actions">
+    <button class="workflow-demo-button" type="button" hx-get="/workflow-actions-demo/landing" hx-target="#workflow-demo-stage" hx-swap="innerHTML">Run again</button>
+  </div>
+  {{ end }}
+</section>

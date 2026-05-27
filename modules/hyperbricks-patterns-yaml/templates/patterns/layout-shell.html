@@ -1,0 +1,22 @@
+<main class="page-shell">
+  <header class="page-header border-b border-stone-200 pb-4">
+    <p class="page-kicker">Pattern Demo</p>
+    <h1 class="page-title">{{ .section_title }}</h1>
+    <p class="page-lead max-w-[60ch] text-[1.02rem]">{{ .section_intro }}</p>
+  </header>
+
+  <section class="pattern-layout-grid">
+    <aside class="pattern-layout-aside">
+      <h2 class="page-copy-subtitle mb-3">Examples</h2>
+      <nav class="pattern-layout-nav">
+        <a href="/" class="page-link">Pattern index</a>
+        <a href="/status-demo" class="page-link-muted">HTMX canonical page + fragment route</a>
+        <a href="/status-demo/plugin" class="page-link-muted">Plugin panel integration</a>
+      </nav>
+    </aside>
+
+    <section>
+      {{.content_right}}
+    </section>
+  </section>
+</main>

@@ -1,0 +1,20 @@
+{{ $data := .Data }}
+{{ if eq .Status 200 }}
+  {{ if gt (len $data) 0 }}
+    {{ $item := index $data 0 }}
+    <div class="split-result" data-state="success">
+      <strong>Rename committed</strong><br>
+      Asset <span class="code-inline">{{ index $item "asset_id" }}</span> moved to <span class="code-inline">{{ index $item "path" }}</span>.
+    </div>
+  {{ else }}
+    <div class="split-result" data-state="error">
+      <strong>Unexpected API shape</strong><br>
+      The mock success route returned no rows.
+    </div>
+  {{ end }}
+{{ else }}
+  <div class="split-result" data-state="error">
+    <strong>Rename rejected</strong><br>
+    {{ index $data "message" }}
+  </div>
+{{ end }}

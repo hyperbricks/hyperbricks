@@ -1,0 +1,42 @@
+{{ if .error_message }}
+<div class="split-result" data-state="error">
+  <strong>Import blocked</strong><br>
+  {{ .error_message }}
+</div>
+{{ end }}
+
+{{ if .success_title }}
+<div class="split-result" data-state="success">
+  <strong>{{ .success_title }}</strong><br>
+  {{ .success_message }}
+</div>
+{{ end }}
+
+{{ if .manifest_url }}
+<div class="split-note">
+  <strong>Normalized request</strong><br>
+  <span class="split-code">{{ .manifest_url }}</span>
+  <br><br>
+  <strong>Mode</strong><br>
+  <span class="split-code">{{ .import_mode }}</span>
+  <br><br>
+  <strong>Plan</strong>
+  <ul class="split-list">
+    {{ range .steps }}
+    <li>{{ . }}</li>
+    {{ end }}
+  </ul>
+  {{ if .tags }}
+  <br>
+  <strong>Tags</strong><br>
+  {{ range .tags }}
+  <span class="code-inline mr-1 mt-1">{{ . }}</span>
+  {{ end }}
+  {{ end }}
+  {{ if .notes }}
+  <br><br>
+  <strong>Operator notes</strong><br>
+  {{ .notes }}
+  {{ end }}
+</div>
+{{ end }}

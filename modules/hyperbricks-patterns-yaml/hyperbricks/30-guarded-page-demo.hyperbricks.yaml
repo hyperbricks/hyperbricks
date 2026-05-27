@@ -1,0 +1,116 @@
+imports:
+  - "partials/site.hyperbricks.yaml"
+
+guarded_demo_shell:
+  - inherit: "pattern_site_page"
+  - nocache: "true"
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/guarded-shell.html}}"
+      - values:
+          section_title: Guarded Page Demo
+          section_intro: "Native route guard protects the secret page. A small auth plugin handles login, logout, and authorize endpoints for HTMX and normal browser requests."
+          content_right:
+            - type: tree
+
+guarded_demo_login_panel:
+  - type: tree
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/guarded-login.html}}"
+
+guarded_demo_forbidden_panel:
+  - type: tree
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/guarded-forbidden.html}}"
+
+guarded_demo_secret_panel:
+  - type: tree
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/guarded-secret.html}}"
+
+guarded_demo_auth_login:
+  - type: fragment
+  - route: guarded-demo/auth/login
+  - nocache: "true"
+  - plugin_10:
+      - type: plugin
+      - plugin: "GuardedDemoAuthPlugin__hyperbricks-patterns@1.0.0"
+      - data:
+          action: login
+          cookie_name: guarded_demo_session
+          success_redirect: /guarded-demo/secret
+          forbidden_redirect: /guarded-demo/forbidden
+
+guarded_demo_auth_logout:
+  - type: fragment
+  - route: guarded-demo/auth/logout
+  - nocache: "true"
+  - plugin_10:
+      - type: plugin
+      - plugin: "GuardedDemoAuthPlugin__hyperbricks-patterns@1.0.0"
+      - data:
+          action: logout
+          cookie_name: guarded_demo_session
+          login_redirect: /guarded-demo
+
+guarded_demo_auth_authorize:
+  - type: fragment
+  - route: guarded-demo/auth/authorize
+  - nocache: "true"
+  - plugin_10:
+      - type: plugin
+      - plugin: "GuardedDemoAuthPlugin__hyperbricks-patterns@1.0.0"
+      - data:
+          action: authorize
+          cookie_name: guarded_demo_session
+
+app_guarded_demo_login:
+  - inherit: "guarded_demo_shell"
+  - route: guarded-demo
+  - template_10:
+      - values:
+          content_right:
+            - inherit: "guarded_demo_login_panel.template_10"
+
+app_guarded_demo_login_alias:
+  - inherit: "guarded_demo_shell"
+  - route: guarded-demo/login
+  - template_10:
+      - values:
+          content_right:
+            - inherit: "guarded_demo_login_panel.template_10"
+
+app_guarded_demo_forbidden:
+  - inherit: "guarded_demo_shell"
+  - route: guarded-demo/forbidden
+  - template_10:
+      - values:
+          content_right:
+            - inherit: "guarded_demo_forbidden_panel.template_10"
+
+guarded_demo_secret_shell:
+  - inherit: "guarded_demo_shell"
+  - guard:
+      enabled: "true"
+      auth:
+        cookie: guarded_demo_session
+      require:
+        authenticated: "true"
+      authorize:
+        endpoint: "http://127.0.0.1:8080/guarded-demo/auth/authorize"
+        method: GET
+      on_unauthenticated:
+        redirect: /guarded-demo/login
+      on_forbidden:
+        redirect: /guarded-demo/forbidden
+
+app_guarded_demo_secret:
+  - inherit: "guarded_demo_secret_shell"
+  - route: guarded-demo/secret
+  - "10":
+      values:
+        content_right:
+          - inherit: "guarded_demo_secret_panel.template_10"

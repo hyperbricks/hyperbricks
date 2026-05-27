@@ -1,0 +1,144 @@
+# here you can set the current module
+$module = modules/hyperbricks-patterns-yaml
+
+
+# use this sort of objects to set hyperbricks globals
+myconf {
+    some = value
+}
+
+# this is the main hyperbricks configuration object. Use hyperbricks, not other objects.
+hyperbricks {
+    # live, development or debug mode
+    mode = development
+
+    # build metadata updated by hyperbricks build
+    metadata {
+        module = default
+        moduleversion = 1.0
+        format = hra
+        format_version = 1
+        commit = unknown
+        built_at = 1970-01-01T00:00:00Z
+        hyperbricks = v0.0.0
+    }
+
+    # settings for debugging hyperbricks in go env
+    debug {
+        level = debugging
+    }
+
+    # only available in development mode. Then press r to reload.
+    development {
+        # watches hyperbricks and templatedir (directories) 
+        watch = true
+        reload = true
+
+        # shows errors in the frontend output in development mode
+        frontend_errors = false
+
+         # shows dashboard in development mode
+        dashboard = false
+    }
+
+    live {
+        # settings for live mode
+        # parses a duration string. 
+        # such as "300ms", "-1.5h" or "2h45m". 
+        # Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+        #
+        # Starter profile: Small public site (default)
+        cache = 30s
+        #
+        # Starter profile: Balanced production app
+        # cache = 15s
+        #
+        # Starter profile: Heavy pages or slower clients
+        # cache = 10s
+    }
+
+    server {
+        # set http port here
+        port = 8080
+        beautify = true
+        # use <img ... /> instead of <img ...>
+        self_closing_tags = true
+
+        routing {
+            # use clean URLs like /help for help.html
+            clean_urls = true
+            index_files = [ index.html, index.htm ]
+            extensions = [ html, htm ]
+        }
+
+        # Runtime defaults when omitted:
+        # read_timeout = 5s
+        # write_timeout = 10s
+        # idle_timeout = 20s
+        # keep_alives_enabled = true
+
+        # Starter profile: Small public site (default)
+        read_timeout = 5s
+        write_timeout =  10s
+        idle_timeout = 20s
+        keep_alives_enabled = true
+
+        # Starter profile: Balanced production app
+        # read_timeout = 10s
+        # write_timeout = 15s
+        # idle_timeout = 30s
+        # keep_alives_enabled = true
+
+        # Starter profile: Heavy pages or slower clients
+        # read_timeout = 15s
+        # write_timeout = 30s
+        # idle_timeout = 60s
+        # keep_alives_enabled = true
+    }
+
+    system {
+        # ticker interval
+        metrics_watch_interval = 10s
+    }
+
+    rate_limit {
+        # Low traffic (~50-500 daily visitors).
+        requests_per_second = 100
+        burst= 500
+        
+        # High-Traffic Blog
+        # requests_per_second = 20
+        # burst = 40
+    }
+
+    plugins {
+        # run "hyperbricks plugin help" and "hyperbricks plugin list" for options
+        enabled = [ MarkdownPlugin@2.0.0, TailwindcssPlugin@2.0.0, EsbuildPlugin@2.0.0, TemplateConfigDemoPlugin__hyperbricks-patterns@2.0.0, GuardedDemoAuthPlugin__hyperbricks-patterns@1.0.0, WorkflowActionsDemoPlugin__hyperbricks-patterns@1.0.0, RouteSplitDemoPlugin__hyperbricks-patterns@1.0.0 ]
+     }
+
+    directories {
+        # directory for rendered static html output
+        render = {{VAR:module}}/rendered
+
+        # This dir for all static assets that do not need processing
+        static = {{VAR:module}}/static
+
+        # Directory for resources that need processing
+        resources = {{VAR:module}}/resources
+
+        # plugins folder
+        plugins = ./bin/plugins/
+
+        # Use this folder for templating with type TEMPLATE
+        # Use {{TEMPLATE:path/template}} without .tmpl extension
+        templates = {{VAR:module}}/templates
+
+        # folder that will be scanned for hyperbricks files
+        hyperbricks = {{VAR:module}}/hyperbricks
+
+
+        # uncomment this for logging to file
+        # logs = {{VAR:module}}/logs
+
+    }
+}

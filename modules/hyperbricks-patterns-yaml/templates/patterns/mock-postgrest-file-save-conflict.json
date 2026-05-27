@@ -1,0 +1,6 @@
+{
+  "message": "File path is locked by another session.",
+  "code": "23505",
+  "hint": "Reload assets before retrying the write.",
+  "details": "Mocked conflict payload returned from a local fragment endpoint."
+}

@@ -1,0 +1,135 @@
+imports:
+  - "partials/site.hyperbricks.yaml"
+
+status_demo_shell:
+  - inherit: "pattern_site_page"
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/layout-shell.html}}"
+      - values:
+          section_title: HyperBricks Patterns
+          section_intro: "Small, concrete examples of reusable HyperBricks patterns."
+          content_right:
+            - type: tree
+
+status_demo_summary:
+  - type: fragment
+  - route: fragments/status-demo-summary
+  - nocache: "true"
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/status-summary.html}}"
+
+status_demo_settings:
+  - type: fragment
+  - route: fragments/status-demo-settings
+  - nocache: "true"
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/status-settings.html}}"
+
+status_demo_overview_panel:
+  - type: tree
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/status-overview.html}}"
+
+status_demo_plugin_panel:
+  - type: plugin
+  - plugin: "TemplateConfigDemoPlugin__hyperbricks-patterns@2.0.0"
+  - data:
+      template: "{{TEMPLATE:demo.html}}"
+      class: pattern-plugin-panel
+      content: "\"## Plugin panel\\n\\nThis panel is rendered by the **Template Config Plugin** and injected through the same canonical HTMX flow.\""
+
+status_demo_plugin:
+  - type: fragment
+  - route: fragments/status-demo-plugin
+  - nocache: "true"
+  - status_demo_plugin_panel_10:
+      - inherit: "status_demo_plugin_panel"
+
+status_demo_base_view:
+  - type: tree
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/status-demo.html}}"
+      - values:
+          page_url: /status-demo
+          fragment_url: /fragments/status-demo
+          summary_fragment_url: /fragments/status-demo-summary
+          settings_fragment_url: /fragments/status-demo-settings
+          plugin_fragment_url: /fragments/status-demo-plugin
+          landing_page_url: /status-demo
+          summary_page_url: /status-demo/summary
+          settings_page_url: /status-demo/settings
+          plugin_page_url: /status-demo/plugin
+          active_panel: overview
+          panel:
+            - inherit: "status_demo_overview_panel.template_10"
+
+status_demo:
+  - type: fragment
+  - route: fragments/status-demo
+  - nocache: "true"
+  - "10_10":
+      - inherit: "status_demo_base_view.template_10"
+
+status_demo_summary_view:
+  - inherit: "status_demo_base_view"
+  - template_10:
+      - values:
+          page_url: /status-demo/summary
+          active_panel: summary
+          panel:
+            - inherit: "status_demo_summary.template_10"
+
+status_demo_settings_view:
+  - inherit: "status_demo_base_view"
+  - template_10:
+      - values:
+          page_url: /status-demo/settings
+          active_panel: settings
+          panel:
+            - inherit: "status_demo_settings.template_10"
+
+status_demo_plugin_view:
+  - inherit: "status_demo_base_view"
+  - template_10:
+      - values:
+          page_url: /status-demo/plugin
+          active_panel: plugin
+          panel:
+            - inherit: "status_demo_plugin_panel"
+
+app_status_demo_summary:
+  - inherit: "status_demo_shell"
+  - route: status-demo/summary
+  - template_10:
+      - values:
+          content_right:
+            - inherit: "status_demo_summary_view.template_10"
+
+app_status_demo:
+  - inherit: "status_demo_shell"
+  - route: status-demo
+  - template_10:
+      - values:
+          content_right:
+            - inherit: "status_demo_base_view.template_10"
+
+app_status_demo_settings:
+  - inherit: "status_demo_shell"
+  - route: status-demo/settings
+  - template_10:
+      - values:
+          content_right:
+            - inherit: "status_demo_settings_view.template_10"
+
+app_status_demo_plugin:
+  - inherit: "status_demo_shell"
+  - route: status-demo/plugin
+  - template_10:
+      - values:
+          content_right:
+            - inherit: "status_demo_plugin_view.template_10"

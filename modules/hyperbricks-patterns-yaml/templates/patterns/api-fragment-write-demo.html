@@ -1,0 +1,128 @@
+<main class="write-shell">
+  <header class="page-header">
+    <nav class="page-topnav">
+      <a href="/index" class="page-link">← Pattern index</a>
+      <a href="/docs" class="page-link-muted">Docs</a>
+    </nav>
+    <p class="page-kicker">API Fragment Pattern</p>
+    <h1 class="page-title">Send form data to a backend and show the result</h1>
+    <p class="page-lead max-w-[72ch]">
+      This demo shows a very common builder action: the user submits a form, HyperBricks forwards that data to a backend-style endpoint, and the page shows the returned result. The route also sends a small HTMX event so other parts of the screen can refresh after the save.
+    </p>
+  </header>
+
+  <section class="write-layout">
+    <section class="grid gap-5">
+      <div class="write-card">
+        <h2 class="page-copy-title mb-2">What is simplified in this demo</h2>
+        <p class="page-copy-text">
+          Instead of calling a real external service, this page uses two local mock endpoints. One answers like a successful save, and the other answers like a conflict. That keeps the example easy to run while still showing the real route shape.
+        </p>
+      </div>
+
+      <div class="write-grid">
+        <section class="write-card">
+          <h3 class="page-copy-subtitle mb-2">Successful save</h3>
+          <p class="page-copy-text mb-3">
+            This form simulates a save that succeeds and returns a friendly confirmation panel.
+          </p>
+          <form class="write-form form-grid" hx-post="/patterns/assets/file-save-success" hx-target="#api-write-feedback" hx-swap="innerHTML">
+            <label>
+              <span>Project slug</span>
+              <input type="text" name="project" value="demo-patterns">
+            </label>
+            <label>
+              <span>File id</span>
+              <input type="number" name="file_id" value="42">
+            </label>
+            <label>
+              <span>Kind</span>
+              <input type="text" name="kind" value="template">
+            </label>
+            <label>
+              <span>Path</span>
+              <input type="text" name="path" value="templates/demo.html">
+            </label>
+            <label>
+              <span>Content</span>
+              <textarea name="content">&lt;section&gt;Updated demo content&lt;/section&gt;</textarea>
+            </label>
+            <div class="write-actions">
+              <button class="write-button" type="submit">Run success demo</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="write-card">
+          <h3 class="page-copy-subtitle mb-2">Save with conflict</h3>
+          <p class="page-copy-text mb-3">
+            This one sends the same kind of data, but the backend answer says the change cannot be applied.
+          </p>
+          <form class="write-form form-grid" hx-post="/patterns/assets/file-save-conflict" hx-target="#api-write-feedback" hx-swap="innerHTML">
+            <label>
+              <span>Project slug</span>
+              <input type="text" name="project" value="demo-patterns">
+            </label>
+            <label>
+              <span>File id</span>
+              <input type="number" name="file_id" value="42">
+            </label>
+            <label>
+              <span>Kind</span>
+              <input type="text" name="kind" value="template">
+            </label>
+            <label>
+              <span>Path</span>
+              <input type="text" name="path" value="templates/demo.html">
+            </label>
+            <label>
+              <span>Content</span>
+              <textarea name="content">&lt;section&gt;Conflicting demo content&lt;/section&gt;</textarea>
+            </label>
+            <div class="write-actions">
+              <button class="write-button" type="submit">Run conflict demo</button>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <div id="api-write-feedback" class="write-card">
+        <div class="write-note">
+          Submit either form and the rendered result will appear here.
+        </div>
+      </div>
+    </section>
+
+    <aside class="grid gap-4">
+      <section class="write-card">
+        <h2 class="page-copy-subtitle mb-2">Refresh probe</h2>
+        <p class="page-copy-text mb-3">
+          This panel reloads on page load and also after a successful or failed save. It shows how one save action can tell other parts of the page to update too.
+        </p>
+        <div id="api-write-refresh-probe" hx-get="/fragments/api-fragment-write-refresh-probe" hx-trigger="load, hb-pattern-assets-refresh from:body" hx-swap="innerHTML"></div>
+      </section>
+
+      <section class="write-card">
+        <h2 class="page-copy-subtitle mb-2">How the form fields are reshaped</h2>
+        <p class="page-copy-text">
+          The browser fields on this page do not have to match the backend field names. HyperBricks can rename and reorder them before sending the request.
+        </p>
+        <code class="write-code">{"p_project_slug":"$project","p_file_id":$file_id,"p_kind":"$kind","p_path":"$path","p_content":"$content"}</code>
+      </section>
+
+      <section class="write-card">
+        <h2 class="page-copy-subtitle mb-2">Routes</h2>
+        <div class="write-note">
+          <strong>Page</strong><br>
+          <span class="write-code">/api-fragment-write-demo</span><br><br>
+          <strong>Write actions</strong><br>
+          <span class="write-code">/patterns/assets/file-save-success</span><br>
+          <span class="write-code">/patterns/assets/file-save-conflict</span><br><br>
+          <strong>Mock API fragments</strong><br>
+          <span class="write-code">/fragments/mock-postgrest-file-save-success</span><br>
+          <span class="write-code">/fragments/mock-postgrest-file-save-conflict</span>
+        </div>
+      </section>
+    </aside>
+  </section>
+</main>

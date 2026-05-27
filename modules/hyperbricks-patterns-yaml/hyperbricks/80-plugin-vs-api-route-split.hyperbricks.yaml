@@ -1,0 +1,85 @@
+imports:
+  - "partials/site.hyperbricks.yaml"
+
+route_split_demo_shell:
+  - inherit: "pattern_site_page"
+  - nocache: "true"
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/route-split-demo.html}}"
+
+route_split_mock_rename_success:
+  - type: fragment
+  - route: fragments/mock-postgrest-rename-success
+  - nocache: "true"
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/mock-postgrest-rename-success.json}}"
+
+route_split_mock_rename_conflict:
+  - type: fragment
+  - route: fragments/mock-postgrest-rename-conflict
+  - nocache: "true"
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/mock-postgrest-rename-conflict.json}}"
+
+route_split_api_rename_success:
+  - type: api_fragment_render
+  - route: patterns/route-split/rename-success
+  - nocache: "true"
+  - method: POST
+  - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-rename-success"
+  - request:
+      headers:
+        Content-Type: application/json
+        Accept: application/json
+  - querykeys: []
+  - body: "{\"p_project_slug\":\"$project\",\"p_asset_id\":$asset_id,\"p_old_path\":\"$old_path\",\"p_new_path\":\"$new_path\"}"
+  - template: "{{TEMPLATE:patterns/route-split-api-result.html}}"
+  - response:
+      hx_trigger: hb-pattern-route-split-refresh
+
+route_split_api_rename_conflict:
+  - type: api_fragment_render
+  - route: patterns/route-split/rename-conflict
+  - nocache: "true"
+  - method: POST
+  - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-rename-conflict"
+  - request:
+      headers:
+        Content-Type: application/json
+        Accept: application/json
+  - querykeys: []
+  - body: "{\"p_project_slug\":\"$project\",\"p_asset_id\":$asset_id,\"p_old_path\":\"$old_path\",\"p_new_path\":\"$new_path\"}"
+  - template: "{{TEMPLATE:patterns/route-split-api-conflict-result.html}}"
+  - response:
+      hx_trigger: hb-pattern-route-split-refresh
+
+route_split_plugin_import:
+  - type: fragment
+  - route: patterns/route-split/import
+  - nocache: "true"
+  - plugin_10:
+      - type: plugin
+      - plugin: "RouteSplitDemoPlugin__hyperbricks-patterns@1.0.0"
+      - data:
+          action: import
+          template: "{{TEMPLATE:patterns/route-split-plugin-result.html}}"
+
+route_split_refresh_probe:
+  - type: fragment
+  - route: fragments/route-split-refresh-probe
+  - nocache: "true"
+  - html_10:
+      - type: html
+      - value: |
+          <div class="split-note">
+            <strong>Refresh event seen</strong><br>
+            The last API-side write emitted <span class="code-inline">hb-pattern-route-split-refresh</span>, which is useful for related panels that should refresh after structured writes.
+          </div>
+
+app_route_split_demo:
+  - inherit: "route_split_demo_shell"
+  - route: plugin-vs-api-route-split
+  - title: Plugin vs API Route Split

@@ -1,0 +1,8 @@
+{
+  "plugin": "github.com/hyperbricks/plugins/guarded-demo-auth",
+  "source": "guarded_demo_auth_plugin.go",
+  "version": "1.0.0",
+  "binary": "GuardedDemoAuthPlugin",
+  "compatible_hyperbricks": [">=0.7.8-alpha"],
+  "description": "Guarded page auth demo plugin"
+}

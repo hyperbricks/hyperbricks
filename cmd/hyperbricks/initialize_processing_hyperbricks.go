@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -13,16 +14,23 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
+	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
 	"github.com/mitchellh/mapstructure"
 	"go.uber.org/zap"
 )
+
+type hyperBricksConfigSource struct {
+	Filename string
+	Config   map[string]interface{}
+}
 
 // PreProcessAndPopulateConfigs orchestrates the preprocessing and population of configurations.
 func PreProcessAndPopulateConfigs() error {
 	hbConfig, logger := retrieveConfigAndLogger()
 	determineDirectories(hbConfig)
 
-	if err := loadHyperBricks(); err != nil {
+	sources, err := loadHyperBricks()
+	if err != nil {
 		return fmt.Errorf("error loading HyperBricks: %w", err)
 	}
 
@@ -30,19 +38,10 @@ func PreProcessAndPopulateConfigs() error {
 	tempHyperMediasBySection := make(map[string][]composite.HyperMediaConfig)
 	filenameToRoutes := make(map[string][]string)
 
-	// Acquire lock if necessary for thread safety
-	hyperBricksArray.PreProcessedHyperScriptStoreMutex.Lock()
-	allScripts := hyperBricksArray.HyperBricksStore
-	orderedRoutes := hyperBricksArray.OrderedHyperBricksRoutes
-	hyperBricksArray.PreProcessedHyperScriptStoreMutex.Unlock()
-
 	// ---- Process configs in strict order! ----
-	sort.Strings(orderedRoutes)
-	for _, filename := range orderedRoutes {
-		content := allScripts[filename]
-		config := parser.ParseHyperScript(content)
-		if err := processScript(filename, config, tempConfigs, tempHyperMediasBySection, logger, filenameToRoutes); err != nil {
-			logger.Warnw("Error processing script", "file", filename, "error", err)
+	for _, source := range sources {
+		if err := processScript(source.Filename, source.Config, tempConfigs, tempHyperMediasBySection, logger, filenameToRoutes); err != nil {
+			logger.Warnw("Error processing script", "file", source.Filename, "error", err)
 		}
 	}
 
@@ -106,9 +105,125 @@ func determineDirectories(hbConfig *shared.Config) core.ModuleConfiguredDirector
 	return core.ModuleDirectories
 }
 
-// loadHyperBricks preprocesses HyperBricks from the specified directories.
-func loadHyperBricks() error {
-	return hyperBricksArray.PreProcessHyperBricksFromFiles()
+// loadHyperBricks preprocesses HyperBricks sources from the configured directory.
+func loadHyperBricks() ([]hyperBricksConfigSource, error) {
+	legacySources, err := loadLegacyHyperBricksSources()
+	if err != nil {
+		return nil, err
+	}
+	yamlSources, err := loadYAMLHyperBricksSources()
+	if err != nil {
+		return nil, err
+	}
+
+	sources := append(legacySources, yamlSources...)
+	sort.Slice(sources, func(i, j int) bool {
+		return sources[i].Filename < sources[j].Filename
+	})
+	if len(sources) == 0 {
+		return nil, fmt.Errorf("no .hyperbricks or .hyperbricks.yaml files found in %s", core.ModuleDirectories.HyperbricksDir)
+	}
+	return sources, nil
+}
+
+func loadLegacyHyperBricksSources() ([]hyperBricksConfigSource, error) {
+	files, err := filepath.Glob(filepath.Join(core.ModuleDirectories.HyperbricksDir, "*.hyperbricks"))
+	if err != nil {
+		return nil, fmt.Errorf("glob legacy hyperbricks files: %w", err)
+	}
+	sort.Strings(files)
+
+	tempHyperBricks := make(map[string]string, len(files))
+	orderedRoutes := make([]string, 0, len(files))
+	sources := make([]hyperBricksConfigSource, 0, len(files))
+
+	for _, file := range files {
+		data, err := os.ReadFile(file)
+		if err != nil {
+			return nil, fmt.Errorf("read legacy hyperbricks file %s: %w", file, err)
+		}
+		filename := hyperBricksSourceName(file, ".hyperbricks")
+		uncommented := parser.StripComments(string(data))
+		preprocessed, err := parser.PreprocessHyperScript(uncommented)
+		if err != nil {
+			return nil, fmt.Errorf("preprocess legacy hyperbricks file %s: %w", file, err)
+		}
+		tempHyperBricks[filename] = preprocessed
+		orderedRoutes = append(orderedRoutes, filename)
+		sources = append(sources, hyperBricksConfigSource{
+			Filename: filename,
+			Config:   parser.ParseHyperScript(preprocessed),
+		})
+		logging.GetLogger().Debug("Loaded legacy configuration for route: ", filename)
+	}
+
+	hyperBricksArray.PreProcessedHyperScriptStoreMutex.Lock()
+	hyperBricksArray.HyperBricksStore = tempHyperBricks
+	hyperBricksArray.OrderedHyperBricksRoutes = orderedRoutes
+	hyperBricksArray.PreProcessedHyperScriptStoreMutex.Unlock()
+
+	return sources, nil
+}
+
+func loadYAMLHyperBricksSources() ([]hyperBricksConfigSource, error) {
+	files, err := filepath.Glob(filepath.Join(core.ModuleDirectories.HyperbricksDir, "*.hyperbricks.yaml"))
+	if err != nil {
+		return nil, fmt.Errorf("glob YAML hyperbricks files: %w", err)
+	}
+	sort.Strings(files)
+
+	opts := yamlRuntimeOptions()
+	sources := make([]hyperBricksConfigSource, 0, len(files))
+	for _, file := range files {
+		result, err := yamlparser.ProcessFile(file, opts)
+		if err != nil {
+			return nil, fmt.Errorf("process YAML hyperbricks file %s: %w", file, err)
+		}
+		sources = append(sources, hyperBricksConfigSource{
+			Filename: hyperBricksSourceName(file, ".hyperbricks.yaml"),
+			Config:   result.Materialized,
+		})
+		logging.GetLogger().Debug("Loaded YAML configuration for route: ", file)
+	}
+	return sources, nil
+}
+
+func yamlRuntimeOptions() yamlparser.Options {
+	return yamlparser.Options{
+		Config:      parser.HbConfig,
+		Variables:   yamlRuntimeVariables(),
+		TemplateDir: core.ModuleDirectories.TemplateDir,
+		Paths: yamlparser.PathMarkers{
+			ModuleRoot:  core.ModuleDirectories.ModulesRoot,
+			Root:        core.ModuleDirectories.Root,
+			Module:      core.ModuleDirectories.ModuleDir,
+			Resources:   core.ModuleDirectories.ResourcesDir,
+			Templates:   core.ModuleDirectories.TemplateDir,
+			Static:      core.ModuleDirectories.StaticDir,
+			HyperBricks: core.ModuleDirectories.HyperbricksDir,
+		},
+	}
+}
+
+func yamlRuntimeVariables() map[string]string {
+	return map[string]string{
+		"module_root": core.ModuleDirectories.ModulesRoot,
+		"root":        core.ModuleDirectories.Root,
+		"module":      core.ModuleDirectories.ModuleDir,
+		"resources":   core.ModuleDirectories.ResourcesDir,
+		"templates":   core.ModuleDirectories.TemplateDir,
+		"static":      core.ModuleDirectories.StaticDir,
+		"hyperbricks": core.ModuleDirectories.HyperbricksDir,
+		"render":      core.ModuleDirectories.RenderedDir,
+	}
+}
+
+func hyperBricksSourceName(path string, suffix string) string {
+	name := filepath.Base(path)
+	if strings.HasSuffix(name, suffix) {
+		return strings.TrimSuffix(name, suffix)
+	}
+	return strings.TrimSuffix(name, filepath.Ext(name))
 }
 
 // processScript parses and processes a single HyperBricks file.
