@@ -1,0 +1,8 @@
+{
+  "plugin": "github.com/hyperbricks/plugins/route-split-demo",
+  "source": "route_split_demo_plugin.go",
+  "version": "1.0.0",
+  "binary": "RouteSplitDemoPlugin",
+  "compatible_hyperbricks": [">=0.7.8-alpha"],
+  "description": "Plugin vs API route split demo plugin"
+}

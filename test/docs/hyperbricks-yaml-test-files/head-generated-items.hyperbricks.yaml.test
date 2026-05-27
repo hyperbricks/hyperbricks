@@ -1,0 +1,49 @@
+==== hyperbricks yaml {!{page}} ====
+page:
+  - type: hypermedia
+  - route: head-generated-items
+  - head:
+      - type: head
+      - title: Generated title should not render
+      - payload:
+          - type: html
+          - value: <title>Manual payload</title>
+      - custom_head:
+          - type: html
+          - value: <meta name="custom" content="yes">
+      - generator:
+          - type: html
+          - value: <meta name="generator" content="manual">
+==== explainer ====
+HEAD generated items are normal ordered Items. The named generator and payload items can be overridden from YAML.
+==== expected materialized json ====
+{
+  "@order": [
+    "head"
+  ],
+  "@type": "<HYPERMEDIA>",
+  "head": {
+    "@order": [
+      "payload",
+      "custom_head",
+      "generator"
+    ],
+    "@type": "<HEAD>",
+    "custom_head": {
+      "@type": "<HTML>",
+      "value": "<meta name=\"custom\" content=\"yes\">"
+    },
+    "generator": {
+      "@type": "<HTML>",
+      "value": "<meta name=\"generator\" content=\"manual\">"
+    },
+    "payload": {
+      "@type": "<HTML>",
+      "value": "<title>Manual payload</title>"
+    },
+    "title": "Generated title should not render"
+  },
+  "route": "head-generated-items"
+}
+==== expected output ====
+<!DOCTYPE html><html><head><title>Manual payload</title><meta name="custom" content="yes"><meta name="generator" content="manual"></head><body></body></html>

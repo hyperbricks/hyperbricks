@@ -205,6 +205,52 @@ page:
 	}
 }
 
+func TestMaterializeInheritedValueNodeOverridesInheritedBaseValueNode(t *testing.T) {
+	doc, err := ParseBytes([]byte(`
+base_panel:
+  - type: template
+  - template: base.html
+
+replacement_panel:
+  - type: template
+  - template: replacement.html
+
+shell:
+  - type: hypermedia
+  - template_10:
+      - type: template
+      - values:
+          content:
+            - inherit: base_panel
+
+page:
+  - inherit: shell
+  - template_10:
+      - values:
+          content:
+            - inherit: replacement_panel
+`))
+	if err != nil {
+		t.Fatalf("ParseBytes() error = %v", err)
+	}
+
+	got, err := doc.Materialize()
+	if err != nil {
+		t.Fatalf("Materialize() error = %v", err)
+	}
+	page := got["page"].(map[string]interface{})
+	body := page["template_10"].(map[string]interface{})
+	values := body["values"].(map[string]interface{})
+	content := values["content"].(map[string]interface{})
+
+	if content["@type"] != "<TEMPLATE>" {
+		t.Fatalf("content @type = %#v", content["@type"])
+	}
+	if content["template"] != "replacement.html" {
+		t.Fatalf("content template = %#v, want replacement.html", content["template"])
+	}
+}
+
 func TestProcessBytesPreprocessesAndKeepsScalarsAsStrings(t *testing.T) {
 	assetsDir := t.TempDir()
 	heroPath := filepath.Join(assetsDir, "hero.html")

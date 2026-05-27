@@ -1,0 +1,135 @@
+<main class="split-shell">
+  <header class="page-header">
+    <nav class="page-topnav">
+      <a href="/index" class="page-link">← Pattern index</a>
+      <a href="/docs" class="page-link-muted">Docs</a>
+    </nav>
+    <p class="page-kicker">Builder Boundary Pattern</p>
+    <h1 class="page-title">Plugin vs API Route Split</h1>
+    <p class="page-lead">
+      This page compares two common ways to handle a user action in HyperBricks. The left side is a thin route that forwards form data to an API-like endpoint and renders the response. The right side uses a plugin because the request needs extra thinking first: validation, cleanup, and a small execution plan before anything is shown back to the user.
+    </p>
+  </header>
+
+  <section class="split-layout">
+    <section class="split-column">
+      <div class="split-card">
+        <span class="split-pill" data-kind="api">API Fragment</span>
+        <h2 class="page-copy-title mt-3 mb-2">Simple save or rename action</h2>
+        <p class="page-copy-text mb-4">
+          Think of this as a normal form submission where the browser sends fields, HyperBricks reshapes them for the backend, and the backend answers with structured data. That is a good fit for <span class="code-inline">&lt;API_FRAGMENT_RENDER&gt;</span>.
+        </p>
+        <form class="split-form form-grid" hx-post="/patterns/route-split/rename-success" hx-target="#split-api-result" hx-swap="innerHTML">
+          <label>
+            <span>Project slug</span>
+            <input type="text" name="project" value="demo-patterns">
+          </label>
+          <label>
+            <span>Asset id</span>
+            <input type="number" name="asset_id" value="42">
+          </label>
+          <label>
+            <span>Old path</span>
+            <input type="text" name="old_path" value="templates/card.html">
+          </label>
+          <label>
+            <span>New path</span>
+            <input type="text" name="new_path" value="templates/card-compact.html">
+          </label>
+          <div class="split-actions">
+            <button class="split-button" type="submit">Run success rename</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="split-card">
+        <h3 class="page-copy-subtitle mb-2">Same action, different backend answer</h3>
+        <p class="page-copy-text mb-4">
+          Here the request shape stays the same, but the backend returns a conflict message instead of a success row. The route still belongs on the API side because the main job is forwarding data and rendering the returned result.
+        </p>
+        <form class="split-form" hx-post="/patterns/route-split/rename-conflict" hx-target="#split-api-result" hx-swap="innerHTML">
+          <input type="hidden" name="project" value="demo-patterns">
+          <input type="hidden" name="asset_id" value="42">
+          <input type="hidden" name="old_path" value="templates/card.html">
+          <input type="hidden" name="new_path" value="templates/card-compact.html">
+          <div class="split-actions">
+            <button class="split-button" type="submit">Run conflict rename</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="split-api-result" class="split-card">
+        <div class="split-note">
+          Submit either form and this panel will show the backend-style response that HyperBricks rendered for the user.
+        </div>
+      </div>
+    </section>
+
+    <section class="split-column">
+      <div class="split-card">
+        <span class="split-pill" data-kind="plugin">Plugin</span>
+        <h2 class="page-copy-title mt-3 mb-2">Action that needs extra decision-making</h2>
+        <p class="page-copy-text mb-4">
+          This side simulates an import action. Before anything is rendered, the code has to validate the input, normalize the tags, decide what the import plan should be, and then hand those values to a template. That is where a plugin is more natural.
+        </p>
+        <form class="split-form form-grid" hx-post="/patterns/route-split/import" hx-target="#split-plugin-result" hx-swap="innerHTML">
+          <label>
+            <span>Manifest URL</span>
+            <input type="text" name="manifest_url" value="https://cdn.example.test/library/homepage.json">
+          </label>
+          <label>
+            <span>Import mode</span>
+            <select name="import_mode">
+              <option value="preview" selected>Preview only</option>
+              <option value="apply">Apply import</option>
+            </select>
+          </label>
+          <label>
+            <span>Tags CSV</span>
+            <input type="text" name="tags" value="homepage, hero, campaign">
+          </label>
+          <label>
+            <span>Notes</span>
+            <textarea name="notes">Normalize component names before importing.</textarea>
+          </label>
+          <div class="split-actions">
+            <button class="split-button" type="submit">Run plugin import</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="split-plugin-result" class="split-card">
+        <div class="split-note">
+          Submit the import form and this panel will show the computed plan that the plugin prepared.
+        </div>
+      </div>
+
+      <div class="split-card">
+        <h2 class="page-copy-subtitle mb-2">How to choose</h2>
+        <div class="split-note">
+          <strong>Choose the API route shape when:</strong>
+          <ul class="split-list">
+            <li>the action mostly means “send these fields to the backend”</li>
+            <li>the backend system already owns the save, rename, delete, or fetch logic</li>
+            <li>the response already comes back as data that a template can show directly</li>
+          </ul>
+          <br>
+          <strong>Choose a plugin when:</strong>
+          <ul class="split-list">
+            <li>the action needs validation, cleanup, or branching before the result is known</li>
+            <li>the action behaves more like a workflow than a plain save</li>
+            <li>one piece of code should own the logic for deciding what happens next</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="split-card">
+        <h2 class="page-copy-subtitle mb-2">Refresh probe</h2>
+        <p class="page-copy-text mb-3">
+          The API-side action sends a small HTMX event after it finishes. That gives other parts of the UI a simple way to refresh themselves after a save.
+        </p>
+        <div id="split-refresh-probe" hx-get="/fragments/route-split-refresh-probe" hx-trigger="load, hb-pattern-route-split-refresh from:body" hx-swap="innerHTML"></div>
+      </div>
+    </section>
+  </section>
+</main>

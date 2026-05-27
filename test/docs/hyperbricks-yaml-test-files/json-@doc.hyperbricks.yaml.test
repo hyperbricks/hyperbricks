@@ -3,14 +3,13 @@ local_json_test:
   - type: json_render
   - debug: "false"
   - file: hyperbricks-test-files/assets/quotes.json
-  - inline: |2-
-              <h1>{{.someproperty}}</h1>
-              <ul>
-                  {{range .Data.quotes}}
-                      <li><strong>{{.author}}:</strong> {{.quote}}</li>
-                  {{end}}
-              </ul>
-      	
+  - inline: |-
+      <h1>{{.someproperty}}</h1>
+      <ul>
+          {{range .Data.quotes}}
+              <li><strong>{{.author}}:</strong> {{.quote}}</li>
+          {{end}}
+      </ul>
   - values:
       someproperty: Quotes!
 ==== explainer ====
@@ -26,7 +25,7 @@ Debug the response data
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
-  "Inline": "        <h1>{{.someproperty}}</h1>\n        <ul>\n            {{range .Data.quotes}}\n                <li><strong>{{.author}}:</strong> {{.quote}}</li>\n            {{end}}\n        </ul>\n\t",
+  "Inline": "<h1>{{.someproperty}}</h1>\n<ul>\n    {{range .Data.quotes}}\n        <li><strong>{{.author}}:</strong> {{.quote}}</li>\n    {{end}}\n</ul>",
   "MetaDocDescription": "",
   "Template": "",
   "Values": {

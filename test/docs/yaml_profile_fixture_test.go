@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -14,7 +13,6 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
-	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	"github.com/hyperbricks/hyperbricks/pkg/render"
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 	hbschema "github.com/hyperbricks/hyperbricks/pkg/schema"
@@ -23,8 +21,12 @@ import (
 	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
 )
 
-var updateYAMLGoldensFlag = flag.Bool("update-yaml-golden", false, "rewrite HyperBricks YAML materialized JSON golden fixtures")
 var updateYAMLReadableFlag = flag.Bool("update-yaml-readable", false, "rewrite migrated HyperBricks YAML readable expected JSON sections")
+
+const (
+	legacyDocumentationFixtureDir = "hyperbricks-test-files"
+	yamlProfileFixtureDir         = "hyperbricks-yaml-test-files"
+)
 
 type yamlReadableCase struct {
 	Path                     string
@@ -39,75 +41,18 @@ type yamlReadableCase struct {
 }
 
 var yamlCoreCorpus = []string{
-	"text-html-tree.hyperbricks.yaml",
-	"template-values.hyperbricks.yaml",
-	"inheritance-override.hyperbricks.yaml",
-	"ordered-children.hyperbricks.yaml",
-	"nested-tree-3-level.hyperbricks.yaml",
-	"head-assets.hyperbricks.yaml",
-	"hypermedia-route.hyperbricks.yaml",
-	"fragment-response.hyperbricks.yaml",
-	"menu-items.hyperbricks.yaml",
-	"api-render-request.hyperbricks.yaml",
-	"reserved-name-collision.hyperbricks.yaml",
-}
-
-var yamlLegacyParityCorpus = map[string]string{
-	"text-html-tree.hyperbricks.yaml":          "text-html-tree.legacy.hyperbricks",
-	"inheritance-override.hyperbricks.yaml":    "inheritance-override.legacy.hyperbricks",
-	"ordered-children.hyperbricks.yaml":        "ordered-children.legacy.hyperbricks",
-	"nested-tree-3-level.hyperbricks.yaml":     "nested-tree-3-level.legacy.hyperbricks",
-	"head-assets.hyperbricks.yaml":             "head-assets.legacy.hyperbricks",
-	"hypermedia-route.hyperbricks.yaml":        "hypermedia-route.legacy.hyperbricks",
-	"fragment-response.hyperbricks.yaml":       "fragment-response.legacy.hyperbricks",
-	"menu-items.hyperbricks.yaml":              "menu-items.legacy.hyperbricks",
-	"reserved-name-collision.hyperbricks.yaml": "reserved-name-collision.legacy.hyperbricks",
-}
-
-func TestYAMLProfileFixturesParseAndMaterialize(t *testing.T) {
-	matches, err := filepath.Glob(filepath.Join("hyperbricks-yaml-test-files", "*.hyperbricks.yaml"))
-	if err != nil {
-		t.Fatalf("glob YAML fixtures: %v", err)
-	}
-	if len(matches) == 0 {
-		t.Fatal("no YAML profile fixtures found")
-	}
-
-	for _, path := range matches {
-		t.Run(filepath.Base(path), func(t *testing.T) {
-			raw := readFixtureFile(t, path)
-			doc, err := yamlparser.ParseBytes(raw)
-			if err != nil {
-				t.Fatalf("parse YAML fixture: %v", err)
-			}
-			materialized, err := doc.Materialize()
-			if err != nil {
-				t.Fatalf("materialize YAML fixture: %v", err)
-			}
-			if len(doc.Roots) > 0 && len(materialized) == 0 {
-				t.Fatal("materialized map is empty for non-empty fixture")
-			}
-			assertMaterializedGolden(t, path, materialized)
-		})
-	}
-}
-
-func TestYAMLProfileLegacyParity(t *testing.T) {
-	ensureLegacyParserTypes()
-	for yamlName, legacyName := range yamlLegacyParityCorpus {
-		t.Run(yamlName, func(t *testing.T) {
-			yamlMaterialized := materializeYAMLFixture(t, yamlName)
-			legacyPath := filepath.Join("hyperbricks-yaml-test-files", legacyName)
-			legacyRaw := string(readFixtureFile(t, legacyPath))
-			legacyMaterialized := parser.ParseHyperScript(legacyRaw)
-
-			got := canonicalJSON(t, normalizeForLegacyParity(yamlMaterialized))
-			want := canonicalJSON(t, normalizeForLegacyParity(legacyMaterialized))
-			if !bytes.Equal(got, want) {
-				t.Fatalf("legacy parity mismatch for %s\n--- yaml ---\n%s\n--- legacy ---\n%s", yamlName, got, want)
-			}
-		})
-	}
+	"text-html-tree.hyperbricks.yaml.test",
+	"template-values-data.hyperbricks.yaml.test",
+	"inheritance-override.hyperbricks.yaml.test",
+	"ordered-children.hyperbricks.yaml.test",
+	"nested-tree-3-level.hyperbricks.yaml.test",
+	"head-assets.hyperbricks.yaml.test",
+	"head-generated-items.hyperbricks.yaml.test",
+	"hypermedia-route.hyperbricks.yaml.test",
+	"fragment-response.hyperbricks.yaml.test",
+	"menu-items.hyperbricks.yaml.test",
+	"api-render-request.hyperbricks.yaml.test",
+	"reserved-name-collision.hyperbricks.yaml.test",
 }
 
 func TestYAMLProfileFixturesInstantiateRuntimeConfigs(t *testing.T) {
@@ -137,7 +82,7 @@ func TestYAMLProfileFixturesInstantiateRuntimeConfigs(t *testing.T) {
 }
 
 func TestYAMLProfileReadableCases(t *testing.T) {
-	matches, err := filepath.Glob(filepath.Join("hyperbricks-yaml-test-files", "*.hyperbricks.yaml.test"))
+	matches, err := filepath.Glob(filepath.Join(yamlProfileFixtureDir, "*.hyperbricks.yaml.test"))
 	if err != nil {
 		t.Fatalf("glob readable YAML cases: %v", err)
 	}
@@ -181,17 +126,32 @@ func TestYAMLProfileReadableCases(t *testing.T) {
 	}
 }
 
+func TestYAMLProfileFixtureDirectoryContainsOnlyReadableYAMLFixtures(t *testing.T) {
+	entries, err := os.ReadDir(yamlProfileFixtureDir)
+	if err != nil {
+		t.Fatalf("read YAML fixture directory: %v", err)
+	}
+	for _, entry := range entries {
+		if entry.IsDir() || entry.Name() == "README.md" || strings.HasPrefix(entry.Name(), ".") {
+			continue
+		}
+		if !strings.HasSuffix(entry.Name(), ".hyperbricks.yaml.test") {
+			t.Fatalf("unexpected file in YAML fixture directory: %s", entry.Name())
+		}
+	}
+}
+
 func TestYAMLProfileReadableCasesCoverCoreCorpus(t *testing.T) {
 	for _, name := range yamlCoreCorpus {
-		readablePath := filepath.Join("hyperbricks-yaml-test-files", name+".test")
+		readablePath := filepath.Join(yamlProfileFixtureDir, name)
 		if _, err := os.Stat(readablePath); err != nil {
-			t.Fatalf("readable YAML test case %s is missing: %v", name+".test", err)
+			t.Fatalf("readable YAML test case %s is missing: %v", name, err)
 		}
 	}
 }
 
 func TestYAMLProfileReadableCasesCoverMigratedDocumentationFixtures(t *testing.T) {
-	matches, err := filepath.Glob(filepath.Join("hyperbricks-yaml-test-files", "*.hyperbricks"))
+	matches, err := filepath.Glob(filepath.Join(legacyDocumentationFixtureDir, "*.hyperbricks"))
 	if err != nil {
 		t.Fatalf("glob migrated documentation fixtures: %v", err)
 	}
@@ -200,35 +160,15 @@ func TestYAMLProfileReadableCasesCoverMigratedDocumentationFixtures(t *testing.T
 		if strings.HasSuffix(name, ".legacy.hyperbricks") {
 			continue
 		}
-		readablePath := strings.TrimSuffix(path, ".hyperbricks") + ".hyperbricks.yaml.test"
+		readablePath := filepath.Join(yamlProfileFixtureDir, strings.TrimSuffix(name, ".hyperbricks")+".hyperbricks.yaml.test")
 		if _, err := os.Stat(readablePath); err != nil {
 			t.Fatalf("readable YAML test case %s is missing for %s: %v", filepath.Base(readablePath), name, err)
 		}
 	}
 }
 
-func TestYAMLProfileCoreCorpusExists(t *testing.T) {
-	for _, name := range yamlCoreCorpus {
-		path := filepath.Join("hyperbricks-yaml-test-files", name)
-		if _, err := os.Stat(path); err != nil {
-			t.Fatalf("core corpus fixture %s is missing: %v", name, err)
-		}
-	}
-}
-
-func TestYAMLProfileLegacyParityFixturesExist(t *testing.T) {
-	for yamlName, legacyName := range yamlLegacyParityCorpus {
-		if _, err := os.Stat(filepath.Join("hyperbricks-yaml-test-files", yamlName)); err != nil {
-			t.Fatalf("YAML parity fixture %s is missing: %v", yamlName, err)
-		}
-		if _, err := os.Stat(filepath.Join("hyperbricks-yaml-test-files", legacyName)); err != nil {
-			t.Fatalf("legacy parity fixture %s is missing: %v", legacyName, err)
-		}
-	}
-}
-
 func TestYAMLProfileFixturePreservesSourceOrder(t *testing.T) {
-	materialized := materializeYAMLFixture(t, "ordered-children.hyperbricks.yaml")
+	materialized := materializeYAMLFixture(t, "ordered-children.hyperbricks.yaml.test")
 	page := asMap(t, materialized["page"], "page")
 	want := []string{"zeta", "alpha", "middle"}
 	if got := page["@order"]; !reflect.DeepEqual(got, want) {
@@ -237,7 +177,7 @@ func TestYAMLProfileFixturePreservesSourceOrder(t *testing.T) {
 }
 
 func TestYAMLProfileFixturePreservesThreeLevelNestedTree(t *testing.T) {
-	materialized := materializeYAMLFixture(t, "nested-tree-3-level.hyperbricks.yaml")
+	materialized := materializeYAMLFixture(t, "nested-tree-3-level.hyperbricks.yaml.test")
 	page := asMap(t, materialized["page"], "page")
 	content := asMap(t, page["content"], "page.content")
 	section := asMap(t, content["section_block"], "page.content.section_block")
@@ -264,7 +204,7 @@ func TestYAMLProfileFixturePreservesThreeLevelNestedTree(t *testing.T) {
 }
 
 func TestYAMLProfileFixtureResolvesInheritanceOverride(t *testing.T) {
-	materialized := materializeYAMLFixture(t, "inheritance-override.hyperbricks.yaml")
+	materialized := materializeYAMLFixture(t, "inheritance-override.hyperbricks.yaml.test")
 	page := asMap(t, materialized["page"], "page")
 	card := asMap(t, page["featured_card"], "featured_card")
 	values := asMap(t, card["values"], "featured_card.values")
@@ -288,7 +228,7 @@ func TestYAMLProfileFixtureResolvesInheritanceOverride(t *testing.T) {
 }
 
 func TestYAMLProfileFixtureKeepsDataArrays(t *testing.T) {
-	materialized := materializeYAMLFixture(t, "template-values.hyperbricks.yaml")
+	materialized := materializeYAMLFixture(t, "template-values-data.hyperbricks.yaml.test")
 	card := asMap(t, materialized["card"], "card")
 	values := asMap(t, card["values"], "card.values")
 
@@ -311,7 +251,7 @@ func TestYAMLProfileFixtureKeepsDataArrays(t *testing.T) {
 }
 
 func TestYAMLProfileFixtureAvoidsReservedNameChildCollision(t *testing.T) {
-	materialized := materializeYAMLFixture(t, "reserved-name-collision.hyperbricks.yaml")
+	materialized := materializeYAMLFixture(t, "reserved-name-collision.hyperbricks.yaml.test")
 	page := asMap(t, materialized["page"], "page")
 	head := asMap(t, page["head"], "page.head")
 
@@ -333,46 +273,13 @@ func TestYAMLProfileFixtureAvoidsReservedNameChildCollision(t *testing.T) {
 
 func materializeYAMLFixture(t *testing.T, name string) map[string]interface{} {
 	t.Helper()
-	path := filepath.Join("hyperbricks-yaml-test-files", name)
-	raw := readFixtureFile(t, path)
-	doc, err := yamlparser.ParseBytes(raw)
+	path := filepath.Join(yamlProfileFixtureDir, name)
+	testCase := parseYAMLReadableCase(t, path)
+	result, err := yamlparser.ProcessBytes([]byte(testCase.Source), yamlProfileOptionsForCase(t, path))
 	if err != nil {
-		t.Fatalf("parse YAML fixture %s: %v", name, err)
+		t.Fatalf("process YAML fixture %s: %v", name, err)
 	}
-	materialized, err := doc.Materialize()
-	if err != nil {
-		t.Fatalf("materialize YAML fixture %s: %v", name, err)
-	}
-	return materialized
-}
-
-func assertMaterializedGolden(t *testing.T, fixturePath string, materialized map[string]interface{}) {
-	t.Helper()
-	goldenPath := yamlGoldenPath(fixturePath)
-	got := canonicalJSON(t, materialized)
-	if *updateYAMLGoldensFlag {
-		if err := os.WriteFile(goldenPath, got, 0o644); err != nil {
-			t.Fatalf("write YAML golden %s: %v", goldenPath, err)
-		}
-		return
-	}
-
-	rawExpected, err := os.ReadFile(goldenPath)
-	if err != nil {
-		t.Fatalf("read YAML golden %s: %v; run go test ./test/docs -run TestYAMLProfileFixturesParseAndMaterialize -update-yaml-golden", goldenPath, err)
-	}
-	var expected interface{}
-	if err := json.Unmarshal(rawExpected, &expected); err != nil {
-		t.Fatalf("parse YAML golden %s: %v", goldenPath, err)
-	}
-	want := canonicalJSON(t, expected)
-	if !bytes.Equal(got, want) {
-		t.Fatalf("materialized JSON mismatch for %s\n--- got ---\n%s\n--- want ---\n%s", filepath.Base(fixturePath), got, want)
-	}
-}
-
-func yamlGoldenPath(fixturePath string) string {
-	return strings.TrimSuffix(fixturePath, ".hyperbricks.yaml") + ".materialized.json"
+	return result.Materialized
 }
 
 func parseYAMLReadableCase(t *testing.T, path string) yamlReadableCase {
@@ -584,7 +491,7 @@ func yamlProfileOptionsForCase(t *testing.T, path string) yamlparser.Options {
 			},
 		},
 		Paths: yamlparser.PathMarkers{
-			Resources: filepath.Join("hyperbricks-yaml-test-files", "pipeline-assets"),
+			Resources: filepath.Join(yamlProfileFixtureDir, "pipeline-assets"),
 		},
 	}
 }
@@ -816,65 +723,6 @@ func canonicalJSON(t *testing.T, value interface{}) []byte {
 		t.Fatalf("encode canonical JSON: %v", err)
 	}
 	return buf.Bytes()
-}
-
-func normalizeForLegacyParity(value interface{}) interface{} {
-	switch typed := value.(type) {
-	case map[string]interface{}:
-		out := make(map[string]interface{}, len(typed))
-		for key, nested := range typed {
-			if key == "@order" {
-				continue
-			}
-			out[key] = normalizeForLegacyParity(nested)
-		}
-		return out
-	case []interface{}:
-		out := make([]interface{}, 0, len(typed))
-		for _, nested := range typed {
-			out = append(out, normalizeForLegacyParity(nested))
-		}
-		return out
-	case string:
-		return normalizeLegacyParityString(typed)
-	case nil:
-		return nil
-	default:
-		return normalizeLegacyParityString(fmt.Sprint(typed))
-	}
-}
-
-func normalizeLegacyParityString(value string) string {
-	value = strings.ReplaceAll(value, "\r\n", "\n")
-	value = strings.ReplaceAll(value, "\r", "\n")
-	value = strings.TrimPrefix(value, "\n")
-	return strings.TrimRight(value, "\n")
-}
-
-func ensureLegacyParserTypes() {
-	for _, token := range []string{
-		"<HYPERMEDIA>",
-		"<FRAGMENT>",
-		"<API_RENDER>",
-		"<API_FRAGMENT_RENDER>",
-		"<TREE>",
-		"<TEMPLATE>",
-		"<HEAD>",
-		"<TEXT>",
-		"<HTML>",
-		"<IMAGE>",
-		"<IMAGES>",
-		"<MENU>",
-		"<CSS>",
-		"<STYLES>",
-		"<JAVASCRIPT>",
-		"<JS>",
-		"<JSON>",
-		"<JSON_RENDER>",
-		"<PLUGIN>",
-	} {
-		parser.KnownTypes[token] = true
-	}
 }
 
 func asMap(t *testing.T, value interface{}, label string) map[string]interface{} {

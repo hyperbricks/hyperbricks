@@ -211,15 +211,14 @@ func orderedTreeKeys(items map[string]interface{}) []string {
 		return nil
 	}
 
-	fallback := shared.SortedUniqueKeys(items)
-	order := extractTreeOrder(items["@order"])
-	if len(order) == 0 {
-		return filterTreeRenderKeys(fallback, nil)
+	rawOrder, hasOrder := items["@order"]
+	if !hasOrder {
+		return filterTreeRenderKeys(shared.SortedUniqueKeys(items), nil)
 	}
 
 	seen := make(map[string]bool, len(items))
 	keys := make([]string, 0, len(items))
-	for _, key := range order {
+	for _, key := range extractTreeOrder(rawOrder) {
 		if treeMetadataKey(key) || seen[key] {
 			continue
 		}
@@ -229,7 +228,7 @@ func orderedTreeKeys(items map[string]interface{}) []string {
 		seen[key] = true
 		keys = append(keys, key)
 	}
-	return filterTreeRenderKeys(fallback, seen, keys...)
+	return keys
 }
 
 func extractTreeOrder(raw interface{}) []string {

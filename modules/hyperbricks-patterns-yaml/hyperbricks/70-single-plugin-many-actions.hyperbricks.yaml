@@ -1,0 +1,61 @@
+imports:
+  - "partials/site.hyperbricks.yaml"
+
+single_plugin_actions_shell:
+  - inherit: "pattern_site_page"
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/single-plugin-actions-shell.html}}"
+
+workflow_actions_demo_landing:
+  - type: fragment
+  - route: workflow-actions-demo/landing
+  - nocache: "true"
+  - plugin_10:
+      - type: plugin
+      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns@1.0.0"
+      - data:
+          action: landing
+          template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
+
+workflow_actions_demo_lookup:
+  - type: fragment
+  - route: workflow-actions-demo/lookup
+  - nocache: "true"
+  - plugin_10:
+      - type: plugin
+      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns@1.0.0"
+      - data:
+          action: lookup
+          template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
+
+workflow_actions_demo_signup:
+  - type: fragment
+  - route: workflow-actions-demo/signup
+  - nocache: "true"
+  - plugin_10:
+      - type: plugin
+      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns@1.0.0"
+      - data:
+          action: signup
+          template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
+
+workflow_actions_demo_complete:
+  - type: fragment
+  - route: workflow-actions-demo/complete
+  - nocache: "true"
+  - plugin_10:
+      - type: plugin
+      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns@1.0.0"
+      - data:
+          action: complete
+          template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
+
+app_single_plugin_actions_demo:
+  - inherit: "single_plugin_actions_shell"
+  - route: single-plugin-actions-demo
+  - title: Single Plugin Many Actions Demo
+  - template_10:
+      - values:
+          page_title: "Single Plugin, Many Actions"
+          page_intro: "This page shows a workflow that has several clear steps, while one plugin keeps the decision-making in one place. Each route still has its own name, but the plugin decides what each step should show next."

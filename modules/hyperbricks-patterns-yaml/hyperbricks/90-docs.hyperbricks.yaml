@@ -1,0 +1,250 @@
+imports:
+  - "partials/site.hyperbricks.yaml"
+
+pattern_docs_shell:
+  - inherit: "pattern_site_page"
+  - template_10:
+      - type: template
+      - template: "{{TEMPLATE:patterns/docs-shell.html}}"
+
+pattern_docs_overview:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content: |
+            {{FILE:{{MODULE}}/docs/patterns-index.md}}
+
+pattern_docs_readme:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content: |
+            {{FILE:{{MODULE}}/docs/README.md}}
+
+pattern_docs_markdown_plugin:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content: |
+            {{FILE:{{MODULE}}/docs/markdown-plugin.md}}
+
+pattern_docs_template_config:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content: |
+            {{FILE:{{MODULE}}/docs/template-config-plugin.md}}
+
+pattern_docs_htmx_canonical:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content: |
+            {{FILE:{{MODULE}}/docs/htmx-canonical-fragment-demo.md}}
+
+pattern_docs_guarded_page:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content: |
+            {{FILE:{{MODULE}}/docs/guarded-page-demo.md}}
+
+pattern_docs_api_fragment_write:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content: |
+            {{FILE:{{MODULE}}/docs/api-fragment-write-demo.md}}
+
+pattern_docs_menu_htmx:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content: |
+            {{FILE:{{MODULE}}/docs/menu-htmx-demo.md}}
+
+pattern_docs_section_rail:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content: |
+            {{FILE:{{MODULE}}/docs/config-driven-section-rail.md}}
+
+pattern_docs_single_plugin:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content: |
+            {{FILE:{{MODULE}}/docs/single-plugin-many-actions.md}}
+
+pattern_docs_route_split:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content: |
+            {{FILE:{{MODULE}}/docs/plugin-vs-api-route-split.md}}
+
+app_pattern_docs_overview:
+  - inherit: "pattern_docs_shell"
+  - route: docs
+  - title: HyperBricks Patterns Docs
+  - template_10:
+      - values:
+          current_doc: overview
+          doc_title: HyperBricks Patterns Docs
+          doc_intro: Browse the pattern guides as rendered HTML. The left menu keeps normal page links and also uses HTMX so readers can switch docs quickly without leaving the page shell.
+          content:
+            - inherit: "pattern_docs_overview.plugin_10"
+
+app_pattern_docs_readme:
+  - inherit: "pattern_docs_shell"
+  - route: docs/readme
+  - title: HyperBricks Patterns Docs
+  - template_10:
+      - values:
+          current_doc: readme
+          doc_title: Module Overview
+          doc_intro: Start here for the short module summary and the current pattern list.
+          content:
+            - inherit: "pattern_docs_readme.plugin_10"
+
+app_pattern_docs_markdown_plugin:
+  - inherit: "pattern_docs_shell"
+  - route: docs/markdown-plugin
+  - title: HyperBricks Patterns Docs
+  - template_10:
+      - values:
+          current_doc: markdown-plugin
+          doc_title: Markdown Plugin
+          doc_intro: This page documents the Markdown plugin itself and explains how the docs browser turns Markdown files into HTML.
+          content:
+            - inherit: "pattern_docs_markdown_plugin.plugin_10"
+
+app_pattern_docs_template_config:
+  - inherit: "pattern_docs_shell"
+  - route: docs/template-config-plugin
+  - title: HyperBricks Patterns Docs
+  - template_10:
+      - values:
+          current_doc: template-config-plugin
+          doc_title: Template Config Plugin
+          doc_intro: Learn the plugin-to-template handoff pattern used throughout this module.
+          content:
+            - inherit: "pattern_docs_template_config.plugin_10"
+
+app_pattern_docs_htmx_canonical:
+  - inherit: "pattern_docs_shell"
+  - route: docs/htmx-canonical-fragment-demo
+  - title: HyperBricks Patterns Docs
+  - template_10:
+      - values:
+          current_doc: htmx-canonical-fragment-demo
+          doc_title: HTMX Canonical Page + Fragment Demo
+          doc_intro: Read the canonical-page-versus-fragment explanation without leaving the docs shell.
+          content:
+            - inherit: "pattern_docs_htmx_canonical.plugin_10"
+
+app_pattern_docs_guarded_page:
+  - inherit: "pattern_docs_shell"
+  - route: docs/guarded-page-demo
+  - title: HyperBricks Patterns Docs
+  - template_10:
+      - values:
+          current_doc: guarded-page-demo
+          doc_title: Guarded Page Demo
+          doc_intro: "Understand the public login, protected page, and forbidden page flow in one place."
+          content:
+            - inherit: "pattern_docs_guarded_page.plugin_10"
+
+app_pattern_docs_api_fragment_write:
+  - inherit: "pattern_docs_shell"
+  - route: docs/api-fragment-write-demo
+  - title: HyperBricks Patterns Docs
+  - template_10:
+      - values:
+          current_doc: api-fragment-write-demo
+          doc_title: API Fragment Write Demo
+          doc_intro: "This guide explains the “submit form, call backend, render result” route shape step by step."
+          content:
+            - inherit: "pattern_docs_api_fragment_write.plugin_10"
+
+app_pattern_docs_menu_htmx:
+  - inherit: "pattern_docs_shell"
+  - route: docs/menu-htmx-demo
+  - title: HyperBricks Patterns Docs
+  - template_10:
+      - values:
+          current_doc: menu-htmx-demo
+          doc_title: MENU + HTMX Demo
+          doc_intro: Read how normal links and HTMX enhancements can coexist in one navigation pattern.
+          content:
+            - inherit: "pattern_docs_menu_htmx.plugin_10"
+
+app_pattern_docs_section_rail:
+  - inherit: "pattern_docs_shell"
+  - route: docs/config-driven-section-rail
+  - title: HyperBricks Patterns Docs
+  - template_10:
+      - values:
+          current_doc: config-driven-section-rail
+          doc_title: Config-Driven Section Rail
+          doc_intro: See how a left rail can be driven from structured config instead of hand-written links.
+          content:
+            - inherit: "pattern_docs_section_rail.plugin_10"
+
+app_pattern_docs_single_plugin:
+  - inherit: "pattern_docs_shell"
+  - route: docs/single-plugin-many-actions
+  - title: HyperBricks Patterns Docs
+  - template_10:
+      - values:
+          current_doc: single-plugin-many-actions
+          doc_title: "Single Plugin, Many Actions"
+          doc_intro: Read the workflow pattern that keeps several route steps under one plugin owner.
+          content:
+            - inherit: "pattern_docs_single_plugin.plugin_10"
+
+app_pattern_docs_route_split:
+  - inherit: "pattern_docs_shell"
+  - route: docs/plugin-vs-api-route-split
+  - title: HyperBricks Patterns Docs
+  - template_10:
+      - values:
+          current_doc: plugin-vs-api-route-split
+          doc_title: Plugin vs API Route Split
+          doc_intro: Compare thin backend-forwarding routes with plugin-owned decision-making inside the same docs shell.
+          content:
+            - inherit: "pattern_docs_route_split.plugin_10"

@@ -910,11 +910,47 @@ func resolveNode(node *Node, roots map[string]*Node, resolved map[string]*Node, 
 		}
 		out.Children[index] = resolvedChild
 	}
+	for key, value := range out.Props {
+		resolvedValue, err := resolveNodeValue(value, roots, resolved, resolving)
+		if err != nil {
+			return nil, err
+		}
+		out.Props[key] = resolvedValue
+	}
 
 	if cacheByName && strings.TrimSpace(node.Name) != "" {
 		resolved[node.Name] = cloneNode(out)
 	}
 	return out, nil
+}
+
+func resolveNodeValue(value interface{}, roots map[string]*Node, resolved map[string]*Node, resolving map[string]bool) (interface{}, error) {
+	switch typed := value.(type) {
+	case *Node:
+		return resolveNode(typed, roots, resolved, resolving, false)
+	case map[string]interface{}:
+		out := cloneMap(typed)
+		for key, nested := range out {
+			resolvedValue, err := resolveNodeValue(nested, roots, resolved, resolving)
+			if err != nil {
+				return nil, err
+			}
+			out[key] = resolvedValue
+		}
+		return out, nil
+	case []interface{}:
+		out := make([]interface{}, 0, len(typed))
+		for _, nested := range typed {
+			resolvedValue, err := resolveNodeValue(nested, roots, resolved, resolving)
+			if err != nil {
+				return nil, err
+			}
+			out = append(out, resolvedValue)
+		}
+		return out, nil
+	default:
+		return value, nil
+	}
 }
 
 func resolveReference(ref string, roots map[string]*Node, resolved map[string]*Node, resolving map[string]bool) (*Node, error) {
@@ -992,6 +1028,9 @@ func mergeValues(base interface{}, overlay interface{}) interface{} {
 	baseNode, baseOK := base.(*Node)
 	overlayNode, overlayOK := overlay.(*Node)
 	if baseOK && overlayOK {
+		if strings.TrimSpace(overlayNode.Inherit) != "" {
+			return cloneNode(overlayNode)
+		}
 		return mergeNodes(baseNode, overlayNode)
 	}
 	return cloneValue(overlay)

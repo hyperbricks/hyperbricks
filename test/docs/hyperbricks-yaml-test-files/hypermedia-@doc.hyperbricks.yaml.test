@@ -1,7 +1,7 @@
 ==== hyperbricks yaml {!{hypermedia}} ====
 css:
   - type: html
-  - value: |2
+  - value: |
       <style>
           body {
               padding:20px;
@@ -9,24 +9,27 @@ css:
       </style>
 hypermedia:
   - type: hypermedia
-  - tree_10:
+  - main_content:
       - type: tree
-      - html_1:
+      - intro:
           - type: html
           - value: <p>SOME CONTENT</p>
   - head:
       - type: head
-      - html_10:
+      - inline_head_style:
           - type: html
-          - value: |2
+          - value: |
               <style>
                   body {
                       padding:20px;
                   }
               </style>
-      - css_20:
+      - page_styles:
           - type: css
-          - inline: "\n.content {\n    color:green;\n}\n    "
+          - inline: |
+              .content {
+                  color:green;
+              }
 ==== explainer ====
 HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use <FRAGMENT> to utilize hx-[method] (GET,POST etc) requests.
 ==== expected json ====
@@ -42,17 +45,17 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
   "Favicon": "",
   "Head": {
     "@order": [
-      "html_10",
-      "css_20"
+      "inline_head_style",
+      "page_styles"
     ],
     "@type": "<HEAD>",
-    "css_20": {
-      "@type": "<CSS>",
-      "inline": "\n.content {\n    color:green;\n}\n    "
-    },
-    "html_10": {
+    "inline_head_style": {
       "@type": "<HTML>",
       "value": "<style>\n    body {\n        padding:20px;\n    }\n</style>\n"
+    },
+    "page_styles": {
+      "@type": "<CSS>",
+      "inline": ".content {\n    color:green;\n}\n"
     }
   },
   "Headers": null,
@@ -79,7 +82,6 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
     }
 </style>
 <style>
-
 .content {
     color:green;
 }

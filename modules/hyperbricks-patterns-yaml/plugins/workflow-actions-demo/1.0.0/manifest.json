@@ -1,0 +1,8 @@
+{
+  "plugin": "github.com/hyperbricks/plugins/workflow-actions-demo",
+  "source": "workflow_actions_demo_plugin.go",
+  "version": "1.0.0",
+  "binary": "WorkflowActionsDemoPlugin",
+  "compatible_hyperbricks": [">=0.7.8-alpha"],
+  "description": "Single plugin, many actions demo plugin"
+}

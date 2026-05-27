@@ -1,22 +1,22 @@
 ==== hyperbricks yaml {!{fragment}} ====
 fragment:
   - type: fragment
-  - tree_10:
+  - content_groups:
       - type: tree
-      - tree_10:
+      - primary_group:
           - type: tree
-          - html_1:
+          - primary_intro:
               - type: html
               - value: <p>SOME NESTED HTML --- 10-1</p>
-          - html_2:
+          - primary_detail:
               - type: html
               - value: <p>SOME NESTED HTML --- 10-2</p>
-      - tree_20:
+      - secondary_group:
           - type: tree
-          - html_1:
+          - secondary_intro:
               - type: html
               - value: <p>SOME NESTED HTML --- 20-1</p>
-          - html_2:
+          - secondary_detail:
               - type: html
               - value: <p>SOME NESTED HTML --- 20-2</p>
 ==== explainer ====

@@ -1,0 +1,70 @@
+<article class="status-demo-shell">
+  <header class="status-demo-hero">
+    <p class="page-kicker">HTMX Fragments</p>
+    <h2 class="mb-2 text-[1.8rem] font-semibold leading-tight">Canonical page route with explicit fragment targets</h2>
+    <p class="page-copy-text max-w-[68ch]">
+      This mirrors the Composer pattern where the page route owns browser state and a separate rooted fragment owns reusable section content.
+    </p>
+    <div class="pattern-diagnostic">
+      <div class="pattern-diagnostic-card">
+        <strong>Canonical browser URL</strong>
+        <span id="pattern-current-url" class="pattern-url-chip">{{ .page_url }}</span>
+      </div>
+      <div class="pattern-diagnostic-card">
+        <strong>Last fragment request</strong>
+        <span id="pattern-last-fragment" class="pattern-url-chip">{{ .summary_fragment_url }}</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="status-demo-section">
+    <h3 class="page-copy-subtitle mb-3">Route ownership</h3>
+    <ul class="page-list">
+      <li>Canonical page route: <code>{{ .page_url }}</code></li>
+      <li>Reusable section fragment: <code>{{ .fragment_url }}</code></li>
+      <li>Explicit panel fragments: <code>{{ .summary_fragment_url }}</code>, <code>{{ .settings_fragment_url }}</code>, and <code>{{ .plugin_fragment_url }}</code></li>
+      <li>Panel page routes: <code>{{ .summary_page_url }}</code>, <code>{{ .settings_page_url }}</code>, and <code>{{ .plugin_page_url }}</code></li>
+    </ul>
+  </section>
+
+  <section class="page-card-panel">
+    <div class="pattern-toolbar">
+      <a
+        class="pattern-toolbar-link"
+        href="{{ .summary_page_url }}"
+        hx-get="{{ .summary_fragment_url }}"
+        hx-target="#status-demo-panel"
+        hx-swap="innerHTML"
+        hx-push-url="{{ .summary_page_url }}"
+        data-variant="{{ if eq .active_panel `summary` }}primary{{ else }}secondary{{ end }}">
+        Summary panel
+      </a>
+      <a
+        class="pattern-toolbar-link"
+        href="{{ .settings_page_url }}"
+        hx-get="{{ .settings_fragment_url }}"
+        hx-target="#status-demo-panel"
+        hx-swap="innerHTML"
+        hx-push-url="{{ .settings_page_url }}"
+        data-variant="{{ if eq .active_panel `settings` }}primary{{ else }}secondary{{ end }}">
+        Settings panel
+      </a>
+      <a
+        class="pattern-toolbar-link"
+        href="{{ .plugin_page_url }}"
+        hx-get="{{ .plugin_fragment_url }}"
+        hx-target="#status-demo-panel"
+        hx-swap="innerHTML"
+        hx-push-url="{{ .plugin_page_url }}"
+        data-variant="{{ if eq .active_panel `plugin` }}primary{{ else }}secondary{{ end }}">
+        Plugin panel
+      </a>
+    </div>
+
+    <div class="status-demo-panel-wrap">
+      <div id="status-demo-panel">
+        {{.panel}}
+      </div>
+    </div>
+  </section>
+</article>

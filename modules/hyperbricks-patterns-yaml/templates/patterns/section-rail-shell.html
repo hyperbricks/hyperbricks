@@ -1,0 +1,84 @@
+<main class="rail-shell">
+  <header class="page-header">
+    <nav class="page-topnav">
+      <a href="/index" class="page-link">← Pattern index</a>
+      <a href="/docs" class="page-link-muted">Docs</a>
+    </nav>
+    <p class="page-kicker">Section Rail Pattern</p>
+    <h1 class="page-title">{{ .page_title }}</h1>
+    <p class="page-lead max-w-[72ch]">{{ .page_intro }}</p>
+  </header>
+
+  <section class="rail-grid">
+    <aside class="rail-card rail-sidebar">
+      <p class="page-kicker mb-3">Config-driven rail</p>
+      <nav aria-label="Demo sections" data-section-rail>
+        <ul class="rail-nav-list">
+          {{range $mainKey, $main := index . "items"}}
+          {{$mainFragment := index $main "fragment"}}
+          {{$pushURL := printf "/%v" $mainFragment}}
+          {{$fragmentURL := printf "/fragments/%v" $mainFragment}}
+          {{$mainLabel := index $main "label"}}
+          {{$mainTarget := index $main "target"}}
+          {{$subLinks := index $main "sub_section"}}
+          {{$subLabels := index $main "sub_labels"}}
+          <li>
+            {{if and $subLinks $subLabels}}
+            <details open>
+              <summary
+                class="rail-nav-summary"
+                aria-selected="{{if eq $.current_route $pushURL}}true{{else}}false{{end}}">
+                {{$mainLabel}}
+              </summary>
+              <ul class="rail-nav-sublist">
+                {{range $idx, $subLink := $subLinks}}
+                {{$subLabel := index $subLabels $idx}}
+                <li>
+                  <a
+                    class="rail-sub-link"
+                    href="{{$subLink}}"
+                    hx-get="{{$fragmentURL}}"
+                    hx-trigger="click"
+                    hx-target="#{{$mainTarget}}"
+                    hx-swap="innerHTML"
+                    hx-push-url="{{$pushURL}}{{$subLink}}"
+                    data-outline-link>
+                    {{$subLabel}}
+                  </a>
+                </li>
+                {{end}}
+              </ul>
+            </details>
+            {{else}}
+            <a
+              class="rail-nav-link"
+              href="{{$pushURL}}"
+              hx-get="{{$fragmentURL}}"
+              hx-trigger="click"
+              hx-target="#{{$mainTarget}}"
+              hx-swap="innerHTML"
+              hx-push-url="{{$pushURL}}"
+              aria-selected="{{if eq $.current_route $pushURL}}true{{else}}false{{end}}">
+              {{$mainLabel}}
+            </a>
+            {{end}}
+          </li>
+          {{end}}
+        </ul>
+      </nav>
+
+      <div class="rail-note mt-4">
+        <strong>Config keys</strong><br>
+        <span class="rail-code">target</span>
+        <span class="rail-code">fragment</span>
+        <span class="rail-code">label</span>
+        <span class="rail-code">sub_section</span>
+        <span class="rail-code">sub_labels</span>
+      </div>
+    </aside>
+
+    <section id="right_column" class="rail-card">
+      {{ .content }}
+    </section>
+  </section>
+</main>

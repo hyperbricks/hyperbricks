@@ -1,9 +1,9 @@
 ==== hyperbricks yaml {!{fragment}} ====
 fragment:
   - type: fragment
-  - template_10:
+  - profile_card:
       - type: template
-      - inline: |2
+      - inline: |
           <h2>{{.header}}</h2>
           <p>{{.text}}</p>
           {{.image}}

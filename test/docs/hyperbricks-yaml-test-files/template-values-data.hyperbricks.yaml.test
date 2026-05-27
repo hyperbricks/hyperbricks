@@ -1,0 +1,46 @@
+==== hyperbricks yaml {!{card}} ====
+card:
+  - type: template
+  - template: "{{TEMPLATE:cards/card.html}}"
+  - values:
+      title: Template values fixture
+      lead: Plain scalar values remain map fields.
+      cards:
+        - title: First card
+          body: First card is data, not a child component.
+          variant: primary
+        - title: Second card
+          body: Second card stays in array order.
+          variant: flat
+      cta:
+        - type: html
+        - value: |
+            <a href="/start" class="btn">Start</a>
+==== explainer ====
+Template values can contain scalar fields, arrays of plain data maps, and nested
+component values without numeric child keys.
+==== expected materialized json ====
+{
+  "@type": "<TEMPLATE>",
+  "template": "{{TEMPLATE:cards/card.html}}",
+  "values": {
+    "cards": [
+      {
+        "body": "First card is data, not a child component.",
+        "title": "First card",
+        "variant": "primary"
+      },
+      {
+        "body": "Second card stays in array order.",
+        "title": "Second card",
+        "variant": "flat"
+      }
+    ],
+    "cta": {
+      "@type": "<HTML>",
+      "value": "<a href=\"/start\" class=\"btn\">Start</a>\n"
+    },
+    "lead": "Plain scalar values remain map fields.",
+    "title": "Template values fixture"
+  }
+}

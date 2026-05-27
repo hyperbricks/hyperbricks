@@ -1,0 +1,35 @@
+<section class="page-copy">
+  <div class="page-copy">
+    <h3 class="page-copy-subtitle">Login page</h3>
+    <p class="page-copy-text">
+      This route is public. The form posts to a small auth plugin endpoint. On success it redirects to the guarded page. On a blocked account it redirects to the forbidden page.
+    </p>
+  </div>
+
+  <div class="guarded-note">
+    <strong>Demo credentials</strong><br>
+    <span class="guarded-code">demo / open-sesame</span> opens the secret page.<br>
+    <span class="guarded-code">blocked / open-sesame</span> redirects to forbidden.
+  </div>
+
+  <div id="guarded-login-feedback"></div>
+
+  <form
+    class="guarded-form"
+    hx-post="/guarded-demo/auth/login"
+    hx-target="#guarded-login-feedback"
+    hx-swap="innerHTML">
+    <label>
+      <span>Username</span>
+      <input type="text" name="identifier" placeholder="demo">
+    </label>
+    <label>
+      <span>Password</span>
+      <input type="password" name="password" placeholder="open-sesame">
+    </label>
+    <div class="guarded-actions">
+      <button class="guarded-button" type="submit">Login with HTMX</button>
+      <a class="guarded-button" data-variant="secondary" href="/guarded-demo/secret">Direct visit to guarded page</a>
+    </div>
+  </form>
+</section>

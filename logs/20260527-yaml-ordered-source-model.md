@@ -169,13 +169,85 @@ map[string]interface{}{
 Minimal intended renderer change:
 
 - add internal order metadata as `@order` inside the existing `Items` pass
-- let composite rendering prefer explicit `Items["@order"]` metadata
+- let composite rendering follow explicit `Items["@order"]` metadata exactly
 - keep `SortedUniqueKeys` only as legacy fallback for old `.hyperbricks` input
 - keep mapstructure tags and component structs as the runtime contract
 
 Do not introduce a second child-pass contract. `Items` remains the pass. If a
 typed internal order field is ever added later, it must be a convenience around
 the same `Items["@order"]` contract, not a replacement for it.
+
+### Decision: TREE Order Is Explicit
+
+If a `<TREE>` receives `Items["@order"]`, it renders only the keys listed in
+that order. Unlisted renderable items are not appended implicitly.
+
+Rules:
+
+- `@order` is local to one `Items` map.
+- Nested composites need their own `@order`; parent order does not apply to
+  grandchildren.
+- If `@order` is absent, `<TREE>` uses legacy alphanumeric sorting for old
+  `.hyperbricks` input.
+- Runtime code that injects renderable items into a tree-owned map must also
+  place those items in `@order` if deterministic YAML rendering should include
+  them.
+- Metadata/runtime fields such as `@type`, `hyperbricksfile`,
+  `hyperbrickspath`, and `hyperbrickskey` are never render keys.
+
+This removes the implicit "ordered keys first, then everything else sorted"
+behavior from the YAML path. It makes missing `@order` entries visible instead
+of silently changing output later.
+
+### Decision: HEAD Generated Items
+
+`<HEAD>` generated output remains part of the normal `Items` pass. There is no
+separate slot or second render contract.
+
+The legacy renderer used numeric implementation keys:
+
+- `999` for the default generator meta tag
+- `1000` for generated head payload from `favicon`, `title`, `meta`, `css`,
+  and `js`
+
+For the YAML deterministic render contract these generated items are named:
+
+- `generator`
+- `payload`
+
+Rules:
+
+- `generator` and `payload` are ordinary `HEAD.Items`.
+- If a YAML source defines either item explicitly, that item overrides the
+  runtime-generated version.
+- If the YAML source does not define them, the runtime injects the missing
+  generated items.
+- If `@order` is present, missing generated items are appended to that order as
+  `generator`, then `payload`.
+- If the user-defined `@order` already contains `generator` or `payload`, their
+  position is respected.
+- There is no renderer-level compatibility fallback for `999`/`1000`. Those
+  names are treated as normal legacy item names by the old parser path, not as a
+  mode switch in `<HEAD>`.
+
+This keeps the public YAML contract deterministic without introducing another
+runtime abstraction:
+
+```yaml
+page:
+  - type: hypermedia
+  - head:
+      - type: head
+      - payload:
+          - type: html
+          - value: <title>Manual payload</title>
+      - custom_head:
+          - type: html
+          - value: <meta name="custom" content="yes">
+      - generator:
+          - type: html
+          - value: <meta name="generator" content="manual">
+```
 
 ## Inheritance Semantics
 
@@ -921,10 +993,10 @@ Implemented on branch `codex/dsl-migration-sprint`:
   runtime keys, and reserved runtime field-name collisions
 - `cmd/hyperbricks-yaml-dryrun`: temporary CLI to inspect parser output
 - `docs/YAML_PROFILE.md`: draft public source-profile contract
-- duplicated fixture area:
+- YAML fixture area:
   `test/docs/hyperbricks-yaml-test-files/`
-- YAML fixture goldens for representative runtime scenarios
-- legacy parity tests where the old DSL can express the same structure cleanly
+- readable `.hyperbricks.yaml.test` fixtures for representative runtime
+  scenarios
 - runtime typefactory decode tests for all core YAML fixtures
 
 Current proof:
@@ -940,14 +1012,14 @@ All passed on 2026-05-27.
 
 ## Next Proof Step
 
-The next useful step is renderer-level parity for a small set of fixtures:
+The next useful step is renderer-level proof for a small set of fixtures:
 
 ```text
 YAML fixture
   -> materialized runtime map
   -> existing RenderManager
   -> rendered HTML
-  -> compare with legacy fixture output where applicable
+  -> compare with the expected output embedded in the YAML fixture
 ```
 
 That will prove more than parser shape. It will prove that source order,
@@ -1008,3 +1080,396 @@ go test ./test/docs -count=1
 go test ./... -count=1
 go vet ./...
 ```
+
+## YAML Documentation Pipeline Decision
+
+The existing `.hyperbricks` documentation generator and fixture test should stay
+intact for now. It is the current baseline and should not be refactored while
+the YAML source model is still being proven.
+
+The YAML documentation/test pipeline should be implemented in parallel instead
+of being folded into `test/docs/documentation_source_test.go` or
+`test/docs/documentation_generation.go`.
+
+Proposed new files:
+
+```text
+test/docs/yaml_documentation_source_test.go
+test/docs/yaml_template.md
+docs/REFERENCE_YAML.md
+```
+
+`docs/REFERENCE_YAML.md` can later replace `docs/REFERENCE.md` only after the
+YAML runtime integration is accepted.
+
+### Source Of Truth
+
+- `pkg/schema.Definitions()` and struct tags remain the source of truth for
+  fields.
+- YAML fixtures remain the source of truth for behavior.
+- The old `.hyperbricks` fixture set remains a baseline until the migration is
+  intentionally completed.
+
+### Fixture Layers
+
+The YAML docs pipeline should distinguish three kinds of fixtures:
+
+- field fixtures: one fixture per public documented field where field-level
+  behavior matters
+- curated component fixtures: compact public examples for each component or
+  composite
+- feature fixtures: deeper scenarios for behavior such as inheritance, imports,
+  preprocessor markers, guard, response headers, `@order`, nested `Items`, and
+  template values
+
+The field fixtures are allowed to be exhaustive because they protect sync with
+code. The public reference should not render every field fixture as a full
+section.
+
+### Public Reference Shape
+
+Generated YAML reference output should be compact:
+
+- component/composite heading
+- short type description from `@doc` or schema description
+- field table generated from struct tags
+- one curated YAML config example
+- expected output for the curated example
+- links or short references to relevant feature fixtures when useful
+
+It should avoid the current `REFERENCE.md` problem where every field-level
+fixture becomes a large public documentation section.
+
+### Sync Rules
+
+The new YAML documentation test should fail when:
+
+- a public `mapstructure` field has no generated field-table entry
+- a field has an `example:"{!{...}}"` reference that points to a missing YAML
+  fixture, unless explicitly skipped
+- a curated YAML example does not parse
+- a curated YAML example does not materialize into the existing runtime map
+  shape
+- a curated YAML example does not instantiate through the runtime typefactory
+- a curated YAML example has expected output and the renderer output differs
+- a YAML fixture uses a child name that collides with a runtime field without
+  being intentionally modeled as a field
+
+The test may allow explicit skips, but skips must be centralized and named so
+they are reviewable.
+
+### Non-Goals For The Next Pass
+
+- Do not change the old `.hyperbricks` documentation generator.
+- Do not switch runtime loading to YAML yet.
+- Do not replace `docs/REFERENCE.md` yet.
+- Do not require every field fixture to become public prose.
+
+### Acceptance For The Next Implementation Pass
+
+The next pass is accepted when:
+
+```text
+go test ./test/docs -run TestYAMLDocumentation -count=1
+go test ./test/docs -run TestYAMLProfile -count=1
+go test ./... -count=1
+go vet ./...
+```
+
+all pass, and `docs/REFERENCE_YAML.md` can be generated from the same source
+data without manually editing the generated content.
+
+## Implemented YAML Documentation Pipeline Pass
+
+The YAML documentation pipeline now exists as a parallel pass next to the old
+`.hyperbricks` documentation generator.
+
+Implemented files:
+
+```text
+test/docs/yaml_documentation_source_test.go
+test/docs/yaml_template.md
+docs/REFERENCE_YAML.md
+```
+
+The pass currently does four things:
+
+- checks that schema `example:"{!{...}}"` references have matching YAML
+  fixtures
+- runs one curated YAML fixture per schema definition through preprocess,
+  materialize, runtime decode, and render checks where output is present
+- generates a compact YAML reference from `pkg/schema.Definitions()` and the
+  curated executable fixtures
+- fails when `docs/REFERENCE_YAML.md` is stale unless regenerated with
+  `-update-yaml-docs`
+- protects prose/table text in generated Markdown by rendering all-caps
+  `<TYPE>` tokens as inline code, so markdown-to-HTML does not create raw HTML
+  elements such as `<template>`
+
+The old generator remains untouched. `docs/REFERENCE_YAML.md` is not yet a
+replacement for `docs/REFERENCE.md`; it is the proving ground for the YAML
+source model and the future public reference shape.
+
+Verified commands after implementation:
+
+```text
+go test ./test/docs -run TestYAMLDocumentationReference -update-yaml-docs -count=1
+go test ./test/docs -run TestYAMLDocumentationReferenceMarkdownIsHTMLSafe -count=1
+go test ./test/docs -run TestYAMLDocumentation -count=1
+go test ./test/docs -run TestYAMLProfile -count=1
+go test ./test/docs -count=1
+go test ./... -count=1
+go vet ./...
+```
+
+## Implemented Runtime Loader Integration Pass
+
+The runtime now has a narrow YAML source loader next to the legacy
+`.hyperbricks` loader.
+
+Implemented behavior:
+
+- files ending in `.hyperbricks.yaml` are loaded from the configured
+  `hyperbricks` directory
+- each YAML file runs through the YAML source pipeline and materializes into the
+  existing mapstructure-compatible runtime map
+- legacy `.hyperbricks` files still load through the old parser path
+- both source formats are passed into the same `processScript` route indexing
+  path
+- YAML-only modules are allowed; the loader errors only when neither
+  `.hyperbricks` nor `.hyperbricks.yaml` files exist
+- `package.hyperbricks` remains legacy for now and is not part of this pass
+
+The first runtime integration proof is:
+
+```text
+temporary module with hyperbricks/page.hyperbricks.yaml
+  -> PreProcessAndPopulateConfigs
+  -> route config indexed in the global runtime config map
+  -> ServeContent
+  -> rendered HTML response
+```
+
+Verified command:
+
+```text
+go test ./cmd/hyperbricks -run 'TestPreProcessAndPopulateConfigsLoadsYAMLRouteThroughServerRenderFlow|TestProcessScript' -count=1 -v
+```
+
+## Implemented Runtime Preprocessing Integration Pass
+
+The runtime YAML loader now passes the configured module directories into the
+YAML preprocessor as both path markers and runtime variables.
+
+Supported through the runtime loader:
+
+- `imports:` model imports, resolved relative to the importing YAML file
+- `{{ENV:NAME}}`, read from the process environment unless explicitly supplied
+  in parser options
+- `{{CONF:path.to.value}}`, read from the current parsed HyperBricks config map
+- `{{VAR:module}}`, `{{VAR:module_root}}`, `{{VAR:root}}`,
+  `{{VAR:resources}}`, `{{VAR:templates}}`, `{{VAR:static}}`,
+  `{{VAR:hyperbricks}}`, and `{{VAR:render}}`
+- path markers `{{MODULE_ROOT}}`, `{{ROOT}}`, `{{MODULE}}`,
+  `{{RESOURCES}}`, `{{TEMPLATES}}`, `{{STATIC}}`, and `{{HYPERBRICKS}}`
+- `{{TEMPLATE:path.html}}`, stored in the existing runtime template store
+- `{{FILE:path}}`, only when the marker occupies a full YAML block-scalar line
+
+The runtime proof uses a temporary module containing:
+
+```text
+hyperbricks/page.hyperbricks.yaml
+hyperbricks/partials/shared.hyperbricks.yaml
+templates/cards/runtime-card.html
+resources/runtime-body.html
+```
+
+That test proves this full path:
+
+```text
+YAML source
+  -> import shared component
+  -> env/config/var/path/file/template preprocessing
+  -> inheritance/materialization
+  -> normal route indexing
+  -> ServeContent
+  -> rendered HTML response
+```
+
+The current runtime variable set is deliberately derived from
+`core.ModuleDirectories`. Arbitrary user-defined YAML variables are supported by
+the parser options, but package-level YAML variable configuration is not part of
+this pass. `package.hyperbricks` remains legacy for now.
+
+Verified command:
+
+```text
+go test ./cmd/hyperbricks -run 'TestPreProcessAndPopulateConfigs.*YAML|TestProcessScript' -count=1 -v
+go test ./cmd/hyperbricks -count=1
+go test ./pkg/yaml-parser -count=1
+go test ./... -count=1
+go vet ./...
+```
+
+## Default Init Source Decision
+
+The default `hyperbricks init` module should introduce the YAML source format.
+The embedded Hello World asset is now:
+
+```text
+cmd/hyperbricks/commands/assets/default/hyperbricks/hello-world.hyperbricks.yaml
+cmd/hyperbricks/commands/assets/default/templates/hello-card.html
+```
+
+The default init command still writes `package.hyperbricks` for runtime package
+configuration. Route source moves to YAML first; package configuration remains a
+later migration step. The default route demonstrates both supported template
+paths:
+
+- `template: "{{TEMPLATE:hello-card.html}}"` with values loaded from
+  `templates/hello-card.html`
+- `inline: |` with local values directly in the YAML source
+
+Verified command:
+
+```text
+go test ./cmd/hyperbricks/commands -run TestDefaultInitAssetsWriteYAMLHelloWorld -count=1 -v
+```
+
+## Demo Module Spectrum Example
+
+`modules/demo` now contains a visible YAML runtime spectrum route:
+
+```text
+modules/demo/hyperbricks/yaml-spectrum.hyperbricks.yaml
+modules/demo/hyperbricks/partials/yaml-spectrum.shared.hyperbricks.yaml
+modules/demo/templates/spectrum/card.html
+modules/demo/templates/spectrum/directories.html
+modules/demo/templates/spectrum/status.html
+modules/demo/resources/yaml-spectrum/lead.html
+modules/demo/static/yaml-spectrum.css
+```
+
+The route `/yaml-spectrum` demonstrates the runtime YAML path with:
+
+- `imports:` from a YAML partial
+- inheritance from imported components
+- `{{CONF:...}}` values from `package.hyperbricks`
+- `{{ENV:SHELL}}`
+- runtime `{{VAR:...}}` values
+- path markers for module, resources, templates, static, and hyperbricks dirs
+- `{{FILE:...}}` loading a resource file into a block scalar
+- `{{TEMPLATE:...}}` loading reusable Go template files
+- value-mounted bricks inside template values
+- nested ordered trees without numeric keys
+- a companion `/yaml-spectrum/status` fragment with HTMX response headers
+
+Manual runtime proof:
+
+```text
+go run ./cmd/hyperbricks start -m demo -p 18089 --non-interactive
+curl -sS http://127.0.0.1:18089/yaml-spectrum
+curl -sS -D - http://127.0.0.1:18089/yaml-spectrum/status
+```
+
+Verified after adding the demo:
+
+```text
+go test ./... -count=1
+go vet ./...
+```
+
+## Legacy Converter And Patterns Acceptance Pass
+
+The migration now has a first source-aware legacy converter instead of a raw
+map dump.
+
+Implemented files:
+
+```text
+cmd/hyperbricks-yaml-convert/main.go
+pkg/legacy-yaml-converter/converter.go
+pkg/legacy-yaml-converter/converter_test.go
+modules/hyperbricks-patterns-yaml/
+```
+
+The converter reads old `.hyperbricks` source operations and emits the new YAML
+profile while preserving the important source model:
+
+- `@import "x.hyperbricks"` becomes top-level `imports: ["x.hyperbricks.yaml"]`
+- `name = <TYPE>` becomes `type: <type>`
+- `target <<< source` becomes `inherit: source`
+- source blocks become nested YAML nodes or maps
+- multiline `<<[ ... ]>>` values become YAML block scalars
+- numeric render slots are converted to stable semantic IDs such as
+  `template_10`, `html_10`, and `plugin_10`
+- module-local file references in the generated acceptance module use
+  `{{MODULE}}/...` so tests and runtime starts do not depend on the current
+  shell working directory
+
+The numeric suffix is intentionally retained in generated names for now. The new
+public model no longer uses numeric ordering, but the converter needs stable
+names that avoid collisions with runtime fields such as `template`, `head`,
+`route`, and `title`.
+
+The duplicated acceptance module is:
+
+```text
+modules/hyperbricks-patterns-yaml
+```
+
+It is generated from `modules/hyperbricks-patterns` and proves that a
+non-trivial real module can be converted and loaded through the normal runtime
+flow.
+
+Important parser fix discovered by this pass:
+
+```text
+pkg/yaml-parser/parser.go
+```
+
+Value-mounted inherited nodes must resolve recursively. A real patterns case
+overrode an inherited template value with:
+
+```yaml
+content:
+  - inherit: "menu_htmx_demo_intro_panel.template_10"
+```
+
+Before the fix, the inherited base value survived and the menu demo rendered an
+empty panel. The YAML materializer now resolves inherited nodes inside props,
+maps, and arrays before rendering.
+
+Runtime proof:
+
+```text
+go run ./cmd/hyperbricks start -m hyperbricks-patterns-yaml -p 18090 --non-interactive
+curl -sS -D - http://127.0.0.1:18090/menu-demo
+curl -sS -D - http://127.0.0.1:18090/fragments/status-demo-summary
+```
+
+Observed result:
+
+- the converted module registered 56 routes
+- `/menu-demo` rendered as a full page with doctype, head, menu shell, and
+  landing panel content
+- `/fragments/status-demo-summary` rendered with
+  `X-Hyperbricks-Render-Error-Count: 0`
+
+Automated proof:
+
+```text
+go test ./pkg/legacy-yaml-converter -count=1 -v
+go test ./pkg/yaml-parser -count=1 -v
+go test ./cmd/hyperbricks -run 'TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule|TestPreProcessAndPopulateConfigs.*YAML|TestProcessScript' -count=1 -v
+```
+
+The remaining render errors in full pages are from stale local plugin binaries
+already present in the legacy module path:
+
+```text
+plugin was built with a different version of package github.com/hyperbricks/hyperbricks/assets
+```
+
+That is a local plugin artifact issue, not a YAML parser or converter contract
+issue.

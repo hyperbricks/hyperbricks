@@ -1,0 +1,41 @@
+<main class="menu-demo-shell">
+  <header class="page-header">
+    <nav class="page-topnav">
+      <a href="/index" class="page-link">← Pattern index</a>
+      <a href="/docs" class="page-link-muted">Docs</a>
+    </nav>
+    <p class="page-kicker">MENU Pattern</p>
+    <h1 class="page-title">{{ .page_title }}</h1>
+  </header>
+
+  <section class="menu-demo-grid">
+    <div id="menu-demo-sidebar-shell" >
+      <aside class="menu-demo-card menu-demo-sidebar page-copy" >
+        <div>
+          <h2 class="page-copy-subtitle mb-2">Rendered by &lt;MENU&gt;</h2>
+          <div id="menu-demo-nav-container">
+            {{ .nav }}
+          </div>
+        </div>
+
+        <div class="menu-demo-note">
+          <strong>Mechanism</strong><br>
+          Each menu item keeps a normal <span class="menu-demo-code">href</span> for full navigation and adds HTMX attributes to fetch the same canonical page route and swap only <span class="menu-demo-code">#menu-demo-panel</span>.
+        </div>
+
+        <div>
+          <p class="page-copy-text">{{ .page_intro }}</p>
+        </div>
+
+        <div class="menu-demo-note">
+          <strong>Current route</strong><br>
+          <span class="menu-demo-code">{{ .current_route }}</span>
+        </div>
+      </aside>
+    </div>
+
+    <section id="menu-demo-panel" class="menu-demo-card">
+      {{ .content }}
+    </section>
+  </section>
+</main>

@@ -1,0 +1,754 @@
+@import "tailwindcss";
+@config "./tailwind.config.js";
+
+@layer base {
+  html {
+    @apply bg-stone-50;
+  }
+
+  body {
+    @apply bg-stone-50 text-stone-900 antialiased;
+    font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  }
+
+  a {
+    @apply transition-colors duration-150;
+  }
+}
+
+@layer components {
+  .page-shell {
+    @apply mx-auto max-w-[1080px] px-5 pb-16 pt-8 text-stone-900;
+  }
+
+  .page-shell-wide {
+    @apply max-w-[1180px];
+  }
+
+  .page-shell-rail {
+    @apply max-w-[1120px];
+  }
+
+  .page-header {
+    @apply mb-6;
+  }
+
+  .page-topnav {
+    @apply mb-4 flex flex-wrap gap-3;
+  }
+
+  .page-link {
+    @apply text-stone-900 no-underline hover:text-stone-700;
+  }
+
+  .page-link-muted {
+    @apply text-stone-600 no-underline hover:text-stone-900;
+  }
+
+  .page-kicker {
+    @apply mb-1 text-[0.8rem] uppercase tracking-[0.14em] text-stone-500;
+  }
+
+  .page-title {
+    @apply mb-2 text-[2.3rem] font-semibold leading-[1.05];
+  }
+
+  .page-title-large {
+    @apply text-[2.4rem];
+  }
+
+  .page-lead {
+    @apply m-0 max-w-[78ch] leading-7 text-stone-700;
+  }
+
+  .page-layout-sidebar {
+    @apply grid items-start gap-6 md:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)];
+  }
+
+  .page-layout-main {
+    @apply grid items-start gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,24rem)];
+  }
+
+  .page-layout-split {
+    @apply grid items-start gap-5 lg:grid-cols-2;
+  }
+
+  .page-grid-cards {
+    @apply grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(16rem,1fr))];
+  }
+
+  .page-card {
+    @apply rounded-2xl border border-stone-200 bg-white p-5;
+  }
+
+  .page-card-soft {
+    @apply rounded-2xl border border-stone-200 bg-stone-100 p-4;
+  }
+
+  .page-card-panel {
+    @apply overflow-hidden rounded-2xl border border-stone-200 bg-white;
+  }
+
+  .page-copy {
+    @apply grid gap-2;
+  }
+
+  .page-copy-title {
+    @apply m-0 text-[1.2rem] font-semibold;
+  }
+
+  .page-copy-subtitle {
+    @apply m-0 text-[1.05rem] font-semibold;
+  }
+
+  .page-copy-text {
+    @apply m-0 leading-7 text-stone-700;
+  }
+
+  .page-list {
+    @apply m-0 grid gap-1.5 pl-5 leading-7;
+  }
+
+  .page-note {
+    @apply rounded-xl border border-stone-200 bg-stone-100 p-4 leading-7;
+  }
+
+  .page-note-warning {
+    @apply rounded-xl border-l-4 border-amber-600 bg-amber-50 px-4 py-3 leading-7;
+  }
+
+  .code-chip {
+    @apply inline-block break-words rounded-lg bg-stone-100 px-2 py-0.5 font-mono text-sm;
+  }
+
+  .code-block {
+    @apply mt-3 block break-words rounded-xl bg-stone-100 p-4 font-mono text-sm leading-7;
+  }
+
+  .code-inline {
+    @apply inline-block rounded-md bg-stone-100 px-1.5 py-0.5 font-mono text-sm;
+  }
+
+  .form-grid {
+    @apply grid gap-3.5;
+  }
+
+  .form-grid label,
+  .guarded-form label,
+  .write-form label,
+  .workflow-demo-form label,
+  .split-form label {
+    @apply grid gap-1.5 text-[0.95rem];
+  }
+
+  .form-grid input,
+  .guarded-form input,
+  .write-form input,
+  .workflow-demo-form input,
+  .split-form input,
+  .form-grid select,
+  .guarded-form select,
+  .write-form select,
+  .workflow-demo-form select,
+  .split-form select,
+  .form-grid textarea,
+  .guarded-form textarea,
+  .write-form textarea,
+  .workflow-demo-form textarea,
+  .split-form textarea {
+    @apply w-full rounded-xl border border-stone-300 bg-white px-3.5 py-3 text-base text-stone-900;
+    box-shadow: none;
+  }
+
+  .form-grid input:focus,
+  .guarded-form input:focus,
+  .write-form input:focus,
+  .workflow-demo-form input:focus,
+  .split-form input:focus,
+  .form-grid select:focus,
+  .guarded-form select:focus,
+  .write-form select:focus,
+  .workflow-demo-form select:focus,
+  .split-form select:focus,
+  .form-grid textarea:focus,
+  .guarded-form textarea:focus,
+  .write-form textarea:focus,
+  .workflow-demo-form textarea:focus,
+  .split-form textarea:focus,
+  .form-grid input:focus-visible,
+  .guarded-form input:focus-visible,
+  .write-form input:focus-visible,
+  .workflow-demo-form input:focus-visible,
+  .split-form input:focus-visible,
+  .form-grid select:focus-visible,
+  .guarded-form select:focus-visible,
+  .write-form select:focus-visible,
+  .workflow-demo-form select:focus-visible,
+  .split-form select:focus-visible,
+  .form-grid textarea:focus-visible,
+  .guarded-form textarea:focus-visible,
+  .write-form textarea:focus-visible,
+  .workflow-demo-form textarea:focus-visible,
+  .split-form textarea:focus-visible {
+    @apply border-stone-400 outline-none ring-0;
+  }
+
+  .form-grid textarea,
+  .guarded-form textarea,
+  .write-form textarea,
+  .workflow-demo-form textarea,
+  .split-form textarea {
+    @apply min-h-[7rem] resize-y;
+  }
+
+  .action-row {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-stone-900 px-4 py-3 text-base text-stone-50 no-underline;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full bg-stone-200 px-4 py-3 text-base text-stone-800 no-underline;
+  }
+
+  .feedback-success {
+    @apply rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800;
+  }
+
+  .feedback-error {
+    @apply rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800;
+  }
+
+  .pattern-layout-grid {
+    @apply grid items-start gap-6 md:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)];
+  }
+
+  .pattern-layout-aside {
+    @apply rounded-2xl border border-stone-200 bg-stone-100 p-4;
+  }
+
+  .pattern-layout-nav {
+    @apply grid gap-3;
+  }
+
+  .pattern-diagnostic {
+    @apply mt-4 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(14rem,1fr))];
+  }
+
+  .pattern-diagnostic-card {
+    @apply rounded-2xl border border-stone-200 bg-white p-4;
+  }
+
+  .pattern-diagnostic-card strong {
+    @apply mb-1 block text-[0.78rem] uppercase tracking-[0.08em] text-amber-700;
+  }
+
+  .pattern-url-chip {
+    @apply inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1.5 text-[0.92rem] leading-[1.3] text-stone-900;
+  }
+
+  .pattern-toolbar {
+    @apply flex flex-wrap items-center gap-3 border-b border-stone-200 px-5 py-4;
+  }
+
+  .pattern-toolbar-link {
+    @apply inline-flex items-center rounded-full px-4 py-2 text-[0.95rem] no-underline;
+  }
+
+  .pattern-toolbar-link[data-variant="primary"] {
+    @apply bg-stone-900 text-stone-50;
+  }
+
+  .pattern-toolbar-link[data-variant="secondary"] {
+    @apply bg-stone-200 text-stone-800;
+  }
+
+  .status-demo-shell {
+    @apply grid gap-5;
+  }
+
+  .status-demo-hero {
+    @apply rounded-2xl border border-stone-200 bg-gradient-to-br from-stone-100 to-amber-100 p-5;
+  }
+
+  .status-demo-section {
+    @apply rounded-2xl border border-stone-200 bg-white p-5;
+  }
+
+  .status-demo-panel-wrap {
+    @apply px-5 py-5;
+  }
+
+  .status-demo-metric-grid {
+    @apply grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))];
+  }
+
+  .status-demo-metric-card {
+    @apply rounded-2xl border border-stone-200 bg-stone-100 p-4;
+  }
+
+  .status-demo-callout {
+    @apply rounded-xl border-l-4 border-amber-600 bg-amber-50 px-4 py-3;
+  }
+
+  .status-demo-stack {
+    @apply grid gap-4;
+  }
+
+  .status-demo-panel {
+    @apply grid gap-4;
+  }
+
+  .menu-demo-shell,
+  .write-shell,
+  .workflow-demo-shell,
+  .guarded-shell {
+    @apply mx-auto max-w-[1080px] px-5 pb-16 pt-8 text-stone-900;
+  }
+
+  .split-shell,
+  .pattern-docs-shell {
+    @apply mx-auto max-w-[1180px] px-5 pb-16 pt-8 text-stone-900;
+  }
+
+  .rail-shell {
+    @apply mx-auto max-w-[1120px] px-5 pb-16 pt-8 text-stone-900;
+  }
+
+  .menu-demo-grid {
+    @apply grid items-start gap-6 md:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)];
+  }
+
+  .menu-demo-nav {
+    @apply flex flex-wrap gap-2.5;
+  }
+
+  .menu-demo-link,
+  .menu-demo-link-active {
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2.5 text-[0.95rem] leading-5 no-underline;
+  }
+
+  .menu-demo-link {
+    @apply bg-amber-100 text-stone-800;
+  }
+
+  .menu-demo-link-active {
+    @apply bg-stone-900 text-stone-50;
+  }
+
+  .menu-demo-link:focus,
+  .menu-demo-link:focus-visible,
+  .menu-demo-link-active:focus,
+  .menu-demo-link-active:focus-visible {
+    @apply outline-none ring-0;
+  }
+
+  .menu-demo-sidebar,
+  .rail-sidebar,
+  .pattern-docs-sidebar {
+    position: sticky;
+    top: 1rem;
+  }
+
+  .menu-demo-card,
+  .workflow-demo-card,
+  .split-card,
+  .write-card,
+  .rail-card,
+  .guarded-nav,
+  .guarded-card,
+  .pattern-docs-panel,
+  .pattern-docs-sidebar {
+    @apply rounded-2xl border border-stone-200 bg-white p-5;
+  }
+
+  .menu-demo-note,
+  .workflow-demo-note,
+  .split-note,
+  .write-note,
+  .guarded-note,
+  .rail-note {
+    @apply rounded-xl border border-stone-200 bg-stone-100 p-4 leading-7;
+  }
+
+  .menu-demo-code,
+  .workflow-demo-code,
+  .split-code,
+  .write-code,
+  .guarded-code,
+  .rail-code {
+    @apply inline-block break-words rounded-lg bg-stone-100 px-2 py-0.5 font-mono text-sm;
+  }
+
+  .split-code,
+  .write-code {
+    @apply mt-3 block rounded-xl p-4 leading-7;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .guarded-grid {
+    @apply grid items-start gap-6 md:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)];
+  }
+
+  .guarded-nav a {
+    @apply mt-2.5 block text-stone-600 no-underline hover:text-stone-900;
+  }
+
+  .guarded-content {
+    @apply p-5;
+  }
+
+  .guarded-form {
+    display: grid;
+    gap: 0.875rem;
+  }
+
+  .guarded-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .guarded-button,
+  .write-button,
+  .workflow-demo-button,
+  .split-button {
+    @apply inline-flex items-center justify-center rounded-full bg-stone-900 px-4 py-3 text-base text-stone-50 no-underline;
+    cursor: pointer;
+  }
+
+  .guarded-button[data-variant="secondary"],
+  .workflow-demo-button[data-variant="secondary"] {
+    @apply inline-flex items-center justify-center rounded-full bg-stone-200 px-4 py-3 text-base text-stone-800 no-underline;
+  }
+
+  .guarded-alert[data-level="error"] {
+    @apply rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800;
+  }
+
+  .guarded-alert[data-level="success"] {
+    @apply rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800;
+  }
+
+  .write-layout {
+    @apply grid items-start gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,24rem)];
+  }
+
+  .write-layout > section,
+  .write-layout > aside,
+  .write-card,
+  .write-note,
+  .write-feedback {
+    min-width: 0;
+  }
+
+  .write-grid {
+    @apply grid gap-4 md:[grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))];
+  }
+
+  .write-form {
+    display: grid;
+    gap: 0.875rem;
+  }
+
+  .write-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .write-feedback[data-state="success"] {
+    @apply rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800;
+  }
+
+  .write-feedback[data-state="error"] {
+    @apply rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800;
+  }
+
+  .workflow-demo-grid {
+    @apply grid items-start gap-6;
+    grid-template-columns: minmax(18rem, 23rem) minmax(0, 1fr);
+  }
+
+  .workflow-demo-stage,
+  .workflow-demo-copy {
+    @apply grid gap-4;
+  }
+
+  .workflow-demo-form {
+    display: grid;
+    gap: 0.875rem;
+  }
+
+  .workflow-demo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .workflow-demo-alert[data-level="success"] {
+    @apply rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800;
+  }
+
+  .workflow-demo-alert[data-level="error"] {
+    @apply rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800;
+  }
+
+  .split-layout {
+    @apply grid items-start gap-5 lg:grid-cols-2;
+  }
+
+  .split-column {
+    @apply grid gap-4;
+  }
+
+  .split-pill {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-[0.8rem] uppercase tracking-[0.08em];
+  }
+
+  .split-pill[data-kind="api"] {
+    @apply bg-sky-100 text-sky-800;
+  }
+
+  .split-pill[data-kind="plugin"] {
+    @apply bg-amber-100 text-amber-800;
+  }
+
+  .split-form {
+    display: grid;
+    gap: 0.875rem;
+  }
+
+  .split-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .split-result[data-state="success"] {
+    @apply rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800;
+  }
+
+  .split-result[data-state="error"] {
+    @apply rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800;
+  }
+
+  .split-list {
+    @apply m-0 grid gap-1.5 pl-5;
+  }
+
+  .rail-grid {
+    @apply grid items-start gap-6 md:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)];
+  }
+
+  .rail-nav-list,
+  .rail-nav-sublist {
+    @apply m-0 list-none p-0;
+  }
+
+  .rail-nav-list {
+    @apply grid gap-3;
+  }
+
+  .rail-nav-link,
+  .rail-nav-summary {
+    @apply block rounded-full bg-amber-100 px-4 py-3 font-semibold leading-5 text-stone-800 no-underline;
+  }
+
+  .rail-nav-link[aria-selected="true"],
+  .rail-nav-summary[aria-selected="true"] {
+    @apply bg-stone-900 text-stone-50;
+  }
+
+  .rail-nav-sublist {
+    @apply mt-2.5 ml-4 grid gap-2 border-l border-stone-200 pl-4;
+  }
+
+  .rail-sub-link {
+    @apply text-[0.92rem] text-stone-600 no-underline hover:text-stone-900;
+  }
+
+  .rail-panel-stack {
+    @apply grid gap-10;
+  }
+
+  .rail-panel-copy {
+    @apply grid gap-2.5;
+  }
+
+  .rail-panel-block {
+    @apply grid gap-3 border-t border-stone-200 py-6;
+    min-height: 22rem;
+  }
+
+  .rail-panel-block:first-of-type {
+    @apply border-t-0 pt-0;
+  }
+
+  .rail-section {
+    scroll-margin-top: 1.35rem;
+  }
+
+  .pattern-docs-topnav {
+    @apply mb-4 flex flex-wrap gap-3;
+  }
+
+  .pattern-docs-grid {
+    @apply grid items-start gap-5 md:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)];
+  }
+
+  .pattern-docs-group {
+    @apply grid gap-1.5;
+  }
+
+  .pattern-docs-group + .pattern-docs-group {
+    @apply mt-4 border-t border-stone-200 pt-4;
+  }
+
+  .pattern-docs-link {
+    @apply block rounded-xl px-3 py-2 leading-6 text-stone-600 no-underline hover:bg-stone-100 hover:text-stone-900;
+  }
+
+  .pattern-docs-panel code {
+    @apply rounded-lg border border-stone-300 bg-white px-2.5 py-1 font-mono text-[0.9rem] text-stone-900;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  }
+
+  .pattern-docs-panel li code {
+    @apply inline-block bg-amber-50;
+  }
+
+  .pattern-docs-panel pre code {
+    @apply block border-stone-200 bg-stone-100 px-0 py-0 text-inherit;
+    box-shadow: none;
+  }
+
+  .pattern-docs-link[data-active="true"] {
+    @apply bg-stone-100 font-bold text-stone-900;
+  }
+
+  .pattern-docs-markdown {
+    @apply leading-8 text-stone-900;
+  }
+
+  .pattern-docs-markdown h1,
+  .pattern-docs-markdown h2,
+  .pattern-docs-markdown h3,
+  .pattern-docs-markdown h4 {
+    @apply mt-[1.4em] mb-2 text-stone-900;
+    line-height: 1.12;
+  }
+
+  .pattern-docs-markdown h1:first-child,
+  .pattern-docs-markdown h2:first-child,
+  .pattern-docs-markdown h3:first-child {
+    @apply mt-0;
+  }
+
+  .pattern-docs-markdown p,
+  .pattern-docs-markdown ul,
+  .pattern-docs-markdown ol,
+  .pattern-docs-markdown blockquote,
+  .pattern-docs-markdown pre,
+  .pattern-docs-markdown table {
+    @apply mt-0 mb-4;
+  }
+
+  .pattern-docs-markdown a {
+    @apply text-amber-800;
+  }
+
+  .pattern-docs-markdown code {
+    @apply rounded-md bg-stone-100 px-1.5 py-0.5 text-[0.92em];
+  }
+
+  .pattern-docs-markdown pre {
+    @apply overflow-auto rounded-xl border border-stone-200 bg-stone-100 p-4;
+  }
+
+  .pattern-docs-markdown pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .pattern-docs-markdown blockquote {
+    @apply ml-0 border-l-4 border-stone-300 pl-4 text-stone-600;
+  }
+
+  .pattern-docs-markdown table {
+    @apply w-full border-collapse;
+  }
+
+  .pattern-docs-markdown th,
+  .pattern-docs-markdown td {
+    @apply border border-stone-200 px-3 py-2 text-left align-top;
+  }
+
+  .pattern-docs-markdown th {
+    @apply bg-stone-100;
+  }
+
+  .pattern-index-grid {
+    @apply grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(16rem,1fr))];
+  }
+
+  .pattern-index-card {
+    @apply block rounded-2xl border border-stone-200 bg-white p-5 text-inherit no-underline;
+  }
+
+  .pattern-index-title {
+    @apply mb-2 block font-semibold;
+  }
+
+  .pattern-index-copy {
+    @apply block leading-7 text-stone-700;
+  }
+}
+
+@media (max-width: 920px) {
+  .write-layout,
+  .pattern-docs-grid,
+  .split-layout {
+    @apply grid-cols-1;
+  }
+}
+
+@media (max-width: 900px) {
+  .menu-demo-grid,
+  .rail-grid,
+  .workflow-demo-grid,
+  .guarded-grid {
+    @apply grid-cols-1;
+  }
+
+  .menu-demo-sidebar,
+  .rail-sidebar,
+  .pattern-docs-sidebar {
+    position: static;
+    top: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    @apply px-3.5 pb-10 pt-5;
+  }
+
+  .write-grid {
+    @apply grid-cols-1;
+  }
+
+  .write-button,
+  .split-button,
+  .workflow-demo-button,
+  .guarded-button {
+    @apply w-full;
+  }
+}
