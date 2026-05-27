@@ -7,7 +7,7 @@ plugin {
     }
 }
 ==== explainer ====
-
+Plugin-specific data passed to the renderer
 ==== expected json ====
 {
   "ConfigType": "<PLUGIN>",
@@ -24,4 +24,4 @@ plugin {
   }
 }
 ==== expected output ====
-<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+Plugin example

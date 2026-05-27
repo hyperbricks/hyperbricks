@@ -90,7 +90,7 @@ hyperbricks {
 
     plugins {
         # run "hyperbricks plugin help" and "hyperbricks plugin list" for options
-        # enabled = [ plugin.so , otherplugin.so ]
+        # enabled = [ MyPlugin@1.0.0, OtherPlugin@1.0.0 ]
      }
 
     directories {

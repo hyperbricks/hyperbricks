@@ -1,6 +1,6 @@
 name: CI Hyperbricks Tests
 permissions:
-  contents: write
+  contents: read
 on:
   push:
     branches:
@@ -22,31 +22,7 @@ jobs:
         with:
           go-version: 1.23.4
 
-      - name: Make scripts executable
-        run: chmod +x scripts/*.sh
-
-      - name: Debug scripts folder
-        run: ls -l scripts/
-
-      - name: Build and start services
-        run: docker compose -f ./test/dedicated/docker/docker-compose.yml up -d --build
-
-      - name: Wait for Postgres to be ready
-        run: |
-          for i in {1..20}; do
-            if docker exec postgres_db pg_isready -U postgres; then
-              echo "Postgres is ready!"
-              break
-            fi
-            echo "Waiting for Postgres..."
-            sleep 3
-          done
-
       - name: Run all tests
-        run: ./scripts/run_all_tests.sh
+        run: bash ./scripts/run_all_tests.sh
         env:
           BRANCH_NAME: ${{ github.ref_name }}
-
-      - name: Tear down containers
-        if: always()
-        run: docker compose -f ./test/dedicated/docker/docker-compose.yml down -v

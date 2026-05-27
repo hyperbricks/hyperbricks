@@ -232,15 +232,40 @@ func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleIma
 }
 
 func addDimensions(fileName string, builder *strings.Builder) {
-	parts := strings.Split(fileName, "_w")
-	if len(parts) > 1 {
-		sizeParts := strings.Split(parts[1], "_h")
-		if len(sizeParts) > 1 {
-			width := sizeParts[0]
-			height := strings.TrimSuffix(sizeParts[1], filepath.Ext(sizeParts[1]))
-			builder.WriteString(fmt.Sprintf(" width=\"%s\" height=\"%s\"", width, height))
-		}
+	width, height, ok := imageDimensionsFromFileName(fileName)
+	if ok {
+		builder.WriteString(fmt.Sprintf(" width=\"%s\" height=\"%s\"", width, height))
 	}
+}
+
+func imageDimensionsFromFileName(fileName string) (string, string, bool) {
+	baseName := filepath.Base(fileName)
+	ext := filepath.Ext(baseName)
+	nameWithoutExt := strings.TrimSuffix(baseName, ext)
+	widthIndex := strings.LastIndex(nameWithoutExt, "_w")
+	if widthIndex < 0 {
+		return "", "", false
+	}
+
+	dimensions := nameWithoutExt[widthIndex+len("_w"):]
+	heightIndex := strings.Index(dimensions, "_h")
+	if heightIndex < 0 {
+		return "", "", false
+	}
+
+	width := dimensions[:heightIndex]
+	height := dimensions[heightIndex+len("_h"):]
+	if width == "" || height == "" {
+		return "", "", false
+	}
+	if _, err := strconv.Atoi(width); err != nil {
+		return "", "", false
+	}
+	if _, err := strconv.Atoi(height); err != nil {
+		return "", "", false
+	}
+
+	return width, height, true
 }
 
 func addOptionalAttributes(config SingleImageConfig, builder *strings.Builder) {

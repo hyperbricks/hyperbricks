@@ -6,7 +6,7 @@ api_render {
     body = {"foo":"bar"}
 }
 ==== explainer ====
-Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
+Raw request body. Use a scalar string value; nested objects are not parsed for this field.
 ==== expected json ====
 {
   "ConfigType": "<API_RENDER>",

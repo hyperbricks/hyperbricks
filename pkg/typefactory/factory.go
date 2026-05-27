@@ -23,13 +23,19 @@ type TypeResponse struct {
 
 // TypeFactory is responsible for creating instances of types based on type names.
 type TypeFactory struct {
-	types map[string]reflect.Type
+	types      map[string]reflect.Type
+	decodeHook mapstructure.DecodeHookFunc
 }
 
 // NewTypeFactory initializes a new TypeFactory.
 func NewTypeFactory() *TypeFactory {
 	return &TypeFactory{
 		types: make(map[string]reflect.Type),
+		decodeHook: mapstructure.ComposeDecodeHookFunc(
+			StringToSliceHookFunc(),
+			StringToIntHookFunc(),
+			StringToMapStringHookFunc(),
+		),
 	}
 }
 
@@ -49,17 +55,10 @@ func (tf *TypeFactory) CreateInstance(request TypeRequest) (*TypeResponse, error
 	instancePtr := reflect.New(typ)
 	instance := instancePtr.Interface()
 
-	// Compose both decode hooks
-	combinedHook := mapstructure.ComposeDecodeHookFunc(
-		StringToSliceHookFunc(),
-		StringToIntHookFunc(),
-		StringToMapStringHookFunc(),
-	)
-
 	// Set up the decoder with appropriate configuration
 	decoderConfig := &mapstructure.DecoderConfig{
 		Metadata:         nil,
-		DecodeHook:       combinedHook,
+		DecodeHook:       tf.decodeHook,
 		Result:           instance,
 		TagName:          "mapstructure",
 		WeaklyTypedInput: true,

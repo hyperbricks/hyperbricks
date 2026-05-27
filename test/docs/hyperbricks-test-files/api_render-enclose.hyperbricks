@@ -6,7 +6,7 @@ api_render {
     enclose = <div>|</div>
 }
 ==== explainer ====
-The enclosing HTML element for the header divided by |
+Wrap rendered output using prefix|suffix syntax
 ==== expected json ====
 {
   "ConfigType": "<API_RENDER>",

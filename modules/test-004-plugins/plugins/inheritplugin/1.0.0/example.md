@@ -9,6 +9,6 @@ article {
 
 inherit_article = <PLUGIN>
 inherit_article.plugin = InheritMapPlugin__test-004-plugins@1.0.0
-inherit_article.data.template < article
+inherit_article.data.template <<< article
 inherit_article.data.title = Updated title
 ```

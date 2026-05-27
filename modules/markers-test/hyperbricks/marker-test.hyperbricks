@@ -34,8 +34,8 @@ test_001.10.value = {{FILE:{{RESOURCES}}/test.txt}}
 
 test_002 = <HYPERMEDIA>
 test_002.route = test_002
-test_002.10 < template
+test_002.10 <<< template
 
 test_003 = <HYPERMEDIA>
 test_003.route = test_003
-test_003.10 < template
+test_003.10 <<< template

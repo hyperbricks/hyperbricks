@@ -13,7 +13,7 @@ import (
 // HyperMediaConfig represents configuration hypermedia.
 type HyperMediaConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	MetaDocDescription string                 `mapstructure:"@doc" description:"HYPERMEDIA description" example:"{!{hypermedia-@doc.hyperbricks}}"`
+	MetaDocDescription string                 `mapstructure:"@doc" description:"Route-owning page shell that renders the main HyperBricks document." example:"{!{hypermedia-@doc.hyperbricks}}"`
 	Beautify           *bool                  `mapstructure:"beautify" json:"Beautify,omitempty" description:"Override server.beautify for this object when rendered directly"`
 	Title              string                 `mapstructure:"title" description:"The title of the hypermedia site" example:"{!{hypermedia-title.hyperbricks}}"`
 	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the hypermedia" example:"{!{hypermedia-route.hyperbricks}}"`
@@ -22,9 +22,9 @@ type HyperMediaConfig struct {
 	BodyTag            string                 `mapstructure:"bodytag" description:"Special body enclose with use of |. Please note that this will not work when a <HYPERMEDIA>.template is configured. In that case, you have to add the bodytag in the template." example:"{!{hypermedia-bodytag.hyperbricks}}"`
 	Enclose            string                 `mapstructure:"enclose" description:"Enclosure of the property for the hypermedia" example:"{!{hypermedia-enclose.hyperbricks}}"`
 	Favicon            string                 `mapstructure:"favicon" description:"Path to the favicon for the hypermedia" example:"{!{hypermedia-favicon.hyperbricks}}"`
-	Template           map[string]interface{} `mapstructure:"template" description:"Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions." example:"{!{hypermedia-template.hyperbricks}}"`
+	Template           *TemplateOptions       `mapstructure:"template" description:"Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions." example:"{!{hypermedia-template.hyperbricks}}"`
 	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{hypermedia-cache.hyperbricks}}"`
-	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly deisable cache" example:"{!{hypermedia-nocache.hyperbricks}}"`
+	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly disable cache" example:"{!{hypermedia-nocache.hyperbricks}}"`
 	Static             string                 `mapstructure:"static" description:"Static file path associated with the hypermedia, for rendering out the hypermedia to static files." example:"{!{hypermedia-static.hyperbricks}}"`
 	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options" example:"{!{hypermedia-index.hyperbricks}}"`
 	Doctype            string                 `mapstructure:"doctype" description:"Alternative Doctype for the HTML document" example:"{!{hypermedia-doctype.hyperbricks}}"`
@@ -192,16 +192,25 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 	var errors []error
 	var config HyperMediaConfig
 
-	err := mapstructure.Decode(instance, &config)
-	if err != nil {
-		return "", append(errors, shared.ComponentError{
-			Hash: shared.GenerateHash(),
-			Key:  config.Composite.Meta.HyperBricksKey,
-			Path: config.Composite.Meta.HyperBricksPath,
-			File: config.Composite.Meta.HyperBricksFile,
-			Type: "<HYPERMEDIA>",
-			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
-		})
+	switch typed := instance.(type) {
+	case HyperMediaConfig:
+		config = typed
+	case *HyperMediaConfig:
+		if typed != nil {
+			config = *typed
+		}
+	default:
+		err := mapstructure.Decode(instance, &config)
+		if err != nil {
+			return "", append(errors, shared.ComponentError{
+				Hash: shared.GenerateHash(),
+				Key:  config.Composite.Meta.HyperBricksKey,
+				Path: config.Composite.Meta.HyperBricksPath,
+				File: config.Composite.Meta.HyperBricksFile,
+				Type: "<HYPERMEDIA>",
+				Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
+			})
+		}
 	}
 
 	if config.ConfigType != "<HYPERMEDIA>" {
@@ -264,22 +273,24 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 	outputHtml := ""
 	// TEMPLATE?
 	if config.Template != nil {
-		config.Template = shared.CloneMapDeep(config.Template)
-		config.Template["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
-		config.Template["hyperbrickspath"] = config.Composite.Meta.HyperBricksKey + ".template"
+		templateConfig := config.Template.ToRenderMap()
+		templateConfig["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
+		templateConfig["hyperbrickspath"] = config.Composite.Meta.HyperBricksKey + ".template"
 
 		// INSERT HEAD to TEMPLATE VALUES....
 		// Ensure 'values' exists inside Template
-		if _, exists := config.Template["values"]; !exists {
-			config.Template["values"] = make(map[string]interface{})
+		values, ok := templateConfig["values"].(map[string]interface{})
+		if !ok {
+			values = make(map[string]interface{})
+			templateConfig["values"] = values
 		}
 
 		// Set 'head' inside 'values'
 		if config.Head != nil {
-			config.Template["values"].(map[string]interface{})["head"] = config.Head
+			values["head"] = config.Head
 		}
 
-		result, errr := pr.RenderManager.Render("<TEMPLATE>", config.Template, ctx)
+		result, errr := pr.RenderManager.Render("<TEMPLATE>", templateConfig, ctx)
 		errors = append(errors, errr...)
 		templatebuilder.WriteString(result)
 		outputHtml = shared.EncloseContent(config.Enclose, templatebuilder.String())

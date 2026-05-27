@@ -5,7 +5,7 @@ api_fragment {
     method = POST
     route = auth-logout-all
     inline = <<[<p>Logged out everywhere</p>]>>
-    setcookies = [token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0, hb_composer_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0]
+    setcookies = [token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0, runtime_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0]
 }
 ==== explainer ====
 Multiple Set-Cookie response templates
@@ -30,7 +30,7 @@ Multiple Set-Cookie response templates
   "SetCookie": "",
   "SetCookies": [
     "token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
-    "hb_composer_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
+    "runtime_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
   ],
   "AllowedQueryKeys": null,
   "QueryParams": null,

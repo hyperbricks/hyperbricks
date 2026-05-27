@@ -116,7 +116,7 @@ Macros let you generate repeated config blocks from a compact “table + templat
 1|Introduction|introduction_fragment|introduction
 2|Quickstart|quickstart_fragment|quickstart
 } = <<<[
-    {{{.route}}} < docs_fragment
+    {{{.route}}} <<< docs_fragment
     {{{.route}}} {
         index = {{{.index}}}
         route = {{{.route}}}

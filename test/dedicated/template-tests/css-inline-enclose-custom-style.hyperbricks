@@ -12,4 +12,4 @@ Enclose replaces the default <style> tag with the provided tag.
 ==== expected output ====
 <!DOCTYPE html><html><head><style media="print">
 body{color:red;}
-</style><meta name="generator" content="hyperbricks cms"></head><body></body></html>
+</style><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

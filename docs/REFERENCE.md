@@ -1,6 +1,8 @@
-**Licence:** MIT  
-**Version:** dev  
-**Build time:** undefined
+**Licence:** MIT
+**Version:** v1.1.0-beta
+
+**Build time:** 2026-05-26T18:53:23Z
+
 
 ## Build Status
 
@@ -9,11 +11,7 @@
 ## HyperBricks type reference
 
 
-
 # Category: **component**
-
-
-
 
 
 ## &lt;HTML&gt;
@@ -21,12 +19,7 @@
 **Type Description**
 
 
-
-
-
-
 Component for rendering all your single or multiline snippets.
-
 
 **Main Example**
 ````properties
@@ -35,7 +28,6 @@ html.value = <<[
   <p>HTML TEST</p>
 ]>>
 html.enclose = <div>|</div>
-
 ````
 
 
@@ -47,40 +39,23 @@ html.enclose = <div>|</div>
   </p>
 </div>
 ````
-
-
-**more**
-
-
-
-
-
-
-
-
 
 
 **Properties**
 
 
-
-
-
 ### enclose
 
-**Description**  
-The enclosing HTML element for the header divided by |
-
+**Description**
+Wrap rendered output using prefix|suffix syntax
 
 **Example**
 ````properties
 html = <HTML>
 html.value = <<[
-        <p>HTML TEST</p>    
+        <p>HTML TEST</p>
     ]>>
 html.enclose = <div>|</div>
-}
-
 ````
 
 **Expected Result**
@@ -94,29 +69,15 @@ html.enclose = <div>|</div>
 ````
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 ### value
 
-**Description**  
+**Description**
 The raw HTML content
-
 
 **Example**
 ````properties
 html = <HTML>
 html.value = <p>HTML TEST</p>
-
 ````
 
 **Expected Result**
@@ -128,29 +89,18 @@ html.value = <p>HTML TEST</p>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### trimspace
 
-**Description**  
-Property trimspace filters (if set to true true),  all leading and trailing white space removed, as defined by Unicode.
-
+**Description**
+Property trimspace filters, when set to true, all leading and trailing white space removed, as defined by Unicode.
 
 **Example**
 ````properties
 html = <HTML>
 html.value = <<[
-        <p>HTML TEST</p>    
+        <p>HTML TEST</p>
     ]>>
 html.trimspace = true
-
 ````
 
 **Expected Result**
@@ -160,17 +110,6 @@ html.trimspace = true
   HTML TEST
 </p>
 ````
-
-
-
-
-
-
-
-
-
-
-
 
 
 ## &lt;PLUGIN&gt;
@@ -178,29 +117,16 @@ html.trimspace = true
 **Type Description**
 
 
-
-
-
-
-
-
-
-
-
-
+Plugin renderer that delegates output to a loaded HyperBricks plugin.
 
 
 **Properties**
 
 
-
-
-
 ### attributes
 
-**Description**  
+**Description**
 Extra attributes like id, data-role, data-action
-
 
 **Example**
 ````properties
@@ -211,30 +137,21 @@ plugin {
         data-role = demo
     }
 }
-
 ````
 
 **Expected Result**
 
 ````html
-<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+<div data-role="demo">
+  Plugin example
+</div>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### enclose
 
-**Description**  
-The enclosing HTML element for the header divided by |
-
+**Description**
+Wrap rendered output using prefix|suffix syntax
 
 **Example**
 ````properties
@@ -243,30 +160,21 @@ plugin {
     plugin = example
     enclose = <div>|</div>
 }
-
 ````
 
 **Expected Result**
 
 ````html
-<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+<div>
+  Plugin example
+</div>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### plugin
 
-**Description**  
-
-
+**Description**
+Name of the plugin to render
 
 **Example**
 ````properties
@@ -274,30 +182,19 @@ plugin = <PLUGIN>
 plugin {
     plugin = example
 }
-
 ````
 
 **Expected Result**
 
 ````html
-<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+Plugin example
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### classes
 
-**Description**  
-Optional CSS classes for the link
-
+**Description**
+Optional CSS classes for the plugin output wrapper
 
 **Example**
 ````properties
@@ -306,30 +203,21 @@ plugin {
     plugin = example
     classes = [primary, secondary]
 }
-
 ````
 
 **Expected Result**
 
 ````html
-<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+<div class="primary secondary">
+  Plugin example
+</div>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### data
 
-**Description**  
-
-
+**Description**
+Plugin-specific data passed to the renderer
 
 **Example**
 ````properties
@@ -340,25 +228,281 @@ plugin {
         key = value
     }
 }
-
 ````
 
 **Expected Result**
 
 ````html
-<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+Plugin example
 ````
 
 
+## &lt;TEMPLATE&gt;
+
+**Type Description**
 
 
+&lt;TEMPLATE&gt; can be used nested in &lt;FRAGMENT&gt; or &lt;HYPERMEDIA&gt; types. It uses Go&#39;s standard html/template library.
+
+**Main Example**
+````properties
+template = youtube.tmpl
 
 
+inline = <<[
+    <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
+]>>
+
+myComponent = <TEMPLATE>
+myComponent {
+    inline = <<[
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
+    ]>>
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 <<< myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 <<< myComponent
+
+    enclose = <div class="youtube_video">|</div>
+}
+````
 
 
+**Expected Result**
+````html
+<div class="youtube_video">
+  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+````
 
 
+**More**
 
+
+**Properties**
+
+
+### template
+
+**Description**
+The template used for rendering.
+
+**Example**
+````properties
+myComponent = <TEMPLATE>
+myComponent {
+
+
+    inline = <<[
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
+    ]>>
+
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 <<< myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 <<< myComponent
+
+    enclose = <div class="youtube_video">|</div>
+}
+````
+
+**Expected Result**
+
+````html
+<div class="youtube_video">
+  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+````
+
+
+### inline
+
+**Description**
+The inline template used for rendering.
+
+**Example**
+````properties
+myComponent = <TEMPLATE>
+myComponent {
+
+    inline = <<[
+        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
+    ]>>
+
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 <<< myComponent
+    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
+
+    20 <<< myComponent
+
+    enclose = <div class="youtube_video">|</div>
+}
+````
+
+**Expected Result**
+
+````html
+<div class="youtube_video">
+  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>
+````
+
+
+### querykeys
+
+**Description**
+The inline template used for rendering.
+
+**Example**
+````properties
+myComponent = <TEMPLATE>
+myComponent {
+
+    queryparams = {
+        somequeryparameter = helloworld
+    }
+    querykeys = [somequeryparameter]
+
+
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+````
+
+
+### queryparams
+
+**Description**
+The inline template used for rendering.
+
+**Example**
+````properties
+myComponent = <TEMPLATE>
+myComponent {
+
+    queryparams = {
+        somequeryparameter = helloworld
+    }
+    querykeys = [somequeryparameter]
+
+
+    values {
+        width = 300
+        height = 400
+        src = https://www.youtube.com/embed/tgbNymZ7vqY
+    }
+}
+````
+
+
+### values
+
+**Description**
+Key-value pairs for template rendering
+
+**Example**
+````properties
+$test = hello world
+
+myComponent = <TEMPLATE>
+myComponent {
+    inline = <<[
+        <h1>{{.header}}</h1>
+        <p>{{.text}}</p>
+    ]>>
+
+    values {
+        header = {{VAR:test}}!
+        text = some text
+    }
+}
+
+fragment = <FRAGMENT>
+fragment.content = <TREE>
+fragment.content {
+    10 <<< myComponent
+    enclose = <div class="sometext">|</div>
+}
+````
+
+**Expected Result**
+
+````html
+<div class="sometext">
+  <h1>
+    hello world!
+  </h1>
+  <p>
+    some text
+  </p>
+</div>
+````
+
+
+### enclose
+
+**Description**
+Enclosing property for the template rendered output divided by |
+
+**Example**
+````properties
+myComponent = <TEMPLATE>
+myComponent {
+    inline = <<[
+      <img src="{{.src}}" alt="{{.alt}}" width="{{.width}}" height="{{.height}}">
+    ]>>
+    values {
+        width = 500
+        height = 600
+        alt = Girl in a jacket
+        src = img_girl.jpg
+    }
+    enclose = <div id="image-container">|</div>
+}
+````
+
+**Expected Result**
+
+````html
+<div id="image-container">
+  <img src="img_girl.jpg" alt="Girl in a jacket" width="500" height="600">
+</div>
+````
 
 
 ## &lt;TEXT&gt;
@@ -366,12 +510,7 @@ plugin {
 **Type Description**
 
 
-
-
-
-
-
-
+Render simple text
 
 **Main Example**
 ````properties
@@ -380,7 +519,6 @@ text {
 	value = SOME VALUE
     enclose = <span>|</span>
 }
-
 ````
 
 
@@ -392,26 +530,13 @@ text {
 ````
 
 
-**more**
-
-
-
-
-
-
-
-
 **Properties**
-
-
-
 
 
 ### enclose
 
-**Description**  
+**Description**
 The enclosing HTML element for the text divided by |
-
 
 **Example**
 ````properties
@@ -420,7 +545,6 @@ text {
 	  value = SOME VALUE
     enclose = <span>|</span>
 }
-
 ````
 
 **Expected Result**
@@ -432,23 +556,10 @@ text {
 ````
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 ### value
 
-**Description**  
+**Description**
 The paragraph content
-
 
 **Example**
 ````properties
@@ -457,7 +568,6 @@ text {
 	value = SOME VALUE
     enclose = <span>|</span>
 }
-
 ````
 
 **Expected Result**
@@ -469,20 +579,7 @@ text {
 ````
 
 
-
-
-
-
-
-
-
-
-
-
 # Category: **composite**
-
-
-
 
 
 ## &lt;API_FRAGMENT_RENDER&gt;
@@ -490,46 +587,7 @@ text {
 **Type Description**
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 A &lt;FRAGMENT&gt; dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
-
 
 **Main Example**
 ````properties
@@ -539,41 +597,16 @@ api_fragment {
     method = GET
     route = api-fragment
 }
-
 ````
-
-
-
-**more**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 **Properties**
 
 
-
-
-
 ### endpoint
 
-**Description**  
+**Description**
 The API endpoint
-
 
 **Example**
 ````properties
@@ -583,22 +616,13 @@ api_fragment {
     method = GET
     route = api-fragment
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### method
 
-**Description**  
-HTTP method to use for API calls, GET POST PUT DELETE etc... 
-
+**Description**
+HTTP method to use for API calls, GET POST PUT DELETE etc...
 
 **Example**
 ````properties
@@ -608,22 +632,13 @@ api_fragment {
     method = POST
     route = api-fragment
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### headers
 
-**Description**  
+**Description**
 Optional HTTP headers for API requests
-
 
 **Example**
 ````properties
@@ -636,22 +651,13 @@ api_fragment {
         Accept = application/json
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### body
 
-**Description**  
-Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
-
+**Description**
+Raw request body. Use a scalar string value; nested objects are not parsed for this field.
 
 **Example**
 ````properties
@@ -662,22 +668,13 @@ api_fragment {
     route = api-fragment
     body = {"foo":"bar"}
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### template
 
-**Description**  
+**Description**
 Loads contents of a template file in the modules template directory
-
 
 **Example**
 ````properties
@@ -688,7 +685,6 @@ api_fragment {
     route = api-fragment
     template = example
 }
-
 ````
 
 **Expected Result**
@@ -698,20 +694,10 @@ api_fragment {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### inline
 
-**Description**  
+**Description**
 Use inline to define the template in a multiline block &lt;&lt;[ /* Template goes here */ ]&gt;&gt;
-
 
 **Example**
 ````properties
@@ -722,7 +708,6 @@ api_fragment {
     route = api-fragment
     inline = <div>INLINE</div>
 }
-
 ````
 
 **Expected Result**
@@ -734,20 +719,10 @@ api_fragment {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### values
 
-**Description**  
+**Description**
 Key-value pairs for template rendering
-
 
 **Example**
 ````properties
@@ -760,22 +735,13 @@ api_fragment {
         foo = bar
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### username
 
-**Description**  
+**Description**
 Username for basic auth
-
 
 **Example**
 ````properties
@@ -786,22 +752,13 @@ api_fragment {
     route = api-fragment
     username = user1
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### password
 
-**Description**  
+**Description**
 Password for basic auth
-
 
 **Example**
 ````properties
@@ -812,22 +769,13 @@ api_fragment {
     route = api-fragment
     password = secret
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### setcookie
 
-**Description**  
+**Description**
 Legacy shorthand for one Set-Cookie response template
-
 
 **Example**
 ````properties
@@ -839,7 +787,6 @@ api_fragment {
     inline = <<[<p>Logged out</p>]>>
     setcookie = token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0
 }
-
 ````
 
 **Expected Result**
@@ -851,20 +798,10 @@ api_fragment {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### setcookies
 
-**Description**  
+**Description**
 Multiple Set-Cookie response templates
-
 
 **Example**
 ````properties
@@ -874,9 +811,8 @@ api_fragment {
     method = POST
     route = auth-logout-all
     inline = <<[<p>Logged out everywhere</p>]>>
-    setcookies = [token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0, hb_composer_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0]
+    setcookies = [token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0, runtime_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0]
 }
-
 ````
 
 **Expected Result**
@@ -888,20 +824,10 @@ api_fragment {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### querykeys
 
-**Description**  
+**Description**
 Set allowed proxy query keys
-
 
 **Example**
 ````properties
@@ -912,22 +838,13 @@ api_fragment {
     route = api-fragment
     querykeys = [foo, bar]
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### queryparams
 
-**Description**  
-Set proxy query key in the confifuration
-
+**Description**
+Set proxy query keys in the configuration
 
 **Example**
 ````properties
@@ -940,22 +857,13 @@ api_fragment {
         foo = bar
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### jwtsecret
 
-**Description**  
+**Description**
 When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request
-
 
 **Example**
 ````properties
@@ -966,22 +874,13 @@ api_fragment {
     route = api-fragment
     jwtsecret = secret
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### jwtclaims
 
-**Description**  
-jwt claim map
-
+**Description**
+JWT claims to include when signing the bearer token
 
 **Example**
 ````properties
@@ -994,22 +893,13 @@ api_fragment {
         sub = user
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### debug
 
-**Description**  
+**Description**
 Debug the response data
-
 
 **Example**
 ````properties
@@ -1021,22 +911,13 @@ api_fragment {
     debug = true
     debugpanel = true
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### debugpanel
 
-**Description**  
+**Description**
 Debug the response data
-
 
 **Example**
 ````properties
@@ -1048,22 +929,13 @@ api_fragment {
     debug = true
     debugpanel = true
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### response
 
-**Description**  
+**Description**
 HTMX response header configuration.
-
 
 **Example**
 ````properties
@@ -1076,25 +948,13 @@ api_fragment {
         hx_trigger = myEvent
     }
 }
-
 ````
-
-
-
-
-
-
-
-
-
-
 
 
 ### title
 
-**Description**  
+**Description**
 The title of the fragment
-
 
 **Example**
 ````properties
@@ -1105,22 +965,13 @@ api_fragment {
     route = api-fragment
     title = API Fragment Title
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### route
 
-**Description**  
+**Description**
 The route (URL-friendly identifier) for the fragment
-
 
 **Example**
 ````properties
@@ -1130,22 +981,13 @@ api_fragment {
     method = GET
     route = api-fragment-route
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### section
 
-**Description**  
+**Description**
 The section the fragment belongs to
-
 
 **Example**
 ````properties
@@ -1156,22 +998,13 @@ api_fragment {
     route = api-fragment
     section = api
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### enclose
 
-**Description**  
+**Description**
 Wrapping property for the fragment rendered output
-
 
 **Example**
 ````properties
@@ -1182,7 +1015,6 @@ api_fragment {
     route = api-fragment
     enclose = <div>|</div>
 }
-
 ````
 
 **Expected Result**
@@ -1192,20 +1024,10 @@ api_fragment {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### index
 
-**Description**  
+**Description**
 Index number is a sort order option for the &lt;MENU&gt; section. See &lt;MENU&gt; for further explanation
-
 
 **Example**
 ````properties
@@ -1213,22 +1035,13 @@ fragment = <FRAGMENT>
 fragment {
 	index = 1
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### guard
 
-**Description**  
+**Description**
 Optional pre-render route guard. When omitted or disabled, current API_FRAGMENT_RENDER behavior remains unchanged
-
 
 **Example**
 ````properties
@@ -1267,19 +1080,10 @@ api_fragment {
         }
     }
 }
-
 ````
 
 
-
-
-
-
-
-
-
-
-   # HyperBricks API-RENDER 
+# HyperBricks API-RENDER
 
 HyperBricks renders HTML directly from APIs. Use `<API_RENDER>` for cacheable/public data. Use `<API_FRAGMENT_RENDER>` for live, interactive, or authenticated fragments (HTMX-style partials). Fragments are always dynamic.
 
@@ -1544,11 +1348,10 @@ Configure inside `response { ... }` on fragments.
 ## Known limitations & open items
 
 * XML decoding often needs struct bindings; generic map decoding may fail and fall back to plain text. *(Document what “fallback” looks like for templates.)*
-* Placeholder matching uses word boundaries; avoid dashes in `$key` names. 
+* Placeholder matching uses word boundaries; avoid dashes in `$key` names.
 * Fragment rendering assumes `Request` and `ResponseWriter` are present in context.
 * `<API_RENDER>` exposes `setcookie` in the struct but does not send it.
 * Use `setcookies` when one route must emit multiple `Set-Cookie` headers, such as clearing both an auth token and a legacy session cookie during logout.
-
 
 
 ## &lt;FRAGMENT&gt;
@@ -1556,12 +1359,7 @@ Configure inside `response { ... }` on fragments.
 **Type Description**
 
 
-
-
-
-
 A FRAGMENT dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
-
 
 **Main Example**
 ````properties
@@ -1574,7 +1372,7 @@ fragment.10 {
         <p>{{.text}}</p>
         {{.image}}
 ]>>
-    
+
     values {
         header = SOME HEADER
         text = <TEXT>
@@ -1585,7 +1383,6 @@ fragment.10 {
         image.width = 800
     }
 }
-
 ````
 
 
@@ -1601,70 +1398,13 @@ fragment.10 {
 ````
 
 
-**more**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 **Properties**
-
-
-
 
 
 ### response
 
-**Description**  
+**Description**
 HTMX response header configuration.
-
 
 **Example**
 ````properties
@@ -1674,7 +1414,6 @@ fragment {
         hx_trigger = trigger-element-id
     }
 }
-
 ````
 
 
@@ -1699,19 +1438,10 @@ This document provides an overview of the HTML headers used in the `HxResponse` 
 | hx_trigger_after_swap          | HX-Trigger-After-Swap       | Allows you to trigger client-side events after the swap step |
 
 
-
-
-
-
-
-
-
-
 ### beautify
 
-**Description**  
+**Description**
 Override server.beautify for this object when rendered directly
-
 
 **Example**
 ````properties
@@ -1719,22 +1449,13 @@ fragment = <FRAGMENT>
 fragment {
 	beautify = false
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### title
 
-**Description**  
+**Description**
 The title of the fragment, only used in the context of the &lt;MENU&gt; component. For document title use &lt;HYPERMEDIA&gt; type.
-
 
 **Example**
 ````properties
@@ -1742,22 +1463,13 @@ fragment = <FRAGMENT>
 fragment {
 	title = Some Title
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### route
 
-**Description**  
+**Description**
 The route (URL-friendly identifier) for the fragment
-
 
 **Example**
 ````properties
@@ -1765,22 +1477,13 @@ fragment = <FRAGMENT>
 fragment {
 	route = index
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### section
 
-**Description**  
+**Description**
 The section the fragment belongs to. This can be used with the component &lt;MENU&gt; for example.
-
 
 **Example**
 ````properties
@@ -1788,22 +1491,13 @@ fragment = <FRAGMENT>
 fragment {
 	section = some_section
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### enclose
 
-**Description**  
+**Description**
 Enclosing property using the pipe symbol |
-
 
 **Example**
 ````properties
@@ -1813,7 +1507,6 @@ fragment {
     10.value = <p>TEST HTML</p>
     enclose = <div>|</div>
 }
-
 ````
 
 **Expected Result**
@@ -1827,39 +1520,28 @@ fragment {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### template
 
-**Description**  
+**Description**
 Template configurations for rendering the fragment. (This will disable rendering any content added to the alpha numeric items that are added to the fragment root object.) See &lt;TEMPLATE&gt; for more details using templates.
-
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
 fragment {
 	template {
-        
+
         inline = <<[
             <div>{{.content}}</div>
 
         ]>>
-      
+
         values {
             content = <HTML>
             content.value = <p>SOME HTML CONTENT</p>
         }
     }
 }
-
 ````
 
 **Expected Result**
@@ -1873,20 +1555,10 @@ fragment {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### static
 
-**Description**  
-Static file path associated with the fragment, this will only work for a hx-get (GET) request. 
-
+**Description**
+Static file path associated with the fragment, this will only work for a hx-get (GET) request.
 
 **Example**
 ````properties
@@ -1894,22 +1566,13 @@ fragment = <FRAGMENT>
 fragment {
 	static = some_static_file.extension
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### cache
 
-**Description**  
+**Description**
 Cache expire string
-
 
 **Example**
 ````properties
@@ -1920,7 +1583,6 @@ hypermedia.bodytag = <body id="main">|</body>
 hypermedia.10 = <TEXT>
 hypermedia.10.value = HELLO WORLD!
 hypermedia.enclose = <p>|</p>
-
 ````
 
 **Expected Result**
@@ -1937,21 +1599,10 @@ hypermedia.enclose = <p>|</p>
 ````
 
 
-
-
-
-
-
-
-
-
-
-
 ### nocache
 
-**Description**  
+**Description**
 Explicitly disable cache
-
 
 **Example**
 ````properties
@@ -1962,7 +1613,6 @@ hypermedia.bodytag = <body id="main">|</body>
 hypermedia.10 = <TEXT>
 hypermedia.10.value = HELLO WORLD!
 hypermedia.enclose = <p>|</p>
-
 ````
 
 **Expected Result**
@@ -1979,21 +1629,10 @@ hypermedia.enclose = <p>|</p>
 ````
 
 
-
-
-
-
-
-
-
-
-
-
 ### index
 
-**Description**  
+**Description**
 Index number is a sort order option for the &lt;MENU&gt; section. See &lt;MENU&gt; for further explanation
-
 
 **Example**
 ````properties
@@ -2001,43 +1640,25 @@ fragment = <FRAGMENT>
 fragment {
 	index = 1
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### content_type
 
-**Description**  
+**Description**
 content type header definition
-
 
 **Example**
 ````properties
 fragment = <FRAGMENT>
-fragment.content_type = text/json 
-
+fragment.content_type = text/json
 ````
-
-
-
-
-
-
-
 
 
 ### guard
 
-**Description**  
+**Description**
 Optional pre-render route guard. When omitted or disabled, current FRAGMENT behavior remains unchanged
-
 
 **Example**
 ````properties
@@ -2074,22 +1695,13 @@ fragment {
         }
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### hx_location
 
-**Description**  
+**Description**
 Allows you to do a client-side redirect that does not do a full page reload
-
 
 **Example**
 ````properties
@@ -2099,22 +1711,13 @@ fragment {
         hx_location = someurl
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### hx_push_url
 
-**Description**  
-Pushes a new url into the history stack
-
+**Description**
+Pushes a new URL into the history stack
 
 **Example**
 ````properties
@@ -2124,22 +1727,13 @@ fragment {
         hx_push_url = /some/url
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### hx_redirect
 
-**Description**  
+**Description**
 Can be used to do a client-side redirect to a new location
-
 
 **Example**
 ````properties
@@ -2149,22 +1743,13 @@ fragment {
         hx_redirect = /some/new/location
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### hx_refresh
 
-**Description**  
+**Description**
 If set to &#39;true&#39; the client-side will do a full refresh of the page
-
 
 **Example**
 ````properties
@@ -2174,22 +1759,13 @@ fragment {
         hx_refresh = true
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### hx_replace_url
 
-**Description**  
-replaces the current url in the location bar
-
+**Description**
+Replaces the current URL in the location bar
 
 **Example**
 ````properties
@@ -2199,22 +1775,13 @@ fragment {
         hx_replace_url = /alternative/url
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### hx_reswap
 
-**Description**  
+**Description**
 Allows you to specify how the response will be swapped. See hx-swap in the [HTMX documentation](https://htmx.org/).
-
 
 **Example**
 ````properties
@@ -2224,22 +1791,13 @@ fragment {
         hx_reswap = innerHTML
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### hx_retarget
 
-**Description**  
-A css selector that updates the target of the content update
-
+**Description**
+CSS selector that updates the target of the content update
 
 **Example**
 ````properties
@@ -2249,22 +1807,13 @@ fragment {
         hx_retarget = #someid
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### hx_reselect
 
-**Description**  
-A css selector that allows you to choose which part of the response is used to be swapped in.
-
+**Description**
+CSS selector that selects which part of the response is swapped in.
 
 **Example**
 ````properties
@@ -2274,22 +1823,13 @@ fragment {
         hx_reselect = #someotherid
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### hx_trigger
 
-**Description**  
+**Description**
 allows you to trigger client-side events
-
 
 **Example**
 ````properties
@@ -2299,22 +1839,13 @@ fragment {
         hx_trigger = myEvent
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### hx_trigger_after_settle
 
-**Description**  
+**Description**
 allows you to trigger client-side events after the settle step
-
 
 **Example**
 ````properties
@@ -2324,22 +1855,13 @@ fragment {
         hx_trigger_after_settle = myAfterSettleEvent
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### hx_trigger_after_swap
 
-**Description**  
+**Description**
 allows you to trigger client-side events after the swap step
-
 
 **Example**
 ````properties
@@ -2349,17 +1871,7 @@ fragment {
         hx_trigger_after_swap = myAfterSwapEvent
     }
 }
-
 ````
-
-
-
-
-
-
-
-
-
 
 
 ## &lt;HEAD&gt;
@@ -2367,29 +1879,16 @@ fragment {
 **Type Description**
 
 
-
-
-
-
-
-
-
-
-
-
+Document head helper that assembles title, meta, CSS, and JavaScript.
 
 
 **Properties**
 
 
-
-
-
 ### title
 
-**Description**  
+**Description**
 The title of the hypermedia document
-
 
 **Example**
 ````properties
@@ -2398,7 +1897,6 @@ hypermedia.head = <HEAD>
 hypermedia.head {
     title = Home
 }
-
 ````
 
 **Expected Result**
@@ -2407,7 +1905,7 @@ hypermedia.head {
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <title>
       Home
     </title>
@@ -2417,20 +1915,10 @@ hypermedia.head {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### favicon
 
-**Description**  
+**Description**
 Path to the favicon for the hypermedia document
-
 
 **Example**
 ````properties
@@ -2439,7 +1927,6 @@ hypermedia.head = <HEAD>
 hypermedia.head {
     favicon = /images/icon.ico
 }
-
 ````
 
 **Expected Result**
@@ -2448,7 +1935,7 @@ hypermedia.head {
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <link rel="icon" type="image/x-icon" href="/images/icon.ico">
   </head>
   <body></body>
@@ -2456,20 +1943,10 @@ hypermedia.head {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### meta
 
-**Description**  
+**Description**
 Metadata for the head section
-
 
 **Example**
 ````properties
@@ -2481,7 +1958,6 @@ hypermedia.head {
         b = c
     }
 }
-
 ````
 
 **Expected Result**
@@ -2490,7 +1966,7 @@ hypermedia.head {
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <meta name="a" content="b">
     <meta name="b" content="c">
   </head>
@@ -2499,20 +1975,10 @@ hypermedia.head {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### css
 
-**Description**  
+**Description**
 CSS files to include
-
 
 **Example**
 ````properties
@@ -2521,7 +1987,6 @@ hypermedia.head = <HEAD>
 hypermedia.head {
     css = [style.css,morestyles.css]
 }
-
 ````
 
 **Expected Result**
@@ -2530,7 +1995,7 @@ hypermedia.head {
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="morestyles.css">
   </head>
@@ -2539,20 +2004,10 @@ hypermedia.head {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### js
 
-**Description**  
+**Description**
 JavaScript files to include
-
 
 **Example**
 ````properties
@@ -2561,7 +2016,6 @@ hypermedia.head = <HEAD>
 hypermedia.head {
     js = [main.js,helpers.js]
 }
-
 ````
 
 **Expected Result**
@@ -2570,7 +2024,7 @@ hypermedia.head {
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <script src="main.js"></script>
     <script src="helpers.js"></script>
   </head>
@@ -2579,26 +2033,12 @@ hypermedia.head {
 ````
 
 
-
-
-
-
-
-
-
-
-
-
-
 ## &lt;HYPERMEDIA&gt;
 
 **Type Description**
 
 
-
-
-HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use &lt;FRAGMENT&gt; to utilize hx-[method] (GET,POST etc) requests.  
-
+HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use &lt;FRAGMENT&gt; to utilize hx-[method] (GET,POST etc) requests.
 
 **Main Example**
 ````properties
@@ -2616,7 +2056,7 @@ css.value = <<[
 hypermedia = <HYPERMEDIA>
 hypermedia.head = <HEAD>
 hypermedia.head {
-    10 < css
+    10 <<< css
     20 = <CSS>
     20.inline = <<[
         .content {
@@ -2629,8 +2069,6 @@ hypermedia.10 {
     1 = <HTML>
     1.value = <p>SOME CONTENT</p>
 }
-
-
 ````
 
 
@@ -2649,7 +2087,7 @@ hypermedia.10 {
       color:green;
       }
     </style>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
   </head>
   <body>
     <p>
@@ -2660,66 +2098,16 @@ hypermedia.10 {
 ````
 
 
-**more**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+**More**
 
 
 **Properties**
 
 
-
-
-
-
-
-
 ### beautify
 
-**Description**  
+**Description**
 Override server.beautify for this object when rendered directly
-
 
 **Example**
 ````properties
@@ -2728,7 +2116,6 @@ hypermedia {
     beautify = false
     title = Home
 }
-
 ````
 
 **Expected Result**
@@ -2737,7 +2124,7 @@ hypermedia {
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <title>
       Home
     </title>
@@ -2747,20 +2134,10 @@ hypermedia {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### title
 
-**Description**  
+**Description**
 The title of the hypermedia site
-
 
 **Example**
 ````properties
@@ -2768,7 +2145,6 @@ hypermedia = <HYPERMEDIA>
 hypermedia {
     title = Home
 }
-
 ````
 
 **Expected Result**
@@ -2777,7 +2153,7 @@ hypermedia {
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <title>
       Home
     </title>
@@ -2787,20 +2163,10 @@ hypermedia {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### route
 
-**Description**  
+**Description**
 The route (URL-friendly identifier) for the hypermedia
-
 
 **Example**
 ````properties
@@ -2808,7 +2174,6 @@ hypermedia = <HYPERMEDIA>
 hypermedia {
     route = index
 }
-
 ````
 
 **Expected Result**
@@ -2821,20 +2186,10 @@ hypermedia {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### section
 
-**Description**  
+**Description**
 The section the hypermedia belongs to. This can be used with the component &lt;MENU&gt; for example.
-
 
 **Example**
 ````properties
@@ -2842,7 +2197,6 @@ hypermedia = <HYPERMEDIA>
 hypermedia {
     section = my_section
 }
-
 ````
 
 **Expected Result**
@@ -2855,20 +2209,10 @@ hypermedia {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### bodytag
 
-**Description**  
+**Description**
 Special body enclosure with use of a pipe symbol |. Please note that this will not work when a template is applied. In that case, you have to add the bodytag in the template.
-
 
 **Example**
 ````properties
@@ -2877,7 +2221,6 @@ hypermedia.route = index
 hypermedia.bodytag = <body id="main">|</body>
 hypermedia.10 = <TEXT>
 hypermedia.10.value = HELLO WORLD!
-
 ````
 
 **Expected Result**
@@ -2892,21 +2235,10 @@ hypermedia.10.value = HELLO WORLD!
 ````
 
 
-
-
-
-
-
-
-
-
-
-
 ### enclose
 
-**Description**  
+**Description**
 Enclosure of the property for the hypermedia
-
 
 **Example**
 ````properties
@@ -2916,7 +2248,6 @@ hypermedia.bodytag = <body id="main">|</body>
 hypermedia.10 = <TEXT>
 hypermedia.10.value = HELLO WORLD!
 hypermedia.enclose = <p>|</p>
-
 ````
 
 **Expected Result**
@@ -2933,21 +2264,10 @@ hypermedia.enclose = <p>|</p>
 ````
 
 
-
-
-
-
-
-
-
-
-
-
 ### favicon
 
-**Description**  
+**Description**
 Path to the favicon for the hypermedia
-
 
 **Example**
 ````properties
@@ -2955,7 +2275,6 @@ hypermedia = <HYPERMEDIA>
 hypermedia {
     favicon = static/favicon.ico
 }
-
 ````
 
 **Expected Result**
@@ -2964,7 +2283,7 @@ hypermedia {
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <link rel="icon" type="image/x-icon" href="static/favicon.ico">
   </head>
   <body></body>
@@ -2972,28 +2291,17 @@ hypermedia {
 ````
 
 
-
-
-
-
-
-
-
-
-
-
 ### template
 
-**Description**  
+**Description**
 Template configurations for rendering the hypermedia. See &lt;TEMPLATE&gt; for field descriptions.
-
 
 **Example**
 ````properties
 hypermedia = <HYPERMEDIA>
 hypermedia {
 	template {
-        
+
         inline = <<[
             <div>{{.content}}</div>
         ]>>
@@ -3004,7 +2312,6 @@ hypermedia {
         }
     }
 }
-
 ````
 
 **Expected Result**
@@ -3018,20 +2325,10 @@ hypermedia {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### cache
 
-**Description**  
+**Description**
 Cache expire string
-
 
 **Example**
 ````properties
@@ -3042,7 +2339,6 @@ hypermedia.bodytag = <body id="main">|</body>
 hypermedia.10 = <TEXT>
 hypermedia.10.value = HELLO WORLD!
 hypermedia.enclose = <p>|</p>
-
 ````
 
 **Expected Result**
@@ -3059,21 +2355,10 @@ hypermedia.enclose = <p>|</p>
 ````
 
 
-
-
-
-
-
-
-
-
-
-
 ### nocache
 
-**Description**  
+**Description**
 Explicitly disable cache
-
 
 **Example**
 ````properties
@@ -3084,7 +2369,6 @@ hypermedia.bodytag = <body id="main">|</body>
 hypermedia.10 = <TEXT>
 hypermedia.10.value = HELLO WORLD!
 hypermedia.enclose = <p>|</p>
-
 ````
 
 **Expected Result**
@@ -3101,21 +2385,10 @@ hypermedia.enclose = <p>|</p>
 ````
 
 
-
-
-
-
-
-
-
-
-
-
 ### static
 
-**Description**  
+**Description**
 Static file path associated with the hypermedia, for rendering out the hypermedia to static files.
-
 
 **Example**
 ````properties
@@ -3123,7 +2396,6 @@ hypermedia = <HYPERMEDIA>
 hypermedia {
 	static = index.html
 }
-
 ````
 
 **Expected Result**
@@ -3136,20 +2408,10 @@ hypermedia {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### index
 
-**Description**  
+**Description**
 Index number is a sort order option for the hypermedia defined in the section field. See &lt;MENU&gt; for further explanation and field options
-
 
 **Example**
 ````properties
@@ -3157,7 +2419,6 @@ hypermedia = <HYPERMEDIA>
 hypermedia {
 	index = 1
 }
-
 ````
 
 **Expected Result**
@@ -3170,27 +2431,16 @@ hypermedia {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### doctype
 
-**Description**  
+**Description**
 Alternative Doctype for the HTML document
-
 
 **Example**
 ````properties
 hypermedia = <HYPERMEDIA>
 
 hypermedia.doctype = <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-
 ````
 
 **Expected Result**
@@ -3203,26 +2453,15 @@ hypermedia.doctype = <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://w
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### htmltag
 
-**Description**  
+**Description**
 The opening HTML tag with attributes
-
 
 **Example**
 ````properties
 hypermedia = <HYPERMEDIA>
 hypermedia.htmltag = <html lang="en">
-
 ````
 
 **Expected Result**
@@ -3235,20 +2474,10 @@ hypermedia.htmltag = <html lang="en">
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### head
 
-**Description**  
+**Description**
 Builds header content. See &lt;HEADER&gt; for details
-
 
 **Example**
 ````properties
@@ -3274,12 +2503,11 @@ hypermedia.head {
     ]>>
 
     20 = <HTML>
-    20.value = <meta name="generator" content="hyperbricks cms">
-     
+    20.value = <meta name="generator" content="hyperbricks runtime">
+
 }
 hypermedia.10 = <HTML>
 hypermedia.10.value = <p>some HTML</p>
-
 ````
 
 **Expected Result**
@@ -3288,7 +2516,7 @@ hypermedia.10.value = <p>some HTML</p>
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <!-- 999 overrides default generator meta tag -->
     <meta name="a" content="b">
     <meta name="b" content="c">
@@ -3311,20 +2539,10 @@ hypermedia.10.value = <p>some HTML</p>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### headers
 
-**Description**  
+**Description**
 HTTP response headers to include when serving this hypermedia
-
 
 **Example**
 ````properties
@@ -3335,7 +2553,6 @@ hypermedia {
         Content-Security-Policy = default-src 'self'
     }
 }
-
 ````
 
 **Expected Result**
@@ -3348,20 +2565,10 @@ hypermedia {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### cookies
 
-**Description**  
+**Description**
 HTTP cookies to include when serving this hypermedia
-
 
 **Example**
 ````properties
@@ -3369,7 +2576,6 @@ hypermedia = <HYPERMEDIA>
 hypermedia {
     cookies = [session=abc; Path=/; HttpOnly; Secure, prefs=dark; Path=/; Max-Age=31536000; SameSite=Lax]
 }
-
 ````
 
 **Expected Result**
@@ -3382,20 +2588,10 @@ hypermedia {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### guard
 
-**Description**  
+**Description**
 Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA behavior remains unchanged
-
 
 **Example**
 ````properties
@@ -3410,7 +2606,6 @@ hypermedia.guard {
     on_forbidden.redirect = /denied
     on_forbidden.status = 403
 }
-
 ````
 
 **Expected Result**
@@ -3423,28 +2618,17 @@ hypermedia.guard {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### content_type
 
-**Description**  
+**Description**
 content type header definition
-
 
 **Example**
 ````properties
 hypermedia = <HYPERMEDIA>
 hypermedia {
-	
-}
 
+}
 ````
 
 **Expected Result**
@@ -3455,379 +2639,6 @@ hypermedia {
   <body></body>
 </html>
 ````
-
-
-
-
-
-
-
-
-
-
-
-
-
-## &lt;TEMPLATE&gt;
-
-**Type Description**
-
-
-
-
-&lt;TEMPLATE&gt; can be used nested in &lt;FRAGMENT&gt; or &lt;HYPERMEDIA&gt; types. It uses golang&#39;s standard html/template library.
-
-
-**Main Example**
-````properties
-
-template = youtube.tmpl
-
-
-inline = <<[
-    <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
-]>>
-
-myComponent = <TEMPLATE>
-myComponent {
-    inline = <<[
-        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
-    ]>>
-    values {
-        width = 300
-        height = 400
-        src = https://www.youtube.com/embed/tgbNymZ7vqY
-    }
-}
-
-fragment = <FRAGMENT>
-fragment.content = <TREE>
-fragment.content {
-    10 < myComponent
-    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
-
-    20 < myComponent
-
-    enclose = <div class="youtube_video">|</div>
-}
-
-````
-
-
-**Expected Result**
-````html
-<div class="youtube_video">
-  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-</div>
-````
-
-
-**more**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-**Properties**
-
-
-
-
-
-
-
-
-### template
-
-**Description**  
-The template used for rendering.
-
-
-**Example**
-````properties
-myComponent = <TEMPLATE>
-myComponent {
-
-    
-    inline = <<[
-        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
-    ]>>
-  
-    values {
-        width = 300
-        height = 400
-        src = https://www.youtube.com/embed/tgbNymZ7vqY
-    }
-}
-
-fragment = <FRAGMENT>
-fragment.content = <TREE>
-fragment.content {
-    10 < myComponent
-    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
-
-    20 < myComponent
-
-    enclose = <div class="youtube_video">|</div>
-}
-
-````
-
-**Expected Result**
-
-````html
-<div class="youtube_video">
-  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-</div>
-````
-
-
-
-
-
-
-
-
-
-
-
-### inline
-
-**Description**  
-The inline template used for rendering.
-
-
-**Example**
-````properties
-myComponent = <TEMPLATE>
-myComponent {
-    
-    inline = <<[
-        <iframe width="{{.width}}" height="{{.height}}" src="{{.src}}"></iframe>
-    ]>>
-  
-    values {
-        width = 300
-        height = 400
-        src = https://www.youtube.com/embed/tgbNymZ7vqY
-    }
-}
-
-fragment = <FRAGMENT>
-fragment.content = <TREE>
-fragment.content {
-    10 < myComponent
-    10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
-
-    20 < myComponent
-
-    enclose = <div class="youtube_video">|</div>
-}
-
-````
-
-**Expected Result**
-
-````html
-<div class="youtube_video">
-  <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
-  <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
-</div>
-````
-
-
-
-
-
-
-
-
-
-
-
-### querykeys
-
-**Description**  
-The inline template used for rendering.
-
-
-**Example**
-````properties
-myComponent = <TEMPLATE>
-myComponent {
-    
-    queryparams = {
-        somequeryparameter = helloworld
-    }
-    querykeys = [somequeryparameter]
-
-   
-    values {
-        width = 300
-        height = 400
-        src = https://www.youtube.com/embed/tgbNymZ7vqY
-    }
-}
-
-
-````
-
-
-
-
-
-
-
-
-
-### queryparams
-
-**Description**  
-The inline template used for rendering.
-
-
-**Example**
-````properties
-myComponent = <TEMPLATE>
-myComponent {
-    
-    queryparams = {
-        somequeryparameter = helloworld
-    }
-    querykeys = [somequeryparameter]
-
-   
-    values {
-        width = 300
-        height = 400
-        src = https://www.youtube.com/embed/tgbNymZ7vqY
-    }
-}
-
-
-````
-
-
-
-
-
-
-
-
-
-### values
-
-**Description**  
-Key-value pairs for template rendering
-
-
-**Example**
-````properties
-
-$test = hello world
-
-myComponent = <TEMPLATE>
-myComponent {
-    inline = <<[
-        <h1>{{.header}}</h1>
-        <p>{{.text}}</p>
-    ]>>
-
-    values {
-        header = {{VAR:test}}!
-        text = some text
-    }
-}
-
-fragment = <FRAGMENT>
-fragment.content = <TREE>
-fragment.content {
-    10 < myComponent
-    enclose = <div class="sometext">|</div>
-}
-
-````
-
-**Expected Result**
-
-````html
-<div class="sometext">
-  <h1>
-    hello world!
-  </h1>
-  <p>
-    some text
-  </p>
-</div>
-````
-
-
-
-
-
-
-
-
-
-
-
-### enclose
-
-**Description**  
-Enclosing property for the template rendered output divided by |
-
-
-**Example**
-````properties
-myComponent = <TEMPLATE>
-myComponent {
-    inline = <<[
-      <img src="{{.src}}" alt="{{.alt}}" width="{{.width}}" height="{{.height}}">
-    ]>>
-    values {
-        width = 500
-        height = 600
-        alt = Girl in a jacket
-        src = img_girl.jpg
-    }
-    enclose = <div id="image-container">|</div>
-}
-
-````
-
-**Expected Result**
-
-````html
-<div id="image-container">
-  <img src="img_girl.jpg" alt="Girl in a jacket" width="500" height="600">
-</div>
-````
-
-
-
-
-
-
-
-
-
-
-
 
 
 ## &lt;TREE&gt;
@@ -3835,10 +2646,7 @@ myComponent {
 **Type Description**
 
 
-
-
 TREE description
-
 
 **Main Example**
 ````properties
@@ -3859,13 +2667,12 @@ fragment {
         20 {
             1 = <HTML>
             1.value = <p>SOME NESTED HTML --- 20-1</p>
-            
+
             2 = <HTML>
             2.value = <p>SOME NESTED HTML --- 20-2</p>
         }
     }
 }
-
 ````
 
 
@@ -3886,29 +2693,13 @@ fragment {
 ````
 
 
-**more**
-
-
-
-
-
-
-
-
 **Properties**
-
-
-
-
-
-
 
 
 ### enclose
 
-**Description**  
+**Description**
 Enclosing tag using the pipe symbol |
-
 
 **Example**
 ````properties
@@ -3929,14 +2720,13 @@ fragment {
         20 {
             1 = <HTML>
             1.value = <p>SOME NESTED HTML --- 20-1</p>
-            
+
             2 = <HTML>
             2.value = <p>SOME NESTED HTML --- 20-2</p>
         }
         enclose = <div>|</div>
     }
 }
-
 ````
 
 **Expected Result**
@@ -3959,20 +2749,7 @@ fragment {
 ````
 
 
-
-
-
-
-
-
-
-
-
-
 # Category: **data**
-
-
-
 
 
 ## &lt;API_RENDER&gt;
@@ -3980,42 +2757,7 @@ fragment {
 **Type Description**
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-&lt;API_RENDER&gt; description
-
+Fetch a remote API endpoint and render the response through a template or inline template.
 
 **Main Example**
 ````properties
@@ -4024,29 +2766,16 @@ api_render {
     endpoint = https://example.com/api
     method = GET
 }
-
 ````
-
-
-
-**more**
-
-
-
-
 
 
 **Properties**
 
 
-
-
-
 ### enclose
 
-**Description**  
-The enclosing HTML element for the header divided by |
-
+**Description**
+Wrap rendered output using prefix|suffix syntax
 
 **Example**
 ````properties
@@ -4056,7 +2785,6 @@ api_render {
     method = GET
     enclose = <div>|</div>
 }
-
 ````
 
 **Expected Result**
@@ -4066,20 +2794,10 @@ api_render {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### endpoint
 
-**Description**  
+**Description**
 The API endpoint
-
 
 **Example**
 ````properties
@@ -4088,22 +2806,13 @@ api_render {
     endpoint = https://example.com/endpoint
     method = GET
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### method
 
-**Description**  
-HTTP method to use for API calls, GET POST PUT DELETE etc... 
-
+**Description**
+HTTP method to use for API calls, GET POST PUT DELETE etc...
 
 **Example**
 ````properties
@@ -4112,22 +2821,13 @@ api_render {
     endpoint = https://example.com/api
     method = POST
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### headers
 
-**Description**  
+**Description**
 Optional HTTP headers for API requests
-
 
 **Example**
 ````properties
@@ -4139,22 +2839,13 @@ api_render {
         Accept = application/json
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### body
 
-**Description**  
-Use the string format of the example, do not use an nested object to define. The values will be parsed en send with the request.
-
+**Description**
+Raw request body. Use a scalar string value; nested objects are not parsed for this field.
 
 **Example**
 ````properties
@@ -4164,22 +2855,13 @@ api_render {
     method = GET
     body = {"foo":"bar"}
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### template
 
-**Description**  
+**Description**
 Loads contents of a template file in the modules template directory
-
 
 **Example**
 ````properties
@@ -4189,7 +2871,6 @@ api_render {
     method = GET
     template = example
 }
-
 ````
 
 **Expected Result**
@@ -4199,20 +2880,10 @@ api_render {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### inline
 
-**Description**  
+**Description**
 Use inline to define the template in a multiline block &lt;&lt;[ /* Template goes here */ ]&gt;&gt;
-
 
 **Example**
 ````properties
@@ -4222,7 +2893,6 @@ api_render {
     method = GET
     inline = <div>INLINE</div>
 }
-
 ````
 
 **Expected Result**
@@ -4234,20 +2904,10 @@ api_render {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### values
 
-**Description**  
+**Description**
 Key-value pairs for template rendering
-
 
 **Example**
 ````properties
@@ -4259,22 +2919,13 @@ api_render {
         foo = bar
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### username
 
-**Description**  
+**Description**
 Username for basic auth
-
 
 **Example**
 ````properties
@@ -4284,22 +2935,13 @@ api_render {
     method = GET
     username = user1
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### password
 
-**Description**  
+**Description**
 Password for basic auth
-
 
 **Example**
 ````properties
@@ -4309,22 +2951,13 @@ api_render {
     method = GET
     password = secret
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### querykeys
 
-**Description**  
+**Description**
 Set allowed proxy query keys
-
 
 **Example**
 ````properties
@@ -4334,22 +2967,13 @@ api_render {
     method = GET
     querykeys = [foo, bar]
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### queryparams
 
-**Description**  
-Set proxy query key in the confifuration
-
+**Description**
+Set proxy query keys in the configuration
 
 **Example**
 ````properties
@@ -4361,22 +2985,13 @@ api_render {
         foo = bar
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### jwtsecret
 
-**Description**  
+**Description**
 When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request
-
 
 **Example**
 ````properties
@@ -4386,22 +3001,13 @@ api_render {
     method = GET
     jwtsecret = secret
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### jwtclaims
 
-**Description**  
-jwt claim map
-
+**Description**
+JWT claims to include when signing the bearer token
 
 **Example**
 ````properties
@@ -4413,22 +3019,13 @@ api_render {
         sub = user
     }
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### debug
 
-**Description**  
+**Description**
 Debug the response data
-
 
 **Example**
 ````properties
@@ -4439,22 +3036,13 @@ api_render {
     debug = true
     debugpanel = true
 }
-
 ````
-
-
-
-
-
-
-
 
 
 ### debugpanel
 
-**Description**  
+**Description**
 Debug the response data
-
 
 **Example**
 ````properties
@@ -4465,35 +3053,15 @@ api_render {
     debug = true
     debugpanel = true
 }
-
 ````
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-## &lt;JSON&gt;
+## &lt;JSON_RENDER&gt;
 
 **Type Description**
 
 
-
-
-
-
-
-
 Debug the response data
-
 
 **Main Example**
 ````properties
@@ -4514,7 +3082,6 @@ local_json_test {
     }
     debug = false
 }
-
 ````
 
 
@@ -4556,36 +3123,15 @@ local_json_test {
   </li>
 </ul>
 ````
-
-
-**more**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 **Properties**
 
 
-
-
-
 ### attributes
 
-**Description**  
+**Description**
 Extra attributes like id, data-role, data-action
-
 
 **Example**
 ````properties
@@ -4602,7 +3148,6 @@ local_json_test {
 	]>>
     debug = false
 }
-
 ````
 
 **Expected Result**
@@ -4644,22 +3189,12 @@ local_json_test {
   </li>
 </ul>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### enclose
 
-**Description**  
-The enclosing HTML element for the header divided by |
-
+**Description**
+Wrap rendered output using prefix|suffix syntax
 
 **Example**
 ````properties
@@ -4676,7 +3211,6 @@ local_json_test {
 	]>>
     debug = false
 }
-
 ````
 
 **Expected Result**
@@ -4718,25 +3252,12 @@ local_json_test {
   </li>
 </ul>
 ````
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ### file
 
-**Description**  
+**Description**
 Path to the local JSON file
-
 
 **Example**
 ````properties
@@ -4753,7 +3274,6 @@ local_json_test {
 	]>>
     debug = false
 }
-
 ````
 
 **Expected Result**
@@ -4795,22 +3315,12 @@ local_json_test {
   </li>
 </ul>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### template
 
-**Description**  
+**Description**
 Template for rendering output
-
 
 **Example**
 ````properties
@@ -4818,7 +3328,7 @@ local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
 
-    
+
 	inline = <<[
         <h1>Quotes</h1>
         <ul>
@@ -4829,7 +3339,6 @@ local_json_test {
 	]>>
     debug = false
 }
-
 ````
 
 **Expected Result**
@@ -4871,22 +3380,12 @@ local_json_test {
   </li>
 </ul>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### inline
 
-**Description**  
+**Description**
 Use inline to define the template in a multiline block &lt;&lt;[ /* Template code goes here */ ]&gt;&gt;
-
 
 **Example**
 ````properties
@@ -4903,7 +3402,6 @@ local_json_test {
 	]>>
     debug = false
 }
-
 ````
 
 **Expected Result**
@@ -4947,20 +3445,10 @@ local_json_test {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### values
 
-**Description**  
+**Description**
 Key-value pairs for template rendering
-
 
 **Example**
 ````properties
@@ -4968,7 +3456,7 @@ local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
 
-    
+
 	inline = <<[
         <h1>{{.someproperty}}</h1>
         <ul>
@@ -4982,7 +3470,6 @@ local_json_test {
     }
     debug = false
 }
-
 ````
 
 **Expected Result**
@@ -5024,22 +3511,12 @@ local_json_test {
   </li>
 </ul>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### debug
 
-**Description**  
+**Description**
 Debug the response data
-
 
 **Example**
 ````properties
@@ -5047,7 +3524,7 @@ local_json_test = <JSON_RENDER>
 local_json_test {
 	file =  hyperbricks-test-files/assets/quotes.json
 
-    
+
 	inline = <<[
         <h1>{{.someproperty}}</h1>
         <ul>
@@ -5061,7 +3538,6 @@ local_json_test {
     }
     debug = false
 }
-
 ````
 
 **Expected Result**
@@ -5105,20 +3581,7 @@ local_json_test {
 ````
 
 
-
-
-
-
-
-
-
-
-
-
 # Category: **menu**
-
-
-
 
 
 ## &lt;MENU&gt;
@@ -5126,33 +3589,16 @@ local_json_test {
 **Type Description**
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Menu renderer that sorts and formats page links by section.
 
 
 **Properties**
 
 
-
-
-
 ### enclose
 
-**Description**  
-The enclosing HTML element for the header divided by |
-
+**Description**
+Wrap rendered output using prefix|suffix syntax
 
 **Example**
 ````properties
@@ -5170,18 +3616,17 @@ hypermedia.10 {
     enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
-hm_1 < hypermedia
+hm_1 <<< hypermedia
 hm_1.route = doc1
 hm_1.title = DOCUMENT_1
 
-hm_2 < hypermedia
+hm_2 <<< hypermedia
 hm_2.route = doc2
 hm_2.title = DOCUMENT_2
 
-hm_3 < hypermedia
+hm_3 <<< hypermedia
 hm_3.route = doc3
 hm_3.title = DOCUMENT_3
-
 ````
 
 **Expected Result**
@@ -5190,7 +3635,7 @@ hm_3.title = DOCUMENT_3
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <title>
       DOCUMENT_3
     </title>
@@ -5210,22 +3655,12 @@ hm_3.title = DOCUMENT_3
   </body>
 </html>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### section
 
-**Description**  
+**Description**
 The section of the menu to display.
-
 
 **Example**
 ````properties
@@ -5243,18 +3678,17 @@ hypermedia.10 {
     enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
-hm_1 < hypermedia
+hm_1 <<< hypermedia
 hm_1.route = doc1
 hm_1.title = DOCUMENT_1
 
-hm_2 < hypermedia
+hm_2 <<< hypermedia
 hm_2.route = doc2
 hm_2.title = DOCUMENT_2
 
-hm_3 < hypermedia
+hm_3 <<< hypermedia
 hm_3.route = doc3
 hm_3.title = DOCUMENT_3
-
 ````
 
 **Expected Result**
@@ -5263,7 +3697,7 @@ hm_3.title = DOCUMENT_3
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <title>
       DOCUMENT_3
     </title>
@@ -5283,22 +3717,12 @@ hm_3.title = DOCUMENT_3
   </body>
 </html>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### order
 
-**Description**  
+**Description**
 The order of items in the menu (&#39;asc&#39; or &#39;desc&#39;).
-
 
 **Example**
 ````properties
@@ -5316,18 +3740,17 @@ hypermedia.10 {
     enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
-hm_1 < hypermedia
+hm_1 <<< hypermedia
 hm_1.route = doc1
 hm_1.title = DOCUMENT_1
 
-hm_2 < hypermedia
+hm_2 <<< hypermedia
 hm_2.route = doc2
 hm_2.title = DOCUMENT_2
 
-hm_3 < hypermedia
+hm_3 <<< hypermedia
 hm_3.route = doc3
 hm_3.title = DOCUMENT_3
-
 ````
 
 **Expected Result**
@@ -5336,7 +3759,7 @@ hm_3.title = DOCUMENT_3
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <title>
       DOCUMENT_3
     </title>
@@ -5356,22 +3779,12 @@ hm_3.title = DOCUMENT_3
   </body>
 </html>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### sort
 
-**Description**  
+**Description**
 The field to sort menu items by (&#39;title&#39;, &#39;route&#39;, or &#39;index&#39;).
-
 
 **Example**
 ````properties
@@ -5389,18 +3802,17 @@ hypermedia.10 {
     enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
-hm_1 < hypermedia
+hm_1 <<< hypermedia
 hm_1.route = doc1
 hm_1.title = DOCUMENT_1
 
-hm_2 < hypermedia
+hm_2 <<< hypermedia
 hm_2.route = doc2
 hm_2.title = DOCUMENT_2
 
-hm_3 < hypermedia
+hm_3 <<< hypermedia
 hm_3.route = doc3
 hm_3.title = DOCUMENT_3
-
 ````
 
 **Expected Result**
@@ -5409,7 +3821,7 @@ hm_3.title = DOCUMENT_3
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <title>
       DOCUMENT_3
     </title>
@@ -5429,22 +3841,12 @@ hm_3.title = DOCUMENT_3
   </body>
 </html>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### active
 
-**Description**  
+**Description**
 Template for the active menu item.
-
 
 **Example**
 ````properties
@@ -5462,19 +3864,17 @@ hypermedia.10 {
     enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
-hm_1 < hypermedia
+hm_1 <<< hypermedia
 hm_1.route = doc1
 hm_1.title = DOCUMENT_1
 
-hm_2 < hypermedia
+hm_2 <<< hypermedia
 hm_2.route = doc2
 hm_2.title = DOCUMENT_2
 
-hm_3 < hypermedia
+hm_3 <<< hypermedia
 hm_3.route = doc3
 hm_3.title = DOCUMENT_3
-
-
 ````
 
 **Expected Result**
@@ -5483,7 +3883,7 @@ hm_3.title = DOCUMENT_3
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <title>
       DOCUMENT_3
     </title>
@@ -5503,22 +3903,12 @@ hm_3.title = DOCUMENT_3
   </body>
 </html>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### item
 
-**Description**  
+**Description**
 Template for regular menu items.
-
 
 **Example**
 ````properties
@@ -5536,18 +3926,17 @@ hypermedia.10 {
     enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
-hm_1 < hypermedia
+hm_1 <<< hypermedia
 hm_1.route = doc1
 hm_1.title = DOCUMENT_1
 
-hm_2 < hypermedia
+hm_2 <<< hypermedia
 hm_2.route = doc2
 hm_2.title = DOCUMENT_2
 
-hm_3 < hypermedia
+hm_3 <<< hypermedia
 hm_3.route = doc3
 hm_3.title = DOCUMENT_3
-
 ````
 
 **Expected Result**
@@ -5556,7 +3945,7 @@ hm_3.title = DOCUMENT_3
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <title>
       DOCUMENT_3
     </title>
@@ -5576,22 +3965,12 @@ hm_3.title = DOCUMENT_3
   </body>
 </html>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### enclose
 
-**Description**  
-The enclosing HTML element for the header divided by |
-
+**Description**
+Wrap rendered output using prefix|suffix syntax
 
 **Example**
 ````properties
@@ -5609,18 +3988,17 @@ hypermedia.10 {
     enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
-hm_1 < hypermedia
+hm_1 <<< hypermedia
 hm_1.route = doc1
 hm_1.title = DOCUMENT_1
 
-hm_2 < hypermedia
+hm_2 <<< hypermedia
 hm_2.route = doc2
 hm_2.title = DOCUMENT_2
 
-hm_3 < hypermedia
+hm_3 <<< hypermedia
 hm_3.route = doc3
 hm_3.title = DOCUMENT_3
-
 ````
 
 **Expected Result**
@@ -5629,7 +4007,7 @@ hm_3.title = DOCUMENT_3
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
     <title>
       DOCUMENT_3
     </title>
@@ -5649,33 +4027,14 @@ hm_3.title = DOCUMENT_3
   </body>
 </html>
 ````
-
-
-
-
-
-
-
-
-
-
 
 
 # Category: **resources**
 
 
-
-
-
 ## &lt;CSS&gt;
 
 **Type Description**
-
-
-
-
-
-
 
 
 ### Inline css example
@@ -5696,10 +4055,6 @@ css.enclose = &lt;style media=&#34;print&#34;&gt;|&lt;/style&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-
-
-
-
 **Main Example**
 ````properties
 css = <CSS>
@@ -5708,7 +4063,6 @@ css.attributes {
     media = screen
 }
 css.enclose = <style media="print">|</style>
-
 ````
 
 
@@ -5722,7 +4076,7 @@ css.enclose = <style media="print">|</style>
 ````
 
 
-**more**
+**More**
 And some other details we do not want to forget....
 
 like an extra example:
@@ -5737,27 +4091,13 @@ css.enclose = &lt;style media=&#34;print&#34;&gt;|&lt;/style&gt;
 ```
 
 
-
-
-
-
-
-
-
-
-
-
 **Properties**
-
-
-
 
 
 ### attributes
 
-**Description**  
+**Description**
 Extra attributes like id, data-role, data-action, media
-
 
 **Example**
 ````properties
@@ -5769,7 +4109,6 @@ hypermedia.head {
         media = screen
     }
 }
-
 ````
 
 **Expected Result**
@@ -5783,27 +4122,17 @@ hypermedia.head {
       background-color: red;
       }
     </style>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
   </head>
   <body></body>
 </html>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### enclose
 
-**Description**  
+**Description**
 A custom &lt;style&gt; tag definition |. Will override extraAttributes.
-
 
 **Example**
 ````properties
@@ -5816,7 +4145,6 @@ head {
     }
     10.enclose = <style media="print">|</style>
 }
-
 ````
 
 **Expected Result**
@@ -5828,28 +4156,15 @@ head {
     background-color: red;
     }
   </style>
-  <meta name="generator" content="hyperbricks cms">
+  <meta name="generator" content="hyperbricks runtime">
 </head>
 ````
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 ### inline
 
-**Description**  
+**Description**
 Use inline to define css in a multiline block &lt;&lt;[ /* css goes here */ ]&gt;&gt;
-
 
 **Example**
 ````properties
@@ -5862,7 +4177,6 @@ hypermedia.head {
         }
     ]>>
 }
-
 ````
 
 **Expected Result**
@@ -5876,27 +4190,17 @@ hypermedia.head {
       background-color: lightblue;
       }
     </style>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
   </head>
   <body></body>
 </html>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### link
 
-**Description**  
+**Description**
 Use link for a link tag to a css file.
-
 
 **Example**
 ````properties
@@ -5906,7 +4210,6 @@ hypermedia.head {
     10 = <CSS>
     10.link = styles.css
 }
-
 ````
 
 **Expected Result**
@@ -5916,27 +4219,17 @@ hypermedia.head {
 <html>
   <head>
     <link rel="stylesheet" href="styles.css">
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
   </head>
   <body></body>
 </html>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### file
 
-**Description**  
+**Description**
 file overrides link and inline, it loads contents of a file and renders it in a style tag.
-
 
 **Example**
 ````properties
@@ -5948,7 +4241,6 @@ hypermedia.head {
         media = screen
     }
 }
-
 ````
 
 **Expected Result**
@@ -5962,22 +4254,11 @@ hypermedia.head {
       background-color: red;
       }
     </style>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
   </head>
   <body></body>
 </html>
 ````
-
-
-
-
-
-
-
-
-
-
-
 
 
 ## &lt;IMAGE&gt;
@@ -5985,14 +4266,7 @@ hypermedia.head {
 **Type Description**
 
 
-
-
-
-
-
-
-
-
+Processes a single image from src and writes an optimized copy to static/images using the configured width, height, and quality, then returns the corresponding HTML img tag.
 
 **Main Example**
 ````properties
@@ -6003,12 +4277,11 @@ image.width = 100
 image.title = Some Cute Cat!
 image.class = class-a class-b class-c
 image.attributes {
-  usemap = #catmap 
+  usemap = #catmap
 }
 image.alt = cat but cute
 image.quality = 90
 image.id = #cat
-
 ````
 
 
@@ -6018,42 +4291,13 @@ image.id = #cat
 ````
 
 
-**more**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 **Properties**
-
-
-
 
 
 ### attributes
 
-**Description**  
+**Description**
 Extra attributes like loading, data-role, data-action etc
-
 
 **Example**
 ````properties
@@ -6061,9 +4305,8 @@ image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
 image.attributes {
-  usemap = #catmap 
+  usemap = #catmap
 }
-
 ````
 
 **Expected Result**
@@ -6073,20 +4316,10 @@ image.attributes {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### enclose
 
-**Description**  
+**Description**
 Use the pipe symbol | to enclose the ````&lt;IMG&gt;```` tag.
-
 
 **Example**
 ````properties
@@ -6097,7 +4330,6 @@ image.attributes {
     loading = lazy
 }
 image.enclose = <div id="#gallery">|</div>
-
 ````
 
 **Expected Result**
@@ -6109,23 +4341,10 @@ image.enclose = <div id="#gallery">|</div>
 ````
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 ### src
 
-**Description**  
+**Description**
 The source URL of the image
-
 
 **Example**
 ````properties
@@ -6137,7 +4356,6 @@ image.attributes {
     loading = lazy
 }
 image.enclose = <div id="#logo">|</div>
-
 ````
 
 **Expected Result**
@@ -6147,22 +4365,12 @@ image.enclose = <div id="#logo">|</div>
   <img src="static/images/cute_cat_w300_h300.jpg" width="300" height="300" loading="lazy" />
 </div>
 ````
-
-
-
-
-
-
-
-
-
 
 
 ### width
 
-**Description**  
+**Description**
 The width of the image (can be a number or percentage)
-
 
 **Example**
 ````properties
@@ -6174,7 +4382,6 @@ image.attributes {
     loading = lazy
 }
 image.enclose = <div id="#logo">|</div>
-
 ````
 
 **Expected Result**
@@ -6186,20 +4393,10 @@ image.enclose = <div id="#logo">|</div>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### height
 
-**Description**  
+**Description**
 The height of the image (can be a number or percentage)
-
 
 **Example**
 ````properties
@@ -6211,7 +4408,6 @@ image.attributes {
     loading = lazy
 }
 image.enclose = <div id="#logo">|</div>
-
 ````
 
 **Expected Result**
@@ -6223,20 +4419,10 @@ image.enclose = <div id="#logo">|</div>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### alt
 
-**Description**  
+**Description**
 Alternative text for the image
-
 
 **Example**
 ````properties
@@ -6245,7 +4431,6 @@ image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
 image.alt = Cute cat!
 image.enclose = <div id="#gallery">|</div>
-
 ````
 
 **Expected Result**
@@ -6257,20 +4442,10 @@ image.enclose = <div id="#gallery">|</div>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### title
 
-**Description**  
+**Description**
 The title attribute of the image
-
 
 **Example**
 ````properties
@@ -6278,7 +4453,6 @@ image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
 image.title = Some Cute Cat!
-
 ````
 
 **Expected Result**
@@ -6288,20 +4462,10 @@ image.title = Some Cute Cat!
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### id
 
-**Description**  
+**Description**
 Id of image
-
 
 **Example**
 ````properties
@@ -6310,7 +4474,6 @@ image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 310
 image.height = 310
 image.id = #cat
-
 ````
 
 **Expected Result**
@@ -6320,20 +4483,10 @@ image.id = #cat
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### class
 
-**Description**  
+**Description**
 CSS class for styling the image
-
 
 **Example**
 ````properties
@@ -6342,7 +4495,6 @@ image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 100
 image.title = Some Cute Cat!
 image.class = aclass bclass cclass
-
 ````
 
 **Expected Result**
@@ -6352,20 +4504,10 @@ image.class = aclass bclass cclass
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### quality
 
-**Description**  
+**Description**
 Image quality for optimization, bigger is better.
-
 
 **Example**
 ````properties
@@ -6374,7 +4516,6 @@ image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 320
 image.height = 320
 image.quality = 1
-
 ````
 
 **Expected Result**
@@ -6384,20 +4525,10 @@ image.quality = 1
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### loading
 
-**Description**  
+**Description**
 Lazy loading strategy (e.g., &#39;lazy&#39;, &#39;eager&#39;)
-
 
 **Example**
 ````properties
@@ -6406,7 +4537,6 @@ image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 320
 image.height = 320
 image.loading = lazy
-
 ````
 
 **Expected Result**
@@ -6416,30 +4546,12 @@ image.loading = lazy
 ````
 
 
-
-
-
-
-
-
-
-
-
-
-
 ## &lt;IMAGES&gt;
 
 **Type Description**
 
 
-
-
-
-
-
-
-
-
+Processes images from a directory and writes optimized copies to static/images with the configured width, height, and quality, then outputs the corresponding HTML img tags. Uses the base id plus an index to make ids unique.
 
 **Main Example**
 ````properties
@@ -6450,12 +4562,11 @@ image.width = 100
 image.title = Some Cute Cat!
 image.class = class-a class-b class-c
 image.attributes {
-  usemap = #catmap 
+  usemap = #catmap
 }
 image.alt = cat but cute
 image.quality = 90
 image.id = #cat
-
 ````
 
 
@@ -6465,42 +4576,13 @@ image.id = #cat
 ````
 
 
-**more**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 **Properties**
-
-
-
 
 
 ### attributes
 
-**Description**  
+**Description**
 Extra attributes like id, data-role, data-action
-
 
 **Example**
 ````properties
@@ -6510,9 +4592,8 @@ images.width = 100
 images.loading = lazy
 images.id = #galleryimage_
 images.attributes {
-    decoding = async 
+    decoding = async
 }
-
 ````
 
 **Expected Result**
@@ -6523,20 +4604,10 @@ images.attributes {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### enclose
 
-**Description**  
+**Description**
 Use the pipe symbol | to enclose the ````&lt;IMG&gt;```` tag.
-
 
 **Example**
 ````properties
@@ -6547,7 +4618,6 @@ image.attributes {
     loading = lazy
 }
 image.enclose = <div id="#gallery">|</div>
-
 ````
 
 **Expected Result**
@@ -6557,25 +4627,12 @@ image.enclose = <div id="#gallery">|</div>
   <img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" loading="lazy" />
 </div>
 ````
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ### directory
 
-**Description**  
+**Description**
 The directory path containing the images
-
 
 **Example**
 ````properties
@@ -6586,7 +4643,6 @@ image.attributes {
     loading = lazy
 }
 image.enclose = <div id="#gallery">|</div>
-
 ````
 
 **Expected Result**
@@ -6598,27 +4654,16 @@ image.enclose = <div id="#gallery">|</div>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### width
 
-**Description**  
+**Description**
 The width of the images (can be a number or percentage)
-
 
 **Example**
 ````properties
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.width = 330
-
 ````
 
 **Expected Result**
@@ -6628,27 +4673,16 @@ image.width = 330
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### height
 
-**Description**  
+**Description**
 The height of the images (can be a number or percentage)
-
 
 **Example**
 ````properties
 image = <IMAGE>
 image.src = hyperbricks-test-files/assets/cute_cat.jpg
 image.height = 100
-
 ````
 
 **Expected Result**
@@ -6658,20 +4692,10 @@ image.height = 100
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### id
 
-**Description**  
+**Description**
 Id of images with a index added to it
-
 
 **Example**
 ````properties
@@ -6681,9 +4705,8 @@ images.width = 100
 images.loading = lazy
 images.id = #img_
 images.attributes {
-    decoding = async 
+    decoding = async
 }
-
 ````
 
 **Expected Result**
@@ -6694,20 +4717,10 @@ images.attributes {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### class
 
-**Description**  
+**Description**
 CSS class for styling the image
-
 
 **Example**
 ````properties
@@ -6719,9 +4732,8 @@ images.loading = lazy
 images.id = #galleryimage_
 images.class = galleryimage bordered
 images.attributes {
-    decoding = async 
+    decoding = async
 }
-
 ````
 
 **Expected Result**
@@ -6732,20 +4744,10 @@ images.attributes {
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### alt
 
-**Description**  
+**Description**
 Alternative text for the image
-
 
 **Example**
 ````properties
@@ -6757,7 +4759,6 @@ images.loading = lazy
 images.id = #galleryimage_
 images.class = galleryimage bordered
 images.alt = gallery image
-
 ````
 
 **Expected Result**
@@ -6768,20 +4769,10 @@ images.alt = gallery image
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### title
 
-**Description**  
+**Description**
 The title attribute of the image
-
 
 **Example**
 ````properties
@@ -6791,7 +4782,6 @@ images.width = 100
 images.loading = lazy
 images.id = #img_
 images.title = sometitle
-
 ````
 
 **Expected Result**
@@ -6802,20 +4792,10 @@ images.title = sometitle
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### quality
 
-**Description**  
+**Description**
 Image quality for optimization
-
 
 **Example**
 ````properties
@@ -6825,7 +4805,6 @@ images.width = 100
 images.loading = lazy
 images.id = #img_
 images.quality = 1
-
 ````
 
 **Expected Result**
@@ -6836,20 +4815,10 @@ images.quality = 1
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### loading
 
-**Description**  
+**Description**
 Lazy loading strategy (e.g., &#39;lazy&#39;, &#39;eager&#39;)
-
 
 **Example**
 ````properties
@@ -6859,7 +4828,6 @@ images.width = 100
 images.loading = lazy
 images.id = #img_
 images.loading = lazy
-
 ````
 
 **Expected Result**
@@ -6870,30 +4838,12 @@ images.loading = lazy
 ````
 
 
-
-
-
-
-
-
-
-
-
-
-
 ## &lt;JS&gt;
 
 **Type Description**
 
 
-
-
-
-
-
-
 Extra attributes like id, data-role, data-action, type
-
 
 **Main Example**
 ````properties
@@ -6902,7 +4852,6 @@ js.file = hyperbricks-test-files/assets/script.js
 js.attributes {
     type = text/javascript
 }
-
 ````
 
 
@@ -6914,30 +4863,13 @@ js.attributes {
 ````
 
 
-**more**
-
-
-
-
-
-
-
-
-
-
-
-
 **Properties**
-
-
-
 
 
 ### attributes
 
-**Description**  
+**Description**
 Extra attributes like id, data-role, data-action, type
-
 
 **Example**
 ````properties
@@ -6949,7 +4881,6 @@ head {
         type = text/javascript
     }
 }
-
 ````
 
 **Expected Result**
@@ -6959,25 +4890,15 @@ head {
   <script type="text/javascript">
     console.log("Hello World!")
   </script>
-  <meta name="generator" content="hyperbricks cms">
+  <meta name="generator" content="hyperbricks runtime">
 </head>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### enclose
 
-**Description**  
-The enclosing HTML element for the header divided by |
-
+**Description**
+Wrap rendered output using prefix|suffix syntax
 
 **Example**
 ````properties
@@ -6990,7 +4911,6 @@ head {
     }
     10.enclose = <script defer></script>
 }
-
 ````
 
 **Expected Result**
@@ -6999,27 +4919,14 @@ head {
 <head>
 <script defer></script>
 console.log("Hello World!")
-<meta name="generator" content="hyperbricks cms">
+<meta name="generator" content="hyperbricks runtime">
 ````
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ### inline
 
-**Description**  
+**Description**
 Use inline to define JavaScript in a multiline block &lt;&lt;[ /* JavaScript goes here */ ]&gt;&gt;
-
 
 **Example**
 ````properties
@@ -7031,7 +4938,6 @@ hypermedia.head {
         type = text/javascript
     }
 }
-
 ````
 
 **Expected Result**
@@ -7043,27 +4949,17 @@ hypermedia.head {
     <script type="text/javascript">
       console.log("Hello World!")
     </script>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
   </head>
   <body></body>
 </html>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### link
 
-**Description**  
+**Description**
 Use link for a script tag with a src attribute
-
 
 **Example**
 ````properties
@@ -7075,7 +4971,6 @@ hypermedia.head {
         type = text/javascript
     }
 }
-
 ````
 
 **Expected Result**
@@ -7085,27 +4980,17 @@ hypermedia.head {
 <html>
   <head>
     <script src="hyperbricks-test-files/assets/main.js" type="text/javascript"></script>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
   </head>
   <body></body>
 </html>
 ````
 
 
-
-
-
-
-
-
-
-
-
 ### file
 
-**Description**  
+**Description**
 File overrides link and inline, it loads contents of a file and renders it in a script tag.
-
 
 **Example**
 ````properties
@@ -7117,7 +5002,6 @@ hypermedia.head {
         type = text/javascript
     }
 }
-
 ````
 
 **Expected Result**
@@ -7129,19 +5013,41 @@ hypermedia.head {
     <script type="text/javascript">
       console.log("Hello World!")
     </script>
-    <meta name="generator" content="hyperbricks cms">
+    <meta name="generator" content="hyperbricks runtime">
   </head>
   <body></body>
 </html>
 ````
 
 
+## &lt;STYLES&gt;
+
+**Type Description**
 
 
+Stylesheet file renderer for project style assets.
 
 
+**Properties**
 
 
+### file
 
+**Description**
+Path to the CSS file
 
+**Example**
+````properties
+style = <STYLES>
+style.file = hyperbricks-test-files/assets/styles.css
+````
 
+**Expected Result**
+
+````html
+<style>
+  body {
+  background-color: red;
+  }
+</style>
+````

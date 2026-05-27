@@ -47,4 +47,4 @@ Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here
 ==== expected output ====
 <!DOCTYPE html><html><head><script type="text/javascript">
 console.log("Hello World!")
-</script><meta name="generator" content="hyperbricks cms"></head><body></body></html> 
+</script><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

@@ -6,7 +6,7 @@ fragment {
     }
 }
 ==== explainer ====
-A css selector that updates the target of the content update
+CSS selector that updates the target of the content update
 ==== expected json ====
 {
     "ConfigType": "<FRAGMENT>",
@@ -41,4 +41,3 @@ A css selector that updates the target of the content update
 "ContentType": ""
   }
 ==== expected output ====
-

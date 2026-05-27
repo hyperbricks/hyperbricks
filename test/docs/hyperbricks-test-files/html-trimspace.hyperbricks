@@ -5,7 +5,7 @@ html.value = <<[
     ]>>
 html.trimspace = true
 ==== explainer ====
-Property trimspace filters (if set to true true),  all leading and trailing white space removed, as defined by Unicode.
+Property trimspace filters, when set to true, all leading and trailing white space removed, as defined by Unicode.
 ==== expected json ====
 {
     "ConfigType": "<HTML>",

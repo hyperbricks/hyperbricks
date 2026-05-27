@@ -5,7 +5,7 @@ plugin {
     classes = [primary, secondary]
 }
 ==== explainer ====
-Optional CSS classes for the link
+Optional CSS classes for the plugin output wrapper
 ==== expected json ====
 {
   "ConfigType": "<PLUGIN>",
@@ -23,4 +23,4 @@ Optional CSS classes for the link
   "Data": null
 }
 ==== expected output ====
-<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+<div class="primary secondary">Plugin example</div>

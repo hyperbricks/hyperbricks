@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"math/rand"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/Masterminds/sprig/v3"
@@ -16,7 +17,7 @@ func ApplyTemplate(templateStr string, data map[string]interface{}) (string, []e
 	var errors []error
 
 	// Parse the template string
-	tmpl, err := GenericTemplate().Parse(templateStr)
+	tmpl, err := ParsedGenericTemplate(templateStr)
 	if err != nil {
 		errors = append(errors, ComponentError{
 			Err:      fmt.Errorf("error parsing template: %v", err).Error(),
@@ -126,6 +127,7 @@ func GetGenericFuncMap() template.FuncMap {
 }
 
 var baseTemplate = template.New("hyperbricks-generic-template").Funcs(GetGenericFuncMap())
+var genericTemplateCache sync.Map
 
 // // Why use clone ?
 // Prevents concurrent modification: Clone() creates a separate instance per goroutine, avoiding map modification issues.
@@ -134,4 +136,18 @@ var baseTemplate = template.New("hyperbricks-generic-template").Funcs(GetGeneric
 func GenericTemplate() *template.Template {
 	tmpl, _ := baseTemplate.Clone() // Clone ensures thread safety
 	return tmpl
+}
+
+func ParsedGenericTemplate(templateStr string) (*template.Template, error) {
+	if value, ok := genericTemplateCache.Load(templateStr); ok {
+		return value.(*template.Template), nil
+	}
+
+	tmpl, err := GenericTemplate().Parse(templateStr)
+	if err != nil {
+		return nil, err
+	}
+
+	value, _ := genericTemplateCache.LoadOrStore(templateStr, tmpl)
+	return value.(*template.Template), nil
 }

@@ -9,4 +9,4 @@ Use a local JS file path relative to the dedicated tests directory.
 ==== expected output ====
 <!DOCTYPE html><html><head><script>
 console.log('from file');
-</script><meta name="generator" content="hyperbricks cms"></head><body></body></html>
+</script><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

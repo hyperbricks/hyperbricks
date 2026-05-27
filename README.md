@@ -1,12 +1,12 @@
-**Licence:** MIT  
-**Version:** dev  
-**Build time:** undefined
+**Licence:** MIT
+**Version:** v1.1.0-beta
+
+**Build time:** 2026-05-26T18:53:23Z
+
 
 ## Build Status
 
 [![Build & Test (develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml/badge.svg?branch=develop)](https://github.com/hyperbricks/hyperbricks/actions/workflows/ci-all-tests.yml?query=branch%3Adevelop)
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks.svg?type=small)](https://app.fossa.com/projects/git%2Bgithub.com%2Fhyperbricks%2Fhyperbricks?ref=badge_small)
 
 ## HyperBricks
 
@@ -21,10 +21,9 @@ With HyperBricks, you can:
 * **Maintain** full control over templates, routing, and rendering — with no boilerplate or JavaScript lock-in
 * **Manage** state and logic for your app in a modular, versionable, and scalable way
 
-> **No JavaScript lock-in** — but if you want, you can still compose NPM packages using the **[esbuild plugin](/plugins.html#esbuild) and serve them however you like.
+> **No JavaScript lock-in** — but if you want, you can still compose NPM packages using the **[esbuild plugin](docs/PLUGINS.md)** and serve them however you like.
 
-** [esbuild](https://esbuild.github.io/) is a third-party go library,
-An extremely fast bundler for the web
+**[esbuild](https://esbuild.github.io/)** is a third-party Go library and an extremely fast bundler for the web.
 
 <br>
 
@@ -42,4 +41,3 @@ An extremely fast bundler for the web
 ---
 
 The project is released under the [MIT License](https://github.com/hyperbricks/hyperbricks/blob/main/LICENSE) and provided “as-is,” without any warranties or guarantees.
-

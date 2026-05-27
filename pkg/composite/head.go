@@ -66,15 +66,24 @@ func (cr *HeadRenderer) Render(instance interface{}, ctx context.Context) (strin
 	var errors []error
 	var config HeadConfig
 
-	err := mapstructure.Decode(instance, &config)
-	if err != nil {
-		return "", append(errors, shared.ComponentError{
-			Hash: shared.GenerateHash(),
-			File: config.Composite.Meta.HyperBricksFile,
-			Key:  config.Composite.Meta.HyperBricksKey,
-			Path: config.Composite.Meta.HyperBricksPath,
-			Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
-		})
+	switch typed := instance.(type) {
+	case HeadConfig:
+		config = typed
+	case *HeadConfig:
+		if typed != nil {
+			config = *typed
+		}
+	default:
+		err := mapstructure.Decode(instance, &config)
+		if err != nil {
+			return "", append(errors, shared.ComponentError{
+				Hash: shared.GenerateHash(),
+				File: config.Composite.Meta.HyperBricksFile,
+				Key:  config.Composite.Meta.HyperBricksKey,
+				Path: config.Composite.Meta.HyperBricksPath,
+				Err:  fmt.Errorf("failed to decode instance into HeadConfig: %w", err).Error(),
+			})
+		}
 	}
 
 	// appending page validation errors
@@ -119,7 +128,7 @@ func (cr *HeadRenderer) Render(instance interface{}, ctx context.Context) (strin
 	if config.Items["999"] == nil {
 		config.Items["999"] = map[string]interface{}{
 			"@type": "<HTML>",
-			"value": `<meta name="generator" content="hyperbricks cms">`,
+			"value": `<meta name="generator" content="hyperbricks runtime">`,
 		}
 	}
 

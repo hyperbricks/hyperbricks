@@ -21,12 +21,29 @@ var (
 	serverMu sync.Mutex
 )
 
+func currentServer() *http.Server {
+	serverMu.Lock()
+	defer serverMu.Unlock()
+	return server
+}
+
+func publishServer(activeServer *http.Server) {
+	serverMu.Lock()
+	server = activeServer
+	serverMu.Unlock()
+}
+
+func clearServer(activeServer *http.Server) {
+	serverMu.Lock()
+	if server == activeServer {
+		server = nil
+	}
+	serverMu.Unlock()
+}
+
 // StopServer gracefully shuts down the HTTP server.
 func StopServer(ctx context.Context) error {
-	serverMu.Lock()
-	activeServer := server
-	serverMu.Unlock()
-
+	activeServer := currentServer()
 	if activeServer == nil {
 		return nil
 	}
@@ -41,8 +58,8 @@ func StopServer(ctx context.Context) error {
 // StartServer initializes and starts the HTTP server based on the selected mode.
 func StartServer(ctx context.Context) {
 	hbConfig := getHyperBricksConfiguration()
-	if err := validatePreviewGatewayConfig(hbConfig.Server.PreviewGateway); err != nil {
-		log.Fatal("Invalid preview gateway config:", err)
+	if err := validateRuntimeGatewayConfig(hbConfig.Server.RuntimeGateway); err != nil {
+		log.Fatal("Invalid runtime gateway config:", err)
 	}
 
 	var listener net.Listener
@@ -54,7 +71,7 @@ func StartServer(ctx context.Context) {
 		log.Fatal("Failed to start listener:", err)
 	}
 
-	server = &http.Server{
+	activeServer := &http.Server{
 		Addr:         fmt.Sprintf(":%d", hbConfig.Server.Port),
 		ReadTimeout:  hbConfig.Server.ReadTimeout,
 		WriteTimeout: hbConfig.Server.WriteTimeout,
@@ -62,13 +79,10 @@ func StartServer(ctx context.Context) {
 	}
 	if hbConfig.Mode == shared.LIVE_MODE {
 		// Keep the smaller live-mode header limit, but honor configured transport settings.
-		server.MaxHeaderBytes = 65536
+		activeServer.MaxHeaderBytes = 65536
 	}
-	server.SetKeepAlivesEnabled(hbConfig.Server.KeepAlivesEnabled)
-
-	serverMu.Lock()
-	activeServer := server
-	serverMu.Unlock()
+	activeServer.SetKeepAlivesEnabled(hbConfig.Server.KeepAlivesEnabled)
+	publishServer(activeServer)
 
 	go func() {
 		<-ctx.Done()
@@ -95,9 +109,5 @@ func StartServer(ctx context.Context) {
 		log.Fatal("Server error:", err)
 	}
 
-	serverMu.Lock()
-	if server == activeServer {
-		server = nil
-	}
-	serverMu.Unlock()
+	clearServer(activeServer)
 }

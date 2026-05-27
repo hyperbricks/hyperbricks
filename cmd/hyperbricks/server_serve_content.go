@@ -478,13 +478,24 @@ func headerContentType(headers map[string]string) string {
 	return ""
 }
 
-func applyLiveCacheMetadataHeaders(headers map[string]string, renderedAt string, expiresAt string) map[string]string {
+func applyLiveCacheMetadataHeaders(headers map[string]string, renderedAt string, expiresAt string, etag string) map[string]string {
 	if headers == nil {
 		headers = make(map[string]string)
 	}
 	headers[liveCacheRenderedAtHeader] = renderedAt
 	headers[liveCacheExpiresAtHeader] = expiresAt
+	if etag != "" {
+		headers["ETag"] = etag
+	}
 	return headers
+}
+
+func liveCacheETag(content string) string {
+	if content == "" {
+		return ""
+	}
+	sum := sha256.Sum256([]byte(content))
+	return `"hb-` + hex.EncodeToString(sum[:]) + `"`
 }
 
 func resolveLiveCacheKey(route string, r *http.Request) (string, bool) {
@@ -1034,7 +1045,7 @@ func HandleRenderErrors(renderErrors []error) string {
 
 func nextRenderRequestID() string {
 	sequence := atomic.AddInt64(&renderDiagnosticsSeq, 1)
-	return fmt.Sprintf("hb-%d", sequence)
+	return "hb-" + strconv.FormatInt(sequence, 10)
 }
 
 func recordRenderDiagnostics(requestID string, route string, renderErrors []error) {
@@ -1102,18 +1113,64 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 	logging.GetLogger().Debugw("Received request for route", "route", route)
 	if hbConfig.Mode == shared.LIVE_MODE {
 		cacheEntry := handleLiveMode(w, route, r, requestID)
-		if !writeRenderResponse(w, route, requestID, cacheEntry.Content, cacheEntry.Handled, cacheEntry.Headers, cacheEntry.Cookies, cacheEntry.ContentType, cacheEntry.Status, cacheEntry.ErrorCount) {
+		if writeNotModifiedResponse(w, route, requestID, r, cacheEntry) {
+			return
+		}
+		if !writeRenderResponse(w, route, requestID, cacheEntry.Content, cacheEntry.ContentLength, cacheEntry.Handled, cacheEntry.Headers, cacheEntry.Cookies, cacheEntry.ContentType, cacheEntry.Status, cacheEntry.ErrorCount) {
 			return
 		}
 	} else {
 		renderContent := handleDeveloperMode(w, route, r, requestID)
-		if !writeRenderResponse(w, route, requestID, renderContent.Content, renderContent.Handled, renderContent.Headers, renderContent.Cookies, renderContent.ContentType, renderContent.Status, renderContent.ErrorCount) {
+		if !writeRenderResponse(w, route, requestID, renderContent.Content, "", renderContent.Handled, renderContent.Headers, renderContent.Cookies, renderContent.ContentType, renderContent.Status, renderContent.ErrorCount) {
 			return
 		}
 	}
 }
 
-func writeRenderResponse(w http.ResponseWriter, route string, requestID string, content string, handled *shared.HandledResponse, headers map[string]string, cookies []string, contentType string, status int, errorCount int) bool {
+func writeNotModifiedResponse(w http.ResponseWriter, route string, requestID string, r *http.Request, cacheEntry CacheEntry) bool {
+	if !canUseNotModified(r, cacheEntry) {
+		return false
+	}
+	applyResponseHeaders(cacheEntry.Headers, w)
+	w.Header().Set(requestIDHeader, requestID)
+	w.Header().Set(renderErrorCountHeader, strconv.Itoa(cacheEntry.ErrorCount))
+	w.Header().Del("Content-Length")
+	w.WriteHeader(http.StatusNotModified)
+	logging.GetLogger().Debugw("Served not modified request", "route", route)
+	return true
+}
+
+func canUseNotModified(r *http.Request, cacheEntry CacheEntry) bool {
+	if r == nil || cacheEntry.ETag == "" || cacheEntry.Status != http.StatusOK || cacheEntry.Handled != nil || len(cacheEntry.Cookies) > 0 {
+		return false
+	}
+	if r.Method != "" && r.Method != http.MethodGet && r.Method != http.MethodHead {
+		return false
+	}
+	return headerHasETag(r.Header.Values("If-None-Match"), cacheEntry.ETag)
+}
+
+func headerHasETag(values []string, etag string) bool {
+	for _, value := range values {
+		for _, candidate := range strings.Split(value, ",") {
+			candidate = comparableETag(candidate)
+			if candidate == "*" || candidate == etag {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func comparableETag(value string) string {
+	value = strings.TrimSpace(value)
+	if strings.HasPrefix(value, "W/") {
+		value = strings.TrimSpace(strings.TrimPrefix(value, "W/"))
+	}
+	return value
+}
+
+func writeRenderResponse(w http.ResponseWriter, route string, requestID string, content string, contentLength string, handled *shared.HandledResponse, headers map[string]string, cookies []string, contentType string, status int, errorCount int) bool {
 	applyResponseHeaders(headers, w)
 	applyResponseCookies(cookies, w)
 	if contentType != "" {
@@ -1127,22 +1184,45 @@ func writeRenderResponse(w http.ResponseWriter, route string, requestID string, 
 		status = http.StatusOK
 	}
 
-	body := []byte(content)
 	if handled != nil {
-		body = handled.Body
-	}
-
-	w.WriteHeader(status)
-	if len(body) == 0 {
+		if responseAllowsBody(status) {
+			w.Header().Set("Content-Length", strconv.Itoa(len(handled.Body)))
+		}
+		body := handled.Body
+		w.WriteHeader(status)
+		if len(body) == 0 {
+			logging.GetLogger().Debugw("Served request", "route", route)
+			return true
+		}
+		if _, err := w.Write(body); err != nil {
+			logging.GetLogger().Errorw("Error writing response", "route", route, "error", err)
+			return false
+		}
 		logging.GetLogger().Debugw("Served request", "route", route)
 		return true
 	}
-	if _, err := w.Write(body); err != nil {
+
+	if responseAllowsBody(status) {
+		if contentLength == "" {
+			contentLength = strconv.Itoa(len(content))
+		}
+		w.Header().Set("Content-Length", contentLength)
+	}
+	w.WriteHeader(status)
+	if content == "" {
+		logging.GetLogger().Debugw("Served request", "route", route)
+		return true
+	}
+	if _, err := io.WriteString(w, content); err != nil {
 		logging.GetLogger().Errorw("Error writing response", "route", route, "error", err)
 		return false
 	}
 	logging.GetLogger().Debugw("Served request", "route", route)
 	return true
+}
+
+func responseAllowsBody(status int) bool {
+	return status != http.StatusNoContent && status != http.StatusNotModified
 }
 
 // RENDER WITHOUT CACHE
@@ -1202,31 +1282,39 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request, reques
 	renderTime := time.Now().Format("2006-01-02 15:04:05 (-07:00)")
 
 	renderContent := renderContent(w, route, r, requestID)
+	etag := ""
+	contentLength := ""
 	if !renderContent.NoCache {
 		if cacheable && renderContent.Content != "" {
-			renderContent.Headers = applyLiveCacheMetadataHeaders(renderContent.Headers, renderTime, expirationTime)
+			etag = liveCacheETag(renderContent.Content)
+			contentLength = strconv.Itoa(len(renderContent.Content))
+			renderContent.Headers = applyLiveCacheMetadataHeaders(renderContent.Headers, renderTime, expirationTime, etag)
 			htmlCacheMutex.Lock()
 			htmlCache[cacheKey] = CacheEntry{
-				Content:     renderContent.Content,
-				Timestamp:   now,
-				ContentType: renderContent.ContentType,
-				Status:      renderContent.Status,
-				Headers:     renderContent.Headers,
-				Cookies:     renderContent.Cookies,
-				ErrorCount:  renderContent.ErrorCount,
+				Content:       renderContent.Content,
+				ContentLength: contentLength,
+				ETag:          etag,
+				Timestamp:     now,
+				ContentType:   renderContent.ContentType,
+				Status:        renderContent.Status,
+				Headers:       renderContent.Headers,
+				Cookies:       renderContent.Cookies,
+				ErrorCount:    renderContent.ErrorCount,
 			}
 			htmlCacheMutex.Unlock()
 			logging.GetLogger().Debugw("Updated cache for route", "route", route)
 		}
 	}
 	return CacheEntry{
-		Content:     renderContent.Content,
-		Timestamp:   now,
-		ContentType: renderContent.ContentType,
-		Status:      renderContent.Status,
-		Headers:     renderContent.Headers,
-		Cookies:     renderContent.Cookies,
-		ErrorCount:  renderContent.ErrorCount,
-		Handled:     cloneHandledResponseData(renderContent.Handled),
+		Content:       renderContent.Content,
+		ContentLength: contentLength,
+		ETag:          etag,
+		Timestamp:     now,
+		ContentType:   renderContent.ContentType,
+		Status:        renderContent.Status,
+		Headers:       renderContent.Headers,
+		Cookies:       renderContent.Cookies,
+		ErrorCount:    renderContent.ErrorCount,
+		Handled:       cloneHandledResponseData(renderContent.Handled),
 	}
 }

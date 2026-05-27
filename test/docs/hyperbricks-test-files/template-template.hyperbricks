@@ -17,10 +17,10 @@ myComponent {
 fragment = <FRAGMENT>
 fragment.content = <TREE>
 fragment.content {
-    10 < myComponent
+    10 <<< myComponent
     10.values.src = https://www.youtube.com/watch?v=Wlh6yFSJEms
 
-    20 < myComponent
+    20 <<< myComponent
 
     enclose = <div class="youtube_video">|</div>
 }

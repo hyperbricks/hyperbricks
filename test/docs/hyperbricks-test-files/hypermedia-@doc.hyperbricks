@@ -13,7 +13,7 @@ css.value = <<[
 hypermedia = <HYPERMEDIA>
 hypermedia.head = <HEAD>
 hypermedia.head {
-    10 < css
+    10 <<< css
     20 = <CSS>
     20.inline = <<[
         .content {
@@ -28,7 +28,7 @@ hypermedia.10 {
 }
 
 ==== explainer ====
-HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use <FRAGMENT> to utilize hx-[method] (GET,POST etc) requests.  
+HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use <FRAGMENT> to utilize hx-[method] (GET,POST etc) requests.
 ==== expected json ====
 {
   "ConfigType": "<HYPERMEDIA>",
@@ -78,6 +78,6 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
 .content {
     color:green;
 }
-    
-</style><meta name="generator" content="hyperbricks cms"></head><body><p>SOME CONTENT</p></body></html> 
+
+</style><meta name="generator" content="hyperbricks runtime"></head><body><p>SOME CONTENT</p></body></html>
 ==== more details ====

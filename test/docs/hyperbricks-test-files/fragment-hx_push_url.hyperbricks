@@ -6,7 +6,7 @@ fragment {
     }
 }
 ==== explainer ====
-Pushes a new url into the history stack
+Pushes a new URL into the history stack
 ==== expected json ====
 {
     "ConfigType": "<FRAGMENT>",

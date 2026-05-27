@@ -105,7 +105,7 @@ func initStaticFileServer(limiter *rate.Limiter) {
 
 	// Use a single handler for the defined directories
 	baseHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if handlePreviewGateway(w, r) {
+		if handleRuntimeGateway(w, r) {
 			return
 		}
 		switch {

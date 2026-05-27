@@ -10,14 +10,16 @@ import (
 )
 
 type CacheEntry struct {
-	ContentType string
-	Content     string
-	Status      int
-	Timestamp   time.Time
-	Headers     map[string]string
-	Cookies     []string
-	ErrorCount  int
-	Handled     *shared.HandledResponse
+	ContentType   string
+	Content       string
+	ContentLength string
+	ETag          string
+	Status        int
+	Timestamp     time.Time
+	Headers       map[string]string
+	Cookies       []string
+	ErrorCount    int
+	Handled       *shared.HandledResponse
 }
 
 var (

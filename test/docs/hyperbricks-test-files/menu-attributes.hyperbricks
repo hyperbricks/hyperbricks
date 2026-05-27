@@ -13,15 +13,15 @@ hypermedia.10 {
     enclose = <nav class="nav nav-masthead justify-content-center float-md-end">|</nav>
 }
 
-hm_1 < hypermedia
+hm_1 <<< hypermedia
 hm_1.route = doc1
 hm_1.title = DOCUMENT_1
 
-hm_2 < hypermedia
+hm_2 <<< hypermedia
 hm_2.route = doc2
 hm_2.title = DOCUMENT_2
 
-hm_3 < hypermedia
+hm_3 <<< hypermedia
 hm_3.route = doc3
 hm_3.title = DOCUMENT_3
 ==== explainer ====
@@ -51,7 +51,7 @@ Extra attributes like id, data-role, data-action
   "Cookies": null
 }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><title>DOCUMENT_3</title>
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>DOCUMENT_3</title>
 </head><body><nav class="nav nav-masthead justify-content-center float-md-end"><a class="nav-link fw-bold py-1 px-0" href="doc1"> DOCUMENT_1</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc2"> DOCUMENT_2</a>
 <a class="nav-link fw-bold py-1 px-0" href="doc3"> DOCUMENT_3</a></nav></body></html> 

@@ -17,7 +17,7 @@ type MultipleImagesConfig struct {
 	Height             int    `mapstructure:"height" validate:"min=1" description:"The height of the images (can be a number or percentage)" example:"{!{images-height.hyperbricks}}"`
 	Id                 string `mapstructure:"id" description:"Id of images with a index added to it" example:"{!{images-id.hyperbricks}}"`
 	Class              string `mapstructure:"class" description:"CSS class for styling the image" example:"{!{images-class.hyperbricks}}"`
-	IsStatic           bool   `mapstructure:"is_static" description:"Flag indicating if the images are static" example:"{!{images-is_static.hyperbricks}}"`
+	IsStatic           bool   `mapstructure:"is_static" exclude:"true" description:"Flag indicating if the images are static" example:"{!{images-is_static.hyperbricks}}"`
 	Alt                string `mapstructure:"alt" description:"Alternative text for the image" example:"{!{images-alt.hyperbricks}}"`
 	Title              string `mapstructure:"title" description:"The title attribute of the image" example:"{!{images-title.hyperbricks}}"`
 	Quality            int    `mapstructure:"quality" description:"Image quality for optimization" example:"{!{images-quality.hyperbricks}}"`

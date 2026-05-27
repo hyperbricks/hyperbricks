@@ -12,4 +12,4 @@ When both file and link are set, file content takes precedence and must render a
 body {
     color: blue;
 }
-</style><meta name="generator" content="hyperbricks cms"></head><body></body></html>
+</style><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

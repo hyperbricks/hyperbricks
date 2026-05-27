@@ -24,4 +24,4 @@ Extra attributes like id, data-role, data-action
   "Data": null
 }
 ==== expected output ====
-<!-- Error loading plugin example: plugin.Open("bin/plugins/example.so"): realpath failed -->
+<div data-role="demo">Plugin example</div>

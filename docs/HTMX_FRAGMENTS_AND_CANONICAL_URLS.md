@@ -16,7 +16,7 @@ fragment from an explicit fragment endpoint or composed fragment source.
 Consider this shape:
 
 ```hyperbricks
-app_assets < app
+app_assets <<< app
 app_assets.route = assets
 
 assets = <FRAGMENT>
@@ -80,14 +80,14 @@ When a page is derived from an app shell, keep the page route on the composed
 page:
 
 ```hyperbricks
-app_assets < app
+app_assets <<< app
 app_assets.route = assets
 ```
 
 Then compose or reuse the fragment content explicitly:
 
 ```hyperbricks
-app_assets.10.values.content.10.values.content_right < assets.10
+app_assets.10.values.content.10.values.content_right <<< assets.10
 ```
 
 This expresses the ownership clearly:

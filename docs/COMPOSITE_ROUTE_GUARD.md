@@ -1,6 +1,6 @@
 # Composite Route Guard
 
-Status: working reference  
+Status: working reference
 Date: 2026-04-30
 
 ## Purpose

@@ -9,7 +9,7 @@ api_fragment {
     }
 }
 ==== explainer ====
-Set proxy query key in the confifuration
+Set proxy query keys in the configuration
 ==== expected json ====
 {
   "ConfigType": "<API_FRAGMENT_RENDER>",

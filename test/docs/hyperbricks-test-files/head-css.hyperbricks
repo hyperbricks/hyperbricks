@@ -40,6 +40,6 @@ CSS files to include
   "Cookies": null
 }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks cms"><link rel="stylesheet" href="style.css">
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><link rel="stylesheet" href="style.css">
         <link rel="stylesheet" href="morestyles.css">
         </head><body></body></html> 

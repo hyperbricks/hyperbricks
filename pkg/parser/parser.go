@@ -23,6 +23,13 @@ var (
 	logger   *zap.SugaredLogger
 	HbConfig map[string]interface{}
 )
+
+var (
+	envPlaceholderPattern  = regexp.MustCompile(`{{ENV:([a-zA-Z0-9_]+)}}`)
+	varPlaceholderPattern  = regexp.MustCompile(`{{VAR:([a-zA-Z0-9_]+)}}`)
+	confPlaceholderPattern = regexp.MustCompile(`{{CONF:([a-zA-Z0-9_.]+)}}`)
+)
+
 var KnownTypes = map[string]bool{
 	// this is populated by registerComponent...
 }
@@ -66,11 +73,6 @@ func ParseHyperScript(input string) map[string]interface{} {
 // parseLines recursively parses lines into the config object.
 // Now includes variables map for substitution.
 func parseLines(lines []string, index *int, config map[string]interface{}, rootConfig map[string]interface{}, variables map[string]string) {
-	// Regex to identify variable placeholders like {{VAR:varname}}
-	envPattern := regexp.MustCompile(`{{ENV:([a-zA-Z0-9_]+)}}`)
-	varPattern := regexp.MustCompile(`{{VAR:([a-zA-Z0-9_]+)}}`)
-	confPattern := regexp.MustCompile(`{{CONF:([a-zA-Z0-9_.]+)}}`)
-
 	for *index < len(lines) {
 		line := strings.TrimSpace(lines[*index])
 		*index++
@@ -132,20 +134,15 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 			continue
 		}
 
-		// Handle assignment by reference syntax: "key < reference_key"
-		if strings.Contains(line, "<") && !strings.Contains(line, "=") {
-			parts := strings.Split(line, "<")
-			if len(parts) == 2 {
-				key := strings.TrimSpace(parts[0])
-				referenceKey := strings.TrimSpace(parts[1])
-				keyParts := strings.Split(key, ".")
-				err := setReferenceValue(config, keyParts, referenceKey, rootConfig)
-				if err != nil {
+		// Handle assignment by reference syntax: "key <<< reference_key".
+		if key, referenceKey, ok := splitReferenceAssignment(line); ok {
+			keyParts := strings.Split(key, ".")
+			err := setReferenceValue(config, keyParts, referenceKey, rootConfig)
+			if err != nil {
 
-					logging.GetLogger().Errorf("Error setting reference inhiterence: %v", err)
-				}
-				continue
+				logging.GetLogger().Errorf("Error setting reference inhiterence: %v", err)
 			}
+			continue
 		}
 
 		// Handle key-value assignments
@@ -235,9 +232,9 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 			// Perform variable substitution in each array element
 			for i, elem := range arrayElements {
 				if elemStr, ok := elem.(string); ok {
-					arrayElements[i] = varPattern.ReplaceAllStringFunc(elemStr, func(match string) string {
+					arrayElements[i] = varPlaceholderPattern.ReplaceAllStringFunc(elemStr, func(match string) string {
 						// Extract variable name
-						submatches := varPattern.FindStringSubmatch(match)
+						submatches := varPlaceholderPattern.FindStringSubmatch(match)
 						if len(submatches) != 2 {
 							logger.Warnf("Invalid variable placeholder: %s", match)
 							return match // Return as-is
@@ -249,9 +246,9 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 						logger.Warnf("Undefined variable '%s'", varName)
 						return match // Return as-is
 					})
-					arrayElements[i] = envPattern.ReplaceAllStringFunc(elemStr, func(match string) string {
+					arrayElements[i] = envPlaceholderPattern.ReplaceAllStringFunc(elemStr, func(match string) string {
 						// Extract variable name
-						submatches := envPattern.FindStringSubmatch(match)
+						submatches := envPlaceholderPattern.FindStringSubmatch(match)
 						if len(submatches) != 2 {
 							logger.Warnf("Invalid variable placeholder: %s", match)
 							return match // Return as-is
@@ -299,9 +296,9 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 			setNestedValue(config, keyParts, arrayElements)
 			continue
 		}
-		value = envPattern.ReplaceAllStringFunc(value, func(match string) string {
+		value = envPlaceholderPattern.ReplaceAllStringFunc(value, func(match string) string {
 			// Extract variable name
-			submatches := envPattern.FindStringSubmatch(match)
+			submatches := envPlaceholderPattern.FindStringSubmatch(match)
 			if len(submatches) != 2 {
 				logger.Warnf("Invalid variable placeholder: %s", match)
 				return match // Return as-is
@@ -317,9 +314,9 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 		})
 
 		// Perform variable substitution in the value
-		value = varPattern.ReplaceAllStringFunc(value, func(match string) string {
+		value = varPlaceholderPattern.ReplaceAllStringFunc(value, func(match string) string {
 			// Extract variable name
-			submatches := varPattern.FindStringSubmatch(match)
+			submatches := varPlaceholderPattern.FindStringSubmatch(match)
 			if len(submatches) != 2 {
 				logger.Warnf("Invalid variable placeholder: %s", match)
 				return match // Return as-is
@@ -333,9 +330,9 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 		})
 
 		// Perform config substitution
-		value = confPattern.ReplaceAllStringFunc(value, func(match string) string {
+		value = confPlaceholderPattern.ReplaceAllStringFunc(value, func(match string) string {
 			// Extract config name
-			submatches := confPattern.FindStringSubmatch(match)
+			submatches := confPlaceholderPattern.FindStringSubmatch(match)
 			if len(submatches) != 2 {
 				logger.Warnf("Invalid config placeholder: %s", match)
 				return match // Return as-is
@@ -373,6 +370,21 @@ func parseLines(lines []string, index *int, config map[string]interface{}, rootC
 			setNestedValue(config, keyParts, value)
 		}
 	}
+}
+
+func splitReferenceAssignment(line string) (string, string, bool) {
+	if strings.Contains(line, "=") {
+		return "", "", false
+	}
+
+	if strings.Count(line, "<<<") != 1 {
+		return "", "", false
+	}
+
+	parts := strings.SplitN(line, "<<<", 2)
+	key := strings.TrimSpace(parts[0])
+	referenceKey := strings.TrimSpace(parts[1])
+	return key, referenceKey, key != "" && referenceKey != ""
 }
 
 // LookupByPath retrieves a value from a nested map using a dot-separated key path.

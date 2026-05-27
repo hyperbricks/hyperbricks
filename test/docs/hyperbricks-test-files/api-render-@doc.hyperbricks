@@ -5,7 +5,7 @@ api_render {
     method = GET
 }
 ==== explainer ====
-<API_RENDER> description
+Fetch a remote API endpoint and render the response through a template or inline template.
 ==== expected json ====
 {
   "ConfigType": "<API_RENDER>",

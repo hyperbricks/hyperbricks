@@ -1,6 +1,8 @@
 {{define "main"}}**Licence:** MIT  
 **Version:** {{.version}}  
+{{if and .buildtime (ne .buildtime "undefined")}}
 **Build time:** {{.buildtime}}
+{{end}}
 
 ## Build Status
 
@@ -9,72 +11,70 @@
 ## HyperBricks type reference
 
 {{range $category, $types := .data}}
-
 # Category: **{{$category}}**
 
 {{range $typeName, $fields := $types}}
-
-{{ if eq $typeName "<FRAGMENT>" }}
-   {{include "template_api_fragment_render.md"}}
+{{if eq $typeName "<FRAGMENT>"}}
+{{include "template_api_fragment_render.md"}}
 {{end}}
 
 ## {{$typeName}}
 
 **Type Description**
+{{if not (hasTypeDoc $fields)}}
 
-{{range $fields}}
-{{if eq .Mapstructure "@doc"}}
+{{trimText (typeDescription $fields)}}
+{{end}}
+{{range $fields}}{{if eq .Mapstructure "@doc"}}
 
-{{.Description}}
+{{trimText .Description}}
 
 **Main Example**
 ````properties
-{{.Example}}
+{{trimHTML .Example}}
 ````
 
 {{if .Result}}
 **Expected Result**
 ````html
-{{.Result}}
+{{trimHTML .Result}}
 ````
 {{end}}
 
-**more**
-{{.MoreDetails}}
-
+{{if .MoreDetails}}
+**More**
+{{trimText .MoreDetails}}
 {{end}}
-{{end}}
 
+{{end}}{{end}}
 
 **Properties**
-
-{{range $fields}}
-
-{{if ne .Mapstructure "@doc"}}
+{{range $fields}}{{if ne .Mapstructure "@doc"}}
 
 ### {{.Mapstructure}}
 
 **Description**  
-{{.Description}}
+{{trimText .Description}}
 
 **Example**
 ````properties
-{{.Example}}
+{{trimHTML .Example}}
 ````
 {{if .Result}}
 **Expected Result**
 
 ````html
-{{.Result}}
+{{trimHTML .Result}}
 ````
 
 
 {{end}}
 
-{{.MoreDetails}}
+{{if .MoreDetails}}
+{{trimText .MoreDetails}}
+{{end}}
 
-{{end}}
-{{end}}
+{{end}}{{end}}
 
 {{end}}
 {{end}}

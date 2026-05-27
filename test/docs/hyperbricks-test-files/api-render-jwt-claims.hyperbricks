@@ -8,7 +8,7 @@ api_render {
     }
 }
 ==== explainer ====
-jwt claim map
+JWT claims to include when signing the bearer token
 ==== expected json ====
 {
   "ConfigType": "<API_RENDER>",

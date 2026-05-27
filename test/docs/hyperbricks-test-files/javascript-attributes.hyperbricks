@@ -34,4 +34,4 @@ Extra attributes like id, data-role, data-action, type
 ==== expected output ====
 <head><script type="text/javascript">
 console.log("Hello World!")
-</script><meta name="generator" content="hyperbricks cms"></head>
+</script><meta name="generator" content="hyperbricks runtime"></head>

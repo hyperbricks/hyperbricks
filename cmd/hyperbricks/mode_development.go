@@ -7,7 +7,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hyperbricks/hyperbricks/pkg/database"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 
 	"go.uber.org/zap"
@@ -72,9 +71,6 @@ func development_mode() {
 
 	// Wait for the server to finish
 	wg.Wait()
-	if err := database.CloseDB(); err != nil {
-		logging.GetLogger().Warnw("Failed to close database", "error", err)
-	}
 	fmt.Print("\033[H\033[2J")
 	logging.GetLogger().Info("Application exited")
 
