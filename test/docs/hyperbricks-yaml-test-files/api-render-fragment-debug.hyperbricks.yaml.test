@@ -1,0 +1,58 @@
+==== hyperbricks yaml {!{api_fragment}} ====
+api_fragment:
+  - type: api_fragment_render
+  - debug: "true"
+  - debugpanel: "true"
+  - endpoint: https://example.com/fragment
+  - method: GET
+  - route: api-fragment
+==== explainer ====
+Debug the response data
+==== expected json ====
+{
+  "AllowedQueryKeys": null,
+  "Body": "",
+  "ConfigCategory": "",
+  "ConfigType": "<API_FRAGMENT_RENDER>",
+  "Debug": true,
+  "DebugPanel": true,
+  "Enclose": "",
+  "Endpoint": "https://example.com/fragment",
+  "Headers": null,
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Inline": "",
+  "Items": null,
+  "JwtClaims": null,
+  "JwtSecret": "",
+  "MetaDocDescription": "",
+  "Method": "GET",
+  "NoCache": false,
+  "Password": "",
+  "QueryParams": null,
+  "Route": "api-fragment",
+  "Section": "",
+  "SetCookie": "",
+  "Status": 0,
+  "Template": "",
+  "Title": "",
+  "Username": "",
+  "Values": null
+}
+
+==== expected output ====

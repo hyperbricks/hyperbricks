@@ -1,0 +1,31 @@
+{
+  "page": {
+    "@order": [
+      "head"
+    ],
+    "@type": "<HYPERMEDIA>",
+    "head": {
+      "@order": [
+        "css_component",
+        "js_component"
+      ],
+      "@type": "<HEAD>",
+      "css": [
+        "{{RESOURCES}}/css/base.css"
+      ],
+      "css_component": {
+        "@type": "<CSS>",
+        "inline": ".reserved-name-fixture {\n  display: block;\n}\n"
+      },
+      "js": [
+        "{{RESOURCES}}/js/app.js"
+      ],
+      "js_component": {
+        "@type": "<JAVASCRIPT>",
+        "inline": "console.log(\"reserved-name fixture\");\n"
+      },
+      "title": "Reserved names fixture"
+    },
+    "route": "reserved-name-collision"
+  }
+}

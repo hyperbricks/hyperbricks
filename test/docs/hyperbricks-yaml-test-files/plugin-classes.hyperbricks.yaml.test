@@ -1,0 +1,28 @@
+==== hyperbricks yaml {!{plugin}} ====
+plugin:
+  - type: plugin
+  - classes:
+      - primary
+      - secondary
+  - plugin: example
+==== explainer ====
+Optional CSS classes for the plugin output wrapper
+==== expected json ====
+{
+  "Classes": [
+    "primary",
+    "secondary"
+  ],
+  "ConfigCategory": "",
+  "ConfigType": "<PLUGIN>",
+  "Data": null,
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "PluginName": "example"
+}
+
+==== expected output ====
+<div class="primary secondary">Plugin example</div>

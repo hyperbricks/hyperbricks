@@ -1,0 +1,41 @@
+==== hyperbricks yaml {!{hypermedia}} ====
+hypermedia:
+  - type: hypermedia
+  - cookies:
+      - session=abc; Path=/; HttpOnly; Secure
+      - prefs=dark; Path=/; Max-Age=31536000; SameSite=Lax
+==== explainer ====
+HTTP cookies to include when serving this hypermedia
+==== expected json ====
+{
+  "BodyTag": "",
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "ContentType": "",
+  "Cookies": [
+    "session=abc; Path=/; HttpOnly; Secure",
+    "prefs=dark; Path=/; Max-Age=31536000; SameSite=Lax"
+  ],
+  "Doctype": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Head": null,
+  "Headers": null,
+  "HtmlTag": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<!DOCTYPE html><html><body></body></html>

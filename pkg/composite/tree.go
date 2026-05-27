@@ -78,8 +78,9 @@ func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []
 		}
 	}
 
-	// Step 1: Sort the keys
-	itemsSortedOnKeys := shared.SortedUniqueKeys(config.Items)
+	// Step 1: Prefer explicit source order from the YAML source model and fall
+	// back to legacy alphanumeric sorting when no order metadata is present.
+	itemsSortedOnKeys := orderedTreeKeys(config.Items)
 
 	var wg sync.WaitGroup
 
@@ -91,7 +92,7 @@ func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []
 	for idx, key := range itemsSortedOnKeys {
 
 		switch key {
-		case "@type", "hyperbricksfile", "hyperbrickspath", "hyperbrickskey":
+		case "@type", "@order", "hyperbricksfile", "hyperbrickspath", "hyperbrickskey":
 			continue
 		}
 
@@ -203,6 +204,78 @@ func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []
 	sortedErrors := SortCompositeErrors(renderErrors, itemsSortedOnKeys)
 	outputHtml := shared.EncloseContent(config.Enclose, renderedComponentOutput.String())
 	return outputHtml, sortedErrors
+}
+
+func orderedTreeKeys(items map[string]interface{}) []string {
+	if len(items) == 0 {
+		return nil
+	}
+
+	fallback := shared.SortedUniqueKeys(items)
+	order := extractTreeOrder(items["@order"])
+	if len(order) == 0 {
+		return filterTreeRenderKeys(fallback, nil)
+	}
+
+	seen := make(map[string]bool, len(items))
+	keys := make([]string, 0, len(items))
+	for _, key := range order {
+		if treeMetadataKey(key) || seen[key] {
+			continue
+		}
+		if _, exists := items[key]; !exists {
+			continue
+		}
+		seen[key] = true
+		keys = append(keys, key)
+	}
+	return filterTreeRenderKeys(fallback, seen, keys...)
+}
+
+func extractTreeOrder(raw interface{}) []string {
+	switch typed := raw.(type) {
+	case []string:
+		return typed
+	case []interface{}:
+		out := make([]string, 0, len(typed))
+		for _, value := range typed {
+			key, ok := value.(string)
+			if !ok || key == "" {
+				continue
+			}
+			out = append(out, key)
+		}
+		return out
+	default:
+		return nil
+	}
+}
+
+func filterTreeRenderKeys(keys []string, seen map[string]bool, prefixed ...string) []string {
+	out := append([]string(nil), prefixed...)
+	if seen == nil {
+		seen = make(map[string]bool, len(out))
+		for _, key := range out {
+			seen[key] = true
+		}
+	}
+	for _, key := range keys {
+		if treeMetadataKey(key) || seen[key] {
+			continue
+		}
+		seen[key] = true
+		out = append(out, key)
+	}
+	return out
+}
+
+func treeMetadataKey(key string) bool {
+	switch key {
+	case "@type", "@order", "hyperbricksfile", "hyperbrickspath", "hyperbrickskey":
+		return true
+	default:
+		return false
+	}
 }
 
 func SortCompositeErrors(errors []error, sortedKeys []string) []error {

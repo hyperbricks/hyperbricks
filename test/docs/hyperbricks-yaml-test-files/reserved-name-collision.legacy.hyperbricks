@@ -1,0 +1,19 @@
+page = <HYPERMEDIA>
+page.route = reserved-name-collision
+
+page.head = <HEAD>
+page.head.title = Reserved names fixture
+page.head.css = [{{RESOURCES}}/css/base.css]
+page.head.js = [{{RESOURCES}}/js/app.js]
+
+page.head.css_component = <CSS>
+page.head.css_component.inline = <<[
+.reserved-name-fixture {
+  display: block;
+}
+]>>
+
+page.head.js_component = <JAVASCRIPT>
+page.head.js_component.inline = <<[
+console.log("reserved-name fixture");
+]>>

@@ -1,0 +1,22 @@
+==== hyperbricks yaml {!{plugin}} ====
+plugin:
+  - type: plugin
+  - plugin: example
+==== explainer ====
+Name of the plugin to render
+==== expected json ====
+{
+  "Classes": null,
+  "ConfigCategory": "",
+  "ConfigType": "<PLUGIN>",
+  "Data": null,
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "PluginName": "example"
+}
+
+==== expected output ====
+Plugin example

@@ -1,0 +1,102 @@
+==== hyperbricks yaml {!{hypermedia}} ====
+hypermedia:
+  - type: hypermedia
+  - html_10:
+      - type: html
+      - value: <p>some HTML</p>
+  - head:
+      - type: head
+      - html_20:
+          - type: html
+          - value: <meta name="generator" content="hyperbricks runtime">
+      - html_999:
+          - type: html
+          - value: <!-- 999 overrides default generator meta tag -->
+      - css_1001:
+          - type: css
+          - inline: "\nbody {\n  padding:10px;\n}\n    "
+      - css:
+          - styles.css
+          - xxxx
+      - js:
+          - styles.css
+          - xxxx
+      - meta:
+          a: b
+          b: c
+  - route: index
+==== explainer ====
+Builds header content. See <HEADER> for details
+==== expected json ====
+{
+  "BodyTag": "",
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "ContentType": "",
+  "Cookies": null,
+  "Doctype": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Head": {
+    "@order": [
+      "html_20",
+      "html_999",
+      "css_1001"
+    ],
+    "@type": "<HEAD>",
+    "css": [
+      "styles.css",
+      "xxxx"
+    ],
+    "css_1001": {
+      "@type": "<CSS>",
+      "inline": "\nbody {\n  padding:10px;\n}\n    "
+    },
+    "html_20": {
+      "@type": "<HTML>",
+      "value": "<meta name=\"generator\" content=\"hyperbricks runtime\">"
+    },
+    "html_999": {
+      "@type": "<HTML>",
+      "value": "<!-- 999 overrides default generator meta tag -->"
+    },
+    "js": [
+      "styles.css",
+      "xxxx"
+    ],
+    "meta": {
+      "a": "b",
+      "b": "c"
+    }
+  },
+  "Headers": null,
+  "HtmlTag": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "index",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><!-- 999 overrides default generator meta tag --><style>
+
+body {
+  padding:10px;
+}
+    
+</style><meta name="generator" content="hyperbricks runtime"><meta name="a" content="b">
+<meta name="b" content="c">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="xxxx">
+<script src="styles.css"></script>
+<script src="xxxx"></script>
+</head><body><p>some HTML</p></body></html>

@@ -1,0 +1,16 @@
+page:
+  - type: hypermedia
+  - route: index
+  - static: index.html
+  - title: YAML Route Fixture
+  - section: main
+  - index: 10
+  - bodytag: '<body data-page="yaml-route">|</body>'
+  - headers:
+      X-HyperBricks-Fixture: yaml
+  - cookies:
+      - fixture=ok; Path=/; SameSite=Lax
+
+  - hero:
+      - type: html
+      - value: <h1>Route fixture</h1>

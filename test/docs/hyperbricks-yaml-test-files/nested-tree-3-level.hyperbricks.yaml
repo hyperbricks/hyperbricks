@@ -1,0 +1,21 @@
+page:
+  - type: hypermedia
+  - route: nested-tree-3-level
+
+  - content:
+      - type: tree
+
+      - section_block:
+          - type: tree
+
+          - article_block:
+              - type: tree
+
+              - title:
+                  - type: html
+                  - value: |
+                      <h1>Three level tree</h1>
+
+              - body:
+                  - type: text
+                  - value: Tree level three keeps leaf order.

@@ -1,0 +1,14 @@
+fragment = <FRAGMENT>
+fragment.route = fragments/status
+fragment.title = YAML Fragment Fixture
+fragment.nocache = true
+fragment.response {
+    hx_trigger = fixture-updated
+    hx_target = #status
+    hx_reswap = outerHTML
+}
+
+fragment.body = <HTML>
+fragment.body.value = <<[
+<div id="status">Updated</div>
+]>>

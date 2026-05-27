@@ -1,0 +1,47 @@
+==== hyperbricks yaml {!{page}} ====
+base_card:
+  - type: template
+  - template: "{{TEMPLATE:cards/card.html}}"
+  - values:
+      title: Base title
+      body: Base body
+      width: 320
+      theme:
+        tone: neutral
+        density: compact
+
+page:
+  - type: hypermedia
+  - route: inheritance-override
+
+  - featured_card:
+      - inherit: base_card
+      - values:
+          title: Overridden title
+          theme:
+            tone: strong
+==== explainer ====
+inherit deep-copies a named object and recursively merges local value overrides without moving the child.
+==== expected json ====
+{
+  "@order": [
+    "featured_card"
+  ],
+  "@type": "<HYPERMEDIA>",
+  "featured_card": {
+    "@type": "<TEMPLATE>",
+    "template": "{{TEMPLATE:cards/card.html}}",
+    "values": {
+      "body": "Base body",
+      "theme": {
+        "density": "compact",
+        "tone": "strong"
+      },
+      "title": "Overridden title",
+      "width": "320"
+    }
+  },
+  "route": "inheritance-override"
+}
+==== expected output ====
+<!DOCTYPE html><html><body><article><h2>Overridden title</h2><p>Base body</p><span>strong</span></article></body></html>

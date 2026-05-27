@@ -1,0 +1,38 @@
+==== hyperbricks yaml {!{main_menu}} ====
+home:
+  - type: hypermedia
+  - route: index
+  - title: Home
+  - section: main
+  - index: 10
+
+about:
+  - type: hypermedia
+  - route: about
+  - title: About
+  - section: main
+  - index: 20
+
+main_menu:
+  - type: menu
+  - section: main
+  - sort: index
+  - order: asc
+  - item: '<a href="/{{.Route}}">{{.Title}}</a>'
+  - active: '<strong>{{.Title}}</strong>'
+  - enclose: '<nav>|</nav>'
+==== explainer ====
+MENU keeps route metadata separate from the selected menu component; the {!{main_menu}} scope renders the menu.
+==== expected json ====
+{
+  "@type": "<MENU>",
+  "active": "<strong>{{.Title}}</strong>",
+  "enclose": "<nav>|</nav>",
+  "item": "<a href=\"/{{.Route}}\">{{.Title}}</a>",
+  "order": "asc",
+  "section": "main",
+  "sort": "index"
+}
+==== expected output ====
+<nav><strong>Home</strong>
+<a href="/about">About</a></nav>

@@ -1,0 +1,26 @@
+page:
+  - type: hypermedia
+  - route: head-assets
+
+  - head:
+      - type: head
+      - title: YAML Head Fixture
+      - favicon: "{{RESOURCES}}/favicon.svg"
+      - meta:
+          description: Head properties stay properties.
+      - css:
+          - "{{RESOURCES}}/css/base.css"
+      - js:
+          - "{{RESOURCES}}/js/app.js"
+
+      - inline_styles:
+          - type: css
+          - inline: |
+              .fixture {
+                color: green;
+              }
+
+      - inline_script:
+          - type: javascript
+          - inline: |
+              console.log("yaml head fixture");

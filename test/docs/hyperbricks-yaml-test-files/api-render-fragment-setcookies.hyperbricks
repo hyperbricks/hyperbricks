@@ -1,0 +1,63 @@
+==== hyperbricks config {!{api_fragment}} ====
+api_fragment = <API_FRAGMENT_RENDER>
+api_fragment {
+    endpoint = https://api.example.com/rpc/logout
+    method = POST
+    route = auth-logout-all
+    inline = <<[<p>Logged out everywhere</p>]>>
+    setcookies = [token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0, runtime_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0]
+}
+==== explainer ====
+Multiple Set-Cookie response templates
+==== expected json ====
+{
+  "ConfigType": "<API_FRAGMENT_RENDER>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "Items": null,
+  "Endpoint": "https://api.example.com/rpc/logout",
+  "Method": "POST",
+  "Headers": null,
+  "Body": "",
+  "Template": "",
+  "Inline": "<p>Logged out everywhere</p>",
+  "Values": null,
+  "Username": "",
+  "Password": "",
+  "Status": 0,
+  "SetCookie": "",
+  "SetCookies": [
+    "token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
+    "runtime_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
+  ],
+  "AllowedQueryKeys": null,
+  "QueryParams": null,
+  "JwtSecret": "",
+  "JwtClaims": null,
+  "Debug": false,
+  "DebugPanel": false,
+  "HxTemplateResult": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxReselect": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "MetaDocDescription": "",
+  "HxResponseWriter": null,
+  "Title": "",
+  "Route": "auth-logout-all",
+  "Section": "",
+  "Enclose": "",
+  "NoCache": false,
+  "Index": 0
+}
+==== expected output ====
+<p>Logged out everywhere</p>

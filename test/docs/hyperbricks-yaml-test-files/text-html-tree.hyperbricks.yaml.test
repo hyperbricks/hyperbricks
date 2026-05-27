@@ -1,0 +1,44 @@
+==== hyperbricks yaml {!{page}} ====
+page:
+  - type: hypermedia
+  - route: text-html-tree
+
+  - content:
+      - type: tree
+
+      - intro_html:
+          - type: html
+          - value: |
+              <h1>YAML tree fixture</h1>
+
+      - intro_text:
+          - type: text
+          - value: Text and HTML components can live in one ordered tree.
+==== explainer ====
+HYPERMEDIA can contain a named TREE child with ordered HTML and TEXT leaves.
+==== expected json ====
+{
+  "@order": [
+    "content"
+  ],
+  "@type": "<HYPERMEDIA>",
+  "content": {
+    "@order": [
+      "intro_html",
+      "intro_text"
+    ],
+    "@type": "<TREE>",
+    "intro_html": {
+      "@type": "<HTML>",
+      "value": "<h1>YAML tree fixture</h1>\n"
+    },
+    "intro_text": {
+      "@type": "<TEXT>",
+      "value": "Text and HTML components can live in one ordered tree."
+    }
+  },
+  "route": "text-html-tree"
+}
+==== expected output ====
+<!DOCTYPE html><html><body><h1>YAML tree fixture</h1>
+Text and HTML components can live in one ordered tree.</body></html>

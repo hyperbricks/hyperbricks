@@ -1,0 +1,16 @@
+base_card = <TEMPLATE>
+base_card.template = {{TEMPLATE:cards/card.html}}
+base_card.values {
+    title = Base title
+    body = Base body
+    width = 320
+    theme.tone = neutral
+    theme.density = compact
+}
+
+page = <HYPERMEDIA>
+page.route = inheritance-override
+
+page.featured_card <<< base_card
+page.featured_card.values.title = Overridden title
+page.featured_card.values.theme.tone = strong

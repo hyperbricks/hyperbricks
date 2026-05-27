@@ -1,0 +1,59 @@
+==== hyperbricks yaml {!{fragment}} ====
+fragment:
+  - type: fragment
+  - content:
+      - type: tree
+      - template_10:
+          - type: template
+          - inline: "\n<h1>{{.header}}</h1>\n<p>{{.text}}</p>\n    "
+          - values:
+              header: hello world!
+              text: some text
+      - enclose: <div class="sometext">|</div>
+myComponent:
+  - type: template
+  - inline: "\n<h1>{{.header}}</h1>\n<p>{{.text}}</p>\n    "
+  - values:
+      header: hello world!
+      text: some text
+==== explainer ====
+Key-value pairs for template rendering
+==== expected json ====
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "ContentType": "",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<div class="sometext">
+<h1>hello world!</h1>
+<p>some text</p>
+    </div> 

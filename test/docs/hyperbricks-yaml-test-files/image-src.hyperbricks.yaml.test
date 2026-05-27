@@ -1,0 +1,37 @@
+==== hyperbricks yaml {!{image}} ====
+image:
+  - type: image
+  - attributes:
+      loading: lazy
+  - enclose: <div id="#logo">|</div>
+  - height: "300"
+  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - width: "300"
+==== explainer ====
+The source URL of the image
+==== expected json ====
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "<div id=\"#logo\">|</div>",
+  "ExtraAttributes": {
+    "loading": "lazy"
+  },
+  "Height": 300,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": false,
+  "Loading": "",
+  "MetaDocDescription": "",
+  "Quality": 0,
+  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Title": "",
+  "Width": 300
+}
+
+==== expected output ====
+<div id="#logo"><img src="static/images/cute_cat_w300_h300.jpg" width="300" height="300" loading="lazy" /></div> 

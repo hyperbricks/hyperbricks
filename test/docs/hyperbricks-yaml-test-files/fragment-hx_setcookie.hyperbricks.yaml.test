@@ -1,0 +1,11 @@
+==== hyperbricks yaml {!{fragment}} ====
+fragment:
+  - type: fragment
+==== explainer ====
+Set Cookies in <FRAGMENT>
+==== expected json ====
+{
+  "@type": "<FRAGMENT>"
+}
+
+==== expected output ====

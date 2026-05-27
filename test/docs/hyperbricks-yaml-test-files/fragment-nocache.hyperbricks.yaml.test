@@ -1,0 +1,47 @@
+==== hyperbricks yaml {!{hypermedia}} ====
+hypermedia:
+  - type: hypermedia
+  - text_10:
+      - type: text
+      - value: HELLO WORLD!
+  - bodytag: <body id="main">|</body>
+  - enclose: <p>|</p>
+  - nocache: "true"
+  - route: index
+==== explainer ====
+Explicitly disable cache
+==== expected json ====
+{
+  "BodyTag": "<body id=\"main\">|</body>",
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "ContentType": "",
+  "Cookies": null,
+  "Doctype": "",
+  "Enclose": "<p>|</p>",
+  "Favicon": "",
+  "Head": null,
+  "Headers": null,
+  "HtmlTag": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": true,
+  "Route": "index",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<!DOCTYPE html>
+<html>
+  <body id="main">
+    <p>HELLO WORLD!</p>
+  </body>
+</html>

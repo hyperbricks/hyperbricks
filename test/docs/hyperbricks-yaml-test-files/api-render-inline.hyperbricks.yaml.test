@@ -1,0 +1,37 @@
+==== hyperbricks yaml {!{api_render}} ====
+api_render:
+  - type: api_render
+  - endpoint: https://example.com/api
+  - inline: <div>INLINE</div>
+  - method: GET
+==== explainer ====
+Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>
+==== expected json ====
+{
+  "AllowedQueryKeys": null,
+  "Body": "",
+  "ConfigCategory": "",
+  "ConfigType": "<API_RENDER>",
+  "Debug": false,
+  "DebugPanel": false,
+  "Enclose": "",
+  "Endpoint": "https://example.com/api",
+  "ExtraAttributes": null,
+  "Headers": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "<div>INLINE</div>",
+  "JwtClaims": null,
+  "JwtSecret": "",
+  "MetaDocDescription": "",
+  "Method": "GET",
+  "Password": "",
+  "QueryParams": null,
+  "Status": 0,
+  "Template": "",
+  "Username": "",
+  "Values": null
+}
+
+==== expected output ====

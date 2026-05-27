@@ -1,0 +1,44 @@
+==== hyperbricks yaml {!{head}} ====
+head:
+  - type: head
+  - css_10:
+      - type: css
+      - attributes:
+          media: screen
+      - enclose: <style media="print">|</style>
+      - file: hyperbricks-test-files/assets/styles.css
+==== explainer ====
+A custom <style> tag definition |. Will override extraAttributes.
+==== expected json ====
+{
+  "ConfigCategory": "",
+  "ConfigType": "<HEAD>",
+  "Css": null,
+  "Favicon": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Items": {
+    "@order": [
+      "css_10"
+    ],
+    "css_10": {
+      "@type": "<CSS>",
+      "attributes": {
+        "media": "screen"
+      },
+      "enclose": "<style media=\"print\">|</style>",
+      "file": "hyperbricks-test-files/assets/styles.css"
+    }
+  },
+  "Js": null,
+  "MetaData": null,
+  "Title": ""
+}
+
+==== expected output ====
+<head><style media="print">
+body {
+    background-color: red;
+}
+</style><meta name="generator" content="hyperbricks runtime"></head>

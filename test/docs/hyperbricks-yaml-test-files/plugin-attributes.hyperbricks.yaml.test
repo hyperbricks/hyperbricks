@@ -1,0 +1,26 @@
+==== hyperbricks yaml {!{plugin}} ====
+plugin:
+  - type: plugin
+  - attributes:
+      data-role: demo
+  - plugin: example
+==== explainer ====
+Extra attributes like id, data-role, data-action
+==== expected json ====
+{
+  "Classes": null,
+  "ConfigCategory": "",
+  "ConfigType": "<PLUGIN>",
+  "Data": null,
+  "Enclose": "",
+  "ExtraAttributes": {
+    "data-role": "demo"
+  },
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "PluginName": "example"
+}
+
+==== expected output ====
+<div data-role="demo">Plugin example</div>

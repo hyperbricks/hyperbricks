@@ -1,0 +1,24 @@
+==== hyperbricks yaml {!{style}} ====
+style:
+  - type: styles
+  - file: hyperbricks-test-files/assets/styles.css
+==== explainer ====
+Path to the CSS file
+==== expected json ====
+{
+  "ConfigCategory": "",
+  "ConfigType": "<STYLES>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "File": "hyperbricks-test-files/assets/styles.css",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": ""
+}
+
+==== expected output ====
+<style>
+body {
+    background-color: red;
+}
+</style>

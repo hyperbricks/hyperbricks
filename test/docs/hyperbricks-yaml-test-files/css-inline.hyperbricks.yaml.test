@@ -1,0 +1,50 @@
+==== hyperbricks yaml {!{hypermedia}} ====
+hypermedia:
+  - type: hypermedia
+  - head:
+      "10":
+        - type: css
+        - inline: "\nbody {\n    background-color: lightblue;\n}\n    "
+==== explainer ====
+Use inline to define css in a multiline block <<[ /* css goes here */ ]>>
+==== expected json ====
+{
+  "BodyTag": "",
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "ContentType": "",
+  "Cookies": null,
+  "Doctype": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Head": {
+    "10": {
+      "@type": "<CSS>",
+      "inline": "\nbody {\n    background-color: lightblue;\n}\n    "
+    }
+  },
+  "Headers": null,
+  "HtmlTag": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<!DOCTYPE html><html><head><style>
+
+body {
+    background-color: lightblue;
+}
+
+</style><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

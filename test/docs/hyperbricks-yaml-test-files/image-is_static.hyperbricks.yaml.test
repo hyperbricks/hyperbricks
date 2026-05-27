@@ -1,0 +1,40 @@
+==== hyperbricks yaml {!{image}} ====
+image:
+  - type: image
+  - height: "310"
+  - is_static: "true"
+  - src: cute_cat.jpg
+  - width: "310"
+==== explainer ====
+Flag indicating if the image is static, if so the img will not be scaled and has to be present in the configured static image directory. See package.hyperbricks in the module for settings. 
+```
+#conveys this logic:
+destDir := hbConfig.Directories["static"] + "/images/"
+if config.IsStatic {
+    destDir = hbConfig.Directories["render"] + "/images/"
+}
+```
+==== expected json ====
+{
+  "Alt": "",
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "Height": 310,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "",
+  "IsStatic": true,
+  "Loading": "",
+  "MetaDocDescription": "",
+  "Quality": 0,
+  "Src": "cute_cat.jpg",
+  "Title": "",
+  "Width": 310
+}
+
+==== expected output ====
+<img src="static/images/cute_cat.jpg" /> 

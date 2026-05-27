@@ -1,0 +1,22 @@
+==== hyperbricks yaml {!{text}} ====
+text:
+  - type: text
+  - enclose: <span>|</span>
+  - value: SOME VALUE
+==== explainer ====
+
+==== expected json ====
+{
+  "ConfigCategory": "",
+  "ConfigType": "<TEXT>",
+  "Enclose": "<span>|</span>",
+  "ExtraAttributes": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "MetaDocDescription": "",
+  "Value": "SOME VALUE"
+}
+
+==== expected output ====
+<span>SOME VALUE</span> 

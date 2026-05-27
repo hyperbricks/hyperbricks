@@ -1,0 +1,40 @@
+==== hyperbricks yaml {!{images}} ====
+images:
+  - type: images
+  - attributes:
+      decoding: async
+  - class: galleryimage bordered
+  - directory: hyperbricks-test-files/assets/
+  - height: "10"
+  - id: '#galleryimage_'
+  - loading: lazy
+  - width: "100"
+==== explainer ====
+CSS class for styling the image
+==== expected json ====
+{
+  "Alt": "",
+  "Class": "galleryimage bordered",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGES>",
+  "Directory": "hyperbricks-test-files/assets/",
+  "Enclose": "",
+  "ExtraAttributes": {
+    "decoding": "async"
+  },
+  "Height": 10,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "#galleryimage_",
+  "IsStatic": false,
+  "Loading": "lazy",
+  "MetaDocDescription": "",
+  "Quality": 0,
+  "Title": "",
+  "Width": 100
+}
+
+==== expected output ====
+<img src="static/images/cute_cat_w100_h10.jpg" width="100" height="10" class="galleryimage bordered" id="#galleryimage_0" loading="lazy" decoding="async" />
+<img src="static/images/same_cute_cat_w100_h10.jpg" width="100" height="10" class="galleryimage bordered" id="#galleryimage_1" loading="lazy" decoding="async" /> 

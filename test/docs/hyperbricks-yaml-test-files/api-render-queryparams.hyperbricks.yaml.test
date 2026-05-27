@@ -1,0 +1,40 @@
+==== hyperbricks yaml {!{api_render}} ====
+api_render:
+  - type: api_render
+  - endpoint: https://example.com/api
+  - method: GET
+  - queryparams:
+      foo: bar
+==== explainer ====
+Set proxy query keys in the configuration
+==== expected json ====
+{
+  "AllowedQueryKeys": null,
+  "Body": "",
+  "ConfigCategory": "",
+  "ConfigType": "<API_RENDER>",
+  "Debug": false,
+  "DebugPanel": false,
+  "Enclose": "",
+  "Endpoint": "https://example.com/api",
+  "ExtraAttributes": null,
+  "Headers": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "",
+  "JwtClaims": null,
+  "JwtSecret": "",
+  "MetaDocDescription": "",
+  "Method": "GET",
+  "Password": "",
+  "QueryParams": {
+    "foo": "bar"
+  },
+  "Status": 0,
+  "Template": "",
+  "Username": "",
+  "Values": null
+}
+
+==== expected output ====

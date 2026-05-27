@@ -1,0 +1,42 @@
+==== hyperbricks yaml {!{page}} ====
+page:
+  - type: hypermedia
+  - route: ordered-children
+
+  - zeta:
+      - type: html
+      - value: <p>Renders first by source order.</p>
+
+  - alpha:
+      - type: html
+      - value: <p>Renders second, not first alphabetically.</p>
+
+  - middle:
+      - type: html
+      - value: <p>Renders third.</p>
+==== explainer ====
+Source order replaces numeric child keys; zeta renders before alpha because the YAML sequence says so.
+==== expected json ====
+{
+  "@order": [
+    "zeta",
+    "alpha",
+    "middle"
+  ],
+  "@type": "<HYPERMEDIA>",
+  "alpha": {
+    "@type": "<HTML>",
+    "value": "<p>Renders second, not first alphabetically.</p>"
+  },
+  "middle": {
+    "@type": "<HTML>",
+    "value": "<p>Renders third.</p>"
+  },
+  "route": "ordered-children",
+  "zeta": {
+    "@type": "<HTML>",
+    "value": "<p>Renders first by source order.</p>"
+  }
+}
+==== expected output ====
+<!DOCTYPE html><html><body><p>Renders first by source order.</p><p>Renders second, not first alphabetically.</p><p>Renders third.</p></body></html>

@@ -1,0 +1,42 @@
+==== hyperbricks yaml {!{hypermedia}} ====
+hypermedia:
+  - type: hypermedia
+  - head:
+      - type: head
+      - title: Home
+==== explainer ====
+The title of the hypermedia document
+==== expected json ====
+{
+  "BodyTag": "",
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "ContentType": "",
+  "Cookies": null,
+  "Doctype": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Head": {
+    "@type": "<HEAD>",
+    "title": "Home"
+  },
+  "Headers": null,
+  "HtmlTag": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>Home</title>
+        </head><body></body></html> 

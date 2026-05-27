@@ -1,0 +1,23 @@
+==== hyperbricks config {!{plugin}} ====
+plugin = <PLUGIN>
+plugin {
+    plugin = example
+    enclose = <div>|</div>
+}
+==== explainer ====
+Wrap rendered output using prefix|suffix syntax
+==== expected json ====
+{
+  "ConfigType": "<PLUGIN>",
+  "ConfigCategory": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "HyperBricksFile": "",
+  "ExtraAttributes": null,
+  "Enclose": "<div>|</div>",
+  "PluginName": "example",
+  "Classes": null,
+  "Data": null
+}
+==== expected output ====
+<div>Plugin example</div>

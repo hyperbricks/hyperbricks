@@ -1,0 +1,26 @@
+{
+  "card": {
+    "@type": "<TEMPLATE>",
+    "template": "{{TEMPLATE:cards/card.html}}",
+    "values": {
+      "cards": [
+        {
+          "body": "First card is data, not a child component.",
+          "title": "First card",
+          "variant": "primary"
+        },
+        {
+          "body": "Second card stays in array order.",
+          "title": "Second card",
+          "variant": "flat"
+        }
+      ],
+      "cta": {
+        "@type": "<HTML>",
+        "value": "<a href=\"/start\" class=\"btn\">Start</a>\n"
+      },
+      "lead": "Plain scalar values remain map fields.",
+      "title": "Template values fixture"
+    }
+  }
+}

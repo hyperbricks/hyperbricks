@@ -1,0 +1,22 @@
+==== hyperbricks yaml {!{html}} ====
+html:
+  - type: html
+  - value: <p>HTML TEST</p>
+==== explainer ====
+The raw HTML content
+==== expected json ====
+{
+  "ConfigCategory": "",
+  "ConfigType": "<HTML>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "MetaDocDescription": "",
+  "TrimSpace": false,
+  "Value": "<p>HTML TEST</p>"
+}
+
+==== expected output ====
+<p>HTML TEST</p>

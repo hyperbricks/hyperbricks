@@ -1,0 +1,68 @@
+==== hyperbricks yaml {!{fragment}} ====
+fragment:
+  - type: fragment
+  - content:
+      - type: tree
+      - template_10:
+          - type: template
+          - inline: "\n<iframe width=\"{{.width}}\" height=\"{{.height}}\" src=\"{{.src}}\"></iframe>\n    "
+          - values:
+              height: "400"
+              src: https://www.youtube.com/watch?v=Wlh6yFSJEms
+              width: "300"
+      - template_20:
+          - type: template
+          - inline: "\n<iframe width=\"{{.width}}\" height=\"{{.height}}\" src=\"{{.src}}\"></iframe>\n    "
+          - values:
+              height: "400"
+              src: https://www.youtube.com/embed/tgbNymZ7vqY
+              width: "300"
+      - enclose: <div class="youtube_video">|</div>
+myComponent:
+  - type: template
+  - inline: "\n<iframe width=\"{{.width}}\" height=\"{{.height}}\" src=\"{{.src}}\"></iframe>\n    "
+  - values:
+      height: "400"
+      src: https://www.youtube.com/embed/tgbNymZ7vqY
+      width: "300"
+==== explainer ====
+The inline template used for rendering.
+==== expected json ====
+{
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "ContentType": "",
+  "Enclose": "",
+  "HxLocation": "",
+  "HxPushedUrl": "",
+  "HxRedirect": "",
+  "HxRefresh": "",
+  "HxReplaceUrl": "",
+  "HxReselect": "",
+  "HxResponseWriter": null,
+  "HxReswap": "",
+  "HxRetarget": "",
+  "HxTemplateResult": "",
+  "HxTrigger": "",
+  "HxTriggerafterSettle": "",
+  "HxTriggerafterSwap": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<div class="youtube_video">
+    <iframe width="300" height="400" src="https://www.youtube.com/watch?v=Wlh6yFSJEms"></iframe>
+    <iframe width="300" height="400" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+</div>

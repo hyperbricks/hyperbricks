@@ -1,0 +1,51 @@
+==== hyperbricks yaml {!{hypermedia}} ====
+hypermedia:
+  - type: hypermedia
+  - head:
+      "10":
+        - type: javascript
+        - attributes:
+            type: text/javascript
+        - inline: console.log("Hello World!")
+==== explainer ====
+Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here */ ]>>
+==== expected json ====
+{
+  "BodyTag": "",
+  "Cache": "",
+  "ConfigCategory": "",
+  "ConfigType": "<HYPERMEDIA>",
+  "ContentType": "",
+  "Cookies": null,
+  "Doctype": "",
+  "Enclose": "",
+  "Favicon": "",
+  "Head": {
+    "10": {
+      "@type": "<JAVASCRIPT>",
+      "attributes": {
+        "type": "text/javascript"
+      },
+      "inline": "console.log(\"Hello World!\")"
+    }
+  },
+  "Headers": null,
+  "HtmlTag": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Route": "",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+
+==== expected output ====
+<!DOCTYPE html><html><head><script type="text/javascript">
+console.log("Hello World!")
+</script><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

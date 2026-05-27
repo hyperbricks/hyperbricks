@@ -1,0 +1,63 @@
+==== hyperbricks yaml {!{page}} ====
+page:
+  - type: hypermedia
+  - route: nested-tree-3-level
+
+  - content:
+      - type: tree
+
+      - section_block:
+          - type: tree
+
+          - article_block:
+              - type: tree
+
+              - title:
+                  - type: html
+                  - value: |
+                      <h1>Three level tree</h1>
+
+              - body:
+                  - type: text
+                  - value: Tree level three keeps leaf order.
+==== explainer ====
+Three nested TREE components keep source order without numeric child keys.
+The {!{page}} reference in the header selects the root object that is materialized and rendered.
+==== expected json ====
+{
+  "@order": [
+    "content"
+  ],
+  "@type": "<HYPERMEDIA>",
+  "content": {
+    "@order": [
+      "section_block"
+    ],
+    "@type": "<TREE>",
+    "section_block": {
+      "@order": [
+        "article_block"
+      ],
+      "@type": "<TREE>",
+      "article_block": {
+        "@order": [
+          "title",
+          "body"
+        ],
+        "@type": "<TREE>",
+        "body": {
+          "@type": "<TEXT>",
+          "value": "Tree level three keeps leaf order."
+        },
+        "title": {
+          "@type": "<HTML>",
+          "value": "<h1>Three level tree</h1>\n"
+        }
+      }
+    }
+  },
+  "route": "nested-tree-3-level"
+}
+==== expected output ====
+<!DOCTYPE html><html><body><h1>Three level tree</h1>
+Tree level three keeps leaf order.</body></html>
