@@ -1,0 +1,68 @@
+==== hyperbricks yaml {!{page}} ====
+base_content:
+  - type: tree
+
+  - text_summary:
+      - type: text
+      - value: Intro
+
+  - text_summary:
+      - type: text
+      - value: Summary
+
+page:
+  - type: hypermedia
+  - route: duplicate-inheritance-path
+
+  - content:
+      - inherit: base_content
+
+      - text_summary_2:
+          - value: Summary override
+
+      - summary_copy:
+          - inherit: base_content.text_summary_2
+          - value: Copied summary override
+==== explainer ====
+Recovered duplicate names become real runtime paths.
+An inherited TREE can override text_summary_2 by name, and another child can inherit directly from base_content.text_summary_2.
+==== expected json ====
+{
+  "@order": [
+    "content"
+  ],
+  "@type": "<HYPERMEDIA>",
+  "content": {
+    "@order": [
+      "text_summary",
+      "text_summary_2",
+      "summary_copy"
+    ],
+    "@type": "<TREE>",
+    "summary_copy": {
+      "@type": "<TEXT>",
+      "value": "Copied summary override"
+    },
+    "text_summary": {
+      "@type": "<TEXT>",
+      "value": "Intro"
+    },
+    "text_summary_2": {
+      "@type": "<TEXT>",
+      "value": "Summary override"
+    }
+  },
+  "route": "duplicate-inheritance-path"
+}
+==== expected diagnostics ====
+[
+  {
+    "type": "YAML",
+    "path": "base_content",
+    "key": "text_summary",
+    "level": "WARNING",
+    "contains": "using \"text_summary_2\" as runtime path"
+  }
+]
+==== expected output ====
+<!DOCTYPE html><html><body>IntroSummary overrideCopied summary override</body></html>
