@@ -1,0 +1,62 @@
+==== hyperbricks yaml {!{page}} ====
+page:
+  - type: hypermedia
+  - route: duplicate-item-name-collision
+
+  - content:
+      - type: tree
+
+      - text_summary:
+          - type: text
+          - value: First
+
+      - text_summary_2:
+          - type: text
+          - value: Explicit second
+
+      - text_summary:
+          - type: text
+          - value: Recovered third
+==== explainer ====
+Generated duplicate names never overwrite an existing sibling.
+If text_summary_2 already exists, the recovered duplicate becomes text_summary_3.
+==== expected json ====
+{
+  "@order": [
+    "content"
+  ],
+  "@type": "<HYPERMEDIA>",
+  "content": {
+    "@order": [
+      "text_summary",
+      "text_summary_2",
+      "text_summary_3"
+    ],
+    "@type": "<TREE>",
+    "text_summary": {
+      "@type": "<TEXT>",
+      "value": "First"
+    },
+    "text_summary_2": {
+      "@type": "<TEXT>",
+      "value": "Explicit second"
+    },
+    "text_summary_3": {
+      "@type": "<TEXT>",
+      "value": "Recovered third"
+    }
+  },
+  "route": "duplicate-item-name-collision"
+}
+==== expected diagnostics ====
+[
+  {
+    "type": "YAML",
+    "path": "page.content",
+    "key": "text_summary",
+    "level": "WARNING",
+    "contains": "using \"text_summary_3\" as runtime path"
+  }
+]
+==== expected output ====
+<!DOCTYPE html><html><body>FirstExplicit secondRecovered third</body></html>

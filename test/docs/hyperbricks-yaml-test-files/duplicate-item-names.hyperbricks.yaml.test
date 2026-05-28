@@ -1,0 +1,53 @@
+==== hyperbricks yaml {!{page}} ====
+page:
+  - type: hypermedia
+  - route: duplicate-item-names
+
+  - content:
+      - type: tree
+
+      - text_summary:
+          - type: text
+          - value: Intro
+
+      - text_summary:
+          - type: text
+          - value: Summary
+==== explainer ====
+Duplicate YAML child names are recovered in runtime-load style fixtures.
+The first child keeps its name, the second gets a deterministic runtime path.
+==== expected json ====
+{
+  "@order": [
+    "content"
+  ],
+  "@type": "<HYPERMEDIA>",
+  "content": {
+    "@order": [
+      "text_summary",
+      "text_summary_2"
+    ],
+    "@type": "<TREE>",
+    "text_summary": {
+      "@type": "<TEXT>",
+      "value": "Intro"
+    },
+    "text_summary_2": {
+      "@type": "<TEXT>",
+      "value": "Summary"
+    }
+  },
+  "route": "duplicate-item-names"
+}
+==== expected diagnostics ====
+[
+  {
+    "type": "YAML",
+    "path": "page.content",
+    "key": "text_summary",
+    "level": "WARNING",
+    "contains": "using \"text_summary_2\" as runtime path"
+  }
+]
+==== expected output ====
+<!DOCTYPE html><html><body>IntroSummary</body></html>

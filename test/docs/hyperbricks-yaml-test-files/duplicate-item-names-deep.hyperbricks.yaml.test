@@ -1,0 +1,71 @@
+==== hyperbricks yaml {!{page}} ====
+page:
+  - type: hypermedia
+  - route: duplicate-item-names-deep
+
+  - content:
+      - type: tree
+
+      - section_block:
+          - type: tree
+
+          - article_block:
+              - type: tree
+
+              - copy:
+                  - type: text
+                  - value: First copy
+
+              - copy:
+                  - type: text
+                  - value: Second copy
+==== explainer ====
+Duplicate child-name recovery is local to the nested TREE where the duplicate occurs.
+Deep nested composite maps still emit accurate local @order data.
+==== expected json ====
+{
+  "@order": [
+    "content"
+  ],
+  "@type": "<HYPERMEDIA>",
+  "content": {
+    "@order": [
+      "section_block"
+    ],
+    "@type": "<TREE>",
+    "section_block": {
+      "@order": [
+        "article_block"
+      ],
+      "@type": "<TREE>",
+      "article_block": {
+        "@order": [
+          "copy",
+          "copy_2"
+        ],
+        "@type": "<TREE>",
+        "copy": {
+          "@type": "<TEXT>",
+          "value": "First copy"
+        },
+        "copy_2": {
+          "@type": "<TEXT>",
+          "value": "Second copy"
+        }
+      }
+    }
+  },
+  "route": "duplicate-item-names-deep"
+}
+==== expected diagnostics ====
+[
+  {
+    "type": "YAML",
+    "path": "page.content.section_block.article_block",
+    "key": "copy",
+    "level": "WARNING",
+    "contains": "using \"copy_2\" as runtime path"
+  }
+]
+==== expected output ====
+<!DOCTYPE html><html><body>First copySecond copy</body></html>

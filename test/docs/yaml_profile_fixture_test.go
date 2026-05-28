@@ -37,7 +37,16 @@ type yamlReadableCase struct {
 	ExpectedMaterializedJSON string
 	ExpectedRuntimeJSON      string
 	ExpectedJSON             string
+	ExpectedDiagnostics      string
 	ExpectedOutput           string
+}
+
+type expectedYAMLDiagnostic struct {
+	Type     string `json:"type"`
+	Path     string `json:"path"`
+	Key      string `json:"key"`
+	Level    string `json:"level"`
+	Contains string `json:"contains"`
 }
 
 var yamlCoreCorpus = []string{
@@ -53,6 +62,9 @@ var yamlCoreCorpus = []string{
 	"menu-items.hyperbricks.yaml.test",
 	"api-render-request.hyperbricks.yaml.test",
 	"reserved-name-collision.hyperbricks.yaml.test",
+	"duplicate-item-names.hyperbricks.yaml.test",
+	"duplicate-item-names-deep.hyperbricks.yaml.test",
+	"duplicate-item-name-collision.hyperbricks.yaml.test",
 }
 
 func TestYAMLProfileFixturesInstantiateRuntimeConfigs(t *testing.T) {
@@ -107,6 +119,7 @@ func TestYAMLProfileReadableCases(t *testing.T) {
 			assertCaseExpectedMaterializedJSON(t, testCase, scope)
 			assertCaseExpectedRuntimeJSON(t, rm, testCase, scope)
 			assertCaseExpectedJSON(t, rm, testCase, scope)
+			assertCaseExpectedDiagnostics(t, testCase, result.Diagnostics)
 
 			if strings.TrimSpace(testCase.ExpectedOutput) == "" {
 				return
@@ -296,6 +309,7 @@ func parseYAMLReadableCase(t *testing.T, path string) yamlReadableCase {
 		ExpectedMaterializedJSON: sections["expected materialized json"],
 		ExpectedRuntimeJSON:      sections["expected runtime json"],
 		ExpectedJSON:             sections["expected json"],
+		ExpectedDiagnostics:      sections["expected diagnostics"],
 		ExpectedOutput:           sections["expected output"],
 	}
 	if strings.TrimSpace(testCase.Source) == "" {
@@ -426,6 +440,38 @@ func assertExpectedJSONValue(t *testing.T, path string, section string, expected
 	}
 }
 
+func assertCaseExpectedDiagnostics(t *testing.T, testCase yamlReadableCase, diagnostics []yamlparser.Diagnostic) {
+	t.Helper()
+	if strings.TrimSpace(testCase.ExpectedDiagnostics) == "" {
+		return
+	}
+	var expected []expectedYAMLDiagnostic
+	if err := json.Unmarshal([]byte(testCase.ExpectedDiagnostics), &expected); err != nil {
+		t.Fatalf("parse expected diagnostics in %s: %v", testCase.Path, err)
+	}
+	if len(diagnostics) != len(expected) {
+		t.Fatalf("diagnostics len for %s = %d, want %d: %#v", filepath.Base(testCase.Path), len(diagnostics), len(expected), diagnostics)
+	}
+	for index, want := range expected {
+		got := diagnostics[index]
+		if want.Type != "" && want.Type != "YAML" {
+			t.Fatalf("expected diagnostics[%d].type = %q, only YAML diagnostics are supported in %s", index, want.Type, testCase.Path)
+		}
+		if want.Path != "" && got.Path != want.Path {
+			t.Fatalf("diagnostics[%d].path for %s = %q, want %q", index, filepath.Base(testCase.Path), got.Path, want.Path)
+		}
+		if want.Key != "" && got.OriginalName != want.Key {
+			t.Fatalf("diagnostics[%d].key for %s = %q, want %q", index, filepath.Base(testCase.Path), got.OriginalName, want.Key)
+		}
+		if want.Level != "" && !strings.EqualFold(got.Level, want.Level) {
+			t.Fatalf("diagnostics[%d].level for %s = %q, want %q", index, filepath.Base(testCase.Path), got.Level, want.Level)
+		}
+		if want.Contains != "" && !strings.Contains(got.Message, want.Contains) {
+			t.Fatalf("diagnostics[%d].message for %s = %q, want to contain %q", index, filepath.Base(testCase.Path), got.Message, want.Contains)
+		}
+	}
+}
+
 func runtimeConfigProjection(t *testing.T, rm *render.RenderManager, testCase yamlReadableCase, scope map[string]interface{}) interface{} {
 	t.Helper()
 	typeName, ok := scope["@type"].(string)
@@ -476,7 +522,9 @@ func runtimeConfigProjection(t *testing.T, rm *render.RenderManager, testCase ya
 func yamlProfileOptionsForCase(t *testing.T, path string) yamlparser.Options {
 	t.Helper()
 	if filepath.Base(path) != "pipeline-pre-parse-post.hyperbricks.yaml.test" {
-		return yamlparser.Options{}
+		return yamlparser.Options{
+			RecoverDuplicateChildren: true,
+		}
 	}
 	return yamlparser.Options{
 		Variables: map[string]string{
@@ -493,6 +541,7 @@ func yamlProfileOptionsForCase(t *testing.T, path string) yamlparser.Options {
 		Paths: yamlparser.PathMarkers{
 			Resources: filepath.Join(yamlProfileFixtureDir, "pipeline-assets"),
 		},
+		RecoverDuplicateChildren: true,
 	}
 }
 
