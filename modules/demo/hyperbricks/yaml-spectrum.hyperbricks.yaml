@@ -4,7 +4,8 @@ imports:
 yaml_spectrum:
   - type: hypermedia
   - route: yaml-spectrum
-  - title: "{{CONF:myconf.demo.title}}"
+  - title:
+      config: myconf.demo.title
   - bodytag: <body class="yaml-spectrum">|</body>
   - guard:
       enabled: false
@@ -97,13 +98,18 @@ yaml_spectrum:
                 </section>
               </main>
           - values:
-              heading: "{{CONF:myconf.demo.heading}}"
-              summary: "{{CONF:myconf.demo.summary}}"
-              shell: "{{ENV:SHELL}}"
+              heading:
+                config: myconf.demo.heading
+              summary:
+                config: myconf.demo.summary
+              shell:
+                env: SHELL
               lead:
                 - type: html
-                - value: |
-                    {{FILE:{{RESOURCES}}/yaml-spectrum/lead.html}}
+                - value:
+                    file:
+                      base: resources
+                      path: yaml-spectrum/lead.html
       - card_grid_start:
           - type: html
           - value: <div class="spectrum-page"><section class="spectrum-grid">
@@ -153,16 +159,33 @@ yaml_spectrum:
           - value: </section>
       - directories:
           - type: template
-          - template: "{{TEMPLATE:spectrum/directories.html}}"
+          - template:
+              file: spectrum/directories.html
           - values:
-              module_var: "{{VAR:module}}"
-              module_marker: "{{MODULE}}"
-              module_root: "{{MODULE_ROOT}}"
-              resources: "{{RESOURCES}}"
-              templates: "{{TEMPLATES}}"
-              static: "{{STATIC}}"
-              hyperbricks: "{{HYPERBRICKS}}"
-              static_asset: "{{STATIC}}/yaml-spectrum.css"
+              module_var:
+                var: module
+              module_marker:
+                path:
+                  base: module
+              module_root:
+                path:
+                  base: module_root
+              resources:
+                path:
+                  base: resources
+              templates:
+                path:
+                  base: templates
+              static:
+                path:
+                  base: static
+              hyperbricks:
+                path:
+                  base: hyperbricks
+              static_asset:
+                path:
+                  base: static
+                  path: yaml-spectrum.css
       - status_target:
           - type: html
           - value: <div id="yaml-spectrum-status" class="spectrum-status"><strong>Fragment target:</strong> click "Render the fragment" to replace this block with /yaml-spectrum/status.</div>
@@ -183,4 +206,7 @@ yaml_spectrum_status:
       - values:
           title: Fragment rendered
           message: This fragment was loaded from the same YAML runtime pipeline and inherited its template from the imported partial.
-          source: "{{VAR:hyperbricks}}/yaml-spectrum.hyperbricks.yaml"
+          source:
+            path:
+              base: hyperbricks
+              path: yaml-spectrum.hyperbricks.yaml

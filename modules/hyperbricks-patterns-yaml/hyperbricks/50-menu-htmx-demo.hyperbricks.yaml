@@ -5,7 +5,8 @@ menu_htmx_demo_shell:
   - inherit: "pattern_site_page"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/menu-htmx-shell.html}}"
+      - template:
+          file: patterns/menu-htmx-shell.html
       - values:
           nav:
             - type: menu
@@ -33,25 +34,29 @@ menu_htmx_demo_intro_panel:
   - type: tree
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/menu-htmx-intro.html}}"
+      - template:
+          file: patterns/menu-htmx-intro.html
 
 menu_htmx_demo_doc1_panel:
   - type: tree
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/menu-htmx-doc1.html}}"
+      - template:
+          file: patterns/menu-htmx-doc1.html
 
 menu_htmx_demo_doc2_panel:
   - type: tree
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/menu-htmx-doc2.html}}"
+      - template:
+          file: patterns/menu-htmx-doc2.html
 
 menu_htmx_demo_doc3_panel:
   - type: tree
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/menu-htmx-doc3.html}}"
+      - template:
+          file: patterns/menu-htmx-doc3.html
 
 app_menu_htmx_demo:
   - inherit: "menu_htmx_demo_shell"

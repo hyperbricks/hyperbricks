@@ -1,9 +1,14 @@
 ==== hyperbricks yaml {!{page}} ====
 # The YAML parser ignores this comment.
+vars:
+  route: pipeline
+
 page:
   - type: <HYPERMEDIA>
-  - route: "{{VAR:route}}"
-  - title: "{{CONF:site.title}}"
+  - route:
+      var: route
+  - title:
+      config: site.title
   - guard:
       enabled: true
       auth:
@@ -12,20 +17,31 @@ page:
         authenticated: true
   - hero:
       - type: <HTML>
-      - value: |
-          # This comment stays because it is inside the block scalar.
-          {{FILE:{{RESOURCES}}/hero.html}}
+      - value:
+          format: |-
+            # This comment stays because it is inside the block scalar.
+            %s
+          args:
+            - file:
+                base: resources
+                path: hero.html
   - cta:
       - type: <TEXT>
-      - value: "{{ENV:CTA_TEXT}}"
+      - value:
+          env: CTA_TEXT
 ==== explainer ====
 Pipeline fixture for the YAML source model. It shows preprocessing first, then materialization, then the runtime-facing Items pass.
 ==== expected preprocessed yaml ====
 # The YAML parser ignores this comment.
+vars:
+  route: pipeline
+
 page:
   - type: <HYPERMEDIA>
-  - route: "pipeline"
-  - title: "Pipeline Page"
+  - route:
+      var: route
+  - title:
+      config: site.title
   - guard:
       enabled: true
       auth:
@@ -34,14 +50,18 @@ page:
         authenticated: true
   - hero:
       - type: <HTML>
-      - value: |
-          # This comment stays because it is inside the block scalar.
-          <section class="from-file">
-            <p>File body</p>
-          </section>
+      - value:
+          format: |-
+            # This comment stays because it is inside the block scalar.
+            %s
+          args:
+            - file:
+                base: resources
+                path: hero.html
   - cta:
       - type: <TEXT>
-      - value: "Start now"
+      - value:
+          env: CTA_TEXT
 ==== expected materialized json ====
 {
   "@type": "<HYPERMEDIA>",

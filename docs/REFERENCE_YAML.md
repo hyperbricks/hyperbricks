@@ -354,13 +354,20 @@ page:
   - head:
       - type: head
       - title: YAML Head Fixture
-      - favicon: "{{RESOURCES}}/favicon.svg"
+      - favicon:
+          path:
+            base: resources
+            path: favicon.svg
       - meta:
           description: Head properties stay properties.
       - css:
-          - "{{RESOURCES}}/css/base.css"
+          - path:
+              base: resources
+              path: css/base.css
       - js:
-          - "{{RESOURCES}}/js/app.js"
+          - path:
+              base: resources
+              path: js/app.js
 
       - inline_styles:
           - type: css
@@ -386,11 +393,11 @@ Expected output:
 </style><script>
 console.log("yaml head fixture");
 
-</script><meta name="generator" content="hyperbricks runtime"><link rel="icon" type="image/x-icon" href="{{RESOURCES}}/favicon.svg">
+</script><meta name="generator" content="hyperbricks runtime"><link rel="icon" type="image/x-icon" href="resources/favicon.svg">
 <title>YAML Head Fixture</title>
 <meta name="description" content="Head properties stay properties.">
-<link rel="stylesheet" href="{{RESOURCES}}/css/base.css">
-<script src="{{RESOURCES}}/js/app.js"></script>
+<link rel="stylesheet" href="resources/css/base.css">
+<script src="resources/js/app.js"></script>
 </head><body></body></html>
 ```
 

@@ -43,6 +43,7 @@ type PathMarkers struct {
 	Templates   string
 	Static      string
 	HyperBricks string
+	Render      string
 }
 
 // Result is the phase-aware output of the YAML source pipeline.
@@ -56,6 +57,7 @@ type Result struct {
 // Document is the ordered HyperBricks YAML source model.
 type Document struct {
 	Imports     []string
+	Vars        map[string]interface{}
 	Roots       []*Node
 	Diagnostics []Diagnostic
 }
@@ -104,7 +106,7 @@ func ProcessBytes(input []byte, opts Options) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	materialized, err := doc.Materialize()
+	materialized, diagnostics, err := doc.MaterializeWithOptions(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +114,7 @@ func ProcessBytes(input []byte, opts Options) (*Result, error) {
 		Preprocessed: string(preprocessed),
 		Document:     doc,
 		Materialized: materialized,
-		Diagnostics:  append([]Diagnostic(nil), doc.Diagnostics...),
+		Diagnostics:  append(append([]Diagnostic(nil), doc.Diagnostics...), diagnostics...),
 	}, nil
 }
 
@@ -124,14 +126,15 @@ func ProcessFile(path string, opts Options) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	materialized, err := doc.Materialize()
+	materialized, diagnostics, err := doc.MaterializeWithOptions(opts)
 	if err != nil {
 		return nil, err
 	}
+	applyDiagnosticSource(diagnostics, path)
 	return &Result{
 		Document:     doc,
 		Materialized: materialized,
-		Diagnostics:  append([]Diagnostic(nil), doc.Diagnostics...),
+		Diagnostics:  append(append([]Diagnostic(nil), doc.Diagnostics...), diagnostics...),
 	}, nil
 }
 
@@ -212,6 +215,22 @@ func ParseBytesWithOptions(input []byte, opts ParseOptions) (*Document, error) {
 			doc.Imports = append(doc.Imports, imports...)
 			continue
 		}
+		if key == "vars" {
+			vars, err := parseVars(valueNode, ctx)
+			if err != nil {
+				return nil, err
+			}
+			if doc.Vars == nil {
+				doc.Vars = make(map[string]interface{})
+			}
+			for varName, varValue := range vars {
+				if _, exists := doc.Vars[varName]; exists {
+					return nil, nodeError(keyNode, "duplicate top-level var %q", varName)
+				}
+				doc.Vars[varName] = varValue
+			}
+			continue
+		}
 		if seenRoots[key] {
 			return nil, nodeError(keyNode, "duplicate top-level object %q", key)
 		}
@@ -236,6 +255,13 @@ func ParseBytesWithOptions(input []byte, opts ParseOptions) (*Document, error) {
 // Materialize resolves inheritance and converts the ordered model to the
 // current mapstructure-compatible HyperBricks map shape.
 func (d *Document) Materialize() (map[string]interface{}, error) {
+	materialized, _, err := d.MaterializeWithOptions(Options{})
+	return materialized, err
+}
+
+// MaterializeWithOptions resolves inheritance, applies value resolvers, and
+// converts the ordered model to the current mapstructure-compatible map shape.
+func (d *Document) MaterializeWithOptions(opts Options) (map[string]interface{}, []Diagnostic, error) {
 	roots := make(map[string]*Node, len(d.Roots))
 	for _, root := range d.Roots {
 		if strings.TrimSpace(root.Name) == "" {
@@ -247,39 +273,20 @@ func (d *Document) Materialize() (map[string]interface{}, error) {
 	out := make(map[string]interface{}, len(d.Roots))
 	resolved := make(map[string]*Node, len(d.Roots))
 	resolving := make(map[string]bool, len(d.Roots))
+	ctx := newValueResolverContext(d, opts)
 	for _, root := range d.Roots {
 		node, err := resolveRootNode(root, roots, resolved, resolving)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		out[root.Name] = node.ToMap()
+		out[root.Name] = materializeNodeToMap(node, ctx, root.Name)
 	}
-	return out, nil
+	return out, ctx.diagnostics, nil
 }
 
 // ToMap converts a resolved node into the runtime map shape.
 func (n *Node) ToMap() map[string]interface{} {
-	out := make(map[string]interface{}, len(n.Props)+len(n.Children)+2)
-	if typ := formatType(n.Type); typ != "" {
-		out["@type"] = typ
-	}
-	for key, value := range n.Props {
-		out[key] = materializeValue(value)
-	}
-	if len(n.Children) > 0 {
-		order := make([]string, 0, len(n.Children))
-		for _, child := range n.Children {
-			if strings.TrimSpace(child.Name) == "" {
-				continue
-			}
-			order = append(order, child.Name)
-			out[child.Name] = child.ToMap()
-		}
-		if len(order) > 0 {
-			out[orderKey] = order
-		}
-	}
-	return out
+	return materializeNodeToMap(n, nil, n.Name)
 }
 
 func parseImports(node *yaml.Node) ([]string, error) {
@@ -305,6 +312,13 @@ func parseImports(node *yaml.Node) ([]string, error) {
 	default:
 		return nil, nodeError(node, "imports must be a string or string sequence")
 	}
+}
+
+func parseVars(node *yaml.Node, ctx *parseContext) (map[string]interface{}, error) {
+	if node.Kind != yaml.MappingNode {
+		return nil, nodeError(node, "vars must be a mapping")
+	}
+	return parseGenericMap(node, ctx, "vars")
 }
 
 type parseContext struct {
@@ -363,13 +377,18 @@ func parseNodeSequence(name string, seq *yaml.Node, ctx *parseContext, path stri
 			node.Inherit = value
 		default:
 			if valueNode.Kind == yaml.SequenceNode && looksLikeChildNodeSequence(valueNode) {
-				childName := normalizeChildName(key, keyNode, ctx, path, seenChildren, firstChildByOriginalName, reservedSiblingNames)
-				child, err := parseNodeSequence(childName, valueNode, ctx, joinPath(path, childName))
-				if err != nil {
-					return nil, err
+				if looksLikeNodeSequence(valueNode) && reservedRuntimeChildName(formatType(node.Type), key) {
+					return nil, nodeError(keyNode, "child %q at %s collides with a reserved %s field", key, joinPath(path, key), formatType(node.Type))
 				}
-				node.Children = append(node.Children, child)
-				continue
+				if !reservedRuntimeChildName(formatType(node.Type), key) {
+					childName := normalizeChildName(key, keyNode, ctx, path, seenChildren, firstChildByOriginalName, reservedSiblingNames)
+					child, err := parseNodeSequence(childName, valueNode, ctx, joinPath(path, childName))
+					if err != nil {
+						return nil, err
+					}
+					node.Children = append(node.Children, child)
+					continue
+				}
 			}
 			if seenEntries[key] {
 				return nil, nodeError(keyNode, "duplicate property %q", key)
@@ -814,6 +833,17 @@ func loadFile(path string, opts Options, state *loadState) (*Document, error) {
 }
 
 func appendDocumentRoots(target *Document, source *Document, seenRoots map[string]string, sourcePath string) error {
+	if len(source.Vars) > 0 {
+		if target.Vars == nil {
+			target.Vars = make(map[string]interface{})
+		}
+		for key, value := range source.Vars {
+			if _, exists := target.Vars[key]; exists {
+				return fmt.Errorf("duplicate top-level var %q from %s", key, sourcePath)
+			}
+			target.Vars[key] = cloneValue(value)
+		}
+	}
 	for _, root := range source.Roots {
 		if root == nil {
 			continue
@@ -832,7 +862,7 @@ func appendDocumentRoots(target *Document, source *Document, seenRoots map[strin
 }
 
 func docWithoutImports(doc *Document) *Document {
-	out := &Document{}
+	out := &Document{Vars: cloneMap(doc.Vars)}
 	for _, root := range doc.Roots {
 		out.Roots = append(out.Roots, cloneNode(root))
 	}
@@ -845,6 +875,7 @@ func cloneDocument(doc *Document) *Document {
 	}
 	out := &Document{
 		Imports:     append([]string(nil), doc.Imports...),
+		Vars:        cloneMap(doc.Vars),
 		Diagnostics: append([]Diagnostic(nil), doc.Diagnostics...),
 	}
 	for _, root := range doc.Roots {
@@ -883,6 +914,7 @@ func applyPathMarkers(source string, paths PathMarkers) string {
 		"{{TEMPLATES}}", paths.Templates,
 		"{{STATIC}}", paths.Static,
 		"{{HYPERBRICKS}}", paths.HyperBricks,
+		"{{RENDER}}", paths.Render,
 	}
 	pairs := make([]string, 0, len(replacements))
 	for i := 0; i < len(replacements); i += 2 {

@@ -33,7 +33,8 @@ section_rail_shell:
   - inherit: "pattern_site_page"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/section-rail-shell.html}}"
+      - template:
+          file: patterns/section-rail-shell.html
 
 rail_builder_panel:
   - type: fragment
@@ -41,7 +42,8 @@ rail_builder_panel:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/section-rail-builder.html}}"
+      - template:
+          file: patterns/section-rail-builder.html
 
 rail_assets_panel:
   - type: fragment
@@ -49,7 +51,8 @@ rail_assets_panel:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/section-rail-assets.html}}"
+      - template:
+          file: patterns/section-rail-assets.html
 
 rail_status_panel:
   - type: fragment
@@ -57,7 +60,8 @@ rail_status_panel:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/section-rail-status.html}}"
+      - template:
+          file: patterns/section-rail-status.html
 
 app_section_rail_demo:
   - inherit: "section_rail_shell"
@@ -74,7 +78,8 @@ app_section_rail_demo:
             - type: tree
             - template_10:
                 - type: template
-                - template: "{{TEMPLATE:patterns/section-rail-landing.html}}"
+                - template:
+                    file: patterns/section-rail-landing.html
 
 app_rail_builder:
   - inherit: "section_rail_shell"

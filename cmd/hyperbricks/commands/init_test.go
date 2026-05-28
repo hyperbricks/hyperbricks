@@ -49,7 +49,8 @@ func TestDefaultInitAssetsWriteYAMLHelloWorld(t *testing.T) {
 		"- type: hypermedia",
 		"- route: index",
 		"<h1>Hello World</h1>",
-		`template: "{{TEMPLATE:hello-card.html}}"`,
+		"template:",
+		"file: hello-card.html",
 		"Inline template",
 	} {
 		if !strings.Contains(string(yamlContent), want) {
@@ -89,10 +90,10 @@ func TestDefaultInitAssetsWriteYAMLHelloWorld(t *testing.T) {
 		t.Fatalf("template_file = %T, want map", main["template_file"])
 	}
 	if templateFile["template"] != "hello-card.html" {
-		t.Fatalf("template marker was not resolved, got %#v", templateFile["template"])
+		t.Fatalf("template.file resolver was not resolved, got %#v", templateFile["template"])
 	}
 	if storedTemplate, found := parser.GetTemplate("hello-card.html"); !found || !strings.Contains(storedTemplate, "{{.body}}") {
-		t.Fatalf("template marker did not cache hello-card.html, found=%v content=%q", found, storedTemplate)
+		t.Fatalf("template.file resolver did not cache hello-card.html, found=%v content=%q", found, storedTemplate)
 	}
 
 	legacyPath := filepath.Join("modules", "demo", "hyperbricks", "hello-world.hyperbricks")

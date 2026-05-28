@@ -15,11 +15,16 @@ In this module it is used for two things:
 
 ## Basic shape
 
-```hyperbricks
-my_doc = <PLUGIN>
-my_doc.plugin = MarkdownPlugin@2.0.0
-my_doc.data.class = pattern-docs-markdown
-my_doc.data.content = {{FILE:modules/hyperbricks-patterns/docs/markdown-plugin.md}}
+```yaml
+my_doc:
+  - type: plugin
+  - plugin: MarkdownPlugin@2.0.0
+  - data:
+      class: pattern-docs-markdown
+      content:
+        file:
+          base: module
+          path: docs/markdown-plugin.md
 ```
 
 ## Input fields

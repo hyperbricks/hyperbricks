@@ -7,9 +7,13 @@ page:
       - type: head
       - title: Reserved names fixture
       - css:
-          - "{{RESOURCES}}/css/base.css"
+          - path:
+              base: resources
+              path: css/base.css
       - js:
-          - "{{RESOURCES}}/js/app.js"
+          - path:
+              base: resources
+              path: js/app.js
 
       - css_component:
           - type: css
@@ -37,14 +41,14 @@ Reserved runtime field names such as css and js remain properties; custom compon
     ],
     "@type": "<HEAD>",
     "css": [
-      "{{RESOURCES}}/css/base.css"
+      "resources/css/base.css"
     ],
     "css_component": {
       "@type": "<CSS>",
       "inline": ".reserved-name-fixture {\n  display: block;\n}\n"
     },
     "js": [
-      "{{RESOURCES}}/js/app.js"
+      "resources/js/app.js"
     ],
     "js_component": {
       "@type": "<JAVASCRIPT>",
@@ -64,6 +68,6 @@ Reserved runtime field names such as css and js remain properties; custom compon
 console.log("reserved-name fixture");
 
 </script><meta name="generator" content="hyperbricks runtime"><title>Reserved names fixture</title>
-<link rel="stylesheet" href="{{RESOURCES}}/css/base.css">
-<script src="{{RESOURCES}}/js/app.js"></script>
+<link rel="stylesheet" href="resources/css/base.css">
+<script src="resources/js/app.js"></script>
 </head><body></body></html>

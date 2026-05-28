@@ -155,6 +155,20 @@ func TestYAMLProfileFixtureDirectoryContainsOnlyReadableYAMLFixtures(t *testing.
 	}
 }
 
+func TestYAMLProfileReadableCasesUseValueResolversInsteadOfLegacyMarkers(t *testing.T) {
+	matches, err := filepath.Glob(filepath.Join(yamlProfileFixtureDir, "*.hyperbricks.yaml.test"))
+	if err != nil {
+		t.Fatalf("glob readable YAML cases: %v", err)
+	}
+	legacyMarkerPattern := regexp.MustCompile(`\{\{(?:VAR|ENV|CONF|FILE|TEMPLATE|RESOURCES|TEMPLATES|STATIC|HYPERBRICKS|MODULE|ROOT|MODULE_ROOT|MODULE_PATH)(?::|\}\})`)
+	for _, path := range matches {
+		testCase := parseYAMLReadableCase(t, path)
+		if legacyMarkerPattern.MatchString(testCase.Source) {
+			t.Fatalf("%s uses legacy {{...}} marker syntax in YAML source", filepath.Base(path))
+		}
+	}
+}
+
 func TestYAMLProfileReadableCasesCoverCoreCorpus(t *testing.T) {
 	for _, name := range yamlCoreCorpus {
 		readablePath := filepath.Join(yamlProfileFixtureDir, name)
@@ -524,6 +538,9 @@ func yamlProfileOptionsForCase(t *testing.T, path string) yamlparser.Options {
 	t.Helper()
 	if filepath.Base(path) != "pipeline-pre-parse-post.hyperbricks.yaml.test" {
 		return yamlparser.Options{
+			Paths: yamlparser.PathMarkers{
+				Resources: "resources",
+			},
 			RecoverDuplicateChildren: true,
 		}
 	}
@@ -557,8 +574,7 @@ func newYAMLProfileRenderManager(t *testing.T) *render.RenderManager {
 	rm := render.NewRenderManager()
 	templateProvider := func(templateName string) (string, bool) {
 		templates := map[string]string{
-			"cards/card.html":              `<article><h2>{{.title}}</h2>{{if .lead}}<p>{{.lead}}</p>{{end}}{{if .body}}<p>{{.body}}</p>{{end}}{{if .cta}}{{.cta}}{{end}}{{if .theme}}<span>{{.theme.tone}}</span>{{end}}</article>`,
-			"{{TEMPLATE:cards/card.html}}": `<article><h2>{{.title}}</h2>{{if .lead}}<p>{{.lead}}</p>{{end}}{{if .body}}<p>{{.body}}</p>{{end}}{{if .cta}}{{.cta}}{{end}}{{if .theme}}<span>{{.theme.tone}}</span>{{end}}</article>`,
+			"cards/card.html": `<article><h2>{{.title}}</h2>{{if .lead}}<p>{{.lead}}</p>{{end}}{{if .body}}<p>{{.body}}</p>{{end}}{{if .cta}}{{.cta}}{{end}}{{if .theme}}<span>{{.theme.tone}}</span>{{end}}</article>`,
 		}
 		content, exists := templates[templateName]
 		return content, exists

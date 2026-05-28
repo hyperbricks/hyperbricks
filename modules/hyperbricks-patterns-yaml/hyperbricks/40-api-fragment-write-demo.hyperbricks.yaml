@@ -6,7 +6,8 @@ api_fragment_write_demo_shell:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/api-fragment-write-demo.html}}"
+      - template:
+          file: patterns/api-fragment-write-demo.html
 
 api_fragment_write_refresh_probe:
   - type: fragment
@@ -14,7 +15,8 @@ api_fragment_write_refresh_probe:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/api-fragment-write-refresh-probe.html}}"
+      - template:
+          file: patterns/api-fragment-write-refresh-probe.html
 
 api_fragment_write_mock_success:
   - type: fragment
@@ -22,7 +24,8 @@ api_fragment_write_mock_success:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/mock-postgrest-file-save-success.json}}"
+      - template:
+          file: patterns/mock-postgrest-file-save-success.json
 
 api_fragment_write_mock_conflict:
   - type: fragment
@@ -30,7 +33,8 @@ api_fragment_write_mock_conflict:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/mock-postgrest-file-save-conflict.json}}"
+      - template:
+          file: patterns/mock-postgrest-file-save-conflict.json
 
 api_fragment_write_save_success:
   - type: api_fragment_render
@@ -44,7 +48,8 @@ api_fragment_write_save_success:
         Accept: application/json
   - querykeys: []
   - body: "{\"p_project_slug\":\"$project\",\"p_file_id\":$file_id,\"p_kind\":\"$kind\",\"p_path\":\"$path\",\"p_content\":\"$content\"}"
-  - template: "{{TEMPLATE:patterns/api-file-write-result.html}}"
+  - template:
+      file: patterns/api-file-write-result.html
   - response:
       hx_trigger: hb-pattern-assets-refresh
 
@@ -60,7 +65,8 @@ api_fragment_write_save_conflict:
         Accept: application/json
   - querykeys: []
   - body: "{\"p_project_slug\":\"$project\",\"p_file_id\":$file_id,\"p_kind\":\"$kind\",\"p_path\":\"$path\",\"p_content\":\"$content\"}"
-  - template: "{{TEMPLATE:patterns/api-file-write-result.html}}"
+  - template:
+      file: patterns/api-file-write-result.html
   - response:
       hx_trigger: hb-pattern-assets-refresh
 

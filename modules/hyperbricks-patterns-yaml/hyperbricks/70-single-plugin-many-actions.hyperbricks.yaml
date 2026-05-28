@@ -5,7 +5,8 @@ single_plugin_actions_shell:
   - inherit: "pattern_site_page"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/single-plugin-actions-shell.html}}"
+      - template:
+          file: patterns/single-plugin-actions-shell.html
 
 workflow_actions_demo_landing:
   - type: fragment
@@ -16,7 +17,8 @@ workflow_actions_demo_landing:
       - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: landing
-          template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
+          template:
+            file: patterns/workflow-actions-stage.html
 
 workflow_actions_demo_lookup:
   - type: fragment
@@ -27,7 +29,8 @@ workflow_actions_demo_lookup:
       - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: lookup
-          template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
+          template:
+            file: patterns/workflow-actions-stage.html
 
 workflow_actions_demo_signup:
   - type: fragment
@@ -38,7 +41,8 @@ workflow_actions_demo_signup:
       - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: signup
-          template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
+          template:
+            file: patterns/workflow-actions-stage.html
 
 workflow_actions_demo_complete:
   - type: fragment
@@ -49,7 +53,8 @@ workflow_actions_demo_complete:
       - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: complete
-          template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
+          template:
+            file: patterns/workflow-actions-stage.html
 
 app_single_plugin_actions_demo:
   - inherit: "single_plugin_actions_shell"

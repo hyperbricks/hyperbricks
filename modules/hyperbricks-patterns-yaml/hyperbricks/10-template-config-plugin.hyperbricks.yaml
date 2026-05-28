@@ -6,4 +6,5 @@ patterns_index:
   - route: index
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/index.html}}"
+      - template:
+          file: patterns/index.html

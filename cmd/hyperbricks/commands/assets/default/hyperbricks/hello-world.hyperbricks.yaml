@@ -9,7 +9,8 @@ page:
           - value: <main><h1>Hello World</h1></main>
       - template_file:
           - type: template
-          - template: "{{TEMPLATE:hello-card.html}}"
+          - template:
+              file: hello-card.html
           - values:
               heading: Template file
               body: This block is loaded from modules/demo/templates/hello-card.html.

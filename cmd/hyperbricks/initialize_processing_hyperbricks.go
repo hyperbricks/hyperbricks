@@ -205,6 +205,7 @@ func yamlRuntimeOptions() yamlparser.Options {
 			Templates:   core.ModuleDirectories.TemplateDir,
 			Static:      core.ModuleDirectories.StaticDir,
 			HyperBricks: core.ModuleDirectories.HyperbricksDir,
+			Render:      core.ModuleDirectories.RenderedDir,
 		},
 		RecoverDuplicateChildren: true,
 	}
@@ -221,11 +222,28 @@ func yamlDiagnosticsToComponentErrors(diagnostics []yamlparser.Diagnostic) []err
 			Type:  "YAML",
 			Path:  diagnostic.Path,
 			Key:   diagnostic.OriginalName,
-			Err:   fmt.Sprintf("%s (source: %s:%d:%d)", diagnostic.Message, filepath.Base(diagnostic.Source), diagnostic.Line, diagnostic.Column),
-			Level: "WARNING",
+			Err:   formatYAMLDiagnosticMessage(diagnostic),
+			Level: strings.ToUpper(defaultDiagnosticLevel(diagnostic.Level)),
 		})
 	}
 	return out
+}
+
+func formatYAMLDiagnosticMessage(diagnostic yamlparser.Diagnostic) string {
+	if strings.TrimSpace(diagnostic.Source) == "" {
+		return diagnostic.Message
+	}
+	if diagnostic.Line <= 0 || diagnostic.Column <= 0 {
+		return fmt.Sprintf("%s (source: %s)", diagnostic.Message, filepath.Base(diagnostic.Source))
+	}
+	return fmt.Sprintf("%s (source: %s:%d:%d)", diagnostic.Message, filepath.Base(diagnostic.Source), diagnostic.Line, diagnostic.Column)
+}
+
+func defaultDiagnosticLevel(level string) string {
+	if strings.TrimSpace(level) == "" {
+		return "warning"
+	}
+	return level
 }
 
 func yamlRuntimeVariables() map[string]string {
