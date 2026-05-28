@@ -1,271 +1,203 @@
-# HyperBricks API-RENDER 
+# API Render
 
-HyperBricks renders HTML directly from APIs. Use `<API_RENDER>` for cacheable/public data. Use `<API_FRAGMENT_RENDER>` for live, interactive, or authenticated fragments (HTMX-style partials). Fragments are always dynamic.
+HyperBricks can fetch API data and render it into HTML through Go templates.
+There are two API-oriented components:
 
----
+- `api_render` fetches API data inside another route and renders it as part of a
+  page or fragment.
+- `api_fragment_render` owns its own route and returns a dynamic fragment.
 
-## Components at a glance
+Use `api_render` for public, cacheable, nested content. Use
+`api_fragment_render` for interactive, request-specific, authenticated, or HTMX
+fragment flows.
 
-| Component               | Primary use                          | Cache       | Client auth | Typical cases                   |
-| ----------------------- | ------------------------------------ | ----------- | ----------- | ------------------------------- |
-| `<API_RENDER>`          | Public, cacheable API → HTML         | Optional    | No          | Public widgets, feeds           |
-| `<API_FRAGMENT_RENDER>` | Interactive/auth API → HTML fragment | No (forced) | Yes         | Login, dashboards, HTMX islands |
+## At A Glance
 
-**IMPORTANT:** `<API_FRAGMENT_RENDER>` forces `nocache = true` at runtime.
+| YAML type | Runtime type | Route owner | Cache behavior | Typical use |
+| --- | --- | --- | --- | --- |
+| `api_render` | `<API_RENDER>` | no | cacheable by parent route | public feeds, public widgets, read-only API content |
+| `api_fragment_render` | `<API_FRAGMENT_RENDER>` | yes | always dynamic | forms, authenticated fragments, HTMX islands |
 
----
+`api_fragment_render` is forced to `nocache` at runtime.
 
-## Features
+## API Render
 
-### `<API_RENDER>`
+`api_render` is a nested component. It must live inside a route owner such as
+`hypermedia` or `fragment`.
 
-* Nested and optionally cached; lives inside a composite like `<FRAGMENT>` or `<HYPERMEDIA>` so, <API_RENDER> is unlike <API_FRAGMENT_RENDER> not a route by itself; it must be included inside a root component (<HYPERMEDIA>/<FRAGMENT>).
-* Fetches API data, transforms via `inline`/`template`
-* Forwards only allow-listed query params (`querykeys`)
-* Can set upstream request headers and modify request body
-* Can apply upstream auth (JWT, Basic, cookies)
-
-### `<API_FRAGMENT_RENDER>`
-
-* Custom route; renders to an HTML fragment for HTMX/partial updates
-* Bi-directional proxy: filters queries, forwards form/body
-* Can apply upstream auth (JWT, Basic, cookies)
-* HTMX response headers via `response { ... }`
-* `setcookie` sets one client cookie based on response data when the upstream response is any `2xx`
-* `setcookies` sets multiple client cookies, one `Set-Cookie` header per entry, on any `2xx` upstream response
-* Can declare optional `guard { ... }` to deny the route before any upstream API call is made
-
----
-
-###  **Relevant Documentation**
-* See the [TaskManager repository](https://github.com/hyperbricks/taskmanager/blob/main/modules/taskmanager/hyperbricks/lib/tasklist.hyperbricks#:~:text=tasklist.-,hyperbricks,-taskmanager.hyperbricks) for an example with with [PostgREST](https://postgrest.org/) and [HTMX](https://htmx.org/).
-* For latest hyperbricks configuration examples see [test/dedicated/api-tests](https://github.com/hyperbricks/hyperbricks/tree/main/test/dedicated/api-tests#:~:text=api%2D-,tests,-api%2Dfragment%2Drender)
-* [HTMX Out-of-Band Swaps](https://htmx.org/attributes/hx-swap-oob/)
-* [HTMX Response Headers](https://htmx.org/reference/#response_headers)
-* [Hypermedia Systems](https://hypermedia.systems/book/contents/)
-* [Go html/template](https://pkg.go.dev/html/template)
-* [Sprig Template Functions](https://masterminds.github.io/sprig/)
-* [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md)
-
-
-<img src="assets/api_fragment_render.svg" alt="Direct HTMX OOB via HyperBricks &lt;API_FRAGMENT_RENDER&gt;" width="100%" />
-
-Note: this sequence diagram shows the allow path. If `<API_FRAGMENT_RENDER>.guard` is configured and denies the request, HyperBricks returns the configured denial response before any upstream API call is made. See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md).
-
-
-## Key differences
-
-| Feature                             | `<API_RENDER>`              | `<API_FRAGMENT_RENDER>`                |
-| ----------------------------------- | --------------------------- | -------------------------------------- |
-| Cache                               | Optional                    | None (runtime-forced `nocache = true`) |
-| Client auth handling                | No                          | Yes (forms/tokens)                     |
-| Upstream auth (Server→API)          | Yes (JWT/Basic/Cookies)     | Yes (JWT/Basic/Cookies)                |
-| Query param filtering (`querykeys`) | Yes                         | Yes                                    |
-| Request body mapping                | Yes                         | Yes                                    |
-| Transform via `inline`/`template`   | Yes                         | Yes                                    |
-| HTMX response headers               | No                          | Yes via `response { ... }`             |
-| `setcookie` / `setcookies` back to client | No (unused in current code) | Yes (any `2xx`)                   |
-
----
-
-## Key fields (reference tables)
-
-### `<API_RENDER>`
-
-| Property            | Description                                                                                                                   |                       |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| endpoint            | API URL.                                                                                                                      |                       |
-| method              | HTTP method (default GET).                                                                                                    |                       |
-| cache               | Enable caching for a duration (e.g., `60s`, `5m`, `1h`). *(If caching is controlled at a parent level, document that there.)* |                       |
-| nocache             | Force dynamic rendering, overriding cache. *(If controlled at a parent level, document precedence there.)*                    |                       |
-| querykeys           | Allowlist of client query params to forward (default: `id`, `name`, `order`).                                                 |                       |
-| queryparams         | Extra query params to append to the outgoing request.                                                                         |                       |
-| headers             | Upstream request headers to send to the API.                                                                                  |                       |
-| body                | String with `$key` placeholders replaced from query/form/json.                                                                |                       |
-| inline / template   | Template source (inline block or file path).                                                                                  |                       |
-| values              | Key-value pairs merged into the template context **root** (use `{{ .key }}`).                                                 |                       |
-| username / password | Basic Auth credentials for upstream.                                                                                          |                       |
-| jwtsecret           | Secret for generating a JWT for `Authorization`.                                                                              |                       |
-| jwtclaims           | Claims map; `exp` is seconds offset from now.                                                                                 |                       |
-| debug               | Adds debug comments.                                                                                                          |                       |
-| debugpanel          | Enables the front-end error panel (non-LIVE mode and global flag on).                                                         |                       |
-| enclose             | Wrap final HTML with `before                                                                                                  | after` (see Enclose). |
-
-### `<API_FRAGMENT_RENDER>`
-
-| Property            | Description                                                                                                       |                       |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------- |
-| route               | Fragment route (URL segment).                                                                                     |                       |
-| guard { ... }       | Optional pre-render route guard. If denied, HyperBricks does not call the upstream `endpoint`. See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md). |                       |
-| title               | Optional fragment title.                                                                                          |                       |
-| section             | Logical grouping section.                                                                                         |                       |
-| index               | Sort key for menus.                                                                                               |                       |
-| endpoint            | API URL.                                                                                                          |                       |
-| method              | HTTP method (default GET).                                                                                        |                       |
-| nocache             | Always dynamic. **Runtime-forced true.**                                                                          |                       |
-| querykeys           | Allowlist of client query params to forward (default: `id`, `name`, `order`).                                     |                       |
-| queryparams         | Extra query params for the outgoing request.                                                                      |                       |
-| request.headers     | Headers to send to the upstream API. *(If you also need non-HTMX response headers, add a separate config block.)* |                       |
-| response { ... }    | HTMX response header block (see table below).                                                                     |                       |
-| inline / template   | Template source (inline block or file path).                                                                      |                       |
-| values              | Key-value pairs merged into the template context **root** (use `{{ .key }}`).                                     |                       |
-| username / password | Basic Auth credentials for upstream.                                                                              |                       |
-| jwtsecret           | Secret for generating a JWT (overrides cookie token).                                                             |                       |
-| jwtclaims           | Claims map; `exp` is seconds offset.                                                                              |                       |
-| setcookie           | Legacy shorthand for one template that becomes `Set-Cookie` when the upstream response is any `2xx`.             |                       |
-| setcookies          | Optional list of templates; each entry becomes its own `Set-Cookie` header when the upstream response is any `2xx`. |                    |
-| debug               | Adds debug comments.                                                                                              |                       |
-| debugpanel          | Enables front-end error panel (non-LIVE mode and global flag on).                                                 |                       |
-| enclose             | Wrap final HTML with `before                                                                                      | after` (see Enclose). |
-
-### Enclose helper
-
-| Property  | Description                                                                                                     |                            |         |
-| --------- | --------------------------------------------------------------------------------------------------------------- | -------------------------- | ------- |
-| enclose   | Enclosing HTML split by `                                                                                       | `, e.g. `<div class="box"> | </div>` |
-| trimspace | *(Not currently documented as supported.)* If you add it later, define exact behavior.                          |                            |         |
-| value     | *(Not currently documented as supported.)* If you add it later, define how it interacts with `inline/template`. |                            |         |
-
----
-
-## Template context
-
-| Property         | Description                                                                                 |
-| ---------------- | ------------------------------------------------------------------------------------------- |
-| `Data`           | Parsed API response (JSON object/array → map/list; XML may fall back; plain text → string). |
-| `Status`         | Upstream HTTP status code.                                                                  |
-| `values { ... }` | Merged into the template context **root** (use `{{ .key }}`).                               |
-
-
----
-
-## Config variables
-
-You can set variables and reuse them.
-
-| Property        | Description                       |
-| --------------- | --------------------------------- |
-| `$NAME = value` | Defines a variable at file scope. |
-| `{{VAR:NAME}}`  | Expands to the variable's value.  |
-
-Example:
-
-```properties
-$API_URL = http://localhost:3000
-endpoint = {{VAR:API_URL}}/rpc/login_user
+```yaml
+page:
+  - type: hypermedia
+  - route: public-feed
+  - title: Public feed
+  - main:
+      - type: tree
+      - feed:
+          - type: api_render
+          - endpoint: https://api.example.test/articles
+          - method: GET
+          - querykeys:
+              - category
+          - template:
+              file: api/articles.html
+          - values:
+              heading: Latest articles
 ```
 
-Or you can use environment variables like this:
+The template receives the parsed upstream response as `.Data`, the upstream HTTP
+status as `.Status`, and `values` merged into the template root.
 
-| Property        | Description                       |
-| --------------- | --------------------------------- |
-| `{{ENV:NAME}}`  | Expands to the environment variable's value.  |
-
-Example:
-
-```properties
-endpoint = {{ENV:API_URL}}/rpc/login_user
+```html
+<section>
+  <h2>{{.heading}}</h2>
+  {{range .Data.items}}
+    <article>
+      <h3>{{.title}}</h3>
+      <p>{{.summary}}</p>
+    </article>
+  {{end}}
+</section>
 ```
 
-**Note:** If variables are shared across imports/files, document precedence (nearest scope wins vs global) in one place.
+## API Fragment Render
 
----
+`api_fragment_render` owns a route. It receives the browser request, optionally
+maps query/form/body data to an upstream API request, renders the upstream
+response, and returns fragment HTML.
 
-## Mapping the request (query, form, body)
+```yaml
+profile_fragment:
+  - type: api_fragment_render
+  - route: fragments/profile
+  - endpoint: http://127.0.0.1:9000/api/profile
+  - method: GET
+  - querykeys:
+      - user_id
+  - response:
+      hx_target: "#profile"
+      hx_reswap: outerHTML
+  - template:
+      file: fragments/profile.html
+```
 
-| Source       | Included in fragments        | Included in API_RENDER       | Notes                                                                 |
-| ------------ | ---------------------------- | ---------------------------- | --------------------------------------------------------------------- |
-| Query params | Yes, filtered by `querykeys` | Yes, filtered by `querykeys` | Default allowlist: `id`, `name`, `order`; empty list → forward none.  |
-| Form data    | Yes                          | Yes                          | Flattened: single → string; multi → list.                             |
-| JSON body    | Yes                          | Yes                          | Merged; on key collision, JSON key is also available as `body_<key>`. |
+The `response` block maps to HTMX response headers.
 
-**Placeholders in `body`:** `$key` tokens are replaced from the merged data.
+| Field | Header |
+| --- | --- |
+| `hx_location` | `HX-Location` |
+| `hx_push_url` | `HX-Push-Url` |
+| `hx_redirect` | `HX-Redirect` |
+| `hx_refresh` | `HX-Refresh` |
+| `hx_replace_url` | `HX-Replace-Url` |
+| `hx_reswap` | `HX-Reswap` |
+| `hx_retarget` | `HX-Retarget` |
+| `hx_reselect` | `HX-Reselect` |
+| `hx_trigger` | `HX-Trigger` |
+| `hx_trigger_after_settle` | `HX-Trigger-After-Settle` |
+| `hx_trigger_after_swap` | `HX-Trigger-After-Swap` |
 
-* Uses a word-boundary regex around key names. Stick to `[A-Za-z0-9_]+` in placeholder keys.
-* Multi-value form fields are stringified. *(If you add joiners later, document the syntax.)*
+## Request Mapping
 
----
+Both API components support the same core API request fields.
 
-## Route guard
+| Field | Purpose |
+| --- | --- |
+| `endpoint` | Upstream API URL |
+| `method` | HTTP method |
+| `headers` | Extra upstream request headers |
+| `body` | Raw upstream request body with `$key` placeholders |
+| `querykeys` | Allow-list of incoming query keys to forward |
+| `queryparams` | Static query parameters to append |
+| `username` / `password` | Basic authentication |
+| `jwtsecret` / `jwtclaims` | Generate a bearer token for upstream authentication |
+| `template` | Template file resolver or template name |
+| `inline` | Inline Go template source |
+| `values` | Extra template data |
+| `debug` | Add debug output in development flows |
+| `debugpanel` | Enable the frontend error panel when configured globally |
 
-`<API_FRAGMENT_RENDER>` is a route-owning root component, so it may declare an optional `guard { ... }` block.
+`body` placeholders use `$key` names resolved from the merged request data.
+Prefer simple placeholder names such as `$id`, `$name`, or `$email`.
 
-If configured and enabled:
+```yaml
+login:
+  - type: api_fragment_render
+  - route: auth/login
+  - endpoint: http://127.0.0.1:9000/rpc/login
+  - method: POST
+  - headers:
+      Content-Type: application/json
+  - body: |
+      {"email":"$email","password":"$password"}
+  - response:
+      hx_trigger: login-updated
+  - inline: |
+      <div id="login-result">{{.Data.message}}</div>
+```
 
-* the guard runs after route resolution but before any upstream API request
-* denied requests do not execute the API proxy path
-* HTMX requests may use `HX-Redirect` through the guard response settings
+## Authentication
 
-See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md) for the shared contract used by `<HYPERMEDIA>`, `<FRAGMENT>`, and `<API_FRAGMENT_RENDER>`.
+Upstream authorization is applied in this order:
 
-## Authentication behavior
+1. When `jwtsecret` is set, HyperBricks signs `jwtclaims` and sends a bearer
+   token.
+2. Otherwise, when the incoming request has a `token` cookie, HyperBricks sends
+   it as a bearer token.
+3. Otherwise, when `username` and `password` are set, HyperBricks uses Basic
+   Auth.
+4. Otherwise, no upstream auth header is added.
 
-Observed precedence for the upstream `Authorization` header:
+`jwtclaims.exp` is treated as a seconds offset from now.
 
-1. If `jwtsecret` is set, a new JWT is generated from `jwtclaims` and used.
-2. Else, if the incoming client request has a `token` cookie, use `Bearer <token>`.
-3. Else, if `username`/`password` are set, use Basic Auth.
-4. Else, no auth header.
+## Cookies
 
-`jwtclaims.exp` is treated as **seconds offset from now**. If missing or invalid, defaults to now + 1h.
+`api_fragment_render` can set response cookies when the upstream API returns a
+successful `2xx` response.
 
----
+```yaml
+logout:
+  - type: api_fragment_render
+  - route: auth/logout
+  - endpoint: http://127.0.0.1:9000/rpc/logout
+  - method: POST
+  - setcookies:
+      - "token=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax"
+      - "session=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax"
+  - inline: |
+      <div id="auth-status">Signed out</div>
+```
 
-## Caching & static
+Use `setcookies` when one route must emit multiple `Set-Cookie` headers.
 
-* `cache = <duration>` enables caching for `<API_RENDER>`.
-* `nocache = true` forces dynamic rendering.
-* `<API_FRAGMENT_RENDER>` forces `nocache = true` at runtime.
-* `static = <path>` writes static files during `hyperbricks static`.
+## Guards
 
-**TO-DO:** Define precedence between parent composite cache settings and child settings.
+`api_fragment_render` can declare a `guard` block. The guard runs before the
+upstream API call. A denied request never reaches the upstream endpoint.
 
----
+```yaml
+secure_profile:
+  - type: api_fragment_render
+  - route: fragments/secure-profile
+  - guard:
+      enabled: true
+      endpoint: http://127.0.0.1:9000/auth/authorize
+      method: POST
+      deny_status: 403
+  - endpoint: http://127.0.0.1:9000/api/profile
+  - method: GET
+  - template:
+      file: fragments/profile.html
+```
 
-## HTMX response headers
+See [Route Guard](ROUTE_GUARD.md) for the full guard contract.
 
-Configure inside `response { ... }` on fragments.
+## Security Notes
 
-| Key                     | HTMX Header             | Description                              |
-| ----------------------- | ----------------------- | ---------------------------------------- |
-| hx_location             | HX-Location             | Client-side redirect without full reload |
-| hx_push_url             | HX-Push-Url             | Push a new URL into history              |
-| hx_redirect             | HX-Redirect             | Redirect to new location                 |
-| hx_refresh              | HX-Refresh              | Full page refresh                        |
-| hx_replace_url          | HX-Replace-Url          | Replace current URL in the location bar  |
-| hx_reswap               | HX-Reswap               | Swap behavior                            |
-| hx_retarget             | HX-Retarget             | Selector for update target               |
-| hx_reselect             | HX-Reselect             | Selector to pick part of the response    |
-| hx_trigger              | HX-Trigger              | Trigger client events                    |
-| hx_trigger_after_settle | HX-Trigger-After-Settle | Trigger events after settle              |
-| hx_trigger_after_swap   | HX-Trigger-After-Swap   | Trigger events after swap                |
+- Keep `querykeys` narrow. Do not forward arbitrary browser query parameters to
+  upstream APIs.
+- Use loopback or private upstream URLs for internal services.
+- Prefer `HttpOnly`, `Secure`, `SameSite`, and `Path` on cookies.
+- Do not reflect untrusted input into headers or cookies without validation.
+- Keep debug output disabled in live deployments.
 
----
-
-## Security notes
-
-* New cookie jar per outgoing request; shared transport for pooling. Prevents cookie leakage between users.
-* If a `token` cookie exists on the client request, it becomes `Authorization: Bearer <token>` to the upstream unless `jwtsecret` overrides.
-* `setcookie` and `setcookies` run on any upstream `2xx` status on fragments, including `204 No Content`. Prefer `HttpOnly; Secure; SameSite=Lax; Path=/` and set expiry/Max-Age.
-* `querykeys` allowlist prevents accidental forwarding of sensitive client params.
-* Sanitize any dynamic values you reflect into headers or cookies.
-
----
-
-## Debug & errors
-
-* `debug = true` adds a HTML comment with the upstream payload (in non-LIVE mode).
-* `debugpanel = true` injects a front-end error panel when global `Development.FrontendErrors` is enabled (and not LIVE).
-* Errors are surfaced as HTML comments and collected for logs.
-* **TO-DO:** Fragment debug string says `Debug in <API_RENDER>...` — adjust label.
-
-
----
-
-## Known limitations & open items
-
-* XML decoding often needs struct bindings; generic map decoding may fail and fall back to plain text. *(Document what “fallback” looks like for templates.)*
-* Placeholder matching uses word boundaries; avoid dashes in `$key` names. 
-* Fragment rendering assumes `Request` and `ResponseWriter` are present in context.
-* `<API_RENDER>` exposes `setcookie` in the struct but does not send it.
-* Use `setcookies` when one route must emit multiple `Set-Cookie` headers, such as clearing both an auth token and a legacy session cookie during logout.
+For all available component fields, see [Reference](REFERENCE.md).

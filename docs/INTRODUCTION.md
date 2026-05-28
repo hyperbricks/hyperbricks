@@ -1,160 +1,173 @@
 # Introduction
 
-HyperBricks is a Go-based system that can **build and serve** web applications from small, modular configuration files (`.hyperbricks`). It was designed to ship **fast, high-quality hypermedia apps** (full pages + HTMX fragments) without pulling in a large JavaScript framework just to get structure, templating, routing, and build tooling.
+HyperBricks is a Go runtime and build system for HTMX-powered hypermedia
+applications. You describe pages, fragments, templates, data calls, and route
+behavior in `*.hyperbricks.yaml` files; HyperBricks materializes that
+configuration into the same runtime component model for serving or static
+rendering.
 
-At a high level: you describe **what your site is** as a hierarchy of components, HyperBricks wires the output, and it can render either **statically** or **dynamically**.
+The goal is simple: keep the authoring model readable, reusable, and versionable
+while still giving developers full control over HTML, routing, templates, and
+deployment.
 
-## HyperBricks started from a practical standpoint:
+## Mental Model
 
-* A **granular templating system** that stays readable and modular as projects grow
-* Great **runtime performance** (Go’s templating + concurrency)
-* First-class integration with **HTMX**
-* Optional modern JS bundling for **TypeScript / ESM modules** (without “JS dependency clutter”)
-* Tailwind CLI integration
-* A simple “native component” model that stays extensible through plugins
-* **Bi-directional SSR**: render API → HTML and return either full pages or HTMX fragments
+HyperBricks has three layers:
 
-The guiding idea is to keep the authoring model *simple*, while still supporting advanced composition and data-driven rendering.
+- YAML source files describe route owners and reusable components.
+- The parser materializes those files into ordered runtime configuration maps.
+- The runtime registry decodes those maps into components and renders them.
 
----
+That separation matters. YAML is the source format, but the runtime contract is
+still component based. A YAML page, fragment, or template must become the same
+shape the renderer expects.
 
-## The mental model
+## Route Owners
 
-HyperBricks projects are built from small `.hyperbricks` files. Think of each file as a module of configuration that defines components and how they nest.
+Route owners are top-level components that can answer a request.
 
-### 1) Components are the building blocks
+- `hypermedia` renders full HTML documents.
+- `fragment` renders HTMX-oriented partial responses.
+- `api_fragment_render` proxies an API request and renders the response as a
+  fragment.
 
-HyperBricks uses **two kinds of components**:
+Example full page:
 
-#### Standard components (leaf nodes)
-
-Leaf components render only what you put in them.
-
-Examples: `<HTML>`, `<TEXT>`, `<IMAGE>`, `<CSS>`, `<JS>`, `<JSON>`, `<MENU>`, `<PLUGIN>`
-
-```hyperbricks
-intro = <TEXT>
-intro.value = Welcome to HyperBricks!
+```yaml
+page:
+  - type: hypermedia
+  - route: index
+  - title: Welcome
+  - main:
+      - type: tree
+      - hero:
+          - type: html
+          - value: |
+              <main>
+                <h1>Hello HyperBricks</h1>
+                <p>This page is rendered from YAML.</p>
+              </main>
 ```
 
-#### Composite components (structural nodes)
+Example fragment:
 
-Composite components contain other components and define how output is assembled.
-
-Examples: `<HYPERMEDIA>`, `<FRAGMENT>`, `<TREE>`, `<TEMPLATE>`, `<API_RENDER>`, `<API_FRAGMENT_RENDER>`
-
-```hyperbricks
-myfragment = <FRAGMENT>
-myfragment.10 = <HTML>
-myfragment.10.value = <p>Fragment content 1</p>
-myfragment.20 = <HTML>
-myfragment.20.value = <p>Fragment content 2</p>
+```yaml
+status:
+  - type: fragment
+  - route: fragments/status
+  - response:
+      hx_target: "#status"
+      hx_reswap: outerHTML
+  - body:
+      - type: html
+      - value: |
+          <div id="status">Ready</div>
 ```
 
----
+## Components
 
-## Root types and routes
+Components are the building blocks of a route.
 
-Some composite components are **Root Types**. Root types initiate frontend output and typically correspond to a **route**.
+Leaf components render their own output. Common examples are `html`, `text`,
+`image`, `css`, `javascript`, `json_render`, `menu`, and `plugin`.
 
-### Root Types
+Composite components contain or transform other components. Common examples are
+`tree`, `template`, `head`, `api_render`, `fragment`, and `hypermedia`.
 
-* `<HYPERMEDIA>` — full-page documents, controls `<head>`, `<body>`, routing
-* `<FRAGMENT>` — HTMX-powered partial responses
-* `<API_FRAGMENT_RENDER>` — authenticated API fragment proxy (returns HTMX-ready responses)
+The most important rule is that ordered render content belongs in component
+children. HyperBricks records the YAML sequence order as `@order`, then the
+runtime uses that order when rendering tree-like structures.
 
-These route-owning composites may also declare an optional `guard { ... }` block to deny a request before rendering starts. See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md).
-
-A minimal root looks like this:
-
-```hyperbricks
-hypermedia = <HYPERMEDIA>
-hypermedia.route = index
-hypermedia.title = Welcome!
-
-hypermedia.10 = <HTML>
-hypermedia.10.value = <p>Hello from HyperBricks.</p>
+```yaml
+page:
+  - type: hypermedia
+  - route: ordered
+  - main:
+      - type: tree
+      - heading:
+          - type: html
+          - value: <h1>First</h1>
+      - copy:
+          - type: text
+          - value: Second
 ```
 
-This creates a route at `/index` with a title and body output.
+Maps are data. Trees are ordered content.
 
----
+## Templates
 
-## Aggregation types (composition tools)
+Templates use Go `html/template` with Sprig functions. Template files can be
+loaded explicitly through YAML resolvers, or inline content can live directly in
+the config.
 
-Aggregation types are composite components you use to structure and reuse output.
-
-* `<API_RENDER>` — fetch and render public API data (cache-friendly patterns)
-* `<TREE>` — hierarchical/nested components
-* `<TEMPLATE>` — reusable Go template logic (with Sprig extensions)
-
-These are the “glue” that lets you scale beyond single-page config files.
-
----
-
-## Modular configuration: `@import`
-
-By default, HyperBricks loads `.hyperbricks` files from the module’s `hyperbricks/` directory. Files in subfolders are typically **not loaded unless you import them**.
-
-Use `@import` to include external config *inline*:
-
-```hyperbricks
-@import "plugins/esbuild.hyperbricks"
-@import "page/menu.hyperbricks"
+```yaml
+card:
+  - type: template
+  - template:
+      file: cards/product.html
+  - values:
+      title: YAML templates
+      body: Template values stay ordinary data.
 ```
 
-Best practice: keep your configs small and reusable—split plugins, themes, menus, and page fragments into separate files and import as needed.
+Template syntax is separate from YAML resolver syntax. `{{ .title }}` belongs to
+Go templates. YAML resolvers are structured YAML nodes such as `file`, `var`,
+`env`, `format`, and `template.file`.
 
----
+## Reuse
 
-## Dynamic generation: `@macro`
+Reusable objects can live in the same file or be brought in through imports.
+Inheritance copies the referenced component and then applies local overrides.
 
-Macros let you generate repeated config blocks from a compact “table + template” form. Most projects don’t need it early, but it becomes useful for repeated route definitions, menus, mappings, etc.
+```yaml
+base_card:
+  - type: template
+  - template:
+      file: cards/simple.html
+  - values:
+      title: Default title
+      body: Default body
 
-```hyperbricks
-@macro as (index, title, route, doc) {
-1|Introduction|introduction_fragment|introduction
-2|Quickstart|quickstart_fragment|quickstart
-} = <<<[
-    {{{.route}}} <<< docs_fragment
-    {{{.route}}} {
-        index = {{{.index}}}
-        route = {{{.route}}}
-        title = {{{.title}}}
-
-        10.data.source = {{RESOURCES}}/docs/{{{.doc}}}.md
-    }
-]>>>
+page:
+  - type: hypermedia
+  - route: reuse
+  - main:
+      - type: tree
+      - welcome:
+          - inherit: base_card
+          - values:
+              title: Welcome
+              body: This card overrides inherited values.
 ```
 
----
+## Runtime Behavior
 
-## Where JavaScript fits
+HyperBricks is intentionally tolerant at runtime. If a user edits a config file
+and introduces a bad component, the runtime should still render what it can and
+surface diagnostics for the broken parts.
 
-HyperBricks does **not** require a heavy JS framework. You can build highly interactive experiences using **HTMX** and fragments, and only add JavaScript where it’s clearly useful.
+That browser-like behavior is important for local development and for hosted
+editing flows. Configuration diagnostics belong in the render diagnostics
+pipeline, not as process-ending failures.
 
-If you *do* want modern JS/TS bundling, the ecosystem supports that through plugins (e.g., an esbuild-based workflow). The intent is: **no lock-in**, and no forced dependency sprawl.
+## Project Layout
 
----
+A typical module contains:
 
-## What a typical project looks like
+- `hyperbricks/` for `*.hyperbricks.yaml` source files.
+- `templates/` for Go HTML templates.
+- `resources/` for source content and images.
+- `static/` for files served directly.
+- `rendered/` for static output.
 
-When you initialize a module, you get a structure like:
+Directory locations are configured in `package.hyperbricks.yaml`. See
+[YAML Usage](YAML_USAGE.md) for the YAML source contract and
+[Reference](REFERENCE.md) for generated component fields.
 
-* `hyperbricks/` — your `.hyperbricks` configs
-* `templates/` — Go templates (if you use them)
-* `resources/` — source assets (docs, images, content)
-* `static/` — static files served as-is
-* `rendered/` — build output
+## Next Steps
 
-HyperBricks then parses your configs, resolves imports/macros, renders, and serves (or builds) concurrently.
-
----
-
-## Next steps
-
-1. **Quickstart**: create a minimal `<HYPERMEDIA>` route and serve it
-2. **Fragments**: add a `<FRAGMENT>` and update it via HTMX
-3. **Composition**: extract repeating parts into `<TEMPLATE>` and/or `<TREE>`
-4. **Data**: introduce `<API_RENDER>` for public API rendering
-5. **Modularity**: split configs with `@import`, use `@macro` only when repetition hurts
+- [Quickstart](QUICKSTART.md) creates a working YAML module.
+- [Routing](ROUTING.md) explains route owners and URL matching.
+- [YAML Usage](YAML_USAGE.md) documents the YAML syntax and resolvers.
+- [Reference](REFERENCE.md) lists runtime component fields.
+- [Route Guard](ROUTE_GUARD.md) documents request-time authorization.

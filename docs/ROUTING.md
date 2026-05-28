@@ -1,96 +1,46 @@
 # Routing
 
-For HTMX fragment routing and canonical browser URLs, see [HTMX Fragments and Canonical URLs](HTMX_FRAGMENTS_AND_CANONICAL_URLS.md).
+This document explains how HyperBricks resolves routes and clean URLs for
+dynamic rendering and static output.
 
-For optional pre-render authorization on route-owning composites, see [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md).
+Route guard behavior is documented in [ROUTE_GUARD.md](ROUTE_GUARD.md).
 
-This document explains how Hyperbricks resolves routes and how to configure
-clean URLs (like `/help`) for `.html` content (like `help.html`).
+## Route Owners
 
-The routing config lives in your module's `package.hyperbricks.yaml` under
-`hyperbricks.server.routing`.
+Routes are owned by root components:
 
-## Defaults (when missing)
+- `hypermedia`
+- `fragment`
+- `api_fragment_render`
 
-If `server.routing` is missing, Hyperbricks uses these defaults:
+Example page route:
 
-- `clean_urls = true`
-- `index_files = [ index.html, index.htm ]`
-- `extensions = [ html, htm ]`
+```yaml
+page:
+  - type: hypermedia
+  - route: help
+  - title: Help
+  - main:
+      - type: tree
+      - content:
+          - type: html
+          - value: <h1>Help</h1>
+```
 
-Defaults are applied even if you only set some fields. Empty lists are
-replaced with defaults.
+Example fragment route:
 
-## What "clean URLs" means here
+```yaml
+status:
+  - type: fragment
+  - route: fragments/status
+  - body:
+      - type: html
+      - value: <div id="status">Ready</div>
+```
 
-Clean URLs are implemented as internal rewrites, not redirects.
-The browser URL stays the same:
+## Routing Configuration
 
-- `/` can serve `index.html`
-- `/help` can serve `help.html`
-
-If you want canonical redirects (for example `/help.html` -> `/help`),
-you should add them at a reverse proxy (Caddy, Nginx, Cloudflare, etc.).
-
-## Resolution order (dynamic rendering)
-
-When `hyperbricks start` serves a request, it resolves routes like this:
-
-1) Root request `/`
-   - `index` (if a route exists)
-   - then any file in `index_files` (default: `index.html`, `index.htm`)
-2) Exact match (route exists exactly as requested)
-3) If `clean_urls = false`: stop here
-4) If request has an allowed extension (for example `.html`), try the
-   extension-less route
-5) If request has no extension, try adding each extension from `extensions`
-
-This keeps URLs clean while still letting you define explicit `.html` routes.
-
-## Route guards
-
-After HyperBricks resolves a route, the owning root composite may optionally evaluate `guard { ... }` before any rendering starts.
-
-Supported route owners are:
-
-- `<HYPERMEDIA>`
-- `<FRAGMENT>`
-- `<API_FRAGMENT_RENDER>`
-
-If a guard denies the request, HyperBricks returns the configured denial response before page rendering, fragment child execution, or upstream API proxy work begins. See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md).
-
-## Resolution order (static file server)
-
-When serving static files (for example after `hyperbricks static`):
-
-1) If the URL ends with `/`, try `index_files`
-2) If `clean_urls = true` and the URL has no extension, try `extensions`
-3) Otherwise serve the file as-is
-
-Note: `/index.html` still redirects to `/` (Go's file server behavior), and
-`/` serves the index file directly to avoid redirect loops.
-
-## Live-Mode cache headers
-
-When `hyperbricks start` serves a route in live mode and the response is
-cacheable, Hyperbricks adds cache metadata as HTTP response headers:
-
-- `X-Hyperbricks-Rendered-At`
-- `X-Hyperbricks-Cache-Expires-At`
-
-These headers describe when the cached response was rendered and when that
-cache entry expires.
-
-Notes:
-
-- They are response metadata, not routing config.
-- They are sent in headers instead of being appended to the HTML body.
-- On a cache hit, the same cached header values are returned again.
-- In development mode, these headers are not added.
-
-## Configuration reference
-
-Example block:
+Routing config lives in `package.hyperbricks.yaml`:
 
 ```yaml
 hyperbricks:
@@ -105,44 +55,104 @@ hyperbricks:
         - htm
 ```
 
-Fields:
+Defaults are used when routing config is omitted:
 
-- `clean_urls` (bool)
-  - `true`: allow `/help` to resolve to `help.html`
-  - `false`: only exact routes (except `/` which still uses `index_files`)
-- `index_files` (list)
-  - Files to try for `/` or `/path/` requests
-  - You can include values like `index.html` or `index.htm`
-- `extensions` (list)
-  - Extensions to try for clean URLs
-  - Use `html`, `htm`, etc (leading dots are accepted but trimmed)
+| Field | Default |
+| --- | --- |
+| `clean_urls` | `true` |
+| `index_files` | `index.html`, `index.htm` |
+| `extensions` | `html`, `htm` |
 
-## Example configurations
+Defaults are also applied for empty list values.
 
-### 1) Default behavior (clean URLs on)
+## Clean URLs
+
+Clean URLs are internal rewrites, not redirects. The browser URL stays the same.
+
+Examples:
+
+```text
+/       can resolve to index or index.html
+/help   can resolve to help or help.html
+```
+
+If you want canonical redirects such as `/help.html` to `/help`, add them at a
+reverse proxy such as Caddy, Nginx, or Cloudflare.
+
+## Dynamic Route Resolution
+
+When `hyperbricks start` serves a request, it resolves routes in this order:
+
+1. For `/`, try the route `index`.
+2. For `/`, try each configured `index_files` value.
+3. Try an exact route match.
+4. If `clean_urls` is `false`, stop here.
+5. If the request has an allowed extension, try the extension-less route.
+6. If the request has no extension, try appending each allowed extension.
+
+This allows clean browser URLs while still supporting explicit `.html` routes.
+
+## Static File Resolution
+
+When serving static files, for example after `hyperbricks static`:
+
+1. If the URL ends with `/`, try configured `index_files`.
+2. If `clean_urls` is `true` and the URL has no extension, try configured
+   `extensions`.
+3. Otherwise serve the file as requested.
+
+Go's static file server can still redirect `/index.html` to `/`. HyperBricks
+serves `/` directly to avoid redirect loops.
+
+## Practical Examples
+
+### `index` As `/`
 
 ```yaml
-hyperbricks:
-  server:
-    routing:
-      clean_urls: true
-      index_files:
-        - index.html
-        - index.htm
-      extensions:
-        - html
-        - htm
+page:
+  - type: hypermedia
+  - route: index
 ```
 
-Routes resolve like this:
+Requests:
 
-```
-/            -> index.html (or index.htm)
-/help        -> help.html (or help.htm)
-/help.html   -> help.html (exact match), or help (if only help exists)
+```text
+/       -> index
+/index  -> index
 ```
 
-### 2) Strict routing (clean URLs off)
+### `index.html` As `/`
+
+```yaml
+page:
+  - type: hypermedia
+  - route: index.html
+```
+
+Requests:
+
+```text
+/             -> index.html
+/index        -> index.html
+/index.html   -> index.html
+```
+
+### `help.html` As `/help`
+
+```yaml
+page:
+  - type: hypermedia
+  - route: help.html
+```
+
+Requests:
+
+```text
+/help        -> help.html
+/help.html   -> help.html
+```
+
+### Strict Routing
 
 ```yaml
 hyperbricks:
@@ -153,92 +163,26 @@ hyperbricks:
 
 Routes resolve like this:
 
-```
-/            -> index.html (or index.htm)
-/help        -> only if "help" exists
-/help.html   -> only if "help.html" exists
-```
-
-### 3) Custom index files
-
-```yaml
-hyperbricks:
-  server:
-    routing:
-      index_files:
-        - home.html
-        - index.html
+```text
+/             -> index or configured index file
+/help         -> only if route help exists
+/help.html    -> only if route help.html exists
 ```
 
-Routes resolve like this:
+## Live Mode Cache Headers
 
-```
-/            -> home.html (if it exists), else index.html
-```
+In live mode, cacheable dynamic route responses include cache metadata headers:
 
-### 4) Custom extensions
-
-```yaml
-hyperbricks:
-  server:
-    routing:
-      extensions:
-        - html
-        - xhtml
+```text
+X-Hyperbricks-Rendered-At
+X-Hyperbricks-Cache-Expires-At
 ```
 
-Routes resolve like this:
-
-```
-/help        -> help.html, or help.xhtml
-```
-
-## Practical examples
-
-### Example A: `index.html` as `/`
-
-```
-page = <HYPERMEDIA>
-page.route = index.html
-```
-
-Requests:
-
-```
-/      -> index.html
-/index -> index.html
-```
-
-### Example B: `help.html` as `/help`
-
-```
-page = <HYPERMEDIA>
-page.route = help.html
-```
-
-Requests:
-
-```
-/help      -> help.html
-/help.html -> help.html
-```
-
-### Example C: `help` route with `.html` access
-
-```
-page = <HYPERMEDIA>
-page.route = help
-```
-
-Requests:
-
-```
-/help      -> help
-/help.html -> help
-```
+These are response metadata. They do not affect route matching. Development mode
+does not add these headers.
 
 ## Notes
 
 - Route resolution is internal and does not change the browser URL.
-- If you want redirects (canonical URLs), add them at your reverse proxy.
-- Index routing for `/` is always active, even when `clean_urls = false`.
+- Index routing for `/` is always active, even when `clean_urls` is `false`.
+- Guarded routes are resolved first, then guard evaluation runs before render.

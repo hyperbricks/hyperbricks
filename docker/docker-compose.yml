@@ -13,6 +13,6 @@ services:
       HB_DEPLOY_SECRET: "change-me"
     volumes:
       - ./data/deploy:/opt/hyperbricks/deploy
-      - ./deploy.hyperbricks:/opt/hyperbricks/deploy.hyperbricks:ro
+      - ./deploy.hyperbricks.yaml:/opt/hyperbricks/deploy.hyperbricks.yaml:ro
       - ./ssh/authorized_keys:/etc/hyperbricks/authorized_keys:ro
     restart: unless-stopped

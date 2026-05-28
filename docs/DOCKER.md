@@ -1,77 +1,130 @@
-# Docker Deploy Setup (Hyperbricks)
+# Docker Deploy
 
-This repo includes a Docker-based Alpine deploy setup that mirrors
-`docs/alpine-hyperbricks-compile.md`. It builds Hyperbricks as the `deploy`
-user, supports plugin compilation, and exposes SSH + the Deploy API.
+The repository includes a Docker-based deploy environment for running the
+HyperBricks Deploy API, SSH upload access, plugin builds, and deployed module
+processes.
 
-## Quick start
-From repo root:
-```
+Use it for local deploy testing or as a simple remote runtime host.
+
+## Quick Start
+
+From the repository root:
+
+```bash
 docker compose -f docker/docker-compose.yml up --build
 ```
 
-Deploy API:
-- http://localhost:9090/
+Default exposed ports:
 
-SSH:
-- Host: localhost
-- Port: 2222
+| Port | Purpose |
+| ---: | --- |
+| `9090` | Deploy API |
+| `2222` | SSH upload access |
+| `8080-8100` | Deployed module runtime ports |
 
-## Required configuration
-1) Set the HMAC secret (same value for client + server):
-- `docker/docker-compose.yml` -> `HB_DEPLOY_SECRET`
+## Required Setup
 
-2) Add your public key for SSH:
-- Put your public key line in `docker/ssh/authorized_keys`
+Set a shared deploy secret in `docker/docker-compose.yml` or through your
+environment:
 
-Example:
+```yaml
+environment:
+  HB_DEPLOY_SECRET: "change-me"
 ```
-ssh-keygen -y -f ~/.ssh/proxmox_lxc > docker/ssh/authorized_keys
+
+Add an SSH public key:
+
+```bash
+ssh-keygen -y -f ~/.ssh/hyperbricks_deploy > docker/ssh/authorized_keys
 ```
 
-3) SSH config for convenience:
-```
+The container uses this key for the `deploy` user.
+
+## SSH Config
+
+Example local SSH config:
+
+```sshconfig
 Host hyperbricks-docker-remote
   HostName localhost
   Port 2222
   User deploy
-  IdentityFile ~/.ssh/proxmox_lxc
+  IdentityFile ~/.ssh/hyperbricks_deploy
   IdentitiesOnly yes
 ```
 
-Then use `hyperbricks-docker-remote` as the deploy target host in
-`deploy.hyperbricks`.
+Use `hyperbricks-docker-remote` as the deploy target host in your deploy client
+configuration.
 
-## Ports
-- 9090: Deploy API
-- 2222: SSH for push
-- 8080-8100: runtime ports for deployed modules
+## Volumes
 
-## Plugin builds
-The container creates `/opt/hyperbricks/bin/plugins` on startup. You can build
-plugins via the Deploy UI or manually inside the container as `deploy`:
+The compose setup mounts:
+
+```text
+docker/data/deploy        -> /opt/hyperbricks/deploy
+docker/deploy.hyperbricks.yaml -> /opt/hyperbricks/deploy.hyperbricks.yaml
+docker/ssh/authorized_keys -> /etc/hyperbricks/authorized_keys
 ```
+
+The deploy folder is persistent on the host, so archives, extracted builds, and
+logs survive container restarts.
+
+## Plugin Builds
+
+The container creates `/opt/hyperbricks/bin/plugins` at startup. Build plugins
+inside the container as the `deploy` user:
+
+```bash
 docker exec -u deploy -w /opt/hyperbricks <container_name> \
-  hyperbricks plugin build tailwindcss@1.0.1
+  hyperbricks plugin build example@1.0.0
 ```
 
-Plugin source is available at `/opt/hyperbricks/plugins` (copied from this repo).
+Plugin source is copied into `/opt/hyperbricks/plugins`.
 
 ## Tailwind CLI
-The image downloads a Tailwind CLI binary based on the container architecture
-(x86_64 or arm64). For arm64 Alpine, the image includes `gcompat` so glibc-linked
-binaries work. To skip Tailwind installation, set `TAILWIND_VERSION` to empty in
+
+The Docker image can install a Tailwind CLI binary based on the container
+architecture. The version is controlled by the `TAILWIND_VERSION` build arg in
 `docker/docker-compose.yml`.
 
-## Troubleshooting
-- SSH host key changed:
-  - `ssh-keygen -R "[localhost]:2222"`
-- SSH permission denied (publickey):
-  - Confirm `docker/ssh/authorized_keys` contains your public key.
-  - Ensure your SSH config includes `Port 2222` and `IdentityFile`.
-- Module not reachable from host:
-  - Ensure the module binds to `0.0.0.0` inside the container.
-  - Verify the runtime port shown in the Deploy UI matches the exposed range.
-- Plugin build fails on Go version:
-  - The container uses Go 1.23.4. Rebuild if you were on 1.23.2.
+Set `TAILWIND_VERSION` to an empty value if you want to skip Tailwind
+installation.
 
+## Runtime Ports
+
+Deployed modules are assigned ports from the configured deploy port range. The
+compose file exposes `8080-8100` by default.
+
+If a deployed module is not reachable from the host:
+
+- verify the runtime port in the Deploy UI or API status
+- ensure that port is exposed by Docker
+- ensure the module process binds inside the container
+
+## Troubleshooting
+
+Remove a stale SSH host key:
+
+```bash
+ssh-keygen -R "[localhost]:2222"
+```
+
+Check SSH access:
+
+```bash
+ssh hyperbricks-docker-remote
+```
+
+Check the Deploy API:
+
+```bash
+curl -i http://localhost:9090/
+```
+
+Rebuild the image after runtime or dependency changes:
+
+```bash
+docker compose -f docker/docker-compose.yml build --no-cache
+```
+
+See [Deploy](DEPLOY.md) for the deploy workflow and authentication model.

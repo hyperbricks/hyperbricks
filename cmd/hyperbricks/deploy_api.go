@@ -25,7 +25,6 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
-	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/mitchellh/mapstructure"
 )
@@ -133,7 +132,7 @@ func (s *deployNonceStore) seen(nonce string, now time.Time) bool {
 }
 
 func startDeployAPIServer() error {
-	configPath := "deploy.hyperbricks"
+	configPath := commands.DeployConfigFileName
 	if envPath := strings.TrimSpace(os.Getenv("HB_DEPLOY_CONFIG")); envPath != "" {
 		configPath = envPath
 	}
@@ -319,20 +318,9 @@ func loadDeployConfig(path string) (shared.DeployConfig, error) {
 		},
 	}
 
-	content, err := os.ReadFile(path)
+	deployRaw, err := loadDeployYAMLRoot(path)
 	if err != nil {
-		return cfg, fmt.Errorf("failed to read deploy config %s: %w", path, err)
-	}
-
-	parsed := parser.ParseHyperScript(string(content))
-	deployRaw, ok := parsed["deploy"].(map[string]interface{})
-	if !ok {
-		if hyper, ok := parsed["hyperbricks"].(map[string]interface{}); ok {
-			deployRaw, _ = hyper["deploy"].(map[string]interface{})
-		}
-	}
-	if deployRaw == nil {
-		return cfg, fmt.Errorf("missing deploy block in %s", path)
+		return cfg, err
 	}
 	if _, ok := deployRaw["remote"].(map[string]interface{}); !ok {
 		return cfg, fmt.Errorf("missing deploy.remote block in %s", path)

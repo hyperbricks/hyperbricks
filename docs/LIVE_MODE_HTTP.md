@@ -1,133 +1,17 @@
 # Live Mode HTTP Settings
 
-This note explains a small but important part of HyperBricks runtime behavior: the HTTP server settings used in `live` mode.
+Live mode has two separate concerns:
 
-It is written for newcomers who want the practical picture first.
+- `live.cache` controls rendered output reuse.
+- `server.*` controls HTTP connection behavior.
 
-## Two different concerns
+Those settings solve different problems. Cache settings decide whether a route
+can reuse rendered content. Server settings decide how long clients may hold
+network resources.
 
-In HyperBricks, these are different things:
+## Connection Settings
 
-- `live.cache` controls how long rendered page output may stay cached.
-- `server.read_timeout`, `server.write_timeout`, `server.idle_timeout`, and `server.keep_alives_enabled` control how the Go HTTP server handles network connections.
-
-That distinction matters because caching and connection handling solve different problems.
-
-## What the settings mean
-
-### `read_timeout`
-
-How long the server allows itself to read the incoming request.
-
-This protects the server from clients that send data very slowly.
-
-### `write_timeout`
-
-How long the server allows itself to send the response.
-
-This helps avoid a response hanging forever on a slow or broken connection.
-
-### `idle_timeout`
-
-How long an already-open keep-alive connection may sit idle before the server closes it.
-
-### Keep-alives
-
-Keep-alive means one TCP connection can be reused for multiple HTTP requests.
-
-That is usually a good default for real traffic, because it reduces connection setup work and plays nicely with browsers, proxies, and load balancers.
-
-In HyperBricks config, that policy is controlled with:
-
-```hyperbricks
-server {
-    keep_alives_enabled = true
-}
-```
-
-## How live mode works now
-
-`live` mode now uses the configured server transport settings instead of silently replacing them with a separate hard-coded profile.
-
-- `server.read_timeout`
-- `server.write_timeout`
-- `server.idle_timeout`
-- `server.keep_alives_enabled`
-
-That means the values in `package.hyperbricks.yaml` are the values the live server actually uses.
-
-## Where `nocache` must be set
-
-If you want live mode to skip cache headers and skip storing the response in the live cache, set `nocache = true` on the routed root object itself.
-
-That means the top-level route owner that owns the response, such as `<HYPERMEDIA>`, `<FRAGMENT>`, or `<API_FRAGMENT_RENDER>`.
-
-Routes that use `guard { ... }` are also treated as non-cacheable request paths, because access decisions are request-specific. See [Composite Route Guard](COMPOSITE_ROUTE_GUARD.md).
-
-Setting `nocache` only inside a nested template or child component is not enough, because the live cache decision is made from the root route config.
-
-Example:
-
-```hyperbricks
-page = <HYPERMEDIA>
-page.route = cacheTest
-page.nocache = true
-```
-
-```hyperbricks
-fragment = <FRAGMENT>
-fragment.route = cacheTest
-fragment.nocache = true
-```
-
-## Defaults when omitted
-
-If you do not set these values in `package.hyperbricks.yaml`, HyperBricks uses these runtime defaults:
-
-- `read_timeout = 5s`
-- `write_timeout = 10s`
-- `idle_timeout = 20s`
-- `keep_alives_enabled = true`
-
-This applies even when the `server` block does not explicitly list them.
-
-## The practical scaling lesson
-
-When people first think about "scaling", they often think only about handling many requests at once.
-
-In practice, scaling also means controlling how long slow, stuck, or idle clients are allowed to occupy server resources.
-
-Timeouts and keep-alive policy are part of that.
-
-## Default guidance
-
-For most internet-facing deployments, these are sensible defaults:
-
-- keep `keep_alives_enabled = true`
-- use finite read, write, and idle timeouts
-- treat `keep_alives_enabled = false` as a special-case setting, not the normal production default
-
-If you later want benchmark-style one-request-per-connection behavior, make that an explicit choice in config.
-
-## Example config
-
-```yaml
-hyperbricks:
-  mode: live
-  server:
-    read_timeout: 5s
-    write_timeout: 10s
-    idle_timeout: 20s
-    keep_alives_enabled: true
-```
-
-## Starter profiles
-
-These are not strict rules. They are practical starting points for common use cases.
-
-### 1. Small public site
-
-Use this for a brochure site, simple blog, or small HTMX app with normal page traffic.
+The live server honors these values from `package.hyperbricks.yaml`:
 
 ```yaml
 hyperbricks:
@@ -141,9 +25,102 @@ hyperbricks:
     keep_alives_enabled: true
 ```
 
-### 2. Balanced production app
+`read_timeout` is how long the server allows itself to read a request.
 
-Use this when the site is public, sits behind a reverse proxy, and serves a steady mix of full pages and fragments.
+`write_timeout` is how long the server allows itself to write a response.
+
+`idle_timeout` is how long an open keep-alive connection may sit unused before
+the server closes it.
+
+`keep_alives_enabled` controls whether one TCP connection can be reused for
+multiple requests. Keep-alives should normally stay enabled for browser traffic,
+reverse proxies, and load balancers.
+
+## Defaults
+
+When omitted, HyperBricks uses these defaults:
+
+- `read_timeout: 5s`
+- `write_timeout: 10s`
+- `idle_timeout: 20s`
+- `keep_alives_enabled: true`
+
+These defaults apply even when the `server` block does not explicitly list the
+settings.
+
+## Output Cache
+
+`live.cache` controls how long rendered output may be stored and reused in live
+mode.
+
+```yaml
+hyperbricks:
+  mode: live
+  live:
+    cache: 15s
+```
+
+When a route is cacheable, HyperBricks can add live cache metadata headers and
+serve repeated requests from the cache until the entry expires.
+
+## No-Cache Routes
+
+Set `nocache: true` on the route owner when a route must stay dynamic.
+
+Full page:
+
+```yaml
+page:
+  - type: hypermedia
+  - route: account
+  - title: Account
+  - nocache: true
+  - main:
+      - type: html
+      - value: <main>Account content</main>
+```
+
+Fragment:
+
+```yaml
+account_status:
+  - type: fragment
+  - route: fragments/account-status
+  - nocache: true
+  - response:
+      hx_target: "#account-status"
+      hx_reswap: outerHTML
+  - body:
+      - type: html
+      - value: <div id="account-status">Updated</div>
+```
+
+The `nocache` field belongs on the route owner because the live cache decision
+is made before child components render. Setting it only inside a nested template
+or tree item is not enough.
+
+Routes with `guard` are also treated as non-cacheable, because authorization is
+request-specific. See [Route Guard](ROUTE_GUARD.md).
+
+`api_fragment_render` routes are always dynamic.
+
+## Starter Profiles
+
+Small public site:
+
+```yaml
+hyperbricks:
+  mode: live
+  live:
+    cache: 30s
+  server:
+    read_timeout: 5s
+    write_timeout: 10s
+    idle_timeout: 20s
+    keep_alives_enabled: true
+```
+
+Balanced production app:
 
 ```yaml
 hyperbricks:
@@ -157,9 +134,7 @@ hyperbricks:
     keep_alives_enabled: true
 ```
 
-### 3. Heavy pages or slower clients
-
-Use this when pages are larger, some clients are slower, or the app serves more expensive responses and needs slightly looser network deadlines.
+Heavy pages or slower clients:
 
 ```yaml
 hyperbricks:
@@ -173,11 +148,10 @@ hyperbricks:
     keep_alives_enabled: true
 ```
 
-## When to disable keep-alives
+## Disabling Keep-Alives
 
-Set `keep_alives_enabled = false` only when you explicitly want that behavior and understand the tradeoff.
-
-Example:
+Disable keep-alives only when you explicitly want one-request-per-connection
+behavior and understand the cost.
 
 ```yaml
 hyperbricks:
@@ -189,12 +163,14 @@ hyperbricks:
     keep_alives_enabled: false
 ```
 
-That usually means more connection churn and less efficient normal browser or proxy traffic.
+This usually increases connection churn and is not the normal production
+default.
 
-## Beginner takeaway
+## Takeaway
 
-`live.cache` is about rendered output reuse.
+Use `live.cache` for rendered output reuse.
 
-`server.*` is about connection safety and behavior.
+Use `server.*` for connection safety and transport behavior.
 
-In live mode, HyperBricks now uses the server settings you configure, so those values are worth choosing deliberately.
+Set `nocache: true` on the routed component when the response depends on the
+current request.
