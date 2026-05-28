@@ -4,16 +4,19 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 WITH_DOCS=false
+WITH_PLUGINS=false
 
 usage() {
   cat <<'USAGE'
-Usage: scripts/run_all_tests.sh [--with-docs]
+Usage: scripts/run_all_tests.sh [--with-docs] [--with-plugins]
 
 Runs the repository test suite. Documentation generation is skipped by default.
 
 Options:
-  --with-docs  Regenerate README, reference docs, and documentation test results.
-  -h, --help   Show this help text.
+  --with-docs     Regenerate README, reference docs, and documentation test results.
+  --with-plugins  Install root npm dependencies, rebuild local HyperBricks
+                  plugins, and run plugin-backed runtime smoke tests.
+  -h, --help      Show this help text.
 USAGE
 }
 
@@ -21,6 +24,9 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --with-docs)
       WITH_DOCS=true
+      ;;
+    --with-plugins)
+      WITH_PLUGINS=true
       ;;
     -h|--help)
       usage
@@ -38,6 +44,17 @@ done
 cd "${REPO_ROOT}"
 
 echo "Running all tests..."
+
+if [[ "${WITH_PLUGINS}" == "true" ]]; then
+  echo "Installing root npm dependencies for plugin-backed assets..."
+  npm i
+  echo "Building local HyperBricks plugins..."
+  bash "${SCRIPT_DIR}/plugins/build_hyperbricks_plugins.sh"
+  echo "Running plugin-backed runtime smoke tests..."
+  bash "${SCRIPT_DIR}/plugins/test_hyperbricks_patterns_plugins.sh"
+else
+  echo "Skipping plugin rebuild. Pass --with-plugins to rebuild plugins before tests."
+fi
 
 echo "Running go vet..."
 go vet ./...

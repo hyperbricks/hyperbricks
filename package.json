@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "@codemirror/lang-css": "^6.3.1",
+    "@codemirror/lang-html": "^6.4.11",
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/lang-markdown": "^6.5.0",
+    "@codemirror/language": "^6.12.3",
+    "codemirror": "^6.0.2",
+    "htmx.org": "^2.0.10",
+    "mustache": "^4.2.0",
+    "sortablejs": "^1.15.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "daisyui": "^5.5.19",
+    "tailwindcss": "^4.2.4"
+  }
+}

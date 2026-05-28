@@ -50,7 +50,7 @@ Current example shape:
 
 ```hyperbricks
 template_config_demo = <PLUGIN>
-template_config_demo.plugin = TemplateConfigDemoPlugin__hyperbricks-patterns@2.0.0
+template_config_demo.plugin = TemplateConfigDemoPlugin__hyperbricks-patterns-yaml@2.0.0
 template_config_demo.data.template = {{TEMPLATE:demo.html}}
 template_config_demo.data.content = "# Hello\n\nThis is **cute rendered markdown**."
 template_config_demo.data.class = template_config_demo-content

@@ -7,13 +7,15 @@ RESULTS_FILE="${REPO_ROOT}/test-results.txt"
 
 usage() {
     cat <<'USAGE'
-Usage: ./tests.sh [--with-docs]
+Usage: ./tests.sh [--with-docs] [--with-plugins]
 
 Runs the repository test suite. Documentation generation is skipped by default.
 
 Options:
-  --with-docs  Regenerate README, reference docs, and documentation test results.
-  -h, --help   Show this help text.
+  --with-docs     Regenerate README, reference docs, and documentation test results.
+  --with-plugins  Install root npm dependencies, rebuild local HyperBricks
+                  plugins, and run plugin-backed runtime smoke tests.
+  -h, --help      Show this help text.
 USAGE
 }
 

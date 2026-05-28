@@ -62,7 +62,7 @@ route_split_plugin_import:
   - nocache: "true"
   - plugin_10:
       - type: plugin
-      - plugin: "RouteSplitDemoPlugin__hyperbricks-patterns@1.0.0"
+      - plugin: "RouteSplitDemoPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: import
           template: "{{TEMPLATE:patterns/route-split-plugin-result.html}}"
