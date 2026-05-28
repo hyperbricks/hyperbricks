@@ -339,66 +339,6 @@ page:
 	}
 }
 
-func TestProcessBytesLegacyMarkersRemainCompatibility(t *testing.T) {
-	assetsDir := t.TempDir()
-	heroPath := filepath.Join(assetsDir, "hero.html")
-	if err := os.WriteFile(heroPath, []byte("<section>From file</section>\n<p>Second line</p>\n"), 0o644); err != nil {
-		t.Fatalf("write file marker asset: %v", err)
-	}
-
-	result, err := ProcessBytes([]byte(`
-page:
-  - type: hypermedia
-  - route: "{{VAR:route}}"
-  - title: "{{CONF:site.title}}"
-  - hero:
-      - type: html
-      - value: |
-          # literal comment in block
-          {{FILE:{{RESOURCES}}/hero.html}}
-  - cta:
-      - type: text
-      - value: "{{ENV:CTA_TEXT}}"
-`), Options{
-		Variables: map[string]string{
-			"route": "pipeline",
-		},
-		Env: map[string]string{
-			"CTA_TEXT": "Start now",
-		},
-		Config: map[string]interface{}{
-			"site": map[string]interface{}{
-				"title": "Pipeline Page",
-			},
-		},
-		Paths: PathMarkers{
-			Resources: assetsDir,
-		},
-	})
-	if err != nil {
-		t.Fatalf("ProcessBytes() error = %v", err)
-	}
-	if !strings.Contains(result.Preprocessed, `route: "pipeline"`) {
-		t.Fatalf("preprocessed route not replaced:\n%s", result.Preprocessed)
-	}
-	if !strings.Contains(result.Preprocessed, "          <section>From file</section>\n          <p>Second line</p>") {
-		t.Fatalf("preprocessed file marker not expanded with block indentation:\n%s", result.Preprocessed)
-	}
-
-	page := result.Materialized["page"].(map[string]interface{})
-	if page["route"] != "pipeline" || page["title"] != "Pipeline Page" {
-		t.Fatalf("page fields = %#v", page)
-	}
-	hero := page["hero"].(map[string]interface{})
-	if !strings.Contains(hero["value"].(string), "# literal comment in block") {
-		t.Fatalf("block scalar comment was not preserved: %#v", hero["value"])
-	}
-	cta := page["cta"].(map[string]interface{})
-	if cta["value"] != "Start now" {
-		t.Fatalf("cta value = %#v", cta["value"])
-	}
-}
-
 func TestProcessBytesValueResolverDiagnosticsAreRecoverable(t *testing.T) {
 	result, err := ProcessBytes([]byte(`
 page:
@@ -486,37 +426,6 @@ card:
   - type: template
   - template:
       file: cards/card.html
-  - values:
-      title: Stored template
-`), Options{TemplateDir: templateDir})
-	if err != nil {
-		t.Fatalf("ProcessBytes() error = %v", err)
-	}
-	card := result.Materialized["card"].(map[string]interface{})
-	if card["template"] != "cards/card.html" {
-		t.Fatalf("template field = %#v", card["template"])
-	}
-	if content, found := oldparser.GetTemplate("cards/card.html"); !found || content != "<article>{{.title}}</article>" {
-		t.Fatalf("stored template = %q, found=%v", content, found)
-	}
-}
-
-func TestProcessBytesLegacyTemplateMarkerStoresTemplateContent(t *testing.T) {
-	oldparser.ClearTemplateStore()
-	t.Cleanup(oldparser.ClearTemplateStore)
-
-	templateDir := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(templateDir, "cards"), 0o755); err != nil {
-		t.Fatalf("mkdir template dir: %v", err)
-	}
-	if err := os.WriteFile(filepath.Join(templateDir, "cards", "card.html"), []byte("<article>{{.title}}</article>"), 0o644); err != nil {
-		t.Fatalf("write template file: %v", err)
-	}
-
-	result, err := ProcessBytes([]byte(`
-card:
-  - type: template
-  - template: "{{TEMPLATE:cards/card.html}}"
   - values:
       title: Stored template
 `), Options{TemplateDir: templateDir})
@@ -643,30 +552,88 @@ b:
 	}
 }
 
-func TestPreprocessBytesRejectsLegacyMacros(t *testing.T) {
+func TestPreprocessBytesRejectsUnsupportedMacroSyntax(t *testing.T) {
 	_, err := PreprocessBytes([]byte(`
 @macro "button"
 `), Options{})
 	if err == nil {
-		t.Fatal("PreprocessBytes() error = nil, want legacy macro error")
+		t.Fatal("PreprocessBytes() error = nil, want macro syntax error")
 	}
-	if !strings.Contains(err.Error(), "legacy @macro syntax is not supported") {
+	if !strings.Contains(err.Error(), "@macro syntax is not supported") {
 		t.Fatalf("PreprocessBytes() error = %v", err)
 	}
 }
 
-func TestPreprocessBytesRejectsInlineFileMarkers(t *testing.T) {
-	_, err := PreprocessBytes([]byte(`
+func TestProcessBytesDoesNotResolveInterpolationMarkers(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		key  string
+		raw  string
+	}{
+		{
+			name: "var",
+			key:  "route",
+			raw:  interpolationMarker("VAR", "route"),
+		},
+		{
+			name: "env",
+			key:  "title",
+			raw:  interpolationMarker("ENV", "TITLE"),
+		},
+		{
+			name: "config",
+			key:  "title",
+			raw:  interpolationMarker("CONF", "site.title"),
+		},
+		{
+			name: "file",
+			key:  "value",
+			raw:  interpolationMarker("FILE", "/tmp/example.html"),
+		},
+		{
+			name: "template",
+			key:  "template",
+			raw:  interpolationMarker("TEMPLATE", "cards/card.html"),
+		},
+		{
+			name: "path",
+			key:  "value",
+			raw:  pathInterpolationMarker("RESOURCES") + "/hero.html",
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			source := `
 page:
-  - type: html
-  - value: "{{FILE:/tmp/example.html}}"
-`), Options{})
-	if err == nil {
-		t.Fatal("PreprocessBytes() error = nil, want file marker placement error")
+  - type: hypermedia
+  - ` + test.key + `: "` + test.raw + `"
+`
+			result, err := ProcessBytes([]byte(source), Options{
+				Variables: map[string]string{"route": "resolved-route"},
+				Env:       map[string]string{"TITLE": "Resolved title"},
+				Config: map[string]interface{}{
+					"site": map[string]interface{}{"title": "Resolved config title"},
+				},
+				TemplateDir: t.TempDir(),
+				Paths:       PathMarkers{Resources: "resolved-resources"},
+			})
+			if err == nil {
+				page := result.Materialized["page"].(map[string]interface{})
+				if page[test.key] != test.raw {
+					t.Fatalf("%s = %#v, want literal %#v", test.key, page[test.key], test.raw)
+				}
+				return
+			}
+			t.Fatalf("ProcessBytes() error = %v", err)
+		})
 	}
-	if !strings.Contains(err.Error(), "must occupy a full YAML block-scalar line") {
-		t.Fatalf("PreprocessBytes() error = %v", err)
-	}
+}
+
+func interpolationMarker(name string, value string) string {
+	return "{{" + name + ":" + value + "}}"
+}
+
+func pathInterpolationMarker(name string) string {
+	return "{{" + name + "}}"
 }
 
 func TestParseImports(t *testing.T) {

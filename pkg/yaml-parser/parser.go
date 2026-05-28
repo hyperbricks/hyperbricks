@@ -6,22 +6,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
-	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	"go.yaml.in/yaml/v4"
 )
 
 const orderKey = "@order"
-
-var (
-	envPlaceholderPattern      = regexp.MustCompile(`\{\{ENV:([a-zA-Z0-9_]+)\}\}`)
-	varPlaceholderPattern      = regexp.MustCompile(`\{\{VAR:([a-zA-Z0-9_]+)\}\}`)
-	confPlaceholderPattern     = regexp.MustCompile(`\{\{CONF:([a-zA-Z0-9_.]+)\}\}`)
-	templatePlaceholderPattern = regexp.MustCompile(`\{\{TEMPLATE:([^}]+)\}\}`)
-	filePlaceholderPattern     = regexp.MustCompile(`\{\{FILE:([^}]+)\}\}`)
-)
 
 // Options controls the HyperBricks YAML source pipeline.
 type Options struct {
@@ -33,8 +23,8 @@ type Options struct {
 	RecoverDuplicateChildren bool
 }
 
-// PathMarkers are the standard HyperBricks path placeholders available during
-// YAML-safe preprocessing.
+// PathMarkers are the standard HyperBricks path bases available to YAML value
+// resolvers.
 type PathMarkers struct {
 	ModuleRoot  string
 	Root        string
@@ -138,21 +128,11 @@ func ProcessFile(path string, opts Options) (*Result, error) {
 	}, nil
 }
 
-// PreprocessBytes applies the YAML-safe subset of HyperBricks preprocessing.
-func PreprocessBytes(input []byte, opts Options) ([]byte, error) {
+// PreprocessBytes validates source syntax that does not belong to the
+// HyperBricks YAML profile. Value substitution happens during materialization.
+func PreprocessBytes(input []byte, _ Options) ([]byte, error) {
 	source := string(input)
-	if err := rejectLegacyMacros(source); err != nil {
-		return nil, err
-	}
-	source = applyPathMarkers(source, opts.Paths)
-	source = replacePlaceholders(source, opts)
-	var err error
-	source, err = replaceTemplateMarkers(source, opts)
-	if err != nil {
-		return nil, err
-	}
-	source, err = replaceFileMarkers(source)
-	if err != nil {
+	if err := rejectUnsupportedSourceSyntax(source); err != nil {
 		return nil, err
 	}
 	return []byte(source), nil
@@ -892,120 +872,17 @@ func applyDiagnosticSource(diagnostics []Diagnostic, source string) {
 	}
 }
 
-func rejectLegacyMacros(source string) error {
+func rejectUnsupportedSourceSyntax(source string) error {
 	switch {
 	case strings.Contains(source, "@macro"):
-		return fmt.Errorf("legacy @macro syntax is not supported in HyperBricks YAML")
+		return fmt.Errorf("@macro syntax is not supported in HyperBricks YAML")
 	case strings.Contains(source, "<<<["):
-		return fmt.Errorf("legacy macro template blocks are not supported in HyperBricks YAML")
+		return fmt.Errorf("macro template blocks are not supported in HyperBricks YAML")
 	case strings.Contains(source, "{{{."):
-		return fmt.Errorf("legacy macro variables are not supported in HyperBricks YAML")
+		return fmt.Errorf("macro variables are not supported in HyperBricks YAML")
 	default:
 		return nil
 	}
-}
-
-func applyPathMarkers(source string, paths PathMarkers) string {
-	replacements := []string{
-		"{{MODULE_ROOT}}", paths.ModuleRoot,
-		"{{ROOT}}", paths.Root,
-		"{{MODULE}}", paths.Module,
-		"{{RESOURCES}}", paths.Resources,
-		"{{TEMPLATES}}", paths.Templates,
-		"{{STATIC}}", paths.Static,
-		"{{HYPERBRICKS}}", paths.HyperBricks,
-		"{{RENDER}}", paths.Render,
-	}
-	pairs := make([]string, 0, len(replacements))
-	for i := 0; i < len(replacements); i += 2 {
-		if replacements[i+1] == "" {
-			continue
-		}
-		pairs = append(pairs, replacements[i], replacements[i+1])
-	}
-	if len(pairs) == 0 {
-		return source
-	}
-	return strings.NewReplacer(pairs...).Replace(source)
-}
-
-func replacePlaceholders(source string, opts Options) string {
-	source = envPlaceholderPattern.ReplaceAllStringFunc(source, func(match string) string {
-		key := envPlaceholderPattern.FindStringSubmatch(match)[1]
-		if value, ok := opts.Env[key]; ok {
-			return value
-		}
-		if value, ok := os.LookupEnv(key); ok {
-			return value
-		}
-		return match
-	})
-	source = varPlaceholderPattern.ReplaceAllStringFunc(source, func(match string) string {
-		key := varPlaceholderPattern.FindStringSubmatch(match)[1]
-		if value, ok := opts.Variables[key]; ok {
-			return value
-		}
-		return match
-	})
-	source = confPlaceholderPattern.ReplaceAllStringFunc(source, func(match string) string {
-		key := confPlaceholderPattern.FindStringSubmatch(match)[1]
-		value, ok := lookupConfig(opts.Config, strings.Split(key, "."))
-		if !ok {
-			return match
-		}
-		return fmt.Sprint(value)
-	})
-	return source
-}
-
-func replaceTemplateMarkers(source string, opts Options) (string, error) {
-	if opts.TemplateDir == "" {
-		return source, nil
-	}
-	var firstErr error
-	processed := templatePlaceholderPattern.ReplaceAllStringFunc(source, func(match string) string {
-		if firstErr != nil {
-			return match
-		}
-		templateName := strings.TrimSpace(templatePlaceholderPattern.FindStringSubmatch(match)[1])
-		if templateName == "" {
-			return match
-		}
-		content, err := os.ReadFile(filepath.Join(opts.TemplateDir, templateName))
-		if err != nil {
-			firstErr = fmt.Errorf("read template marker %q: %w", templateName, err)
-			return match
-		}
-		parser.AddTemplate(templateName, string(content))
-		return templateName
-	})
-	return processed, firstErr
-}
-
-func replaceFileMarkers(source string) (string, error) {
-	lines := strings.Split(source, "\n")
-	for index, line := range lines {
-		matches := filePlaceholderPattern.FindAllStringSubmatch(line, -1)
-		if len(matches) == 0 {
-			continue
-		}
-		trimmed := strings.TrimSpace(line)
-		if len(matches) != 1 || trimmed != matches[0][0] {
-			return "", fmt.Errorf("{{FILE:...}} markers must occupy a full YAML block-scalar line")
-		}
-		path := strings.TrimSpace(matches[0][1])
-		content, err := os.ReadFile(path)
-		if err != nil {
-			return "", fmt.Errorf("read file marker %q: %w", path, err)
-		}
-		indent := line[:strings.Index(line, trimmed)]
-		contentLines := strings.Split(strings.TrimRight(string(content), "\n"), "\n")
-		for i, contentLine := range contentLines {
-			contentLines[i] = indent + contentLine
-		}
-		lines[index] = strings.Join(contentLines, "\n")
-	}
-	return strings.Join(lines, "\n"), nil
 }
 
 func lookupConfig(config map[string]interface{}, path []string) (interface{}, bool) {
