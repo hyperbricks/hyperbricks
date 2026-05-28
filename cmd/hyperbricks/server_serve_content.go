@@ -836,6 +836,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	var htmlContent strings.Builder
 
 	renderOutput, renderErrors := rm.Render(configCopy["@type"].(string), configCopy, ctx)
+	renderErrors = append(renderErrors, getRouteSourceErrors(route)...)
 
 	htmlContent.WriteString(renderOutput)
 	var output strings.Builder
@@ -1070,7 +1071,20 @@ func recordRenderDiagnostics(requestID string, route string, renderErrors []erro
 	}
 	renderDiagnosticsMutex.Unlock()
 
-	logging.GetLogger().Errorw("Render diagnostics recorded", "request_id", requestID, "route", route, "error_count", len(diagnostics.Errors))
+	if shouldLogRenderDiagnosticsAsError(renderErrors) {
+		logging.GetLogger().Errorw("Render diagnostics recorded", "request_id", requestID, "route", route, "error_count", len(diagnostics.Errors))
+	}
+}
+
+func shouldLogRenderDiagnosticsAsError(renderErrors []error) bool {
+	for _, err := range renderErrors {
+		componentError, ok := err.(shared.ComponentError)
+		if ok && strings.EqualFold(componentError.Level, "WARNING") && !componentError.Rejected {
+			continue
+		}
+		return true
+	}
+	return false
 }
 
 func collectRenderDiagnostics(renderErrors []error) []ComponentErrorTemplate {

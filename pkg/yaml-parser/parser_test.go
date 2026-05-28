@@ -578,6 +578,85 @@ page:
 	}
 }
 
+func TestParseRecoverDuplicateChildrenRenamesAndDiagnoses(t *testing.T) {
+	doc, err := ParseBytesWithOptions([]byte(`
+page:
+  - type: hypermedia
+  - hero:
+      - type: html
+      - value: first
+  - hero:
+      - type: text
+      - value: second
+  - hero_2:
+      - type: html
+      - value: explicit
+`), ParseOptions{RecoverDuplicateChildren: true})
+	if err != nil {
+		t.Fatalf("ParseBytesWithOptions() error = %v", err)
+	}
+	if len(doc.Diagnostics) != 1 {
+		t.Fatalf("diagnostics len = %d, want 1: %#v", len(doc.Diagnostics), doc.Diagnostics)
+	}
+	diagnostic := doc.Diagnostics[0]
+	if diagnostic.Code != "duplicate_child_name" || diagnostic.Path != "page" || diagnostic.OriginalName != "hero" || diagnostic.MaterializedName != "hero_3" {
+		t.Fatalf("diagnostic = %#v", diagnostic)
+	}
+
+	got, err := doc.Materialize()
+	if err != nil {
+		t.Fatalf("Materialize() error = %v", err)
+	}
+	page := got["page"].(map[string]interface{})
+	if order := page["@order"]; !reflect.DeepEqual(order, []string{"hero", "hero_3", "hero_2"}) {
+		t.Fatalf("page @order = %#v", order)
+	}
+	if _, ok := page["hero_3"].(map[string]interface{}); !ok {
+		t.Fatalf("expected recovered child hero_3 in materialized page: %#v", page)
+	}
+}
+
+func TestProcessBytesRecoverDuplicateChildrenInDeepNestedCompositeMaps(t *testing.T) {
+	result, err := ProcessBytes([]byte(`
+page:
+  - type: hypermedia
+  - route: deep-duplicates
+  - main:
+      - type: tree
+      - article:
+          - type: tree
+          - body:
+              - type: tree
+              - copy:
+                  - type: text
+                  - value: first
+              - copy:
+                  - type: text
+                  - value: second
+`), Options{RecoverDuplicateChildren: true})
+	if err != nil {
+		t.Fatalf("ProcessBytes() error = %v", err)
+	}
+	if len(result.Diagnostics) != 1 {
+		t.Fatalf("diagnostics len = %d, want 1: %#v", len(result.Diagnostics), result.Diagnostics)
+	}
+	if result.Diagnostics[0].Path != "page.main.article.body" || result.Diagnostics[0].MaterializedName != "copy_2" {
+		t.Fatalf("diagnostic = %#v", result.Diagnostics[0])
+	}
+
+	page := result.Materialized["page"].(map[string]interface{})
+	main := page["main"].(map[string]interface{})
+	article := main["article"].(map[string]interface{})
+	body := article["body"].(map[string]interface{})
+	if order := body["@order"]; !reflect.DeepEqual(order, []string{"copy", "copy_2"}) {
+		t.Fatalf("body @order = %#v", order)
+	}
+	copy2 := body["copy_2"].(map[string]interface{})
+	if copy2["value"] != "second" {
+		t.Fatalf("copy_2 value = %#v", copy2["value"])
+	}
+}
+
 func TestParseRejectsPropertyChildCollision(t *testing.T) {
 	_, err := ParseBytes([]byte(`
 page:

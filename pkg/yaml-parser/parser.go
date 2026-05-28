@@ -25,11 +25,12 @@ var (
 
 // Options controls the HyperBricks YAML source pipeline.
 type Options struct {
-	Variables   map[string]string
-	Env         map[string]string
-	Config      map[string]interface{}
-	TemplateDir string
-	Paths       PathMarkers
+	Variables                map[string]string
+	Env                      map[string]string
+	Config                   map[string]interface{}
+	TemplateDir              string
+	Paths                    PathMarkers
+	RecoverDuplicateChildren bool
 }
 
 // PathMarkers are the standard HyperBricks path placeholders available during
@@ -49,12 +50,34 @@ type Result struct {
 	Preprocessed string
 	Document     *Document
 	Materialized map[string]interface{}
+	Diagnostics  []Diagnostic
 }
 
 // Document is the ordered HyperBricks YAML source model.
 type Document struct {
-	Imports []string
-	Roots   []*Node
+	Imports     []string
+	Roots       []*Node
+	Diagnostics []Diagnostic
+}
+
+// Diagnostic describes a non-fatal YAML source normalization performed before
+// runtime materialization.
+type Diagnostic struct {
+	Level            string
+	Code             string
+	Message          string
+	Source           string
+	Path             string
+	OriginalName     string
+	MaterializedName string
+	Line             int
+	Column           int
+}
+
+// ParseOptions controls strict parser behavior without changing the default
+// source contract used by docs and parser tests.
+type ParseOptions struct {
+	RecoverDuplicateChildren bool
 }
 
 // Node is a named HyperBricks object or nested object extension.
@@ -75,7 +98,9 @@ func ProcessBytes(input []byte, opts Options) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	doc, err := ParseBytes(preprocessed)
+	doc, err := ParseBytesWithOptions(preprocessed, ParseOptions{
+		RecoverDuplicateChildren: opts.RecoverDuplicateChildren,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -87,6 +112,7 @@ func ProcessBytes(input []byte, opts Options) (*Result, error) {
 		Preprocessed: string(preprocessed),
 		Document:     doc,
 		Materialized: materialized,
+		Diagnostics:  append([]Diagnostic(nil), doc.Diagnostics...),
 	}, nil
 }
 
@@ -105,6 +131,7 @@ func ProcessFile(path string, opts Options) (*Result, error) {
 	return &Result{
 		Document:     doc,
 		Materialized: materialized,
+		Diagnostics:  append([]Diagnostic(nil), doc.Diagnostics...),
 	}, nil
 }
 
@@ -139,6 +166,12 @@ func LoadFile(path string, opts Options) (*Document, error) {
 
 // ParseBytes parses a strict HyperBricks YAML profile document.
 func ParseBytes(input []byte) (*Document, error) {
+	return ParseBytesWithOptions(input, ParseOptions{})
+}
+
+// ParseBytesWithOptions parses a HyperBricks YAML profile document. The default
+// remains strict; runtime loading can opt into recoverable source diagnostics.
+func ParseBytesWithOptions(input []byte, opts ParseOptions) (*Document, error) {
 	var root yaml.Node
 	decoder := yaml.NewDecoder(bytes.NewReader(input))
 	decoder.KnownFields(false)
@@ -160,6 +193,9 @@ func ParseBytes(input []byte) (*Document, error) {
 	}
 
 	doc := &Document{}
+	ctx := &parseContext{
+		recoverDuplicateChildren: opts.RecoverDuplicateChildren,
+	}
 	seenRoots := make(map[string]bool)
 	for i := 0; i < len(body.Content); i += 2 {
 		keyNode := body.Content[i]
@@ -184,7 +220,7 @@ func ParseBytes(input []byte) (*Document, error) {
 		if valueNode.Kind != yaml.SequenceNode {
 			return nil, nodeError(valueNode, "object %q must be an ordered sequence", key)
 		}
-		node, err := parseNodeSequence(key, valueNode)
+		node, err := parseNodeSequence(key, valueNode, ctx, key)
 		if err != nil {
 			return nil, err
 		}
@@ -193,6 +229,7 @@ func ParseBytes(input []byte) (*Document, error) {
 	if err := validateDocument(doc); err != nil {
 		return nil, err
 	}
+	doc.Diagnostics = append(doc.Diagnostics, ctx.diagnostics...)
 	return doc, nil
 }
 
@@ -270,7 +307,17 @@ func parseImports(node *yaml.Node) ([]string, error) {
 	}
 }
 
-func parseNodeSequence(name string, seq *yaml.Node) (*Node, error) {
+type parseContext struct {
+	recoverDuplicateChildren bool
+	diagnostics              []Diagnostic
+}
+
+type sourcePosition struct {
+	line   int
+	column int
+}
+
+func parseNodeSequence(name string, seq *yaml.Node, ctx *parseContext, path string) (*Node, error) {
 	node := &Node{
 		Name:   strings.TrimSpace(name),
 		Props:  make(map[string]interface{}),
@@ -279,6 +326,9 @@ func parseNodeSequence(name string, seq *yaml.Node) (*Node, error) {
 	}
 	seenEntries := make(map[string]bool)
 	seenReserved := make(map[string]bool)
+	seenChildren := make(map[string]bool)
+	firstChildByOriginalName := make(map[string]sourcePosition)
+	reservedSiblingNames := collectSiblingEntryNames(seq)
 	for _, item := range seq.Content {
 		if item.Kind != yaml.MappingNode || len(item.Content) != 2 {
 			return nil, nodeError(item, "node entries must be single-key mappings")
@@ -313,7 +363,8 @@ func parseNodeSequence(name string, seq *yaml.Node) (*Node, error) {
 			node.Inherit = value
 		default:
 			if valueNode.Kind == yaml.SequenceNode && looksLikeChildNodeSequence(valueNode) {
-				child, err := parseNodeSequence(key, valueNode)
+				childName := normalizeChildName(key, keyNode, ctx, path, seenChildren, firstChildByOriginalName, reservedSiblingNames)
+				child, err := parseNodeSequence(childName, valueNode, ctx, joinPath(path, childName))
 				if err != nil {
 					return nil, err
 				}
@@ -324,7 +375,7 @@ func parseNodeSequence(name string, seq *yaml.Node) (*Node, error) {
 				return nil, nodeError(keyNode, "duplicate property %q", key)
 			}
 			seenEntries[key] = true
-			value, err := parseGenericValue(valueNode)
+			value, err := parseGenericValue(valueNode, ctx, joinPath(path, key))
 			if err != nil {
 				return nil, err
 			}
@@ -334,19 +385,75 @@ func parseNodeSequence(name string, seq *yaml.Node) (*Node, error) {
 	return node, nil
 }
 
-func parseGenericValue(node *yaml.Node) (interface{}, error) {
+func collectSiblingEntryNames(seq *yaml.Node) map[string]bool {
+	names := make(map[string]bool)
+	if seq == nil {
+		return names
+	}
+	for _, item := range seq.Content {
+		if item.Kind != yaml.MappingNode || len(item.Content) != 2 {
+			continue
+		}
+		name := strings.TrimSpace(item.Content[0].Value)
+		if name == "" || name == "type" || name == "inherit" {
+			continue
+		}
+		names[name] = true
+	}
+	return names
+}
+
+func normalizeChildName(original string, keyNode *yaml.Node, ctx *parseContext, path string, seenChildren map[string]bool, firstByOriginal map[string]sourcePosition, reservedSiblingNames map[string]bool) string {
+	name := strings.TrimSpace(original)
+	if ctx == nil || !ctx.recoverDuplicateChildren {
+		return name
+	}
+	if !seenChildren[name] {
+		seenChildren[name] = true
+		if _, exists := firstByOriginal[name]; !exists {
+			firstByOriginal[name] = sourcePosition{line: keyNode.Line, column: keyNode.Column}
+		}
+		return name
+	}
+
+	materializedName := nextAvailableSiblingName(name, seenChildren, reservedSiblingNames)
+	first := firstByOriginal[name]
+	seenChildren[materializedName] = true
+	ctx.diagnostics = append(ctx.diagnostics, Diagnostic{
+		Level:            "warning",
+		Code:             "duplicate_child_name",
+		Message:          fmt.Sprintf("duplicate child %q at %s; first defined at line %d:%d; using %q as runtime path", name, path, first.line, first.column, materializedName),
+		Path:             path,
+		OriginalName:     name,
+		MaterializedName: materializedName,
+		Line:             keyNode.Line,
+		Column:           keyNode.Column,
+	})
+	return materializedName
+}
+
+func nextAvailableSiblingName(base string, used map[string]bool, reserved map[string]bool) string {
+	for index := 2; ; index++ {
+		candidate := fmt.Sprintf("%s_%d", base, index)
+		if !used[candidate] && !reserved[candidate] {
+			return candidate
+		}
+	}
+}
+
+func parseGenericValue(node *yaml.Node, ctx *parseContext, path string) (interface{}, error) {
 	switch node.Kind {
 	case yaml.ScalarNode:
 		return parseScalar(node)
 	case yaml.MappingNode:
-		return parseGenericMap(node)
+		return parseGenericMap(node, ctx, path)
 	case yaml.SequenceNode:
 		if looksLikeNodeSequence(node) {
-			return parseNodeSequence("", node)
+			return parseNodeSequence("", node, ctx, path)
 		}
 		values := make([]interface{}, 0, len(node.Content))
-		for _, item := range node.Content {
-			value, err := parseGenericValue(item)
+		for index, item := range node.Content {
+			value, err := parseGenericValue(item, ctx, fmt.Sprintf("%s[%d]", path, index))
 			if err != nil {
 				return nil, err
 			}
@@ -360,7 +467,7 @@ func parseGenericValue(node *yaml.Node) (interface{}, error) {
 	}
 }
 
-func parseGenericMap(node *yaml.Node) (map[string]interface{}, error) {
+func parseGenericMap(node *yaml.Node, ctx *parseContext, path string) (map[string]interface{}, error) {
 	out := make(map[string]interface{}, len(node.Content)/2)
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
@@ -372,7 +479,7 @@ func parseGenericMap(node *yaml.Node) (map[string]interface{}, error) {
 		if _, exists := out[key]; exists {
 			return nil, nodeError(keyNode, "duplicate map key %q", key)
 		}
-		value, err := parseGenericValue(valueNode)
+		value, err := parseGenericValue(valueNode, ctx, joinPath(path, key))
 		if err != nil {
 			return nil, err
 		}
@@ -671,10 +778,13 @@ func loadFile(path string, opts Options, state *loadState) (*Document, error) {
 	if err != nil {
 		return nil, fmt.Errorf("preprocess %s: %w", absolutePath, err)
 	}
-	doc, err := ParseBytes(preprocessed)
+	doc, err := ParseBytesWithOptions(preprocessed, ParseOptions{
+		RecoverDuplicateChildren: opts.RecoverDuplicateChildren,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("parse %s: %w", absolutePath, err)
 	}
+	applyDiagnosticSource(doc.Diagnostics, absolutePath)
 
 	state.loading[absolutePath] = true
 	defer delete(state.loading, absolutePath)
@@ -693,10 +803,12 @@ func loadFile(path string, opts Options, state *loadState) (*Document, error) {
 		if err := appendDocumentRoots(merged, importedDoc, seenRoots, fullImportPath); err != nil {
 			return nil, err
 		}
+		merged.Diagnostics = append(merged.Diagnostics, importedDoc.Diagnostics...)
 	}
 	if err := appendDocumentRoots(merged, docWithoutImports(doc), seenRoots, absolutePath); err != nil {
 		return nil, err
 	}
+	merged.Diagnostics = append(merged.Diagnostics, doc.Diagnostics...)
 	state.loaded[absolutePath] = cloneDocument(merged)
 	return cloneDocument(merged), nil
 }
@@ -732,12 +844,21 @@ func cloneDocument(doc *Document) *Document {
 		return nil
 	}
 	out := &Document{
-		Imports: append([]string(nil), doc.Imports...),
+		Imports:     append([]string(nil), doc.Imports...),
+		Diagnostics: append([]Diagnostic(nil), doc.Diagnostics...),
 	}
 	for _, root := range doc.Roots {
 		out.Roots = append(out.Roots, cloneNode(root))
 	}
 	return out
+}
+
+func applyDiagnosticSource(diagnostics []Diagnostic, source string) {
+	for index := range diagnostics {
+		if diagnostics[index].Source == "" {
+			diagnostics[index].Source = source
+		}
+	}
 }
 
 func rejectLegacyMacros(source string) error {
