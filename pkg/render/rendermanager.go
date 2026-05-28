@@ -48,11 +48,15 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
-			Err:      "Cannot create component instance...",
+			File:     renderMetadataValue(data, "hyperbricksfile"),
+			Path:     renderMetadataValue(data, "hyperbrickspath"),
+			Key:      renderMetadataValue(data, "hyperbrickskey"),
+			Type:     rendererType,
+			Err:      fmt.Sprintf("cannot create component instance for %s: %v", rendererType, err),
 			Rejected: true,
 		})
 		// When type is not registerd show tag with error...
-		return fmt.Sprintf("<! -- %s -->", err), errors
+		return fmt.Sprintf("<!-- %s -->", err), errors
 	}
 	//logging.Logger.Debug("Render CreateInstance: ", response)
 	// Handle warnings (if any)
@@ -78,10 +82,25 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 	} else {
 		return "", append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
-			Err:      fmt.Errorf("invalid type for HYPERMEDIA").Error(),
+			File:     renderMetadataValue(data, "hyperbricksfile"),
+			Path:     renderMetadataValue(data, "hyperbrickspath"),
+			Key:      renderMetadataValue(data, "hyperbrickskey"),
+			Type:     rendererType,
+			Err:      fmt.Sprintf("renderer %s is not registered", rendererType),
 			Rejected: true,
 		})
 	}
+}
+
+func renderMetadataValue(data map[string]interface{}, key string) string {
+	if data == nil {
+		return ""
+	}
+	value, ok := data[key].(string)
+	if !ok {
+		return ""
+	}
+	return value
 }
 
 // GetRenderComponent retrieves a RenderComponent by its content type.

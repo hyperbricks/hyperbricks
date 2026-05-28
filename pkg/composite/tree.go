@@ -127,9 +127,9 @@ func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []
 		}
 
 		// Update componentConfig with path and key
-		localConfig["hyperbrickskey"] = config.Composite.Meta.HyperBricksKey
+		localConfig["hyperbrickskey"] = key
 		localConfig["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
-		localConfig["hyperbrickspath"] = fmt.Sprintf("%s.%s", config.Composite.Meta.HyperBricksPath, key)
+		localConfig["hyperbrickspath"] = joinTreePath(config.Composite.Meta.HyperBricksPath, key)
 
 		componentType := ""
 		if rawType, ok := component["@type"]; ok {
@@ -204,6 +204,18 @@ func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []
 	sortedErrors := SortCompositeErrors(renderErrors, itemsSortedOnKeys)
 	outputHtml := shared.EncloseContent(config.Enclose, renderedComponentOutput.String())
 	return outputHtml, sortedErrors
+}
+
+func joinTreePath(base string, key string) string {
+	base = strings.Trim(base, ".")
+	key = strings.Trim(key, ".")
+	if base == "" {
+		return key
+	}
+	if key == "" {
+		return base
+	}
+	return base + "." + key
 }
 
 func orderedTreeKeys(items map[string]interface{}) []string {
