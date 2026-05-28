@@ -118,7 +118,6 @@ func TestPreProcessAndPopulateConfigsKeepsRunningWhenYAMLSourceIsInvalid(t *test
 	oldHypermediasBySection := hypermediasBySection
 	oldRouteSourceErrors := routeSourceErrors
 	oldRM := rm
-	oldHyperBricksArray := hyperBricksArray
 	oldParserHbConfig := parser.HbConfig
 	oldRenderDiagnosticsSeq := renderDiagnosticsSeq
 
@@ -136,7 +135,6 @@ func TestPreProcessAndPopulateConfigsKeepsRunningWhenYAMLSourceIsInvalid(t *test
 		commands.ModuleRoot = oldModuleRoot
 		core.ModuleDirectories = oldModuleDirectories
 		rm = oldRM
-		hyperBricksArray = oldHyperBricksArray
 		parser.HbConfig = oldParserHbConfig
 
 		configMutex.Lock()
@@ -207,7 +205,6 @@ func TestPreProcessAndPopulateConfigsKeepsRunningWhenYAMLSourceIsInvalid(t *test
 		"plugins":     filepath.Join(moduleDir, "plugins"),
 	}
 
-	hyperBricksArray = &parser.HyperScriptStringArray{}
 	configs = make(map[string]map[string]interface{})
 	hypermediasBySection = make(map[string][]composite.HyperMediaConfig)
 	parser.HbConfig = map[string]interface{}{}
@@ -252,7 +249,6 @@ func TestYAMLUnknownChildTypeRendersSiblingsAndRecordsDiagnostic(t *testing.T) {
 	oldHypermediasBySection := hypermediasBySection
 	oldRouteSourceErrors := routeSourceErrors
 	oldRM := rm
-	oldHyperBricksArray := hyperBricksArray
 	oldParserHbConfig := parser.HbConfig
 	oldRenderDiagnosticsSeq := renderDiagnosticsSeq
 
@@ -270,7 +266,6 @@ func TestYAMLUnknownChildTypeRendersSiblingsAndRecordsDiagnostic(t *testing.T) {
 		commands.ModuleRoot = oldModuleRoot
 		core.ModuleDirectories = oldModuleDirectories
 		rm = oldRM
-		hyperBricksArray = oldHyperBricksArray
 		parser.HbConfig = oldParserHbConfig
 
 		configMutex.Lock()
@@ -340,7 +335,6 @@ func TestYAMLUnknownChildTypeRendersSiblingsAndRecordsDiagnostic(t *testing.T) {
 		"plugins":     filepath.Join(moduleDir, "plugins"),
 	}
 
-	hyperBricksArray = &parser.HyperScriptStringArray{}
 	configs = make(map[string]map[string]interface{})
 	hypermediasBySection = make(map[string][]composite.HyperMediaConfig)
 	parser.HbConfig = map[string]interface{}{}
@@ -407,7 +401,6 @@ func TestPreProcessAndPopulateHyperbricksConfigurationsRecordsTopLevelErrors(t *
 	oldConfigs := configs
 	oldHypermediasBySection := hypermediasBySection
 	oldRouteSourceErrors := routeSourceErrors
-	oldHyperBricksArray := hyperBricksArray
 	oldRenderDiagnosticsSeq := renderDiagnosticsSeq
 
 	renderDiagnosticsMutex.Lock()
@@ -422,7 +415,6 @@ func TestPreProcessAndPopulateHyperbricksConfigurationsRecordsTopLevelErrors(t *
 		hbConfig.Directories = oldDirectories
 		commands.ModuleRoot = oldModuleRoot
 		core.ModuleDirectories = oldModuleDirectories
-		hyperBricksArray = oldHyperBricksArray
 
 		configMutex.Lock()
 		configs = oldConfigs
@@ -468,7 +460,6 @@ func TestPreProcessAndPopulateHyperbricksConfigurationsRecordsTopLevelErrors(t *
 		"render":      filepath.Join(moduleDir, "rendered"),
 		"plugins":     filepath.Join(moduleDir, "plugins"),
 	}
-	hyperBricksArray = &parser.HyperScriptStringArray{}
 	configs = make(map[string]map[string]interface{})
 	hypermediasBySection = make(map[string][]composite.HyperMediaConfig)
 
@@ -482,7 +473,7 @@ func TestPreProcessAndPopulateHyperbricksConfigurationsRecordsTopLevelErrors(t *
 	if diagnostic.Route != "__config" || len(diagnostic.Errors) != 1 {
 		t.Fatalf("config diagnostics = %#v", diagnostic)
 	}
-	if diagnostic.Errors[0].Type != "CONFIG" || !strings.Contains(diagnostic.Errors[0].Err, "no .hyperbricks or .hyperbricks.yaml files found") {
+	if diagnostic.Errors[0].Type != "CONFIG" || !strings.Contains(diagnostic.Errors[0].Err, "no .hyperbricks.yaml files found") {
 		t.Fatalf("config diagnostic error = %#v", diagnostic.Errors[0])
 	}
 }
@@ -500,7 +491,6 @@ func TestPreProcessAndPopulateConfigsLoadsYAMLRouteThroughServerRenderFlow(t *te
 	oldHypermediasBySection := hypermediasBySection
 	oldRouteSourceErrors := routeSourceErrors
 	oldRM := rm
-	oldHyperBricksArray := hyperBricksArray
 	oldRenderDiagnosticsSeq := renderDiagnosticsSeq
 
 	renderDiagnosticsMutex.Lock()
@@ -517,7 +507,6 @@ func TestPreProcessAndPopulateConfigsLoadsYAMLRouteThroughServerRenderFlow(t *te
 		commands.ModuleRoot = oldModuleRoot
 		core.ModuleDirectories = oldModuleDirectories
 		rm = oldRM
-		hyperBricksArray = oldHyperBricksArray
 
 		configMutex.Lock()
 		configs = oldConfigs
@@ -582,7 +571,6 @@ func TestPreProcessAndPopulateConfigsLoadsYAMLRouteThroughServerRenderFlow(t *te
 		"plugins":     filepath.Join(moduleDir, "plugins"),
 	}
 
-	hyperBricksArray = &parser.HyperScriptStringArray{}
 	configs = make(map[string]map[string]interface{})
 	hypermediasBySection = make(map[string][]composite.HyperMediaConfig)
 
@@ -656,7 +644,6 @@ func TestPreProcessAndPopulateConfigsSupportsYAMLRuntimePreprocessing(t *testing
 	oldHypermediasBySection := hypermediasBySection
 	oldRouteSourceErrors := routeSourceErrors
 	oldRM := rm
-	oldHyperBricksArray := hyperBricksArray
 	oldParserHbConfig := parser.HbConfig
 
 	t.Cleanup(func() {
@@ -666,7 +653,6 @@ func TestPreProcessAndPopulateConfigsSupportsYAMLRuntimePreprocessing(t *testing
 		commands.ModuleRoot = oldModuleRoot
 		core.ModuleDirectories = oldModuleDirectories
 		rm = oldRM
-		hyperBricksArray = oldHyperBricksArray
 		parser.HbConfig = oldParserHbConfig
 		parser.ClearTemplateStore()
 
@@ -785,7 +771,6 @@ page:
 		"plugins":     pluginsDir,
 	}
 
-	hyperBricksArray = &parser.HyperScriptStringArray{}
 	configs = make(map[string]map[string]interface{})
 	hypermediasBySection = make(map[string][]composite.HyperMediaConfig)
 
@@ -842,7 +827,6 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 	oldHypermediasBySection := hypermediasBySection
 	oldRouteSourceErrors := routeSourceErrors
 	oldRM := rm
-	oldHyperBricksArray := hyperBricksArray
 	oldParserHbConfig := parser.HbConfig
 	oldRenderDiagnosticsSeq := renderDiagnosticsSeq
 
@@ -866,7 +850,6 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 		commands.ModuleRoot = oldModuleRoot
 		core.ModuleDirectories = oldModuleDirectories
 		rm = oldRM
-		hyperBricksArray = oldHyperBricksArray
 		parser.HbConfig = oldParserHbConfig
 		parser.ClearTemplateStore()
 		renderDiagnosticsSeq = oldRenderDiagnosticsSeq
@@ -915,7 +898,6 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 		"plugins":     filepath.Join(repoRoot, "bin", "plugins"),
 	}
 
-	hyperBricksArray = &parser.HyperScriptStringArray{}
 	configs = make(map[string]map[string]interface{})
 	hypermediasBySection = make(map[string][]composite.HyperMediaConfig)
 	parser.HbConfig = map[string]interface{}{}

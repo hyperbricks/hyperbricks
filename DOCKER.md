@@ -1,8 +1,7 @@
 # Docker Deploy Setup (Hyperbricks)
 
-This repo includes a Docker-based Alpine deploy setup that mirrors
-`docs/alpine-hyperbricks-compile.md`. It builds Hyperbricks as the `deploy`
-user, supports plugin compilation, and exposes SSH + the Deploy API.
+This repo includes a Docker-based Alpine deploy setup. It builds HyperBricks as
+the `deploy` user, supports plugin compilation, and exposes SSH + the Deploy API.
 
 ## Quick start
 From repo root:

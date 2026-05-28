@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -111,62 +110,18 @@ func determineDirectories(hbConfig *shared.Config) core.ModuleConfiguredDirector
 
 // loadHyperBricks preprocesses HyperBricks sources from the configured directory.
 func loadHyperBricks() ([]hyperBricksConfigSource, []error, error) {
-	legacySources, err := loadLegacyHyperBricksSources()
-	if err != nil {
-		return nil, nil, err
-	}
 	yamlSources, yamlSourceErrors, err := loadYAMLHyperBricksSources()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	sources := append(legacySources, yamlSources...)
-	sort.Slice(sources, func(i, j int) bool {
-		return sources[i].Filename < sources[j].Filename
+	sort.Slice(yamlSources, func(i, j int) bool {
+		return yamlSources[i].Filename < yamlSources[j].Filename
 	})
-	if len(sources) == 0 && len(yamlSourceErrors) == 0 {
-		return nil, nil, fmt.Errorf("no .hyperbricks or .hyperbricks.yaml files found in %s", core.ModuleDirectories.HyperbricksDir)
+	if len(yamlSources) == 0 && len(yamlSourceErrors) == 0 {
+		return nil, nil, fmt.Errorf("no .hyperbricks.yaml files found in %s", core.ModuleDirectories.HyperbricksDir)
 	}
-	return sources, yamlSourceErrors, nil
-}
-
-func loadLegacyHyperBricksSources() ([]hyperBricksConfigSource, error) {
-	files, err := filepath.Glob(filepath.Join(core.ModuleDirectories.HyperbricksDir, "*.hyperbricks"))
-	if err != nil {
-		return nil, fmt.Errorf("glob legacy hyperbricks files: %w", err)
-	}
-	sort.Strings(files)
-
-	tempHyperBricks := make(map[string]string, len(files))
-	orderedRoutes := make([]string, 0, len(files))
-	sources := make([]hyperBricksConfigSource, 0, len(files))
-
-	for _, file := range files {
-		data, err := os.ReadFile(file)
-		if err != nil {
-			return nil, fmt.Errorf("read legacy hyperbricks file %s: %w", file, err)
-		}
-		filename := hyperBricksSourceName(file, ".hyperbricks")
-		uncommented := parser.StripComments(string(data))
-		preprocessed, err := parser.PreprocessHyperScript(uncommented)
-		if err != nil {
-			return nil, fmt.Errorf("preprocess legacy hyperbricks file %s: %w", file, err)
-		}
-		tempHyperBricks[filename] = preprocessed
-		orderedRoutes = append(orderedRoutes, filename)
-		sources = append(sources, hyperBricksConfigSource{
-			Filename: filename,
-			Config:   parser.ParseHyperScript(preprocessed),
-		})
-		logging.GetLogger().Debug("Loaded legacy configuration for route: ", filename)
-	}
-
-	hyperBricksArray.PreProcessedHyperScriptStoreMutex.Lock()
-	hyperBricksArray.HyperBricksStore = tempHyperBricks
-	hyperBricksArray.OrderedHyperBricksRoutes = orderedRoutes
-	hyperBricksArray.PreProcessedHyperScriptStoreMutex.Unlock()
-
-	return sources, nil
+	return yamlSources, yamlSourceErrors, nil
 }
 
 func loadYAMLHyperBricksSources() ([]hyperBricksConfigSource, []error, error) {

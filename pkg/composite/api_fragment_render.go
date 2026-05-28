@@ -47,7 +47,7 @@ type APIConfig struct {
 	Username   string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-fragment-username.hyperbricks}}"`
 	Password   string                 `mapstructure:"password" description:"Password for basic auth" example:"{!{api-render-fragment-password.hyperbricks}}"`
 	Status     int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
-	SetCookie  string                 `mapstructure:"setcookie" description:"Legacy shorthand for one Set-Cookie response template. Applied on any 2xx upstream response." example:"{!{api-render-fragment-setcookie.hyperbricks}}"`
+	SetCookie  string                 `mapstructure:"setcookie" description:"Single Set-Cookie response template shorthand. Applied on any 2xx upstream response." example:"{!{api-render-fragment-setcookie.hyperbricks}}"`
 	SetCookies []string               `mapstructure:"setcookies" json:",omitempty" description:"Optional list of Set-Cookie response templates. Each entry becomes its own Set-Cookie header on any 2xx upstream response." example:"{!{api-render-fragment-setcookies.hyperbricks}}"`
 	// PassCookie       string                 `mapstructure:"passcookie" description:"Pass a cookie in eindpoint request" example:"{!{api-render-setcookie.hyperbricks}}"`
 	AllowedQueryKeys []string          `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-fragment-querykeys.hyperbricks}}"`

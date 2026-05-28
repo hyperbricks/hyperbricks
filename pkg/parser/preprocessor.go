@@ -2,11 +2,9 @@ package parser
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 	"sync"
 
@@ -25,113 +23,6 @@ var pathMarkerReplacerCache struct {
 	sync.RWMutex
 	key      [7]string
 	replacer *strings.Replacer
-}
-
-// GetHyperScriptFiles returns a sorted list of .hyperbricks files in the specified directory.
-func GetHyperScriptFiles(baseUrl string) ([]string, error) {
-	files, err := filepath.Glob(baseUrl + "/*.hyperbricks")
-	if err != nil {
-		return nil, fmt.Errorf("glob error: %w", err)
-	}
-
-	if len(files) == 0 {
-		log.Println("No .hyperbricks files found in the directory.")
-		return nil, nil
-	}
-
-	sort.Strings(files) // Apply strict (lexicographical) order
-
-	return files, nil
-}
-
-// GetHyperScriptContents retrieves the content of a Hyperbricks by its route (metadata key).
-func (t *HyperScriptStringArray) GetHyperScriptContents(route string) (string, bool) {
-	t.PreProcessedHyperScriptStoreMutex.RLock()
-	defer t.PreProcessedHyperScriptStoreMutex.RUnlock()
-
-	content, found := t.HyperBricksStore[route]
-	return content, found
-}
-
-// HyperScriptStringArray is a struct that holds a map of loaded HyperBricks strings
-// and provides thread-safe access to the data.
-type HyperScriptStringArray struct {
-	HyperBricksStore                  map[string]string
-	OrderedHyperBricksRoutes          []string
-	PreProcessedHyperScriptStoreMutex sync.RWMutex
-}
-
-// GetAllHyperBricks returns a copy of all loaded Hyperbricks contents.
-// This method is exported (starts with an uppercase letter) to be accessible from other packages.
-func (tsa *HyperScriptStringArray) GetAllHyperBricks() map[string]string {
-	tsa.PreProcessedHyperScriptStoreMutex.RLock()
-	defer tsa.PreProcessedHyperScriptStoreMutex.RUnlock()
-
-	// Create a copy of the HyperBricksStore to prevent external modifications.
-	copyMap := make(map[string]string, len(tsa.HyperBricksStore))
-	for key, value := range tsa.HyperBricksStore {
-		copyMap[key] = value
-	}
-
-	return copyMap
-}
-
-func (t *HyperScriptStringArray) PreProcessHyperBricksFromFiles() error {
-	tempHyperBricks := make(map[string]string)
-	orderedRoutes := []string{} // <-- stores order
-
-	orangeTrueColor := "\033[38;2;255;165;0m"
-	reset := "\033[0m"
-
-	logging.GetLogger().Info(orangeTrueColor, "Loading hyperbricks files in ", core.ModuleDirectories.HyperbricksDir, "...", reset)
-	files, err := GetHyperScriptFiles(core.ModuleDirectories.HyperbricksDir)
-	if err != nil {
-		return fmt.Errorf("glob error: %v", err)
-	}
-
-	if len(files) == 0 {
-		logging.GetLogger().Error("No .hyperbricks files found in the 'hyperbricks' directory.")
-		return fmt.Errorf("no .hyperbricks files found in the 'hyperbricks' directory")
-	}
-	logging.GetLogger().Info(orangeTrueColor, "Preprocessing hyperbricks configurations...", reset)
-	for _, file := range files {
-		data, err := os.ReadFile(file)
-		if err != nil {
-			logging.GetLogger().Error("Error reading file:", file, "", err)
-			return fmt.Errorf("read file error: %v", err)
-		}
-
-		route := filepath.Base(file)
-		route = route[:len(route)-len(filepath.Ext(route))]
-		uncommented := StripComments(string(data))
-		ts, err := PreprocessHyperScript(uncommented)
-		if err != nil {
-			logging.GetLogger().Error("Error preprocessing")
-			return fmt.Errorf("preprocessing error: %s", err)
-		}
-
-		tempHyperBricks[route] = ts
-		orderedRoutes = append(orderedRoutes, route) // <--- record the order
-		logging.GetLogger().Debug("Loaded configuration for route: ", route)
-	}
-
-	// store both the map and the ordered slice
-	t.PreProcessedHyperScriptStoreMutex.Lock()
-	t.HyperBricksStore = tempHyperBricks
-	t.OrderedHyperBricksRoutes = orderedRoutes // <--- store order!
-	t.PreProcessedHyperScriptStoreMutex.Unlock()
-
-	logging.GetLogger().Debug("Total configurations loaded: ", len(tempHyperBricks))
-
-	// Example: process in strict order
-	for _, route := range orderedRoutes {
-		ts := tempHyperBricks[route]
-		logging.GetLogger().Info("Processing: ", route, ".hyperbricks")
-		// Do your real processing here
-		_ = ts // replace with real usage
-	}
-
-	return nil
 }
 
 // PreprocessHyperScript processes @import directives and replaces TEMPLATE tokens.

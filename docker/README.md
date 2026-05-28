@@ -1,7 +1,7 @@
 # Hyperbricks Alpine Deploy (Docker)
 
-This setup mirrors `docs/alpine-hyperbricks-compile.md` inside a container and
-includes SSH, OpenRC service wiring, and plugin builds.
+This setup runs the HyperBricks Deploy API inside an Alpine-based container with
+SSH upload access, optional OpenRC service wiring, and plugin build support.
 
 ## Build + run
 From repo root:
@@ -48,4 +48,4 @@ docker build -f docker/Dockerfile --build-arg TAILWIND_VERSION="" .
 - Hyperbricks and plugins are built as the `deploy` user for plugin compatibility.
 - Plugin build steps require network access to fetch the plugin index and sources.
 - The deploy root is persisted at `docker/data/deploy`.
-- The entrypoint starts the OpenRC service by default; set `HB_USE_OPENRC=0` to run the deploy API directly.
+- The entrypoint runs the Deploy API directly by default; set `HB_USE_OPENRC=1` to start it through OpenRC.

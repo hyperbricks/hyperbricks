@@ -956,7 +956,7 @@ const errorTemplate = `{{if .HasErrors}}
 	{{range .Errors}} document.getElementById("error_list").innerHTML += '<li><span class="error_message">\n' +
 				'	<div class="error_error">{{.Err}}</div>\n' +
 				'	type <span class="error_type error_mark"></span> at file\n' +
-				'	<span class="error_file error_mark">{{.File}}.hyperbricks</span> at \n' +
+				'	<span class="error_file error_mark">{{.File}}</span> at \n' +
 				'	<span class="error_path error_mark"> {{.Path}}.{{.Key}}</span> \n' +
 				'	</span>\n' +
 				'</li>\n';

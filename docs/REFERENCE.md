@@ -219,7 +219,7 @@ Request-time API fragment that forwards to an upstream endpoint and renders the 
 | `response.hx_trigger_after_swap` | `string` | no | allows you to trigger client-side events after the swap step |
 | `route` | `string` | no | The route (URL-friendly identifier) for the fragment |
 | `section` | `string` | no | The section the fragment belongs to |
-| `setcookie` | `string` | no | Legacy shorthand for one Set-Cookie response template. Applied on any 2xx upstream response. |
+| `setcookie` | `string` | no | Single Set-Cookie response template shorthand. Applied on any 2xx upstream response. |
 | `setcookies` | `list` | no | Optional list of Set-Cookie response templates. Each entry becomes its own Set-Cookie header on any 2xx upstream response. |
 | `template` | `string` | no | Loads contents of a template file in the modules template directory |
 | `title` | `string` | no | The title of the fragment |

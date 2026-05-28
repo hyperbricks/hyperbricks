@@ -856,7 +856,7 @@
           "go_name": "SetCookie",
           "go_type": "string",
           "kind": "string",
-          "description": "Legacy shorthand for one Set-Cookie response template. Applied on any 2xx upstream response.",
+          "description": "Single Set-Cookie response template shorthand. Applied on any 2xx upstream response.",
           "example": "{!{api-render-fragment-setcookie.hyperbricks}}",
           "authoring": {
             "label": "Setcookie",

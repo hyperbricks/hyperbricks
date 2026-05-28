@@ -79,7 +79,7 @@ func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []
 	}
 
 	// Step 1: Prefer explicit source order from the YAML source model and fall
-	// back to legacy alphanumeric sorting when no order metadata is present.
+	// back to deterministic alphanumeric sorting when no order metadata is present.
 	itemsSortedOnKeys := orderedTreeKeys(config.Items)
 
 	var wg sync.WaitGroup

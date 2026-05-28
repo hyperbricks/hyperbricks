@@ -7,7 +7,7 @@ api_fragment:
   - route: auth-logout
   - setcookie: token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0
 ==== explainer ====
-Legacy shorthand for one Set-Cookie response template
+Single Set-Cookie response template shorthand
 ==== expected json ====
 {
   "AllowedQueryKeys": null,
