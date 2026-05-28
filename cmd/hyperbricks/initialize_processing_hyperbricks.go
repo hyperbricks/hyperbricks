@@ -30,7 +30,7 @@ func PreProcessAndPopulateConfigs() error {
 	hbConfig, logger := retrieveConfigAndLogger()
 	determineDirectories(hbConfig)
 
-	sources, err := loadHyperBricks()
+	sources, sourceErrors, err := loadHyperBricks()
 	if err != nil {
 		return fmt.Errorf("error loading HyperBricks: %w", err)
 	}
@@ -51,6 +51,7 @@ func PreProcessAndPopulateConfigs() error {
 	updateGlobalConfigs(tempConfigs)
 	updateGlobalHyperMediasBySection(tempHyperMediasBySection)
 	updateGlobalRouteSourceErrors(tempRouteSourceErrors)
+	recordConfigDiagnostics(sourceErrors)
 
 	// linking resources to the renderers
 	linkRendererResources()
@@ -109,24 +110,24 @@ func determineDirectories(hbConfig *shared.Config) core.ModuleConfiguredDirector
 }
 
 // loadHyperBricks preprocesses HyperBricks sources from the configured directory.
-func loadHyperBricks() ([]hyperBricksConfigSource, error) {
+func loadHyperBricks() ([]hyperBricksConfigSource, []error, error) {
 	legacySources, err := loadLegacyHyperBricksSources()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	yamlSources, err := loadYAMLHyperBricksSources()
+	yamlSources, yamlSourceErrors, err := loadYAMLHyperBricksSources()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	sources := append(legacySources, yamlSources...)
 	sort.Slice(sources, func(i, j int) bool {
 		return sources[i].Filename < sources[j].Filename
 	})
-	if len(sources) == 0 {
-		return nil, fmt.Errorf("no .hyperbricks or .hyperbricks.yaml files found in %s", core.ModuleDirectories.HyperbricksDir)
+	if len(sources) == 0 && len(yamlSourceErrors) == 0 {
+		return nil, nil, fmt.Errorf("no .hyperbricks or .hyperbricks.yaml files found in %s", core.ModuleDirectories.HyperbricksDir)
 	}
-	return sources, nil
+	return sources, yamlSourceErrors, nil
 }
 
 func loadLegacyHyperBricksSources() ([]hyperBricksConfigSource, error) {
@@ -168,19 +169,23 @@ func loadLegacyHyperBricksSources() ([]hyperBricksConfigSource, error) {
 	return sources, nil
 }
 
-func loadYAMLHyperBricksSources() ([]hyperBricksConfigSource, error) {
+func loadYAMLHyperBricksSources() ([]hyperBricksConfigSource, []error, error) {
 	files, err := filepath.Glob(filepath.Join(core.ModuleDirectories.HyperbricksDir, "*.hyperbricks.yaml"))
 	if err != nil {
-		return nil, fmt.Errorf("glob YAML hyperbricks files: %w", err)
+		return nil, nil, fmt.Errorf("glob YAML hyperbricks files: %w", err)
 	}
 	sort.Strings(files)
 
 	opts := yamlRuntimeOptions()
 	sources := make([]hyperBricksConfigSource, 0, len(files))
+	sourceErrors := make([]error, 0)
 	for _, file := range files {
 		result, err := yamlparser.ProcessFile(file, opts)
 		if err != nil {
-			return nil, fmt.Errorf("process YAML hyperbricks file %s: %w", file, err)
+			componentError := yamlLoadErrorToComponentError(file, err)
+			sourceErrors = append(sourceErrors, componentError)
+			logging.GetLogger().Warnw("Skipping invalid YAML HyperBricks source", "file", file, "error", err)
+			continue
 		}
 		sources = append(sources, hyperBricksConfigSource{
 			Filename: hyperBricksSourceName(file, ".hyperbricks.yaml"),
@@ -189,7 +194,14 @@ func loadYAMLHyperBricksSources() ([]hyperBricksConfigSource, error) {
 		})
 		logging.GetLogger().Debug("Loaded YAML configuration for route: ", file)
 	}
-	return sources, nil
+	return sources, sourceErrors, nil
+}
+
+func recordConfigDiagnostics(errors []error) {
+	if len(errors) == 0 || getHyperBricksConfiguration().Mode == shared.LIVE_MODE {
+		return
+	}
+	recordRenderDiagnostics(nextRenderRequestID(), "__config", errors)
 }
 
 func yamlRuntimeOptions() yamlparser.Options {
@@ -208,6 +220,7 @@ func yamlRuntimeOptions() yamlparser.Options {
 			Render:      core.ModuleDirectories.RenderedDir,
 		},
 		RecoverDuplicateChildren: true,
+		AllowUnknownTypes:        true,
 	}
 }
 
@@ -227,6 +240,26 @@ func yamlDiagnosticsToComponentErrors(diagnostics []yamlparser.Diagnostic) []err
 		})
 	}
 	return out
+}
+
+func yamlLoadErrorToComponentError(file string, err error) shared.ComponentError {
+	errorPath := fmt.Sprintf("%s:%v", file, err)
+	return shared.ComponentError{
+		Hash:     shared.HyperScriptErrorHash(errorPath),
+		File:     hyperBricksSourceName(file, ".hyperbricks.yaml"),
+		Type:     "YAML",
+		Path:     hyperBricksSourceName(file, ".hyperbricks.yaml"),
+		Err:      formatYAMLLoadError(file, err),
+		Level:    "ERROR",
+		Rejected: true,
+	}
+}
+
+func formatYAMLLoadError(file string, err error) string {
+	if err == nil {
+		return fmt.Sprintf("YAML source %s could not be loaded", filepath.Base(file))
+	}
+	return fmt.Sprintf("YAML source %s was skipped: %v", filepath.Base(file), err)
 }
 
 func formatYAMLDiagnosticMessage(diagnostic yamlparser.Diagnostic) string {

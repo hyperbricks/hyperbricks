@@ -664,6 +664,38 @@ page:
 	}
 }
 
+func TestProcessBytesAllowsUnknownRuntimeTypeWhenConfigured(t *testing.T) {
+	result, err := ProcessBytes([]byte(`
+page:
+  - type: hypermedia
+  - route: unknown-runtime-type
+  - main:
+      - type: tree
+      - before:
+          - type: html
+          - value: <p>before</p>
+      - inline_css:
+          - type: XXX
+          - inline: |
+              body { color: red; }
+      - after:
+          - type: html
+          - value: <p>after</p>
+`), Options{AllowUnknownTypes: true})
+	if err != nil {
+		t.Fatalf("ProcessBytes() error = %v", err)
+	}
+	page := result.Materialized["page"].(map[string]interface{})
+	main := page["main"].(map[string]interface{})
+	inlineCSS := main["inline_css"].(map[string]interface{})
+	if inlineCSS["@type"] != "<XXX>" {
+		t.Fatalf("inline_css @type = %#v, want <XXX>", inlineCSS["@type"])
+	}
+	if order := main["@order"]; !reflect.DeepEqual(order, []string{"before", "inline_css", "after"}) {
+		t.Fatalf("main @order = %#v", order)
+	}
+}
+
 func TestParseRejectsDuplicateChildren(t *testing.T) {
 	_, err := ParseBytes([]byte(`
 page:

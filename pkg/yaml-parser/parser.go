@@ -21,6 +21,7 @@ type Options struct {
 	TemplateDir              string
 	Paths                    PathMarkers
 	RecoverDuplicateChildren bool
+	AllowUnknownTypes        bool
 }
 
 // PathMarkers are the standard HyperBricks path bases available to YAML value
@@ -70,6 +71,7 @@ type Diagnostic struct {
 // source contract used by docs and parser tests.
 type ParseOptions struct {
 	RecoverDuplicateChildren bool
+	AllowUnknownTypes        bool
 }
 
 // Node is a named HyperBricks object or nested object extension.
@@ -92,6 +94,7 @@ func ProcessBytes(input []byte, opts Options) (*Result, error) {
 	}
 	doc, err := ParseBytesWithOptions(preprocessed, ParseOptions{
 		RecoverDuplicateChildren: opts.RecoverDuplicateChildren,
+		AllowUnknownTypes:        opts.AllowUnknownTypes,
 	})
 	if err != nil {
 		return nil, err
@@ -178,6 +181,7 @@ func ParseBytesWithOptions(input []byte, opts ParseOptions) (*Document, error) {
 	doc := &Document{}
 	ctx := &parseContext{
 		recoverDuplicateChildren: opts.RecoverDuplicateChildren,
+		allowUnknownTypes:        opts.AllowUnknownTypes,
 	}
 	seenRoots := make(map[string]bool)
 	for i := 0; i < len(body.Content); i += 2 {
@@ -225,7 +229,7 @@ func ParseBytesWithOptions(input []byte, opts ParseOptions) (*Document, error) {
 		}
 		doc.Roots = append(doc.Roots, node)
 	}
-	if err := validateDocument(doc); err != nil {
+	if err := validateDocument(doc, ctx); err != nil {
 		return nil, err
 	}
 	doc.Diagnostics = append(doc.Diagnostics, ctx.diagnostics...)
@@ -303,6 +307,7 @@ func parseVars(node *yaml.Node, ctx *parseContext) (map[string]interface{}, erro
 
 type parseContext struct {
 	recoverDuplicateChildren bool
+	allowUnknownTypes        bool
 	diagnostics              []Diagnostic
 }
 
@@ -487,26 +492,26 @@ func parseGenericMap(node *yaml.Node, ctx *parseContext, path string) (map[strin
 	return out, nil
 }
 
-func validateDocument(doc *Document) error {
+func validateDocument(doc *Document, ctx *parseContext) error {
 	if doc == nil {
 		return nil
 	}
 	for _, root := range doc.Roots {
-		if err := validateNode(root, root.Name); err != nil {
+		if err := validateNode(root, root.Name, ctx); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func validateNode(node *Node, path string) error {
+func validateNode(node *Node, path string, ctx *parseContext) error {
 	if node == nil {
 		return nil
 	}
 	if isInternalRuntimeKey(node.Name) {
 		return nodeErrorFromNode(node, fmt.Sprintf("node name %q is reserved", node.Name))
 	}
-	nodeType, err := validateNodeType(node)
+	nodeType, err := validateNodeType(node, ctx)
 	if err != nil {
 		return err
 	}
@@ -517,7 +522,7 @@ func validateNode(node *Node, path string) error {
 		}
 		if nested, ok := value.(*Node); ok {
 			nestedPath := joinPath(path, key)
-			if err := validateNode(nested, nestedPath); err != nil {
+			if err := validateNode(nested, nestedPath, ctx); err != nil {
 				return err
 			}
 		}
@@ -542,14 +547,14 @@ func validateNode(node *Node, path string) error {
 		if reservedRuntimeChildName(nodeType, child.Name) {
 			return nodeErrorFromNode(child, fmt.Sprintf("child %q at %s collides with a reserved %s field", child.Name, childPath, nodeType))
 		}
-		if err := validateNode(child, childPath); err != nil {
+		if err := validateNode(child, childPath, ctx); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func validateNodeType(node *Node) (string, error) {
+func validateNodeType(node *Node, ctx *parseContext) (string, error) {
 	if node == nil {
 		return "", nil
 	}
@@ -558,6 +563,9 @@ func validateNodeType(node *Node) (string, error) {
 	}
 	token, ok := canonicalTypeToken(node.Type)
 	if !ok {
+		if ctx != nil && ctx.allowUnknownTypes {
+			return formatType(node.Type), nil
+		}
 		return "", nodeErrorFromNode(node, fmt.Sprintf("unknown component type %q", node.Type))
 	}
 	return token, nil
@@ -779,6 +787,7 @@ func loadFile(path string, opts Options, state *loadState) (*Document, error) {
 	}
 	doc, err := ParseBytesWithOptions(preprocessed, ParseOptions{
 		RecoverDuplicateChildren: opts.RecoverDuplicateChildren,
+		AllowUnknownTypes:        opts.AllowUnknownTypes,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("parse %s: %w", absolutePath, err)

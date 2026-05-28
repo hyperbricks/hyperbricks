@@ -105,6 +105,388 @@ func TestYAMLDiagnosticsToComponentErrorsFormatsResolverDiagnosticsWithoutZeroPo
 	}
 }
 
+func TestPreProcessAndPopulateConfigsKeepsRunningWhenYAMLSourceIsInvalid(t *testing.T) {
+	shared.Init_configuration()
+	hbConfig := shared.GetHyperBricksConfiguration()
+
+	oldMode := hbConfig.Mode
+	oldBeautify := hbConfig.Server.Beautify
+	oldDirectories := hbConfig.Directories
+	oldModuleRoot := commands.ModuleRoot
+	oldModuleDirectories := core.ModuleDirectories
+	oldConfigs := configs
+	oldHypermediasBySection := hypermediasBySection
+	oldRouteSourceErrors := routeSourceErrors
+	oldRM := rm
+	oldHyperBricksArray := hyperBricksArray
+	oldParserHbConfig := parser.HbConfig
+	oldRenderDiagnosticsSeq := renderDiagnosticsSeq
+
+	renderDiagnosticsMutex.Lock()
+	oldRenderDiagnostics := renderDiagnostics
+	oldRenderDiagnosticsOrder := renderDiagnosticsOrder
+	renderDiagnostics = make(map[string]RenderDiagnostics)
+	renderDiagnosticsOrder = nil
+	renderDiagnosticsMutex.Unlock()
+
+	t.Cleanup(func() {
+		hbConfig.Mode = oldMode
+		hbConfig.Server.Beautify = oldBeautify
+		hbConfig.Directories = oldDirectories
+		commands.ModuleRoot = oldModuleRoot
+		core.ModuleDirectories = oldModuleDirectories
+		rm = oldRM
+		hyperBricksArray = oldHyperBricksArray
+		parser.HbConfig = oldParserHbConfig
+
+		configMutex.Lock()
+		configs = oldConfigs
+		configMutex.Unlock()
+
+		hypermediasMutex.Lock()
+		hypermediasBySection = oldHypermediasBySection
+		hypermediasMutex.Unlock()
+
+		routeSourceErrorsMutex.Lock()
+		routeSourceErrors = oldRouteSourceErrors
+		routeSourceErrorsMutex.Unlock()
+
+		renderDiagnosticsSeq = oldRenderDiagnosticsSeq
+		renderDiagnosticsMutex.Lock()
+		renderDiagnostics = oldRenderDiagnostics
+		renderDiagnosticsOrder = oldRenderDiagnosticsOrder
+		renderDiagnosticsMutex.Unlock()
+	})
+
+	moduleDir := filepath.Join(t.TempDir(), "modules", "yaml-invalid-source")
+	hyperbricksDir := filepath.Join(moduleDir, "hyperbricks")
+	for _, dir := range []string{
+		hyperbricksDir,
+		filepath.Join(moduleDir, "templates"),
+		filepath.Join(moduleDir, "resources"),
+		filepath.Join(moduleDir, "static"),
+		filepath.Join(moduleDir, "rendered"),
+		filepath.Join(moduleDir, "plugins"),
+	} {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			t.Fatalf("create test module dir %s: %v", dir, err)
+		}
+	}
+
+	validSource := `page:
+  - type: hypermedia
+  - route: valid-route
+  - title: Valid route
+  - main:
+      - type: tree
+      - intro:
+          - type: html
+          - value: <h1>Valid route</h1>
+`
+	if err := os.WriteFile(filepath.Join(hyperbricksDir, "valid.hyperbricks.yaml"), []byte(validSource), 0644); err != nil {
+		t.Fatalf("write valid YAML route fixture: %v", err)
+	}
+	invalidSource := `broken:
+  - type: hypermedia
+  - route: broken-route
+  - main: [
+`
+	if err := os.WriteFile(filepath.Join(hyperbricksDir, "broken.hyperbricks.yaml"), []byte(invalidSource), 0644); err != nil {
+		t.Fatalf("write invalid YAML route fixture: %v", err)
+	}
+
+	commands.ModuleRoot = moduleDir
+	hbConfig.Mode = shared.DEVELOPMENT_MODE
+	hbConfig.Server.Beautify = false
+	hbConfig.Directories = map[string]string{
+		"hyperbricks": hyperbricksDir,
+		"templates":   filepath.Join(moduleDir, "templates"),
+		"resources":   filepath.Join(moduleDir, "resources"),
+		"static":      filepath.Join(moduleDir, "static"),
+		"render":      filepath.Join(moduleDir, "rendered"),
+		"plugins":     filepath.Join(moduleDir, "plugins"),
+	}
+
+	hyperBricksArray = &parser.HyperScriptStringArray{}
+	configs = make(map[string]map[string]interface{})
+	hypermediasBySection = make(map[string][]composite.HyperMediaConfig)
+	parser.HbConfig = map[string]interface{}{}
+
+	initializeComponents()
+	if err := PreProcessAndPopulateConfigs(); err != nil {
+		t.Fatalf("PreProcessAndPopulateConfigs returned error: %v", err)
+	}
+	if _, ok := getConfig("valid-route"); !ok {
+		t.Fatalf("valid YAML route was not indexed; configs: %#v", configs)
+	}
+	if _, ok := getConfig("broken-route"); ok {
+		t.Fatalf("invalid YAML route should not be indexed")
+	}
+
+	diagnostics := collectRecentRenderDiagnostics(10)
+	if len(diagnostics) != 1 {
+		t.Fatalf("recent diagnostics len = %d, want 1: %#v", len(diagnostics), diagnostics)
+	}
+	if diagnostics[0].Route != "__config" {
+		t.Fatalf("diagnostics route = %q, want __config", diagnostics[0].Route)
+	}
+	if len(diagnostics[0].Errors) != 1 {
+		t.Fatalf("diagnostics errors len = %d, want 1: %#v", len(diagnostics[0].Errors), diagnostics[0].Errors)
+	}
+	diagnostic := diagnostics[0].Errors[0]
+	if diagnostic.Type != "YAML" || diagnostic.File != "broken" || !strings.Contains(diagnostic.Err, "YAML source broken.hyperbricks.yaml was skipped") {
+		t.Fatalf("config diagnostic = %#v", diagnostic)
+	}
+}
+
+func TestYAMLUnknownChildTypeRendersSiblingsAndRecordsDiagnostic(t *testing.T) {
+	shared.Init_configuration()
+	hbConfig := shared.GetHyperBricksConfiguration()
+
+	oldMode := hbConfig.Mode
+	oldBeautify := hbConfig.Server.Beautify
+	oldDirectories := hbConfig.Directories
+	oldModuleRoot := commands.ModuleRoot
+	oldModuleDirectories := core.ModuleDirectories
+	oldConfigs := configs
+	oldHypermediasBySection := hypermediasBySection
+	oldRouteSourceErrors := routeSourceErrors
+	oldRM := rm
+	oldHyperBricksArray := hyperBricksArray
+	oldParserHbConfig := parser.HbConfig
+	oldRenderDiagnosticsSeq := renderDiagnosticsSeq
+
+	renderDiagnosticsMutex.Lock()
+	oldRenderDiagnostics := renderDiagnostics
+	oldRenderDiagnosticsOrder := renderDiagnosticsOrder
+	renderDiagnostics = make(map[string]RenderDiagnostics)
+	renderDiagnosticsOrder = nil
+	renderDiagnosticsMutex.Unlock()
+
+	t.Cleanup(func() {
+		hbConfig.Mode = oldMode
+		hbConfig.Server.Beautify = oldBeautify
+		hbConfig.Directories = oldDirectories
+		commands.ModuleRoot = oldModuleRoot
+		core.ModuleDirectories = oldModuleDirectories
+		rm = oldRM
+		hyperBricksArray = oldHyperBricksArray
+		parser.HbConfig = oldParserHbConfig
+
+		configMutex.Lock()
+		configs = oldConfigs
+		configMutex.Unlock()
+
+		hypermediasMutex.Lock()
+		hypermediasBySection = oldHypermediasBySection
+		hypermediasMutex.Unlock()
+
+		routeSourceErrorsMutex.Lock()
+		routeSourceErrors = oldRouteSourceErrors
+		routeSourceErrorsMutex.Unlock()
+
+		renderDiagnosticsSeq = oldRenderDiagnosticsSeq
+		renderDiagnosticsMutex.Lock()
+		renderDiagnostics = oldRenderDiagnostics
+		renderDiagnosticsOrder = oldRenderDiagnosticsOrder
+		renderDiagnosticsMutex.Unlock()
+	})
+
+	moduleDir := filepath.Join(t.TempDir(), "modules", "yaml-unknown-child")
+	hyperbricksDir := filepath.Join(moduleDir, "hyperbricks")
+	for _, dir := range []string{
+		hyperbricksDir,
+		filepath.Join(moduleDir, "templates"),
+		filepath.Join(moduleDir, "resources"),
+		filepath.Join(moduleDir, "static"),
+		filepath.Join(moduleDir, "rendered"),
+		filepath.Join(moduleDir, "plugins"),
+	} {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			t.Fatalf("create test module dir %s: %v", dir, err)
+		}
+	}
+
+	yamlSource := `page:
+  - type: hypermedia
+  - route: unknown-child
+  - title: Unknown child
+  - main:
+      - type: tree
+      - before:
+          - type: html
+          - value: <p>before unknown child</p>
+      - inline_css:
+          - type: XXX
+          - inline: |
+              body { color: red; }
+      - after:
+          - type: html
+          - value: <p>after unknown child</p>
+`
+	if err := os.WriteFile(filepath.Join(hyperbricksDir, "page.hyperbricks.yaml"), []byte(yamlSource), 0644); err != nil {
+		t.Fatalf("write YAML route fixture: %v", err)
+	}
+
+	commands.ModuleRoot = moduleDir
+	hbConfig.Mode = shared.DEVELOPMENT_MODE
+	hbConfig.Server.Beautify = false
+	hbConfig.Directories = map[string]string{
+		"hyperbricks": hyperbricksDir,
+		"templates":   filepath.Join(moduleDir, "templates"),
+		"resources":   filepath.Join(moduleDir, "resources"),
+		"static":      filepath.Join(moduleDir, "static"),
+		"render":      filepath.Join(moduleDir, "rendered"),
+		"plugins":     filepath.Join(moduleDir, "plugins"),
+	}
+
+	hyperBricksArray = &parser.HyperScriptStringArray{}
+	configs = make(map[string]map[string]interface{})
+	hypermediasBySection = make(map[string][]composite.HyperMediaConfig)
+	parser.HbConfig = map[string]interface{}{}
+
+	initializeComponents()
+	if err := PreProcessAndPopulateConfigs(); err != nil {
+		t.Fatalf("PreProcessAndPopulateConfigs returned error: %v", err)
+	}
+	routeConfig, ok := getConfig("unknown-child")
+	if !ok {
+		t.Fatalf("YAML route was not indexed; configs: %#v", configs)
+	}
+	main := routeConfig["main"].(map[string]interface{})
+	inlineCSS := main["inline_css"].(map[string]interface{})
+	if inlineCSS["@type"] != "<XXX>" {
+		t.Fatalf("inline_css @type = %#v, want <XXX>", inlineCSS["@type"])
+	}
+
+	request := httptest.NewRequest(http.MethodGet, "/unknown-child", nil)
+	response := httptest.NewRecorder()
+	ServeContent(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, body:\n%s", response.Code, response.Body.String())
+	}
+	body := response.Body.String()
+	if !strings.Contains(body, "before unknown child") || !strings.Contains(body, "after unknown child") {
+		t.Fatalf("valid siblings were not rendered around unknown child:\n%s", body)
+	}
+	if got := response.Header().Get(renderErrorCountHeader); got != "1" {
+		t.Fatalf("render error count = %q, want 1; body:\n%s", got, body)
+	}
+
+	requestID := response.Header().Get(requestIDHeader)
+	if requestID == "" {
+		t.Fatal("missing render request id header")
+	}
+	renderDiagnosticsMutex.RLock()
+	diagnostics, ok := renderDiagnostics[requestID]
+	renderDiagnosticsMutex.RUnlock()
+	if !ok {
+		t.Fatalf("expected diagnostics for request %q", requestID)
+	}
+	if len(diagnostics.Errors) != 1 {
+		t.Fatalf("render diagnostics len = %d, want 1: %#v", len(diagnostics.Errors), diagnostics.Errors)
+	}
+	diagnostic := diagnostics.Errors[0]
+	if diagnostic.Type != "<XXX>" || diagnostic.File != "page" || diagnostic.Path != "page.main.inline_css" || diagnostic.Key != "inline_css" {
+		t.Fatalf("render diagnostic metadata = %#v", diagnostic)
+	}
+	if !strings.Contains(diagnostic.Err, "type <XXX> not registered") {
+		t.Fatalf("render diagnostic error = %#v", diagnostic.Err)
+	}
+}
+
+func TestPreProcessAndPopulateHyperbricksConfigurationsRecordsTopLevelErrors(t *testing.T) {
+	shared.Init_configuration()
+	hbConfig := shared.GetHyperBricksConfiguration()
+
+	oldMode := hbConfig.Mode
+	oldDirectories := hbConfig.Directories
+	oldModuleRoot := commands.ModuleRoot
+	oldModuleDirectories := core.ModuleDirectories
+	oldConfigs := configs
+	oldHypermediasBySection := hypermediasBySection
+	oldRouteSourceErrors := routeSourceErrors
+	oldHyperBricksArray := hyperBricksArray
+	oldRenderDiagnosticsSeq := renderDiagnosticsSeq
+
+	renderDiagnosticsMutex.Lock()
+	oldRenderDiagnostics := renderDiagnostics
+	oldRenderDiagnosticsOrder := renderDiagnosticsOrder
+	renderDiagnostics = make(map[string]RenderDiagnostics)
+	renderDiagnosticsOrder = nil
+	renderDiagnosticsMutex.Unlock()
+
+	t.Cleanup(func() {
+		hbConfig.Mode = oldMode
+		hbConfig.Directories = oldDirectories
+		commands.ModuleRoot = oldModuleRoot
+		core.ModuleDirectories = oldModuleDirectories
+		hyperBricksArray = oldHyperBricksArray
+
+		configMutex.Lock()
+		configs = oldConfigs
+		configMutex.Unlock()
+
+		hypermediasMutex.Lock()
+		hypermediasBySection = oldHypermediasBySection
+		hypermediasMutex.Unlock()
+
+		routeSourceErrorsMutex.Lock()
+		routeSourceErrors = oldRouteSourceErrors
+		routeSourceErrorsMutex.Unlock()
+
+		renderDiagnosticsSeq = oldRenderDiagnosticsSeq
+		renderDiagnosticsMutex.Lock()
+		renderDiagnostics = oldRenderDiagnostics
+		renderDiagnosticsOrder = oldRenderDiagnosticsOrder
+		renderDiagnosticsMutex.Unlock()
+	})
+
+	moduleDir := filepath.Join(t.TempDir(), "modules", "yaml-empty-module")
+	hyperbricksDir := filepath.Join(moduleDir, "hyperbricks")
+	for _, dir := range []string{
+		hyperbricksDir,
+		filepath.Join(moduleDir, "templates"),
+		filepath.Join(moduleDir, "resources"),
+		filepath.Join(moduleDir, "static"),
+		filepath.Join(moduleDir, "rendered"),
+		filepath.Join(moduleDir, "plugins"),
+	} {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			t.Fatalf("create test module dir %s: %v", dir, err)
+		}
+	}
+
+	commands.ModuleRoot = moduleDir
+	hbConfig.Mode = shared.DEVELOPMENT_MODE
+	hbConfig.Directories = map[string]string{
+		"hyperbricks": hyperbricksDir,
+		"templates":   filepath.Join(moduleDir, "templates"),
+		"resources":   filepath.Join(moduleDir, "resources"),
+		"static":      filepath.Join(moduleDir, "static"),
+		"render":      filepath.Join(moduleDir, "rendered"),
+		"plugins":     filepath.Join(moduleDir, "plugins"),
+	}
+	hyperBricksArray = &parser.HyperScriptStringArray{}
+	configs = make(map[string]map[string]interface{})
+	hypermediasBySection = make(map[string][]composite.HyperMediaConfig)
+
+	PreProcessAndPopulateHyperbricksConfigurations()
+
+	diagnostics := collectRecentRenderDiagnostics(10)
+	if len(diagnostics) != 1 {
+		t.Fatalf("recent diagnostics len = %d, want 1: %#v", len(diagnostics), diagnostics)
+	}
+	diagnostic := diagnostics[0]
+	if diagnostic.Route != "__config" || len(diagnostic.Errors) != 1 {
+		t.Fatalf("config diagnostics = %#v", diagnostic)
+	}
+	if diagnostic.Errors[0].Type != "CONFIG" || !strings.Contains(diagnostic.Errors[0].Err, "no .hyperbricks or .hyperbricks.yaml files found") {
+		t.Fatalf("config diagnostic error = %#v", diagnostic.Errors[0])
+	}
+}
+
 func TestPreProcessAndPopulateConfigsLoadsYAMLRouteThroughServerRenderFlow(t *testing.T) {
 	shared.Init_configuration()
 	hbConfig := shared.GetHyperBricksConfiguration()

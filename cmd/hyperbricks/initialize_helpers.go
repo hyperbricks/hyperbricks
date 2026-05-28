@@ -300,6 +300,23 @@ func PreProcessAndPopulateHyperbricksConfigurations() {
 	logger := logging.GetLogger()
 	err := PreProcessAndPopulateConfigs()
 	if err != nil {
-		logger.Fatalw("Error preprocessing Hyperbrickss", "error", err)
+		logger.Errorw("Error preprocessing HyperBricks", "error", err)
+		recordConfigDiagnostics([]error{preprocessErrorToComponentError(err)})
+	}
+}
+
+func preprocessErrorToComponentError(err error) shared.ComponentError {
+	message := "error preprocessing HyperBricks"
+	if err != nil {
+		message = err.Error()
+	}
+	return shared.ComponentError{
+		Hash:     shared.HyperScriptErrorHash(message),
+		File:     "__config",
+		Type:     "CONFIG",
+		Path:     "__config",
+		Err:      message,
+		Level:    "ERROR",
+		Rejected: true,
 	}
 }
