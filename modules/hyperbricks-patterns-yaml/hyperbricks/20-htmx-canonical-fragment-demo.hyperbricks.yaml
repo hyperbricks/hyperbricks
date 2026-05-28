@@ -5,7 +5,8 @@ status_demo_shell:
   - inherit: "pattern_site_page"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/layout-shell.html}}"
+      - template:
+          file: patterns/layout-shell.html
       - values:
           section_title: HyperBricks Patterns
           section_intro: "Small, concrete examples of reusable HyperBricks patterns."
@@ -18,7 +19,8 @@ status_demo_summary:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/status-summary.html}}"
+      - template:
+          file: patterns/status-summary.html
 
 status_demo_settings:
   - type: fragment
@@ -26,19 +28,22 @@ status_demo_settings:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/status-settings.html}}"
+      - template:
+          file: patterns/status-settings.html
 
 status_demo_overview_panel:
   - type: tree
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/status-overview.html}}"
+      - template:
+          file: patterns/status-overview.html
 
 status_demo_plugin_panel:
   - type: plugin
   - plugin: "TemplateConfigDemoPlugin__hyperbricks-patterns-yaml@2.0.0"
   - data:
-      template: "{{TEMPLATE:demo.html}}"
+      template:
+        file: demo.html
       class: pattern-plugin-panel
       content: "\"## Plugin panel\\n\\nThis panel is rendered by the **Template Config Plugin** and injected through the same canonical HTMX flow.\""
 
@@ -53,7 +58,8 @@ status_demo_base_view:
   - type: tree
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/status-demo.html}}"
+      - template:
+          file: patterns/status-demo.html
       - values:
           page_url: /status-demo
           fragment_url: /fragments/status-demo

@@ -2,8 +2,20 @@ tailwind:
   - type: plugin
   - plugin: "TailwindcssPlugin@2.0.0"
   - data:
-      input_css: "{{MODULE}}/resources/css/base.css"
-      output_css: "{{MODULE}}/static/css/styles.css"
+      input_css:
+        path:
+          base: module
+          parts:
+            - resources
+            - css
+            - base.css
+      output_css:
+        path:
+          base: module
+          parts:
+            - static
+            - css
+            - styles.css
       signal: "false"
       minify: "true"
       debug: "true"

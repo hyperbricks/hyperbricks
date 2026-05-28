@@ -13,7 +13,7 @@ import (
 type Fields struct {
 	Content  string `mapstructure:"content"`
 	Class    string `mapstructure:"class"`
-	Template string `mapstructure:"template"` // {{TEMPLATE:demo.html}} resolves to string
+	Template string `mapstructure:"template"` // template.file resolves to this string
 }
 
 type TemplateConfigDemoConfig struct {

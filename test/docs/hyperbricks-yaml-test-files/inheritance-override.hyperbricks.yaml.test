@@ -1,7 +1,8 @@
 ==== hyperbricks yaml {!{page}} ====
 base_card:
   - type: template
-  - template: "{{TEMPLATE:cards/card.html}}"
+  - template:
+      file: cards/card.html
   - values:
       title: Base title
       body: Base body
@@ -30,7 +31,7 @@ inherit deep-copies a named object and recursively merges local value overrides 
   "@type": "<HYPERMEDIA>",
   "featured_card": {
     "@type": "<TEMPLATE>",
-    "template": "{{TEMPLATE:cards/card.html}}",
+    "template": "cards/card.html",
     "values": {
       "body": "Base body",
       "theme": {

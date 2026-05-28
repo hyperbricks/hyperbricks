@@ -5,7 +5,8 @@ pattern_docs_shell:
   - inherit: "pattern_site_page"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/docs-shell.html}}"
+      - template:
+          file: patterns/docs-shell.html
 
 pattern_docs_overview:
   - type: fragment
@@ -14,8 +15,10 @@ pattern_docs_overview:
       - plugin: "MarkdownPlugin@2.0.0"
       - data:
           class: pattern-docs-markdown
-          content: |
-            {{FILE:{{MODULE}}/docs/patterns-index.md}}
+          content:
+            file:
+              base: module
+              path: docs/patterns-index.md
 
 pattern_docs_readme:
   - type: fragment
@@ -24,8 +27,10 @@ pattern_docs_readme:
       - plugin: "MarkdownPlugin@2.0.0"
       - data:
           class: pattern-docs-markdown
-          content: |
-            {{FILE:{{MODULE}}/docs/README.md}}
+          content:
+            file:
+              base: module
+              path: docs/README.md
 
 pattern_docs_markdown_plugin:
   - type: fragment
@@ -34,8 +39,10 @@ pattern_docs_markdown_plugin:
       - plugin: "MarkdownPlugin@2.0.0"
       - data:
           class: pattern-docs-markdown
-          content: |
-            {{FILE:{{MODULE}}/docs/markdown-plugin.md}}
+          content:
+            file:
+              base: module
+              path: docs/markdown-plugin.md
 
 pattern_docs_template_config:
   - type: fragment
@@ -44,8 +51,10 @@ pattern_docs_template_config:
       - plugin: "MarkdownPlugin@2.0.0"
       - data:
           class: pattern-docs-markdown
-          content: |
-            {{FILE:{{MODULE}}/docs/template-config-plugin.md}}
+          content:
+            file:
+              base: module
+              path: docs/template-config-plugin.md
 
 pattern_docs_htmx_canonical:
   - type: fragment
@@ -54,8 +63,10 @@ pattern_docs_htmx_canonical:
       - plugin: "MarkdownPlugin@2.0.0"
       - data:
           class: pattern-docs-markdown
-          content: |
-            {{FILE:{{MODULE}}/docs/htmx-canonical-fragment-demo.md}}
+          content:
+            file:
+              base: module
+              path: docs/htmx-canonical-fragment-demo.md
 
 pattern_docs_guarded_page:
   - type: fragment
@@ -64,8 +75,10 @@ pattern_docs_guarded_page:
       - plugin: "MarkdownPlugin@2.0.0"
       - data:
           class: pattern-docs-markdown
-          content: |
-            {{FILE:{{MODULE}}/docs/guarded-page-demo.md}}
+          content:
+            file:
+              base: module
+              path: docs/guarded-page-demo.md
 
 pattern_docs_api_fragment_write:
   - type: fragment
@@ -74,8 +87,10 @@ pattern_docs_api_fragment_write:
       - plugin: "MarkdownPlugin@2.0.0"
       - data:
           class: pattern-docs-markdown
-          content: |
-            {{FILE:{{MODULE}}/docs/api-fragment-write-demo.md}}
+          content:
+            file:
+              base: module
+              path: docs/api-fragment-write-demo.md
 
 pattern_docs_menu_htmx:
   - type: fragment
@@ -84,8 +99,10 @@ pattern_docs_menu_htmx:
       - plugin: "MarkdownPlugin@2.0.0"
       - data:
           class: pattern-docs-markdown
-          content: |
-            {{FILE:{{MODULE}}/docs/menu-htmx-demo.md}}
+          content:
+            file:
+              base: module
+              path: docs/menu-htmx-demo.md
 
 pattern_docs_section_rail:
   - type: fragment
@@ -94,8 +111,10 @@ pattern_docs_section_rail:
       - plugin: "MarkdownPlugin@2.0.0"
       - data:
           class: pattern-docs-markdown
-          content: |
-            {{FILE:{{MODULE}}/docs/config-driven-section-rail.md}}
+          content:
+            file:
+              base: module
+              path: docs/config-driven-section-rail.md
 
 pattern_docs_single_plugin:
   - type: fragment
@@ -104,8 +123,10 @@ pattern_docs_single_plugin:
       - plugin: "MarkdownPlugin@2.0.0"
       - data:
           class: pattern-docs-markdown
-          content: |
-            {{FILE:{{MODULE}}/docs/single-plugin-many-actions.md}}
+          content:
+            file:
+              base: module
+              path: docs/single-plugin-many-actions.md
 
 pattern_docs_route_split:
   - type: fragment
@@ -114,8 +135,10 @@ pattern_docs_route_split:
       - plugin: "MarkdownPlugin@2.0.0"
       - data:
           class: pattern-docs-markdown
-          content: |
-            {{FILE:{{MODULE}}/docs/plugin-vs-api-route-split.md}}
+          content:
+            file:
+              base: module
+              path: docs/plugin-vs-api-route-split.md
 
 app_pattern_docs_overview:
   - inherit: "pattern_docs_shell"

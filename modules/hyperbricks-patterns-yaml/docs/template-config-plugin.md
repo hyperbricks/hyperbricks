@@ -48,12 +48,15 @@ The plugin accepts a standard `<PLUGIN>` brick plus a structured `data` object.
 
 Current example shape:
 
-```hyperbricks
-template_config_demo = <PLUGIN>
-template_config_demo.plugin = TemplateConfigDemoPlugin__hyperbricks-patterns-yaml@2.0.0
-template_config_demo.data.template = {{TEMPLATE:demo.html}}
-template_config_demo.data.content = "# Hello\n\nThis is **cute rendered markdown**."
-template_config_demo.data.class = template_config_demo-content
+```yaml
+template_config_demo:
+  - type: plugin
+  - plugin: TemplateConfigDemoPlugin__hyperbricks-patterns-yaml@2.0.0
+  - data:
+      template:
+        file: demo.html
+      content: "# Hello\n\nThis is **cute rendered markdown**."
+      class: template_config_demo-content
 ```
 
 ### Plugin responsibility
@@ -75,7 +78,7 @@ Preferred output shape:
   "@type": "<TREE>",
   "10": {
     "@type": "<TEMPLATE>",
-    "template": "{{TEMPLATE:demo.html}}",
+    "template": "demo.html",
     "values": {
       "class": "template_config_demo-content",
       "html": "<p>...</p>"
@@ -84,7 +87,7 @@ Preferred output shape:
 }
 ```
 
-The exact value stored in `template` may already be the resolved template marker payload as provided by HyperBricks.
+The exact value stored in `template` is the resolved template key provided by HyperBricks.
 
 ## Current Example
 

@@ -6,7 +6,8 @@ route_split_demo_shell:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/route-split-demo.html}}"
+      - template:
+          file: patterns/route-split-demo.html
 
 route_split_mock_rename_success:
   - type: fragment
@@ -14,7 +15,8 @@ route_split_mock_rename_success:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/mock-postgrest-rename-success.json}}"
+      - template:
+          file: patterns/mock-postgrest-rename-success.json
 
 route_split_mock_rename_conflict:
   - type: fragment
@@ -22,7 +24,8 @@ route_split_mock_rename_conflict:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/mock-postgrest-rename-conflict.json}}"
+      - template:
+          file: patterns/mock-postgrest-rename-conflict.json
 
 route_split_api_rename_success:
   - type: api_fragment_render
@@ -36,7 +39,8 @@ route_split_api_rename_success:
         Accept: application/json
   - querykeys: []
   - body: "{\"p_project_slug\":\"$project\",\"p_asset_id\":$asset_id,\"p_old_path\":\"$old_path\",\"p_new_path\":\"$new_path\"}"
-  - template: "{{TEMPLATE:patterns/route-split-api-result.html}}"
+  - template:
+      file: patterns/route-split-api-result.html
   - response:
       hx_trigger: hb-pattern-route-split-refresh
 
@@ -52,7 +56,8 @@ route_split_api_rename_conflict:
         Accept: application/json
   - querykeys: []
   - body: "{\"p_project_slug\":\"$project\",\"p_asset_id\":$asset_id,\"p_old_path\":\"$old_path\",\"p_new_path\":\"$new_path\"}"
-  - template: "{{TEMPLATE:patterns/route-split-api-conflict-result.html}}"
+  - template:
+      file: patterns/route-split-api-conflict-result.html
   - response:
       hx_trigger: hb-pattern-route-split-refresh
 
@@ -65,7 +70,8 @@ route_split_plugin_import:
       - plugin: "RouteSplitDemoPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: import
-          template: "{{TEMPLATE:patterns/route-split-plugin-result.html}}"
+          template:
+            file: patterns/route-split-plugin-result.html
 
 route_split_refresh_probe:
   - type: fragment

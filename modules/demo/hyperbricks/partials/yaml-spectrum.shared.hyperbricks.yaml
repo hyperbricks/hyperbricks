@@ -1,6 +1,7 @@
 spectrum_card:
   - type: template
-  - template: "{{TEMPLATE:spectrum/card.html}}"
+  - template:
+      file: spectrum/card.html
   - values:
       eyebrow: imported base
       title: Imported card template
@@ -8,12 +9,16 @@ spectrum_card:
       chips:
         - import
         - inheritance
-        - template marker
+        - template.file resolver
 
 spectrum_status_card:
   - type: template
-  - template: "{{TEMPLATE:spectrum/status.html}}"
+  - template:
+      file: spectrum/status.html
   - values:
       title: Fragment status
       message: This fragment body is inherited from an imported YAML component.
-      source: "{{HYPERBRICKS}}/partials/yaml-spectrum.shared.hyperbricks.yaml"
+      source:
+        path:
+          base: hyperbricks
+          path: partials/yaml-spectrum.shared.hyperbricks.yaml

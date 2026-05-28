@@ -6,7 +6,8 @@ guarded_demo_shell:
   - nocache: "true"
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/guarded-shell.html}}"
+      - template:
+          file: patterns/guarded-shell.html
       - values:
           section_title: Guarded Page Demo
           section_intro: "Native route guard protects the secret page. A small auth plugin handles login, logout, and authorize endpoints for HTMX and normal browser requests."
@@ -17,19 +18,22 @@ guarded_demo_login_panel:
   - type: tree
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/guarded-login.html}}"
+      - template:
+          file: patterns/guarded-login.html
 
 guarded_demo_forbidden_panel:
   - type: tree
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/guarded-forbidden.html}}"
+      - template:
+          file: patterns/guarded-forbidden.html
 
 guarded_demo_secret_panel:
   - type: tree
   - template_10:
       - type: template
-      - template: "{{TEMPLATE:patterns/guarded-secret.html}}"
+      - template:
+          file: patterns/guarded-secret.html
 
 guarded_demo_auth_login:
   - type: fragment

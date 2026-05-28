@@ -169,7 +169,7 @@ func TestMaterializeResolvesInheritanceWithDeepMerge(t *testing.T) {
 	doc, err := ParseBytes([]byte(`
 my_component:
   - type: template
-  - template: "{{TEMPLATE:video.html}}"
+  - template: video.html
   - values:
       width: 300
       height: 400
@@ -251,7 +251,95 @@ page:
 	}
 }
 
-func TestProcessBytesPreprocessesAndKeepsScalarsAsStrings(t *testing.T) {
+func TestProcessBytesValueResolversMaterializeRuntimeShape(t *testing.T) {
+	assetsDir := t.TempDir()
+	heroPath := filepath.Join(assetsDir, "hero.html")
+	if err := os.WriteFile(heroPath, []byte("<section>From file</section>\n<p>Second line</p>\n"), 0o644); err != nil {
+		t.Fatalf("write file resolver asset: %v", err)
+	}
+
+	result, err := ProcessBytes([]byte(`
+vars:
+  route: pipeline
+  cta:
+    text: Start now
+  asset:
+    name: hero.png
+
+page:
+  - type: hypermedia
+  - route:
+      var: route
+  - title:
+      format: "%s %s"
+      args:
+        - config: site.title
+        - env:
+            name: HB_PAGE_SUFFIX
+            default: Page
+  - hero:
+      - type: html
+      - value:
+          file:
+            base: resources
+            path: hero.html
+  - cta:
+      - type: text
+      - value:
+          var: cta.text
+  - details:
+      - type: template
+      - values:
+          width: 800
+          enabled: true
+          empty:
+          resource:
+            path:
+              base: resources
+              parts:
+                - var: asset.name
+`), Options{
+		Config: map[string]interface{}{
+			"site": map[string]interface{}{
+				"title": "Pipeline Page",
+			},
+		},
+		Paths: PathMarkers{
+			Resources: assetsDir,
+		},
+	})
+	if err != nil {
+		t.Fatalf("ProcessBytes() error = %v", err)
+	}
+	if !strings.Contains(result.Preprocessed, "var: route") {
+		t.Fatalf("resolver source should not be string-preprocessed:\n%s", result.Preprocessed)
+	}
+
+	page := result.Materialized["page"].(map[string]interface{})
+	if page["route"] != "pipeline" || page["title"] != "Pipeline Page Page" {
+		t.Fatalf("page fields = %#v", page)
+	}
+	hero := page["hero"].(map[string]interface{})
+	if !strings.Contains(hero["value"].(string), "<section>From file</section>") {
+		t.Fatalf("file resolver content = %#v", hero["value"])
+	}
+	details := page["details"].(map[string]interface{})
+	values := details["values"].(map[string]interface{})
+	if values["width"] != "800" {
+		t.Fatalf("width = %#v, want string", values["width"])
+	}
+	if values["enabled"] != "true" {
+		t.Fatalf("enabled = %#v, want string", values["enabled"])
+	}
+	if values["empty"] != "" {
+		t.Fatalf("empty = %#v, want empty string", values["empty"])
+	}
+	if values["resource"] != filepath.Join(assetsDir, "hero.png") {
+		t.Fatalf("resource = %#v", values["resource"])
+	}
+}
+
+func TestProcessBytesLegacyMarkersRemainCompatibility(t *testing.T) {
 	assetsDir := t.TempDir()
 	heroPath := filepath.Join(assetsDir, "hero.html")
 	if err := os.WriteFile(heroPath, []byte("<section>From file</section>\n<p>Second line</p>\n"), 0o644); err != nil {
@@ -271,13 +359,6 @@ page:
   - cta:
       - type: text
       - value: "{{ENV:CTA_TEXT}}"
-  - details:
-      - type: template
-      - values:
-          width: 800
-          enabled: true
-          empty:
-          resource: "{{RESOURCES}}/hero.png"
 `), Options{
 		Variables: map[string]string{
 			"route": "pipeline",
@@ -312,19 +393,42 @@ page:
 	if !strings.Contains(hero["value"].(string), "# literal comment in block") {
 		t.Fatalf("block scalar comment was not preserved: %#v", hero["value"])
 	}
-	details := page["details"].(map[string]interface{})
-	values := details["values"].(map[string]interface{})
-	if values["width"] != "800" {
-		t.Fatalf("width = %#v, want string", values["width"])
+	cta := page["cta"].(map[string]interface{})
+	if cta["value"] != "Start now" {
+		t.Fatalf("cta value = %#v", cta["value"])
 	}
-	if values["enabled"] != "true" {
-		t.Fatalf("enabled = %#v, want string", values["enabled"])
+}
+
+func TestProcessBytesValueResolverDiagnosticsAreRecoverable(t *testing.T) {
+	result, err := ProcessBytes([]byte(`
+page:
+  - type: hypermedia
+  - route:
+      var: missing.route
+  - title:
+      env:
+        name: HB_MISSING_TITLE
+        required: true
+`), Options{})
+	if err != nil {
+		t.Fatalf("ProcessBytes() error = %v", err)
 	}
-	if values["empty"] != "" {
-		t.Fatalf("empty = %#v, want empty string", values["empty"])
+	page := result.Materialized["page"].(map[string]interface{})
+	if page["route"] != "" || page["title"] != "" {
+		t.Fatalf("page recovered values = %#v", page)
 	}
-	if values["resource"] != filepath.Join(assetsDir, "hero.png") {
-		t.Fatalf("resource = %#v", values["resource"])
+	if len(result.Diagnostics) != 2 {
+		t.Fatalf("diagnostics len = %d, want 2: %#v", len(result.Diagnostics), result.Diagnostics)
+	}
+	diagnosticsByCode := map[string]Diagnostic{}
+	for _, diagnostic := range result.Diagnostics {
+		diagnosticsByCode[diagnostic.Code] = diagnostic
+	}
+	if diagnostic := diagnosticsByCode["var_missing"]; diagnostic.Path != "page.route" {
+		t.Fatalf("var diagnostic = %#v", diagnostic)
+	}
+	if diagnostic := diagnosticsByCode["env_missing"]; diagnostic.Level != "error" || diagnostic.Path != "page.title" {
+		t.Fatalf("env diagnostic = %#v", diagnostic)
 	}
 }
 
@@ -365,7 +469,39 @@ fragment:
 	}
 }
 
-func TestProcessBytesStoresTemplateMarkerContent(t *testing.T) {
+func TestProcessBytesTemplateFileResolverStoresTemplateContent(t *testing.T) {
+	oldparser.ClearTemplateStore()
+	t.Cleanup(oldparser.ClearTemplateStore)
+
+	templateDir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(templateDir, "cards"), 0o755); err != nil {
+		t.Fatalf("mkdir template dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(templateDir, "cards", "card.html"), []byte("<article>{{.title}}</article>"), 0o644); err != nil {
+		t.Fatalf("write template file: %v", err)
+	}
+
+	result, err := ProcessBytes([]byte(`
+card:
+  - type: template
+  - template:
+      file: cards/card.html
+  - values:
+      title: Stored template
+`), Options{TemplateDir: templateDir})
+	if err != nil {
+		t.Fatalf("ProcessBytes() error = %v", err)
+	}
+	card := result.Materialized["card"].(map[string]interface{})
+	if card["template"] != "cards/card.html" {
+		t.Fatalf("template field = %#v", card["template"])
+	}
+	if content, found := oldparser.GetTemplate("cards/card.html"); !found || content != "<article>{{.title}}</article>" {
+		t.Fatalf("stored template = %q, found=%v", content, found)
+	}
+}
+
+func TestProcessBytesLegacyTemplateMarkerStoresTemplateContent(t *testing.T) {
 	oldparser.ClearTemplateStore()
 	t.Cleanup(oldparser.ClearTemplateStore)
 

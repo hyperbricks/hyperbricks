@@ -13,6 +13,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/core"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
 	"go.uber.org/zap"
 )
 
@@ -27,7 +28,7 @@ func TestProcessScriptIndexesAPIFragmentRenderWithScalarTemplate(t *testing.T) {
 			"section":  "api",
 			"endpoint": "http://example.invalid/api",
 			"method":   "GET",
-			"template": "{{TEMPLATE:api/panel.html}}",
+			"template": "api/panel.html",
 		},
 	}
 	tempConfigs := make(map[string]map[string]interface{})
@@ -60,7 +61,7 @@ func TestProcessScriptRejectsFragmentScalarTemplate(t *testing.T) {
 			"route":    "bad-fragment",
 			"title":    "Bad Fragment",
 			"section":  "api",
-			"template": "{{TEMPLATE:fragment.html}}",
+			"template": "fragment.html",
 		},
 	}
 	tempConfigs := make(map[string]map[string]interface{})
@@ -75,6 +76,32 @@ func TestProcessScriptRejectsFragmentScalarTemplate(t *testing.T) {
 
 	if _, ok := tempConfigs["bad-fragment"]; ok {
 		t.Fatalf("expected scalar <FRAGMENT>.template to be rejected")
+	}
+}
+
+func TestYAMLDiagnosticsToComponentErrorsFormatsResolverDiagnosticsWithoutZeroPosition(t *testing.T) {
+	errors := yamlDiagnosticsToComponentErrors([]yamlparser.Diagnostic{{
+		Level:   "warning",
+		Code:    "var_missing",
+		Source:  "/tmp/project/page.hyperbricks.yaml",
+		Path:    "page.title",
+		Message: `missing var "title"; resolved as empty string`,
+	}})
+	if len(errors) != 1 {
+		t.Fatalf("errors len = %d, want 1", len(errors))
+	}
+	diagnostic, ok := errors[0].(shared.ComponentError)
+	if !ok {
+		t.Fatalf("diagnostic type = %T, want shared.ComponentError", errors[0])
+	}
+	if diagnostic.Level != "WARNING" || diagnostic.File != "page" || diagnostic.Path != "page.title" {
+		t.Fatalf("diagnostic fields = %#v", diagnostic)
+	}
+	if strings.Contains(diagnostic.Err, ":0:0") {
+		t.Fatalf("diagnostic should not expose zero YAML position: %#v", diagnostic.Err)
+	}
+	if !strings.Contains(diagnostic.Err, "(source: page.hyperbricks.yaml)") {
+		t.Fatalf("diagnostic source = %#v", diagnostic.Err)
 	}
 }
 
@@ -328,23 +355,37 @@ func TestPreProcessAndPopulateConfigsSupportsYAMLRuntimePreprocessing(t *testing
 page:
   - type: hypermedia
   - route: runtime-pipeline
-  - title: "{{ENV:HB_TEST_TITLE}}"
+  - title:
+      env: HB_TEST_TITLE
   - main:
       - type: tree
       - hero:
           - inherit: shared_hero
-          - value: |
-              {{FILE:{{RESOURCES}}/runtime-body.html}}
+          - value:
+              file:
+                base: resources
+                path: runtime-body.html
       - card:
           - type: template
-          - template: "{{TEMPLATE:cards/runtime-card.html}}"
+          - template:
+              file: cards/runtime-card.html
           - values:
-              heading: "{{CONF:site.heading}}"
-              module_var: "{{VAR:module}}"
-              module_marker: "{{MODULE}}"
-              templates_marker: "{{TEMPLATES}}"
-              static_marker: "{{STATIC}}"
-              hyperbricks_marker: "{{HYPERBRICKS}}"
+              heading:
+                config: site.heading
+              module_var:
+                var: module
+              module_marker:
+                path:
+                  base: module
+              templates_marker:
+                path:
+                  base: templates
+              static_marker:
+                path:
+                  base: static
+              hyperbricks_marker:
+                path:
+                  base: hyperbricks
 `
 	if err := os.WriteFile(filepath.Join(hyperbricksDir, "page.hyperbricks.yaml"), []byte(yamlSource), 0644); err != nil {
 		t.Fatalf("write YAML route fixture: %v", err)
