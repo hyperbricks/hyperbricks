@@ -442,6 +442,29 @@ card:
 This replaces the old template marker style. Go template syntax inside template
 files or inline template strings is not interpreted by the YAML resolver.
 
+`template.file` can be used anywhere a YAML value named `template` appears, not
+only on `<TEMPLATE>` components. This is useful for plugin configuration that
+passes a template key to plugin code while still preloading the template content:
+
+```yaml
+onboarding_starter_list:
+  - type: plugin
+  - plugin: projectonboarding
+  - data:
+      template:
+        file: app/partials/onboarding/starter-list.html
+```
+
+The plugin receives:
+
+```yaml
+data:
+  template: app/partials/onboarding/starter-list.html
+```
+
+and the template content is available through the runtime template provider
+under that same key.
+
 ## Multiline Strings
 
 Use YAML block scalars for multiline HTML, CSS, JavaScript, JSON, or text.
@@ -549,6 +572,17 @@ Current behavior:
 
 Render diagnostics include request/source context such as file, path, key, type,
 and message where available.
+
+## Test Corpus
+
+Executable YAML fixtures live in:
+
+```text
+test/docs/hyperbricks-yaml-test-files/
+```
+
+Those fixtures document source input, materialized JSON, expected diagnostics
+where relevant, and rendered output.
 
 ## Package Configuration
 
