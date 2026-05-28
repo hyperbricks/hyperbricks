@@ -36,7 +36,7 @@ status_demo_overview_panel:
 
 status_demo_plugin_panel:
   - type: plugin
-  - plugin: "TemplateConfigDemoPlugin__hyperbricks-patterns@2.0.0"
+  - plugin: "TemplateConfigDemoPlugin__hyperbricks-patterns-yaml@2.0.0"
   - data:
       template: "{{TEMPLATE:demo.html}}"
       class: pattern-plugin-panel

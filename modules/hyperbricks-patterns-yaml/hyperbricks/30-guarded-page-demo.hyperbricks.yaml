@@ -37,7 +37,7 @@ guarded_demo_auth_login:
   - nocache: "true"
   - plugin_10:
       - type: plugin
-      - plugin: "GuardedDemoAuthPlugin__hyperbricks-patterns@1.0.0"
+      - plugin: "GuardedDemoAuthPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: login
           cookie_name: guarded_demo_session
@@ -50,7 +50,7 @@ guarded_demo_auth_logout:
   - nocache: "true"
   - plugin_10:
       - type: plugin
-      - plugin: "GuardedDemoAuthPlugin__hyperbricks-patterns@1.0.0"
+      - plugin: "GuardedDemoAuthPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: logout
           cookie_name: guarded_demo_session
@@ -62,7 +62,7 @@ guarded_demo_auth_authorize:
   - nocache: "true"
   - plugin_10:
       - type: plugin
-      - plugin: "GuardedDemoAuthPlugin__hyperbricks-patterns@1.0.0"
+      - plugin: "GuardedDemoAuthPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: authorize
           cookie_name: guarded_demo_session
@@ -110,7 +110,7 @@ guarded_demo_secret_shell:
 app_guarded_demo_secret:
   - inherit: "guarded_demo_secret_shell"
   - route: guarded-demo/secret
-  - "10":
-      values:
-        content_right:
-          - inherit: "guarded_demo_secret_panel.template_10"
+  - template_10:
+      - values:
+          content_right:
+            - inherit: "guarded_demo_secret_panel.template_10"

@@ -13,7 +13,7 @@ workflow_actions_demo_landing:
   - nocache: "true"
   - plugin_10:
       - type: plugin
-      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns@1.0.0"
+      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: landing
           template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
@@ -24,7 +24,7 @@ workflow_actions_demo_lookup:
   - nocache: "true"
   - plugin_10:
       - type: plugin
-      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns@1.0.0"
+      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: lookup
           template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
@@ -35,7 +35,7 @@ workflow_actions_demo_signup:
   - nocache: "true"
   - plugin_10:
       - type: plugin
-      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns@1.0.0"
+      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: signup
           template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
@@ -46,7 +46,7 @@ workflow_actions_demo_complete:
   - nocache: "true"
   - plugin_10:
       - type: plugin
-      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns@1.0.0"
+      - plugin: "WorkflowActionsDemoPlugin__hyperbricks-patterns-yaml@1.0.0"
       - data:
           action: complete
           template: "{{TEMPLATE:patterns/workflow-actions-stage.html}}"
