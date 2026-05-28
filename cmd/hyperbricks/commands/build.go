@@ -2,6 +2,7 @@ package commands
 
 import (
 	"archive/zip"
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -18,6 +19,7 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/spf13/cobra"
+	"go.yaml.in/yaml/v4"
 )
 
 var (
@@ -179,7 +181,7 @@ func runBuild() (buildResult, error) {
 		return result, fmt.Errorf("module directory not found: %s", moduleDir)
 	}
 
-	configPath := filepath.Join(moduleDir, "package.hyperbricks")
+	configPath := filepath.Join(moduleDir, PackageConfigFileName)
 	configContent, err := os.ReadFile(configPath)
 	if err != nil {
 		return result, fmt.Errorf("failed to read %s: %w", configPath, err)
@@ -425,7 +427,7 @@ func computeBuildID(files []buildFile, updatedConfig []byte) (string, error) {
 		}
 
 		var content []byte
-		if rel == "package.hyperbricks" {
+		if rel == PackageConfigFileName {
 			content = updatedConfig
 		} else {
 			data, err := os.ReadFile(file.abs)
@@ -472,7 +474,7 @@ func writeArchive(outPath string, files []buildFile, updatedConfig []byte) error
 			continue
 		}
 
-		if header.Name == "package.hyperbricks" {
+		if header.Name == PackageConfigFileName {
 			if _, err := writer.Write(updatedConfig); err != nil {
 				archiveFile.Close()
 				return err
@@ -602,154 +604,87 @@ func findBuildIndex(index buildIndex, buildID string) (buildIndexRow, bool) {
 }
 
 func updatePackageMetadata(configPath string, content string, updates map[string]string) (string, string, error) {
-	lines := strings.Split(content, "\n")
-
-	hyperStart := -1
-	metaStart := -1
-	metaEnd := -1
-	depth := 0
-	hyperDepth := -1
-	metaDepth := -1
-
-	for i, line := range lines {
-		trimmed := strings.TrimSpace(stripLineComment(line))
-		if trimmed == "" {
-			continue
-		}
-		if strings.HasSuffix(trimmed, "{") {
-			keyPart := strings.TrimSpace(strings.TrimSuffix(trimmed, "{"))
-			if eq := strings.Index(keyPart, "="); eq != -1 {
-				keyPart = strings.TrimSpace(keyPart[:eq])
-			}
-			if keyPart == "hyperbricks" && hyperStart == -1 {
-				hyperStart = i
-				hyperDepth = depth + 1
-			} else if keyPart == "metadata" && hyperStart != -1 && metaStart == -1 && depth >= hyperDepth {
-				metaStart = i
-				metaDepth = depth + 1
-			}
-			depth++
-			continue
-		}
-		if trimmed == "}" {
-			depth--
-			if metaStart != -1 && metaEnd == -1 && depth < metaDepth {
-				metaEnd = i
-			}
-		}
+	var root yaml.Node
+	if err := yaml.Unmarshal([]byte(content), &root); err != nil {
+		return "", "", fmt.Errorf("parse package config %s: %w", configPath, err)
 	}
-
-	var missing []string
-	if hyperStart == -1 {
-		missing = append(missing, "hyperbricks")
+	body := yamlDocumentBody(&root)
+	hyper := yamlMappingValue(body, "hyperbricks")
+	if hyper == nil || hyper.Kind != yaml.MappingNode {
+		return "", "", fmt.Errorf("missing required objects in %s: hyperbricks", configPath)
 	}
-	if hyperStart != -1 && metaStart == -1 {
-		missing = append(missing, "hyperbricks.metadata")
+	metadata := yamlMappingValue(hyper, "metadata")
+	if metadata == nil || metadata.Kind != yaml.MappingNode {
+		return "", "", fmt.Errorf("missing required objects in %s: hyperbricks.metadata", configPath)
 	}
-	if len(missing) > 0 {
-		return "", "", fmt.Errorf("missing required objects in %s: %s", configPath, strings.Join(missing, ", "))
-	}
-	if metaEnd == -1 {
-		return "", "", fmt.Errorf("missing closing brace for hyperbricks.metadata in %s", configPath)
-	}
-
-	keyLines := make(map[string][]int)
-	fieldIndent := ""
-	moduleVersion := ""
-
-	for i := metaStart + 1; i < metaEnd; i++ {
-		lineWithoutComment := strings.TrimSpace(stripLineComment(lines[i]))
-		if lineWithoutComment == "" {
-			continue
-		}
-		if !strings.Contains(lineWithoutComment, "=") {
-			continue
-		}
-		if fieldIndent == "" {
-			fieldIndent = leadingWhitespace(lines[i])
-		}
-
-		key, value := splitAssignment(lineWithoutComment)
-		keyLines[key] = append(keyLines[key], i)
-		if key == "moduleversion" && moduleVersion == "" {
-			moduleVersion = cleanValue(value)
-		}
-	}
-
-	if moduleVersion == "" {
+	moduleVersion := yamlScalarValue(yamlMappingValue(metadata, "moduleversion"))
+	if strings.TrimSpace(moduleVersion) == "" {
 		return "", "", fmt.Errorf("missing required field in %s: hyperbricks.metadata.moduleversion", configPath)
 	}
 
-	if fieldIndent == "" {
-		fieldIndent = leadingWhitespace(lines[metaStart]) + "    "
-	}
-
 	for key, value := range updates {
-		if indexes, ok := keyLines[key]; ok {
-			for _, idx := range indexes {
-				lines[idx] = replaceAssignmentLine(lines[idx], key, value)
-			}
+		yamlSetMappingScalar(metadata, key, value)
+	}
+
+	var out bytes.Buffer
+	encoder := yaml.NewEncoder(&out)
+	encoder.SetIndent(2)
+	if err := encoder.Encode(&root); err != nil {
+		return "", "", fmt.Errorf("encode package config %s: %w", configPath, err)
+	}
+	if err := encoder.Close(); err != nil {
+		return "", "", fmt.Errorf("encode package config %s: %w", configPath, err)
+	}
+
+	return strings.TrimRight(out.String(), "\n"), strings.TrimSpace(moduleVersion), nil
+}
+
+func yamlDocumentBody(root *yaml.Node) *yaml.Node {
+	if root == nil {
+		return nil
+	}
+	if root.Kind == yaml.DocumentNode && len(root.Content) > 0 {
+		return root.Content[0]
+	}
+	return root
+}
+
+func yamlMappingValue(node *yaml.Node, key string) *yaml.Node {
+	if node == nil || node.Kind != yaml.MappingNode {
+		return nil
+	}
+	for i := 0; i < len(node.Content); i += 2 {
+		if node.Content[i].Value == key {
+			return node.Content[i+1]
 		}
 	}
-
-	insertOrder := []string{"module", "commit", "built_at", "hyperbricks", "format", "format_version"}
-	var newLines []string
-	for _, key := range insertOrder {
-		if _, ok := keyLines[key]; ok {
-			continue
-		}
-		newLines = append(newLines, fmt.Sprintf("%s%s = %s", fieldIndent, key, updates[key]))
-	}
-	if len(newLines) > 0 {
-		before := append([]string{}, lines[:metaEnd]...)
-		after := append([]string{}, lines[metaEnd:]...)
-		lines = append(before, newLines...)
-		lines = append(lines, after...)
-	}
-
-	return strings.Join(lines, "\n"), moduleVersion, nil
+	return nil
 }
 
-func stripLineComment(line string) string {
-	if idx := strings.Index(line, "#"); idx != -1 {
-		return line[:idx]
+func yamlScalarValue(node *yaml.Node) string {
+	if node == nil || node.Kind != yaml.ScalarNode {
+		return ""
 	}
-	return line
+	return node.Value
 }
 
-func splitAssignment(line string) (string, string) {
-	parts := strings.SplitN(line, "=", 2)
-	key := strings.TrimSpace(parts[0])
-	value := ""
-	if len(parts) > 1 {
-		value = strings.TrimSpace(parts[1])
+func yamlSetMappingScalar(node *yaml.Node, key string, value string) {
+	if node == nil || node.Kind != yaml.MappingNode {
+		return
 	}
-	return key, value
-}
-
-func cleanValue(value string) string {
-	value = strings.TrimSpace(value)
-	value = strings.Trim(value, "\"'")
-	return value
-}
-
-func leadingWhitespace(line string) string {
-	for i, r := range line {
-		if r != ' ' && r != '\t' {
-			return line[:i]
+	for i := 0; i < len(node.Content); i += 2 {
+		if node.Content[i].Value == key {
+			node.Content[i+1] = yamlScalarNode(value)
+			return
 		}
 	}
-	return line
+	node.Content = append(node.Content, yamlScalarNode(key), yamlScalarNode(value))
 }
 
-func replaceAssignmentLine(line string, key string, value string) string {
-	indent := leadingWhitespace(line)
-	comment := ""
-	if idx := strings.Index(line, "#"); idx != -1 {
-		comment = strings.TrimSpace(line[idx:])
+func yamlScalarNode(value string) *yaml.Node {
+	return &yaml.Node{
+		Kind:  yaml.ScalarNode,
+		Tag:   "!!str",
+		Value: value,
 	}
-	if comment != "" {
-		return fmt.Sprintf("%s%s = %s %s", indent, key, value, comment)
-	}
-	return fmt.Sprintf("%s%s = %s", indent, key, value)
 }

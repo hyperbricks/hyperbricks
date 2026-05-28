@@ -50,19 +50,20 @@ hyperbricks start -m my-module --port 8080 \
 
 Equivalent package configuration:
 
-```hyperbricks
-hyperbricks {
-  server {
-    runtime_gateway {
-      enabled = true
-      domain = runtime.local
-      domains = live.local,runtime.local
-      host_suffix = -runtime.hyperbricks.eu
-      host_suffixes = -live.hyperbricks.eu,-staging.hyperbricks.eu
-      resolver = http://127.0.0.1:8080/resolve-runtime
-    }
-  }
-}
+```yaml
+hyperbricks:
+  server:
+    runtime_gateway:
+      enabled: true
+      domain: runtime.local
+      domains:
+        - live.local
+        - runtime.local
+      host_suffix: -runtime.hyperbricks.eu
+      host_suffixes:
+        - -live.hyperbricks.eu
+        - -staging.hyperbricks.eu
+      resolver: http://127.0.0.1:8080/resolve-runtime
 ```
 
 `domain` is the original single-domain setting and remains supported.

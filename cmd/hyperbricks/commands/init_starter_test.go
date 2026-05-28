@@ -12,6 +12,14 @@ import (
 	"testing"
 )
 
+const testStarterPackageConfig = `hyperbricks:
+  directories:
+    hyperbricks:
+      path:
+        base: module
+        path: hyperbricks
+`
+
 func TestResolveStarterVersionPrefersLatestCompatible(t *testing.T) {
 	starters := map[string]map[string]StarterMeta{
 		"hello-world": {
@@ -59,7 +67,7 @@ func TestRunInitStarterGetDownloadsAndExtractsStarter(t *testing.T) {
 				Name:                  "hello-world",
 				Version:               "1.0.0",
 				Path:                  "starters/hello-world/1.0.0",
-				Entrypoint:            "package.hyperbricks",
+				Entrypoint:            "package.hyperbricks.yaml",
 				Description:           "Minimal starter",
 				CompatibleHyperbricks: []string{">=0.8.0-alpha"},
 			},
@@ -67,14 +75,14 @@ func TestRunInitStarterGetDownloadsAndExtractsStarter(t *testing.T) {
 	}
 
 	archiveBytes := createTestStarterArchive(t, map[string]string{
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/package.hyperbricks":                 "$module = {{MODULE_PATH}}\n",
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/package.hyperbricks.yaml":            testStarterPackageConfig,
 		"hyperbricks-starters-main/starters/hello-world/1.0.0/hyperbricks/hello-world.hyperbricks": "page = <TEXT>\npage.value = HELLO WORLD!\n",
 		"hyperbricks-starters-main/starters/hello-world/1.0.0/templates/.gitkeep":                  "",
 		"hyperbricks-starters-main/starters/hello-world/1.0.0/static/.gitkeep":                     "",
 		"hyperbricks-starters-main/starters/hello-world/1.0.0/resources/.gitkeep":                  "",
 		"hyperbricks-starters-main/starters/hello-world/1.0.0/rendered/.gitkeep":                   "",
 		"hyperbricks-starters-main/starters/hello-world/1.0.0/logs/.gitkeep":                       "",
-		"hyperbricks-starters-main/starters/other-starter/1.0.0/package.hyperbricks":               "ignored\n",
+		"hyperbricks-starters-main/starters/other-starter/1.0.0/package.hyperbricks.yaml":          "ignored: true\n",
 		"hyperbricks-starters-main/README.md":                                                      "ignored\n",
 	})
 
@@ -120,7 +128,7 @@ func TestRunInitStarterGetDownloadsAndExtractsStarter(t *testing.T) {
 	}
 
 	expectedFiles := []string{
-		filepath.Join("modules", "example-site", "package.hyperbricks"),
+		filepath.Join("modules", "example-site", "package.hyperbricks.yaml"),
 		filepath.Join("modules", "example-site", "hyperbricks", "hello-world.hyperbricks"),
 		filepath.Join("modules", "example-site", "templates"),
 		filepath.Join("modules", "example-site", "static"),
@@ -156,14 +164,14 @@ func TestRunInitStarterGetRejectsNonEmptyModuleDir(t *testing.T) {
 				Name:                  "hello-world",
 				Version:               "1.0.0",
 				Path:                  "starters/hello-world/1.0.0",
-				Entrypoint:            "package.hyperbricks",
+				Entrypoint:            "package.hyperbricks.yaml",
 				CompatibleHyperbricks: []string{">=0.8.0-alpha"},
 			},
 		},
 	}
 
 	archiveBytes := createTestStarterArchive(t, map[string]string{
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/package.hyperbricks": "$module = {{MODULE_PATH}}\n",
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/package.hyperbricks.yaml": testStarterPackageConfig,
 	})
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

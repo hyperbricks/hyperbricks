@@ -55,7 +55,7 @@ type APIConfig struct {
 	JwtSecret        string            `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-fragment-jwt-secret.hyperbricks}}"`
 	JwtClaims        map[string]string `mapstructure:"jwtclaims" description:"JWT claims to include when signing the bearer token" example:"{!{api-render-fragment-jwt-claims.hyperbricks}}"`
 	Debug            bool              `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-fragment-debug.hyperbricks}}"`
-	DebugPanel       bool              `mapstructure:"debugpanel" description:"Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks" example:"{!{api-render-fragment-debug.hyperbricks}}"`
+	DebugPanel       bool              `mapstructure:"debugpanel" description:"Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml" example:"{!{api-render-fragment-debug.hyperbricks}}"`
 }
 
 // FragmentConfigGetName returns the HyperBricks type associated with the FragmentConfig.

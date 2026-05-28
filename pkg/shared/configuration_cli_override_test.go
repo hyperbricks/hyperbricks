@@ -30,7 +30,7 @@ func resetConfigurationForTest(t *testing.T) {
 func writePackageConfig(t *testing.T, root string, moduleRoot string, content string) {
 	t.Helper()
 
-	configPath := filepath.Join(root, moduleRoot, "package.hyperbricks")
+	configPath := filepath.Join(root, moduleRoot, PackageConfigFileName)
 	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
 		t.Fatalf("failed to create package config directory: %v", err)
 	}
@@ -63,33 +63,40 @@ func TestLoadHyperBricksConfigurationAppliesCLIOverrides(t *testing.T) {
 	root := t.TempDir()
 	moduleRoot := filepath.ToSlash(filepath.Join("runtime", "current"))
 	writePackageConfig(t, root, moduleRoot, `
-$module = stale/module
-
-hyperbricks {
-	mode = development
-
-	server {
-		port = 7070
-		runtime_gateway {
-			enabled = false
-			domain = config.runtime.local
-			host_suffix = -config-runtime.local
-			resolver = http://config-resolver.local/resolve
-		}
-	}
-
-	directories {
-		render = {{VAR:module}}/rendered
-		templates = {{VAR:module}}/templates
-		hyperbricks = {{VAR:module}}/hyperbricks
-		static = {{VAR:module}}/static
-		resources = {{VAR:module}}/resources
-	}
-}
+hyperbricks:
+  mode: development
+  server:
+    port: 7070
+    runtime_gateway:
+      enabled: false
+      domain: config.runtime.local
+      host_suffix: -config-runtime.local
+      resolver: http://config-resolver.local/resolve
+  directories:
+    render:
+      path:
+        base: module
+        path: rendered
+    templates:
+      path:
+        base: module
+        path: templates
+    hyperbricks:
+      path:
+        base: module
+        path: hyperbricks
+    static:
+      path:
+        base: module
+        path: static
+    resources:
+      path:
+        base: module
+        path: resources
 `)
 	chdirForTest(t, root)
 
-	Module = filepath.Join(moduleRoot, "package.hyperbricks")
+	Module = filepath.Join(moduleRoot, PackageConfigFileName)
 	SetRuntimeOptions(RuntimeOptions{
 		ModuleRoot: moduleRoot,
 
@@ -136,17 +143,13 @@ func TestLoadHyperBricksConfigurationKeepsConfiguredPortWhenCLIPortIsDefault(t *
 	root := t.TempDir()
 	moduleRoot := filepath.ToSlash(filepath.Join("modules", "demo"))
 	writePackageConfig(t, root, moduleRoot, `
-$module = modules/demo
-
-hyperbricks {
-	server {
-		port = 7070
-	}
-}
+hyperbricks:
+  server:
+    port: 7070
 `)
 	chdirForTest(t, root)
 
-	Module = filepath.Join(moduleRoot, "package.hyperbricks")
+	Module = filepath.Join(moduleRoot, PackageConfigFileName)
 	SetRuntimeOptions(RuntimeOptions{
 		ModuleRoot: moduleRoot,
 		Port:       8080,
@@ -166,17 +169,13 @@ func TestLoadHyperBricksConfigurationIgnoresRuntimePortWithoutOverride(t *testin
 	root := t.TempDir()
 	moduleRoot := filepath.ToSlash(filepath.Join("modules", "demo"))
 	writePackageConfig(t, root, moduleRoot, `
-$module = modules/demo
-
-hyperbricks {
-	server {
-		port = 7070
-	}
-}
+hyperbricks:
+  server:
+    port: 7070
 `)
 	chdirForTest(t, root)
 
-	Module = filepath.Join(moduleRoot, "package.hyperbricks")
+	Module = filepath.Join(moduleRoot, PackageConfigFileName)
 	SetRuntimeOptions(RuntimeOptions{
 		ModuleRoot: moduleRoot,
 		Port:       9099,

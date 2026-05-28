@@ -234,7 +234,7 @@ func normalizeStarterMeta(name string, version string, meta StarterMeta) Starter
 		meta.Path = filepath.ToSlash(filepath.Join("starters", name, version))
 	}
 	if strings.TrimSpace(meta.Entrypoint) == "" {
-		meta.Entrypoint = "package.hyperbricks"
+		meta.Entrypoint = "package.hyperbricks.yaml"
 	}
 	return meta
 }

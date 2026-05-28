@@ -7,7 +7,7 @@ For optional pre-render authorization on route-owning composites, see [Composite
 This document explains how Hyperbricks resolves routes and how to configure
 clean URLs (like `/help`) for `.html` content (like `help.html`).
 
-The routing config lives in your module's `package.hyperbricks` under
+The routing config lives in your module's `package.hyperbricks.yaml` under
 `hyperbricks.server.routing`.
 
 ## Defaults (when missing)
@@ -92,16 +92,17 @@ Notes:
 
 Example block:
 
-```
-hyperbricks {
-  server {
-    routing {
-      clean_urls = true
-      index_files = [ index.html, index.htm ]
-      extensions = [ html, htm ]
-    }
-  }
-}
+```yaml
+hyperbricks:
+  server:
+    routing:
+      clean_urls: true
+      index_files:
+        - index.html
+        - index.htm
+      extensions:
+        - html
+        - htm
 ```
 
 Fields:
@@ -120,16 +121,17 @@ Fields:
 
 ### 1) Default behavior (clean URLs on)
 
-```
-hyperbricks {
-  server {
-    routing {
-      clean_urls = true
-      index_files = [ index.html, index.htm ]
-      extensions = [ html, htm ]
-    }
-  }
-}
+```yaml
+hyperbricks:
+  server:
+    routing:
+      clean_urls: true
+      index_files:
+        - index.html
+        - index.htm
+      extensions:
+        - html
+        - htm
 ```
 
 Routes resolve like this:
@@ -142,14 +144,11 @@ Routes resolve like this:
 
 ### 2) Strict routing (clean URLs off)
 
-```
-hyperbricks {
-  server {
-    routing {
-      clean_urls = false
-    }
-  }
-}
+```yaml
+hyperbricks:
+  server:
+    routing:
+      clean_urls: false
 ```
 
 Routes resolve like this:
@@ -162,14 +161,13 @@ Routes resolve like this:
 
 ### 3) Custom index files
 
-```
-hyperbricks {
-  server {
-    routing {
-      index_files = [ home.html, index.html ]
-    }
-  }
-}
+```yaml
+hyperbricks:
+  server:
+    routing:
+      index_files:
+        - home.html
+        - index.html
 ```
 
 Routes resolve like this:
@@ -180,14 +178,13 @@ Routes resolve like this:
 
 ### 4) Custom extensions
 
-```
-hyperbricks {
-  server {
-    routing {
-      extensions = [ html, xhtml ]
-    }
-  }
-}
+```yaml
+hyperbricks:
+  server:
+    routing:
+      extensions:
+        - html
+        - xhtml
 ```
 
 Routes resolve like this:

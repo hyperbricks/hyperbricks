@@ -6,12 +6,12 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
+	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
 
 	"github.com/mitchellh/mapstructure"
 
@@ -101,6 +101,8 @@ const (
 	DEBUG_MODE       string = "debug"
 	DEVELOPMENT_MODE string = "development"
 )
+
+const PackageConfigFileName = "package.hyperbricks.yaml"
 
 // Config structure with default values.
 type Config struct {
@@ -240,22 +242,13 @@ func loadHyperBricksConfiguration() *Config {
 
 	configFilePath := filepath.Join(dir, Module)
 
-	// Read the configuration file
-	configContent, err := os.ReadFile(configFilePath)
-	if err != nil {
-		GetLogger().Info("Failed to read config file", "path", configFilePath, "error", err)
-	}
-
 	runtimeOptions := GetRuntimeOptions()
 	moduleDir := runtimeModuleRoot(runtimeOptions)
-	rootPattern := regexp.MustCompile(`{{MODULE_PATH}}`)
-	_config := rootPattern.ReplaceAllString(string(configContent), moduleDir)
-	if strings.TrimSpace(moduleDir) != "" {
-		_config = applyModuleRootOverride(_config, moduleDir)
+	parsedConfig, err := LoadPackageConfigMap(configFilePath, moduleDir)
+	if err != nil {
+		GetLogger().Info("Failed to load config file", "path", configFilePath, "error", err)
+		parsedConfig = map[string]interface{}{}
 	}
-
-	// Parse the configuration file content
-	parsedConfig := parser.ParseHyperScript(_config)
 	parser.HbConfig = parsedConfig
 	GetLogger().Infof("Parsed Configuration %v", parsedConfig)
 
@@ -371,13 +364,40 @@ func loadHyperBricksConfiguration() *Config {
 		GetLogger().Debug("Setting mode to debug mode")
 		GetLogger().Debugf("Final Configuration", "config", config)
 	} else {
-		GetLogger().Debugf("Invalid mode set in package.hyperbricks %v", config.Mode)
+		GetLogger().Debugf("Invalid mode set in package config %v", config.Mode)
 
 		GetLogger().Warn("Setting mode not recognised, setting to live (production) mode")
 		config.Mode = LIVE_MODE
 	}
 	fmt.Println("loaded " + Module)
 	return &config
+}
+
+func LoadPackageConfigMap(configFilePath string, moduleDir string) (map[string]interface{}, error) {
+	result, err := yamlparser.ProcessConfigFile(configFilePath, packageConfigYAMLOptions(moduleDir))
+	if err != nil {
+		return nil, err
+	}
+	return result.Materialized, nil
+}
+
+func packageConfigYAMLOptions(moduleDir string) yamlparser.Options {
+	modulesRoot := filepath.Dir(moduleDir)
+	return yamlparser.Options{
+		Variables: map[string]string{
+			"module": moduleDir,
+		},
+		Paths: yamlparser.PathMarkers{
+			ModuleRoot:  modulesRoot,
+			Root:        ".",
+			Module:      moduleDir,
+			Resources:   filepath.Join(moduleDir, "resources"),
+			Templates:   filepath.Join(moduleDir, "templates"),
+			Static:      filepath.Join(moduleDir, "static"),
+			HyperBricks: filepath.Join(moduleDir, "hyperbricks"),
+			Render:      filepath.Join(moduleDir, "rendered"),
+		},
+	}
 }
 
 // decodeConfig decodes map to struct with defaults using mapstructure.
@@ -427,32 +447,4 @@ func decodeConfig(input interface{}, output interface{}) error {
 	}
 
 	return decoder.Decode(input)
-}
-
-func applyModuleRootOverride(content string, moduleRoot string) string {
-	lines := strings.Split(content, "\n")
-	replaced := false
-
-	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if !strings.HasPrefix(trimmed, "$module") {
-			continue
-		}
-		parts := strings.SplitN(trimmed, "=", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		if strings.TrimSpace(parts[0]) != "$module" {
-			continue
-		}
-		indent := line[:len(line)-len(strings.TrimLeft(line, " \t"))]
-		lines[i] = fmt.Sprintf("%s$module = %s", indent, moduleRoot)
-		replaced = true
-	}
-
-	if !replaced {
-		lines = append([]string{fmt.Sprintf("$module = %s", moduleRoot), ""}, lines...)
-	}
-
-	return strings.Join(lines, "\n")
 }

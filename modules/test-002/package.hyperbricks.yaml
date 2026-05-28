@@ -1,0 +1,75 @@
+myconf:
+  some: value
+
+hyperbricks:
+  mode: development
+
+  metadata:
+    module: default
+    moduleversion: "1.0"
+    format: hra
+    format_version: "1"
+    commit: unknown
+    built_at: "1970-01-01T00:00:00Z"
+    hyperbricks: v0.0.0
+
+  debug:
+    level: debugging
+
+  development:
+    watch: true
+    reload: true
+    dashboard: false
+
+  live:
+    cache: 30s
+
+  server:
+    port: 8080
+    beautify: true
+    self_closing_tags: true
+    routing:
+      clean_urls: true
+      index_files:
+        - index.html
+        - index.htm
+      extensions:
+        - html
+        - htm
+    read_timeout: 5s
+    write_timeout: 10s
+    idle_timeout: 20s
+    keep_alives_enabled: true
+
+  system:
+    metrics_watch_interval: 10s
+
+  rate_limit:
+    requests_per_second: 100
+    burst: 500
+
+  plugins:
+    enabled: []
+
+  directories:
+    render:
+      path:
+        base: module
+        path: rendered
+    static:
+      path:
+        base: module
+        path: static
+    resources:
+      path:
+        base: module
+        path: resources
+    plugins: ./bin/plugins/
+    templates:
+      path:
+        base: module
+        path: templates
+    hyperbricks:
+      path:
+        base: module
+        path: hyperbricks

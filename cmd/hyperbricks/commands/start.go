@@ -90,7 +90,7 @@ func NewStartCommand() *cobra.Command {
 					return
 				}
 				ModuleRoot = runtimeDir
-				ModuleConfigPath = filepath.Join(runtimeDir, "package.hyperbricks")
+				ModuleConfigPath = filepath.Join(runtimeDir, "package.hyperbricks.yaml")
 			}
 
 			configPath := GetModuleConfigPath()

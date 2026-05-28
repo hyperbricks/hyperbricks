@@ -175,7 +175,7 @@ Request-time API fragment that forwards to an upstream endpoint and renders the 
 | --- | --- | --- | --- |
 | `body` | `string` | no | Raw request body. Use a scalar string value; nested objects are not parsed for this field. |
 | `debug` | `bool` | no | Debug the response data |
-| `debugpanel` | `bool` | no | Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks |
+| `debugpanel` | `bool` | no | Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml |
 | `enclose` | `string` | no | Wrapping property for the fragment rendered output |
 | `endpoint` | `string` | yes | The API endpoint |
 | `guard.auth.cookie` | `string` | no | Cookie name used to resolve the request token |
@@ -563,7 +563,7 @@ Remote API fetcher that renders the upstream response through a template.
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `body` | `string` | no | Raw request body. Use a scalar string value; nested objects are not parsed for this field. |
 | `debug` | `bool` | no | Debug the response data |
-| `debugpanel` | `bool` | no | Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks |
+| `debugpanel` | `bool` | no | Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
 | `endpoint` | `string` | yes | The API endpoint |
 | `headers` | `map` | no | Optional HTTP headers for API requests |

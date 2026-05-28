@@ -45,10 +45,11 @@ Global plugins come from the public plugin index and are shared across modules.
 
 Enable global plugins in a module using the compiled binary name without the `.so` suffix:
 
-```hcl
-plugins {
-  enabled = [ EsbuildPlugin@2.0.0 ]
-}
+```yaml
+hyperbricks:
+  plugins:
+    enabled:
+      - EsbuildPlugin@2.0.0
 ```
 
 ---
@@ -79,10 +80,11 @@ modules/<module>/plugins/<name>/<version>/manifest.json
 
 Enable custom plugins with the full custom config name, without `.so`:
 
-```hcl
-plugins {
-  enabled = [ MyPlugin__test-003@1.0.0 ]
-}
+```yaml
+hyperbricks:
+  plugins:
+    enabled:
+      - MyPlugin__test-003@1.0.0
 ```
 
 ---
@@ -215,19 +217,20 @@ __<module>@<version>
 
 Global plugin names in the module config remain in the Global Plugins view.
 
-Example `package.hyperbricks`:
+Example `package.hyperbricks.yaml`:
 
-```hcl
-plugins {
-  enabled = [ MyPlugin__test-003@1.0.0 ]
-}
+```yaml
+hyperbricks:
+  plugins:
+    enabled:
+      - MyPlugin__test-003@1.0.0
 ```
 
 Rules:
 
 * Do not include `.so` in the config name.
-* There is no automatic update of `package.hyperbricks`.
-* Update `package.hyperbricks` manually when adding, removing, or renaming plugins.
+* There is no automatic update of `package.hyperbricks.yaml`.
+* Update `package.hyperbricks.yaml` manually when adding, removing, or renaming plugins.
 
 ---
 

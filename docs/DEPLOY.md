@@ -87,7 +87,7 @@ Optional flags:
 
 Runtime extraction:
 - Archives are extracted to `deploy/<module>/runtime/<build_id>/`
-- The server reads `package.hyperbricks` from that runtime directory
+- The server reads `package.hyperbricks.yaml` from that runtime directory
 
 If you need a fresh extraction, remove the runtime folder and start again:
 
@@ -97,7 +97,7 @@ hyperbricks start --deploy -m <module>
 ```
 
 ## Port Allocation
-- If `server.port` exists in the archive's `package.hyperbricks`, prefer it.
+- If `server.port` exists in the archive's `package.hyperbricks.yaml`, prefer it.
   If the port is already in use, auto-assign the next free port starting from
   that value.
 - Otherwise assign the first free port starting at `deploy.remote.port_start` (default 8080).
@@ -629,7 +629,7 @@ Export output:
   build ID and restart with `--deploy`.
 
 ## Required Metadata
-Each module must have `hyperbricks.metadata.moduleversion` in `package.hyperbricks`.
+Each module must have `hyperbricks.metadata.moduleversion` in `package.hyperbricks.yaml`.
 The `build` command injects or updates dynamic fields on archive creation.
 
 ## Future Considerations

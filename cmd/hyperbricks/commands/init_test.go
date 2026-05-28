@@ -30,13 +30,39 @@ func TestDefaultInitAssetsWriteYAMLHelloWorld(t *testing.T) {
 	createHbConfig("demo")
 	extractEmbeddedFiles("demo")
 
-	packagePath := filepath.Join("modules", "demo", "package.hyperbricks")
+	packagePath := filepath.Join("modules", "demo", "package.hyperbricks.yaml")
 	packageContent, err := os.ReadFile(packagePath)
 	if err != nil {
-		t.Fatalf("read package.hyperbricks: %v", err)
+		t.Fatalf("read package.hyperbricks.yaml: %v", err)
 	}
-	if !strings.Contains(string(packageContent), "$module = modules/demo") {
-		t.Fatalf("package.hyperbricks does not point at demo module:\n%s", packageContent)
+	for _, want := range []string{
+		"hyperbricks:",
+		"directories:",
+		"base: module",
+		"path: hyperbricks",
+	} {
+		if !strings.Contains(string(packageContent), want) {
+			t.Fatalf("package.hyperbricks.yaml missing %q:\n%s", want, packageContent)
+		}
+	}
+	packageResult, err := yamlparser.ProcessConfigFile(packagePath, yamlparser.Options{
+		Paths: yamlparser.PathMarkers{
+			Module: filepath.Join("modules", "demo"),
+		},
+	})
+	if err != nil {
+		t.Fatalf("process package.hyperbricks.yaml: %v", err)
+	}
+	hyperbricks, ok := packageResult.Materialized["hyperbricks"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("package hyperbricks = %T, want map", packageResult.Materialized["hyperbricks"])
+	}
+	directories, ok := hyperbricks["directories"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("package directories = %T, want map", hyperbricks["directories"])
+	}
+	if directories["render"] != filepath.Join("modules", "demo", "rendered") {
+		t.Fatalf("package render directory = %#v", directories["render"])
 	}
 
 	yamlPath := filepath.Join("modules", "demo", "hyperbricks", "hello-world.hyperbricks.yaml")

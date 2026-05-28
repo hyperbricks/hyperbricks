@@ -54,7 +54,7 @@ server {
 - `server.idle_timeout`
 - `server.keep_alives_enabled`
 
-That means the values in `package.hyperbricks` are the values the live server actually uses.
+That means the values in `package.hyperbricks.yaml` are the values the live server actually uses.
 
 ## Where `nocache` must be set
 
@@ -82,7 +82,7 @@ fragment.nocache = true
 
 ## Defaults when omitted
 
-If you do not set these values in `package.hyperbricks`, HyperBricks uses these runtime defaults:
+If you do not set these values in `package.hyperbricks.yaml`, HyperBricks uses these runtime defaults:
 
 - `read_timeout = 5s`
 - `write_timeout = 10s`
@@ -111,17 +111,14 @@ If you later want benchmark-style one-request-per-connection behavior, make that
 
 ## Example config
 
-```hyperbricks
-hyperbricks {
-    mode = live
-
-    server {
-        read_timeout = 5s
-        write_timeout = 10s
-        idle_timeout = 20s
-        keep_alives_enabled = true
-    }
-}
+```yaml
+hyperbricks:
+  mode: live
+  server:
+    read_timeout: 5s
+    write_timeout: 10s
+    idle_timeout: 20s
+    keep_alives_enabled: true
 ```
 
 ## Starter profiles
@@ -132,63 +129,48 @@ These are not strict rules. They are practical starting points for common use ca
 
 Use this for a brochure site, simple blog, or small HTMX app with normal page traffic.
 
-```hyperbricks
-hyperbricks {
-    mode = live
-
-    live {
-        cache = 30s
-    }
-
-    server {
-        read_timeout = 5s
-        write_timeout = 10s
-        idle_timeout = 20s
-        keep_alives_enabled = true
-    }
-}
+```yaml
+hyperbricks:
+  mode: live
+  live:
+    cache: 30s
+  server:
+    read_timeout: 5s
+    write_timeout: 10s
+    idle_timeout: 20s
+    keep_alives_enabled: true
 ```
 
 ### 2. Balanced production app
 
 Use this when the site is public, sits behind a reverse proxy, and serves a steady mix of full pages and fragments.
 
-```hyperbricks
-hyperbricks {
-    mode = live
-
-    live {
-        cache = 15s
-    }
-
-    server {
-        read_timeout = 10s
-        write_timeout = 15s
-        idle_timeout = 30s
-        keep_alives_enabled = true
-    }
-}
+```yaml
+hyperbricks:
+  mode: live
+  live:
+    cache: 15s
+  server:
+    read_timeout: 10s
+    write_timeout: 15s
+    idle_timeout: 30s
+    keep_alives_enabled: true
 ```
 
 ### 3. Heavy pages or slower clients
 
 Use this when pages are larger, some clients are slower, or the app serves more expensive responses and needs slightly looser network deadlines.
 
-```hyperbricks
-hyperbricks {
-    mode = live
-
-    live {
-        cache = 10s
-    }
-
-    server {
-        read_timeout = 15s
-        write_timeout = 30s
-        idle_timeout = 60s
-        keep_alives_enabled = true
-    }
-}
+```yaml
+hyperbricks:
+  mode: live
+  live:
+    cache: 10s
+  server:
+    read_timeout: 15s
+    write_timeout: 30s
+    idle_timeout: 60s
+    keep_alives_enabled: true
 ```
 
 ## When to disable keep-alives
@@ -197,17 +179,14 @@ Set `keep_alives_enabled = false` only when you explicitly want that behavior an
 
 Example:
 
-```hyperbricks
-hyperbricks {
-    mode = live
-
-    server {
-        read_timeout = 5s
-        write_timeout = 10s
-        idle_timeout = 20s
-        keep_alives_enabled = false
-    }
-}
+```yaml
+hyperbricks:
+  mode: live
+  server:
+    read_timeout: 5s
+    write_timeout: 10s
+    idle_timeout: 20s
+    keep_alives_enabled: false
 ```
 
 That usually means more connection churn and less efficient normal browser or proxy traffic.

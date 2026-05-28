@@ -510,7 +510,7 @@ func (api *deployLocalServer) handleLocalCustomPluginsList(w http.ResponseWriter
 		return
 	}
 
-	configPath := filepath.Join(api.modulesDir, module, "package.hyperbricks")
+	configPath := filepath.Join(api.modulesDir, module, "package.hyperbricks.yaml")
 	pluginRoot := filepath.Join(api.modulesDir, module, "plugins")
 	pluginDir := filepath.Join(api.workingDir, "bin", "plugins")
 
@@ -1272,7 +1272,7 @@ func listLocalModules(modulesDir string) ([]string, error) {
 			continue
 		}
 		name := entry.Name()
-		configPath := filepath.Join(modulesDir, name, "package.hyperbricks")
+		configPath := filepath.Join(modulesDir, name, "package.hyperbricks.yaml")
 		if _, err := os.Stat(configPath); err != nil {
 			continue
 		}
