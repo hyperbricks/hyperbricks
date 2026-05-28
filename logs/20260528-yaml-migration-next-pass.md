@@ -212,7 +212,7 @@ Guardrails:
 
 ### 1. YAML Dependency Hardening
 
-The current implementation uses:
+The original implementation used:
 
 ```go
 import "gopkg.in/yaml.v3"
@@ -254,6 +254,29 @@ go test ./test/docs -run TestYAMLProfile -count=1
 go test ./test/docs -run TestYAMLDocumentation -count=1
 go test ./cmd/hyperbricks -run TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule -count=1
 ```
+
+Applied on 2026-05-28:
+
+```text
+pkg/yaml-parser/parser.go now imports go.yaml.in/yaml/v4
+go.mod requires go.yaml.in/yaml/v4 v4.0.0-rc.4
+gopkg.in/yaml.v3 is no longer a direct HyperBricks parser dependency
+```
+
+Verification after applying the dependency switch:
+
+```text
+go test ./pkg/yaml-parser -count=1
+go test ./test/docs -run TestYAMLProfile -count=1
+go test ./test/docs -run TestYAMLDocumentation -count=1
+go test ./cmd/hyperbricks -run TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule -count=1
+go vet ./...
+go test ./... -count=1
+```
+
+Note: `gopkg.in/yaml.v3` can still appear in `go.sum` transitively. At the
+time of the switch, `go mod why -m gopkg.in/yaml.v3` traced it through
+`go.uber.org/zap/zapcore.test`, not through the HyperBricks YAML parser.
 
 ### 2. Duplicate Item Name Normalization
 

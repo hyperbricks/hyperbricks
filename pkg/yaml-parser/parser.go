@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v4"
 )
 
 const orderKey = "@order"
