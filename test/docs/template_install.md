@@ -1,17 +1,13 @@
 ## Hyperbricks Configuration Reference
 
-This section explains the configuration options for your `package.hyperbricks` file.
+This section explains the configuration options for your `package.hyperbricks.yaml` file.
 
 ---
 
-### Module Declaration
+### Module Paths
 
-```ini
-# Set the current module path
-$module = modules/default
-```
-
-Use the `$module` variable to reference the module directory throughout your configuration.
+The runtime supplies the active module directory to package config path resolvers.
+Use explicit YAML path objects when a field should point inside the current module.
 
 ---
 
@@ -19,10 +15,9 @@ Use the `$module` variable to reference the module directory throughout your con
 
 You can define global config blocks (e.g., for custom use):
 
-```ini
-myconf {
-    some = value
-}
+```yaml
+myconf:
+  some: value
 ```
 
 Only the `hyperbricks` object is processed by the runtime. Other objects are allowed for organizational or user-defined purposes.
@@ -31,7 +26,7 @@ Only the `hyperbricks` object is processed by the runtime. Other objects are all
 
 ### Main Configuration Block
 
-#### `hyperbricks { ... }`
+#### `hyperbricks:`
 
 This is the primary configuration block.
 
@@ -39,8 +34,9 @@ This is the primary configuration block.
 
 ### Mode Settings
 
-```ini
-mode = development
+```yaml
+hyperbricks:
+  mode: development
 ```
 
 Available modes:
@@ -53,10 +49,10 @@ Available modes:
 
 ### Debugging
 
-```ini
-debug {
-    level = debugging
-}
+```yaml
+hyperbricks:
+  debug:
+    level: debugging
 ```
 
 Controls Go-level debug verbosity.
@@ -65,13 +61,13 @@ Controls Go-level debug verbosity.
 
 ### Development Mode
 
-```ini
-development {
-    watch = true
-    reload = true
-    frontend_errors = false
-    dashboard = false
-}
+```yaml
+hyperbricks:
+  development:
+    watch: true
+    reload: true
+    frontend_errors: false
+    dashboard: false
 ```
 
 These settings are active only in `development` mode.
@@ -80,10 +76,10 @@ These settings are active only in `development` mode.
 
 ### Live Mode
 
-```ini
-live {
-    cache = 10s
-}
+```yaml
+hyperbricks:
+  live:
+    cache: 10s
 ```
 
 * Sets cache duration for rendered pages.
@@ -93,15 +89,15 @@ live {
 
 ### Server Settings
 
-```ini
-server {
-    port = 8080
-    beautify = true
-    read_timeout = 5s
-    write_timeout = 10s
-    idle_timeout = 20s
-    keep_alives_enabled = true
-}
+```yaml
+hyperbricks:
+  server:
+    port: 8080
+    beautify: true
+    read_timeout: 5s
+    write_timeout: 10s
+    idle_timeout: 20s
+    keep_alives_enabled: true
 ```
 
 If these settings are omitted, HyperBricks uses the same defaults shown above: `read_timeout = 5s`, `write_timeout = 10s`, `idle_timeout = 20s`, and `keep_alives_enabled = true`.
@@ -112,10 +108,10 @@ Adjust timeout values based on traffic level. Keep-alives are enabled by default
 
 ### System Settings
 
-```ini
-system {
-    metrics_watch_interval = 10s
-}
+```yaml
+hyperbricks:
+  system:
+    metrics_watch_interval: 10s
 ```
 
 Interval for system ticker to gather and report metrics.
@@ -124,11 +120,11 @@ Interval for system ticker to gather and report metrics.
 
 ### Rate Limiting
 
-```ini
-rate_limit {
-    requests_per_second = 100
-    burst = 500
-}
+```yaml
+hyperbricks:
+  rate_limit:
+    requests_per_second: 100
+    burst: 500
 ```
 
 Control traffic with configurable request and burst limits. Adjust for your traffic level.
@@ -137,11 +133,12 @@ Control traffic with configurable request and burst limits. Adjust for your traf
 
 ### Plugins
 
-```ini
-plugins {
-    # Example:
-    # enabled = [ MyPlugin@1.0.0, OtherPlugin@1.0.0 ]
-}
+```yaml
+hyperbricks:
+  plugins:
+    enabled:
+      - MyPlugin@1.0.0
+      - OtherPlugin@1.0.0
 ```
 
 Enable plugins by listing their exact config names without the `.so` suffix. Use `hyperbricks plugin help` and `hyperbricks plugin list` for details.
@@ -151,16 +148,30 @@ See plugin section on how to create and/or install plugins for Hyperbricks.
 
 ### Directory Settings
 
-```ini
-directories {
-    render      = {{VAR:module}}/rendered
-    static      = {{VAR:module}}/static
-    resources   = {{VAR:module}}/resources
-    plugins     = ./bin/plugins/
-    templates   = {{VAR:module}}/templates
-    hyperbricks = {{VAR:module}}/hyperbricks
-    # logs = {{VAR:module}}/logs
-}
+```yaml
+hyperbricks:
+  directories:
+    render:
+      path:
+        base: module
+        path: rendered
+    static:
+      path:
+        base: module
+        path: static
+    resources:
+      path:
+        base: module
+        path: resources
+    plugins: ./bin/plugins/
+    templates:
+      path:
+        base: module
+        path: templates
+    hyperbricks:
+      path:
+        base: module
+        path: hyperbricks
 ```
 
 | Key           | Purpose                                                 |
@@ -186,7 +197,7 @@ someproject/
 ├── resources/
 ├── static/
 ├── templates/
-└── package.hyperbricks
+└── package.hyperbricks.yaml
 ```
 
 ---
@@ -244,7 +255,7 @@ Stores template files used during rendering.
 
 ---
 
-#### `package.hyperbricks`
+#### `package.hyperbricks.yaml`
 
 Module entry point.
 
@@ -332,7 +343,7 @@ someproject/
 ├── resources/
 ├── static/
 ├── templates/
-└── package.hyperbricks
+└── package.hyperbricks.yaml
 ```
 
 Always run Hyperbricks CLI from the **project root** (parent of `modules/`).
@@ -439,13 +450,17 @@ To enable plugins, they must be compiled for the currently installed version of 
 This can be done automatically using:
  hyperbricks plugin install <name>@<plugin_version> 
 
-* To preload the plugin, add the config name to your package.hyperbricks
+* To preload the plugin, add the config name to your package.hyperbricks.yaml
 * under the `plugins.enabled` array.
 * Plugin binaries are compiled as `<Binary>@<plugin_version>.so`, but runtime config omits `.so`.
-```
-plugins {
-  enabled = [ EsbuildPlugin@1.0.0, LoremIpsumPlugin@1.0.0, MarkdownPlugin@1.0.0, TailwindcssPlugin@1.0.0 ]
-}
+```yaml
+hyperbricks:
+  plugins:
+    enabled:
+      - EsbuildPlugin@1.0.0
+      - LoremIpsumPlugin@1.0.0
+      - MarkdownPlugin@1.0.0
+      - TailwindcssPlugin@1.0.0
 ```
 ---
 
@@ -509,14 +524,15 @@ hyperbricks plugin update markdown
 
 ## Using Installed Plugins
 
-To enable a plugin in your module, add its config name without `.so` to the `plugins.enabled` list in `package.hyperbricks`.
+To enable a plugin in your module, add its config name without `.so` to the `plugins.enabled` list in `package.hyperbricks.yaml`.
 
 Example:
 
-```ini
-plugins {
-    enabled = [ Markdown@1.0.0 ]
-}
+```yaml
+hyperbricks:
+  plugins:
+    enabled:
+      - Markdown@1.0.0
 ```
 
 > Plugin binary filenames follow the format `<CamelCaseName>@<version>.so`; config names omit the `.so` suffix.

@@ -174,7 +174,7 @@ someproject/
 ├── resources/
 ├── static/
 ├── templates/
-└── package.hyperbricks
+└── package.hyperbricks.yaml
 ```
 
 Directory purposes:
@@ -185,7 +185,7 @@ rendered/      Static output from `hyperbricks static`.
 resources/     Raw assets, JS sources, Tailwind config, markdown, data.
 static/        Public files served directly.
 templates/     Go templates used by `<TEMPLATE>`.
-package.hyperbricks Module entrypoint and runtime config.
+package.hyperbricks.yaml Module entrypoint and runtime config.
 ```
 
 Run the HyperBricks CLI from the project root, usually the parent of `modules/`.
@@ -242,7 +242,7 @@ Important commands:
 
 ```text
 build          Build runtime archive `.hra` or `.zip`.
-init           Create package.hyperbricks and module directories.
+init           Create package.hyperbricks.yaml and module directories.
 init-starter   List or install official starters.
 plugin         Manage plugins.
 select         Select active module.
@@ -286,7 +286,7 @@ modules/someproject/
 ├── resources/
 ├── static/
 ├── templates/
-└── package.hyperbricks
+└── package.hyperbricks.yaml
 ```
 
 ## Initialize from starter
@@ -393,19 +393,14 @@ Deploy API: http://localhost:9090
 SSH:        localhost:2222
 ```
 
-## package.hyperbricks
+## package.hyperbricks.yaml
 
-A typical package starts with:
-
-```hyperbricks
-$module = modules/default
-```
+The runtime supplies the active module directory to package config path resolvers.
 
 The main runtime config is inside:
 
-```hyperbricks
-hyperbricks {
-}
+```yaml
+hyperbricks: {}
 ```
 
 Only the `hyperbricks` object is processed by the runtime. Other objects may be used for organization.
@@ -414,8 +409,9 @@ Only the `hyperbricks` object is processed by the runtime. Other objects may be 
 
 Available modes:
 
-```hyperbricks
-mode = development
+```yaml
+hyperbricks:
+  mode: development
 ```
 
 Modes:
@@ -428,29 +424,23 @@ debug         Verbose diagnostics.
 
 ## Development config
 
-```hyperbricks
-hyperbricks {
-  mode = development
-
-  development {
-    watch = true
-    reload = true
-    frontend_errors = false
-    dashboard = false
-  }
-}
+```yaml
+hyperbricks:
+  mode: development
+  development:
+    watch: true
+    reload: true
+    frontend_errors: false
+    dashboard: false
 ```
 
 ## Live config
 
-```hyperbricks
-hyperbricks {
-  mode = live
-
-  live {
-    cache = 10s
-  }
-}
+```yaml
+hyperbricks:
+  mode: live
+  live:
+    cache: 10s
 ```
 
 Go-style durations are valid:
@@ -465,46 +455,54 @@ Go-style durations are valid:
 
 Defaults:
 
-```hyperbricks
-hyperbricks {
-  server {
-    port = 8080
-    beautify = true
-    read_timeout = 5s
-    write_timeout = 10s
-    idle_timeout = 20s
-    keep_alives_enabled = true
-  }
-}
+```yaml
+hyperbricks:
+  server:
+    port: 8080
+    beautify: true
+    read_timeout: 5s
+    write_timeout: 10s
+    idle_timeout: 20s
+    keep_alives_enabled: true
 ```
 
 Keep-alives should usually stay enabled.
 
 ## Rate limiting
 
-```hyperbricks
-hyperbricks {
-  rate_limit {
-    requests_per_second = 100
-    burst = 500
-  }
-}
+```yaml
+hyperbricks:
+  rate_limit:
+    requests_per_second: 100
+    burst: 500
 ```
 
 ## Directory config
 
-```hyperbricks
-hyperbricks {
-  directories {
-    render      = {{VAR:module}}/rendered
-    static      = {{VAR:module}}/static
-    resources   = {{VAR:module}}/resources
-    plugins     = ./bin/plugins/
-    templates   = {{VAR:module}}/templates
-    hyperbricks = {{VAR:module}}/hyperbricks
-    # logs      = {{VAR:module}}/logs
-  }
-}
+```yaml
+hyperbricks:
+  directories:
+    render:
+      path:
+        base: module
+        path: rendered
+    static:
+      path:
+        base: module
+        path: static
+    resources:
+      path:
+        base: module
+        path: resources
+    plugins: ./bin/plugins/
+    templates:
+      path:
+        base: module
+        path: templates
+    hyperbricks:
+      path:
+        base: module
+        path: hyperbricks
 ```
 
 ## Runtime gateway
@@ -531,17 +529,14 @@ hyperbricks start -m my-module --port 8080 \
 
 Config example:
 
-```hyperbricks
-hyperbricks {
-  server {
-    runtime_gateway {
-      enabled = true
-      domain = runtime.local
-      host_suffix = -runtime.hyperbricks.eu
-      resolver = http://127.0.0.1:8080/resolve-runtime
-    }
-  }
-}
+```yaml
+hyperbricks:
+  server:
+    runtime_gateway:
+      enabled: true
+      domain: runtime.local
+      host_suffix: -runtime.hyperbricks.eu
+      resolver: http://127.0.0.1:8080/resolve-runtime
 ```
 
 Rules:
@@ -574,14 +569,15 @@ Compiled binaries live in:
 ./bin/plugins
 ```
 
-Enable plugins in `package.hyperbricks` using the compiled binary name without `.so`.
+Enable plugins in `package.hyperbricks.yaml` using the compiled binary name without `.so`.
 
 Example:
 
-```hyperbricks
-plugins {
-  enabled = [ MarkdownPlugin@1.0.0 ]
-}
+```yaml
+hyperbricks:
+  plugins:
+    enabled:
+      - MarkdownPlugin@1.0.0
 ```
 
 ## Plugin CLI
@@ -619,10 +615,11 @@ Output:
 
 Config usage:
 
-```hyperbricks
-plugins {
-  enabled = [ EsbuildPlugin@2.0.0 ]
-}
+```yaml
+hyperbricks:
+  plugins:
+    enabled:
+      - EsbuildPlugin@2.0.0
 ```
 
 ## Custom plugins
@@ -647,10 +644,11 @@ Output:
 
 Config usage:
 
-```hyperbricks
-plugins {
-  enabled = [ MyPlugin__test-003@1.0.0 ]
-}
+```yaml
+hyperbricks:
+  plugins:
+    enabled:
+      - MyPlugin__test-003@1.0.0
 ```
 
 Build custom plugin:
@@ -1022,7 +1020,7 @@ When editing a HyperBricks project:
 5. Use `<FRAGMENT>` for HTMX partials.
 6. Use `<TREE>` or `<TEMPLATE>` for repeated structure.
 7. Use `@macro` only when repetition is material.
-8. Keep `package.hyperbricks` plugin names exact.
+8. Keep `package.hyperbricks.yaml` plugin names exact.
 9. Never include `.so` in `plugins.enabled`.
 10. For custom plugins, include `__<module>@<version>` in the config name.
 11. Do not assume plugin binaries are valid; rebuild if version compatibility is uncertain.

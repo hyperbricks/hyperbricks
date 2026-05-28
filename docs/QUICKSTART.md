@@ -29,7 +29,7 @@ rootdir/
         ├── resources/
         ├── static/
         ├── templates/
-        └── package.hyperbricks
+        └── package.hyperbricks.yaml
 ```
 
 > Always run the CLI from `rootdir/` (the parent of `modules/`).

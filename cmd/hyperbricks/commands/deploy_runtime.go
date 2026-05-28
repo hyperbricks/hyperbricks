@@ -37,7 +37,7 @@ func ResolveDeployArchive(module string, deployDir string, buildID string) (stri
 
 func EnsureRuntimeExtracted(archivePath string, deployDir string, module string, buildID string) (string, error) {
 	runtimeDir := filepath.Join(deployDir, module, runtimeDirName, buildID)
-	configPath := filepath.Join(runtimeDir, "package.hyperbricks")
+	configPath := filepath.Join(runtimeDir, "package.hyperbricks.yaml")
 	if _, err := os.Stat(configPath); err == nil {
 		return runtimeDir, nil
 	}

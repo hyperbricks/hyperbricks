@@ -949,7 +949,7 @@ func cloneHandledResponseData(response *shared.HandledResponse) *shared.HandledR
 }
 
 // errorTemplate is the embedded Go template as a string
-// {{safe "<!--  Begin Frontend Errors [development.frontend_errors = true] in package.hyperbricks  -->"}}
+// {{safe "<!--  Begin Frontend Errors [development.frontend_errors = true] in package.hyperbricks.yaml  -->"}}
 // {{safe "<!-- No Errors -->"}}{{end}}
 const errorTemplate = `{{if .HasErrors}}
 	<script>

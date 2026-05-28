@@ -10,6 +10,8 @@ var (
 	ModuleConfigPath string
 )
 
+const PackageConfigFileName = "package.hyperbricks.yaml"
+
 func GetModuleRoot() string {
 	if strings.TrimSpace(ModuleRoot) != "" {
 		return filepath.Clean(ModuleRoot)
@@ -24,7 +26,7 @@ func GetModuleConfigPath() string {
 	if strings.TrimSpace(ModuleConfigPath) != "" {
 		return filepath.Clean(ModuleConfigPath)
 	}
-	return filepath.Join(GetModuleRoot(), "package.hyperbricks")
+	return filepath.Join(GetModuleRoot(), PackageConfigFileName)
 }
 
 func GetModulesRoot() string {

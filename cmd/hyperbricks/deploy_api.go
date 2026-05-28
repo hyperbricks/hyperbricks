@@ -677,7 +677,7 @@ func (api *deployAPI) handleCustomPluginsList(w http.ResponseWriter, r *http.Req
 	}
 
 	runtimeDir := filepath.Join(api.root, module, "runtime", buildID)
-	configPath := filepath.Join(runtimeDir, "package.hyperbricks")
+	configPath := filepath.Join(runtimeDir, "package.hyperbricks.yaml")
 	pluginRoot := filepath.Join(runtimeDir, "plugins")
 	pluginDir := filepath.Join(api.workingDir, "bin", "plugins")
 
@@ -1111,7 +1111,7 @@ func (api *deployAPI) handleModuleStatus(w http.ResponseWriter, module string) {
 	port := index.Port
 	if port == 0 && index.Current != "" {
 		runtimeDir := filepath.Join(api.root, module, "runtime", index.Current)
-		configPath := filepath.Join(runtimeDir, "package.hyperbricks")
+		configPath := filepath.Join(runtimeDir, "package.hyperbricks.yaml")
 		if _, err := os.Stat(configPath); err == nil {
 			packagePort, _ := readServerPort(configPath)
 			if packagePort > 0 {
@@ -1182,7 +1182,7 @@ func (api *deployAPI) handleModuleActivate(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	configPath := filepath.Join(runtimeDir, "package.hyperbricks")
+	configPath := filepath.Join(runtimeDir, "package.hyperbricks.yaml")
 	metadata, packagePort, err := readMetadataAndPort(configPath)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
@@ -2302,12 +2302,10 @@ func readLogTail(path string, maxLines int, maxBytes int64) (string, bool, error
 }
 
 func readMetadataAndPort(path string) (map[string]string, int, error) {
-	content, err := os.ReadFile(path)
+	parsed, err := shared.LoadPackageConfigMap(path, filepath.Dir(path))
 	if err != nil {
 		return nil, 0, err
 	}
-
-	parsed := parser.ParseHyperScript(string(content))
 	hyper, ok := parsed["hyperbricks"].(map[string]interface{})
 	if !ok {
 		return nil, 0, errors.New("missing hyperbricks config")
@@ -2334,11 +2332,10 @@ func readMetadataAndPort(path string) (map[string]string, int, error) {
 }
 
 func readServerPort(path string) (int, error) {
-	content, err := os.ReadFile(path)
+	parsed, err := shared.LoadPackageConfigMap(path, filepath.Dir(path))
 	if err != nil {
 		return 0, err
 	}
-	parsed := parser.ParseHyperScript(string(content))
 	hyper, ok := parsed["hyperbricks"].(map[string]interface{})
 	if !ok {
 		return 0, errors.New("missing hyperbricks config")
@@ -2362,7 +2359,7 @@ func (api *deployAPI) readRuntimePort(module string, buildID string) int {
 	if buildID == "" {
 		return 0
 	}
-	configPath := filepath.Join(api.root, module, "runtime", buildID, "package.hyperbricks")
+	configPath := filepath.Join(api.root, module, "runtime", buildID, "package.hyperbricks.yaml")
 	if _, err := os.Stat(configPath); err != nil {
 		return 0
 	}

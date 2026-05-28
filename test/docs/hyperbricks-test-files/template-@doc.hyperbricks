@@ -1,5 +1,5 @@
 ==== hyperbricks config {!{fragment}} ====
-# Use a TEMPLATE:filepath directive, relative to the templates folder defined in the module's package.hyperbricks:
+# Use a TEMPLATE:filepath directive, relative to the templates folder defined in the module's package.hyperbricks.yaml:
 template = youtube.tmpl
 
 # Or use the inline notation:

@@ -23,7 +23,7 @@ func (api *deployLocalServer) isDevBuildID(buildID string) bool {
 }
 
 func (api *deployLocalServer) devBuildRow(module string) (localBuildRowResponse, bool) {
-	configPath := filepath.Join(api.modulesDir, module, "package.hyperbricks")
+	configPath := filepath.Join(api.modulesDir, module, "package.hyperbricks.yaml")
 	if _, err := os.Stat(configPath); err != nil {
 		return localBuildRowResponse{}, false
 	}
@@ -59,7 +59,7 @@ func (api *deployLocalServer) devBuildRow(module string) (localBuildRowResponse,
 }
 
 func (api *deployLocalServer) devBuildStatus(module string) (map[string]interface{}, error) {
-	configPath := filepath.Join(api.modulesDir, module, "package.hyperbricks")
+	configPath := filepath.Join(api.modulesDir, module, "package.hyperbricks.yaml")
 	meta, preferredPort, err := readMetadataAndPort(configPath)
 	if err != nil {
 		return nil, err
@@ -492,7 +492,7 @@ func (api *deployLocalServer) readRuntimePort(module string, buildID string) int
 	if buildID == "" {
 		return 0
 	}
-	configPath := filepath.Join(api.buildRoot, module, "runtime", buildID, "package.hyperbricks")
+	configPath := filepath.Join(api.buildRoot, module, "runtime", buildID, "package.hyperbricks.yaml")
 	if _, err := os.Stat(configPath); err != nil {
 		return 0
 	}
@@ -614,7 +614,7 @@ func (api *deployLocalServer) startLocalBuild(module string, buildID string) err
 }
 
 func (api *deployLocalServer) startLocalDev(module string) error {
-	configPath := filepath.Join(api.modulesDir, module, "package.hyperbricks")
+	configPath := filepath.Join(api.modulesDir, module, "package.hyperbricks.yaml")
 	if _, err := os.Stat(configPath); err != nil {
 		return fmt.Errorf("module config not found: %s", configPath)
 	}

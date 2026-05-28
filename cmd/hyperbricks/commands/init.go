@@ -15,12 +15,6 @@ var (
 )
 
 func createHbConfig(module string) {
-	// Module code template
-	moduleCode := `# here you can set the current module
-$module = modules/%s
-
-`
-
 	// Get the current working directory
 	dir, err := os.Getwd()
 	if err != nil {
@@ -29,24 +23,18 @@ $module = modules/%s
 	}
 
 	// Path to the new module file
-	newConfigPath := filepath.Join(dir, fmt.Sprintf("modules/%s/package.hyperbricks", module))
+	newConfigPath := filepath.Join(dir, "modules", module, PackageConfigFileName)
 
 	// Read the embedded default config content
-	defaultConfigPath := "assets/default-config.hyperbricks"
+	defaultConfigPath := "assets/default-config.hyperbricks.yaml"
 	defaultConfigContent, err := embeddedFiles.ReadFile(defaultConfigPath)
 	if err != nil {
 		fmt.Printf("Failed to read the embedded default config file (%s): %v\n", defaultConfigPath, err)
 		return
 	}
 
-	// Prepare the top lines with the module code
-	topLines := fmt.Sprintf(moduleCode, module)
-
-	// Combine top lines with the default config content
-	newConfigContent := topLines + string(defaultConfigContent)
-
 	// Write the combined content to the new module file
-	err = os.WriteFile(newConfigPath, []byte(newConfigContent), 0644)
+	err = os.WriteFile(newConfigPath, defaultConfigContent, 0644)
 	if err != nil {
 		fmt.Printf("Failed to write the new config file: %v\n", err)
 		return
@@ -187,7 +175,7 @@ func extractEmbeddedFiles(module string) {
 func NewInitCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
-		Short: "Create package.hyperbricks and required directories",
+		Short: "Create package.hyperbricks.yaml and required directories",
 		Run: func(cmd *cobra.Command, args []string) {
 
 			createModuleDirectories(module)

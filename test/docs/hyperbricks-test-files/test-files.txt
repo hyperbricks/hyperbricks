@@ -2359,7 +2359,7 @@ image.width = 310
 image.height = 310
 image.is_static = true
 ==== explainer ====
-Flag indicating if the image is static, if so the img will not be scaled and has to be present in the configured static image directory. See package.hyperbricks in the module for settings.
+Flag indicating if the image is static, if so the img will not be scaled and has to be present in the configured static image directory. See package.hyperbricks.yaml in the module for settings.
 ```
 #conveys this logic:
 destDir := hbConfig.Directories["static"] + "/images/"
@@ -3892,7 +3892,7 @@ fragment {
 ==== expected output ====
 <div>this test fails</div>
 ==== hyperbricks config {!{fragment}} ====
-# Use the a TEMPLATE:filepath (relative from templates folder defined in module's package.hyperbricks) directive like this:
+# Use the a TEMPLATE:filepath (relative from templates folder defined in module's package.hyperbricks.yaml) directive like this:
 template = {{TEMPLATE:youtube.tmpl}}
 
 # Or use the inline notation:

@@ -133,7 +133,7 @@
           "go_name": "DebugPanel",
           "go_type": "bool",
           "kind": "bool",
-          "description": "Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks",
+          "description": "Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml",
           "example": "{!{api-render-fragment-debug.hyperbricks}}",
           "authoring": {
             "label": "Debugpanel",
@@ -1054,7 +1054,7 @@
           "go_name": "DebugPanel",
           "go_type": "bool",
           "kind": "bool",
-          "description": "Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks",
+          "description": "Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml",
           "example": "{!{api-render-debug.hyperbricks}}",
           "authoring": {
             "label": "Debugpanel",
