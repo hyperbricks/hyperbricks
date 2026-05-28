@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
-	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
@@ -33,9 +32,8 @@ var (
 	requestCounter      int = 0
 	requestCounterMutex sync.RWMutex
 
-	htmlCache        = make(map[string]CacheEntry)
-	htmlCacheMutex   sync.RWMutex
-	hyperBricksArray = &parser.HyperScriptStringArray{}
+	htmlCache      = make(map[string]CacheEntry)
+	htmlCacheMutex sync.RWMutex
 
 	renderDiagnosticsMutex sync.RWMutex
 	renderDiagnostics      = make(map[string]RenderDiagnostics)

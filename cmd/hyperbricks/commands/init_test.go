@@ -218,12 +218,12 @@ func TestDefaultInitAssetsWriteYAMLHelloWorld(t *testing.T) {
 		t.Fatalf("status fragment response = %#v", response)
 	}
 
-	legacyPath := filepath.Join("modules", "demo", "hyperbricks", "hello-world.hyperbricks")
-	if _, err := os.Stat(legacyPath); !os.IsNotExist(err) {
-		t.Fatalf("legacy hello-world.hyperbricks should not be created, stat err: %v", err)
+	unsupportedPath := filepath.Join("modules", "demo", "hyperbricks", "hello-world.hyperbricks")
+	if _, err := os.Stat(unsupportedPath); !os.IsNotExist(err) {
+		t.Fatalf("unsupported hello-world.hyperbricks should not be created, stat err: %v", err)
 	}
-	legacyPackagePath := filepath.Join("modules", "demo", "package.hyperbricks")
-	if _, err := os.Stat(legacyPackagePath); !os.IsNotExist(err) {
-		t.Fatalf("legacy package.hyperbricks should not be created, stat err: %v", err)
+	unsupportedPackagePath := filepath.Join("modules", "demo", "package.hyperbricks")
+	if _, err := os.Stat(unsupportedPackagePath); !os.IsNotExist(err) {
+		t.Fatalf("unsupported package.hyperbricks should not be created, stat err: %v", err)
 	}
 }

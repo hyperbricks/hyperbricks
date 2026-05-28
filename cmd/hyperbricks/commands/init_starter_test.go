@@ -18,6 +18,15 @@ const testStarterPackageConfig = `hyperbricks:
       path:
         base: module
         path: hyperbricks
+	`
+
+const testStarterYAMLSource = `page:
+  - type: hypermedia
+  - route: index
+  - body:
+      - type: text
+      - value: HELLO WORLD!
+      - enclose: <p>|</p>
 `
 
 func TestResolveStarterVersionPrefersLatestCompatible(t *testing.T) {
@@ -75,15 +84,15 @@ func TestRunInitStarterGetDownloadsAndExtractsStarter(t *testing.T) {
 	}
 
 	archiveBytes := createTestStarterArchive(t, map[string]string{
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/package.hyperbricks.yaml":            testStarterPackageConfig,
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/hyperbricks/hello-world.hyperbricks": "page = <TEXT>\npage.value = HELLO WORLD!\n",
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/templates/.gitkeep":                  "",
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/static/.gitkeep":                     "",
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/resources/.gitkeep":                  "",
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/rendered/.gitkeep":                   "",
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/logs/.gitkeep":                       "",
-		"hyperbricks-starters-main/starters/other-starter/1.0.0/package.hyperbricks.yaml":          "ignored: true\n",
-		"hyperbricks-starters-main/README.md":                                                      "ignored\n",
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/package.hyperbricks.yaml":                 testStarterPackageConfig,
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/hyperbricks/hello-world.hyperbricks.yaml": testStarterYAMLSource,
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/templates/.gitkeep":                       "",
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/static/.gitkeep":                          "",
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/resources/.gitkeep":                       "",
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/rendered/.gitkeep":                        "",
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/logs/.gitkeep":                            "",
+		"hyperbricks-starters-main/starters/other-starter/1.0.0/package.hyperbricks.yaml":               "ignored: true\n",
+		"hyperbricks-starters-main/README.md":                                                           "ignored\n",
 	})
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +138,7 @@ func TestRunInitStarterGetDownloadsAndExtractsStarter(t *testing.T) {
 
 	expectedFiles := []string{
 		filepath.Join("modules", "example-site", "package.hyperbricks.yaml"),
-		filepath.Join("modules", "example-site", "hyperbricks", "hello-world.hyperbricks"),
+		filepath.Join("modules", "example-site", "hyperbricks", "hello-world.hyperbricks.yaml"),
 		filepath.Join("modules", "example-site", "templates"),
 		filepath.Join("modules", "example-site", "static"),
 		filepath.Join("modules", "example-site", "resources"),
@@ -144,6 +153,97 @@ func TestRunInitStarterGetDownloadsAndExtractsStarter(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join("modules", "example-site", "manifest.json")); !os.IsNotExist(err) {
 		t.Fatalf("expected starter manifest.json to be excluded from installed module")
+	}
+}
+
+func TestInstallStarterRejectsUnsupportedEntrypoint(t *testing.T) {
+	tmpDir := t.TempDir()
+	prevWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("chdir temp dir: %v", err)
+	}
+	defer os.Chdir(prevWD)
+
+	err = installStarter(StarterMeta{
+		Name:       "hello-world",
+		Version:    "1.0.0",
+		Entrypoint: "package.hyperbricks",
+	}, "hello-world")
+	if err == nil {
+		t.Fatal("installStarter() error = nil, want unsupported entrypoint error")
+	}
+	if !strings.Contains(err.Error(), "package.hyperbricks.yaml") {
+		t.Fatalf("installStarter() error = %v, want package.hyperbricks.yaml guidance", err)
+	}
+}
+
+func TestRunInitStarterGetRejectsUnsupportedStarterSources(t *testing.T) {
+	tmpDir := t.TempDir()
+	prevWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("chdir temp dir: %v", err)
+	}
+	defer os.Chdir(prevWD)
+
+	indexPayload := map[string]map[string]StarterMeta{
+		"hello-world": {
+			"1.0.0": {
+				Name:                  "hello-world",
+				Version:               "1.0.0",
+				Path:                  "starters/hello-world/1.0.0",
+				Entrypoint:            "package.hyperbricks.yaml",
+				CompatibleHyperbricks: []string{">=0.8.0-alpha"},
+			},
+		},
+	}
+
+	archiveBytes := createTestStarterArchive(t, map[string]string{
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/package.hyperbricks.yaml":            testStarterPackageConfig,
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/hyperbricks/hello-world.hyperbricks": "page = <TEXT>\npage.value = HELLO WORLD!\n",
+	})
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/starters.index.json":
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewEncoder(w).Encode(indexPayload); err != nil {
+				t.Fatalf("encode index payload: %v", err)
+			}
+		case "/archive.zip":
+			w.Header().Set("Content-Type", "application/zip")
+			if _, err := w.Write(archiveBytes); err != nil {
+				t.Fatalf("write archive: %v", err)
+			}
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	prevIndexURL := starterIndexURL
+	prevArchiveURL := starterArchiveURL
+	prevArchiveRoot := starterArchiveRoot
+	starterIndexURL = server.URL + "/starters.index.json"
+	starterArchiveURL = server.URL + "/archive.zip"
+	starterArchiveRoot = "hyperbricks-starters-main"
+	defer func() {
+		starterIndexURL = prevIndexURL
+		starterArchiveURL = prevArchiveURL
+		starterArchiveRoot = prevArchiveRoot
+	}()
+
+	_, _, err = runInitStarterGet("hello-world", "example-site")
+	if err == nil {
+		t.Fatal("runInitStarterGet() error = nil, want unsupported source rejection")
+	}
+	if !strings.Contains(err.Error(), "unsupported .hyperbricks files") || !strings.Contains(err.Error(), "hyperbricks/hello-world.hyperbricks") {
+		t.Fatalf("runInitStarterGet() error = %v, want unsupported source details", err)
 	}
 }
 

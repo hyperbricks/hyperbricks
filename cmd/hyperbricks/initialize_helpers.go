@@ -103,12 +103,6 @@ func ensureDirectoriesExist(directories map[string]string) {
 	}
 
 	logger := logging.GetLogger()
-	defaultHyperbricks := `# index page
-page = <HYPERMEDIA>
-page.route = index
-page.10 = TEXT
-page.10.value = HELLO WORLD!
-`
 	for key, dir := range directories {
 		logger.Debugw("Checking directory", "key", key, "directory", dir)
 
@@ -118,17 +112,6 @@ page.10.value = HELLO WORLD!
 				logger.Fatalw("Failed to create directory", "directory", dir, "error", err)
 			}
 			log.Printf("Created directory ==>%s", dir)
-
-			if key == "hyperbricks" {
-				configFilePath := filepath.Join(dir, "test_index.hyperbricks")
-				if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
-					err := os.WriteFile(configFilePath, []byte(defaultHyperbricks), 0644)
-					if err != nil {
-						logger.Fatalw("Failed to create configuration file", "file", configFilePath, "error", err)
-					}
-					logger.Infow("Configuration file created", "file", configFilePath)
-				}
-			}
 		} else if err != nil {
 			logger.Fatalw("Error checking directory", "directory", dir, "error", err)
 		} else {

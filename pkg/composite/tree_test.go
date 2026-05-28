@@ -79,7 +79,7 @@ func TestTreeRendererAppliesExplicitOrderPerNestedTree(t *testing.T) {
 	}
 }
 
-func TestTreeRendererKeepsLegacySortedFallbackWithoutOrder(t *testing.T) {
+func TestTreeRendererKeepsSortedFallbackWithoutOrder(t *testing.T) {
 	rm := newTreeTestRenderManager()
 	data := map[string]interface{}{
 		"@type": "<TREE>",

@@ -314,6 +314,10 @@ func installStarter(meta StarterMeta, moduleName string) error {
 		return err
 	}
 
+	if filepath.ToSlash(filepath.Clean(meta.Entrypoint)) != "package.hyperbricks.yaml" {
+		return fmt.Errorf("starter %s@%s uses unsupported entrypoint %s; starters must use package.hyperbricks.yaml", meta.Name, meta.Version, meta.Entrypoint)
+	}
+
 	archivePath, err := downloadStarterArchive()
 	if err != nil {
 		return err
@@ -335,6 +339,9 @@ func installStarter(meta StarterMeta, moduleName string) error {
 	if _, err := os.Stat(entrypoint); err != nil {
 		return fmt.Errorf("starter entrypoint not found after extraction: %s", meta.Entrypoint)
 	}
+	if err := validateYAMLOnlyStarter(stageDir); err != nil {
+		return err
+	}
 	if err := os.Remove(filepath.Join(stageDir, "manifest.json")); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to remove starter manifest from staging directory: %w", err)
 	}
@@ -344,6 +351,35 @@ func installStarter(meta StarterMeta, moduleName string) error {
 	}
 
 	createModuleDirectories(moduleName)
+	return nil
+}
+
+func validateYAMLOnlyStarter(stageDir string) error {
+	var unsupportedFiles []string
+	if err := filepath.WalkDir(stageDir, func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		name := filepath.Base(path)
+		if name == "package.hyperbricks" || strings.HasSuffix(name, ".hyperbricks") {
+			rel, relErr := filepath.Rel(stageDir, path)
+			if relErr != nil {
+				unsupportedFiles = append(unsupportedFiles, path)
+			} else {
+				unsupportedFiles = append(unsupportedFiles, filepath.ToSlash(rel))
+			}
+		}
+		return nil
+	}); err != nil {
+		return fmt.Errorf("failed to inspect starter contents: %w", err)
+	}
+	if len(unsupportedFiles) > 0 {
+		sort.Strings(unsupportedFiles)
+		return fmt.Errorf("starter contains unsupported .hyperbricks files: %s", strings.Join(unsupportedFiles, ", "))
+	}
 	return nil
 }
 

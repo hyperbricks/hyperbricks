@@ -8,7 +8,7 @@ api_fragment {
     setcookie = token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0
 }
 ==== explainer ====
-Legacy shorthand for one Set-Cookie response template
+Single Set-Cookie response template shorthand
 ==== expected json ====
 {
   "ConfigType": "<API_FRAGMENT_RENDER>",

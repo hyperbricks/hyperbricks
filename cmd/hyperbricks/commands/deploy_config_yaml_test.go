@@ -36,11 +36,11 @@ func TestLoadDeployPushConfigReadsGeneratedYAML(t *testing.T) {
 	}
 }
 
-func TestLoadDeployPushConfigRejectsLegacyDeployDSL(t *testing.T) {
+func TestLoadDeployPushConfigRejectsUnsupportedDeployDSL(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "deploy.hyperbricks")
 	if err := os.WriteFile(path, []byte(`
 deploy {
-  hmac_secret = legacy
+  hmac_secret = old-dsl
 }
 `), 0o644); err != nil {
 		t.Fatalf("write deploy config: %v", err)
