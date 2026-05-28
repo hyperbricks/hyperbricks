@@ -65,6 +65,7 @@ var yamlCoreCorpus = []string{
 	"duplicate-item-names.hyperbricks.yaml.test",
 	"duplicate-item-names-deep.hyperbricks.yaml.test",
 	"duplicate-item-name-collision.hyperbricks.yaml.test",
+	"duplicate-inheritance-path.hyperbricks.yaml.test",
 }
 
 func TestYAMLProfileFixturesInstantiateRuntimeConfigs(t *testing.T) {
