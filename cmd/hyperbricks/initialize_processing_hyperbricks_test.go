@@ -32,9 +32,10 @@ func TestProcessScriptIndexesAPIFragmentRenderWithScalarTemplate(t *testing.T) {
 	}
 	tempConfigs := make(map[string]map[string]interface{})
 	tempHyperMediasBySection := make(map[string][]composite.HyperMediaConfig)
+	tempRouteSourceErrors := make(map[string][]error)
 	filenameToRoutes := make(map[string][]string)
 
-	err := processScript("test", config, tempConfigs, tempHyperMediasBySection, zap.NewNop().Sugar(), filenameToRoutes)
+	err := processScript("test", config, nil, tempConfigs, tempHyperMediasBySection, tempRouteSourceErrors, zap.NewNop().Sugar(), filenameToRoutes)
 	if err != nil {
 		t.Fatalf("processScript returned error: %v", err)
 	}
@@ -64,9 +65,10 @@ func TestProcessScriptRejectsFragmentScalarTemplate(t *testing.T) {
 	}
 	tempConfigs := make(map[string]map[string]interface{})
 	tempHyperMediasBySection := make(map[string][]composite.HyperMediaConfig)
+	tempRouteSourceErrors := make(map[string][]error)
 	filenameToRoutes := make(map[string][]string)
 
-	err := processScript("test", config, tempConfigs, tempHyperMediasBySection, zap.NewNop().Sugar(), filenameToRoutes)
+	err := processScript("test", config, nil, tempConfigs, tempHyperMediasBySection, tempRouteSourceErrors, zap.NewNop().Sugar(), filenameToRoutes)
 	if err != nil {
 		t.Fatalf("processScript returned error: %v", err)
 	}
@@ -87,8 +89,17 @@ func TestPreProcessAndPopulateConfigsLoadsYAMLRouteThroughServerRenderFlow(t *te
 	oldModuleDirectories := core.ModuleDirectories
 	oldConfigs := configs
 	oldHypermediasBySection := hypermediasBySection
+	oldRouteSourceErrors := routeSourceErrors
 	oldRM := rm
 	oldHyperBricksArray := hyperBricksArray
+	oldRenderDiagnosticsSeq := renderDiagnosticsSeq
+
+	renderDiagnosticsMutex.Lock()
+	oldRenderDiagnostics := renderDiagnostics
+	oldRenderDiagnosticsOrder := renderDiagnosticsOrder
+	renderDiagnostics = make(map[string]RenderDiagnostics)
+	renderDiagnosticsOrder = nil
+	renderDiagnosticsMutex.Unlock()
 
 	t.Cleanup(func() {
 		hbConfig.Mode = oldMode
@@ -106,6 +117,16 @@ func TestPreProcessAndPopulateConfigsLoadsYAMLRouteThroughServerRenderFlow(t *te
 		hypermediasMutex.Lock()
 		hypermediasBySection = oldHypermediasBySection
 		hypermediasMutex.Unlock()
+
+		routeSourceErrorsMutex.Lock()
+		routeSourceErrors = oldRouteSourceErrors
+		routeSourceErrorsMutex.Unlock()
+
+		renderDiagnosticsSeq = oldRenderDiagnosticsSeq
+		renderDiagnosticsMutex.Lock()
+		renderDiagnostics = oldRenderDiagnostics
+		renderDiagnosticsOrder = oldRenderDiagnosticsOrder
+		renderDiagnosticsMutex.Unlock()
 	})
 
 	moduleDir := filepath.Join(t.TempDir(), "modules", "yaml-runtime")
@@ -132,6 +153,9 @@ func TestPreProcessAndPopulateConfigsLoadsYAMLRouteThroughServerRenderFlow(t *te
       - intro:
           - type: html
           - value: <main><h1>YAML runtime route</h1></main>
+      - intro:
+          - type: html
+          - value: <p>Recovered duplicate child</p>
 `
 	if err := os.WriteFile(filepath.Join(hyperbricksDir, "page.hyperbricks.yaml"), []byte(yamlSource), 0644); err != nil {
 		t.Fatalf("write YAML route fixture: %v", err)
@@ -180,6 +204,33 @@ func TestPreProcessAndPopulateConfigsLoadsYAMLRouteThroughServerRenderFlow(t *te
 	if body := response.Body.String(); !strings.Contains(body, "<h1>YAML runtime route</h1>") {
 		t.Fatalf("rendered body does not contain YAML route content:\n%s", body)
 	}
+	if body := response.Body.String(); !strings.Contains(body, "Recovered duplicate child") {
+		t.Fatalf("rendered body does not contain recovered duplicate child:\n%s", body)
+	}
+
+	if got := response.Header().Get(renderErrorCountHeader); got != "1" {
+		t.Fatalf("render error count = %q, want 1", got)
+	}
+	requestID := response.Header().Get(requestIDHeader)
+	if requestID == "" {
+		t.Fatal("missing render request id header")
+	}
+	renderDiagnosticsMutex.RLock()
+	diagnostics, ok := renderDiagnostics[requestID]
+	renderDiagnosticsMutex.RUnlock()
+	if !ok {
+		t.Fatalf("expected diagnostics for request %q", requestID)
+	}
+	if len(diagnostics.Errors) != 1 {
+		t.Fatalf("render diagnostics len = %d, want 1: %#v", len(diagnostics.Errors), diagnostics.Errors)
+	}
+	diagnostic := diagnostics.Errors[0]
+	if diagnostic.Type != "YAML" || diagnostic.Path != "page.main" || diagnostic.Key != "intro" || !strings.Contains(diagnostic.Err, `using "intro_2" as runtime path`) {
+		t.Fatalf("render diagnostic = %#v", diagnostic)
+	}
+	if diagnostic.File != "page" {
+		t.Fatalf("render diagnostic file = %#v", diagnostic.File)
+	}
 }
 
 func TestPreProcessAndPopulateConfigsSupportsYAMLRuntimePreprocessing(t *testing.T) {
@@ -194,6 +245,7 @@ func TestPreProcessAndPopulateConfigsSupportsYAMLRuntimePreprocessing(t *testing
 	oldModuleDirectories := core.ModuleDirectories
 	oldConfigs := configs
 	oldHypermediasBySection := hypermediasBySection
+	oldRouteSourceErrors := routeSourceErrors
 	oldRM := rm
 	oldHyperBricksArray := hyperBricksArray
 	oldParserHbConfig := parser.HbConfig
@@ -216,6 +268,10 @@ func TestPreProcessAndPopulateConfigsSupportsYAMLRuntimePreprocessing(t *testing
 		hypermediasMutex.Lock()
 		hypermediasBySection = oldHypermediasBySection
 		hypermediasMutex.Unlock()
+
+		routeSourceErrorsMutex.Lock()
+		routeSourceErrors = oldRouteSourceErrors
+		routeSourceErrorsMutex.Unlock()
 	})
 
 	moduleDir := filepath.Join(t.TempDir(), "modules", "yaml-runtime-pipeline")
@@ -361,6 +417,7 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 	oldModuleDirectories := core.ModuleDirectories
 	oldConfigs := configs
 	oldHypermediasBySection := hypermediasBySection
+	oldRouteSourceErrors := routeSourceErrors
 	oldRM := rm
 	oldHyperBricksArray := hyperBricksArray
 	oldParserHbConfig := parser.HbConfig
@@ -398,6 +455,10 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 		hypermediasMutex.Lock()
 		hypermediasBySection = oldHypermediasBySection
 		hypermediasMutex.Unlock()
+
+		routeSourceErrorsMutex.Lock()
+		routeSourceErrors = oldRouteSourceErrors
+		routeSourceErrorsMutex.Unlock()
 
 		htmlCacheMutex.Lock()
 		htmlCache = oldHTMLCache

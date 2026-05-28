@@ -23,10 +23,12 @@ type CacheEntry struct {
 }
 
 var (
-	configs              = make(map[string]map[string]interface{})
-	configMutex          sync.RWMutex
-	hypermediasBySection = make(map[string][]composite.HyperMediaConfig)
-	hypermediasMutex     sync.RWMutex
+	configs                = make(map[string]map[string]interface{})
+	configMutex            sync.RWMutex
+	hypermediasBySection   = make(map[string][]composite.HyperMediaConfig)
+	hypermediasMutex       sync.RWMutex
+	routeSourceErrors      = make(map[string][]error)
+	routeSourceErrorsMutex sync.RWMutex
 
 	requestCounter      int = 0
 	requestCounterMutex sync.RWMutex

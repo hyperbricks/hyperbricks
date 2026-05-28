@@ -78,11 +78,21 @@ fragment:
       - value: Summary
 ```
 
-This should not be a hard parser error for child entries. Instead, the
-materializer should assign deterministic unique runtime keys.
+Duplicate child names are not recommended source because item names become
+paths. The parser/materializer should report a clear diagnostic, then recover by
+assigning deterministic unique runtime keys when recovery is enabled.
+
+Runtime loading uses recovery: the runtime should try to render the normalized
+map. Documentation and CI tooling may choose to fail on this diagnostic as a
+quality policy, but hard-failing is not the parser contract itself.
 
 Contract:
 
+- duplicate child names produce a diagnostic
+- runtime-load mode recovers automatically and keeps rendering
+- recoverable YAML source diagnostics are attached to the existing route render
+  error pipeline
+- docs/CI may fail on the diagnostic as quality policy
 - the first occurrence keeps the original name
 - the second occurrence receives `_2`
 - the third occurrence receives `_3`
@@ -92,6 +102,19 @@ Contract:
 - `@order` must use the generated runtime keys
 - inheritance and local overrides must refer to the generated runtime key after
   materialization
+- the runtime render layer must receive only the normalized map; it must not
+  learn about duplicate YAML source entries
+
+Current runtime error-pipeline direction:
+
+- the render diagnostics endpoint contract stays unchanged
+- recoverable YAML source diagnostics are attached as existing
+  `shared.ComponentError` entries when an affected route renders
+- the runtime still renders best-effort; the error entry is diagnostic only
+- users can inspect these through the existing request-bound render diagnostics
+  flow
+- warning-only source diagnostics must not be written as warning/error noise to
+  stdout
 
 Example materialized child keys:
 
@@ -111,6 +134,76 @@ Example materialized child keys:
 
 Important: this is not display naming. It is address normalization. Once
 materialized, `text_summary_2` is the actual path.
+
+Example diagnostic:
+
+```text
+duplicate child "text_summary" at fragment; materialized second occurrence as "text_summary_2"
+```
+
+The legacy converter follows the same recovery rule for generated-name
+collisions. It should write unique YAML output and print warnings so the user
+can clean the source later.
+
+Progress on 2026-05-28:
+
+- strict `ParseBytes` still rejects duplicate child names
+- runtime-load mode enables duplicate-child recovery
+- deep nested duplicate children are normalized before materialization
+- normalized names are included in the generated `@order`
+- existing sibling names such as `hero_2` are respected; generated names keep
+  incrementing until unique
+- runtime routes keep rendering the normalized map
+- recoverable YAML source diagnostics are converted to `shared.ComponentError`
+  and attached to the affected route
+- the existing `/__hyperbricks/render-diagnostics?request_id=...` contract is
+  unchanged
+- warning-only YAML source diagnostics are recorded in render diagnostics
+  without producing the `Render diagnostics recorded` error log line
+
+User story:
+
+```text
+As a HyperBricks author migrating a legacy page to YAML,
+I accidentally define the same child name twice inside a TREE because both
+blocks describe summary text.
+
+I want the runtime to render both blocks in the source order instead of dropping
+one block or failing the route,
+so that the page remains usable while I inspect and clean up the migrated source.
+```
+
+Example source:
+
+```yaml
+page:
+  - type: hypermedia
+  - route: duplicate-demo
+  - main:
+      - type: tree
+      - text_summary:
+          - type: text
+          - value: Intro
+      - text_summary:
+          - type: text
+          - value: Summary
+```
+
+Expected runtime behavior:
+
+- the route renders both `Intro` and `Summary`
+- the materialized children become `text_summary` and `text_summary_2`
+- `@order` becomes `["text_summary", "text_summary_2"]`
+- render diagnostics for that request include a YAML warning such as:
+
+```text
+duplicate child "text_summary" at page.main; first defined at line ...; using "text_summary_2" as runtime path
+```
+
+Important alignment note: this is not a new diagnostics endpoint, not a SaaS
+contract change, and not a general config-warning layer. It is only a YAML
+source diagnostic attached to the existing render error pipeline for the route
+that was rendered.
 
 ## Inheritance Contract
 
@@ -168,6 +261,7 @@ Open deterministic edge cases to keep visible:
 - fallback behavior when legacy `.hyperbricks` data has no `@order`
 - whether YAML-generated `@order` should be strict for YAML paths and legacy
   sorted fallback should be legacy-only
+- missing or extra keys in a runtime `@order` map
 
 Current direction:
 
@@ -175,6 +269,10 @@ Current direction:
 - Generated runtime items should be named and represented in `@order`.
 - Legacy fallback can stay as a migration bridge, but should not define the new
   YAML authoring contract.
+- If runtime receives unlisted renderable child keys, append them in
+  deterministic alphanumeric order and emit a render diagnostic.
+- If runtime receives missing keys in `@order`, skip the missing key and emit a
+  render diagnostic.
 
 ## Fixture And Documentation Direction
 
@@ -280,8 +378,10 @@ time of the switch, `go mod why -m gopkg.in/yaml.v3` traced it through
 
 ### 2. Duplicate Item Name Normalization
 
-Implement in `pkg/yaml-parser`, with tests for:
+Implemented in `pkg/yaml-parser` for runtime-load recovery, with tests for:
 
+- duplicate child names emit diagnostics
+- runtime-load/recovery mode materializes normalized keys and keeps going
 - duplicate child names become `_2`, `_3`
 - `@order` contains generated names
 - existing `name_2` collision increments further
@@ -289,6 +389,11 @@ Implement in `pkg/yaml-parser`, with tests for:
 - reserved names still fail
 - property/child collisions still fail
 - top-level duplicate root names still fail
+
+Still open:
+
+- docs/CI callers can choose to fail on duplicate diagnostics
+- legacy converter generated-name collisions are renamed with warnings
 
 Likely fixture:
 
@@ -371,6 +476,10 @@ regenerating documentation artifacts.
 This pass is complete when:
 
 - duplicate YAML item names materialize to stable unique runtime paths
+- duplicate YAML item names emit clear diagnostics
+- runtime-load mode recovers duplicate child names with diagnostics and renders
+  the normalized map
+- docs/CI can fail on duplicate-name diagnostics as quality policy
 - YAML parsing uses the maintained `go.yaml.in/yaml/v4` package unless a tested
   incompatibility blocks the migration
 - inheritance works against normalized paths

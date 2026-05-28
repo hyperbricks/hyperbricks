@@ -22,6 +22,7 @@ import (
 type hyperBricksConfigSource struct {
 	Filename string
 	Config   map[string]interface{}
+	Errors   []error
 }
 
 // PreProcessAndPopulateConfigs orchestrates the preprocessing and population of configurations.
@@ -36,11 +37,12 @@ func PreProcessAndPopulateConfigs() error {
 
 	tempConfigs := make(map[string]map[string]interface{})
 	tempHyperMediasBySection := make(map[string][]composite.HyperMediaConfig)
+	tempRouteSourceErrors := make(map[string][]error)
 	filenameToRoutes := make(map[string][]string)
 
 	// ---- Process configs in strict order! ----
 	for _, source := range sources {
-		if err := processScript(source.Filename, source.Config, tempConfigs, tempHyperMediasBySection, logger, filenameToRoutes); err != nil {
+		if err := processScript(source.Filename, source.Config, source.Errors, tempConfigs, tempHyperMediasBySection, tempRouteSourceErrors, logger, filenameToRoutes); err != nil {
 			logger.Warnw("Error processing script", "file", source.Filename, "error", err)
 		}
 	}
@@ -48,6 +50,7 @@ func PreProcessAndPopulateConfigs() error {
 	// populate configurations
 	updateGlobalConfigs(tempConfigs)
 	updateGlobalHyperMediasBySection(tempHyperMediasBySection)
+	updateGlobalRouteSourceErrors(tempRouteSourceErrors)
 
 	// linking resources to the renderers
 	linkRendererResources()
@@ -182,6 +185,7 @@ func loadYAMLHyperBricksSources() ([]hyperBricksConfigSource, error) {
 		sources = append(sources, hyperBricksConfigSource{
 			Filename: hyperBricksSourceName(file, ".hyperbricks.yaml"),
 			Config:   result.Materialized,
+			Errors:   yamlDiagnosticsToComponentErrors(result.Diagnostics),
 		})
 		logging.GetLogger().Debug("Loaded YAML configuration for route: ", file)
 	}
@@ -202,7 +206,26 @@ func yamlRuntimeOptions() yamlparser.Options {
 			Static:      core.ModuleDirectories.StaticDir,
 			HyperBricks: core.ModuleDirectories.HyperbricksDir,
 		},
+		RecoverDuplicateChildren: true,
 	}
+}
+
+func yamlDiagnosticsToComponentErrors(diagnostics []yamlparser.Diagnostic) []error {
+	out := make([]error, 0, len(diagnostics))
+	for _, diagnostic := range diagnostics {
+		errorPath := fmt.Sprintf("%s:%d:%d:%s", diagnostic.Source, diagnostic.Line, diagnostic.Column, diagnostic.Code)
+		fileName := hyperBricksSourceName(diagnostic.Source, ".hyperbricks.yaml")
+		out = append(out, shared.ComponentError{
+			Hash:  shared.HyperScriptErrorHash(errorPath),
+			File:  fileName,
+			Type:  "YAML",
+			Path:  diagnostic.Path,
+			Key:   diagnostic.OriginalName,
+			Err:   fmt.Sprintf("%s (source: %s:%d:%d)", diagnostic.Message, filepath.Base(diagnostic.Source), diagnostic.Line, diagnostic.Column),
+			Level: "WARNING",
+		})
+	}
+	return out
 }
 
 func yamlRuntimeVariables() map[string]string {
@@ -235,8 +258,10 @@ func hyperBricksSourceName(path string, suffix string) string {
 func processScript(
 	filename string,
 	config map[string]interface{},
+	sourceErrors []error,
 	tempConfigs map[string]map[string]interface{},
 	tempHyperMediasBySection map[string][]composite.HyperMediaConfig,
+	tempRouteSourceErrors map[string][]error,
 	logger *zap.SugaredLogger,
 	filenameToRoutes map[string][]string, // <-- add this
 ) error {
@@ -312,6 +337,7 @@ func processScript(
 			obj["hyperbricksfile"] = filename
 			obj["hyperbrickskey"] = key
 			tempConfigs[fragmentRouteConfig.Route] = obj
+			addRouteSourceErrors(tempRouteSourceErrors, fragmentRouteConfig.Route, sourceErrors)
 
 			// --- Map filename to route here
 			filenameToRoutes[filename] = append(filenameToRoutes[filename], fragmentRouteConfig.Route)
@@ -340,6 +366,7 @@ func processScript(
 			obj["hyperbricksfile"] = filename
 			obj["hyperbrickskey"] = key
 			tempConfigs[hyperMediaConfig.Route] = obj
+			addRouteSourceErrors(tempRouteSourceErrors, hyperMediaConfig.Route, sourceErrors)
 
 			// --- Map filename to route here
 			filenameToRoutes[filename] = append(filenameToRoutes[filename], hyperMediaConfig.Route)
@@ -481,6 +508,33 @@ func GetGlobalHyperMediasBySection() map[string][]composite.HyperMediaConfig {
 	temp := hypermediasBySection // Copy the map for use outside the lock
 	hypermediasMutex.Unlock()
 	return temp
+}
+
+func addRouteSourceErrors(target map[string][]error, route string, errors []error) {
+	if len(errors) == 0 {
+		return
+	}
+	target[route] = append(target[route], errors...)
+}
+
+func updateGlobalRouteSourceErrors(errorsByRoute map[string][]error) {
+	routeSourceErrorsMutex.Lock()
+	defer routeSourceErrorsMutex.Unlock()
+	routeSourceErrors = cloneErrorsByRoute(errorsByRoute)
+}
+
+func getRouteSourceErrors(route string) []error {
+	routeSourceErrorsMutex.RLock()
+	defer routeSourceErrorsMutex.RUnlock()
+	return append([]error(nil), routeSourceErrors[route]...)
+}
+
+func cloneErrorsByRoute(source map[string][]error) map[string][]error {
+	out := make(map[string][]error, len(source))
+	for route, errors := range source {
+		out[route] = append([]error(nil), errors...)
+	}
+	return out
 }
 
 // resetHTMLCache clears the HTML cache.
