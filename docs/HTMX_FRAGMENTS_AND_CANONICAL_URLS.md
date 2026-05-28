@@ -1,126 +1,125 @@
-# HTMX Fragments and Canonical URLs
+# HTMX Fragments And Canonical URLs
 
-HyperBricks can serve full hypermedia pages and smaller HTMX fragments from
-root configurations. A common temptation is to give a page and its fragment the
-same route and let `HX-Request: true` decide which one should be rendered.
+HyperBricks can serve full pages and HTMX fragments from route-owning
+components. Keep those route owners explicit.
 
-That works as an idea, but it creates an unclear ownership model: one URL now
-means two different root configs. It also interacts poorly with route collision
-handling, caching, debugging, and static output.
+The recommended pattern is:
 
-The preferred pattern is: keep the full page route canonical, and request the
-fragment from an explicit fragment endpoint or composed fragment source.
+- use one canonical route for the full page
+- use a separate route for the HTMX fragment
+- use `hx-push-url` when the browser URL should remain or become canonical
+- reuse content through composition or inheritance instead of route collisions
 
-## The Problem With Route Collisions
+## Why Route Collisions Are A Problem
 
-Consider this shape:
+A full page and a fragment should not both claim the same route.
 
-```hyperbricks
-app_assets <<< app
-app_assets.route = assets
+```yaml
+assets_page:
+  - type: hypermedia
+  - route: assets
+  - title: Assets
 
-assets = <FRAGMENT>
-assets.route = assets
+assets_fragment:
+  - type: fragment
+  - route: assets
 ```
 
-Both configs want to own `/assets`.
+Both objects want to own `/assets`. That creates an unclear model:
 
-HyperBricks prevents direct route overwrites by making duplicate route keys
-unique. The first config keeps `assets`; the next one becomes something like
-`assets_1`. That avoids accidental overwrites, but it also means the fragment no
-longer lives at the route the author probably expected.
+- normal requests might expect a full page
+- HTMX requests might expect a fragment
+- cache behavior becomes request-header dependent
+- static output becomes ambiguous
+- diagnostics and route ownership become harder to reason about
 
-Using `HX-Request: true` to recover from this would make route selection depend
-on request headers. That is possible, but it makes the route less explicit:
-
-- normal request to `/assets` returns the full page
-- HTMX request to `/assets` returns a fragment
-- refresh, copy/paste, cache behavior, and diagnostics all need to account for
-  that split
-
-For most applications, this is unnecessary complexity.
+HyperBricks should not rely on accidental duplicate routes to choose output.
 
 ## Preferred Pattern
 
-Use one canonical route for the page, and a separate fragment request target for
-HTMX.
+Give the page and fragment separate routes.
 
-The browser URL should stay canonical:
+```yaml
+assets_page:
+  - type: hypermedia
+  - route: assets
+  - title: Assets
+  - main:
+      - type: tree
+      - content:
+          - inherit: assets_content
 
-```text
-/assets
+assets_fragment:
+  - type: fragment
+  - route: fragments/assets
+  - response:
+      hx_target: "#content"
+      hx_reswap: innerHTML
+  - content:
+      - inherit: assets_content
+
+assets_content:
+  - type: tree
+  - heading:
+      - type: html
+      - value: <h1>Assets</h1>
+  - copy:
+      - type: text
+      - value: Shared page and fragment content.
 ```
 
-The HTMX request can target the fragment explicitly:
+The page owns `/assets`. The fragment owns `/fragments/assets`. The reusable
+content lives in `assets_content`.
+
+## HTMX Link
+
+Use normal `href` for the canonical fallback and `hx-get` for the fragment:
 
 ```html
 <a
   href="/assets"
   hx-get="/fragments/assets"
-  hx-target="#content_right"
+  hx-target="#content"
   hx-push-url="/assets"
 >
   Assets
 </a>
 ```
 
-In this model:
+This gives the browser and crawler a stable URL while HTMX can update part of
+the page.
 
-- `href` is the non-JavaScript fallback
-- `hx-get` requests the fragment response
-- `hx-target` chooses where the fragment is swapped
-- `hx-push-url` keeps the address bar on the canonical page route
+## Fragment Response Headers
 
-This avoids route collisions while preserving correct browser history and share
-URLs.
+Fragment response headers belong on the fragment route owner.
 
-## Composition Example
-
-When a page is derived from an app shell, keep the page route on the composed
-page:
-
-```hyperbricks
-app_assets <<< app
-app_assets.route = assets
+```yaml
+assets_fragment:
+  - type: fragment
+  - route: fragments/assets
+  - response:
+      hx_target: "#content"
+      hx_reswap: innerHTML
+      hx_push_url: /assets
+  - content:
+      - inherit: assets_content
 ```
 
-Then compose or reuse the fragment content explicitly:
+Use response fields when the fragment itself should tell HTMX how to apply the
+response. Use attributes in HTML links or buttons when the trigger should own
+the behavior.
 
-```hyperbricks
-app_assets.10.values.content.10.values.content_right <<< assets.10
-```
+## When Same-URL Fragment Selection Is Appropriate
 
-This expresses the ownership clearly:
+Some frameworks intentionally render a full page for a normal request and a
+fragment for the same URL when `HX-Request` is present.
 
-- `app_assets` owns the `/assets` page route
-- `assets.10` owns the reusable content block
-- HTMX can request a fragment endpoint for that block
-- `hx-push-url="/assets"` keeps the visible URL stable
+HyperBricks should model that as an explicit feature if it is needed. Until
+then, prefer separate fragment routes and shared content.
 
-The important point is that the page route and the fragment source do not need
-to collide. The page decides where the fragment belongs, and HTMX decides when
-to fetch it.
-
-## When To Use Header-Based Selection
-
-Header-based selection can still be useful when a framework deliberately treats
-one URL as both a full-page endpoint and a fragment endpoint:
-
-```text
-GET /assets                  -> full page
-GET /assets + HX-Request     -> fragment
-```
-
-If HyperBricks supports this as a first-class feature, it should be modeled
-explicitly rather than inferred from accidental route collisions. For example,
-a page config could declare which fragment should answer HTMX requests for the
-same canonical route.
-
-Until that exists, prefer explicit fragment targets plus `hx-push-url`.
-
-## Rule Of Thumb
+## Rule
 
 Do not use route collisions to model HTMX fragments.
 
-Use canonical page routes for browser state, explicit fragment targets for HTMX
-requests, and composition to reuse the same content in both places.
+Use canonical page routes for browser state, explicit fragment routes for HTMX
+requests, and reusable content nodes for shared rendering.

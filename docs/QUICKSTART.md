@@ -1,147 +1,219 @@
 # Quickstart
 
-## 1) Install
+This guide creates a small HyperBricks module with a page route, an HTMX
+fragment route, and a reusable template.
 
-Requires Go **1.23.2+**.
+For YAML syntax details, see [YAML_USAGE.md](YAML_USAGE.md). For component
+fields, see [REFERENCE.md](REFERENCE.md).
+
+## Install
+
+Requires Go 1.23.2 or newer.
 
 ```bash
 go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
 ```
 
----
+## Create A Module
 
-## 2) Create a module
-
-From your project root (the folder that will contain `modules/`):
+Run this from the project root, the directory that will contain `modules/`:
 
 ```bash
-hyperbricks init -m someproject
+hyperbricks init -m demo
 ```
 
-You’ll get:
+The module layout is:
 
-```
-rootdir/
-└── modules/
-    └── someproject/
-        ├── hyperbricks/
-        ├── rendered/
-        ├── resources/
-        ├── static/
-        ├── templates/
-        └── package.hyperbricks.yaml
-```
-
-> Always run the CLI from `rootdir/` (the parent of `modules/`).
-
----
-
-## 3) Add your first page route (`<HYPERMEDIA>`)
-
-Create: `modules/someproject/hyperbricks/index.hyperbricks`
-
-```hyperbricks
-docs = <HYPERMEDIA>
-docs.route = index
-docs.title = HyperBricks | Quickstart
-docs.htmltag = <html class="bg-gray-950 text-gray-200">
-docs.bodytag = <body class="p-8">|</body>
-
-docs.10 = <HTML>
-docs.10.value = <<[
-  <h1 class="text-2xl font-bold mb-4">Hello HyperBricks</h1>
-
-  <button
-    class="px-3 py-2 rounded bg-white text-black"
-    hx-get="/hello_fragment"
-    hx-target="#target"
-    hx-swap="innerHTML"
-  >
-    Load fragment
-  </button>
-
-  <div id="target" class="mt-4 p-4 border border-white/20 rounded">
-    (fragment loads here)
-  </div>
-
-  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-]>>
+```text
+modules/
+  demo/
+    hyperbricks/
+    rendered/
+    resources/
+    static/
+    templates/
+    package.hyperbricks.yaml
 ```
 
----
+Always run HyperBricks commands from the project root.
 
-## 4) Add your first fragment route (`<FRAGMENT>`)
+## Add A Page Route
 
-Create: `modules/someproject/hyperbricks/hello_fragment.hyperbricks`
+Create or replace:
 
-```hyperbricks
-hello = <FRAGMENT>
-hello.route = hello_fragment
-
-# Optional: HTMX response headers
-hello.response {
-  hx_trigger = helloLoaded
-  hx_reswap = innerHTML
-}
-
-hello.10 = <HTML>
-hello.10.value = <<[
-  <div>
-    <h2 class="text-xl font-semibold">Hi from a fragment</h2>
-    <p>This HTML was returned without a full page reload.</p>
-  </div>
-]>>
+```text
+modules/demo/hyperbricks/index.hyperbricks.yaml
 ```
 
----
+```yaml
+page:
+  - type: hypermedia
+  - route: index
+  - title: HyperBricks Quickstart
+  - head:
+      - type: head
+      - js:
+          - https://unpkg.com/htmx.org@2.0.4
+      - inline_styles:
+          - type: css
+          - inline: |
+              body {
+                font-family: system-ui, sans-serif;
+                margin: 2rem;
+              }
+              main {
+                max-width: 48rem;
+              }
+              button {
+                cursor: pointer;
+              }
+              #target {
+                margin-top: 1rem;
+                padding: 1rem;
+                border: 1px solid #ddd;
+              }
+  - main:
+      - type: tree
+      - enclose: <main>|</main>
+      - intro:
+          - type: html
+          - value: |
+              <h1>Hello HyperBricks</h1>
+              <p>This page is rendered from YAML.</p>
+              <button
+                hx-get="/hello-fragment"
+                hx-target="#target"
+                hx-swap="innerHTML"
+              >
+                Load fragment
+              </button>
+              <div id="target">(fragment loads here)</div>
+```
 
-## 5) Run the dev server
+`page` is the object name. `type: hypermedia` makes it a full page route.
+`route: index` makes it available as `/index`, and also as `/` with the default
+routing settings.
 
-From `rootdir/`:
+## Add A Fragment Route
+
+Create:
+
+```text
+modules/demo/hyperbricks/hello-fragment.hyperbricks.yaml
+```
+
+```yaml
+hello_fragment:
+  - type: fragment
+  - route: hello-fragment
+  - response:
+      hx_trigger: helloLoaded
+      hx_reswap: innerHTML
+  - panel:
+      - type: html
+      - value: |
+          <section>
+            <h2>Hi from a fragment</h2>
+            <p>This HTML was returned without a full page reload.</p>
+          </section>
+```
+
+`type: fragment` creates an HTMX-friendly partial route. The `response` block
+can set HTMX response headers.
+
+## Run The Dev Server
 
 ```bash
-hyperbricks start -m someproject
+hyperbricks start -m demo
 ```
 
 Open:
 
-* `http://localhost:8080/index`
+```text
+http://localhost:8080/
+```
 
-Click **Load fragment** — it should call `/hello_fragment` and swap into `#target`.
+Click `Load fragment`. The browser calls `/hello-fragment` and swaps the
+response into `#target`.
 
----
+## Use A Template File
 
-## 6) (Optional) Use templates from `templates/`
+Create:
 
-If you want a reusable head/body structure, create a template file:
-
-`modules/someproject/templates/head.html`:
+```text
+modules/demo/templates/card.html
+```
 
 ```html
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>{{ .title }}</title>
-<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+<section class="card">
+  <h2>{{.title}}</h2>
+  <p>{{.body}}</p>
+</section>
 ```
 
-Then reference it from `<HYPERMEDIA>`:
+Then add a template child to `page.main`:
 
-```hyperbricks
-docs.head.100 = <TEMPLATE>
-docs.head.100.template = {{TEMPLATE:head.html}}
-docs.head.100.values {
-  title = HyperBricks | Quickstart
-}
+```yaml
+      - reusable_card:
+          - type: template
+          - template:
+              file: card.html
+          - values:
+              title: Template file
+              body: This block is loaded from modules/demo/templates/card.html.
 ```
 
-(You can keep page content in `docs.10`, `docs.20`, etc., as usual.)
+`template.file` preloads the file from the module templates directory and keeps
+the template name in the runtime config.
 
----
+## Reuse With Inheritance
 
-## 7) Render static output
+Define a reusable object at the top level:
+
+```yaml
+base_card:
+  - type: template
+  - template:
+      file: card.html
+  - values:
+      title: Base card
+      body: Base body
+```
+
+Then use it inside `page.main` and override only the values that change:
+
+```yaml
+      - welcome_card:
+          - inherit: base_card
+          - values:
+              title: Welcome
+              body: This card reuses base_card and overrides its values.
+      - next_card:
+          - inherit: base_card
+          - values:
+              title: Next step
+              body: The template source stays shared.
+```
+
+`inherit` deep-copies the referenced object before applying local fields.
+Inherited objects keep their structure, while local values override or extend
+the copy.
+
+## Render Static Output
 
 ```bash
-hyperbricks static -m someproject
+hyperbricks static -m demo
 ```
 
-Static output is written to `modules/someproject/rendered/` (by default). Serve that folder however you like.
+Static output is written to the module render directory, by default:
+
+```text
+modules/demo/rendered/
+```
+
+## Next Steps
+
+- [YAML_USAGE.md](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
+- [REFERENCE.md](REFERENCE.md): component fields and executable examples.
+- [ROUTING.md](ROUTING.md): route resolution and clean URLs.
+- [ROUTE_GUARD.md](ROUTE_GUARD.md): pre-render route authorization.

@@ -40,7 +40,7 @@ Host hyperbricks-docker-remote
 ```
 
 Then use `hyperbricks-docker-remote` as the deploy target host in
-`deploy.hyperbricks`.
+`deploy.hyperbricks.yaml`.
 
 ## Ports
 - 9090: Deploy API
@@ -74,4 +74,3 @@ binaries work. To skip Tailwind installation, set `TAILWIND_VERSION` to empty in
   - Verify the runtime port shown in the Deploy UI matches the exposed range.
 - Plugin build fails on Go version:
   - The container uses Go 1.23.4. Rebuild if you were on 1.23.2.
-

@@ -12,7 +12,7 @@ ENV GOMODCACHE=${HB_HOME}/go/pkg/mod
 ENV GOCACHE=${HB_HOME}/.cache/go-build
 ENV GOBIN=${HB_HOME}/bin
 ENV PATH=${HB_HOME}/bin:/usr/local/go/bin:${PATH}
-ENV HB_DEPLOY_CONFIG=${HB_HOME}/deploy.hyperbricks
+ENV HB_DEPLOY_CONFIG=${HB_HOME}/deploy.hyperbricks.yaml
 
 RUN apk add --no-cache \
     build-base \
@@ -67,7 +67,7 @@ RUN if [ -n "${TAILWIND_VERSION}" ]; then \
     fi
 
 RUN mkdir -p /etc/hyperbricks
-COPY docker/deploy.hyperbricks /etc/hyperbricks/deploy.hyperbricks
+COPY docker/deploy.hyperbricks.yaml /etc/hyperbricks/deploy.hyperbricks.yaml
 COPY docker/hyperbricks-deploy /etc/init.d/hyperbricks-deploy
 COPY docker/hyperbricks-deploy.conf /etc/conf.d/hyperbricks-deploy
 COPY docker/sshd_config.conf /etc/ssh/sshd_config.d/99-hyperbricks.conf

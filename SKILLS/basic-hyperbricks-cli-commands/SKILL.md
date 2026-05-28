@@ -375,7 +375,7 @@ hyperbricks start --deploy-init-config remote
 Deploy config lives at:
 
 ```text
-deploy.hyperbricks
+deploy.hyperbricks.yaml
 ```
 
 ## Docker deploy

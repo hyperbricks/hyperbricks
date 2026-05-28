@@ -1,5 +1,9 @@
 myconf:
   some: value
+  demo:
+    title: YAML Runtime Fixture
+    section: init-module
+    cta_label: Open status fragment
 
 hyperbricks:
   mode: development

@@ -30,9 +30,9 @@ if [ -f "${HB_AUTHORIZED_KEYS_FILE}" ]; then
   chmod 600 "${HB_HOME}/.ssh/authorized_keys"
 fi
 
-if [ ! -f "${HB_HOME}/deploy.hyperbricks" ] && [ -f "/etc/hyperbricks/deploy.hyperbricks" ]; then
-  cp /etc/hyperbricks/deploy.hyperbricks "${HB_HOME}/deploy.hyperbricks"
-  chown "${HB_USER}:${HB_GROUP}" "${HB_HOME}/deploy.hyperbricks" 2>/dev/null || true
+if [ ! -f "${HB_HOME}/deploy.hyperbricks.yaml" ] && [ -f "/etc/hyperbricks/deploy.hyperbricks.yaml" ]; then
+  cp /etc/hyperbricks/deploy.hyperbricks.yaml "${HB_HOME}/deploy.hyperbricks.yaml"
+  chown "${HB_USER}:${HB_GROUP}" "${HB_HOME}/deploy.hyperbricks.yaml" 2>/dev/null || true
 fi
 
 if [ -f "${HB_HOME}/.ssh/authorized_keys" ]; then

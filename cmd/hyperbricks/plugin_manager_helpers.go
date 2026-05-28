@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
-	"github.com/hyperbricks/hyperbricks/pkg/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 type pluginListEntry struct {
@@ -106,11 +106,10 @@ func removePluginBinary(workingDir string, configName string) (bool, error) {
 }
 
 func readPluginConfigNames(configPath string) ([]string, error) {
-	data, err := os.ReadFile(configPath)
+	parsed, err := shared.LoadPackageConfigMap(configPath, filepath.Dir(configPath))
 	if err != nil {
 		return nil, err
 	}
-	parsed := parser.ParseHyperScript(string(data))
 	root := parsed
 	if hyper, ok := parsed["hyperbricks"].(map[string]interface{}); ok {
 		root = hyper

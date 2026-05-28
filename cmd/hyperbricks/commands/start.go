@@ -32,6 +32,8 @@ var (
 	Debug                  bool
 )
 
+const DeployConfigFileName = "deploy.hyperbricks.yaml"
+
 func GetModule() string {
 	return StartModule
 }
@@ -48,7 +50,7 @@ func NewStartCommand() *cobra.Command {
 					Exit = true
 					return
 				}
-				fmt.Println("Created deploy.hyperbricks.")
+				fmt.Printf("Created %s.\n", DeployConfigFileName)
 				Exit = true
 				return
 			}
@@ -114,7 +116,7 @@ func NewStartCommand() *cobra.Command {
 	cmd.Flags().StringVar(&StartBuildID, "build", "", "Deploy build ID to start (defaults to current)")
 	cmd.Flags().BoolVar(&StartDeployRemote, "deploy-remote", false, "Start deploy API daemon (remote)")
 	cmd.Flags().BoolVar(&StartDeployLocal, "deploy-local", false, "Start local deploy dashboard")
-	cmd.Flags().StringVar(&StartDeployInit, "deploy-init-config", "", "Create a default deploy.hyperbricks (local or remote)")
+	cmd.Flags().StringVar(&StartDeployInit, "deploy-init-config", "", "Create a default deploy.hyperbricks.yaml (local or remote)")
 	cmd.Flags().BoolVar(&StartRuntimeGateway, "runtime-gateway", false, "Enable host-based runtime gateway before normal route rendering")
 	cmd.Flags().StringVar(&StartRuntimeDomain, "runtime-domain", "", "Runtime host suffix to match, for example runtime.local")
 	cmd.Flags().StringVar(&StartRuntimeHostSuffix, "runtime-host-suffix", "", "Flat runtime host suffix to match, for example -runtime.example.com")
@@ -131,7 +133,7 @@ func writeDeployInitConfig(mode string) error {
 		return fmt.Errorf("deploy-init-config must be 'local' or 'remote'")
 	}
 
-	path := "deploy.hyperbricks"
+	path := DeployConfigFileName
 	if _, err := os.Stat(path); err == nil {
 		return fmt.Errorf("%s already exists", path)
 	} else if !os.IsNotExist(err) {
@@ -145,68 +147,62 @@ func writeDeployInitConfig(mode string) error {
 func deployInitTemplate(mode string) string {
 	if mode == "remote" {
 		return `# Deploy config (remote runtime API)
-deploy {
-  # shared HMAC secret (set via env)
-  hmac_secret = {{ENV:HB_DEPLOY_SECRET}}
+deploy:
+  # Shared HMAC secret. Prefer setting HB_DEPLOY_SECRET in the service environment.
+  hmac_secret:
+    env: HB_DEPLOY_SECRET
 
-  remote {
-    # enable deploy api daemon
-    api_enabled = true
-    api_bind = 127.0.0.1
+  remote:
+    # Enable deploy API daemon.
+    api_enabled: true
+    api_bind: 127.0.0.1
     # api_bind controls exposure:
     # - localhost/LAN: use SSH tunnel or LAN access
     # - WAN: bind to public IP and put HTTPS in front (reverse proxy)
-    api_port = 9090
-    root = deploy
-    port_start = 8080
-    logs_enabled = true
-    # binary = /usr/local/bin/hyperbricks
-  }
-}
+    api_port: 9090
+    root: deploy
+    port_start: 8080
+    logs_enabled: true
+    # binary: /usr/local/bin/hyperbricks
 `
 	}
 
 	return `# Deploy config (local build dashboard)
-deploy {
-  # shared HMAC secret (set via env)
-  hmac_secret = {{ENV:HB_DEPLOY_SECRET}}
+deploy:
+  # Shared HMAC secret. Prefer setting HB_DEPLOY_SECRET in the service environment.
+  hmac_secret:
+    env: HB_DEPLOY_SECRET
 
-  remote {
-    # used as defaults for push/sync
-    api_enabled = true
-    api_bind = 127.0.0.1
+  remote:
+    # Used as defaults for push/sync.
+    api_enabled: true
+    api_bind: 127.0.0.1
     # api_bind controls exposure:
     # - localhost/LAN: use SSH tunnel or LAN access
     # - WAN: bind to public IP and put HTTPS in front (reverse proxy)
-    api_port = 9090
-    root = deploy
-    port_start = 8080
-    logs_enabled = true
-  }
+    api_port: 9090
+    root: deploy
+    port_start: 8080
+    logs_enabled: true
 
-  local {
-    bind = 127.0.0.1
-    port = 9091
-    modules_dir = modules
-    build_root = deploy
-  }
+  local:
+    bind: 127.0.0.1
+    port: 9091
+    modules_dir: modules
+    build_root: deploy
 
-  # push targets for build --push and deploy-local
-  client {
-    target = prod
-    targets {
-      prod {
-        host = 192.168.2.35
-        user = deploy
-        port = 22
-        root = /opt/hyperbricks/deploy
-        api = http://192.168.2.35:9090
+  # Push targets for build --push and deploy-local.
+  client:
+    target: prod
+    targets:
+      prod:
+        host: 192.168.2.35
+        user: deploy
+        port: 22
+        root: /opt/hyperbricks/deploy
+        api: http://192.168.2.35:9090
         # For WAN use, point api to your public HTTPS endpoint instead of SSH tunnel.
         # Use SSH keys for push (recommended, no passwords).
-      }
-    }
-  }
-}
 `
 }
 
