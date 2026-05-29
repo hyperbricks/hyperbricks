@@ -1,0 +1,11 @@
+==== hyperbricks yaml {!{post_body_test}} ====
+post_body_test:
+  - type: api_render
+  - route: post_body_test
+  - endpoint: http://localhost:8090/echo/data
+  - method: POST
+  - body: '{"password":"$user_password"}'
+  - inline: |
+      {{.Data.password}}
+==== expected output ====
+mysupersecretpassword

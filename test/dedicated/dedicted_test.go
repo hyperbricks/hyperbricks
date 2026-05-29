@@ -1,3 +1,5 @@
+//go:build legacy_hyperbricks_parser
+
 package main
 
 import (
@@ -41,7 +43,7 @@ type ParsedContent struct {
 	MoreDetails            string
 }
 
-var directory = flag.String("directory", "./api-tests/", "Directory to use")
+var directory = flag.String("directory", "./legacy-api-tests/", "Directory with legacy .hyperbricks fixtures")
 
 // TestMain is the entry point for testing; it must call flag.Parse()
 func TestMain(m *testing.M) {

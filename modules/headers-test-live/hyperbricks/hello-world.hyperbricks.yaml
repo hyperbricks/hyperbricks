@@ -1,0 +1,27 @@
+page:
+  - type: hypermedia
+  - route: index.html
+  - headers:
+      X-Test: headers-test-live
+      Content-Security-Policy: "default-src 'self'"
+  - cookies:
+      - "session=live; Path=/; HttpOnly"
+      - "prefs=live; Path=/; Max-Age=31536000; SameSite=Lax"
+  - text_10:
+      - type: text
+      - value: HELLO WORLD!
+      - enclose: <p>|</p>
+
+help:
+  - type: hypermedia
+  - route: help.html
+  - headers:
+      X-Test: headers-test-live
+      Content-Security-Policy: "default-src 'self'"
+  - cookies:
+      - "session=live; Path=/; HttpOnly"
+      - "prefs=live; Path=/; Max-Age=31536000; SameSite=Lax"
+  - text_10:
+      - type: text
+      - value: HELP PAGE
+      - enclose: <p>|</p>

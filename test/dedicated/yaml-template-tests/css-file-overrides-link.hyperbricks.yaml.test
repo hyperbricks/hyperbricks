@@ -1,0 +1,15 @@
+==== hyperbricks yaml {!{hypermedia}} ====
+hypermedia:
+  - type: hypermedia
+  - head:
+      - type: head
+      - css_main:
+          - type: css
+          - file: template-tests/assets/styles-local.css
+          - link: styles.css
+==== expected output ====
+<!DOCTYPE html><html><head><style>
+body {
+    color: blue;
+}
+</style><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

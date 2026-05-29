@@ -1,0 +1,14 @@
+==== hyperbricks yaml {!{hypermedia}} ====
+hypermedia:
+  - type: hypermedia
+  - head:
+      - type: head
+      - js_main:
+          - type: javascript
+          - inline: |
+              console.log('inline');
+          - link: main.js
+==== expected output ====
+<!DOCTYPE html><html><head><script>
+console.log('inline');
+</script><meta name="generator" content="hyperbricks runtime"></head><body></body></html>

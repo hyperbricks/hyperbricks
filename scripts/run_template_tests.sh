@@ -6,5 +6,5 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${REPO_ROOT}"
 
-echo "Running template test..."
-go test -v ./test/dedicated/dedicted_test.go -args -directory="./template-tests/"
+echo "Running YAML dedicated template tests..."
+go test -v ./test/dedicated -run '^Test_All_Dedicated_YAML_Tests$' -args -directory="./yaml-template-tests/"

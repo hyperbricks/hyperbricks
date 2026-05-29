@@ -1,0 +1,16 @@
+==== hyperbricks yaml {!{status_code_test}} ====
+status_code_test:
+  - type: api_fragment_render
+  - route: status_code_test
+  - endpoint: http://localhost:8090/echo/query
+  - method: GET
+  - querykeys:
+      - code
+  - queryparams:
+      code: "201"
+  - inline: |
+      {{.Data.queryParams.code}}
+  - response:
+      hx_target: target-element-id
+==== expected output ====
+201

@@ -108,5 +108,5 @@ docker compose -f "${COMPOSE_FILE}" down -v >/dev/null 2>&1 || true
 docker compose -f "${COMPOSE_FILE}" up -d
 wait_for_url "http://localhost:3000/" "PostgREST docker stack"
 
-echo "Running Docker API_RENDER and API_FRAGMENT_RENDER tests..."
-go test -v ./test/dedicated/dedicted_test.go -args -directory="./api-tests/"
+echo "Running Docker YAML API_RENDER and API_FRAGMENT_RENDER tests..."
+go test -v ./test/dedicated -run '^Test_All_Dedicated_YAML_Tests$' -args -directory="./yaml-api-tests/"

@@ -1,0 +1,11 @@
+==== hyperbricks yaml {!{body_status_test}} ====
+body_status_test:
+  - type: api_render
+  - route: body_status_test
+  - endpoint: http://localhost:8090/validate/body
+  - method: GET
+  - body: '{"password":"$user_password"}'
+  - inline: |
+      Status:{{.Status}}
+==== expected output ====
+Status:200

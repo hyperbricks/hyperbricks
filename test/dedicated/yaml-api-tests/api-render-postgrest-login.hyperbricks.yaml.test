@@ -1,0 +1,15 @@
+==== hyperbricks yaml {!{api_login_user}} ====
+api_login_user:
+  - type: api_render
+  - route: index
+  - endpoint: http://localhost:3000/rpc/login_user
+  - method: POST
+  - body: '{"p_password":"securepassword","p_username":"testuser1"}'
+  - headers:
+      Access-Control-Allow-Credentials: "true"
+      Content-Type: application/json
+      Accept: application/json
+  - inline: |
+      {{ if eq .Status 400 }}FAIL{{ else if eq .Status 200 }}OK{{ end }}
+==== expected output ====
+OK
