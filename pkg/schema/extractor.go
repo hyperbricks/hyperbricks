@@ -70,8 +70,10 @@ type FieldAuthoring struct {
 }
 
 type PublishRules struct {
-	OmitEmpty bool `json:"omit_empty,omitempty"`
-	OmitFalse bool `json:"omit_false,omitempty"`
+	OmitEmpty      bool   `json:"omit_empty,omitempty"`
+	OmitFalse      bool   `json:"omit_false,omitempty"`
+	ScalarStyle    string `json:"scalar_style,omitempty"`
+	ScalarLanguage string `json:"scalar_language,omitempty"`
 }
 
 func ExtractRegistry(defs []Definition) ComponentSchema {
@@ -91,7 +93,7 @@ func ExtractRegistry(defs []Definition) ComponentSchema {
 func ExtractDefinition(def Definition) TypeSchema {
 	fields := walkType(def.ConfigType, "", nil)
 	assignGroups(fields, def.FormGroups)
-	assignAuthoring(fields)
+	assignAuthoring(fields, def.Token)
 	applyFieldAuthoringOverrides(fields, def.FieldAuthoringOverrides)
 	sort.Slice(fields, func(i, j int) bool {
 		return fields[i].Path < fields[j].Path
@@ -171,9 +173,9 @@ func walkType(rt reflect.Type, prefix string, fields []Field) []Field {
 	return fields
 }
 
-func assignAuthoring(fields []Field) {
+func assignAuthoring(fields []Field, token string) {
 	for i := range fields {
-		fields[i].Authoring = inferFieldAuthoring(fields[i])
+		fields[i].Authoring = inferFieldAuthoring(fields[i], token)
 	}
 }
 
@@ -283,12 +285,12 @@ func inferAuthoringRules(def Definition) []AuthoringRuleRef {
 	}}
 }
 
-func inferFieldAuthoring(field Field) *FieldAuthoring {
+func inferFieldAuthoring(field Field, token string) *FieldAuthoring {
 	authoring := FieldAuthoring{
 		Label:   humanizeFieldLabel(field.Path),
 		Control: inferFieldControl(field),
 		Group:   field.Group,
-		Publish: inferPublishRules(field.Path, field.Kind, field.Required, field.ValueDynamic),
+		Publish: inferPublishRules(field, token),
 	}
 	if authoring.Label == "" && authoring.Control == "" && authoring.Group == "" && authoring.Publish == nil {
 		return nil
@@ -296,19 +298,62 @@ func inferFieldAuthoring(field Field) *FieldAuthoring {
 	return &authoring
 }
 
-func inferPublishRules(path string, kind string, required bool, valueDynamic bool) *PublishRules {
+func inferPublishRules(field Field, token string) *PublishRules {
 	rules := PublishRules{
 		OmitEmpty: true,
 	}
 
-	if shouldOmitFalseOnPublish(path, kind, required, valueDynamic) {
+	if shouldOmitFalseOnPublish(field.Path, field.Kind, field.Required, field.ValueDynamic) {
 		rules.OmitFalse = true
 	}
+	rules.ScalarStyle, rules.ScalarLanguage = inferPublishScalarPresentation(field, token)
 
-	if !rules.OmitEmpty && !rules.OmitFalse {
+	if !rules.OmitEmpty && !rules.OmitFalse && rules.ScalarStyle == "" && rules.ScalarLanguage == "" {
 		return nil
 	}
 	return &rules
+}
+
+func inferPublishScalarPresentation(field Field, token string) (string, string) {
+	if field.Kind != "string" {
+		return "", ""
+	}
+	key := strings.ToLower(strings.TrimSpace(field.Key))
+	path := strings.ToLower(strings.TrimSpace(field.Path))
+	normalizedToken := strings.ToUpper(strings.TrimSpace(token))
+	switch {
+	case key == "inline":
+		return "literal", scalarLanguageForToken(normalizedToken)
+	case key == "body" || strings.HasSuffix(path, ".body"):
+		return "literal", "json"
+	case key == "value" && normalizedToken == "<HTML>":
+		return "literal", "html"
+	case key == "value" && normalizedToken == "<TEXT>":
+		return "folded", "text"
+	case key == "htmltag" || key == "bodytag":
+		return "literal", "html"
+	case key == "enclose" || strings.HasSuffix(path, ".enclose"):
+		return "literal", "html"
+	case normalizedToken == "<MENU>" && (key == "active" || key == "item"):
+		return "literal", "html"
+	case key == "setcookie":
+		return "literal", ""
+	default:
+		return "", ""
+	}
+}
+
+func scalarLanguageForToken(token string) string {
+	switch token {
+	case "<CSS>", "<STYLES>":
+		return "css"
+	case "<JS>":
+		return "js"
+	case "<API_RENDER>", "<API_FRAGMENT_RENDER>", "<FRAGMENT>", "<HYPERMEDIA>", "<JSON_RENDER>", "<TEMPLATE>":
+		return "html"
+	default:
+		return ""
+	}
 }
 
 func shouldOmitFalseOnPublish(path string, kind string, required bool, valueDynamic bool) bool {
