@@ -21,7 +21,7 @@ import (
 	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
 )
 
-var updateYAMLReadableFlag = flag.Bool("update-yaml-readable", false, "rewrite migrated HyperBricks YAML readable expected JSON sections")
+var updateYAMLReadableFlag = flag.Bool("update-yaml-readable", false, "rewrite HyperBricks YAML readable expected JSON sections")
 
 const (
 	yamlProfileFixtureDir = "hyperbricks-yaml-test-files"
@@ -386,7 +386,7 @@ func assertCaseExpectedJSON(t *testing.T, rm *render.RenderManager, testCase yam
 	}
 	got := canonicalJSON(t, gotValue)
 	want := canonicalJSON(t, expected)
-	if *updateYAMLReadableFlag && isMigratedDocumentationYAMLReadableCase(testCase.Path) {
+	if *updateYAMLReadableFlag {
 		rewriteYAMLReadableExpectedJSON(t, testCase.Path, got)
 		return
 	}
@@ -705,15 +705,6 @@ func configureYAMLProfileMenus(t *testing.T, rm *render.RenderManager, doc *yaml
 	menuRenderer.HyperMediasBySection = sections
 }
 
-func isMigratedDocumentationYAMLReadableCase(path string) bool {
-	sourcePath := strings.TrimSuffix(path, ".yaml.test")
-	if sourcePath == path {
-		return false
-	}
-	_, err := os.Stat(sourcePath)
-	return err == nil
-}
-
 func rewriteYAMLReadableExpectedJSON(t *testing.T, path string, expectedJSON []byte) {
 	t.Helper()
 	rawBytes, err := os.ReadFile(path)
@@ -722,15 +713,14 @@ func rewriteYAMLReadableExpectedJSON(t *testing.T, path string, expectedJSON []b
 	}
 	raw := string(rawBytes)
 	jsonHeader := "==== expected json ===="
-	outputHeader := "\n==== expected output ===="
 	start := strings.Index(raw, jsonHeader)
 	if start < 0 {
 		t.Fatalf("%s missing expected JSON header", path)
 	}
 	afterHeader := start + len(jsonHeader)
-	relativeEnd := strings.Index(raw[afterHeader:], outputHeader)
+	relativeEnd := strings.Index(raw[afterHeader:], "\n==== ")
 	if relativeEnd < 0 {
-		t.Fatalf("%s missing expected output header", path)
+		t.Fatalf("%s missing section after expected JSON header", path)
 	}
 	end := afterHeader + relativeEnd
 	replacement := "\n" + strings.TrimRight(string(expectedJSON), "\n") + "\n"

@@ -525,8 +525,10 @@ bodytag: '<body data-page="home">|</body>'
 
 ## Template Syntax
 
-Go `html/template` and Sprig syntax stays literal in YAML values. The YAML
-pipeline does not resolve Go template expressions.
+HyperBricks templates use Go `html/template` with Sprig functions plus the
+small HyperBricks helper set (`safe`, `random`, and `valueOrEmpty`). Template
+syntax stays literal in YAML values. The YAML pipeline does not resolve Go
+template expressions.
 
 ```yaml
 card:
@@ -535,6 +537,28 @@ card:
       <h2>{{.title}}</h2>
       <p>{{ .body | upper }}</p>
 ```
+
+Use YAML lists and maps directly when the data belongs to the template context:
+
+```yaml
+card_list:
+  - type: template
+  - inline: |
+      <ul>
+      {{range .cards}}
+        <li>{{.title}}: {{.body}}</li>
+      {{end}}
+      </ul>
+  - values:
+      cards:
+        - title: First
+          body: Rendered from YAML data
+        - title: Second
+          body: Still ordinary template data
+```
+
+Use YAML block scalars when the template itself spans multiple lines. Avoid the
+old `<<[ ... ]>>` block syntax; it belongs to the removed properties DSL.
 
 ## Unsupported Source Features
 
@@ -599,6 +623,18 @@ myconf:
 
 hyperbricks:
   mode: development
+  development:
+    watch: true
+    reload: true
+    frontend_errors: false
+  live:
+    cache: 10m
+  server:
+    port: 8080
+    read_timeout: 5s
+    write_timeout: 10s
+    idle_timeout: 20s
+    keep_alives_enabled: true
   directories:
     render:
       path:
@@ -616,3 +652,50 @@ hyperbricks:
 
 The same resolver model is available for configuration values. `vars` is used
 for resolver input and is not copied into the materialized configuration.
+
+Common `hyperbricks` package fields:
+
+| Field | Purpose |
+| --- | --- |
+| `mode` | Runtime mode. Supported values are `development`, `live`, and `debug`. Invalid values fall back to live mode. |
+| `development.watch` | Watch source directories in development mode. |
+| `development.reload` | Enable development reload behavior. |
+| `development.frontend_errors` | Render frontend error panels when component `debugpanel` is enabled. |
+| `live.cache` | Default live-mode cache duration. Uses Go duration strings such as `10s`, `5m`, or `2h`. |
+| `server.port` | HTTP server port, unless overridden by CLI flags. |
+| `server.beautify` | Beautify rendered HTML when supported. |
+| `server.self_closing_tags` | Render XHTML-style self-closing tags when enabled. |
+| `server.read_timeout`, `server.write_timeout`, `server.idle_timeout` | HTTP server timeout durations. |
+| `server.keep_alives_enabled` | Enable or disable HTTP keep-alive connections. |
+| `server.routing` | Clean URL and extension routing settings. See [Routing](ROUTING.md). |
+| `server.runtime_gateway` | Runtime host gateway settings. See [Runtime Gateway](RUNTIME_GATEWAY.md). |
+| `rate_limit.requests_per_second`, `rate_limit.burst` | Basic request rate limit settings. |
+| `plugins.enabled` | Plugin config names to preload, without `.so`. See [Plugins](PLUGINS.md). |
+| `plugins.config` | Optional plugin-specific config map. |
+| `directories` | Module directory locations. Resolver path objects are supported here. |
+| `logger.level`, `logger.path` | File logging settings. |
+
+The default module layout is:
+
+```text
+modules/<name>/
+  hyperbricks/
+  rendered/
+  resources/
+  static/
+  templates/
+  package.hyperbricks.yaml
+```
+
+Directory roles:
+
+| Directory | Purpose |
+| --- | --- |
+| `hyperbricks` | Runtime source files. The runtime scans `*.hyperbricks.yaml` files in this directory. |
+| `templates` | Go `html/template` files used by `template.file` and other template providers. |
+| `resources` | Source assets or data that can be read through `file` and path resolvers. |
+| `static` | Public files served directly by the runtime. |
+| `rendered` | Static output written by `hyperbricks static`. |
+
+Subdirectories below `hyperbricks/` are not loaded automatically. Add a root
+source file and load shared files with `imports`.
