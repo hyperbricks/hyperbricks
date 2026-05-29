@@ -6,7 +6,7 @@ head:
       - attributes:
           type: text/javascript
       - enclose: <script defer></script>
-      - file: hyperbricks-test-files/assets/main.js
+      - file: hyperbricks-yaml-test-files/assets/main.js
 ==== explainer ====
 Wrap rendered output using prefix|suffix syntax
 ==== expected json ====
@@ -28,7 +28,7 @@ Wrap rendered output using prefix|suffix syntax
         "type": "text/javascript"
       },
       "enclose": "<script defer></script>",
-      "file": "hyperbricks-test-files/assets/main.js"
+      "file": "hyperbricks-yaml-test-files/assets/main.js"
     }
   },
   "Js": null,

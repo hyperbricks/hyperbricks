@@ -3,7 +3,7 @@ image:
   - type: image
   - height: "320"
   - quality: "1"
-  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
   - width: "320"
 ==== explainer ====
 Image quality for optimization, bigger is better.
@@ -24,7 +24,7 @@ Image quality for optimization, bigger is better.
   "Loading": "",
   "MetaDocDescription": "",
   "Quality": 1,
-  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Src": "hyperbricks-yaml-test-files/assets/cute_cat.jpg",
   "Title": "",
   "Width": 320
 }

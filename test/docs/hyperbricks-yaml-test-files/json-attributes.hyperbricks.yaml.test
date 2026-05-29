@@ -2,7 +2,7 @@
 local_json_test:
   - type: json_render
   - debug: "false"
-  - file: hyperbricks-test-files/assets/quotes.json
+  - file: hyperbricks-yaml-test-files/assets/quotes.json
   - inline: |2-
               <h1>Quotes</h1>
               <ul>
@@ -20,7 +20,7 @@ Extra attributes like id, data-role, data-action
   "Debug": false,
   "Enclose": "",
   "ExtraAttributes": null,
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "FilePath": "hyperbricks-yaml-test-files/assets/quotes.json",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",

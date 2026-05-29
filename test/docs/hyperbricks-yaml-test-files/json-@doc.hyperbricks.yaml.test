@@ -2,7 +2,7 @@
 local_json_test:
   - type: json_render
   - debug: "false"
-  - file: hyperbricks-test-files/assets/quotes.json
+  - file: hyperbricks-yaml-test-files/assets/quotes.json
   - inline: |-
       <h1>{{.someproperty}}</h1>
       <ul>
@@ -21,7 +21,7 @@ Debug the response data
   "Debug": false,
   "Enclose": "",
   "ExtraAttributes": null,
-  "FilePath": "hyperbricks-test-files/assets/quotes.json",
+  "FilePath": "hyperbricks-yaml-test-files/assets/quotes.json",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",

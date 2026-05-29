@@ -1,7 +1,7 @@
 ==== hyperbricks yaml {!{images}} ====
 images:
   - type: images
-  - directory: hyperbricks-test-files/assets/
+  - directory: hyperbricks-yaml-test-files/assets/
   - id: '#img_'
   - loading: lazy
   - width: "100"
@@ -13,7 +13,7 @@ Lazy loading strategy (e.g., 'lazy', 'eager')
   "Class": "",
   "ConfigCategory": "",
   "ConfigType": "<IMAGES>",
-  "Directory": "hyperbricks-test-files/assets/",
+  "Directory": "hyperbricks-yaml-test-files/assets/",
   "Enclose": "",
   "ExtraAttributes": null,
   "Height": 0,

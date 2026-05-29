@@ -2,7 +2,7 @@
 image:
   - type: image
   - height: "100"
-  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
 ==== explainer ====
 The height of the images (can be a number or percentage)
 ==== expected json ====
@@ -22,7 +22,7 @@ The height of the images (can be a number or percentage)
   "Loading": "",
   "MetaDocDescription": "",
   "Quality": 0,
-  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Src": "hyperbricks-yaml-test-files/assets/cute_cat.jpg",
   "Title": "",
   "Width": 0
 }

@@ -6,8 +6,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-
-	oldparser "github.com/hyperbricks/hyperbricks/pkg/parser"
 )
 
 func TestParseMaterializesOrderedChildren(t *testing.T) {
@@ -409,10 +407,7 @@ fragment:
 	}
 }
 
-func TestProcessBytesTemplateFileResolverStoresTemplateContent(t *testing.T) {
-	oldparser.ClearTemplateStore()
-	t.Cleanup(oldparser.ClearTemplateStore)
-
+func TestProcessBytesTemplateFileResolverMaterializesTemplatePath(t *testing.T) {
 	templateDir := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(templateDir, "cards"), 0o755); err != nil {
 		t.Fatalf("mkdir template dir: %v", err)
@@ -435,9 +430,6 @@ card:
 	card := result.Materialized["card"].(map[string]interface{})
 	if card["template"] != "cards/card.html" {
 		t.Fatalf("template field = %#v", card["template"])
-	}
-	if content, found := oldparser.GetTemplate("cards/card.html"); !found || content != "<article>{{.title}}</article>" {
-		t.Fatalf("stored template = %q, found=%v", content, found)
 	}
 }
 

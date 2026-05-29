@@ -1,7 +1,7 @@
 ==== hyperbricks yaml {!{style}} ====
 style:
   - type: styles
-  - file: hyperbricks-test-files/assets/styles.css
+  - file: hyperbricks-yaml-test-files/assets/styles.css
 ==== explainer ====
 Path to the CSS file
 ==== expected json ====
@@ -10,7 +10,7 @@ Path to the CSS file
   "ConfigType": "<STYLES>",
   "Enclose": "",
   "ExtraAttributes": null,
-  "File": "hyperbricks-test-files/assets/styles.css",
+  "File": "hyperbricks-yaml-test-files/assets/styles.css",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": ""

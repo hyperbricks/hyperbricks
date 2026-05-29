@@ -1,5 +1,3 @@
-//go:build !legacy_hyperbricks_parser
-
 package main
 
 import (
@@ -17,6 +15,14 @@ type documentationExamplePlugin struct{}
 
 func (documentationExamplePlugin) Render(data interface{}, ctx context.Context) (any, []error) {
 	return "Plugin example", nil
+}
+
+var angleTag = regexp.MustCompile(`<[A-Z_][A-Z0-9_]*>`)
+
+func codeifyTags(s string) string {
+	return angleTag.ReplaceAllStringFunc(s, func(m string) string {
+		return "`" + m + "`"
+	})
 }
 
 func compactMarkdownOutsideCodeFences(content string) string {

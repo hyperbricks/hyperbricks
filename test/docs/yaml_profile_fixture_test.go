@@ -24,8 +24,7 @@ import (
 var updateYAMLReadableFlag = flag.Bool("update-yaml-readable", false, "rewrite migrated HyperBricks YAML readable expected JSON sections")
 
 const (
-	legacyDocumentationFixtureDir = "hyperbricks-test-files"
-	yamlProfileFixtureDir         = "hyperbricks-yaml-test-files"
+	yamlProfileFixtureDir = "hyperbricks-yaml-test-files"
 )
 
 type yamlReadableCase struct {
@@ -174,23 +173,6 @@ func TestYAMLProfileReadableCasesCoverCoreCorpus(t *testing.T) {
 		readablePath := filepath.Join(yamlProfileFixtureDir, name)
 		if _, err := os.Stat(readablePath); err != nil {
 			t.Fatalf("readable YAML test case %s is missing: %v", name, err)
-		}
-	}
-}
-
-func TestYAMLProfileReadableCasesCoverMigratedDocumentationFixtures(t *testing.T) {
-	matches, err := filepath.Glob(filepath.Join(legacyDocumentationFixtureDir, "*.hyperbricks"))
-	if err != nil {
-		t.Fatalf("glob migrated documentation fixtures: %v", err)
-	}
-	for _, path := range matches {
-		name := filepath.Base(path)
-		if strings.HasSuffix(name, ".legacy.hyperbricks") {
-			continue
-		}
-		readablePath := filepath.Join(yamlProfileFixtureDir, strings.TrimSuffix(name, ".hyperbricks")+".hyperbricks.yaml.test")
-		if _, err := os.Stat(readablePath); err != nil {
-			t.Fatalf("readable YAML test case %s is missing for %s: %v", filepath.Base(readablePath), name, err)
 		}
 	}
 }

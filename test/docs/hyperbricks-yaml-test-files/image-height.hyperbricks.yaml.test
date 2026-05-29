@@ -5,7 +5,7 @@ image:
       loading: lazy
   - enclose: <div id="#logo">|</div>
   - height: "310"
-  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
   - width: "310"
 ==== explainer ====
 The height of the image (can be a number or percentage)
@@ -28,7 +28,7 @@ The height of the image (can be a number or percentage)
   "Loading": "",
   "MetaDocDescription": "",
   "Quality": 0,
-  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Src": "hyperbricks-yaml-test-files/assets/cute_cat.jpg",
   "Title": "",
   "Width": 310
 }

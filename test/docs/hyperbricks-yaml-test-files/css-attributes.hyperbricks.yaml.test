@@ -6,7 +6,7 @@ hypermedia:
         - type: css
         - attributes:
             media: screen
-        - file: hyperbricks-test-files/assets/styles.css
+        - file: hyperbricks-yaml-test-files/assets/styles.css
 ==== explainer ====
 Extra attributes like id, data-role, data-action, media
 ==== expected json ====
@@ -26,7 +26,7 @@ Extra attributes like id, data-role, data-action, media
       "attributes": {
         "media": "screen"
       },
-      "file": "hyperbricks-test-files/assets/styles.css"
+      "file": "hyperbricks-yaml-test-files/assets/styles.css"
     }
   },
   "Headers": null,

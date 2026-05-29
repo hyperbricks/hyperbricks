@@ -3,7 +3,7 @@ images:
   - type: images
   - attributes:
       decoding: async
-  - directory: hyperbricks-test-files/assets/
+  - directory: hyperbricks-yaml-test-files/assets/
   - id: '#galleryimage_'
   - loading: lazy
   - width: "100"
@@ -15,7 +15,7 @@ Extra attributes like id, data-role, data-action
   "Class": "",
   "ConfigCategory": "",
   "ConfigType": "<IMAGES>",
-  "Directory": "hyperbricks-test-files/assets/",
+  "Directory": "hyperbricks-yaml-test-files/assets/",
   "Enclose": "",
   "ExtraAttributes": {
     "decoding": "async"

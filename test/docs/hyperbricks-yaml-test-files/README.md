@@ -3,16 +3,6 @@
 This directory is the migration fixture set for the new HyperBricks YAML
 profile.
 
-The legacy documentation/runtime fixture set remains in:
-
-```text
-test/docs/hyperbricks-test-files/
-```
-
-Do not mutate that legacy directory for the DSL migration. Convert and expand
-fixtures here instead, so old runtime behavior stays covered while the new YAML
-parser, materializer, and later renderer integration get their own corpus.
-
 Migration rules for this directory:
 
 - keep assets local under `assets/`
@@ -21,8 +11,8 @@ Migration rules for this directory:
 - include inheritance, nested values, imports, arrays, route composites,
   template values, guards, API render configs, and collision/reserved-name
   cases
-- do not copy legacy `.hyperbricks` files here; the original legacy fixture set
-  remains in `test/docs/hyperbricks-test-files/`
+- do not add legacy `.hyperbricks` fixtures; YAML readable fixtures are the
+  executable documentation corpus
 - do not add detached JSON golden files; expected materialized/runtime JSON
   belongs inside the readable `.hyperbricks.yaml.test` fixture
 - avoid generated numeric child keys such as `.10`, `.20`, `.30`

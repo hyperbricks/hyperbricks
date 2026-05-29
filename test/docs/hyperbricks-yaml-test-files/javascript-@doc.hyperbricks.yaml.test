@@ -3,7 +3,7 @@ js:
   - type: javascript
   - attributes:
       type: text/javascript
-  - file: hyperbricks-test-files/assets/script.js
+  - file: hyperbricks-yaml-test-files/assets/script.js
 ==== explainer ====
 Extra attributes like id, data-role, data-action, type
 ==== expected json ====
@@ -14,7 +14,7 @@ Extra attributes like id, data-role, data-action, type
   "ExtraAttributes": {
     "type": "text/javascript"
   },
-  "File": "hyperbricks-test-files/assets/script.js",
+  "File": "hyperbricks-yaml-test-files/assets/script.js",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",

@@ -4,7 +4,7 @@ css:
   - attributes:
       media: screen
   - enclose: <style media="print">|</style>
-  - file: hyperbricks-test-files/assets/styles.css
+  - file: hyperbricks-yaml-test-files/assets/styles.css
 ==== explainer ====
 ### Inline css example
 <div id="python" class="tab-content">
@@ -16,7 +16,7 @@ css:
 <div id="javascript" class="tab-content" style="display:none;">
 <pre><code class="language-hyperbricks">
 css = <CSS>
-css.file = hyperbricks-test-files/assets/styles.css
+css.file = hyperbricks-yaml-test-files/assets/styles.css
 css.attributes {
     media = screen
 }
@@ -31,7 +31,7 @@ css.enclose = <style media="print">|</style>
   "ExtraAttributes": {
     "media": "screen"
   },
-  "File": "hyperbricks-test-files/assets/styles.css",
+  "File": "hyperbricks-yaml-test-files/assets/styles.css",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
