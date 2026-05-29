@@ -96,9 +96,23 @@ The `response` block maps to HTMX response headers.
 | `hx_trigger_after_settle` | `HX-Trigger-After-Settle` |
 | `hx_trigger_after_swap` | `HX-Trigger-After-Swap` |
 
+A typical HTMX flow is:
+
+1. The browser triggers an `hx-get` or `hx-post` request.
+2. HyperBricks resolves the `api_fragment_render` route.
+3. If a `guard` is configured, it runs before any upstream API call.
+4. HyperBricks forwards the allowed request data to the upstream API.
+5. The upstream response is rendered through `inline` or `template`.
+6. HyperBricks returns fragment HTML plus any configured HTMX response headers.
+
+If the rendered body contains `hx-swap-oob` elements, HTMX applies those
+out-of-band swaps after the normal target swap.
+
 ## Request Mapping
 
-Both API components support the same core API request fields.
+Both API components support the same core API request fields. `api_render` uses
+them while rendering inside an owning route; `api_fragment_render` uses them for
+its own route.
 
 | Field | Purpose |
 | --- | --- |
@@ -116,8 +130,18 @@ Both API components support the same core API request fields.
 | `debug` | Add debug output in development flows |
 | `debugpanel` | Enable the frontend error panel when configured globally |
 
-`body` placeholders use `$key` names resolved from the merged request data.
-Prefer simple placeholder names such as `$id`, `$name`, or `$email`.
+Incoming data is merged before placeholders are applied:
+
+| Source | Behavior |
+| --- | --- |
+| Query params | Only keys listed in `querykeys` are forwarded. If `querykeys` is omitted, HyperBricks uses the default allow-list `id`, `name`, and `order`. An explicit empty list forwards none. |
+| Form data | Single-value fields become strings. Multi-value fields remain lists. |
+| JSON body | Object keys merge into the request data. If a JSON key collides with an existing key, the JSON value is also available as `body_<key>`. |
+| `queryparams` | Static values are appended to the outgoing upstream query. |
+
+`body` placeholders use `$key` names resolved from that merged request data.
+Prefer simple placeholder names such as `$id`, `$name`, or `$email`; they are
+matched as word-like tokens.
 
 ```yaml
 login:
@@ -134,6 +158,14 @@ login:
   - inline: |
       <div id="login-result">{{.Data.message}}</div>
 ```
+
+Template context contains:
+
+| Key | Meaning |
+| --- | --- |
+| `.Data` | Parsed upstream response. JSON becomes maps/lists; plain text remains string-like data. |
+| `.Status` | Upstream HTTP status code. |
+| Values from `values` | Extra values merged into the template root, for example `{{.heading}}`. |
 
 ## Authentication
 
@@ -168,6 +200,7 @@ logout:
 ```
 
 Use `setcookies` when one route must emit multiple `Set-Cookie` headers.
+`setcookie` is still accepted as a shorthand for one cookie template.
 
 ## Guards
 
