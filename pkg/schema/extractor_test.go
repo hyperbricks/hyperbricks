@@ -288,6 +288,43 @@ func TestExtractorAppliesFieldAuthoringOverrides(t *testing.T) {
 	}
 }
 
+func TestExtractorAddsPublishScalarPresentationMetadata(t *testing.T) {
+	schema := ExtractRegistry(Definitions())
+
+	tests := []struct {
+		token    string
+		path     string
+		style    string
+		language string
+	}{
+		{token: "<HTML>", path: "value", style: "literal", language: "html"},
+		{token: "<TEXT>", path: "value", style: "folded", language: "text"},
+		{token: "<CSS>", path: "inline", style: "literal", language: "css"},
+		{token: "<JS>", path: "inline", style: "literal", language: "js"},
+		{token: "<TEMPLATE>", path: "inline", style: "literal", language: "html"},
+		{token: "<API_FRAGMENT_RENDER>", path: "body", style: "literal", language: "json"},
+		{token: "<HYPERMEDIA>", path: "bodytag", style: "literal", language: "html"},
+		{token: "<MENU>", path: "item", style: "literal", language: "html"},
+	}
+
+	for _, test := range tests {
+		typeSchema := findType(schema, test.token)
+		if typeSchema == nil {
+			t.Fatalf("missing %s", test.token)
+		}
+		field := findField(*typeSchema, test.path)
+		if field == nil {
+			t.Fatalf("%s missing %s", test.token, test.path)
+		}
+		if field.Authoring == nil || field.Authoring.Publish == nil {
+			t.Fatalf("%s.%s publish metadata missing: %#v", test.token, test.path, field.Authoring)
+		}
+		if field.Authoring.Publish.ScalarStyle != test.style || field.Authoring.Publish.ScalarLanguage != test.language {
+			t.Fatalf("%s.%s scalar presentation = %#v, want style=%q language=%q", test.token, test.path, field.Authoring.Publish, test.style, test.language)
+		}
+	}
+}
+
 func findType(schema ComponentSchema, token string) *TypeSchema {
 	for i := range schema.Types {
 		if schema.Types[i].Token == token {
