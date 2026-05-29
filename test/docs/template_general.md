@@ -327,7 +327,7 @@ fragment.10 {
         text.value = some text
 
         image = <IMAGE>
-        image.src = hyperbricks-test-files/assets/cute_cat.jpg
+        image.src = hyperbricks-yaml-test-files/assets/cute_cat.jpg
         image.width = 800
     }
 }

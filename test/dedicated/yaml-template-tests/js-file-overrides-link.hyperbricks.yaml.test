@@ -5,7 +5,7 @@ hypermedia:
       - type: head
       - js_main:
           - type: javascript
-          - file: template-tests/assets/script-local.js
+          - file: yaml-template-tests/assets/script-local.js
           - link: main.js
 ==== expected output ====
 <!DOCTYPE html><html><head><script>

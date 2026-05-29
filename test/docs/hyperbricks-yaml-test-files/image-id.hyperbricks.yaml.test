@@ -3,7 +3,7 @@ image:
   - type: image
   - height: "310"
   - id: '#cat'
-  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
   - width: "310"
 ==== explainer ====
 Id of image
@@ -24,7 +24,7 @@ Id of image
   "Loading": "",
   "MetaDocDescription": "",
   "Quality": 0,
-  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Src": "hyperbricks-yaml-test-files/assets/cute_cat.jpg",
   "Title": "",
   "Width": 310
 }

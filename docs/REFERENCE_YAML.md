@@ -1,11 +1,8 @@
-# HyperBricks Component Reference
+# HyperBricks YAML Reference
 
-This reference describes HyperBricks runtime components and their fields.
-Field tables are generated from the runtime schema and examples come from
-curated executable YAML fixtures.
-
-For YAML syntax, ordering, inheritance, imports, and resolvers, see
-[YAML_USAGE.md](YAML_USAGE.md).
+This reference is generated from the runtime schema and YAML documentation
+fixtures. It is intentionally compact: field tables come from Go struct tags,
+while examples come from curated executable YAML fixtures.
 
 Schema version: 1
 

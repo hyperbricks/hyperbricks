@@ -15,12 +15,6 @@ ROUTES=(
   "http://localhost:${PORT}/test_003"
 )
 
-EXPECTED_FILES=(
-  "test/dedicated/cache-path-marker-tests/expected_result-001.html"
-  "test/dedicated/cache-path-marker-tests/expected_result-002.html"
-  "test/dedicated/cache-path-marker-tests/expected_result-003.html"
-)
-
 PROCESS_PID=""
 
 command_exists() {
@@ -174,6 +168,36 @@ normalize_html() {
   echo "$1" | tr -s '[:space:]' ' ' | sed 's/[[:space:]]*$//g'
 }
 
+expected_result_for_index() {
+  case "$1" in
+    0)
+      printf '%s\n' "hello world!"
+      ;;
+    1|2)
+      cat <<'HTML'
+<!DOCTYPE html>
+<html>
+  <body>
+    name:HyperBricks
+    version:1.0.0
+    module_root:modules
+    root:./
+    module:modules/markers-test
+    resources:modules/markers-test/resources
+    template:modules/markers-test/templates
+    static:modules/markers-test/static
+    hyperbricks:modules/markers-test/hyperbricks
+  </body>
+</html>
+HTML
+      ;;
+    *)
+      echo "Unknown marker expected result index: $1" >&2
+      return 1
+      ;;
+  esac
+}
+
 ensure_module_dirs "${MODULE}"
 ensure_port_available "${PORT}"
 
@@ -190,20 +214,19 @@ all_tests_passed=true
 
 for idx in "${!ROUTES[@]}"; do
   route="${ROUTES[$idx]}"
-  expected_file="${EXPECTED_FILES[$idx]}"
 
   echo "Testing route: ${route}"
 
   response="$(fetch_route "${route}" "${LOG_FILE}")"
-  expected_result="$(cat "${expected_file}")"
+  expected_result="$(expected_result_for_index "${idx}")"
 
   expected_result_normalized="$(normalize_html "${expected_result}")"
   response_normalized="$(normalize_html "${response}")"
 
   if [[ "${response_normalized}" == "${expected_result_normalized}" ]]; then
-    echo "PASS: HTML structure matches the expected template from ${expected_file}."
+    echo "PASS: HTML structure matches the expected marker output."
   else
-    echo "FAIL: HTML structure does not match the expected template from ${expected_file}."
+    echo "FAIL: HTML structure does not match the expected marker output."
     echo "Expected HTML structure (normalized):"
     echo "${expected_result_normalized}"
     echo "Actual HTML structure (normalized):"

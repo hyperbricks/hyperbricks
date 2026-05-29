@@ -1,7 +1,7 @@
 ==== hyperbricks yaml {!{image}} ====
 image:
   - type: image
-  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
   - title: Some Cute Cat!
   - width: "100"
 ==== explainer ====
@@ -23,7 +23,7 @@ The title attribute of the image
   "Loading": "",
   "MetaDocDescription": "",
   "Quality": 0,
-  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Src": "hyperbricks-yaml-test-files/assets/cute_cat.jpg",
   "Title": "Some Cute Cat!",
   "Width": 100
 }

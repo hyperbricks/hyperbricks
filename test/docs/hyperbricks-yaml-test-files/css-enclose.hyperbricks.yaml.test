@@ -6,7 +6,7 @@ head:
       - attributes:
           media: screen
       - enclose: <style media="print">|</style>
-      - file: hyperbricks-test-files/assets/styles.css
+      - file: hyperbricks-yaml-test-files/assets/styles.css
 ==== explainer ====
 A custom <style> tag definition |. Will override extraAttributes.
 ==== expected json ====
@@ -28,7 +28,7 @@ A custom <style> tag definition |. Will override extraAttributes.
         "media": "screen"
       },
       "enclose": "<style media=\"print\">|</style>",
-      "file": "hyperbricks-test-files/assets/styles.css"
+      "file": "hyperbricks-yaml-test-files/assets/styles.css"
     }
   },
   "Js": null,

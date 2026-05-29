@@ -3,15 +3,12 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-RESULTS_FILE="${REPO_ROOT}/test/docs/documentation_test_results.txt"
+RESULTS_FILE="${REPO_ROOT}/test/docs/yaml_documentation_test_results.txt"
 
 cd "${REPO_ROOT}"
 
-version="$(tr -d '\n' < ./assets/version.md)"
-buildtime="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-
-go test ./test/docs -run '^Test_TestAndDocumentationRender$' -v \
-  -args -update-docs -version="${version}" -buildtime="${buildtime}" \
+go test ./test/docs -run '^TestYAMLDocumentationReference$' -v \
+  -args -update-yaml-docs \
   > "${RESULTS_FILE}"
 
 matches=$(grep -iF "PASS:" "${RESULTS_FILE}" || true)
@@ -35,7 +32,7 @@ echo "${pass_num_matches} tests passing"
 echo "${num_matches} tests failing"
 
 
-matches=$(grep -iF ": Test_TestAndDocumentationRender" "${RESULTS_FILE}" || true)
+matches=$(grep -iF ": TestYAMLDocumentationReference" "${RESULTS_FILE}" || true)
 
 if [ -z "$matches" ]; then
     total_num_matches=0

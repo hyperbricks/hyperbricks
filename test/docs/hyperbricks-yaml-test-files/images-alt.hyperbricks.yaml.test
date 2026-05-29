@@ -3,7 +3,7 @@ images:
   - type: images
   - alt: gallery image
   - class: galleryimage bordered
-  - directory: hyperbricks-test-files/assets/
+  - directory: hyperbricks-yaml-test-files/assets/
   - height: "10"
   - id: '#galleryimage_'
   - loading: lazy
@@ -16,7 +16,7 @@ Alternative text for the image
   "Class": "galleryimage bordered",
   "ConfigCategory": "",
   "ConfigType": "<IMAGES>",
-  "Directory": "hyperbricks-test-files/assets/",
+  "Directory": "hyperbricks-yaml-test-files/assets/",
   "Enclose": "",
   "ExtraAttributes": null,
   "Height": 10,

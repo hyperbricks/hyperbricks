@@ -5,7 +5,7 @@ image:
       loading: lazy
   - enclose: <div id="#logo">|</div>
   - height: "300"
-  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
   - width: "300"
 ==== explainer ====
 The source URL of the image
@@ -28,7 +28,7 @@ The source URL of the image
   "Loading": "",
   "MetaDocDescription": "",
   "Quality": 0,
-  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Src": "hyperbricks-yaml-test-files/assets/cute_cat.jpg",
   "Title": "",
   "Width": 300
 }

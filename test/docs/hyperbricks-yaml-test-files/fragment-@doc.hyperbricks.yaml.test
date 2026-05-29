@@ -11,7 +11,7 @@ fragment:
           header: SOME HEADER
           image:
             - type: image
-            - src: hyperbricks-test-files/assets/cute_cat.jpg
+            - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
             - width: "800"
           text:
             - type: text

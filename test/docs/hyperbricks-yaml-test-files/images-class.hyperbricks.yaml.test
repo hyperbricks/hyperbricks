@@ -4,7 +4,7 @@ images:
   - attributes:
       decoding: async
   - class: galleryimage bordered
-  - directory: hyperbricks-test-files/assets/
+  - directory: hyperbricks-yaml-test-files/assets/
   - height: "10"
   - id: '#galleryimage_'
   - loading: lazy
@@ -17,7 +17,7 @@ CSS class for styling the image
   "Class": "galleryimage bordered",
   "ConfigCategory": "",
   "ConfigType": "<IMAGES>",
-  "Directory": "hyperbricks-test-files/assets/",
+  "Directory": "hyperbricks-yaml-test-files/assets/",
   "Enclose": "",
   "ExtraAttributes": {
     "decoding": "async"

@@ -1,7 +1,7 @@
 ==== hyperbricks yaml {!{images}} ====
 images:
   - type: images
-  - directory: hyperbricks-test-files/assets/
+  - directory: hyperbricks-yaml-test-files/assets/
   - id: '#img_'
   - loading: lazy
   - quality: "1"
@@ -14,7 +14,7 @@ Image quality for optimization
   "Class": "",
   "ConfigCategory": "",
   "ConfigType": "<IMAGES>",
-  "Directory": "hyperbricks-test-files/assets/",
+  "Directory": "hyperbricks-yaml-test-files/assets/",
   "Enclose": "",
   "ExtraAttributes": null,
   "Height": 0,

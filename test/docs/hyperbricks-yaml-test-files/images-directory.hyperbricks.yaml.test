@@ -4,7 +4,7 @@ image:
   - attributes:
       loading: lazy
   - enclose: <div id="#gallery">|</div>
-  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
   - width: "100"
 ==== explainer ====
 The directory path containing the images
@@ -27,7 +27,7 @@ The directory path containing the images
   "Loading": "",
   "MetaDocDescription": "",
   "Quality": 0,
-  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Src": "hyperbricks-yaml-test-files/assets/cute_cat.jpg",
   "Title": "",
   "Width": 100
 }

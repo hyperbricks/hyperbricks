@@ -1,5 +1,3 @@
-//go:build !legacy_hyperbricks_parser
-
 package main
 
 import (

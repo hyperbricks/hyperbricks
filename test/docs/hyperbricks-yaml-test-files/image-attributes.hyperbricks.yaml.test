@@ -3,7 +3,7 @@ image:
   - type: image
   - attributes:
       usemap: '#catmap'
-  - src: hyperbricks-test-files/assets/cute_cat.jpg
+  - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
   - width: "100"
 ==== explainer ====
 Extra attributes like loading, data-role, data-action etc
@@ -26,7 +26,7 @@ Extra attributes like loading, data-role, data-action etc
   "Loading": "",
   "MetaDocDescription": "",
   "Quality": 0,
-  "Src": "hyperbricks-test-files/assets/cute_cat.jpg",
+  "Src": "hyperbricks-yaml-test-files/assets/cute_cat.jpg",
   "Title": "",
   "Width": 100
 }
