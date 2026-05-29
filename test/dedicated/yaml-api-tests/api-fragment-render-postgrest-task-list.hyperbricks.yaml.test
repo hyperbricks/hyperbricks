@@ -1,0 +1,23 @@
+==== hyperbricks yaml {!{api_test}} ====
+api_test:
+  - type: api_fragment_render
+  - route: index
+  - endpoint: http://localhost:3000/tasks
+  - method: GET
+  - querykeys:
+      - id
+      - order
+  - values:
+      postgrest_url: http://localhost:3000/
+  - headers:
+      Access-Control-Allow-Credentials: "true"
+      Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiIDogIjEiLCAicm9sZSIgOiAiYXV0aGVudGljYXRlZCJ9.AW7K8SMa3KpCXMpOte1H82-iM0OGTJhB2MH2-0ADdnA
+      Content-Type: application/json
+  - inline: |
+      {{if gt (len .Data) 0}}
+        <p>Tasklist has item(s)</p>
+      {{else}}
+        <p>Tasklist is empty</p>
+      {{end}}
+==== expected output ====
+<p>Tasklist has item(s)</p>

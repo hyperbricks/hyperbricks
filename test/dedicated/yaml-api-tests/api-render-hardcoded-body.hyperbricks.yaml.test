@@ -1,0 +1,11 @@
+==== hyperbricks yaml {!{echo_api_key}} ====
+echo_api_key:
+  - type: api_render
+  - route: echo_api_key
+  - endpoint: http://localhost:8090/echo/data
+  - method: POST
+  - body: '{"my_api_key":"HARD_CODED_NOT_MAPPED"}'
+  - inline: |
+      {{.Data.my_api_key}}
+==== expected output ====
+HARD_CODED_NOT_MAPPED

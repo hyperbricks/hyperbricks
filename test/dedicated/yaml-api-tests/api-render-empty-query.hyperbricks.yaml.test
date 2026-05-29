@@ -1,0 +1,11 @@
+==== hyperbricks yaml {!{no_code_test}} ====
+no_code_test:
+  - type: api_render
+  - route: no_code_test
+  - endpoint: http://localhost:8090/echo/query
+  - method: GET
+  - querykeys: []
+  - inline: |
+      {{.Data.queryParams.code}}
+==== expected output ====
+

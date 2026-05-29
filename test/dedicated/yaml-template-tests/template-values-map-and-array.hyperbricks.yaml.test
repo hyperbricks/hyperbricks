@@ -1,0 +1,38 @@
+==== hyperbricks yaml {!{fragment}} ====
+fragment:
+  - type: fragment
+  - route: warning-lights.html
+  - template:
+      inline: |
+        <div class="flex space-x-2 {{.someOtherObject.motor.d }}">
+          <ul>
+            <li>{{ index .warningLights 0 }}</li>
+            <li>{{ index .warningLights 1 }}</li>
+            <li>{{ index .warningLights 2 }}</li>
+            <li>{{ .someOtherObject.a }}</li>
+            <li>{{ .someOtherObject.b }}</li>
+            <li>{{ .someOtherObject.c }}</li>
+          </ul>
+        </div>
+      values:
+        warningLights:
+          - Check Engine
+          - Low Fuel
+          - Brake System
+        someOtherObject:
+          a: no wheels
+          b: no brakes
+          c: stereo works
+          motor:
+            d: no oil
+==== expected output ====
+<div class="flex space-x-2 no oil">
+  <ul>
+    <li>Check Engine</li>
+    <li>Low Fuel</li>
+    <li>Brake System</li>
+    <li>no wheels</li>
+    <li>no brakes</li>
+    <li>stereo works</li>
+  </ul>
+</div>

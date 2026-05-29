@@ -1,0 +1,13 @@
+==== hyperbricks yaml {!{echo_jwt_fail}} ====
+echo_jwt_fail:
+  - type: api_render
+  - route: index
+  - endpoint: http://localhost:8090/echo/token/validate
+  - method: POST
+  - jwtsecret: a-string-secret-at-least-256-bits-longXXX
+  - jwtclaims:
+      sub: user
+  - inline: |
+      {{if .Data.valid}}GOOD{{else}}FAIL{{end}}
+==== expected output ====
+FAIL

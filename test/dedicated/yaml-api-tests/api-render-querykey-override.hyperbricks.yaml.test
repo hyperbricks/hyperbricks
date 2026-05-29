@@ -1,0 +1,14 @@
+==== hyperbricks yaml {!{overwrite_query_test}} ====
+overwrite_query_test:
+  - type: api_render
+  - route: status_code_test
+  - endpoint: http://localhost:8090/echo/query
+  - method: GET
+  - querykeys:
+      - example
+  - queryparams:
+      otherexample: TEST_OVERWRITTEN
+  - inline: |
+      {{.Data.queryParams.otherexample}}
+==== expected output ====
+TEST_OVERWRITTEN

@@ -1,0 +1,64 @@
+vars:
+  appName: HyperBricks
+  version: 1.0.0
+
+template:
+  - type: template
+  - inline: |
+      name:{{.name}}
+      version:{{.version}}
+      module_root:{{.module_root}}
+      root:{{.root}}
+      module:{{.module}}
+      resources:{{.resources}}
+      template:{{.template}}
+      static:{{.static}}
+      hyperbricks:{{.hyperbricks}}
+  - values:
+      name:
+        var: appName
+      version:
+        var: version
+      module_root:
+        path:
+          base: module_root
+      root:
+        path:
+          base: root
+      module:
+        path:
+          base: module
+      resources:
+        path:
+          base: resources
+      template:
+        path:
+          base: templates
+      static:
+        path:
+          base: static
+      hyperbricks:
+        path:
+          base: hyperbricks
+
+test_001:
+  - type: fragment
+  - route: test_001
+  - text_10:
+      - type: text
+      - value:
+          file:
+            base: resources
+            path: test.txt
+
+test_002:
+  - type: hypermedia
+  - route: test_002
+  - template_10:
+      - inherit: template
+
+test_003:
+  - type: hypermedia
+  - route: test_003
+  - template_10:
+      - inherit: template

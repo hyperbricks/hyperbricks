@@ -1,0 +1,26 @@
+==== hyperbricks yaml {!{api_add_user}} ====
+api_add_user:
+  - type: api_fragment_render
+  - route: index
+  - endpoint: http://localhost:3000/rpc/create_user
+  - method: POST
+  - jwtsecret: a-string-secret-at-least-256-bits-long
+  - jwtclaims:
+      sub: user
+  - body: '{"p_username":"testuser1","p_email":"testuser1@example.com","p_password":"securepassword"}'
+  - headers:
+      Access-Control-Allow-Credentials: "true"
+      Content-Type: application/json
+  - inline: |
+      {{ if eq .Status 204 }}
+        <p>User Created, please check your email</p>
+      {{ else if eq .Status 409 }}
+        <p>User already exists</p>
+      {{ else }}
+        <p>Something went wrong</p>
+      {{ end }}
+  - values:
+      someproperty: User
+  - enclose: '<div class="userlist">|</div>'
+==== expected output ====
+<div class="userlist"><p>User Created, please check your email</p></div>

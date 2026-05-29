@@ -1,0 +1,20 @@
+==== hyperbricks yaml {!{api_set_token_render}} ====
+api_set_token_render:
+  - type: api_fragment_render
+  - route: set_token
+  - endpoint: http://localhost:8090/validate
+  - method: GET
+  - headers:
+      Authorization: Bearer 12345abcdef
+      Accept: application/json
+  - inline: |
+      {{if eq .Status 200}}
+        <p>message:{{.Data.message}}</p><p>status:{{.Status}}</p>
+      {{else}}
+        <p>unauthorised</p>
+      {{end}}
+  - values:
+      someproperty: API_FRAGMENT_RENDER demo
+  - setcookie: token={{.Data.accessToken}}
+==== expected output ====
+<p>message:Token is valid</p><p>status:200</p>

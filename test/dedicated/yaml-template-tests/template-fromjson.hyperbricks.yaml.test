@@ -1,0 +1,24 @@
+==== hyperbricks yaml {!{fragment}} ====
+fragment:
+  - type: fragment
+  - route: users
+  - user_list:
+      - type: template
+      - inline: |
+          <ul>
+            {{$users := fromJson .users}}
+            {{ range $users }}
+              <li>{{.name}} ({{.email}})</li>
+            {{ end }}
+          </ul>
+      - values:
+          users: |
+            [
+              { "name": "Alice", "email": "alice@example.com" },
+              { "name": "Bob", "email": "bob@example.com" }
+            ]
+==== expected output ====
+<ul>
+  <li>Alice (alice@example.com)</li>
+  <li>Bob (bob@example.com)</li>
+</ul>

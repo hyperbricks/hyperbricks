@@ -39,7 +39,7 @@ HyperBricks renders HTML directly from APIs. Use `<API_RENDER>` for cacheable/pu
 
 ###  **Relevant Documentation**
 * See the [TaskManager repository](https://github.com/hyperbricks/taskmanager/blob/main/modules/taskmanager/hyperbricks/lib/tasklist.hyperbricks#:~:text=tasklist.-,hyperbricks,-taskmanager.hyperbricks) for an example with with [PostgREST](https://postgrest.org/) and [HTMX](https://htmx.org/).
-* For latest hyperbricks configuration examples see [test/dedicated/api-tests](https://github.com/hyperbricks/hyperbricks/tree/main/test/dedicated/api-tests#:~:text=api%2D-,tests,-api%2Dfragment%2Drender)
+* For latest hyperbricks configuration examples see [test/dedicated/yaml-api-tests](https://github.com/hyperbricks/hyperbricks/tree/main/test/dedicated/yaml-api-tests)
 * [HTMX Out-of-Band Swaps](https://htmx.org/attributes/hx-swap-oob/)
 * [HTMX Response Headers](https://htmx.org/reference/#response_headers)
 * [Hypermedia Systems](https://hypermedia.systems/book/contents/)
