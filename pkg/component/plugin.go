@@ -21,7 +21,7 @@ var _ shared.ComponentRenderer = (*PluginRenderer)(nil)
 type PluginConfig struct {
 	shared.Component `mapstructure:",squash"`
 	PluginName       string                 `mapstructure:"plugin"  description:"Name of the plugin to render"`
-	Classes          []string               `mapstructure:"classes" description:"Optional CSS classes for the plugin output wrapper" example:"{!{plugin-classes.hyperbricks}}"`
+	Classes          []string               `mapstructure:"classes" description:"Optional CSS classes for the plugin output wrapper" example:"{!{plugin-classes.hyperbricks.yaml}}"`
 	Data             map[string]interface{} `mapstructure:"data" description:"Plugin-specific data passed to the renderer"`
 }
 

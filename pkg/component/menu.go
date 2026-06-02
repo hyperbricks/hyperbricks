@@ -20,12 +20,12 @@ type HyperMediaConfig struct {
 
 type MenuConfig struct {
 	shared.Component     `mapstructure:",squash"`
-	Section              string `mapstructure:"section" validate:"required" description:"The section of the menu to display." example:"{!{menu-section.hyperbricks}}"`
-	Order                string `mapstructure:"order" validate:"oneof=asc desc" description:"The order of items in the menu ('asc' or 'desc')." example:"{!{menu-order.hyperbricks}}"`
-	Sort                 string `mapstructure:"sort" validate:"oneof=title route index" description:"The field to sort menu items by ('title', 'route', or 'index')." example:"{!{menu-sort.hyperbricks}}"`
-	Active               string `mapstructure:"active" validate:"required" description:"Template for the active menu item." example:"{!{menu-active.hyperbricks}}"`
-	Item                 string `mapstructure:"item" validate:"required" description:"Template for regular menu items." example:"{!{menu-item.hyperbricks}}"`
-	Enclose              string `mapstructure:"enclose" description:"Template to enclose the menu items." example:"{!{menu-enclose.hyperbricks}}"`
+	Section              string `mapstructure:"section" validate:"required" description:"The section of the menu to display." example:"{!{menu-section.hyperbricks.yaml}}"`
+	Order                string `mapstructure:"order" validate:"oneof=asc desc" description:"The order of items in the menu ('asc' or 'desc')." example:"{!{menu-order.hyperbricks.yaml}}"`
+	Sort                 string `mapstructure:"sort" validate:"oneof=title route index" description:"The field to sort menu items by ('title', 'route', or 'index')." example:"{!{menu-sort.hyperbricks.yaml}}"`
+	Active               string `mapstructure:"active" validate:"required" description:"Template for the active menu item." example:"{!{menu-active.hyperbricks.yaml}}"`
+	Item                 string `mapstructure:"item" validate:"required" description:"Template for regular menu items." example:"{!{menu-item.hyperbricks.yaml}}"`
+	Enclose              string `mapstructure:"enclose" description:"Template to enclose the menu items." example:"{!{menu-enclose.hyperbricks.yaml}}"`
 	HyperMediasBySection map[string][]composite.HyperMediaConfig
 }
 

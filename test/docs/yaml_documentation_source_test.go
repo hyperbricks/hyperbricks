@@ -72,7 +72,7 @@ func TestYAMLDocumentationFieldExampleReferences(t *testing.T) {
 				for _, ref := range yamlDocumentationExampleRefs(field.Example) {
 					fixturePath, ok := yamlDocumentationFixturePathForReference(ref)
 					if !ok {
-						t.Fatalf("%s.%s example reference %q is not a .hyperbricks fixture reference", schemaType.Name, field.Path, ref)
+						t.Fatalf("%s.%s example reference %q is not a .hyperbricks.yaml fixture reference", schemaType.Name, field.Path, ref)
 					}
 					if _, exists := yamlDocumentationExplicitSkips[fixturePath]; exists {
 						continue
@@ -373,9 +373,9 @@ func yamlDocumentationExampleRefs(example string) []string {
 }
 
 func yamlDocumentationFixturePathForReference(ref string) (string, bool) {
-	if !strings.HasSuffix(ref, ".hyperbricks") {
+	if !strings.HasSuffix(ref, ".hyperbricks.yaml") {
 		return "", false
 	}
-	name := strings.TrimSuffix(ref, ".hyperbricks") + ".hyperbricks.yaml.test"
+	name := strings.TrimSuffix(ref, ".hyperbricks.yaml") + ".hyperbricks.yaml.test"
 	return filepath.Join(yamlDocumentationFixtureDir, name), true
 }

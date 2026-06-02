@@ -99,7 +99,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Raw request body. Use a scalar string value; nested objects are not parsed for this field.",
-          "example": "{!{api-render-fragment-body.hyperbricks}}",
+          "example": "{!{api-render-fragment-body.hyperbricks.yaml}}",
           "authoring": {
             "label": "Body",
             "control": "textarea",
@@ -119,7 +119,7 @@
           "go_type": "bool",
           "kind": "bool",
           "description": "Debug the response data",
-          "example": "{!{api-render-fragment-debug.hyperbricks}}",
+          "example": "{!{api-render-fragment-debug.hyperbricks.yaml}}",
           "authoring": {
             "label": "Debug",
             "control": "checkbox",
@@ -136,7 +136,7 @@
           "go_type": "bool",
           "kind": "bool",
           "description": "Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml",
-          "example": "{!{api-render-fragment-debug.hyperbricks}}",
+          "example": "{!{api-render-fragment-debug.hyperbricks.yaml}}",
           "authoring": {
             "label": "Debugpanel",
             "control": "checkbox",
@@ -153,7 +153,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Wrapping property for the fragment rendered output",
-          "example": "{!{api-fragment-render-enclose.hyperbricks}}",
+          "example": "{!{api-fragment-render-enclose.hyperbricks.yaml}}",
           "authoring": {
             "label": "Enclose",
             "control": "textarea",
@@ -173,7 +173,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The API endpoint",
-          "example": "{!{api-render-fragment-endpoint.hyperbricks}}",
+          "example": "{!{api-render-fragment-endpoint.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -466,7 +466,7 @@
           "go_type": "map[string]string",
           "kind": "map",
           "description": "Optional HTTP headers for API requests",
-          "example": "{!{api-render-fragment-headers.hyperbricks}}",
+          "example": "{!{api-render-fragment-headers.hyperbricks.yaml}}",
           "authoring": {
             "label": "Headers",
             "control": "key-value",
@@ -484,7 +484,7 @@
           "go_type": "int",
           "kind": "int",
           "description": "Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation",
-          "example": "{!{fragment-index.hyperbricks}}",
+          "example": "{!{fragment-index.hyperbricks.yaml}}",
           "authoring": {
             "label": "Index",
             "control": "number",
@@ -501,8 +501,8 @@
           "go_name": "Inline",
           "go_type": "string",
           "kind": "string",
-          "description": "Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>",
-          "example": "{!{api-render-fragment-inline.hyperbricks}}",
+          "description": "Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.",
+          "example": "{!{api-render-fragment-inline.hyperbricks.yaml}}",
           "authoring": {
             "label": "Inline",
             "control": "textarea",
@@ -522,7 +522,7 @@
           "go_type": "map[string]string",
           "kind": "map",
           "description": "JWT claims to include when signing the bearer token",
-          "example": "{!{api-render-fragment-jwt-claims.hyperbricks}}",
+          "example": "{!{api-render-fragment-jwt-claims.hyperbricks.yaml}}",
           "authoring": {
             "label": "JWT claims",
             "control": "key-value",
@@ -540,7 +540,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request",
-          "example": "{!{api-render-fragment-jwt-secret.hyperbricks}}",
+          "example": "{!{api-render-fragment-jwt-secret.hyperbricks.yaml}}",
           "authoring": {
             "label": "JWT secret",
             "control": "text",
@@ -558,7 +558,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "HTTP method to use for API calls, GET POST PUT DELETE etc...",
-          "example": "{!{api-render-fragment-method.hyperbricks}}",
+          "example": "{!{api-render-fragment-method.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -577,7 +577,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Password for basic auth",
-          "example": "{!{api-render-fragment-password.hyperbricks}}",
+          "example": "{!{api-render-fragment-password.hyperbricks.yaml}}",
           "authoring": {
             "label": "Password",
             "control": "text",
@@ -595,7 +595,7 @@
           "go_type": "[]string",
           "kind": "list",
           "description": "Set allowed proxy query keys",
-          "example": "{!{api-render-fragment-querykeys.hyperbricks}}",
+          "example": "{!{api-render-fragment-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
             "control": "list",
@@ -613,7 +613,7 @@
           "go_type": "map[string]string",
           "kind": "map",
           "description": "Set proxy query keys in the configuration",
-          "example": "{!{api-render-fragment-queryparams.hyperbricks}}",
+          "example": "{!{api-render-fragment-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",
             "control": "key-value",
@@ -829,7 +829,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The route (URL-friendly identifier) for the fragment",
-          "example": "{!{api-fragment-render-route.hyperbricks}}",
+          "example": "{!{api-fragment-render-route.hyperbricks.yaml}}",
           "authoring": {
             "label": "Route",
             "control": "route",
@@ -847,7 +847,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The section the fragment belongs to",
-          "example": "{!{api-fragment-render-section.hyperbricks}}",
+          "example": "{!{api-fragment-render-section.hyperbricks.yaml}}",
           "authoring": {
             "label": "Section",
             "control": "text",
@@ -865,7 +865,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Single Set-Cookie response template shorthand. Applied on any 2xx upstream response.",
-          "example": "{!{api-render-fragment-setcookie.hyperbricks}}",
+          "example": "{!{api-render-fragment-setcookie.hyperbricks.yaml}}",
           "authoring": {
             "label": "Setcookie",
             "control": "text",
@@ -883,7 +883,7 @@
           "go_type": "[]string",
           "kind": "list",
           "description": "Optional list of Set-Cookie response templates. Each entry becomes its own Set-Cookie header on any 2xx upstream response.",
-          "example": "{!{api-render-fragment-setcookies.hyperbricks}}",
+          "example": "{!{api-render-fragment-setcookies.hyperbricks.yaml}}",
           "authoring": {
             "label": "Setcookies",
             "control": "list",
@@ -900,7 +900,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Loads contents of a template file in the modules template directory",
-          "example": "{!{api-render-fragment-template.hyperbricks}}",
+          "example": "{!{api-render-fragment-template.hyperbricks.yaml}}",
           "authoring": {
             "label": "Template",
             "control": "template-asset",
@@ -918,7 +918,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The title of the fragment",
-          "example": "{!{api-fragment-render-title.hyperbricks}}",
+          "example": "{!{api-fragment-render-title.hyperbricks.yaml}}",
           "authoring": {
             "label": "Title",
             "control": "text",
@@ -936,7 +936,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Username for basic auth",
-          "example": "{!{api-render-fragment-username.hyperbricks}}",
+          "example": "{!{api-render-fragment-username.hyperbricks.yaml}}",
           "authoring": {
             "label": "Username",
             "control": "text",
@@ -954,7 +954,7 @@
           "go_type": "map[string]interface {}",
           "kind": "map",
           "description": "Key-value pairs for template rendering",
-          "example": "{!{api-render-fragment-values.hyperbricks}}",
+          "example": "{!{api-render-fragment-values.hyperbricks.yaml}}",
           "value_dynamic": true,
           "authoring": {
             "label": "Values",
@@ -1029,7 +1029,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Raw request body. Use a scalar string value; nested objects are not parsed for this field.",
-          "example": "{!{api-render-body.hyperbricks}}",
+          "example": "{!{api-render-body.hyperbricks.yaml}}",
           "authoring": {
             "label": "Body",
             "control": "textarea",
@@ -1049,7 +1049,7 @@
           "go_type": "bool",
           "kind": "bool",
           "description": "Debug the response data",
-          "example": "{!{api-render-debug.hyperbricks}}",
+          "example": "{!{api-render-debug.hyperbricks.yaml}}",
           "authoring": {
             "label": "Debug",
             "control": "checkbox",
@@ -1066,7 +1066,7 @@
           "go_type": "bool",
           "kind": "bool",
           "description": "Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml",
-          "example": "{!{api-render-debug.hyperbricks}}",
+          "example": "{!{api-render-debug.hyperbricks.yaml}}",
           "authoring": {
             "label": "Debugpanel",
             "control": "checkbox",
@@ -1101,7 +1101,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The API endpoint",
-          "example": "{!{api-render-endpoint.hyperbricks}}",
+          "example": "{!{api-render-endpoint.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -1120,7 +1120,7 @@
           "go_type": "map[string]string",
           "kind": "map",
           "description": "Optional HTTP headers for API requests",
-          "example": "{!{api-render-headers.hyperbricks}}",
+          "example": "{!{api-render-headers.hyperbricks.yaml}}",
           "authoring": {
             "label": "Headers",
             "control": "key-value",
@@ -1137,8 +1137,8 @@
           "go_name": "Inline",
           "go_type": "string",
           "kind": "string",
-          "description": "Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>",
-          "example": "{!{api-render-inline.hyperbricks}}",
+          "description": "Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.",
+          "example": "{!{api-render-inline.hyperbricks.yaml}}",
           "authoring": {
             "label": "Inline",
             "control": "textarea",
@@ -1158,7 +1158,7 @@
           "go_type": "map[string]string",
           "kind": "map",
           "description": "JWT claims to include when signing the bearer token",
-          "example": "{!{api-render-jwt-claims.hyperbricks}}",
+          "example": "{!{api-render-jwt-claims.hyperbricks.yaml}}",
           "authoring": {
             "label": "JWT claims",
             "control": "key-value",
@@ -1176,7 +1176,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request",
-          "example": "{!{api-render-jwt-secret.hyperbricks}}",
+          "example": "{!{api-render-jwt-secret.hyperbricks.yaml}}",
           "authoring": {
             "label": "JWT secret",
             "control": "text",
@@ -1194,7 +1194,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "HTTP method to use for API calls, GET POST PUT DELETE etc...",
-          "example": "{!{api-render-method.hyperbricks}}",
+          "example": "{!{api-render-method.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -1213,7 +1213,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Password for basic auth",
-          "example": "{!{api-render-password.hyperbricks}}",
+          "example": "{!{api-render-password.hyperbricks.yaml}}",
           "authoring": {
             "label": "Password",
             "control": "text",
@@ -1231,7 +1231,7 @@
           "go_type": "[]string",
           "kind": "list",
           "description": "Set allowed proxy query keys",
-          "example": "{!{api-render-querykeys.hyperbricks}}",
+          "example": "{!{api-render-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
             "control": "list",
@@ -1249,7 +1249,7 @@
           "go_type": "map[string]string",
           "kind": "map",
           "description": "Set proxy query keys in the configuration",
-          "example": "{!{api-render-queryparams.hyperbricks}}",
+          "example": "{!{api-render-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",
             "control": "key-value",
@@ -1267,7 +1267,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Loads contents of a template file in the modules template directory",
-          "example": "{!{api-render-template.hyperbricks}}",
+          "example": "{!{api-render-template.hyperbricks.yaml}}",
           "authoring": {
             "label": "Template",
             "control": "template-asset",
@@ -1285,7 +1285,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Username for basic auth",
-          "example": "{!{api-render-username.hyperbricks}}",
+          "example": "{!{api-render-username.hyperbricks.yaml}}",
           "authoring": {
             "label": "Username",
             "control": "text",
@@ -1303,7 +1303,7 @@
           "go_type": "map[string]interface {}",
           "kind": "map",
           "description": "Key-value pairs for template rendering",
-          "example": "{!{api-render-values.hyperbricks}}",
+          "example": "{!{api-render-values.hyperbricks.yaml}}",
           "value_dynamic": true,
           "authoring": {
             "label": "Values",
@@ -1378,7 +1378,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "file overrides link and inline, it loads contents of a file and renders it in a style tag.",
-          "example": "{!{css-file.hyperbricks}}",
+          "example": "{!{css-file.hyperbricks.yaml}}",
           "authoring": {
             "label": "File",
             "control": "asset",
@@ -1395,8 +1395,8 @@
           "go_name": "Inline",
           "go_type": "string",
           "kind": "string",
-          "description": "Use inline to define css in a multiline block <<[ /* css goes here */ ]>>",
-          "example": "{!{css-inline.hyperbricks}}",
+          "description": "Inline CSS source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.",
+          "example": "{!{css-inline.hyperbricks.yaml}}",
           "authoring": {
             "label": "Inline",
             "control": "textarea",
@@ -1416,7 +1416,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Use link for a link tag",
-          "example": "{!{css-link.hyperbricks}}",
+          "example": "{!{css-link.hyperbricks.yaml}}",
           "authoring": {
             "label": "Link",
             "control": "asset",
@@ -1548,7 +1548,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Cache expire string",
-          "example": "{!{fragment-cache.hyperbricks}}",
+          "example": "{!{fragment-cache.hyperbricks.yaml}}",
           "authoring": {
             "label": "Cache",
             "control": "text",
@@ -1583,7 +1583,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Wrapping property for the fragment rendered output",
-          "example": "{!{fragment-enclose.hyperbricks}}",
+          "example": "{!{fragment-enclose.hyperbricks.yaml}}",
           "authoring": {
             "label": "Enclose",
             "control": "textarea",
@@ -1877,7 +1877,7 @@
           "go_type": "int",
           "kind": "int",
           "description": "Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation",
-          "example": "{!{fragment-index.hyperbricks}}",
+          "example": "{!{fragment-index.hyperbricks.yaml}}",
           "authoring": {
             "label": "Index",
             "control": "number",
@@ -1895,7 +1895,7 @@
           "go_type": "bool",
           "kind": "bool",
           "description": "Explicitly disable cache",
-          "example": "{!{fragment-nocache.hyperbricks}}",
+          "example": "{!{fragment-nocache.hyperbricks.yaml}}",
           "authoring": {
             "label": "No cache",
             "control": "checkbox",
@@ -2111,7 +2111,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The route (URL-friendly identifier) for the fragment",
-          "example": "{!{fragment-route.hyperbricks}}",
+          "example": "{!{fragment-route.hyperbricks.yaml}}",
           "authoring": {
             "label": "Route",
             "control": "route",
@@ -2129,7 +2129,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The section the fragment belongs to",
-          "example": "{!{fragment-section.hyperbricks}}",
+          "example": "{!{fragment-section.hyperbricks.yaml}}",
           "authoring": {
             "label": "Section",
             "control": "text",
@@ -2147,7 +2147,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Static file path associated with the fragment",
-          "example": "{!{fragment-static.hyperbricks}}",
+          "example": "{!{fragment-static.hyperbricks.yaml}}",
           "authoring": {
             "label": "Static",
             "control": "text",
@@ -2166,7 +2166,7 @@
           "kind": "string",
           "json_name": "enclose",
           "description": "Enclosing property for the template rendered output",
-          "example": "{!{template-enclose.hyperbricks}}",
+          "example": "{!{template-enclose.hyperbricks.yaml}}",
           "authoring": {
             "label": "Enclose",
             "control": "textarea",
@@ -2186,8 +2186,8 @@
           "go_type": "string",
           "kind": "string",
           "json_name": "inline",
-          "description": "Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>",
-          "example": "{!{template-inline.hyperbricks}}",
+          "description": "Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.",
+          "example": "{!{template-inline.hyperbricks.yaml}}",
           "authoring": {
             "label": "Inline",
             "control": "textarea",
@@ -2208,7 +2208,7 @@
           "kind": "list",
           "json_name": "querykeys",
           "description": "Set allowed proxy query keys",
-          "example": "{!{template-querykeys.hyperbricks}}",
+          "example": "{!{template-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
             "control": "list",
@@ -2227,7 +2227,7 @@
           "kind": "map",
           "json_name": "queryparams",
           "description": "Set proxy query keys in the configuration",
-          "example": "{!{template-queryparams.hyperbricks}}",
+          "example": "{!{template-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",
             "control": "key-value",
@@ -2246,7 +2246,7 @@
           "kind": "string",
           "json_name": "template",
           "description": "Loads contents of a template file in the modules template directory",
-          "example": "{!{template-template.hyperbricks}}",
+          "example": "{!{template-template.hyperbricks.yaml}}",
           "authoring": {
             "label": "Template",
             "control": "template-asset",
@@ -2265,7 +2265,7 @@
           "kind": "map",
           "json_name": "values",
           "description": "Key-value pairs for template rendering",
-          "example": "{!{template-values.hyperbricks}}",
+          "example": "{!{template-values.hyperbricks.yaml}}",
           "value_dynamic": true,
           "authoring": {
             "label": "Values",
@@ -2283,7 +2283,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The title of the fragment",
-          "example": "{!{fragment-title.hyperbricks}}",
+          "example": "{!{fragment-title.hyperbricks.yaml}}",
           "authoring": {
             "label": "Title",
             "control": "text",
@@ -2339,7 +2339,7 @@
           "go_type": "[]string",
           "kind": "list",
           "description": "CSS files to include",
-          "example": "{!{head-css.hyperbricks}}",
+          "example": "{!{head-css.hyperbricks.yaml}}",
           "authoring": {
             "label": "CSS",
             "control": "list",
@@ -2357,7 +2357,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Path to the favicon for the hypermedia document",
-          "example": "{!{head-favicon.hyperbricks}}",
+          "example": "{!{head-favicon.hyperbricks.yaml}}",
           "authoring": {
             "label": "Favicon",
             "control": "asset",
@@ -2375,7 +2375,7 @@
           "go_type": "[]string",
           "kind": "list",
           "description": "JavaScript files to include",
-          "example": "{!{head-js.hyperbricks}}",
+          "example": "{!{head-js.hyperbricks.yaml}}",
           "authoring": {
             "label": "JS",
             "control": "list",
@@ -2393,7 +2393,7 @@
           "go_type": "map[string]string",
           "kind": "map",
           "description": "Metadata for the head section",
-          "example": "{!{head-meta.hyperbricks}}",
+          "example": "{!{head-meta.hyperbricks.yaml}}",
           "authoring": {
             "label": "Meta",
             "control": "key-value",
@@ -2411,7 +2411,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The title of the hypermedia document",
-          "example": "{!{head-title.hyperbricks}}",
+          "example": "{!{head-title.hyperbricks.yaml}}",
           "authoring": {
             "label": "Title",
             "control": "text",
@@ -2489,7 +2489,7 @@
           "go_type": "bool",
           "kind": "bool",
           "description": "TrimSpace filters all leading and trailing white space removed, as defined by Unicode.",
-          "example": "{!{html-trimspace.hyperbricks}}",
+          "example": "{!{html-trimspace.hyperbricks.yaml}}",
           "authoring": {
             "label": "Trim space",
             "control": "checkbox",
@@ -2507,7 +2507,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The raw HTML content",
-          "example": "{!{html-value.hyperbricks}}",
+          "example": "{!{html-value.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -2647,7 +2647,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Special body enclose with use of |. Please note that this will not work when a <HYPERMEDIA>.template is configured. In that case, you have to add the bodytag in the template.",
-          "example": "{!{hypermedia-bodytag.hyperbricks}}",
+          "example": "{!{hypermedia-bodytag.hyperbricks.yaml}}",
           "authoring": {
             "label": "Body tag",
             "control": "text",
@@ -2667,7 +2667,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Cache expire string",
-          "example": "{!{hypermedia-cache.hyperbricks}}",
+          "example": "{!{hypermedia-cache.hyperbricks.yaml}}",
           "authoring": {
             "label": "Cache",
             "control": "text",
@@ -2702,7 +2702,7 @@
           "go_type": "[]string",
           "kind": "list",
           "description": "Set-Cookie values to include when serving this hypermedia",
-          "example": "{!{hypermedia-cookies.hyperbricks}}",
+          "example": "{!{hypermedia-cookies.hyperbricks.yaml}}",
           "authoring": {
             "label": "Cookies",
             "control": "list",
@@ -2720,7 +2720,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Alternative Doctype for the HTML document",
-          "example": "{!{hypermedia-doctype.hyperbricks}}",
+          "example": "{!{hypermedia-doctype.hyperbricks.yaml}}",
           "authoring": {
             "label": "Doctype",
             "control": "text",
@@ -2738,7 +2738,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Enclosure of the property for the hypermedia",
-          "example": "{!{hypermedia-enclose.hyperbricks}}",
+          "example": "{!{hypermedia-enclose.hyperbricks.yaml}}",
           "authoring": {
             "label": "Enclose",
             "control": "textarea",
@@ -2758,7 +2758,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Path to the favicon for the hypermedia",
-          "example": "{!{hypermedia-favicon.hyperbricks}}",
+          "example": "{!{hypermedia-favicon.hyperbricks.yaml}}",
           "authoring": {
             "label": "Favicon",
             "control": "asset",
@@ -3050,7 +3050,7 @@
           "go_type": "map[string]interface {}",
           "kind": "map",
           "description": "Configurations for the head section of the hypermedia",
-          "example": "{!{hypermedia-head.hyperbricks}}",
+          "example": "{!{hypermedia-head.hyperbricks.yaml}}",
           "authoring": {
             "label": "Head",
             "control": "key-value",
@@ -3068,7 +3068,7 @@
           "go_type": "map[string]string",
           "kind": "map",
           "description": "HTTP response headers to include when serving this hypermedia",
-          "example": "{!{hypermedia-headers.hyperbricks}}",
+          "example": "{!{hypermedia-headers.hyperbricks.yaml}}",
           "authoring": {
             "label": "Headers",
             "control": "key-value",
@@ -3086,7 +3086,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The opening HTML tag with attributes",
-          "example": "{!{hypermedia-htmltag.hyperbricks}}",
+          "example": "{!{hypermedia-htmltag.hyperbricks.yaml}}",
           "authoring": {
             "label": "HTML tag",
             "control": "text",
@@ -3106,7 +3106,7 @@
           "go_type": "int",
           "kind": "int",
           "description": "Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options",
-          "example": "{!{hypermedia-index.hyperbricks}}",
+          "example": "{!{hypermedia-index.hyperbricks.yaml}}",
           "authoring": {
             "label": "Index",
             "control": "number",
@@ -3124,7 +3124,7 @@
           "go_type": "bool",
           "kind": "bool",
           "description": "Explicitly disable cache",
-          "example": "{!{hypermedia-nocache.hyperbricks}}",
+          "example": "{!{hypermedia-nocache.hyperbricks.yaml}}",
           "authoring": {
             "label": "No cache",
             "control": "checkbox",
@@ -3142,7 +3142,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The route (URL-friendly identifier) for the hypermedia",
-          "example": "{!{hypermedia-route.hyperbricks}}",
+          "example": "{!{hypermedia-route.hyperbricks.yaml}}",
           "authoring": {
             "label": "Route",
             "control": "route",
@@ -3160,7 +3160,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The section the hypermedia belongs to. This can be used with the component <MENU> for example.",
-          "example": "{!{hypermedia-section.hyperbricks}}",
+          "example": "{!{hypermedia-section.hyperbricks.yaml}}",
           "authoring": {
             "label": "Section",
             "control": "text",
@@ -3178,7 +3178,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Static file path associated with the hypermedia, for rendering out the hypermedia to static files.",
-          "example": "{!{hypermedia-static.hyperbricks}}",
+          "example": "{!{hypermedia-static.hyperbricks.yaml}}",
           "authoring": {
             "label": "Static",
             "control": "text",
@@ -3197,7 +3197,7 @@
           "kind": "string",
           "json_name": "enclose",
           "description": "Enclosing property for the template rendered output",
-          "example": "{!{template-enclose.hyperbricks}}",
+          "example": "{!{template-enclose.hyperbricks.yaml}}",
           "authoring": {
             "label": "Enclose",
             "control": "textarea",
@@ -3217,8 +3217,8 @@
           "go_type": "string",
           "kind": "string",
           "json_name": "inline",
-          "description": "Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>",
-          "example": "{!{template-inline.hyperbricks}}",
+          "description": "Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.",
+          "example": "{!{template-inline.hyperbricks.yaml}}",
           "authoring": {
             "label": "Inline",
             "control": "textarea",
@@ -3239,7 +3239,7 @@
           "kind": "list",
           "json_name": "querykeys",
           "description": "Set allowed proxy query keys",
-          "example": "{!{template-querykeys.hyperbricks}}",
+          "example": "{!{template-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
             "control": "list",
@@ -3258,7 +3258,7 @@
           "kind": "map",
           "json_name": "queryparams",
           "description": "Set proxy query keys in the configuration",
-          "example": "{!{template-queryparams.hyperbricks}}",
+          "example": "{!{template-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",
             "control": "key-value",
@@ -3277,7 +3277,7 @@
           "kind": "string",
           "json_name": "template",
           "description": "Loads contents of a template file in the modules template directory",
-          "example": "{!{template-template.hyperbricks}}",
+          "example": "{!{template-template.hyperbricks.yaml}}",
           "authoring": {
             "label": "Template",
             "control": "template-asset",
@@ -3296,7 +3296,7 @@
           "kind": "map",
           "json_name": "values",
           "description": "Key-value pairs for template rendering",
-          "example": "{!{template-values.hyperbricks}}",
+          "example": "{!{template-values.hyperbricks.yaml}}",
           "value_dynamic": true,
           "authoring": {
             "label": "Values",
@@ -3314,7 +3314,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The title of the hypermedia site",
-          "example": "{!{hypermedia-title.hyperbricks}}",
+          "example": "{!{hypermedia-title.hyperbricks.yaml}}",
           "authoring": {
             "label": "Title",
             "control": "text",
@@ -3361,7 +3361,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Alternative text for the image",
-          "example": "{!{image-alt.hyperbricks}}",
+          "example": "{!{image-alt.hyperbricks.yaml}}",
           "authoring": {
             "label": "Alt text",
             "control": "text",
@@ -3395,7 +3395,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "CSS class for styling the image",
-          "example": "{!{image-class.hyperbricks}}",
+          "example": "{!{image-class.hyperbricks.yaml}}",
           "authoring": {
             "label": "Class",
             "control": "text",
@@ -3431,7 +3431,7 @@
           "go_type": "int",
           "kind": "int",
           "description": "The height of the image (can be a number or percentage)",
-          "example": "{!{image-height.hyperbricks}}",
+          "example": "{!{image-height.hyperbricks.yaml}}",
           "validate": "min=1",
           "authoring": {
             "label": "Height",
@@ -3450,7 +3450,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Id of image",
-          "example": "{!{image-id.hyperbricks}}",
+          "example": "{!{image-id.hyperbricks.yaml}}",
           "authoring": {
             "label": "ID",
             "control": "text",
@@ -3468,7 +3468,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Lazy loading strategy (e.g., 'lazy', 'eager')",
-          "example": "{!{image-loading.hyperbricks}}",
+          "example": "{!{image-loading.hyperbricks.yaml}}",
           "authoring": {
             "label": "Loading",
             "control": "text",
@@ -3486,7 +3486,7 @@
           "go_type": "int",
           "kind": "int",
           "description": "Image quality for optimization",
-          "example": "{!{image-quality.hyperbricks}}",
+          "example": "{!{image-quality.hyperbricks.yaml}}",
           "authoring": {
             "label": "Quality",
             "control": "number",
@@ -3504,7 +3504,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The source URL of the image",
-          "example": "{!{image-src.hyperbricks}}",
+          "example": "{!{image-src.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -3523,7 +3523,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The title attribute of the image",
-          "example": "{!{image-title.hyperbricks}}",
+          "example": "{!{image-title.hyperbricks.yaml}}",
           "authoring": {
             "label": "Title",
             "control": "text",
@@ -3541,7 +3541,7 @@
           "go_type": "int",
           "kind": "int",
           "description": "The width of the image (can be a number or percentage)",
-          "example": "{!{image-width.hyperbricks}}",
+          "example": "{!{image-width.hyperbricks.yaml}}",
           "validate": "min=1",
           "authoring": {
             "label": "Width",
@@ -3589,7 +3589,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Alternative text for the image",
-          "example": "{!{images-alt.hyperbricks}}",
+          "example": "{!{images-alt.hyperbricks.yaml}}",
           "authoring": {
             "label": "Alt text",
             "control": "text",
@@ -3623,7 +3623,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "CSS class for styling the image",
-          "example": "{!{images-class.hyperbricks}}",
+          "example": "{!{images-class.hyperbricks.yaml}}",
           "authoring": {
             "label": "Class",
             "control": "text",
@@ -3641,7 +3641,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The directory path containing the images",
-          "example": "{!{images-directory.hyperbricks}}",
+          "example": "{!{images-directory.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -3678,7 +3678,7 @@
           "go_type": "int",
           "kind": "int",
           "description": "The height of the images (can be a number or percentage)",
-          "example": "{!{images-height.hyperbricks}}",
+          "example": "{!{images-height.hyperbricks.yaml}}",
           "validate": "min=1",
           "authoring": {
             "label": "Height",
@@ -3697,7 +3697,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Id of images with a index added to it",
-          "example": "{!{images-id.hyperbricks}}",
+          "example": "{!{images-id.hyperbricks.yaml}}",
           "authoring": {
             "label": "ID",
             "control": "text",
@@ -3715,7 +3715,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Lazy loading strategy (e.g., 'lazy', 'eager')",
-          "example": "{!{images-loading.hyperbricks}}",
+          "example": "{!{images-loading.hyperbricks.yaml}}",
           "authoring": {
             "label": "Loading",
             "control": "text",
@@ -3733,7 +3733,7 @@
           "go_type": "int",
           "kind": "int",
           "description": "Image quality for optimization",
-          "example": "{!{images-quality.hyperbricks}}",
+          "example": "{!{images-quality.hyperbricks.yaml}}",
           "authoring": {
             "label": "Quality",
             "control": "number",
@@ -3751,7 +3751,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The title attribute of the image",
-          "example": "{!{images-title.hyperbricks}}",
+          "example": "{!{images-title.hyperbricks.yaml}}",
           "authoring": {
             "label": "Title",
             "control": "text",
@@ -3769,7 +3769,7 @@
           "go_type": "int",
           "kind": "int",
           "description": "The width of the images (can be a number or percentage)",
-          "example": "{!{images-width.hyperbricks}}",
+          "example": "{!{images-width.hyperbricks.yaml}}",
           "validate": "min=1",
           "authoring": {
             "label": "Width",
@@ -3848,7 +3848,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "File overrides link and inline, it loads contents of a file and renders it in a script tag.",
-          "example": "{!{javascript-file.hyperbricks}}",
+          "example": "{!{javascript-file.hyperbricks.yaml}}",
           "authoring": {
             "label": "File",
             "control": "asset",
@@ -3865,8 +3865,8 @@
           "go_name": "Inline",
           "go_type": "string",
           "kind": "string",
-          "description": "Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here */ ]>>",
-          "example": "{!{javascript-inline.hyperbricks}}",
+          "description": "Inline JavaScript source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.",
+          "example": "{!{javascript-inline.hyperbricks.yaml}}",
           "authoring": {
             "label": "Inline",
             "control": "textarea",
@@ -3886,7 +3886,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Use link for a script tag with a src attribute",
-          "example": "{!{javascript-link.hyperbricks}}",
+          "example": "{!{javascript-link.hyperbricks.yaml}}",
           "authoring": {
             "label": "Link",
             "control": "asset",
@@ -3948,7 +3948,7 @@
           "go_type": "bool",
           "kind": "bool",
           "description": "Debug the response data",
-          "example": "{!{json-debug.hyperbricks}}",
+          "example": "{!{json-debug.hyperbricks.yaml}}",
           "authoring": {
             "label": "Debug",
             "control": "checkbox",
@@ -3984,7 +3984,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Path to the local JSON file",
-          "example": "{!{json-file.hyperbricks}}",
+          "example": "{!{json-file.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -4002,8 +4002,8 @@
           "go_name": "Inline",
           "go_type": "string",
           "kind": "string",
-          "description": "Use inline to define the template in a multiline block <<[ /* Template code goes here */ ]>>",
-          "example": "{!{json-inline.hyperbricks}}",
+          "description": "Inline Go template source used to render the loaded JSON. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.",
+          "example": "{!{json-inline.hyperbricks.yaml}}",
           "authoring": {
             "label": "Inline",
             "control": "textarea",
@@ -4023,7 +4023,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Loads contents of a template file in the modules template directory",
-          "example": "{!{json-template.hyperbricks}}",
+          "example": "{!{json-template.hyperbricks.yaml}}",
           "authoring": {
             "label": "Template",
             "control": "template-asset",
@@ -4041,7 +4041,7 @@
           "go_type": "map[string]interface {}",
           "kind": "map",
           "description": "Key-value pairs for template rendering",
-          "example": "{!{json-values.hyperbricks}}",
+          "example": "{!{json-values.hyperbricks.yaml}}",
           "value_dynamic": true,
           "authoring": {
             "label": "Values",
@@ -4085,7 +4085,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Template for the active menu item.",
-          "example": "{!{menu-active.hyperbricks}}",
+          "example": "{!{menu-active.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -4141,7 +4141,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Template to enclose the menu items.",
-          "example": "{!{menu-enclose.hyperbricks}}",
+          "example": "{!{menu-enclose.hyperbricks.yaml}}",
           "authoring": {
             "label": "Enclose",
             "control": "textarea",
@@ -4161,7 +4161,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Template for regular menu items.",
-          "example": "{!{menu-item.hyperbricks}}",
+          "example": "{!{menu-item.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -4182,7 +4182,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The order of items in the menu ('asc' or 'desc').",
-          "example": "{!{menu-order.hyperbricks}}",
+          "example": "{!{menu-order.hyperbricks.yaml}}",
           "validate": "oneof=asc desc",
           "authoring": {
             "label": "Order",
@@ -4201,7 +4201,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The section of the menu to display.",
-          "example": "{!{menu-section.hyperbricks}}",
+          "example": "{!{menu-section.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -4220,7 +4220,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The field to sort menu items by ('title', 'route', or 'index').",
-          "example": "{!{menu-sort.hyperbricks}}",
+          "example": "{!{menu-sort.hyperbricks.yaml}}",
           "validate": "oneof=title route index",
           "authoring": {
             "label": "Sort",
@@ -4278,7 +4278,7 @@
           "go_type": "[]string",
           "kind": "list",
           "description": "Optional CSS classes for the plugin output wrapper",
-          "example": "{!{plugin-classes.hyperbricks}}",
+          "example": "{!{plugin-classes.hyperbricks.yaml}}",
           "authoring": {
             "label": "Classes",
             "control": "list",
@@ -4403,7 +4403,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Path to the CSS file",
-          "example": "{!{styles-file.hyperbricks}}",
+          "example": "{!{styles-file.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -4471,7 +4471,7 @@
           "kind": "string",
           "json_name": "enclose",
           "description": "Enclosing property for the template rendered output",
-          "example": "{!{template-enclose.hyperbricks}}",
+          "example": "{!{template-enclose.hyperbricks.yaml}}",
           "authoring": {
             "label": "Enclose",
             "control": "textarea",
@@ -4491,8 +4491,8 @@
           "go_type": "string",
           "kind": "string",
           "json_name": "inline",
-          "description": "Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>",
-          "example": "{!{template-inline.hyperbricks}}",
+          "description": "Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.",
+          "example": "{!{template-inline.hyperbricks.yaml}}",
           "authoring": {
             "label": "Inline",
             "control": "textarea",
@@ -4513,7 +4513,7 @@
           "kind": "list",
           "json_name": "querykeys",
           "description": "Set allowed proxy query keys",
-          "example": "{!{template-querykeys.hyperbricks}}",
+          "example": "{!{template-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
             "control": "list",
@@ -4532,7 +4532,7 @@
           "kind": "map",
           "json_name": "queryparams",
           "description": "Set proxy query keys in the configuration",
-          "example": "{!{template-queryparams.hyperbricks}}",
+          "example": "{!{template-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",
             "control": "key-value",
@@ -4551,7 +4551,7 @@
           "kind": "string",
           "json_name": "template",
           "description": "Loads contents of a template file in the modules template directory",
-          "example": "{!{template-template.hyperbricks}}",
+          "example": "{!{template-template.hyperbricks.yaml}}",
           "authoring": {
             "label": "Template",
             "control": "template-asset",
@@ -4570,7 +4570,7 @@
           "kind": "map",
           "json_name": "values",
           "description": "Key-value pairs for template rendering",
-          "example": "{!{template-values.hyperbricks}}",
+          "example": "{!{template-values.hyperbricks.yaml}}",
           "value_dynamic": true,
           "authoring": {
             "label": "Values",
@@ -4647,7 +4647,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "The paragraph content",
-          "example": "{!{text-value.hyperbricks}}",
+          "example": "{!{text-value.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
           "authoring": {
@@ -4702,7 +4702,7 @@
           "go_type": "string",
           "kind": "string",
           "description": "Wrapping property for the tree",
-          "example": "{!{tree-enclose.hyperbricks}}",
+          "example": "{!{tree-enclose.hyperbricks.yaml}}",
           "authoring": {
             "label": "Enclose",
             "control": "textarea",

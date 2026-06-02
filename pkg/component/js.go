@@ -11,10 +11,10 @@ import (
 
 type JSConfig struct {
 	shared.Component   `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"Link js or render script tags from a js file or use inline attribute for multiline js blocks." example:"{!{javascript-@doc.hyperbricks}}"`
-	Inline             string `mapstructure:"inline" description:"Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here */ ]>>" example:"{!{javascript-inline.hyperbricks}}"`
-	Link               string `mapstructure:"link" description:"Use link for a script tag with a src attribute" example:"{!{javascript-link.hyperbricks}}"`
-	File               string `mapstructure:"file" description:"File overrides link and inline, it loads contents of a file and renders it in a script tag." example:"{!{javascript-file.hyperbricks}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Link a JavaScript asset or render a script tag from file or inline source." example:"{!{javascript-@doc.hyperbricks.yaml}}"`
+	Inline             string `mapstructure:"inline" description:"Inline JavaScript source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines." example:"{!{javascript-inline.hyperbricks.yaml}}"`
+	Link               string `mapstructure:"link" description:"Use link for a script tag with a src attribute" example:"{!{javascript-link.hyperbricks.yaml}}"`
+	File               string `mapstructure:"file" description:"File overrides link and inline, it loads contents of a file and renders it in a script tag." example:"{!{javascript-file.hyperbricks.yaml}}"`
 }
 
 // Compatibility alias.

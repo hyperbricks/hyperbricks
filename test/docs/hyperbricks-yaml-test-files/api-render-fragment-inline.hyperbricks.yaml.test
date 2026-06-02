@@ -6,7 +6,7 @@ api_fragment:
   - method: GET
   - route: api-fragment
 ==== explainer ====
-Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>
+Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.
 ==== expected json ====
 {
   "AllowedQueryKeys": null,

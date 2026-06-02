@@ -5,7 +5,7 @@ api_render:
   - inline: <div>INLINE</div>
   - method: GET
 ==== explainer ====
-Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>
+Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.
 ==== expected json ====
 {
   "AllowedQueryKeys": null,

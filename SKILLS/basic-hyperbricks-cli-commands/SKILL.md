@@ -1,236 +1,365 @@
 ---
 name: hyperBricks-basic-cli-skills
-description: Work on HyperBricks routes, fragments, templates, plugins, and deploys
-default_prompt: "Use Linear context to triage or update relevant issues for this task, with clear next actions."
+description: Work on HyperBricks YAML routes, fragments, templates, plugins, CLI workflows, and deploys
 metadata:
-  short-description: Manage HyperBricks isseus with CLI
+  short-description: Manage HyperBricks YAML projects with the CLI
 ---
 
-Save as:
+# HyperBricks Skill For Codex
 
-```text
-.codex/skills/hyperbricks/SKILL.md
+Use this skill when working on HyperBricks projects, `*.hyperbricks.yaml`
+component source files, `package.hyperbricks.yaml`, CLI workflows, routes,
+fragments, templates, plugins, static rendering, deploy archives, or plugin
+development.
+
+HyperBricks is a Go-based system for building and serving hypermedia web
+applications from modular YAML source files. It supports full pages, HTMX
+fragments, static rendering, dynamic rendering, Go templates, plugin-based
+components, Tailwind CLI integration, and optional JS/TS bundling through
+plugins.
+
+## Source Of Truth
+
+Before answering details, prefer the repo docs over memory:
+
+- `docs/YAML_USAGE.md` for YAML syntax, ordering, imports, inheritance, value
+  resolvers, and recovery behavior.
+- `docs/REFERENCE.md` for generated component fields and fixture examples.
+- `docs/HYPERBRICKS_CLI.md` for CLI commands and flags.
+- `docs/API_RENDER.md` for `api_render` and `api_fragment_render`.
+- `docs/ROUTE_GUARD.md` for route guard behavior.
+- `docs/PLUGINS.md` for plugin naming, manifests, and YAML usage.
+- `docs/DEPLOY.md`, `docs/DOCKER.md`, and `docs/RUNTIME_GATEWAY.md` for
+  deploy-specific workflows.
+
+## Core Mental Model
+
+A HyperBricks module contains `*.hyperbricks.yaml` files in its `hyperbricks/`
+directory. Each source file is a top-level YAML mapping. Most top-level keys
+define named HyperBricks objects.
+
+Each component object is an ordered sequence of single-key entries:
+
+```yaml
+page:
+  - type: hypermedia
+  - route: index
+  - title: Home
+  - main:
+      - type: tree
+      - hero:
+          - type: html
+          - value: |
+              <h1>Hello</h1>
 ```
 
-````markdown
-# HyperBricks Skill for Codex
+Source order matters. The YAML loader materializes component sequence order into
+runtime `@order` metadata. Authors should not write `@type` or `@order` in YAML
+source.
 
-Use this skill when working on HyperBricks projects, `.hyperbricks` configuration files, HyperBricks CLI workflows, package configuration, routes, fragments, templates, plugins, static builds, deploy archives, or plugin development.
+Use lowercase type names in YAML:
 
-HyperBricks is a Go-based system for building and serving hypermedia web applications from modular `.hyperbricks` configuration files. It supports full pages, HTMX fragments, static rendering, dynamic rendering, Go templates, plugin-based components, Tailwind CLI integration, and optional JS/TS bundling through plugins.
-
-## Core mental model
-
-A HyperBricks project is configured through small `.hyperbricks` files. Each file defines components and their nesting.
-
-There are two component categories:
-
-1. Standard components: leaf nodes that render their own content.
-2. Composite components: structural nodes that contain other components.
-
-Common standard components:
-
-```text
-<HTML>
-<TEXT>
-<IMAGE>
-<CSS>
-<JS>
-<JSON>
-<MENU>
-<PLUGIN>
-````
-
-Common composite components:
-
-```text
-<HYPERMEDIA>
-<FRAGMENT>
-<TREE>
-<TEMPLATE>
-<API_RENDER>
-<API_FRAGMENT_RENDER>
+```yaml
+- type: hypermedia
+- type: fragment
+- type: api_render
+- type: api_fragment_render
+- type: tree
+- type: head
+- type: template
+- type: html
+- type: text
+- type: css
+- type: javascript
+- type: js
+- type: image
+- type: images
+- type: json
+- type: json_render
+- type: menu
+- type: plugin
+- type: styles
 ```
 
-Use standard components for direct output. Use composite components for routing, nesting, reuse, data rendering, and HTMX partials.
+The runtime normalizes known YAML type names to runtime tokens such as
+`<HYPERMEDIA>` and `<TEMPLATE>`.
 
-## Root components and routes
+## Components And Routes
 
-Root components initiate frontend output and usually own routes.
+Root route owners initiate frontend output:
 
-Root types:
+- `hypermedia` for full pages.
+- `fragment` for HTMX partial responses.
+- `api_fragment_render` for HTMX/API fragment routes backed by upstream calls.
 
-```text
-<HYPERMEDIA>
-<FRAGMENT>
-<API_FRAGMENT_RENDER>
+Example page:
+
+```yaml
+page:
+  - type: hypermedia
+  - route: index
+  - title: Welcome
+  - content:
+      - type: html
+      - value: <p>Hello from HyperBricks.</p>
 ```
 
-Use `<HYPERMEDIA>` for full pages.
+Example fragment:
+
+```yaml
+counter:
+  - type: fragment
+  - route: counter
+  - body:
+      - type: html
+      - value: <span>1</span>
+```
+
+Use `tree` for nested structure, `template` for reusable Go template rendering,
+`api_render` for remote API data rendered during page rendering, and
+`api_fragment_render` for route-owned API fragments.
+
+## Fields And Children
+
+A scalar or data mapping entry is a field:
+
+```yaml
+hero:
+  - type: html
+  - value: <h1>Hello</h1>
+  - enclose: <section>|</section>
+```
+
+An entry whose value is another ordered component sequence is a child:
+
+```yaml
+main:
+  - type: tree
+  - intro:
+      - type: text
+      - value: Welcome
+```
+
+Maps under fields such as `values`, `data`, `headers`, `queryparams`, and
+package configuration are data maps. They are not render-order containers.
+
+## Imports And Inheritance
+
+Use file-level `imports` to load shared YAML source before the current file:
+
+```yaml
+imports:
+  - partials/site.hyperbricks.yaml
+  - partials/cards.hyperbricks.yaml
+
+page:
+  - type: hypermedia
+  - route: index
+  - hero:
+      - inherit: shared_hero
+```
+
+Relative import paths are resolved from the importing file's directory.
+
+Use `inherit` to deep-copy another named object and override selected fields:
+
+```yaml
+base_card:
+  - type: template
+  - template:
+      file: cards/card.html
+  - values:
+      title: Base title
+      body: Base body
+
+featured_card:
+  - inherit: base_card
+  - values:
+      title: Featured
+```
+
+Inheritance references use dotted paths such as `base_card`, `layout.header`, or
+`page.main.hero`.
+
+## Vars And Resolvers
+
+Use file-level `vars` for reusable source values:
+
+```yaml
+vars:
+  page:
+    title: Home
+
+page:
+  - type: hypermedia
+  - route: index
+  - title:
+      var: page.title
+```
+
+Use YAML resolver mappings instead of old marker strings:
+
+```yaml
+title:
+  env:
+    name: SITE_TITLE
+    default: HyperBricks
+
+asset:
+  path:
+    base: static
+    path: css/app.css
+
+content:
+  text:
+    file: docs/intro.md
+
+card:
+  - type: template
+  - template:
+      file: cards/card.html
+  - values:
+      title:
+        format: "%s card"
+        args:
+          - var: page.title
+```
+
+Common runtime variables include `module_root`, `root`, `module`, `resources`,
+`templates`, `static`, `hyperbricks`, and `render`.
+
+Template files are loaded with `template.file`; text/resource files use the
+current YAML resolver model. Do not use `{{TEMPLATE:...}}`, `{{TEXT:...}}`,
+`{{FILE:...}}`, `{{VAR:...}}`, or `{{ENV:...}}`.
+
+## Templates
+
+HyperBricks templates use Go `html/template` with Sprig functions plus
+HyperBricks helpers such as `safe`, `random`, and `valueOrEmpty`.
+
+Go template syntax remains literal YAML content:
+
+```yaml
+card:
+  - type: template
+  - inline: |
+      <article>
+        <h2>{{ .title }}</h2>
+        <p>{{ .body }}</p>
+      </article>
+  - values:
+      title: YAML templates
+      body: Rendered from YAML data
+```
+
+Use YAML block scalars for multiline HTML, CSS, JavaScript, JSON, text, or
+inline template content. Do not use old `<<[ ... ]>>` blocks.
+
+## Route Guards
+
+Route guards apply only to route-owning components: `hypermedia`, `fragment`,
+and `api_fragment_render`.
 
 Example:
 
-```hyperbricks
-hypermedia = <HYPERMEDIA>
-hypermedia.route = index
-hypermedia.title = Welcome!
-
-hypermedia.10 = <HTML>
-hypermedia.10.value = <p>Hello from HyperBricks.</p>
+```yaml
+guarded_page:
+  - type: hypermedia
+  - route: private
+  - guard:
+      enabled: true
+      auth:
+        cookie: token
+        header: Authorization
+        scheme: Bearer
+      require:
+        authenticated: true
+      on_unauthenticated:
+        redirect: /login
+        hx_redirect: /login
+        status: 401
 ```
 
-This creates:
+If a guard denies the request, children do not render, plugins do not execute,
+templates do not render, and `api_fragment_render` does not call its upstream
+endpoint.
 
-```text
-/index
-```
-
-Use `<FRAGMENT>` for HTMX partial responses.
-
-Example:
-
-```hyperbricks
-myfragment = <FRAGMENT>
-myfragment.10 = <HTML>
-myfragment.10.value = <p>Fragment content 1</p>
-myfragment.20 = <HTML>
-myfragment.20.value = <p>Fragment content 2</p>
-```
-
-Root composites may declare a `guard { ... }` block to deny a request before rendering starts.
-
-## Composition components
-
-Use these for larger projects:
-
-```text
-<API_RENDER>      Fetch and render public API data.
-<TREE>            Nest components hierarchically.
-<TEMPLATE>        Use reusable Go template logic with Sprig extensions.
-```
-
-Prefer composition over duplication. Extract repeated structures into `<TREE>` or `<TEMPLATE>`. Use `@macro` only when repetition becomes significant.
-
-## Imports
-
-HyperBricks loads `.hyperbricks` files from the module’s `hyperbricks/` directory.
-
-Files in subdirectories are not auto-loaded. Import them explicitly:
-
-```hyperbricks
-@import "plugins/esbuild.hyperbricks"
-@import "page/menu.hyperbricks"
-```
-
-Best practice:
-
-```text
-hyperbricks/
-├── pages/
-├── fragments/
-├── plugins/
-├── menus/
-└── theme/
-```
-
-Use imports for plugins, themes, menus, reusable fragments, and page sections.
-
-## Macros
-
-Use `@macro` for repeated route definitions, menus, mappings, or generated config blocks.
-
-Example:
-
-```hyperbricks
-@macro as (index, title, route, doc) {
-1|Introduction|introduction_fragment|introduction
-2|Quickstart|quickstart_fragment|quickstart
-} = <<<[
-    {{{.route}}} < docs_fragment
-    {{{.route}}} {
-        index = {{{.index}}}
-        route = {{{.route}}}
-        title = {{{.title}}}
-
-        10.data.source = {{RESOURCES}}/docs/{{{.doc}}}.md
-    }
-]>>>
-```
-
-Rules:
-
-* Use macros for repeated config only.
-* Keep macro tables compact.
-* Prefer explicit config when there are only one or two cases.
-
-## Project structure
+## Project Structure
 
 A standard module looks like:
 
 ```text
-someproject/
-├── hyperbricks/
-├── rendered/
-├── resources/
-├── static/
-├── templates/
-└── package.hyperbricks.yaml
+modules/<module>/
+  hyperbricks/
+  rendered/
+  resources/
+  static/
+  templates/
+  package.hyperbricks.yaml
 ```
 
 Directory purposes:
 
 ```text
-hyperbricks/   Core `.hyperbricks` config files.
-rendered/      Static output from `hyperbricks static`.
-resources/     Raw assets, JS sources, Tailwind config, markdown, data.
-static/        Public files served directly.
-templates/     Go templates used by `<TEMPLATE>`.
-package.hyperbricks.yaml Module entrypoint and runtime config.
+hyperbricks/                 YAML component source files.
+rendered/                    Static output from `hyperbricks static`.
+resources/                   Raw assets, JS sources, markdown, and data.
+static/                      Public files served directly.
+templates/                   Go HTML templates used by template providers.
+package.hyperbricks.yaml     Module entrypoint and runtime config.
 ```
 
-Run the HyperBricks CLI from the project root, usually the parent of `modules/`.
+The runtime scans `*.hyperbricks.yaml` files in the configured `hyperbricks/`
+directory. Subdirectories are not automatically loaded; use YAML `imports` when
+shared files live below nested directories.
 
-## Path markers
+Run HyperBricks CLI commands from the repository or project root, normally the
+directory that contains `modules/`.
 
-Use these markers for portable paths:
+## Package Configuration
 
-```text
-MODULE       Current module directory
-MODULE_ROOT  Root folder of all modules
-RESOURCES    resources/ directory
-HYPERBRICKS  hyperbricks/ directory
-TEMPLATES    templates/ directory
-STATIC       static/ directory
-ROOT         Root of the whole project
+`package.hyperbricks.yaml` is normal YAML configuration, not an ordered
+component source file. Runtime configuration lives under `hyperbricks`.
+
+```yaml
+hyperbricks:
+  mode: development
+  development:
+    watch: true
+    reload: true
+    frontend_errors: false
+    dashboard: false
+  server:
+    port: 8080
+    beautify: true
+  directories:
+    render:
+      path:
+        base: module
+        path: rendered
+    static:
+      path:
+        base: module
+        path: static
+    resources:
+      path:
+        base: module
+        path: resources
+    plugins: ./bin/plugins
+    templates:
+      path:
+        base: module
+        path: templates
+    hyperbricks:
+      path:
+        base: module
+        path: hyperbricks
 ```
 
-Example:
+Other top-level objects can be used for organization and config resolvers, but
+only `hyperbricks` is runtime configuration.
 
-```hyperbricks
-10.data.source = {{RESOURCES}}/docs/introduction.md
-```
-
-## Hypermedia cached file markers
-
-Use the `hypermedia` marker to preload files into memory.
-
-Templates:
-
-```hyperbricks
-hypermedia.10 = TEMPLATE
-hypermedia.10.template = {{TEMPLATE:sometemplate.html}}
-```
-
-Text:
-
-```hyperbricks
-hypermedia.10 = TEXT
-hypermedia.10.value = {{TEXT:sometext.md}}
-```
-
-Use this for fast rendering and self-contained loaded state.
-
-## CLI commands
+## CLI Commands
 
 Main CLI:
 
@@ -257,257 +386,40 @@ Always inspect command-specific flags with:
 hyperbricks <command> --help
 ```
 
-## Install HyperBricks
-
-Requirement:
-
-```text
-Go 1.23.2 or higher
-```
-
-Install:
+Common workflows:
 
 ```bash
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
+hyperbricks init -m demo
+hyperbricks start -m demo
+hyperbricks static -m demo
+hyperbricks build --hra -m demo
+hyperbricks build --zip -m demo
 ```
 
-## Initialize a project
+Deploy runtime commands:
 
 ```bash
-hyperbricks init -m someproject
-```
-
-Creates:
-
-```text
-modules/someproject/
-├── hyperbricks/
-├── rendered/
-├── resources/
-├── static/
-├── templates/
-└── package.hyperbricks.yaml
-```
-
-## Initialize from starter
-
-List starters:
-
-```bash
-hyperbricks init-starter list
-```
-
-Install latest compatible starter:
-
-```bash
-hyperbricks init-starter get hello-world -m someproject
-```
-
-Install specific version:
-
-```bash
-hyperbricks init-starter get hello-world@1.0.0 -m someproject
-```
-
-The target module directory must be missing or empty.
-
-## Start server
-
-```bash
-hyperbricks start -m someproject
-```
-
-Default local URL:
-
-```text
-http://localhost:8080
-```
-
-## Static render
-
-```bash
-hyperbricks static -m someproject
-```
-
-Output goes to the module’s `rendered/` directory unless configured otherwise.
-
-## Build deploy archive
-
-Build `.hra`:
-
-```bash
-hyperbricks build --hra -m someproject
-```
-
-Build `.zip`:
-
-```bash
-hyperbricks build --zip -m someproject
-```
-
-Common flags:
-
-```text
---out <dir>              Output directory, default `deploy/`.
---force                  Rebuild even when source hash is unchanged.
---replace[=<build_id>]   Replace current or specified build.
---push                   Build and push to default deploy target.
---target <name>          Select deploy target when using `--push`.
-```
-
-## Deploy runtime
-
-Run module from deploy folder:
-
-```bash
-hyperbricks start --deploy -m someproject
-```
-
-Deploy services:
-
-```bash
+hyperbricks start --deploy -m demo
 hyperbricks start --deploy-remote
 hyperbricks start --deploy-local
 hyperbricks start --deploy-init-config local
 hyperbricks start --deploy-init-config remote
 ```
 
-Deploy config lives at:
-
-```text
-deploy.hyperbricks.yaml
-```
-
-## Docker deploy
-
-Optional Docker setup:
+Starter commands:
 
 ```bash
-docker compose -f docker/docker-compose.yml up --build
+hyperbricks init-starter list
+hyperbricks init-starter get hello-world -m demo
+hyperbricks init-starter get hello-world@1.0.0 -m demo
 ```
 
-Defaults:
+The target module directory must be missing or empty when installing a starter.
 
-```text
-Deploy API: http://localhost:9090
-SSH:        localhost:2222
-```
+## Runtime Gateway
 
-## package.hyperbricks.yaml
-
-The runtime supplies the active module directory to package config path resolvers.
-
-The main runtime config is inside:
-
-```yaml
-hyperbricks: {}
-```
-
-Only the `hyperbricks` object is processed by the runtime. Other objects may be used for organization.
-
-## Runtime mode
-
-Available modes:
-
-```yaml
-hyperbricks:
-  mode: development
-```
-
-Modes:
-
-```text
-development   Local development with watch/reload.
-live          Production-oriented mode.
-debug         Verbose diagnostics.
-```
-
-## Development config
-
-```yaml
-hyperbricks:
-  mode: development
-  development:
-    watch: true
-    reload: true
-    frontend_errors: false
-    dashboard: false
-```
-
-## Live config
-
-```yaml
-hyperbricks:
-  mode: live
-  live:
-    cache: 10s
-```
-
-Go-style durations are valid:
-
-```text
-300ms
-10s
-2h45m
-```
-
-## Server config
-
-Defaults:
-
-```yaml
-hyperbricks:
-  server:
-    port: 8080
-    beautify: true
-    read_timeout: 5s
-    write_timeout: 10s
-    idle_timeout: 20s
-    keep_alives_enabled: true
-```
-
-Keep-alives should usually stay enabled.
-
-## Rate limiting
-
-```yaml
-hyperbricks:
-  rate_limit:
-    requests_per_second: 100
-    burst: 500
-```
-
-## Directory config
-
-```yaml
-hyperbricks:
-  directories:
-    render:
-      path:
-        base: module
-        path: rendered
-    static:
-      path:
-        base: module
-        path: static
-    resources:
-      path:
-        base: module
-        path: resources
-    plugins: ./bin/plugins/
-    templates:
-      path:
-        base: module
-        path: templates
-    hyperbricks:
-      path:
-        base: module
-        path: hyperbricks
-```
-
-## Runtime gateway
-
-Runtime gateway is disabled by default.
+Runtime gateway is disabled by default. It is a host-based proxy hook for
+isolated runtime views.
 
 CLI example:
 
@@ -523,11 +435,11 @@ Flat host suffix example:
 ```bash
 hyperbricks start -m my-module --port 8080 \
   --runtime-gateway \
-  --runtime-host-suffix -runtime.hyperbricks.eu,-live.hyperbricks.eu \
+  --runtime-host-suffix -runtime.example.test,-live.example.test \
   --runtime-resolver http://127.0.0.1:8080/resolve-runtime
 ```
 
-Config example:
+Package config example:
 
 ```yaml
 hyperbricks:
@@ -535,146 +447,63 @@ hyperbricks:
     runtime_gateway:
       enabled: true
       domain: runtime.local
-      host_suffix: -runtime.hyperbricks.eu
+      host_suffix: -runtime.example.test
       resolver: http://127.0.0.1:8080/resolve-runtime
 ```
 
 Rules:
 
-* Resolver must be an internal trusted endpoint.
-* Startup fails if gateway is enabled without a domain or host suffix and resolver.
-* CLI flags override config.
-* Runtime hosts must resolve to the HyperBricks server.
+- The resolver must be an internal trusted endpoint.
+- Startup fails if gateway is enabled without a domain or host suffix and a
+  resolver.
+- CLI flags override config.
+- Runtime hosts must resolve to the HyperBricks server.
 
-Example local hosts entry:
+## Plugin Model
 
-```text
-127.0.0.1 test-001--current.runtime.local
-```
+HyperBricks plugins are Go `.so` files. They are compiled into `./bin/plugins`
+by default and enabled from `package.hyperbricks.yaml`.
 
-## Plugin model
-
-HyperBricks plugins are Go `.so` files.
-
-Two plugin types exist:
+Two plugin source types exist:
 
 ```text
-Global plugins   Shared public plugins from plugin index.
-Custom plugins   Module-level plugins shipped with a module.
+Global plugins   Shared public plugins from ./plugins.
+Custom plugins   Module-level plugins from modules/<module>/plugins.
 ```
 
-Compiled binaries live in:
-
-```text
-./bin/plugins
-```
-
-Enable plugins in `package.hyperbricks.yaml` using the compiled binary name without `.so`.
-
-Example:
+Enable plugins with the compiled binary name without `.so`:
 
 ```yaml
 hyperbricks:
   plugins:
     enabled:
-      - MarkdownPlugin@1.0.0
+      - ExamplePlugin@1.0.0
+      - CustomWidget__demo@1.0.0
 ```
 
-## Plugin CLI
+Use a plugin component with the same exact config name:
+
+```yaml
+page:
+  - type: hypermedia
+  - route: plugin-demo
+  - main:
+      - type: plugin
+      - plugin: ExamplePlugin@1.0.0
+      - data:
+          title: Rendered by a plugin
+```
 
 Plugin commands:
 
 ```bash
 hyperbricks plugin list
-hyperbricks plugin install <name>@<version>
-hyperbricks plugin build <name>@<version>
-hyperbricks plugin remove <name>@<version>
+hyperbricks plugin install example@1.0.0
+hyperbricks plugin build example@1.0.0
+hyperbricks plugin build widget@1.0.0 --module demo
+hyperbricks plugin update example
+hyperbricks plugin remove example@1.0.0
 ```
-
-If version is omitted for `install`, the latest compatible version is selected.
-
-Example:
-
-```bash
-hyperbricks plugin install markdown@1.0.0
-```
-
-## Global plugins
-
-Source:
-
-```text
-./plugins/<name>/<version>/manifest.json
-```
-
-Output:
-
-```text
-./bin/plugins/<Binary>@<version>.so
-```
-
-Config usage:
-
-```yaml
-hyperbricks:
-  plugins:
-    enabled:
-      - EsbuildPlugin@2.0.0
-```
-
-## Custom plugins
-
-Source in local mode:
-
-```text
-modules/<module>/plugins/<name>/<version>/manifest.json
-```
-
-Source in deploy-remote runtime:
-
-```text
-<deploy.root>/<module>/runtime/<build_id>/plugins/<name>/<version>/manifest.json
-```
-
-Output:
-
-```text
-./bin/plugins/<Binary>__<module>@<version>.so
-```
-
-Config usage:
-
-```yaml
-hyperbricks:
-  plugins:
-    enabled:
-      - MyPlugin__test-003@1.0.0
-```
-
-Build custom plugin:
-
-```bash
-hyperbricks plugin build myplugin@1.0.0 --module test-003
-```
-
-Remove custom plugin:
-
-```bash
-hyperbricks plugin remove myplugin@1.0.0 --module test-003
-```
-
-## Plugin naming rules
-
-The config name is the plugin binary name without `.so`.
-
-Use the exact config name in:
-
-```text
-plugins.enabled
-plugin = "..."
-```
-
-Do not include `.so`.
 
 Global plugin pattern:
 
@@ -682,31 +511,26 @@ Global plugin pattern:
 <Binary>@<version>
 ```
 
-Custom plugin pattern:
+Custom module plugin pattern:
 
 ```text
 <Binary>__<module>@<version>
 ```
 
-Examples:
+Do not include `.so` in `plugins.enabled` or plugin component configuration.
 
-```text
-EsbuildPlugin@1.0.10
-MyPlugin__test-003@1.0.0
-```
+## Plugin Manifest
 
-## Plugin manifest
-
-Example:
+Each plugin version has a `manifest.json`.
 
 ```json
 {
-  "plugin": "github.com/hyperbricks/plugins/myplugin",
-  "source": "my_plugin.go",
+  "plugin": "github.com/hyperbricks/plugins/example",
+  "source": "example_plugin.go",
   "version": "1.0.0",
-  "binary": "MyPlugin",
-  "compatible_hyperbricks": [ ">=0.5.0-alpha" ],
-  "description": "Basic Plugin example"
+  "binary": "ExamplePlugin",
+  "compatible_hyperbricks": [">=1.1.0-beta"],
+  "description": "Example plugin"
 }
 ```
 
@@ -726,212 +550,57 @@ Optional field:
 binary
 ```
 
-If `binary` is present, it overrides the derived binary name.
-
-If `binary` is absent, derive the base name from the Go source file:
-
-```text
-upload_plugin.go -> UploadPlugin
-```
-
-## Plugin compatibility
-
-A plugin must be compiled for the same HyperBricks version as the running binary.
-
-HyperBricks checks compiled plugins using embedded Go module metadata, comparable to:
-
-```bash
-go version -m <plugin.so>
-```
-
-If incompatible, rebuild the plugin against the active HyperBricks version.
-
-## Building plugins against a HyperBricks version
-
-Explicit release version:
-
-```bash
-hyperbricks plugin install esbuild@2.0.0 --hyperbricks-version v1.0.1-beta
-```
-
-```bash
-hyperbricks plugin build esbuild@2.0.0 --hyperbricks-version v1.0.1-beta
-```
-
-In release mode, the version must exist as a real Git revision or tag for:
+If `binary` is omitted, HyperBricks derives the binary base name from the Go
+source file:
 
 ```text
-github.com/hyperbricks/hyperbricks
+example_plugin.go -> ExamplePlugin
 ```
 
-Otherwise `go mod tidy` may fail with:
+## Local HyperBricks Core Development
 
-```text
-unknown revision v1.0.1-beta
-```
-
-Replace that section with:
-
-```markdown
-## Local HyperBricks core development
-
-When answering any **local plugin build** question, first decide whether “local” means only a module-local plugin source, or also a local HyperBricks core checkout.
-
-If the user says “local plugin”, “local build”, “develop plugin locally”, or similar, include the local core workflow unless they clearly mean a released/installed HyperBricks version.
+When answering a local plugin build question, decide whether "local" means only
+a module-local plugin source or also a local HyperBricks core checkout.
 
 Use a local checkout override instead of temporary Git tags.
 
 Preferred local-core workflow:
 
 ```bash
-export HYPERBRICKS_LOCAL_PATH="$HOME/Github/hyperbricks"
-hyperbricks plugin build myplugin@1.0.0 --module test-003
+export HYPERBRICKS_LOCAL_PATH="$HOME/GitHub/hyperbricks"
+hyperbricks plugin build myplugin@1.0.0 --module demo
 ```
 
 Equivalent explicit flag:
 
 ```bash
 hyperbricks plugin build myplugin@1.0.0 \
-  --module test-003 \
-  --hyperbricks-path "$HOME/Github/hyperbricks"
+  --module demo \
+  --hyperbricks-path "$HOME/GitHub/hyperbricks"
 ```
 
 Global plugin install against local core:
 
 ```bash
 hyperbricks plugin install esbuild@2.0.0 \
-  --hyperbricks-path "$HOME/Github/hyperbricks"
-```
-
-Effective module override:
-
-```go
-require github.com/hyperbricks/hyperbricks v0.0.0
-
-replace github.com/hyperbricks/hyperbricks => /absolute/path/to/hyperbricks
+  --hyperbricks-path "$HOME/GitHub/hyperbricks"
 ```
 
 Rules:
 
-- Use `HYPERBRICKS_LOCAL_PATH` or `--hyperbricks-path` for local HyperBricks core development.
+- Use `HYPERBRICKS_LOCAL_PATH` or `--hyperbricks-path` for local HyperBricks
+  core development.
 - Use Git tags only for release builds.
 - Do not create temporary public tags just to make local plugin builds pass.
-- Do not answer local plugin build questions with only `hyperbricks plugin build <name>@<version> --module <module>` unless the user clearly wants the installed/released HyperBricks binary.
-```
-
-## Plugin build mode rules
-
-Development mode:
-
-```bash
-export HYPERBRICKS_LOCAL_PATH="$HOME/Github/hyperbricks"
-hyperbricks plugin install esbuild@2.0.0
-```
-
-Release mode:
-
-```bash
-unset HYPERBRICKS_LOCAL_PATH
-hyperbricks plugin install esbuild@2.0.0 --hyperbricks-version v1.0.1-beta
-```
-
-Rules:
-
-* If `--hyperbricks-path` is set, use local development mode.
-* If `HYPERBRICKS_LOCAL_PATH` is set, use local development mode.
-* If both `--hyperbricks-path` and `--hyperbricks-version` are set, fail unless explicitly allowed.
-* In release mode, remove existing `replace github.com/hyperbricks/hyperbricks`.
-* In release mode, require the requested version to exist as a real tag or revision.
-* Normalize versions so both `1.0.1-beta` and `v1.0.1-beta` work.
-* Never create temporary public test tags only to make plugin builds pass.
-
-## Dashboard plugin manager
-
-Available in:
-
-```text
---deploy-remote
---deploy-local
-```
-
-Global Plugins tab shows:
-
-```text
-Available plugins
-Compatible versions
-Installed binaries
-Compatibility status
-Install/Rebuild/Remove actions
-```
-
-Custom Plugins tab shows module-level plugins from `plugins.enabled`.
-
-Custom plugins appear only when:
-
-```text
-The plugin is listed in plugins.enabled.
-The config name ends with __<module>@<version>.
-manifest.json exists in the module plugin source folder.
-The selected module/build is correct.
-```
-
-## Plugin API endpoints
-
-Deploy-remote:
-
-```text
-GET  /deploy/plugins/global/index
-GET  /deploy/plugins/global
-POST /deploy/plugins/global/install
-POST /deploy/plugins/global/rebuild
-POST /deploy/plugins/global/remove
-GET  /deploy/plugins/custom?module=<m>&build_id=<id>
-POST /deploy/plugins/custom/compile
-POST /deploy/plugins/custom/remove
-GET  /deploy/plugins/tasks/<task_id>
-GET  /deploy/plugins/tasks/<task_id>/logs
-```
-
-Deploy-local:
-
-```text
-GET  /local/plugins/global/index
-GET  /local/plugins/global
-POST /local/plugins/global/install
-POST /local/plugins/global/rebuild
-POST /local/plugins/global/remove
-GET  /local/plugins/custom?module=<m>
-POST /local/plugins/custom/compile
-POST /local/plugins/custom/remove
-GET  /local/plugins/tasks/<task_id>
-GET  /local/plugins/tasks/<task_id>/logs
-```
-
-Deploy-local endpoints do not use HMAC.
-
-## Working directory rule
-
-Plugin lookup uses:
-
-```text
-directories.plugins
-```
-
-Default:
-
-```text
-./bin/plugins
-```
-
-This path is relative to the current working directory.
-
-Deploy services must run with a stable working directory. Otherwise plugins may compile successfully but fail to load at runtime.
+- If `--hyperbricks-path` or `HYPERBRICKS_LOCAL_PATH` is set, treat the build as
+  local development mode.
+- In release mode, require the requested HyperBricks version to exist as a real
+  tag or revision.
+- Rebuild plugins after runtime API changes or when compatibility is uncertain.
 
 ## Troubleshooting
 
-### Custom plugin does not appear
-
-Check:
+Custom plugin does not appear:
 
 ```text
 plugins.enabled contains the custom config name.
@@ -940,96 +609,48 @@ manifest.json exists in the expected source folder.
 The selected module and build are correct.
 ```
 
-### Build fails with unknown revision
+Runtime cannot find plugin:
 
-Cause:
+```text
+directories.plugins points to ./bin/plugins or the intended directory.
+The process working directory is stable.
+The config name exactly matches the binary name without .so.
+The plugin was built for the same HyperBricks version that is running.
+```
+
+Build fails with `unknown revision`:
 
 ```text
 The requested HyperBricks version does not exist as a Git tag or revision.
+Use HYPERBRICKS_LOCAL_PATH or --hyperbricks-path for local core development.
+Use real Git tags only for release builds.
 ```
 
-Fix for local development:
-
-```bash
-export HYPERBRICKS_LOCAL_PATH="$HOME/Github/hyperbricks"
-hyperbricks plugin install <name>@<version>
-```
-
-Fix for release:
-
-```bash
-git tag v1.0.1-beta
-git push origin v1.0.1-beta
-unset HYPERBRICKS_LOCAL_PATH
-hyperbricks plugin install <name>@<version> --hyperbricks-version v1.0.1-beta
-```
-
-### Runtime cannot find plugin
-
-Check:
-
-```text
-directories.plugins points to ./bin/plugins or intended directory.
-Process working directory is stable.
-Config name exactly matches binary name without .so.
-Plugin was built for the same HyperBricks version that is running.
-```
-
-### Plugin marked incompatible
-
-Rebuild against the active HyperBricks version:
-
-```bash
-hyperbricks plugin build <name>@<version>
-```
-
-Or, for local core development:
-
-```bash
-export HYPERBRICKS_LOCAL_PATH="$HOME/Github/hyperbricks"
-hyperbricks plugin build <name>@<version>
-```
-
-## Recommended workflows
-
-Local core plus plugin development:
-
-```bash
-export HYPERBRICKS_LOCAL_PATH="$HOME/Github/hyperbricks"
-hyperbricks plugin install esbuild@2.0.0
-hyperbricks plugin build myplugin@1.0.0 --module test-003
-```
-
-Release:
-
-```bash
-unset HYPERBRICKS_LOCAL_PATH
-git tag v1.0.1-beta
-git push origin v1.0.1-beta
-hyperbricks plugin install esbuild@2.0.0 --hyperbricks-version v1.0.1-beta
-```
-
-## Codex behavior rules
+## Codex Behavior Rules
 
 When editing a HyperBricks project:
 
-1. Preserve existing `.hyperbricks` naming and numeric ordering.
-2. Prefer small modular files and `@import`.
-3. Do not move files into subdirectories without adding imports.
-4. Use `<HYPERMEDIA>` for full-page routes.
-5. Use `<FRAGMENT>` for HTMX partials.
-6. Use `<TREE>` or `<TEMPLATE>` for repeated structure.
-7. Use `@macro` only when repetition is material.
+1. Preserve YAML source order and semantic child names.
+2. Use lowercase YAML `type` values.
+3. Use YAML `imports`, not old `@import`.
+4. Use YAML `inherit`, not old macro/property expansion.
+5. Use YAML resolver mappings, not old marker strings.
+6. Do not write runtime-only `@type` or `@order` in source YAML.
+7. Do not move source files into subdirectories without adding imports.
 8. Keep `package.hyperbricks.yaml` plugin names exact.
 9. Never include `.so` in `plugins.enabled`.
 10. For custom plugins, include `__<module>@<version>` in the config name.
-11. Do not assume plugin binaries are valid; rebuild if version compatibility is uncertain.
+11. Do not assume plugin binaries are valid; rebuild if version compatibility is
+    uncertain.
 12. Do not create temporary public Git tags for local plugin testing.
-13. Use `HYPERBRICKS_LOCAL_PATH` or `--hyperbricks-path` for unreleased local core testing.
-14. Run CLI commands from the project root unless the repository clearly documents otherwise.
-15. When changing deploy or plugin config, check the working directory assumption for `./bin/plugins`.
+13. Use `HYPERBRICKS_LOCAL_PATH` or `--hyperbricks-path` for unreleased local
+    core testing.
+14. Run CLI commands from the project root unless the repository clearly
+    documents otherwise.
+15. When changing deploy or plugin config, check the working directory
+    assumption for `./bin/plugins`.
 
-## Validation commands
+## Validation Commands
 
 Use these when relevant:
 

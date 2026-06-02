@@ -11,7 +11,7 @@ This pattern shows how to keep normal page links while making them feel faster w
 
 ## Files
 
-- Config: `hyperbricks/50-menu-htmx-demo.hyperbricks`
+- Config: `hyperbricks/50-menu-htmx-demo.hyperbricks.yaml`
 - Shell template: `templates/patterns/menu-htmx-shell.html`
 - Content templates:
   `templates/patterns/menu-htmx-intro.html`

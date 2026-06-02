@@ -6,7 +6,7 @@ hypermedia:
         - type: css
         - inline: "\nbody {\n    background-color: lightblue;\n}\n    "
 ==== explainer ====
-Use inline to define css in a multiline block <<[ /* css goes here */ ]>>
+Inline CSS source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.
 ==== expected json ====
 {
   "BodyTag": "",

@@ -5,7 +5,7 @@ html:
   - value: |
       <p>HTML TEST</p>
 ==== explainer ====
-Component for rendering all your single or multiline snippets.
+Component for rendering raw HTML snippets.
 ==== expected json ====
 {
   "ConfigCategory": "",

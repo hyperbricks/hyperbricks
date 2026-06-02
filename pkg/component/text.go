@@ -10,9 +10,9 @@ import (
 
 type TextConfig struct {
 	shared.Component   `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"Render simple text" example:"{!{text-@doc.hyperbricks}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Render simple text" example:"{!{text-@doc.hyperbricks.yaml}}"`
 
-	Value string `mapstructure:"value" validate:"required" description:"The paragraph content" example:"{!{text-value.hyperbricks}}"`
+	Value string `mapstructure:"value" validate:"required" description:"The paragraph content" example:"{!{text-value.hyperbricks.yaml}}"`
 }
 
 func TextConfigGetName() string {

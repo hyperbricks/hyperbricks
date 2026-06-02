@@ -11,7 +11,7 @@ import (
 
 type StyleConfig struct {
 	shared.Component `mapstructure:",squash"`
-	File             string `mapstructure:"file" validate:"required" description:"Path to the CSS file" example:"{!{styles-file.hyperbricks}}"`
+	File             string `mapstructure:"file" validate:"required" description:"Path to the CSS file" example:"{!{styles-file.hyperbricks.yaml}}"`
 }
 
 func StyleConfigGetName() string {

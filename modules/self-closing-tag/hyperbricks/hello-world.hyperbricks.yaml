@@ -1,0 +1,13 @@
+page:
+  - type: hypermedia
+  - route: index
+  - image:
+      - type: image
+      - src:
+          path:
+            base: resources
+            path: cute_cat_w800_h800.jpg
+      - width: 100
+      - loading: lazy
+      - id: img_
+      - title: sometitle!
