@@ -7,8 +7,11 @@ RESULTS_FILE="${REPO_ROOT}/test/docs/yaml_documentation_test_results.txt"
 
 cd "${REPO_ROOT}"
 
-go test ./test/docs -run '^TestYAMLDocumentationReference$' -v \
-  -args -update-yaml-docs \
+version="$(tr -d '\n' < ./assets/version.md)"
+buildtime="$(date -u '+%Y-%m-%d %H:%M UTC')"
+
+go test ./test/docs -run '^(TestYAMLDocumentationReference|TestYAMLDocumentationReadme)$' -v \
+  -args -update-docs -version="${version}" -buildtime="${buildtime}" \
   > "${RESULTS_FILE}"
 
 matches=$(grep -iF "PASS:" "${RESULTS_FILE}" || true)
@@ -32,7 +35,7 @@ echo "${pass_num_matches} tests passing"
 echo "${num_matches} tests failing"
 
 
-matches=$(grep -iF ": TestYAMLDocumentationReference" "${RESULTS_FILE}" || true)
+matches=$(grep -iF ": TestYAMLDocumentation" "${RESULTS_FILE}" || true)
 
 if [ -z "$matches" ]; then
     total_num_matches=0
