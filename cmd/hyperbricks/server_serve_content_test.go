@@ -981,6 +981,147 @@ func TestServeContent_HyperMediaGuardAuthorizesBeforeRender(t *testing.T) {
 	}
 }
 
+func TestServeContent_HyperMediaGuardAuthorizesWithRelativeEndpoint(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+
+	var authorizeCalls int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/authorize" {
+			atomic.AddInt32(&authorizeCalls, 1)
+			if got := r.Header.Get("Authorization"); got != "Bearer test-token" {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		ServeContent(w, r)
+	}))
+	defer server.Close()
+
+	setTestRouteConfig("guarded-relative-authz", map[string]interface{}{
+		"@type": composite.HyperMediaConfigGetName(),
+		"route": "guarded-relative-authz",
+		"guard": map[string]interface{}{
+			"enabled": true,
+			"auth": map[string]interface{}{
+				"cookie": "token",
+			},
+			"require": map[string]interface{}{
+				"authenticated": true,
+			},
+			"authorize": map[string]interface{}{
+				"endpoint": "/authorize",
+				"method":   "GET",
+			},
+		},
+		"template": map[string]interface{}{
+			"@type":  composite.TemplateConfigGetName(),
+			"inline": `relative authorized`,
+		},
+	})
+
+	request, err := http.NewRequest(http.MethodGet, server.URL+"/guarded-relative-authz", nil)
+	if err != nil {
+		t.Fatalf("expected request to build, got error %v", err)
+	}
+	request.AddCookie(&http.Cookie{Name: "token", Value: "test-token"})
+
+	response, err := server.Client().Do(request)
+	if err != nil {
+		t.Fatalf("expected guarded request to succeed, got error %v", err)
+	}
+	defer response.Body.Close()
+	body, _ := io.ReadAll(response.Body)
+
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200 for authorized relative guard request, got %d with body %q", response.StatusCode, string(body))
+	}
+	if !strings.Contains(string(body), "relative authorized") {
+		t.Fatalf("expected protected content to render, got %q", string(body))
+	}
+	if got := atomic.LoadInt32(&authorizeCalls); got != 1 {
+		t.Fatalf("expected one relative authorization call, got %d", got)
+	}
+}
+
+func TestResolveRouteGuardAuthorizeEndpoint(t *testing.T) {
+	t.Run("keeps absolute endpoint", func(t *testing.T) {
+		got, err := resolveRouteGuardAuthorizeEndpoint(nil, "https://auth.example.test/authorize?mode=guard")
+		if err != nil {
+			t.Fatalf("expected absolute endpoint to resolve, got error %v", err)
+		}
+		if got != "https://auth.example.test/authorize?mode=guard" {
+			t.Fatalf("expected absolute endpoint to remain unchanged, got %q", got)
+		}
+	})
+
+	t.Run("resolves relative endpoint against request host", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodGet, "http://127.0.0.1:18092/protected", nil)
+		got, err := resolveRouteGuardAuthorizeEndpoint(request, "/authorize?mode=guard")
+		if err != nil {
+			t.Fatalf("expected relative endpoint to resolve, got error %v", err)
+		}
+		if got != "http://127.0.0.1:18092/authorize?mode=guard" {
+			t.Fatalf("expected request host endpoint, got %q", got)
+		}
+	})
+
+	t.Run("uses forwarded proto for proxied requests", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodGet, "http://internal.example.test/protected", nil)
+		request.Host = "public.example.test"
+		request.Header.Set("X-Forwarded-Proto", "https")
+
+		got, err := resolveRouteGuardAuthorizeEndpoint(request, "/authorize")
+		if err != nil {
+			t.Fatalf("expected proxied relative endpoint to resolve, got error %v", err)
+		}
+		if got != "https://public.example.test/authorize" {
+			t.Fatalf("expected forwarded proto endpoint, got %q", got)
+		}
+	})
+
+	t.Run("rejects relative endpoint without host", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodGet, "/protected", nil)
+		request.Host = ""
+		request.URL.Host = ""
+
+		if _, err := resolveRouteGuardAuthorizeEndpoint(request, "/authorize"); err == nil {
+			t.Fatalf("expected relative endpoint without host to fail")
+		}
+	})
+}
+
+func TestAuthorizeRouteGuardResolvesRelativeEndpointToRequestHost(t *testing.T) {
+	authz := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/authorize" {
+			t.Fatalf("expected authorization path /authorize, got %q", r.URL.Path)
+		}
+		if got := r.Header.Get("Authorization"); got != "Bearer test-token" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer authz.Close()
+
+	request := httptest.NewRequest(http.MethodGet, authz.URL+"/protected", nil)
+	guard := composite.RouteGuardConfig{
+		Authorize: &composite.RouteGuardAuthorizeConfig{
+			Endpoint: "/authorize",
+			Method:   http.MethodGet,
+		},
+	}
+
+	status, err := authorizeRouteGuard(request, guard, "test-token")
+	if err != nil {
+		t.Fatalf("expected relative guard authorization endpoint to resolve, got error %v", err)
+	}
+	if status != http.StatusNoContent {
+		t.Fatalf("expected 204 authorization response, got %d", status)
+	}
+}
+
 func TestServeContent_DevelopmentLeavesBodyCleanWhenNoRenderErrors(t *testing.T) {
 	setupDevelopmentModeServeContentTest(t, false)
 
