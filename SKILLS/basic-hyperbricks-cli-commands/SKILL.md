@@ -253,7 +253,7 @@ card:
 ```
 
 Use YAML block scalars for multiline HTML, CSS, JavaScript, JSON, text, or
-inline template content. Do not use old `<<[ ... ]>>` blocks.
+inline template content.
 
 ## Route Guards
 

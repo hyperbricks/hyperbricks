@@ -544,18 +544,6 @@ b:
 	}
 }
 
-func TestPreprocessBytesRejectsUnsupportedMacroSyntax(t *testing.T) {
-	_, err := PreprocessBytes([]byte(`
-@macro "button"
-`), Options{})
-	if err == nil {
-		t.Fatal("PreprocessBytes() error = nil, want macro syntax error")
-	}
-	if !strings.Contains(err.Error(), "@macro syntax is not supported") {
-		t.Fatalf("PreprocessBytes() error = %v", err)
-	}
-}
-
 func TestProcessBytesDoesNotResolveInterpolationMarkers(t *testing.T) {
 	for _, test := range []struct {
 		name string

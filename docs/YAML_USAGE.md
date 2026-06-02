@@ -557,8 +557,7 @@ card_list:
           body: Still ordinary template data
 ```
 
-Use YAML block scalars when the template itself spans multiple lines. Avoid the
-old `<<[ ... ]>>` block syntax; it belongs to the removed properties DSL.
+Use YAML block scalars when the template itself spans multiple lines.
 
 ## Unsupported Source Features
 

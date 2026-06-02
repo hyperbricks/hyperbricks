@@ -105,7 +105,7 @@ cd "$ROOT_DIR"
 
 BIN_PLUGIN_DIR="$ROOT_DIR/bin/plugins"
 MODULE_PLUGIN_DIR="$ROOT_DIR/modules/$MODULE_NAME/plugins"
-BUILD_MARKER="$BIN_PLUGIN_DIR/.hyperbricks-plugin-build-ok"
+BUILD_MARKER="$BIN_PLUGIN_DIR/hyperbricks-plugin-build-ok"
 
 if [[ "$DRY_RUN" -eq 0 ]]; then
   rm -f "$BUILD_MARKER"
