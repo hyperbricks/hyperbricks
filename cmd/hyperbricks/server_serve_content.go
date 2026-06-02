@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"path"
 	"regexp"
 	"strconv"
@@ -152,6 +153,47 @@ func applyGuardPlaceholders(input string, values map[string]string) string {
 	return result
 }
 
+func resolveRouteGuardAuthorizeEndpoint(r *http.Request, endpoint string) (string, error) {
+	parsed, err := url.Parse(endpoint)
+	if err != nil {
+		return "", err
+	}
+	if parsed.IsAbs() {
+		return parsed.String(), nil
+	}
+	if r == nil {
+		return "", fmt.Errorf("relative guard authorize endpoint %q requires request context", endpoint)
+	}
+
+	host := strings.TrimSpace(r.Host)
+	if host == "" && r.URL != nil {
+		host = strings.TrimSpace(r.URL.Host)
+	}
+	if host == "" {
+		return "", fmt.Errorf("relative guard authorize endpoint %q requires request host", endpoint)
+	}
+
+	scheme := "http"
+	if r.URL != nil && (r.URL.Scheme == "http" || r.URL.Scheme == "https") {
+		scheme = r.URL.Scheme
+	}
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	if forwardedProto := strings.TrimSpace(r.Header.Get("X-Forwarded-Proto")); forwardedProto != "" {
+		proto := strings.TrimSpace(strings.Split(forwardedProto, ",")[0])
+		if proto == "http" || proto == "https" {
+			scheme = proto
+		}
+	}
+
+	if parsed.Path != "" && !strings.HasPrefix(parsed.Path, "/") {
+		parsed.Path = "/" + parsed.Path
+	}
+	base := &url.URL{Scheme: scheme, Host: host, Path: "/"}
+	return base.ResolveReference(parsed).String(), nil
+}
+
 func missingGuardQueryKeys(r *http.Request, guard composite.RouteGuardConfig) []string {
 	if len(guard.Require.Query) == 0 || r == nil {
 		return nil
@@ -216,6 +258,10 @@ func authorizeRouteGuard(r *http.Request, guard composite.RouteGuardConfig, toke
 	}
 	values := guardPlaceholderValues(r)
 	endpoint := applyGuardPlaceholders(strings.TrimSpace(guard.Authorize.Endpoint), values)
+	endpoint, err := resolveRouteGuardAuthorizeEndpoint(r, endpoint)
+	if err != nil {
+		return 0, err
+	}
 	body := applyGuardPlaceholders(guard.Authorize.Body, values)
 	method := strings.ToUpper(strings.TrimSpace(guard.Authorize.Method))
 	if method == "" {

@@ -104,7 +104,7 @@ guarded_demo_secret_shell:
       require:
         authenticated: "true"
       authorize:
-        endpoint: "http://127.0.0.1:8080/guarded-demo/auth/authorize"
+        endpoint: /guarded-demo/auth/authorize
         method: GET
       on_unauthenticated:
         redirect: /guarded-demo/login
