@@ -10,6 +10,12 @@ The goal is simple: keep the authoring model readable, reusable, and versionable
 while still giving developers full control over HTML, routing, templates, and
 deployment.
 
+## Authoring Format
+
+As of `v1.2.0-beta`, HyperBricks uses YAML as its canonical authoring format.
+Earlier internal configuration experiments have been retired in favor of a
+single, readable format for modules, routes, components, and examples.
+
 ## Mental Model
 
 HyperBricks has three layers:
