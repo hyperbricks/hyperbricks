@@ -17,11 +17,18 @@ import (
 	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
 )
 
-var updateYAMLDocsFlag = flag.Bool("update-yaml-docs", false, "write generated YAML reference docs")
+var (
+	updateYAMLDocsFlag = flag.Bool("update-yaml-docs", false, "write generated YAML reference docs")
+	updateDocsFlag     = flag.Bool("update-docs", false, "write generated README and REFERENCE docs")
+	versionFlag        = flag.String("version", "dev", "override version in generated docs")
+	buildTimeFlag      = flag.String("buildtime", "undefined", "override build time in generated docs")
+)
 
 const (
 	yamlDocumentationFixtureDir = "hyperbricks-yaml-test-files"
+	yamlAssetsVersionPath       = "../../assets/version.md"
 	yamlReferencePath           = "../../docs/REFERENCE.md"
+	yamlReadmePath              = "../../README.md"
 )
 
 var yamlDocumentationCuratedFixtures = map[string]string{
@@ -34,8 +41,10 @@ var yamlDocumentationCuratedFixtures = map[string]string{
 var yamlDocumentationExplicitSkips = map[string]string{}
 
 type yamlReferenceData struct {
-	Version    string
-	Categories []yamlReferenceCategory
+	HyperBricksVersion string
+	BuildTime          string
+	SchemaVersion      string
+	Categories         []yamlReferenceCategory
 }
 
 type yamlReferenceCategory struct {
@@ -46,6 +55,7 @@ type yamlReferenceCategory struct {
 type yamlReferenceType struct {
 	Name        string
 	Token       string
+	Aliases     []string
 	Description string
 	Fields      []yamlReferenceField
 	Example     yamlReferenceExample
@@ -112,8 +122,16 @@ func TestYAMLDocumentationCuratedExamplesAreReadable(t *testing.T) {
 }
 
 func TestYAMLDocumentationReference(t *testing.T) {
-	rendered := renderYAMLReference(t)
-	if *updateYAMLDocsFlag {
+	version := resolvedDocumentationVersion(t)
+	buildTime := *buildTimeFlag
+	if !*updateYAMLDocsFlag && !*updateDocsFlag {
+		if expected, err := os.ReadFile(yamlReferencePath); err == nil {
+			version, buildTime = yamlDocumentationHeaderValues(string(expected), version, buildTime)
+		}
+	}
+
+	rendered := renderYAMLReference(t, version, buildTime)
+	if *updateYAMLDocsFlag || *updateDocsFlag {
 		if err := os.WriteFile(yamlReferencePath, rendered, 0o644); err != nil {
 			t.Fatalf("write %s: %v", yamlReferencePath, err)
 		}
@@ -133,7 +151,7 @@ func TestYAMLDocumentationReference(t *testing.T) {
 }
 
 func TestYAMLDocumentationReferenceMarkdownIsHTMLSafe(t *testing.T) {
-	rendered := string(renderYAMLReference(t))
+	rendered := string(renderYAMLReference(t, *versionFlag, *buildTimeFlag))
 	prose := yamlDocumentationMarkdownOutsideFences(rendered)
 	prose = regexp.MustCompile("`[^`\n]*`").ReplaceAllString(prose, "")
 	if match := angleTag.FindString(prose); match != "" {
@@ -142,13 +160,36 @@ func TestYAMLDocumentationReferenceMarkdownIsHTMLSafe(t *testing.T) {
 }
 
 func TestYAMLDocumentationReferenceUsesPlainBlockScalars(t *testing.T) {
-	rendered := string(renderYAMLReference(t))
+	rendered := string(renderYAMLReference(t, *versionFlag, *buildTimeFlag))
 	if match := regexp.MustCompile(`\|[1-9]`).FindString(rendered); match != "" {
 		t.Fatalf("generated YAML reference contains %q; use plain | or |- block scalars in public examples", match)
 	}
 }
 
-func renderYAMLReference(t *testing.T) []byte {
+func TestYAMLDocumentationReferenceIncludesAliases(t *testing.T) {
+	rendered := string(renderYAMLReference(t, resolvedDocumentationVersion(t), *buildTimeFlag))
+	for _, want := range []string{
+		"Aliases: `<JAVASCRIPT>`",
+		"Aliases: `<JSON>`",
+	} {
+		if !strings.Contains(rendered, want) {
+			t.Fatalf("generated YAML reference is missing %q", want)
+		}
+	}
+}
+
+func TestYAMLDocumentationReadme(t *testing.T) {
+	rendered := renderYAMLReadme(t, resolvedDocumentationVersion(t), *buildTimeFlag)
+	outputPath := filepath.Join(t.TempDir(), "README.md")
+	if *updateDocsFlag {
+		outputPath = yamlReadmePath
+	}
+	if err := os.WriteFile(outputPath, rendered, 0o644); err != nil {
+		t.Fatalf("write %s: %v", outputPath, err)
+	}
+}
+
+func renderYAMLReference(t *testing.T, version string, buildTime string) []byte {
 	t.Helper()
 	tmpl, err := template.New("yaml_template.md").Funcs(template.FuncMap{
 		"boolText": func(value bool) string {
@@ -180,10 +221,79 @@ func renderYAMLReference(t *testing.T) []byte {
 	}
 
 	var buf bytes.Buffer
-	if err := tmpl.ExecuteTemplate(&buf, "main", yamlReferenceDataFromSchema(t)); err != nil {
+	data := yamlReferenceDataFromSchema(t)
+	data.HyperBricksVersion = strings.TrimSpace(version)
+	data.BuildTime = normalizedBuildTime(buildTime)
+	if err := tmpl.ExecuteTemplate(&buf, "main", data); err != nil {
 		t.Fatalf("render YAML reference: %v", err)
 	}
 	return []byte(compactMarkdownOutsideCodeFences(buf.String()))
+}
+
+func renderYAMLReadme(t *testing.T, version string, buildTime string) []byte {
+	t.Helper()
+	tmpl, err := template.New("readme.md").Funcs(template.FuncMap{
+		"include": func(filePath string) (string, error) {
+			content, err := os.ReadFile(filePath)
+			if err != nil {
+				return "", err
+			}
+			return string(content), nil
+		},
+	}).ParseFiles("readme.md")
+	if err != nil {
+		t.Fatalf("parse readme.md: %v", err)
+	}
+
+	data := map[string]string{
+		"version":   strings.TrimSpace(version),
+		"buildtime": normalizedBuildTime(buildTime),
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.ExecuteTemplate(&buf, "main", data); err != nil {
+		t.Fatalf("render README: %v", err)
+	}
+	return []byte(compactMarkdownOutsideCodeFences(buf.String()))
+}
+
+func normalizedBuildTime(buildTime string) string {
+	buildTime = strings.TrimSpace(buildTime)
+	if buildTime == "undefined" {
+		return ""
+	}
+	return buildTime
+}
+
+func resolvedDocumentationVersion(t *testing.T) string {
+	t.Helper()
+	version := strings.TrimSpace(*versionFlag)
+	if version != "" && version != "dev" {
+		return version
+	}
+	content, err := os.ReadFile(yamlAssetsVersionPath)
+	if err != nil {
+		return version
+	}
+	if assetVersion := strings.TrimSpace(string(content)); assetVersion != "" {
+		return assetVersion
+	}
+	return version
+}
+
+func yamlDocumentationHeaderValues(markdown string, fallbackVersion string, fallbackBuildTime string) (string, string) {
+	version := strings.TrimSpace(fallbackVersion)
+	buildTime := strings.TrimSpace(fallbackBuildTime)
+	for _, line := range strings.Split(markdown, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "**Version:**") {
+			version = strings.TrimSpace(strings.TrimPrefix(trimmed, "**Version:**"))
+		}
+		if strings.HasPrefix(trimmed, "**Build time:**") {
+			buildTime = strings.TrimSpace(strings.TrimPrefix(trimmed, "**Build time:**"))
+		}
+	}
+	return version, buildTime
 }
 
 func yamlDocumentationMarkdownOutsideFences(markdown string) string {
@@ -229,6 +339,7 @@ func yamlReferenceDataFromSchema(t *testing.T) yamlReferenceData {
 		byCategory[string(schemaType.Category)] = append(byCategory[string(schemaType.Category)], yamlReferenceType{
 			Name:        schemaType.Name,
 			Token:       schemaType.Token,
+			Aliases:     append([]string(nil), schemaType.Aliases...),
 			Description: schemaType.Description,
 			Fields:      refFields,
 			Example: yamlReferenceExample{
@@ -254,8 +365,8 @@ func yamlReferenceDataFromSchema(t *testing.T) yamlReferenceData {
 		return categories[i].Name < categories[j].Name
 	})
 	return yamlReferenceData{
-		Version:    registry.Version,
-		Categories: categories,
+		SchemaVersion: registry.Version,
+		Categories:    categories,
 	}
 }
 

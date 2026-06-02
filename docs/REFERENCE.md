@@ -1,14 +1,27 @@
+**Licence:** MIT
+**Version:** v1.2.0-beta
+
+**Build time:** 2026-06-02 12:00 UTC
+
+
 # HyperBricks Component Reference
 
 This reference is generated from the runtime schema and YAML documentation
 fixtures. It is intentionally compact: field tables come from Go struct tags,
 while examples come from curated executable YAML fixtures.
 
+Regenerate this reference and the root README with:
+
+```bash
+bash scripts/build_docs.sh
+```
+
 Schema version: 1
 
 ## component
 
 ### `<HTML>`
+
 
 Raw HTML snippet for leaf content or small escaped blocks.
 
@@ -43,6 +56,7 @@ Expected output:
 
 ### `<PLUGIN>`
 
+
 Plugin renderer that delegates output to a loaded HyperBricks plugin.
 
 | Field | Kind | Required | Description |
@@ -74,6 +88,7 @@ Plugin example
 
 
 ### `<TEMPLATE>`
+
 
 Template-backed component that binds scalar values and value-mounted bricks into generated HTML.
 
@@ -138,6 +153,7 @@ Expected output:
 
 ### `<TEXT>`
 
+
 Plain text leaf node.
 
 | Field | Kind | Required | Description |
@@ -168,6 +184,7 @@ Expected output:
 ## composite
 
 ### `<API_FRAGMENT_RENDER>`
+
 
 Request-time API fragment that forwards to an upstream endpoint and renders the response.
 
@@ -240,6 +257,7 @@ api_fragment:
 
 
 ### `<FRAGMENT>`
+
 
 A `<FRAGMENT>` dynamically renders part of an HTML page, allowing updates without a full page reload.
 
@@ -329,6 +347,7 @@ Expected output:
 
 ### `<HEAD>`
 
+
 Document head helper that assembles title, meta, CSS, and JavaScript.
 
 | Field | Kind | Required | Description |
@@ -403,6 +422,7 @@ console.log("yaml head fixture");
 
 
 ### `<HYPERMEDIA>`
+
 
 Route-owning page shell that renders the main HyperBricks document.
 
@@ -509,6 +529,7 @@ Expected output:
 
 ### `<TREE>`
 
+
 Ordered container that renders nested child items in key order.
 
 | Field | Kind | Required | Description |
@@ -556,6 +577,7 @@ Expected output:
 
 ### `<API_RENDER>`
 
+
 Remote API fetcher that renders the upstream response through a template.
 
 | Field | Kind | Required | Description |
@@ -594,6 +616,9 @@ api_render:
 
 
 ### `<JSON_RENDER>`
+
+Aliases: `<JSON>`
+
 
 Local JSON renderer that loads a file and feeds it into a template.
 
@@ -647,6 +672,7 @@ Expected output:
 ## menu
 
 ### `<MENU>`
+
 
 Menu renderer that sorts and formats page links by section.
 
@@ -704,6 +730,7 @@ Expected output:
 
 ### `<CSS>`
 
+
 Stylesheet leaf that can emit inline CSS or link to a stylesheet.
 
 | Field | Kind | Required | Description |
@@ -759,6 +786,7 @@ Expected output:
 
 ### `<IMAGE>`
 
+
 Single image renderer with optional optimization and HTML output.
 
 | Field | Kind | Required | Description |
@@ -802,6 +830,7 @@ Expected output:
 
 
 ### `<IMAGES>`
+
 
 Multiple image renderer for a directory of images.
 
@@ -849,6 +878,9 @@ Expected output:
 
 ### `<JS>`
 
+Aliases: `<JAVASCRIPT>`
+
+
 JavaScript leaf that can emit inline script or link to a script file.
 
 | Field | Kind | Required | Description |
@@ -884,6 +916,7 @@ Expected output:
 
 
 ### `<STYLES>`
+
 
 Stylesheet file renderer for project style assets.
 

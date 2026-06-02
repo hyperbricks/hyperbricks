@@ -1,8 +1,8 @@
-**Licence:** MIT
-**Version:** v1.2.0-beta
-
-**Build time:** 2026-06-02 12:00 UTC
-
+{{define "main"}}**Licence:** MIT
+**Version:** {{.version}}
+{{if .buildtime}}
+**Build time:** {{.buildtime}}
+{{end}}
 
 ## Build Status
 
@@ -40,4 +40,6 @@ With HyperBricks, you can:
 
 ---
 
-The project is released under the [MIT License](https://github.com/hyperbricks/hyperbricks/blob/main/LICENSE) and provided “as-is,” without any warranties or guarantees.
+{{include "template_end_note.md"}}
+
+{{end}}
