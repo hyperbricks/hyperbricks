@@ -22,12 +22,12 @@ import (
 // TemplateOptions is the reusable template field set used by <TEMPLATE> and
 // template-bearing composites.
 type TemplateOptions struct {
-	Template         string                 `mapstructure:"template" json:"template,omitempty" description:"Loads contents of a template file in the modules template directory" example:"{!{template-template.hyperbricks}}"`
-	Inline           string                 `mapstructure:"inline" json:"inline,omitempty" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{template-inline.hyperbricks}}"`
-	AllowedQueryKeys []string               `mapstructure:"querykeys" json:"querykeys,omitempty" description:"Set allowed proxy query keys" example:"{!{template-querykeys.hyperbricks}}"`
-	QueryParams      map[string]string      `mapstructure:"queryparams" json:"queryparams,omitempty" description:"Set proxy query keys in the configuration" example:"{!{template-queryparams.hyperbricks}}"`
-	Values           map[string]interface{} `mapstructure:"values" json:"values,omitempty" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks}}"`
-	Enclose          string                 `mapstructure:"enclose" json:"enclose,omitempty" description:"Enclosing property for the template rendered output" example:"{!{template-enclose.hyperbricks}}"`
+	Template         string                 `mapstructure:"template" json:"template,omitempty" description:"Loads contents of a template file in the modules template directory" example:"{!{template-template.hyperbricks.yaml}}"`
+	Inline           string                 `mapstructure:"inline" json:"inline,omitempty" description:"Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines." example:"{!{template-inline.hyperbricks.yaml}}"`
+	AllowedQueryKeys []string               `mapstructure:"querykeys" json:"querykeys,omitempty" description:"Set allowed proxy query keys" example:"{!{template-querykeys.hyperbricks.yaml}}"`
+	QueryParams      map[string]string      `mapstructure:"queryparams" json:"queryparams,omitempty" description:"Set proxy query keys in the configuration" example:"{!{template-queryparams.hyperbricks.yaml}}"`
+	Values           map[string]interface{} `mapstructure:"values" json:"values,omitempty" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks.yaml}}"`
+	Enclose          string                 `mapstructure:"enclose" json:"enclose,omitempty" description:"Enclosing property for the template rendered output" example:"{!{template-enclose.hyperbricks.yaml}}"`
 }
 
 // ToRenderMap converts typed template options back into the map shape expected
@@ -66,7 +66,7 @@ func (opts *TemplateOptions) ToRenderMap() map[string]interface{} {
 // TemplateConfig represents the configuration for a TEMPLATE type.
 type TemplateConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"Template-backed component that binds scalar values and value-mounted bricks into generated HTML." example:"{!{template-@doc.hyperbricks}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Template-backed component that binds scalar values and value-mounted bricks into generated HTML." example:"{!{template-@doc.hyperbricks.yaml}}"`
 	TemplateOptions    `mapstructure:",squash"`
 }
 

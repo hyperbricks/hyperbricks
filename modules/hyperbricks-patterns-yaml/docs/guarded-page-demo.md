@@ -25,7 +25,7 @@ Auth endpoints:
 
 ## Files
 
-- Config: `hyperbricks/30-guarded-page-demo.hyperbricks`
+- Config: `hyperbricks/30-guarded-page-demo.hyperbricks.yaml`
 - Plugin: `plugins/guarded-demo-auth/1.0.0/guarded_demo_auth_plugin.go`
 - Templates:
   `templates/patterns/guarded-shell.html`
@@ -72,4 +72,5 @@ Keep responsibilities separate:
 - auth plugin handles login/logout/authorize request mechanics
 - forbidden is a real route, not just an inline message
 
-That matches the pattern in `../hyperbricks-composer/hyperbricks/app.hyperbricks` and `../hyperbricks-composer/hyperbricks/api/auth.hyperbricks`.
+That matches the same ownership pattern used by Composer: page shells own route
+access, while auth endpoints own login/logout/authorize mechanics.

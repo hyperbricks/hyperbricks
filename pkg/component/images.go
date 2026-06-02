@@ -11,17 +11,17 @@ import (
 
 type MultipleImagesConfig struct {
 	shared.Component   `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"Processes images from a directory and writes optimized copies to static/images with the configured width, height, and quality, then outputs the corresponding HTML img tags. Uses the base id plus an index to make ids unique." example:"{!{image-@doc.hyperbricks}}"`
-	Directory          string `mapstructure:"directory" validate:"required" description:"The directory path containing the images" example:"{!{images-directory.hyperbricks}}"`
-	Width              int    `mapstructure:"width" validate:"min=1" description:"The width of the images (can be a number or percentage)" example:"{!{images-width.hyperbricks}}"`
-	Height             int    `mapstructure:"height" validate:"min=1" description:"The height of the images (can be a number or percentage)" example:"{!{images-height.hyperbricks}}"`
-	Id                 string `mapstructure:"id" description:"Id of images with a index added to it" example:"{!{images-id.hyperbricks}}"`
-	Class              string `mapstructure:"class" description:"CSS class for styling the image" example:"{!{images-class.hyperbricks}}"`
-	IsStatic           bool   `mapstructure:"is_static" exclude:"true" description:"Flag indicating if the images are static" example:"{!{images-is_static.hyperbricks}}"`
-	Alt                string `mapstructure:"alt" description:"Alternative text for the image" example:"{!{images-alt.hyperbricks}}"`
-	Title              string `mapstructure:"title" description:"The title attribute of the image" example:"{!{images-title.hyperbricks}}"`
-	Quality            int    `mapstructure:"quality" description:"Image quality for optimization" example:"{!{images-quality.hyperbricks}}"`
-	Loading            string `mapstructure:"loading" description:"Lazy loading strategy (e.g., 'lazy', 'eager')" example:"{!{images-loading.hyperbricks}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Processes images from a directory and writes optimized copies to static/images with the configured width, height, and quality, then outputs the corresponding HTML img tags. Uses the base id plus an index to make ids unique." example:"{!{image-@doc.hyperbricks.yaml}}"`
+	Directory          string `mapstructure:"directory" validate:"required" description:"The directory path containing the images" example:"{!{images-directory.hyperbricks.yaml}}"`
+	Width              int    `mapstructure:"width" validate:"min=1" description:"The width of the images (can be a number or percentage)" example:"{!{images-width.hyperbricks.yaml}}"`
+	Height             int    `mapstructure:"height" validate:"min=1" description:"The height of the images (can be a number or percentage)" example:"{!{images-height.hyperbricks.yaml}}"`
+	Id                 string `mapstructure:"id" description:"Id of images with a index added to it" example:"{!{images-id.hyperbricks.yaml}}"`
+	Class              string `mapstructure:"class" description:"CSS class for styling the image" example:"{!{images-class.hyperbricks.yaml}}"`
+	IsStatic           bool   `mapstructure:"is_static" exclude:"true" description:"Flag indicating if the images are static" example:"{!{images-is_static.hyperbricks.yaml}}"`
+	Alt                string `mapstructure:"alt" description:"Alternative text for the image" example:"{!{images-alt.hyperbricks.yaml}}"`
+	Title              string `mapstructure:"title" description:"The title attribute of the image" example:"{!{images-title.hyperbricks.yaml}}"`
+	Quality            int    `mapstructure:"quality" description:"Image quality for optimization" example:"{!{images-quality.hyperbricks.yaml}}"`
+	Loading            string `mapstructure:"loading" description:"Lazy loading strategy (e.g., 'lazy', 'eager')" example:"{!{images-loading.hyperbricks.yaml}}"`
 }
 
 func MultipleImagesConfigGetName() string {

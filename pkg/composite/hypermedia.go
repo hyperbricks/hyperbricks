@@ -13,26 +13,26 @@ import (
 // HyperMediaConfig represents configuration hypermedia.
 type HyperMediaConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	MetaDocDescription string                 `mapstructure:"@doc" description:"Route-owning page shell that renders the main HyperBricks document." example:"{!{hypermedia-@doc.hyperbricks}}"`
+	MetaDocDescription string                 `mapstructure:"@doc" description:"Route-owning page shell that renders the main HyperBricks document." example:"{!{hypermedia-@doc.hyperbricks.yaml}}"`
 	Beautify           *bool                  `mapstructure:"beautify" json:"Beautify,omitempty" description:"Override server.beautify for this object when rendered directly"`
-	Title              string                 `mapstructure:"title" description:"The title of the hypermedia site" example:"{!{hypermedia-title.hyperbricks}}"`
-	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the hypermedia" example:"{!{hypermedia-route.hyperbricks}}"`
-	Section            string                 `mapstructure:"section" description:"The section the hypermedia belongs to. This can be used with the component <MENU> for example." example:"{!{hypermedia-section.hyperbricks}}"`
+	Title              string                 `mapstructure:"title" description:"The title of the hypermedia site" example:"{!{hypermedia-title.hyperbricks.yaml}}"`
+	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the hypermedia" example:"{!{hypermedia-route.hyperbricks.yaml}}"`
+	Section            string                 `mapstructure:"section" description:"The section the hypermedia belongs to. This can be used with the component <MENU> for example." example:"{!{hypermedia-section.hyperbricks.yaml}}"`
 	Items              map[string]interface{} `mapstructure:",remain"`
-	BodyTag            string                 `mapstructure:"bodytag" description:"Special body enclose with use of |. Please note that this will not work when a <HYPERMEDIA>.template is configured. In that case, you have to add the bodytag in the template." example:"{!{hypermedia-bodytag.hyperbricks}}"`
-	Enclose            string                 `mapstructure:"enclose" description:"Enclosure of the property for the hypermedia" example:"{!{hypermedia-enclose.hyperbricks}}"`
-	Favicon            string                 `mapstructure:"favicon" description:"Path to the favicon for the hypermedia" example:"{!{hypermedia-favicon.hyperbricks}}"`
-	Template           *TemplateOptions       `mapstructure:"template" description:"Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions." example:"{!{hypermedia-template.hyperbricks}}"`
-	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{hypermedia-cache.hyperbricks}}"`
-	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly disable cache" example:"{!{hypermedia-nocache.hyperbricks}}"`
-	Static             string                 `mapstructure:"static" description:"Static file path associated with the hypermedia, for rendering out the hypermedia to static files." example:"{!{hypermedia-static.hyperbricks}}"`
-	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options" example:"{!{hypermedia-index.hyperbricks}}"`
-	Doctype            string                 `mapstructure:"doctype" description:"Alternative Doctype for the HTML document" example:"{!{hypermedia-doctype.hyperbricks}}"`
-	HtmlTag            string                 `mapstructure:"htmltag" description:"The opening HTML tag with attributes" example:"{!{hypermedia-htmltag.hyperbricks}}"`
-	Head               map[string]interface{} `mapstructure:"head" description:"Configurations for the head section of the hypermedia" example:"{!{hypermedia-head.hyperbricks}}"`
-	Headers            map[string]string      `mapstructure:"headers" description:"HTTP response headers to include when serving this hypermedia" example:"{!{hypermedia-headers.hyperbricks}}"`
-	Cookies            []string               `mapstructure:"cookies" description:"Set-Cookie values to include when serving this hypermedia" example:"{!{hypermedia-cookies.hyperbricks}}"`
-	Guard              *RouteGuardConfig      `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA behavior remains unchanged" example:"{!{hypermedia-guard.hyperbricks}}"`
+	BodyTag            string                 `mapstructure:"bodytag" description:"Special body enclose with use of |. Please note that this will not work when a <HYPERMEDIA>.template is configured. In that case, you have to add the bodytag in the template." example:"{!{hypermedia-bodytag.hyperbricks.yaml}}"`
+	Enclose            string                 `mapstructure:"enclose" description:"Enclosure of the property for the hypermedia" example:"{!{hypermedia-enclose.hyperbricks.yaml}}"`
+	Favicon            string                 `mapstructure:"favicon" description:"Path to the favicon for the hypermedia" example:"{!{hypermedia-favicon.hyperbricks.yaml}}"`
+	Template           *TemplateOptions       `mapstructure:"template" description:"Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions." example:"{!{hypermedia-template.hyperbricks.yaml}}"`
+	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{hypermedia-cache.hyperbricks.yaml}}"`
+	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly disable cache" example:"{!{hypermedia-nocache.hyperbricks.yaml}}"`
+	Static             string                 `mapstructure:"static" description:"Static file path associated with the hypermedia, for rendering out the hypermedia to static files." example:"{!{hypermedia-static.hyperbricks.yaml}}"`
+	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options" example:"{!{hypermedia-index.hyperbricks.yaml}}"`
+	Doctype            string                 `mapstructure:"doctype" description:"Alternative Doctype for the HTML document" example:"{!{hypermedia-doctype.hyperbricks.yaml}}"`
+	HtmlTag            string                 `mapstructure:"htmltag" description:"The opening HTML tag with attributes" example:"{!{hypermedia-htmltag.hyperbricks.yaml}}"`
+	Head               map[string]interface{} `mapstructure:"head" description:"Configurations for the head section of the hypermedia" example:"{!{hypermedia-head.hyperbricks.yaml}}"`
+	Headers            map[string]string      `mapstructure:"headers" description:"HTTP response headers to include when serving this hypermedia" example:"{!{hypermedia-headers.hyperbricks.yaml}}"`
+	Cookies            []string               `mapstructure:"cookies" description:"Set-Cookie values to include when serving this hypermedia" example:"{!{hypermedia-cookies.hyperbricks.yaml}}"`
+	Guard              *RouteGuardConfig      `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA behavior remains unchanged" example:"{!{hypermedia-guard.hyperbricks.yaml}}"`
 	ContentType        string                 `mapstructure:"content_type" description:"content type header definition"`
 }
 

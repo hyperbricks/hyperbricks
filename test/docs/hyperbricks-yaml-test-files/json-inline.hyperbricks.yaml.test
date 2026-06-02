@@ -12,7 +12,7 @@ local_json_test:
               </ul>
       	
 ==== explainer ====
-Use inline to define the template in a multiline block <<[ /* Template code goes here */ ]>>
+Inline Go template source used to render the loaded JSON. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.
 ==== expected json ====
 {
   "ConfigCategory": "",

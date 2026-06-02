@@ -30,20 +30,20 @@ type HxResponse struct {
 // FragmentConfig represents configuration for a single fragment.
 type FragmentConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	HxResponse         `mapstructure:"response" description:"HTMX response header configuration." example:"{!{fragment-response.hyperbricks}}"`
-	MetaDocDescription string                 `mapstructure:"@doc" description:"A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience." example:"{!{fragment-@doc.hyperbricks}}"`
+	HxResponse         `mapstructure:"response" description:"HTMX response header configuration." example:"{!{fragment-response.hyperbricks.yaml}}"`
+	MetaDocDescription string                 `mapstructure:"@doc" description:"A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience." example:"{!{fragment-@doc.hyperbricks.yaml}}"`
 	Beautify           *bool                  `mapstructure:"beautify" json:"Beautify,omitempty" description:"Override server.beautify for this object when rendered directly"`
 	HxResponseWriter   http.ResponseWriter    `mapstructure:"hx_response" exclude:"true"`
-	Title              string                 `mapstructure:"title" description:"The title of the fragment" example:"{!{fragment-title.hyperbricks}}"`
-	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{fragment-route.hyperbricks}}"`
-	Section            string                 `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{fragment-section.hyperbricks}}"`
+	Title              string                 `mapstructure:"title" description:"The title of the fragment" example:"{!{fragment-title.hyperbricks.yaml}}"`
+	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{fragment-route.hyperbricks.yaml}}"`
+	Section            string                 `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{fragment-section.hyperbricks.yaml}}"`
 	Items              map[string]interface{} `mapstructure:",remain"`
-	Enclose            string                 `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{fragment-enclose.hyperbricks}}"`
-	Template           *TemplateOptions       `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks}}"`
-	Static             string                 `mapstructure:"static" description:"Static file path associated with the fragment" example:"{!{fragment-static.hyperbricks}}"`
-	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{fragment-cache.hyperbricks}}"`
-	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly disable cache" example:"{!{fragment-nocache.hyperbricks}}"`
-	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks}}"`
+	Enclose            string                 `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{fragment-enclose.hyperbricks.yaml}}"`
+	Template           *TemplateOptions       `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks.yaml}}"`
+	Static             string                 `mapstructure:"static" description:"Static file path associated with the fragment" example:"{!{fragment-static.hyperbricks.yaml}}"`
+	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{fragment-cache.hyperbricks.yaml}}"`
+	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly disable cache" example:"{!{fragment-nocache.hyperbricks.yaml}}"`
+	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks.yaml}}"`
 	ContentType        string                 `mapstructure:"content_type" description:"content type header definition"`
 	Guard              *RouteGuardConfig      `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current FRAGMENT behavior remains unchanged"`
 }

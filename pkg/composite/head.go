@@ -19,11 +19,11 @@ const (
 // HeadConfig represents the configuration for the head section.
 type HeadConfig struct {
 	shared.Composite `mapstructure:",squash"`
-	Title            string            `mapstructure:"title" description:"The title of the hypermedia document" example:"{!{head-title.hyperbricks}}"`
-	Favicon          string            `mapstructure:"favicon" description:"Path to the favicon for the hypermedia document" example:"{!{head-favicon.hyperbricks}}"`
-	MetaData         map[string]string `mapstructure:"meta" description:"Metadata for the head section" example:"{!{head-meta.hyperbricks}}"`
-	Css              []string          `mapstructure:"css" description:"CSS files to include" example:"{!{head-css.hyperbricks}}"`
-	Js               []string          `mapstructure:"js" description:"JavaScript files to include" example:"{!{head-js.hyperbricks}}"`
+	Title            string            `mapstructure:"title" description:"The title of the hypermedia document" example:"{!{head-title.hyperbricks.yaml}}"`
+	Favicon          string            `mapstructure:"favicon" description:"Path to the favicon for the hypermedia document" example:"{!{head-favicon.hyperbricks.yaml}}"`
+	MetaData         map[string]string `mapstructure:"meta" description:"Metadata for the head section" example:"{!{head-meta.hyperbricks.yaml}}"`
+	Css              []string          `mapstructure:"css" description:"CSS files to include" example:"{!{head-css.hyperbricks.yaml}}"`
+	Js               []string          `mapstructure:"js" description:"JavaScript files to include" example:"{!{head-js.hyperbricks.yaml}}"`
 }
 
 // HeadConfigGetName returns the HyperBricks type associated with the HeadConfig.

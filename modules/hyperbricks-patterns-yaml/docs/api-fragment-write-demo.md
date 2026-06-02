@@ -14,7 +14,7 @@ The advanced HyperBricks term for that route shape is `<API_FRAGMENT_RENDER>`, b
 
 ## Files
 
-- Config: `hyperbricks/40-api-fragment-write-demo.hyperbricks`
+- Config: `hyperbricks/40-api-fragment-write-demo.hyperbricks.yaml`
 - Page template: `templates/patterns/api-fragment-write-demo.html`
 - Result template: `templates/patterns/api-file-write-result.html`
 - Mock responses:

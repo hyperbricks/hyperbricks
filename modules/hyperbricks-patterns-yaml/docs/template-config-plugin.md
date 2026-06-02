@@ -95,7 +95,7 @@ Files:
 
 - Plugin: `plugins/template-config-demo/2.0.0/template_config_demo_plugin.go`
 - Template: `templates/demo.html`
-- HyperBricks example: `hyperbricks/hello-world.hyperbricks`
+- HyperBricks example: `hyperbricks/10-template-config-plugin.hyperbricks.yaml`
 
 What the current example does:
 

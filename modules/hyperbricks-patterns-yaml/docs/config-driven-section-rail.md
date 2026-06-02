@@ -11,7 +11,7 @@ This pattern shows how to build a left rail from data instead of hand-writing ev
 
 ## Files
 
-- Config: `hyperbricks/60-config-driven-section-rail.hyperbricks`
+- Config: `hyperbricks/60-config-driven-section-rail.hyperbricks.yaml`
 - Shell template: `templates/patterns/section-rail-shell.html`
 
 ## Routes

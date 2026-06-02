@@ -16,21 +16,27 @@ It demonstrates:
 
 Composer uses:
 
-```hyperbricks
-app_status <<< app_section
-app_status.route = status
-app_status.10.values.content.10.values.content_right <<< status.10
+```yaml
+app_status:
+  - inherit: app_section
+  - route: status
+  - template_10:
+      - values:
+          content_right:
+            - inherit: status.template_10
 ```
 
 and the reusable section source:
 
-```hyperbricks
-status = <FRAGMENT>
-status.route = fragments/status
-status.10 = <TREE>
+```yaml
+status:
+  - type: fragment
+  - route: fragments/status
+  - template_10:
+      - type: tree
 ```
 
-It also exposes explicit request-time partial endpoints in `api/status.hyperbricks`, such as:
+It also exposes explicit request-time partial endpoints in YAML source, such as:
 
 - `project/status/summary`
 - `project/status/settings`
@@ -40,8 +46,8 @@ It also exposes explicit request-time partial endpoints in `api/status.hyperbric
 
 Files:
 
-- Config: `hyperbricks/20-htmx-canonical-fragment-demo.hyperbricks`
-- Landing page: `hyperbricks/10-template-config-plugin.hyperbricks`
+- Config: `hyperbricks/20-htmx-canonical-fragment-demo.hyperbricks.yaml`
+- Landing page: `hyperbricks/10-template-config-plugin.hyperbricks.yaml`
 - Shell template: `templates/patterns/layout-shell.html`
 - Section template: `templates/patterns/status-demo.html`
 - Panel fragments:

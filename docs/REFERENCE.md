@@ -26,7 +26,7 @@ Raw HTML snippet for leaf content or small escaped blocks.
 
 Fixture: `html-@doc.hyperbricks.yaml.test`
 
-Component for rendering all your single or multiline snippets.
+Component for rendering raw HTML snippets.
 
 
 ```yaml
@@ -83,7 +83,7 @@ Template-backed component that binds scalar values and value-mounted bricks into
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
 | `enclose` | `string` | no | Enclosing property for the template rendered output |
-| `inline` | `string` | no | Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>> |
+| `inline` | `string` | no | Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
 | `querykeys` | `list` | no | Set allowed proxy query keys |
 | `queryparams` | `map` | no | Set proxy query keys in the configuration |
 | `template` | `string` | no | Loads contents of a template file in the modules template directory |
@@ -199,7 +199,7 @@ Request-time API fragment that forwards to an upstream endpoint and renders the 
 | `guard.require.query` | `map` | no | Required query keys, set each key to true to enforce presence |
 | `headers` | `map` | no | Optional HTTP headers for API requests |
 | `index` | `int` | no | Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation |
-| `inline` | `string` | no | Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>> |
+| `inline` | `string` | no | Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
 | `jwtclaims` | `map` | no | JWT claims to include when signing the bearer token |
 | `jwtsecret` | `string` | no | When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request |
 | `method` | `string` | yes | HTTP method to use for API calls, GET POST PUT DELETE etc... |
@@ -285,7 +285,7 @@ A `<FRAGMENT>` dynamically renders part of an HTML page, allowing updates withou
 | `section` | `string` | no | The section the fragment belongs to |
 | `static` | `string` | no | Static file path associated with the fragment |
 | `template.enclose` | `string` | no | Enclosing property for the template rendered output |
-| `template.inline` | `string` | no | Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>> |
+| `template.inline` | `string` | no | Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
 | `template.querykeys` | `list` | no | Set allowed proxy query keys |
 | `template.queryparams` | `map` | no | Set proxy query keys in the configuration |
 | `template.template` | `string` | no | Loads contents of a template file in the modules template directory |
@@ -444,7 +444,7 @@ Route-owning page shell that renders the main HyperBricks document.
 | `section` | `string` | no | The section the hypermedia belongs to. This can be used with the component `<MENU>` for example. |
 | `static` | `string` | no | Static file path associated with the hypermedia, for rendering out the hypermedia to static files. |
 | `template.enclose` | `string` | no | Enclosing property for the template rendered output |
-| `template.inline` | `string` | no | Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>> |
+| `template.inline` | `string` | no | Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
 | `template.querykeys` | `list` | no | Set allowed proxy query keys |
 | `template.queryparams` | `map` | no | Set proxy query keys in the configuration |
 | `template.template` | `string` | no | Loads contents of a template file in the modules template directory |
@@ -570,7 +570,7 @@ Remote API fetcher that renders the upstream response through a template.
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
 | `endpoint` | `string` | yes | The API endpoint |
 | `headers` | `map` | no | Optional HTTP headers for API requests |
-| `inline` | `string` | no | Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>> |
+| `inline` | `string` | no | Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
 | `jwtclaims` | `map` | no | JWT claims to include when signing the bearer token |
 | `jwtsecret` | `string` | no | When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request |
 | `method` | `string` | yes | HTTP method to use for API calls, GET POST PUT DELETE etc... |
@@ -606,7 +606,7 @@ Local JSON renderer that loads a file and feeds it into a template.
 | `debug` | `bool` | no | Debug the response data |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
 | `file` | `string` | yes | Path to the local JSON file |
-| `inline` | `string` | no | Use inline to define the template in a multiline block <<[ /* Template code goes here */ ]>> |
+| `inline` | `string` | no | Inline Go template source used to render the loaded JSON. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
 | `template` | `string` | no | Loads contents of a template file in the modules template directory |
 | `values` | `map` | no | Key-value pairs for template rendering |
 
@@ -714,7 +714,7 @@ Stylesheet leaf that can emit inline CSS or link to a stylesheet.
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
 | `file` | `string` | no | file overrides link and inline, it loads contents of a file and renders it in a style tag. |
-| `inline` | `string` | no | Use inline to define css in a multiline block <<[ /* css goes here */ ]>> |
+| `inline` | `string` | no | Inline CSS source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
 | `link` | `string` | no | Use link for a link tag |
 
 #### Example
@@ -859,7 +859,7 @@ JavaScript leaf that can emit inline script or link to a script file.
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
 | `file` | `string` | no | File overrides link and inline, it loads contents of a file and renders it in a script tag. |
-| `inline` | `string` | no | Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here */ ]>> |
+| `inline` | `string` | no | Inline JavaScript source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
 | `link` | `string` | no | Use link for a script tag with a src attribute |
 
 #### Example

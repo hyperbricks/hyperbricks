@@ -14,7 +14,7 @@ In plain language: the URL structure stays easy to read, but one piece of code s
 
 ## Files
 
-- Config: `hyperbricks/70-single-plugin-many-actions.hyperbricks`
+- Config: `hyperbricks/70-single-plugin-many-actions.hyperbricks.yaml`
 - Shell template: `templates/patterns/single-plugin-actions-shell.html`
 - Stage template: `templates/patterns/workflow-actions-stage.html`
 - Plugin: `plugins/workflow-actions-demo/1.0.0/workflow_actions_demo_plugin.go`

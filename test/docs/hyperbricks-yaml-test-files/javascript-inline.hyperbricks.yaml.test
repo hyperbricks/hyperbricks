@@ -8,7 +8,7 @@ hypermedia:
             type: text/javascript
         - inline: console.log("Hello World!")
 ==== explainer ====
-Use inline to define JavaScript in a multiline block <<[ /* JavaScript goes here */ ]>>
+Inline JavaScript source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines.
 ==== expected json ====
 {
   "BodyTag": "",

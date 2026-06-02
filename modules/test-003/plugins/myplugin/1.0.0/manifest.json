@@ -1,9 +1,0 @@
-{
-  "plugin": "github.com/hyperbricks/plugins/myplugin",
-  "source": "my_plugin.go",
-  "version": "1.0.0",
-  "compatible_hyperbricks": [
-    ">=1.1.0-beta"
-  ],
-  "description": "Basic Plugin example"
-}

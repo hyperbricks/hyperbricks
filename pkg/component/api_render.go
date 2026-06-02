@@ -26,26 +26,26 @@ import (
 type APIConfig struct {
 	shared.Component   `mapstructure:",squash"`
 	ApiRenderConfig    `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"Fetch a remote API endpoint and render the response through a template or inline template." example:"{!{api-render-@doc.hyperbricks}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Fetch a remote API endpoint and render the response through a template or inline template." example:"{!{api-render-@doc.hyperbricks.yaml}}"`
 }
 
 type ApiRenderConfig struct {
-	Endpoint         string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-endpoint.hyperbricks}}"`
-	Method           string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-method.hyperbricks}}"`
-	Headers          map[string]string      `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-headers.hyperbricks}}"`
-	Body             string                 `mapstructure:"body" description:"Raw request body. Use a scalar string value; nested objects are not parsed for this field." example:"{!{api-render-body.hyperbricks}}"`
-	Template         string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-template.hyperbricks}}"`
-	Inline           string                 `mapstructure:"inline" description:"Use inline to define the template in a multiline block <<[ /* Template goes here */ ]>>" example:"{!{api-render-inline.hyperbricks}}"`
-	Values           map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-values.hyperbricks}}"`
-	Username         string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-username.hyperbricks}}"`
-	Password         string                 `mapstructure:"password" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks}}"`
+	Endpoint         string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-endpoint.hyperbricks.yaml}}"`
+	Method           string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-method.hyperbricks.yaml}}"`
+	Headers          map[string]string      `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-headers.hyperbricks.yaml}}"`
+	Body             string                 `mapstructure:"body" description:"Raw request body. Use a scalar string value; nested objects are not parsed for this field." example:"{!{api-render-body.hyperbricks.yaml}}"`
+	Template         string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-template.hyperbricks.yaml}}"`
+	Inline           string                 `mapstructure:"inline" description:"Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines." example:"{!{api-render-inline.hyperbricks.yaml}}"`
+	Values           map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-values.hyperbricks.yaml}}"`
+	Username         string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-username.hyperbricks.yaml}}"`
+	Password         string                 `mapstructure:"password" description:"Password for basic auth" example:"{!{api-render-password.hyperbricks.yaml}}"`
 	Status           int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
-	AllowedQueryKeys []string               `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-querykeys.hyperbricks}}"`
-	QueryParams      map[string]string      `mapstructure:"queryparams" description:"Set proxy query keys in the configuration" example:"{!{api-render-queryparams.hyperbricks}}"`
-	JwtSecret        string                 `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-jwt-secret.hyperbricks}}"`
-	JwtClaims        map[string]string      `mapstructure:"jwtclaims" description:"JWT claims to include when signing the bearer token" example:"{!{api-render-jwt-claims.hyperbricks}}"`
-	Debug            bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks}}"`
-	DebugPanel       bool                   `mapstructure:"debugpanel" description:"Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml" example:"{!{api-render-debug.hyperbricks}}"`
+	AllowedQueryKeys []string               `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-querykeys.hyperbricks.yaml}}"`
+	QueryParams      map[string]string      `mapstructure:"queryparams" description:"Set proxy query keys in the configuration" example:"{!{api-render-queryparams.hyperbricks.yaml}}"`
+	JwtSecret        string                 `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-jwt-secret.hyperbricks.yaml}}"`
+	JwtClaims        map[string]string      `mapstructure:"jwtclaims" description:"JWT claims to include when signing the bearer token" example:"{!{api-render-jwt-claims.hyperbricks.yaml}}"`
+	Debug            bool                   `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-debug.hyperbricks.yaml}}"`
+	DebugPanel       bool                   `mapstructure:"debugpanel" description:"Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml" example:"{!{api-render-debug.hyperbricks.yaml}}"`
 }
 
 func APIConfigGetName() string {

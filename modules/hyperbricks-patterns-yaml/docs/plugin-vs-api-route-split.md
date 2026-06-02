@@ -11,7 +11,7 @@ The point is not that plugins are “better.” The point is that they solve a d
 
 ## Files
 
-- Config: `hyperbricks/80-plugin-vs-api-route-split.hyperbricks`
+- Config: `hyperbricks/80-plugin-vs-api-route-split.hyperbricks.yaml`
 - Page template: `templates/patterns/route-split-demo.html`
 - API result template: `templates/patterns/route-split-api-result.html`
 - Plugin result template: `templates/patterns/route-split-plugin-result.html`

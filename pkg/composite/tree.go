@@ -25,8 +25,8 @@ var _ shared.CompositeRenderer = (*TreeRenderer)(nil)
 // TreeConfig
 type TreeConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"Tree composite element can render types in alphanumeric order. Tree elements can have nested types." example:"{!{tree-@doc.hyperbricks}}"`
-	Enclose            string `mapstructure:"enclose" description:"Wrapping property for the tree" example:"{!{tree-enclose.hyperbricks}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Tree composite element can render types in alphanumeric order. Tree elements can have nested types." example:"{!{tree-@doc.hyperbricks.yaml}}"`
+	Enclose            string `mapstructure:"enclose" description:"Wrapping property for the tree" example:"{!{tree-enclose.hyperbricks.yaml}}"`
 }
 
 func (r *TreeRenderer) Types() []string {
