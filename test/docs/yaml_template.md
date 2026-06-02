@@ -1,4 +1,4 @@
-{{define "main"}}# HyperBricks YAML Reference
+{{define "main"}}# HyperBricks Component Reference
 
 This reference is generated from the runtime schema and YAML documentation
 fixtures. It is intentionally compact: field tables come from Go struct tags,
