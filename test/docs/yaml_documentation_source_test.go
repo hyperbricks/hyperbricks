@@ -21,7 +21,7 @@ var updateYAMLDocsFlag = flag.Bool("update-yaml-docs", false, "write generated Y
 
 const (
 	yamlDocumentationFixtureDir = "hyperbricks-yaml-test-files"
-	yamlReferencePath           = "../../docs/REFERENCE_YAML.md"
+	yamlReferencePath           = "../../docs/REFERENCE.md"
 )
 
 var yamlDocumentationCuratedFixtures = map[string]string{
