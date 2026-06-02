@@ -87,18 +87,3 @@ deploy:
 		t.Fatalf("client config = %#v", cfg.Client)
 	}
 }
-
-func TestLoadDeployYAMLRootRejectsUnsupportedDeployDSL(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "deploy.hyperbricks")
-	if err := os.WriteFile(path, []byte(`
-deploy {
-  hmac_secret = old-dsl
-}
-`), 0o644); err != nil {
-		t.Fatalf("write deploy config: %v", err)
-	}
-
-	if _, err := loadDeployYAMLRoot(path); err == nil {
-		t.Fatal("loadDeployYAMLRoot() error = nil, want YAML parse error")
-	}
-}

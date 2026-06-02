@@ -11,8 +11,7 @@ Migration rules for this directory:
 - include inheritance, nested values, imports, arrays, route composites,
   template values, guards, API render configs, and collision/reserved-name
   cases
-- do not add legacy `.hyperbricks` fixtures; YAML readable fixtures are the
-  executable documentation corpus
+- keep readable YAML fixtures as the executable documentation corpus
 - do not add detached JSON golden files; expected materialized/runtime JSON
   belongs inside the readable `.hyperbricks.yaml.test` fixture
 - avoid generated numeric child keys such as `.10`, `.20`, `.30`

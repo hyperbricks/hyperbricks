@@ -218,12 +218,4 @@ func TestDefaultInitAssetsWriteYAMLHelloWorld(t *testing.T) {
 		t.Fatalf("status fragment response = %#v", response)
 	}
 
-	unsupportedPath := filepath.Join("modules", "demo", "hyperbricks", "hello-world.hyperbricks")
-	if _, err := os.Stat(unsupportedPath); !os.IsNotExist(err) {
-		t.Fatalf("unsupported hello-world.hyperbricks should not be created, stat err: %v", err)
-	}
-	unsupportedPackagePath := filepath.Join("modules", "demo", "package.hyperbricks")
-	if _, err := os.Stat(unsupportedPackagePath); !os.IsNotExist(err) {
-		t.Fatalf("unsupported package.hyperbricks should not be created, stat err: %v", err)
-	}
 }

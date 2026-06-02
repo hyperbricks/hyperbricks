@@ -655,7 +655,7 @@ func sparseClonePlugin(pluginName, version string) error {
 	pluginRelPath := filepath.Join("plugins", pluginName, version)
 	destDir := filepath.Join(".", "plugins", pluginName, version)
 
-	tmpDir, err := os.MkdirTemp("", ".hyperbricks-plugin-*")
+	tmpDir, err := os.MkdirTemp("", "hyperbricks-plugin-*")
 	if err != nil {
 		return err
 	}

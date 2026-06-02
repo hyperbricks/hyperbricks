@@ -131,14 +131,10 @@ func ProcessFile(path string, opts Options) (*Result, error) {
 	}, nil
 }
 
-// PreprocessBytes validates source syntax that does not belong to the
-// HyperBricks YAML profile. Value substitution happens during materialization.
+// PreprocessBytes keeps the public preprocessing hook while YAML parsing and
+// materialization own validation and value substitution.
 func PreprocessBytes(input []byte, _ Options) ([]byte, error) {
-	source := string(input)
-	if err := rejectUnsupportedSourceSyntax(source); err != nil {
-		return nil, err
-	}
-	return []byte(source), nil
+	return append([]byte(nil), input...), nil
 }
 
 // LoadFile loads a HyperBricks YAML file and all top-level model imports.
@@ -878,19 +874,6 @@ func applyDiagnosticSource(diagnostics []Diagnostic, source string) {
 		if diagnostics[index].Source == "" {
 			diagnostics[index].Source = source
 		}
-	}
-}
-
-func rejectUnsupportedSourceSyntax(source string) error {
-	switch {
-	case strings.Contains(source, "@macro"):
-		return fmt.Errorf("@macro syntax is not supported in HyperBricks YAML")
-	case strings.Contains(source, "<<<["):
-		return fmt.Errorf("macro template blocks are not supported in HyperBricks YAML")
-	case strings.Contains(source, "{{{."):
-		return fmt.Errorf("macro variables are not supported in HyperBricks YAML")
-	default:
-		return nil
 	}
 }
 
