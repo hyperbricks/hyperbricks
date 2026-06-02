@@ -20,5 +20,5 @@ tailwind:
       minify: "true"
       debug: "true"
       cache: "false"
-      binairy: /path/to/go/bin/tailwindcss
+      binary: tailwindcss
       enclose: "<link rel=\"stylesheet\" href=\"/|\">"

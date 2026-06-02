@@ -14,13 +14,13 @@ css:
 </div>
 
 <div id="javascript" class="tab-content" style="display:none;">
-<pre><code class="language-hyperbricks">
-css = <CSS>
-css.file = hyperbricks-yaml-test-files/assets/styles.css
-css.attributes {
-    media = screen
-}
-css.enclose = <style media="print">|</style>
+<pre><code class="language-yaml">
+css:
+  - type: css
+  - file: hyperbricks-yaml-test-files/assets/styles.css
+  - attributes:
+      media: screen
+  - enclose: <style media="print">|</style>
 </code></pre>
 </div>
 ==== expected json ====

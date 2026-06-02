@@ -90,7 +90,7 @@ These are the current demo entry points:
 
 Add all of these:
 
-- one self-contained `.hyperbricks` demo in `hyperbricks/`
+- one self-contained `.hyperbricks.yaml` demo in `hyperbricks/`
 - templates in `templates/` if the pattern needs them
 - a plugin in `plugins/` if the pattern is plugin-based
 - a short explainer in `docs/`
