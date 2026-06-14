@@ -188,6 +188,41 @@ hyperbricks:
 	}
 }
 
+func TestLoadHyperBricksConfigurationReadsDevelopmentWatchDirs(t *testing.T) {
+	Init_configuration()
+	resetConfigurationForTest(t)
+
+	root := t.TempDir()
+	moduleRoot := filepath.ToSlash(filepath.Join("modules", "demo"))
+	writePackageConfig(t, root, moduleRoot, `
+hyperbricks:
+  development:
+    watch: true
+    watch_dirs:
+      - hyperbricks
+      - templates
+      - resources
+`)
+	chdirForTest(t, root)
+
+	Module = filepath.Join(moduleRoot, PackageConfigFileName)
+	SetRuntimeOptions(RuntimeOptions{
+		ModuleRoot: moduleRoot,
+	})
+
+	config := GetHyperBricksConfiguration()
+
+	want := []string{"hyperbricks", "templates", "resources"}
+	if len(config.Development.WatchDirs) != len(want) {
+		t.Fatalf("watch_dirs = %#v, want %#v", config.Development.WatchDirs, want)
+	}
+	for index, expected := range want {
+		if config.Development.WatchDirs[index] != expected {
+			t.Fatalf("watch_dirs[%d] = %q, want %q", index, config.Development.WatchDirs[index], expected)
+		}
+	}
+}
+
 func TestRuntimeModuleRootDefaultsToDefaultModule(t *testing.T) {
 	if got := runtimeModuleRoot(RuntimeOptions{}); got != "modules/default" {
 		t.Fatalf("runtime module root = %q, want modules/default", got)

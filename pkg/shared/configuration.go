@@ -136,10 +136,11 @@ type PluginsConfig struct {
 }
 
 type DevelopmentConfig struct {
-	Dashboard      bool `mapstructure:"dashboard"`
-	FrontendErrors bool `mapstructure:"frontend_errors"`
-	Watch          bool `mapstructure:"watch"`
-	Reload         bool `mapstructure:"reload"`
+	Dashboard      bool     `mapstructure:"dashboard"`
+	FrontendErrors bool     `mapstructure:"frontend_errors"`
+	Watch          bool     `mapstructure:"watch"`
+	WatchDirs      []string `mapstructure:"watch_dirs"`
+	Reload         bool     `mapstructure:"reload"`
 }
 
 // LoggerConfig with defaults.
