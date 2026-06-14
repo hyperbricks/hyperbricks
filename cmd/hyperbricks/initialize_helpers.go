@@ -244,17 +244,7 @@ func watchSourceDirectories() {
 	logger := logging.GetLogger()
 	hbConfig := getHyperBricksConfiguration()
 	if hbConfig.Development.Watch {
-		templateDir := "./templates"
-		if tbtemplates, ok := hbConfig.Directories["templates"]; ok {
-			templateDir = fmt.Sprintf("./%s", tbtemplates)
-		}
-
-		hyperbricksDir := "./hyperbricks"
-		if tbhyperbricksDir, ok := hbConfig.Directories["hyperbricks"]; ok {
-			hyperbricksDir = fmt.Sprintf("./%s", tbhyperbricksDir)
-		}
-
-		directoriesToWatch := []string{hyperbricksDir, templateDir}
+		directoriesToWatch := resolveDevelopmentWatchDirectories(hbConfig)
 		go func() {
 			err := watchDirectories(directoriesToWatch, PreProcessAndPopulateHyperbricksConfigurations)
 			if err != nil {
@@ -263,6 +253,48 @@ func watchSourceDirectories() {
 		}()
 	}
 }
+
+func resolveDevelopmentWatchDirectories(hbConfig *shared.Config) []string {
+	watchDirs := hbConfig.Development.WatchDirs
+	if len(watchDirs) == 0 {
+		watchDirs = []string{"hyperbricks", "templates"}
+	}
+
+	seen := map[string]bool{}
+	directories := make([]string, 0, len(watchDirs))
+	for _, name := range watchDirs {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			continue
+		}
+		dir := name
+		if configured, ok := hbConfig.Directories[name]; ok && strings.TrimSpace(configured) != "" {
+			dir = configured
+		}
+		dir = cleanWatchDirectory(dir)
+		if dir == "" || seen[dir] {
+			continue
+		}
+		seen[dir] = true
+		directories = append(directories, dir)
+	}
+	return directories
+}
+
+func cleanWatchDirectory(dir string) string {
+	dir = strings.TrimSpace(dir)
+	if dir == "" {
+		return ""
+	}
+	if filepath.IsAbs(dir) {
+		return filepath.Clean(dir)
+	}
+	if strings.HasPrefix(dir, "./") || strings.HasPrefix(dir, "../") {
+		return filepath.Clean(dir)
+	}
+	return filepath.Clean("./" + dir)
+}
+
 func getHyperBricksConfiguration() *shared.Config {
 	return shared.GetHyperBricksConfiguration()
 }

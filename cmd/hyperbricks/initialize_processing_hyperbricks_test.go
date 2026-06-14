@@ -1,10 +1,12 @@
 package main
 
 import (
+	"debug/buildinfo"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -884,6 +886,7 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 	if _, err := os.Stat(filepath.Join(moduleDir, "hyperbricks")); err != nil {
 		t.Fatalf("converted patterns YAML module is missing: %v", err)
 	}
+	skipIfPluginToolchainMismatch(t, filepath.Join(repoRoot, "bin", "plugins", "MarkdownPlugin@2.0.0.so"))
 
 	commands.ModuleRoot = moduleDir
 	hbConfig.Mode = shared.DEVELOPMENT_MODE
@@ -1012,5 +1015,16 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 	}
 	if got := fragmentResponse.Header().Get("X-Hyperbricks-Render-Error-Count"); got != "0" {
 		t.Fatalf("summary fragment render error count = %q, want 0; body:\n%s", got, fragmentBody)
+	}
+}
+
+func skipIfPluginToolchainMismatch(t *testing.T, pluginPath string) {
+	t.Helper()
+	info, err := buildinfo.ReadFile(pluginPath)
+	if err != nil {
+		t.Fatalf("read plugin build info %s: %v", pluginPath, err)
+	}
+	if info.GoVersion != runtime.Version() {
+		t.Skipf("plugin %s was built with %s, but test host is %s; rebuild plugins with the same Go toolchain before running plugin-backed render tests", pluginPath, info.GoVersion, runtime.Version())
 	}
 }
