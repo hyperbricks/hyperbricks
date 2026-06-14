@@ -177,9 +177,14 @@ hyperbricks start --deploy -m demo --deploy-dir deploy
 Start deploy services:
 
 ```bash
+hyperbricks deploy-daemon
 hyperbricks start --deploy-remote
 hyperbricks start --deploy-local
 ```
+
+`deploy-daemon` starts the remote deploy daemon. If `deploy.hyperbricks.yaml`
+does not exist, it writes a minimal remote config and prints the Composer deploy
+secret/env-var setup instructions.
 
 Create a deploy config:
 

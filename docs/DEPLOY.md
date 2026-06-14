@@ -77,6 +77,40 @@ The runtime reads `package.hyperbricks.yaml` from that extracted build.
 
 ## Remote Deploy API
 
+For Composer-managed deploys, start the remote daemon directly:
+
+```bash
+hyperbricks deploy-daemon
+```
+
+If `deploy.hyperbricks.yaml` does not exist yet, the command writes a minimal
+remote config and prints the next steps. Composer shows the exact env var name
+for each deploy target, using this pattern:
+
+```text
+HB_DEPLOY_SECRET_<NORMALIZED_MODULE>_<NORMALIZED_KEY_ID>
+```
+
+Example:
+
+```bash
+export HB_DEPLOY_SECRET_OWNER_EXAMPLE_TEST_TEST_PROD="hbd_..."
+hyperbricks deploy-daemon
+```
+
+Composer can then upload and activate an already-built HRA through:
+
+```text
+POST /deploy/v1/modules/{module}/releases
+```
+
+That endpoint writes the archive to the normal deploy root and reuses the same
+activation path as the dashboard. Uploaded builds therefore appear in the
+remote dashboard build list, status, logs, restart, stop, rollback, and
+production controls.
+
+Legacy start command:
+
 Create a remote deploy config:
 
 ```bash
@@ -173,11 +207,8 @@ deploy:
     target: staging
     targets:
       staging:
-        host: 192.168.2.35
-        user: deploy
-        port: 22
-        root: /opt/hyperbricks/deploy
         api: http://192.168.2.35:9090
+        key_id: staging
 ```
 
 The deploy config uses the same generic YAML resolver model as other
@@ -201,8 +232,8 @@ hyperbricks build --hra -m demo --push --target staging
 The push flow is:
 
 1. Build archive locally.
-2. Upload the archive to the remote deploy host.
-3. Call the Deploy API activation endpoint.
+2. Upload the archive to `POST /deploy/v1/modules/{module}/releases`.
+3. The remote daemon validates, stores, and activates the archive.
 4. Refresh local metadata from the remote status.
 
 If upload succeeds but activation fails, the local build stays intact and the
@@ -228,6 +259,24 @@ Headers:
 - `X-HB-Nonce`
 - `X-HB-Signature`
 
+Composer-style keyed deploys also send:
+
+- `X-HB-Key-ID`
+- `X-HB-Build-ID`
+- `X-HB-SHA256`
+
+For keyed deploys, the canonical string appends the key id and build id:
+
+```text
+METHOD
+PATH
+SHA256(body)
+timestamp
+nonce
+key_id
+build_id
+```
+
 The server checks timestamp drift, nonce reuse, and signature validity.
 
 Set the same secret on local and remote:
@@ -244,6 +293,7 @@ Deploy services support these environment variables:
 | --- | --- |
 | `HB_DEPLOY_CONFIG` | Alternate deploy config path |
 | `HB_DEPLOY_SECRET` | Shared HMAC secret |
+| `HB_DEPLOY_SECRET_<MODULE>_<KEY_ID>` | Module/key scoped deploy secret for HTTP HRA uploads |
 | `HB_DEPLOY_BIND` | Override remote API bind address |
 | `HB_DEPLOY_PORT` | Override remote API port |
 | `HB_DEPLOY_ROOT` | Override remote deploy root |
@@ -260,11 +310,11 @@ build ID, assigned port, deploy root, and production mode.
 - Keep the local dashboard on `127.0.0.1`.
 - Bind the remote API to localhost or a private network unless it is behind
   trusted HTTPS infrastructure.
-- Use SSH, VPN, firewall rules, or a reverse proxy for remote access.
+- Use HTTPS, VPN, firewall rules, or a reverse proxy for remote access.
 - Keep clocks in sync; HMAC timestamps allow only limited drift.
 
 HMAC provides request integrity and authentication. It does not provide
-confidentiality. Use HTTPS, SSH tunnels, or a private network when secrets or
+confidentiality. Use HTTPS or a private network when secrets or
 archives cross an untrusted network.
 
 ## Systemd Example

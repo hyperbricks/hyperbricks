@@ -9,7 +9,7 @@ deploy:
     api_enabled: true
     api_bind: 0.0.0.0
     # api_bind controls exposure:
-    # - localhost/LAN: use SSH tunnel (127.0.0.1) or LAN access (0.0.0.0)
+    # - localhost/LAN: use direct local or private-network access
     # - WAN: bind to public IP and put HTTPS in front (reverse proxy)
     api_port: 9090
     root: deploy

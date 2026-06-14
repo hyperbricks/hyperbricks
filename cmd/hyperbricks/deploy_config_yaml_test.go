@@ -1,9 +1,16 @@
 package main
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
+	"time"
 )
 
 func TestLoadDeployConfigReadsYAMLSpec(t *testing.T) {
@@ -38,8 +45,77 @@ deploy:
 	if cfg.Remote.Binary != "/usr/local/bin/hyperbricks" {
 		t.Fatalf("remote binary = %q", cfg.Remote.Binary)
 	}
+	if cfg.Remote.Auth.EnvPrefix != "HB_DEPLOY_SECRET_" {
+		t.Fatalf("remote auth env_prefix = %q", cfg.Remote.Auth.EnvPrefix)
+	}
 }
 
+func TestDeploySecretEnvNameNormalizesModuleAndKey(t *testing.T) {
+	got := deploySecretEnvName("HB_DEPLOY_SECRET_", "owner-example-test-test", "prod")
+	want := "HB_DEPLOY_SECRET_OWNER_EXAMPLE_TEST_TEST_PROD"
+	if got != want {
+		t.Fatalf("deploySecretEnvName() = %q, want %q", got, want)
+	}
+}
+
+func TestDeployKeyedEnvSecretForRequest(t *testing.T) {
+	t.Setenv("HB_DEPLOY_SECRET_OWNER_EXAMPLE_TEST_TEST_PROD", "deploy-secret")
+	api := deployAPI{authEnvPrefix: "HB_DEPLOY_SECRET_"}
+	req, err := http.NewRequest(http.MethodPost, "/deploy/v1/modules/owner-example-test-test/releases", nil)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+	req.Header.Set("X-HB-Key-ID", "prod")
+
+	secret, err := api.secretForRequest(req)
+	if err != nil {
+		t.Fatalf("secretForRequest() error = %v", err)
+	}
+	if secret != "deploy-secret" {
+		t.Fatalf("secret = %q", secret)
+	}
+}
+
+func TestVerifyRequestUsesKeyedEnvSecret(t *testing.T) {
+	t.Setenv("HB_DEPLOY_SECRET_OWNER_EXAMPLE_TEST_TEST_PROD", "deploy-secret")
+	api := deployAPI{
+		authEnvPrefix: "HB_DEPLOY_SECRET_",
+		nonceStore:    newDeployNonceStore(),
+	}
+	body := []byte("hra archive bytes")
+	req, err := http.NewRequest(http.MethodPost, "/deploy/v1/modules/owner-example-test-test/releases", nil)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+	timestamp := time.Now().UTC().Unix()
+	nonce := "nonce-for-test"
+	keyID := "prod"
+	buildID := "build-123"
+	hash := sha256.Sum256(body)
+	bodyHash := hex.EncodeToString(hash[:])
+	canonical := strings.Join([]string{
+		http.MethodPost,
+		"/deploy/v1/modules/owner-example-test-test/releases",
+		bodyHash,
+		strconv.FormatInt(timestamp, 10),
+		nonce,
+		keyID,
+		buildID,
+	}, "\n")
+	mac := hmac.New(sha256.New, []byte("deploy-secret"))
+	_, _ = mac.Write([]byte(canonical))
+
+	req.Header.Set("X-HB-Key-ID", keyID)
+	req.Header.Set("X-HB-Build-ID", buildID)
+	req.Header.Set("X-HB-SHA256", bodyHash)
+	req.Header.Set("X-HB-Timestamp", strconv.FormatInt(timestamp, 10))
+	req.Header.Set("X-HB-Nonce", nonce)
+	req.Header.Set("X-HB-Signature", hex.EncodeToString(mac.Sum(nil)))
+
+	if err := api.verifyRequest(req, body); err != nil {
+		t.Fatalf("verifyRequest() error = %v", err)
+	}
+}
 func TestLoadDeployLocalConfigReadsYAMLSpec(t *testing.T) {
 	t.Setenv("HB_DEPLOY_SECRET", "test-secret")
 	path := filepath.Join(t.TempDir(), "deploy.hyperbricks.yaml")
@@ -63,11 +139,8 @@ deploy:
     target: staging
     targets:
       staging:
-        host: 192.168.2.35
-        user: deploy
-        port: 22
-        root: /opt/hyperbricks/deploy
         api: http://192.168.2.35:9090
+        key_id: staging
 `), 0o644); err != nil {
 		t.Fatalf("write deploy config: %v", err)
 	}
@@ -83,7 +156,7 @@ deploy:
 		t.Fatalf("local config = %#v", cfg.Local)
 	}
 	target := cfg.Client.Targets["staging"]
-	if cfg.Client.Target != "staging" || target.Host != "192.168.2.35" || target.API != "http://192.168.2.35:9090" {
+	if cfg.Client.Target != "staging" || target.API != "http://192.168.2.35:9090" || target.KeyID != "staging" {
 		t.Fatalf("client config = %#v", cfg.Client)
 	}
 }

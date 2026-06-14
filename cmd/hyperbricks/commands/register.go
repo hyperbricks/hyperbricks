@@ -28,6 +28,7 @@ func RegisterSubcommands() {
 	// Add subcommands explicitly
 	RootCmd.AddCommand(NewInitCommand())
 	RootCmd.AddCommand(NewStartCommand())
+	RootCmd.AddCommand(NewDeployDaemonCommand())
 	RootCmd.AddCommand(VersionCommand())
 	RootCmd.AddCommand(NewSelectCommand())
 	RootCmd.AddCommand(NewMakeStaticCommand())

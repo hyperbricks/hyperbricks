@@ -80,12 +80,12 @@
                         <input id="localTargetApi" readonly />
                       </div>
                       <div class="field">
-                        <label for="localTargetRoot">Remote Root</label>
+                        <label for="localTargetRoot">Key ID</label>
                         <input id="localTargetRoot" readonly />
                       </div>
                     </div>
                     <div class="note-row">
-                      <span class="note">Local mode uses deploy.client for push/sync.</span>
+                      <span class="note">Local mode uses deploy.client for HTTP upload/sync.</span>
                     </div>
                   </div>
                 </div>
@@ -1337,7 +1337,7 @@
           ui.localTargetApi.value = (status.target_api || "").trim() || "-";
         }
         if (ui.localTargetRoot) {
-          ui.localTargetRoot.value = (status.target_root || "").trim() || "-";
+          ui.localTargetRoot.value = (status.target_key_id || "").trim() || "shared";
         }
       }
 

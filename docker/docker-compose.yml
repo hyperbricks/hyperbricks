@@ -8,11 +8,9 @@ services:
     ports:
       - "9090:9090"
       - "8080-8100:8080-8100"
-      - "2222:22"
     environment:
       HB_DEPLOY_SECRET: "change-me"
     volumes:
       - ./data/deploy:/opt/hyperbricks/deploy
       - ./deploy.hyperbricks.yaml:/opt/hyperbricks/deploy.hyperbricks.yaml:ro
-      - ./ssh/authorized_keys:/etc/hyperbricks/authorized_keys:ro
     restart: unless-stopped
