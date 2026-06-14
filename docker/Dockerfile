@@ -1,4 +1,4 @@
-FROM golang:1.23.4-alpine
+FROM golang:1.26.1-alpine
 
 ARG HB_USER=deploy
 ARG HB_GROUP=deploy

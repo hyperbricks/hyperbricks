@@ -51,4 +51,4 @@ binaries work. To skip Tailwind installation, set `TAILWIND_VERSION` to empty in
   - Ensure the module binds to `0.0.0.0` inside the container.
   - Verify the runtime port shown in the Deploy UI matches the exposed range.
 - Plugin build fails on Go version:
-  - The container uses Go 1.23.4. Rebuild if you were on 1.23.2.
+  - The container uses Go 1.26.1. Rebuild plugins created with older Go versions.
