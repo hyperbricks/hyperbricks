@@ -1,6 +1,6 @@
 module github.com/hyperbricks/plugins/template-config-demo
 
-go 1.23.4
+go 1.26.1
 
 require (
 	github.com/hyperbricks/hyperbricks v0.0.0

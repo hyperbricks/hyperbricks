@@ -1,6 +1,6 @@
 module github.com/hyperbricks/hyperbricks
 
-go 1.23.2
+go 1.26.1
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.0

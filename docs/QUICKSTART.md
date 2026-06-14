@@ -8,7 +8,7 @@ fields, see [REFERENCE.md](REFERENCE.md).
 
 ## Install
 
-Requires Go 1.23.2 or newer.
+Requires Go 1.26.1 or newer.
 
 ```bash
 go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
