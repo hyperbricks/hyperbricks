@@ -189,13 +189,18 @@ type DeployConfig struct {
 }
 
 type DeployRemoteConfig struct {
-	APIEnabled  bool   `mapstructure:"api_enabled"`
-	APIBind     string `mapstructure:"api_bind"`
-	APIPort     int    `mapstructure:"api_port"`
-	Root        string `mapstructure:"root"`
-	PortStart   int    `mapstructure:"port_start"`
-	LogsEnabled bool   `mapstructure:"logs_enabled"`
-	Binary      string `mapstructure:"binary"`
+	APIEnabled  bool                   `mapstructure:"api_enabled"`
+	APIBind     string                 `mapstructure:"api_bind"`
+	APIPort     int                    `mapstructure:"api_port"`
+	Root        string                 `mapstructure:"root"`
+	PortStart   int                    `mapstructure:"port_start"`
+	LogsEnabled bool                   `mapstructure:"logs_enabled"`
+	Binary      string                 `mapstructure:"binary"`
+	Auth        DeployRemoteAuthConfig `mapstructure:"auth"`
+}
+
+type DeployRemoteAuthConfig struct {
+	EnvPrefix string `mapstructure:"env_prefix"`
 }
 
 type DeployLocalConfig struct {
@@ -211,11 +216,8 @@ type DeployClientConfig struct {
 }
 
 type DeployClientTarget struct {
-	Host string `mapstructure:"host"`
-	User string `mapstructure:"user"`
-	Port int    `mapstructure:"port"`
-	Root string `mapstructure:"root"`
-	API  string `mapstructure:"api"`
+	API   string `mapstructure:"api"`
+	KeyID string `mapstructure:"key_id"`
 }
 
 var (

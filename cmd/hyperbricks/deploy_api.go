@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -31,6 +32,7 @@ import (
 
 const (
 	deployIndexFile       = "hyperbricks.versions.json"
+	deploySecretEnvPrefix = "HB_DEPLOY_SECRET_"
 	hmacTimeWindow        = 60 * time.Second
 	maxPortCandidate      = 65535
 	processStartTolerance = 10 * time.Second
@@ -82,15 +84,16 @@ type pluginCustomRemoveRequest struct {
 }
 
 type deployAPI struct {
-	root        string
-	secret      string
-	apiPort     int
-	portStart   int
-	logsEnabled bool
-	binaryPath  string
-	workingDir  string
-	nonceStore  *deployNonceStore
-	pluginTasks *pluginTaskStore
+	root          string
+	secret        string
+	authEnvPrefix string
+	apiPort       int
+	portStart     int
+	logsEnabled   bool
+	binaryPath    string
+	workingDir    string
+	nonceStore    *deployNonceStore
+	pluginTasks   *pluginTaskStore
 }
 
 type deployProcess struct {
@@ -175,8 +178,12 @@ func startDeployAPIServer() error {
 	if secret == "" {
 		secret = strings.TrimSpace(os.Getenv("HB_DEPLOY_SECRET"))
 	}
-	if secret == "" {
-		return fmt.Errorf("deploy api requires deploy.hmac_secret or HB_DEPLOY_SECRET")
+	authEnvPrefix := strings.TrimSpace(deployCfg.Remote.Auth.EnvPrefix)
+	if authEnvPrefix == "" {
+		authEnvPrefix = deploySecretEnvPrefix
+	}
+	if secret == "" && authEnvPrefix == "" {
+		return fmt.Errorf("deploy api requires deploy.hmac_secret, HB_DEPLOY_SECRET, or deploy.remote.auth.env_prefix")
 	}
 
 	portStart := deployCfg.Remote.PortStart
@@ -207,15 +214,16 @@ func startDeployAPIServer() error {
 	workingDir, _ := os.Getwd()
 
 	api := &deployAPI{
-		root:        root,
-		secret:      secret,
-		apiPort:     port,
-		portStart:   portStart,
-		logsEnabled: logsEnabled,
-		binaryPath:  binaryPath,
-		workingDir:  workingDir,
-		nonceStore:  newDeployNonceStore(),
-		pluginTasks: newPluginTaskStore(),
+		root:          root,
+		secret:        secret,
+		authEnvPrefix: authEnvPrefix,
+		apiPort:       port,
+		portStart:     portStart,
+		logsEnabled:   logsEnabled,
+		binaryPath:    binaryPath,
+		workingDir:    workingDir,
+		nonceStore:    newDeployNonceStore(),
+		pluginTasks:   newPluginTaskStore(),
 	}
 
 	mux := http.NewServeMux()
@@ -309,6 +317,9 @@ func loadDeployConfig(path string) (shared.DeployConfig, error) {
 			Root:        "deploy",
 			PortStart:   8080,
 			LogsEnabled: true,
+			Auth: shared.DeployRemoteAuthConfig{
+				EnvPrefix: deploySecretEnvPrefix,
+			},
 		},
 		Local: shared.DeployLocalConfig{
 			Bind:       "127.0.0.1",
@@ -396,16 +407,30 @@ func (api *deployAPI) verifyRequest(r *http.Request, body []byte) error {
 
 	hash := sha256.Sum256(body)
 	bodyHash := hex.EncodeToString(hash[:])
+	if declaredHash := strings.TrimSpace(r.Header.Get("X-HB-SHA256")); declaredHash != "" && !strings.EqualFold(declaredHash, bodyHash) {
+		return errors.New("body sha256 mismatch")
+	}
 
-	canonical := strings.Join([]string{
+	secret, err := api.secretForRequest(r)
+	if err != nil {
+		return err
+	}
+
+	canonicalParts := []string{
 		r.Method,
 		r.URL.Path,
 		bodyHash,
 		tsHeader,
 		nonce,
-	}, "\n")
+	}
+	keyID := strings.TrimSpace(r.Header.Get("X-HB-Key-ID"))
+	buildIDHeader := strings.TrimSpace(r.Header.Get("X-HB-Build-ID"))
+	if keyID != "" || buildIDHeader != "" {
+		canonicalParts = append(canonicalParts, keyID, buildIDHeader)
+	}
+	canonical := strings.Join(canonicalParts, "\n")
 
-	mac := hmac.New(sha256.New, []byte(api.secret))
+	mac := hmac.New(sha256.New, []byte(secret))
 	_, _ = mac.Write([]byte(canonical))
 	expected := hex.EncodeToString(mac.Sum(nil))
 
@@ -415,10 +440,101 @@ func (api *deployAPI) verifyRequest(r *http.Request, body []byte) error {
 	return nil
 }
 
+func (api *deployAPI) secretForRequest(r *http.Request) (string, error) {
+	keyID := strings.TrimSpace(r.Header.Get("X-HB-Key-ID"))
+	if keyID == "" {
+		if api.secret == "" {
+			return "", errors.New("missing deploy HMAC secret")
+		}
+		return api.secret, nil
+	}
+
+	module := deployModuleFromPath(r.URL.Path)
+	if module == "" {
+		return "", errors.New("module is required for keyed deploy auth")
+	}
+	if !validDeployPathPart(module) || !validDeployPathPart(keyID) {
+		return "", errors.New("invalid deploy auth scope")
+	}
+	prefix := strings.TrimSpace(api.authEnvPrefix)
+	if prefix == "" {
+		return "", errors.New("deploy env-prefix auth is not configured")
+	}
+	envName := deploySecretEnvName(prefix, module, keyID)
+	secret := strings.TrimSpace(os.Getenv(envName))
+	if secret == "" {
+		return "", fmt.Errorf("deploy secret env %s is not set", envName)
+	}
+	return secret, nil
+}
+
+func deployModuleFromPath(requestPath string) string {
+	segments := strings.Split(strings.Trim(requestPath, "/"), "/")
+	for i := 0; i < len(segments)-1; i++ {
+		if segments[i] == "modules" {
+			return strings.TrimSpace(segments[i+1])
+		}
+	}
+	return ""
+}
+
+func deploySecretEnvName(prefix string, module string, keyID string) string {
+	return strings.TrimSpace(prefix) + deployEnvPart(module) + "_" + deployEnvPart(keyID)
+}
+
+func deployEnvPart(value string) string {
+	value = strings.ToUpper(strings.TrimSpace(value))
+	var builder strings.Builder
+	lastUnderscore := false
+	for _, r := range value {
+		isAlpha := r >= 'A' && r <= 'Z'
+		isDigit := r >= '0' && r <= '9'
+		if isAlpha || isDigit {
+			builder.WriteRune(r)
+			lastUnderscore = false
+			continue
+		}
+		if !lastUnderscore {
+			builder.WriteByte('_')
+			lastUnderscore = true
+		}
+	}
+	return strings.Trim(builder.String(), "_")
+}
+
+func validDeployPathPart(value string) bool {
+	value = strings.TrimSpace(value)
+	if value == "" || strings.Contains(value, "..") {
+		return false
+	}
+	for _, r := range value {
+		isAlpha := r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z'
+		isDigit := r >= '0' && r <= '9'
+		if isAlpha || isDigit || r == '-' || r == '_' || r == '.' {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
+func randomDeploySuffix() (string, error) {
+	var buf [8]byte
+	if _, err := rand.Read(buf[:]); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(buf[:]), nil
+}
+
 func (api *deployAPI) handleDeploy(w http.ResponseWriter, r *http.Request) {
 	segments := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if len(segments) < 2 || segments[0] != "deploy" {
 		writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+		return
+	}
+
+	if segments[1] == "v1" {
+		api.handleDeployV1(w, r, segments[2:])
 		return
 	}
 
@@ -502,6 +618,18 @@ func (api *deployAPI) handleDeploy(w http.ResponseWriter, r *http.Request) {
 	default:
 		writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
 	}
+}
+
+func (api *deployAPI) handleDeployV1(w http.ResponseWriter, r *http.Request, segments []string) {
+	if len(segments) != 3 || segments[0] != "modules" || segments[2] != "releases" {
+		writeError(w, http.StatusNotFound, errors.New("unknown endpoint"))
+		return
+	}
+	if r.Method != http.MethodPost {
+		writeError(w, http.StatusMethodNotAllowed, errors.New("method not allowed"))
+		return
+	}
+	api.handleModuleReleaseUpload(w, r, segments[1])
 }
 
 func (api *deployAPI) handleListModules(w http.ResponseWriter) {
@@ -1145,36 +1273,104 @@ func (api *deployAPI) handleModuleActivate(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	indexPath := api.indexPath(module)
-	index, err := loadDeployIndex(indexPath)
+	payload, status, err := api.activateModuleBuild(module, buildID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		writeError(w, status, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, payload)
+}
+
+func (api *deployAPI) handleModuleReleaseUpload(w http.ResponseWriter, r *http.Request, module string) {
+	module = strings.TrimSpace(module)
+	if !validDeployPathPart(module) {
+		writeError(w, http.StatusBadRequest, errors.New("invalid module"))
+		return
+	}
+	buildID := strings.TrimSpace(r.Header.Get("X-HB-Build-ID"))
+	if buildID == "" {
+		buildID = strings.TrimSpace(r.URL.Query().Get("build_id"))
+	}
+	if !validDeployPathPart(buildID) {
+		writeError(w, http.StatusBadRequest, errors.New("invalid build_id"))
 		return
 	}
 
-	archivePath, err := api.resolveArchivePath(module, buildID, index)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
 	}
+	if len(body) == 0 {
+		writeError(w, http.StatusBadRequest, errors.New("release archive body is required"))
+		return
+	}
 
-	archivePath, err = api.moveToArchives(module, archivePath)
+	incomingDir := filepath.Join(api.root, module, "incoming")
+	if err := os.MkdirAll(incomingDir, 0755); err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	tmpSuffix, err := randomDeploySuffix()
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
+	destPath := filepath.Join(incomingDir, buildID+".hra")
+	tmpPath := destPath + ".tmp-" + tmpSuffix
+	if err := os.WriteFile(tmpPath, body, 0644); err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	if err := moveFile(tmpPath, destPath); err != nil {
+		_ = os.Remove(tmpPath)
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	payload, status, err := api.activateModuleBuild(module, buildID)
+	if err != nil {
+		writeError(w, status, err)
+		return
+	}
+	payload["uploaded"] = true
+	writeJSON(w, http.StatusOK, payload)
+}
+
+func (api *deployAPI) activateModuleBuild(module string, buildID string) (map[string]interface{}, int, error) {
+	if buildID == "" {
+		return nil, http.StatusBadRequest, errors.New("build_id is required")
+	}
+
+	indexPath := api.indexPath(module)
+	index, err := loadDeployIndex(indexPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			index = deployIndex{}
+		} else {
+			return nil, http.StatusInternalServerError, err
+		}
+	}
+
+	archivePath, err := api.resolveArchivePath(module, buildID, index)
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+
+	archivePath, err = api.moveToArchives(module, archivePath)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
 
 	runtimeDir, err := commands.EnsureRuntimeExtracted(archivePath, api.root, module, buildID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
-		return
+		return nil, http.StatusInternalServerError, err
 	}
 
 	configPath := filepath.Join(runtimeDir, "package.hyperbricks.yaml")
 	metadata, packagePort, err := readMetadataAndPort(configPath)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
-		return
+		return nil, http.StatusInternalServerError, err
 	}
 
 	if packagePort > 0 {
@@ -1200,13 +1396,11 @@ func (api *deployAPI) handleModuleActivate(w http.ResponseWriter, r *http.Reques
 	index.Current = buildID
 
 	if err := saveDeployIndex(indexPath, index); err != nil {
-		writeError(w, http.StatusInternalServerError, err)
-		return
+		return nil, http.StatusInternalServerError, err
 	}
 
 	if err := api.restartModule(module, buildID); err != nil {
-		writeError(w, http.StatusInternalServerError, err)
-		return
+		return nil, http.StatusInternalServerError, err
 	}
 
 	assignedPort := index.Port
@@ -1214,14 +1408,14 @@ func (api *deployAPI) handleModuleActivate(w http.ResponseWriter, r *http.Reques
 		assignedPort = refreshed.Port
 	}
 
-	writeJSON(w, http.StatusOK, map[string]interface{}{
+	return map[string]interface{}{
 		"module":    module,
 		"build_id":  buildID,
 		"port":      assignedPort,
 		"runtime":   runtimeDir,
 		"archived":  api.relativePath(archivePath),
 		"activated": true,
-	})
+	}, http.StatusOK, nil
 }
 
 func (api *deployAPI) handleModuleRollback(w http.ResponseWriter, module string) {

@@ -1,7 +1,7 @@
 # Hyperbricks Alpine Deploy (Docker)
 
 This setup runs the HyperBricks Deploy API inside an Alpine-based container with
-SSH upload access, optional OpenRC service wiring, and plugin build support.
+HTTP HRA upload, optional OpenRC service wiring, and plugin build support.
 
 ## Build + run
 From repo root:
@@ -9,23 +9,11 @@ From repo root:
 docker compose -f docker/docker-compose.yml up --build
 ```
 
-## SSH access
-Put your public key in `docker/ssh/authorized_keys` (single-line key).
-The entrypoint copies it into `/opt/hyperbricks/.ssh/authorized_keys` so
-ownership and permissions are valid inside the container.
-The container exposes SSH on port `2222` by default.
-
-Example:
-```
-ssh -p 2222 deploy@localhost
-```
-
 ## Verify
 - `curl http://localhost:9090/` should return the deploy UI HTML.
-- `ssh -p 2222 deploy@localhost` should succeed once keys are installed.
 
 ## Deploy API
-The API is exposed on `http://localhost:9090` and uses HMAC.
+The API is exposed on `http://localhost:9090` and uses HMAC-signed HTTP upload.
 Set `HB_DEPLOY_SECRET` in `docker/docker-compose.yml` (or override via env).
 
 ## Plugin builds (manual)

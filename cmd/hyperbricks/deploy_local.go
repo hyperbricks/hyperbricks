@@ -53,11 +53,8 @@ type deployClientConfig struct {
 }
 
 type deployClientTarget struct {
-	Host string `mapstructure:"host"`
-	User string `mapstructure:"user"`
-	Port int    `mapstructure:"port"`
-	Root string `mapstructure:"root"`
-	API  string `mapstructure:"api"`
+	API   string `mapstructure:"api"`
+	KeyID string `mapstructure:"key_id"`
 }
 
 type localBuildIndex struct {
@@ -272,7 +269,7 @@ func (api *deployLocalServer) handleStatus(w http.ResponseWriter, r *http.Reques
 		if target, ok := api.cfg.Client.Targets[name]; ok {
 			if normalized, err := api.normalizeTarget(target); err == nil {
 				payload["target_api"] = normalized.API
-				payload["target_root"] = normalized.Root
+				payload["target_key_id"] = normalized.KeyID
 			}
 		}
 	}
@@ -1117,15 +1114,12 @@ func (api *deployLocalServer) syncRemoteModule(module string, targetName string)
 	if err != nil {
 		return time.Time{}, err
 	}
-	secret := strings.TrimSpace(api.cfg.HMACSecret)
-	if secret == "" || strings.Contains(secret, "{{") {
-		secret = strings.TrimSpace(os.Getenv("HB_DEPLOY_SECRET"))
-	}
+	secret := resolveLocalDeploySecret(api.cfg.HMACSecret, module, target.KeyID)
 	if secret == "" {
-		return time.Time{}, errors.New("deploy.hmac_secret or HB_DEPLOY_SECRET is required for sync")
+		return time.Time{}, errors.New("deploy.hmac_secret, HB_DEPLOY_SECRET, or module/key deploy secret is required for sync")
 	}
 
-	buildIDs, err := fetchRemoteBuildIDs(target.API, module, secret)
+	buildIDs, err := fetchRemoteBuildIDs(target.API, module, secret, target.KeyID)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -1148,25 +1142,10 @@ func (api *deployLocalServer) syncRemoteModule(module string, targetName string)
 }
 
 func (api *deployLocalServer) normalizeTarget(target deployClientTarget) (deployClientTarget, error) {
-	target.Host = strings.TrimSpace(target.Host)
-	if target.Host == "" {
-		return target, errors.New("deploy target host is required")
-	}
-	if target.Port == 0 {
-		target.Port = 22
-	}
-	target.User = strings.TrimSpace(target.User)
-	target.Root = strings.TrimSpace(target.Root)
-	if target.Root == "" {
-		target.Root = strings.TrimSpace(api.cfg.Remote.Root)
-	}
 	target.API = strings.TrimSpace(target.API)
+	target.KeyID = strings.TrimSpace(target.KeyID)
 	if target.API == "" {
-		port := api.cfg.Remote.APIPort
-		if port == 0 {
-			port = 9090
-		}
-		target.API = fmt.Sprintf("http://%s:%d", target.Host, port)
+		return target, errors.New("deploy target api is required")
 	}
 	return target, nil
 }
@@ -1283,12 +1262,12 @@ func readJSONBody(r *http.Request) ([]byte, error) {
 	return body, nil
 }
 
-func fetchRemoteBuildIDs(apiBase string, module string, secret string) ([]string, error) {
+func fetchRemoteBuildIDs(apiBase string, module string, secret string, keyID string) ([]string, error) {
 	endpoint, err := buildRemoteURL(apiBase, module, "builds")
 	if err != nil {
 		return nil, err
 	}
-	headers, err := signLocalDeployHeaders(http.MethodGet, endpoint.Path, nil, secret)
+	headers, err := signLocalDeployHeaders(http.MethodGet, endpoint.Path, nil, secret, keyID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -1356,30 +1335,83 @@ func buildRemoteURL(base string, module string, tail string) (*url.URL, error) {
 	return parsed, nil
 }
 
-func signLocalDeployHeaders(method string, requestPath string, body []byte, secret string) (map[string]string, error) {
+func signLocalDeployHeaders(method string, requestPath string, body []byte, secret string, keyID string, buildID string) (map[string]string, error) {
 	nonce, err := randomHexLocal(32)
 	if err != nil {
 		return nil, err
 	}
 	ts := strconv.FormatInt(time.Now().Unix(), 10)
 	hash := sha256.Sum256(body)
-	canonical := strings.Join([]string{
+	bodyHash := hex.EncodeToString(hash[:])
+	canonicalParts := []string{
 		method,
 		requestPath,
-		hex.EncodeToString(hash[:]),
+		bodyHash,
 		ts,
 		nonce,
-	}, "\n")
+	}
+	keyID = strings.TrimSpace(keyID)
+	buildID = strings.TrimSpace(buildID)
+	if keyID != "" || buildID != "" {
+		canonicalParts = append(canonicalParts, keyID, buildID)
+	}
+	canonical := strings.Join(canonicalParts, "\n")
 
 	mac := hmac.New(sha256.New, []byte(secret))
 	_, _ = mac.Write([]byte(canonical))
 	signature := hex.EncodeToString(mac.Sum(nil))
 
-	return map[string]string{
+	headers := map[string]string{
 		"X-HB-Timestamp": ts,
 		"X-HB-Nonce":     nonce,
 		"X-HB-Signature": signature,
-	}, nil
+	}
+	if keyID != "" {
+		headers["X-HB-Key-ID"] = keyID
+	}
+	if buildID != "" {
+		headers["X-HB-Build-ID"] = buildID
+		headers["X-HB-SHA256"] = bodyHash
+	}
+	return headers, nil
+}
+
+func resolveLocalDeploySecret(configSecret string, module string, keyID string) string {
+	keyID = strings.TrimSpace(keyID)
+	if keyID != "" {
+		if secret := strings.TrimSpace(os.Getenv(deploySecretEnvNameLocal("HB_DEPLOY_SECRET_", module, keyID))); secret != "" {
+			return secret
+		}
+	}
+	secret := strings.TrimSpace(configSecret)
+	if secret == "" || strings.Contains(secret, "{{") {
+		secret = strings.TrimSpace(os.Getenv("HB_DEPLOY_SECRET"))
+	}
+	return secret
+}
+
+func deploySecretEnvNameLocal(prefix string, module string, keyID string) string {
+	return strings.TrimSpace(prefix) + deployEnvPartLocal(module) + "_" + deployEnvPartLocal(keyID)
+}
+
+func deployEnvPartLocal(value string) string {
+	value = strings.ToUpper(strings.TrimSpace(value))
+	var builder strings.Builder
+	lastUnderscore := false
+	for _, r := range value {
+		isAlpha := r >= 'A' && r <= 'Z'
+		isDigit := r >= '0' && r <= '9'
+		if isAlpha || isDigit {
+			builder.WriteRune(r)
+			lastUnderscore = false
+			continue
+		}
+		if !lastUnderscore {
+			builder.WriteByte('_')
+			lastUnderscore = true
+		}
+	}
+	return strings.Trim(builder.String(), "_")
 }
 
 func randomHexLocal(bytesLen int) (string, error) {

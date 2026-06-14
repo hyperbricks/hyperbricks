@@ -33,9 +33,49 @@ var (
 )
 
 const DeployConfigFileName = "deploy.hyperbricks.yaml"
+const DefaultDeploySecretEnvPrefix = "HB_DEPLOY_SECRET_"
 
 func GetModule() string {
 	return StartModule
+}
+
+func NewDeployDaemonCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "deploy-daemon",
+		Short: "Start the remote deploy daemon",
+		Run: func(cmd *cobra.Command, args []string) {
+			if strings.TrimSpace(os.Getenv("HB_DEPLOY_CONFIG")) == "" {
+				if _, err := os.Stat(DeployConfigFileName); os.IsNotExist(err) {
+					if err := os.WriteFile(DeployConfigFileName, []byte(deployInitTemplate("remote")), 0644); err != nil {
+						fmt.Printf("Error creating deploy config: %v\n", err)
+						Exit = true
+						return
+					}
+					fmt.Printf("Created %s.\n\n", DeployConfigFileName)
+					fmt.Println("Next steps:")
+					fmt.Println("1. In Composer, create a deploy target for this project.")
+					fmt.Println("2. Copy the generated deploy secret.")
+					fmt.Println("3. Set it on this server using the env var Composer shows, for example:")
+					fmt.Println("")
+					fmt.Println("   export HB_DEPLOY_SECRET_OWNER_EXAMPLE_TEST_TEST_PROD=\"hbd_...\"")
+					fmt.Println("")
+					fmt.Println("4. Start again:")
+					fmt.Println("")
+					fmt.Println("   hyperbricks deploy-daemon")
+					Exit = true
+					return
+				} else if err != nil {
+					fmt.Printf("Error checking deploy config: %v\n", err)
+					Exit = true
+					return
+				}
+			}
+
+			StartDeployRemote = true
+			StartMode = true
+		},
+	}
+	return cmd
 }
 
 // NewStartCommand creates the "start" subcommand
@@ -148,21 +188,25 @@ func deployInitTemplate(mode string) string {
 	if mode == "remote" {
 		return `# Deploy config (remote runtime API)
 deploy:
-  # Shared HMAC secret. Prefer setting HB_DEPLOY_SECRET in the service environment.
+  # Optional admin/dashboard HMAC secret. Composer deploys can use per-module env secrets below.
   hmac_secret:
-    env: HB_DEPLOY_SECRET
+    env: HB_DEPLOY_ADMIN_SECRET
 
   remote:
     # Enable deploy API daemon.
     api_enabled: true
     api_bind: 127.0.0.1
     # api_bind controls exposure:
-    # - localhost/LAN: use SSH tunnel or LAN access
+    # - localhost/LAN: use direct local or private-network access
     # - WAN: bind to public IP and put HTTPS in front (reverse proxy)
     api_port: 9090
     root: deploy
     port_start: 8080
     logs_enabled: true
+    auth:
+      # Composer shows the exact env var name for each deploy target:
+      # HB_DEPLOY_SECRET_<NORMALIZED_MODULE>_<NORMALIZED_KEY_ID>
+      env_prefix: HB_DEPLOY_SECRET_
     # binary: /usr/local/bin/hyperbricks
 `
 	}
@@ -178,7 +222,7 @@ deploy:
     api_enabled: true
     api_bind: 127.0.0.1
     # api_bind controls exposure:
-    # - localhost/LAN: use SSH tunnel or LAN access
+    # - localhost/LAN: use direct local or private-network access
     # - WAN: bind to public IP and put HTTPS in front (reverse proxy)
     api_port: 9090
     root: deploy
@@ -191,18 +235,15 @@ deploy:
     modules_dir: modules
     build_root: deploy
 
-  # Push targets for build --push and deploy-local.
+  # HTTP deploy targets for build --push and deploy-local.
   client:
     target: prod
     targets:
       prod:
-        host: 192.168.2.35
-        user: deploy
-        port: 22
-        root: /opt/hyperbricks/deploy
         api: http://192.168.2.35:9090
-        # For WAN use, point api to your public HTTPS endpoint instead of SSH tunnel.
-        # Use SSH keys for push (recommended, no passwords).
+        # Optional. If set, the client signs with X-HB-Key-ID and reads:
+        # HB_DEPLOY_SECRET_<NORMALIZED_MODULE>_<NORMALIZED_KEY_ID>
+        key_id: prod
 `
 }
 

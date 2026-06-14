@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"sort"
@@ -42,15 +41,8 @@ type deployClientConfig struct {
 }
 
 type deployClientTarget struct {
-	Host string `mapstructure:"host"`
-	User string `mapstructure:"user"`
-	Port int    `mapstructure:"port"`
-	Root string `mapstructure:"root"`
-	API  string `mapstructure:"api"`
-}
-
-type deployActivatePayload struct {
-	BuildID string `json:"build_id"`
+	API   string `mapstructure:"api"`
+	KeyID string `mapstructure:"key_id"`
 }
 
 func runBuildPush(result buildResult) error {
@@ -90,11 +82,6 @@ func runBuildPush(result buildResult) error {
 		}
 	}
 
-	resolved, err := normalizeDeployTarget(cfg, target)
-	if err != nil {
-		return err
-	}
-
 	archivePath := result.ArchivePath
 	if !filepath.IsAbs(archivePath) {
 		archivePath, err = filepath.Abs(archivePath)
@@ -106,23 +93,18 @@ func runBuildPush(result buildResult) error {
 		return fmt.Errorf("archive not found: %s", archivePath)
 	}
 
-	fmt.Printf("Preparing deploy directories on %s...\n", targetName)
-	if err := ensureRemoteDeployDirs(resolved, result.Module); err != nil {
-		return err
-	}
-
-	fmt.Printf("Uploading %s to %s...\n", filepath.Base(archivePath), targetName)
-	if err := scpArchive(resolved, archivePath, result.Module); err != nil {
-		return err
-	}
-
-	secret := resolveDeploySecret(cfg)
+	secret := resolveDeploySecret(cfg, result.Module, target.KeyID)
 	if secret == "" {
-		return errors.New("deploy.hmac_secret or HB_DEPLOY_SECRET is required for activation")
+		return errors.New("deploy.hmac_secret, HB_DEPLOY_SECRET, or module/key deploy secret is required for push")
 	}
 
-	fmt.Printf("Activating build %s on %s...\n", result.BuildID, targetName)
-	if err := activateRemoteBuild(resolved, result.Module, result.BuildID, secret); err != nil {
+	resolved, err := normalizeDeployTarget(target)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Uploading and activating %s on %s...\n", filepath.Base(archivePath), targetName)
+	if err := uploadRemoteBuild(resolved, result.Module, result.BuildID, archivePath, secret); err != nil {
 		return err
 	}
 
@@ -158,7 +140,7 @@ func PushBuildToTarget(module string, buildID string, archivePath string, target
 		return "", err
 	}
 
-	resolved, err := normalizeDeployTarget(cfg, target)
+	resolved, err := normalizeDeployTarget(target)
 	if err != nil {
 		return "", err
 	}
@@ -173,20 +155,12 @@ func PushBuildToTarget(module string, buildID string, archivePath string, target
 		return "", fmt.Errorf("archive not found: %s", archivePath)
 	}
 
-	if err := ensureRemoteDeployDirs(resolved, module); err != nil {
-		return "", err
-	}
-
-	if err := scpArchive(resolved, archivePath, module); err != nil {
-		return "", err
-	}
-
-	secret := resolveDeploySecret(cfg)
+	secret := resolveDeploySecret(cfg, module, resolved.KeyID)
 	if secret == "" {
-		return "", errors.New("deploy.hmac_secret or HB_DEPLOY_SECRET is required for activation")
+		return "", errors.New("deploy.hmac_secret, HB_DEPLOY_SECRET, or module/key deploy secret is required for push")
 	}
 
-	if err := activateRemoteBuild(resolved, module, buildID, secret); err != nil {
+	if err := uploadRemoteBuild(resolved, module, buildID, archivePath, secret); err != nil {
 		return "", err
 	}
 
@@ -291,39 +265,22 @@ func resolveDeployTarget(cfg deployPushConfig, explicit string) (string, deployC
 	return targetName, target, nil
 }
 
-func normalizeDeployTarget(cfg deployPushConfig, target deployClientTarget) (deployClientTarget, error) {
-	target.Host = strings.TrimSpace(target.Host)
-	if target.Host == "" {
-		return target, errors.New("deploy target host is required")
-	}
-	if target.Port == 0 {
-		target.Port = 22
-	}
-	target.User = strings.TrimSpace(target.User)
-	if target.User == "" {
-		if current := strings.TrimSpace(os.Getenv("USER")); current != "" {
-			target.User = current
-		}
-	}
-	target.Root = strings.TrimSpace(target.Root)
-	if target.Root == "" {
-		target.Root = strings.TrimSpace(cfg.Remote.Root)
-	}
-	if target.Root == "" {
-		return target, errors.New("deploy target root is required")
-	}
+func normalizeDeployTarget(target deployClientTarget) (deployClientTarget, error) {
 	target.API = strings.TrimSpace(target.API)
+	target.KeyID = strings.TrimSpace(target.KeyID)
 	if target.API == "" {
-		port := cfg.Remote.APIPort
-		if port == 0 {
-			port = 9090
-		}
-		target.API = fmt.Sprintf("http://%s:%d", target.Host, port)
+		return target, errors.New("deploy target api is required")
 	}
 	return target, nil
 }
 
-func resolveDeploySecret(cfg deployPushConfig) string {
+func resolveDeploySecret(cfg deployPushConfig, module string, keyID string) string {
+	keyID = strings.TrimSpace(keyID)
+	if keyID != "" {
+		if secret := strings.TrimSpace(os.Getenv(deploySecretEnvName("HB_DEPLOY_SECRET_", module, keyID))); secret != "" {
+			return secret
+		}
+	}
 	secret := strings.TrimSpace(cfg.HMACSecret)
 	if secret == "" || strings.Contains(secret, "{{") {
 		secret = strings.TrimSpace(os.Getenv("HB_DEPLOY_SECRET"))
@@ -331,44 +288,17 @@ func resolveDeploySecret(cfg deployPushConfig) string {
 	return secret
 }
 
-func ensureRemoteDeployDirs(target deployClientTarget, module string) error {
-	base := remoteJoin(target.Root, module)
-	incoming := remoteJoin(base, "incoming")
-	archives := remoteJoin(base, "archives")
-	runtime := remoteJoin(base, "runtime")
-	command := fmt.Sprintf("mkdir -p %s %s %s", shellQuote(incoming), shellQuote(archives), shellQuote(runtime))
-	return runSSH(target, command)
-}
-
-func scpArchive(target deployClientTarget, localPath string, module string) error {
-	remoteDir := remoteJoin(target.Root, module, "incoming")
-	dest := fmt.Sprintf("%s:%s/", remoteHost(target), remoteDir)
-
-	args := []string{}
-	if target.Port > 0 {
-		args = append(args, "-P", strconv.Itoa(target.Port))
-	}
-	args = append(args, localPath, dest)
-
-	cmd := exec.Command("scp", args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
-
-func activateRemoteBuild(target deployClientTarget, module string, buildID string, secret string) error {
-	apiURL, err := buildActivateURL(target.API, module)
+func uploadRemoteBuild(target deployClientTarget, module string, buildID string, archivePath string, secret string) error {
+	apiURL, err := buildReleaseURL(target.API, module)
 	if err != nil {
 		return err
 	}
-	payload := deployActivatePayload{BuildID: buildID}
-	body, err := json.Marshal(payload)
+	body, err := os.ReadFile(archivePath)
 	if err != nil {
 		return err
 	}
 
-	headers, err := signDeployHeaders(http.MethodPost, apiURL.Path, body, secret)
+	headers, err := signDeployHeaders(http.MethodPost, apiURL.Path, body, secret, target.KeyID, buildID)
 	if err != nil {
 		return err
 	}
@@ -378,7 +308,7 @@ func activateRemoteBuild(target deployClientTarget, module string, buildID strin
 		return err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/vnd.hyperbricks.hra")
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
@@ -395,19 +325,19 @@ func activateRemoteBuild(target deployClientTarget, module string, buildID strin
 		var payload map[string]interface{}
 		if err := json.Unmarshal(responseBody, &payload); err == nil {
 			if message, ok := payload["error"].(string); ok && message != "" {
-				return fmt.Errorf("deploy activation failed: %s", message)
+				return fmt.Errorf("deploy upload failed: %s", message)
 			}
 		}
 		message := strings.TrimSpace(string(responseBody))
 		if message == "" {
 			message = resp.Status
 		}
-		return fmt.Errorf("deploy activation failed: %s", message)
+		return fmt.Errorf("deploy upload failed: %s", message)
 	}
 	return nil
 }
 
-func buildActivateURL(base string, module string) (*url.URL, error) {
+func buildReleaseURL(base string, module string) (*url.URL, error) {
 	base = strings.TrimSpace(base)
 	if base == "" {
 		return nil, errors.New("deploy target api is required")
@@ -422,36 +352,49 @@ func buildActivateURL(base string, module string) (*url.URL, error) {
 	if parsed.Host == "" {
 		return nil, fmt.Errorf("invalid deploy api url: %s", base)
 	}
-	joined := path.Join(parsed.Path, "deploy", "modules", module, "activate")
+	joined := path.Join(parsed.Path, "deploy", "v1", "modules", module, "releases")
 	parsed.Path = "/" + strings.TrimPrefix(joined, "/")
 	parsed.RawQuery = ""
 	return parsed, nil
 }
 
-func signDeployHeaders(method string, requestPath string, body []byte, secret string) (map[string]string, error) {
+func signDeployHeaders(method string, requestPath string, body []byte, secret string, keyID string, buildID string) (map[string]string, error) {
 	nonce, err := randomHex(32)
 	if err != nil {
 		return nil, err
 	}
 	ts := strconv.FormatInt(time.Now().Unix(), 10)
 	bodyHash := sha256.Sum256(body)
-	canonical := strings.Join([]string{
+	bodyHashHex := hex.EncodeToString(bodyHash[:])
+	canonicalParts := []string{
 		method,
 		requestPath,
-		hex.EncodeToString(bodyHash[:]),
+		bodyHashHex,
 		ts,
 		nonce,
-	}, "\n")
+	}
+	keyID = strings.TrimSpace(keyID)
+	buildID = strings.TrimSpace(buildID)
+	if keyID != "" || buildID != "" {
+		canonicalParts = append(canonicalParts, keyID, buildID)
+	}
+	canonical := strings.Join(canonicalParts, "\n")
 
 	mac := hmac.New(sha256.New, []byte(secret))
 	_, _ = mac.Write([]byte(canonical))
 	signature := hex.EncodeToString(mac.Sum(nil))
 
-	return map[string]string{
+	headers := map[string]string{
 		"X-HB-Timestamp": ts,
 		"X-HB-Nonce":     nonce,
 		"X-HB-Signature": signature,
-	}, nil
+		"X-HB-SHA256":    bodyHashHex,
+		"X-HB-Build-ID":  buildID,
+	}
+	if keyID != "" {
+		headers["X-HB-Key-ID"] = keyID
+	}
+	return headers, nil
 }
 
 func randomHex(bytesLen int) (string, error) {
@@ -462,34 +405,26 @@ func randomHex(bytesLen int) (string, error) {
 	return hex.EncodeToString(data), nil
 }
 
-func remoteJoin(parts ...string) string {
-	return path.Clean(path.Join(parts...))
+func deploySecretEnvName(prefix string, module string, keyID string) string {
+	return strings.TrimSpace(prefix) + deployEnvPart(module) + "_" + deployEnvPart(keyID)
 }
 
-func remoteHost(target deployClientTarget) string {
-	if target.User == "" {
-		return target.Host
+func deployEnvPart(value string) string {
+	value = strings.ToUpper(strings.TrimSpace(value))
+	var builder strings.Builder
+	lastUnderscore := false
+	for _, r := range value {
+		isAlpha := r >= 'A' && r <= 'Z'
+		isDigit := r >= '0' && r <= '9'
+		if isAlpha || isDigit {
+			builder.WriteRune(r)
+			lastUnderscore = false
+			continue
+		}
+		if !lastUnderscore {
+			builder.WriteByte('_')
+			lastUnderscore = true
+		}
 	}
-	return fmt.Sprintf("%s@%s", target.User, target.Host)
-}
-
-func runSSH(target deployClientTarget, command string) error {
-	args := []string{}
-	if target.Port > 0 {
-		args = append(args, "-p", strconv.Itoa(target.Port))
-	}
-	args = append(args, remoteHost(target), command)
-
-	cmd := exec.Command("ssh", args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
-
-func shellQuote(value string) string {
-	if value == "" {
-		return "''"
-	}
-	return "'" + strings.ReplaceAll(value, "'", "'\"'\"'") + "'"
+	return strings.Trim(builder.String(), "_")
 }

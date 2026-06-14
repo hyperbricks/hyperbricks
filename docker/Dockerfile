@@ -21,15 +21,13 @@ RUN apk add --no-cache \
     ca-certificates \
     gcompat \
     git \
-    openssh \
-    openssh-server \
     openrc \
     tzdata \
     wget
 
 RUN adduser -D -h "${HB_HOME}" "${HB_USER}" \
   && passwd -d "${HB_USER}" \
-  && mkdir -p "${HB_HOME}/bin" "${HB_HOME}/deploy" "${HB_HOME}/.ssh" "${HB_HOME}/.cache" "${HB_HOME}/go" \
+  && mkdir -p "${HB_HOME}/bin" "${HB_HOME}/deploy" "${HB_HOME}/.cache" "${HB_HOME}/go" \
   && chown -R "${HB_USER}:${HB_GROUP}" "${HB_HOME}"
 
 COPY plugins "${HB_HOME}/plugins"
@@ -70,11 +68,10 @@ RUN mkdir -p /etc/hyperbricks
 COPY docker/deploy.hyperbricks.yaml /etc/hyperbricks/deploy.hyperbricks.yaml
 COPY docker/hyperbricks-deploy /etc/init.d/hyperbricks-deploy
 COPY docker/hyperbricks-deploy.conf /etc/conf.d/hyperbricks-deploy
-COPY docker/sshd_config.conf /etc/ssh/sshd_config.d/99-hyperbricks.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /etc/init.d/hyperbricks-deploy /usr/local/bin/entrypoint.sh
 
-EXPOSE 9090 22
+EXPOSE 9090
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
