@@ -1,7 +1,7 @@
 **Licence:** MIT
-**Version:** v1.2.0-beta
+**Version:** v1.2.1-beta
 
-**Build time:** 2026-06-02 12:00 UTC
+**Build time:** 2026-06-14 14:39 UTC
 
 
 # HyperBricks Component Reference
