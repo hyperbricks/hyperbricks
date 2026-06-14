@@ -1020,6 +1020,12 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 
 func skipIfPluginToolchainMismatch(t *testing.T, pluginPath string) {
 	t.Helper()
+	if _, err := os.Stat(pluginPath); err != nil {
+		if os.IsNotExist(err) {
+			t.Skipf("plugin %s is missing; run scripts/run_all_tests.sh --with-plugins to rebuild plugin-backed render test fixtures", pluginPath)
+		}
+		t.Fatalf("stat plugin %s: %v", pluginPath, err)
+	}
 	info, err := buildinfo.ReadFile(pluginPath)
 	if err != nil {
 		t.Fatalf("read plugin build info %s: %v", pluginPath, err)
