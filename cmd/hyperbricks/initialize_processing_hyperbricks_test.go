@@ -158,41 +158,14 @@ func TestPreProcessAndPopulateConfigsKeepsRunningWhenYAMLSourceIsInvalid(t *test
 		renderDiagnosticsMutex.Unlock()
 	})
 
-	moduleDir := filepath.Join(t.TempDir(), "modules", "yaml-invalid-source")
+	repoRoot, err := filepath.Abs(filepath.Join("..", ".."))
+	if err != nil {
+		t.Fatalf("resolve repo root: %v", err)
+	}
+	moduleDir := filepath.Join(repoRoot, "modules", "yaml-invalid-source")
 	hyperbricksDir := filepath.Join(moduleDir, "hyperbricks")
-	for _, dir := range []string{
-		hyperbricksDir,
-		filepath.Join(moduleDir, "templates"),
-		filepath.Join(moduleDir, "resources"),
-		filepath.Join(moduleDir, "static"),
-		filepath.Join(moduleDir, "rendered"),
-		filepath.Join(moduleDir, "plugins"),
-	} {
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			t.Fatalf("create test module dir %s: %v", dir, err)
-		}
-	}
-
-	validSource := `page:
-  - type: hypermedia
-  - route: valid-route
-  - title: Valid route
-  - main:
-      - type: tree
-      - intro:
-          - type: html
-          - value: <h1>Valid route</h1>
-`
-	if err := os.WriteFile(filepath.Join(hyperbricksDir, "valid.hyperbricks.yaml"), []byte(validSource), 0644); err != nil {
-		t.Fatalf("write valid YAML route fixture: %v", err)
-	}
-	invalidSource := `broken:
-  - type: hypermedia
-  - route: broken-route
-  - main: [
-`
-	if err := os.WriteFile(filepath.Join(hyperbricksDir, "broken.hyperbricks.yaml"), []byte(invalidSource), 0644); err != nil {
-		t.Fatalf("write invalid YAML route fixture: %v", err)
+	if _, err := os.Stat(filepath.Join(hyperbricksDir, "broken.hyperbricks.yaml")); err != nil {
+		t.Fatalf("invalid YAML fixture module is missing: %v", err)
 	}
 
 	commands.ModuleRoot = moduleDir
@@ -235,6 +208,49 @@ func TestPreProcessAndPopulateConfigsKeepsRunningWhenYAMLSourceIsInvalid(t *test
 	diagnostic := diagnostics[0].Errors[0]
 	if diagnostic.Type != "YAML" || diagnostic.File != "broken" || !strings.Contains(diagnostic.Err, "YAML source broken.hyperbricks.yaml was skipped") {
 		t.Fatalf("config diagnostic = %#v", diagnostic)
+	}
+	if strings.Contains(diagnostic.Err, repoRoot) {
+		t.Fatalf("config diagnostic should not expose absolute repo path: %#v", diagnostic.Err)
+	}
+	if !strings.Contains(diagnostic.Err, "modules/yaml-invalid-source/hyperbricks/broken.hyperbricks.yaml") {
+		t.Fatalf("config diagnostic should include relative YAML path: %#v", diagnostic.Err)
+	}
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/broken-route", nil)
+	ServeContent(writer, request)
+
+	if writer.Code != http.StatusInternalServerError {
+		t.Fatalf("missing broken route status = %d, want %d", writer.Code, http.StatusInternalServerError)
+	}
+	body := writer.Body.String()
+	if !strings.Contains(body, "YAML source broken.hyperbricks.yaml was skipped") {
+		t.Fatalf("missing route body should include YAML load error, got %q", body)
+	}
+	if strings.Contains(body, repoRoot) {
+		t.Fatalf("missing route body should not expose absolute repo path: %q", body)
+	}
+	if !strings.Contains(body, "modules/yaml-invalid-source/hyperbricks/broken.hyperbricks.yaml") {
+		t.Fatalf("missing route body should include relative YAML path: %q", body)
+	}
+	if got := writer.Header().Get(renderErrorCountHeader); got != "1" {
+		t.Fatalf("missing route error count = %q, want 1", got)
+	}
+	requestID := writer.Header().Get(requestIDHeader)
+	if requestID == "" {
+		t.Fatal("missing route response should include request id")
+	}
+	renderDiagnosticsMutex.RLock()
+	routeDiagnostics, ok := renderDiagnostics[requestID]
+	renderDiagnosticsMutex.RUnlock()
+	if !ok {
+		t.Fatalf("expected diagnostics for missing route request %q", requestID)
+	}
+	if routeDiagnostics.Route != "broken-route" {
+		t.Fatalf("missing route diagnostics route = %q, want broken-route", routeDiagnostics.Route)
+	}
+	if len(routeDiagnostics.Errors) != 1 || routeDiagnostics.Errors[0].File != "broken" {
+		t.Fatalf("missing route diagnostics errors = %#v", routeDiagnostics.Errors)
 	}
 }
 

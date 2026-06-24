@@ -791,6 +791,19 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	cookies := []string(nil)
 
 	if !found {
+		sourceErrors := getConfigSourceErrors()
+		if len(sourceErrors) > 0 && hbConfig.Mode != shared.LIVE_MODE {
+			logging.GetLogger().Info("Config not found for route; returning source load diagnostics", "route", route, "error_count", len(sourceErrors))
+			recordRenderDiagnostics(requestID, route, sourceErrors)
+			return RenderContent{
+				Content:     missingRouteSourceErrorContent(route, sourceErrors),
+				NoCache:     true,
+				ContentType: "text/plain; charset=utf-8",
+				Status:      http.StatusInternalServerError,
+				RequestID:   requestID,
+				ErrorCount:  len(sourceErrors),
+			}
+		}
 		__config, _found := getConfig("404")
 		if _found {
 			logging.GetLogger().Info("Redirecting to 404", " from ", route)
@@ -912,6 +925,20 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 		ErrorCount:  len(renderErrors),
 	}
 
+}
+
+func missingRouteSourceErrorContent(route string, sourceErrors []error) string {
+	var output strings.Builder
+	output.WriteString(fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route))
+	output.WriteString("\n\nOne or more HyperBricks source files failed to load. Fix these YAML errors and reload:\n")
+	for _, diagnostic := range collectRenderDiagnostics(sourceErrors) {
+		if strings.TrimSpace(diagnostic.File) == "" || diagnostic.File == "Unknown" {
+			output.WriteString(fmt.Sprintf("- %s\n", diagnostic.Err))
+			continue
+		}
+		output.WriteString(fmt.Sprintf("- %s: %s\n", diagnostic.File, diagnostic.Err))
+	}
+	return output.String()
 }
 
 func renderHandledContent(requestID string, defaultStatus int, defaultContentType string, defaultHeaders map[string]string, defaultCookies []string, defaultNoCache bool, errorCount int, handled *shared.HandledResponse) RenderContent {

@@ -1,0 +1,10 @@
+init_card:
+  - type: template
+  - template:
+      file: hello-card.html
+  - values:
+      heading: Base card
+      body: Base card body
+      cta:
+        - type: html
+        - value: <a href="/">Home</a>
