@@ -21,6 +21,8 @@ type CacheEntry struct {
 	Handled       *shared.HandledResponse
 }
 
+const configDiagnosticsRoute = "__config"
+
 var (
 	configs                = make(map[string]map[string]interface{})
 	configMutex            sync.RWMutex

@@ -1,0 +1,9 @@
+page:
+  - type: hypermedia
+  - route: valid-route
+  - title: Valid route
+  - main:
+      - type: tree
+      - intro:
+          - type: html
+          - value: <h1>Valid route</h1>

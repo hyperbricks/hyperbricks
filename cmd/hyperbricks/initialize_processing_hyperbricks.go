@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -47,6 +48,7 @@ func PreProcessAndPopulateConfigs() error {
 	}
 
 	// populate configurations
+	addRouteSourceErrors(tempRouteSourceErrors, configDiagnosticsRoute, sourceErrors)
 	updateGlobalConfigs(tempConfigs)
 	updateGlobalHyperMediasBySection(tempHyperMediasBySection)
 	updateGlobalRouteSourceErrors(tempRouteSourceErrors)
@@ -214,7 +216,78 @@ func formatYAMLLoadError(file string, err error) string {
 	if err == nil {
 		return fmt.Sprintf("YAML source %s could not be loaded", filepath.Base(file))
 	}
-	return fmt.Sprintf("YAML source %s was skipped: %v", filepath.Base(file), err)
+	return fmt.Sprintf("YAML source %s was skipped: %s", filepath.Base(file), relativeYAMLLoadError(err.Error()))
+}
+
+type pathPrefixReplacement struct {
+	absolute string
+	relative string
+}
+
+func relativeYAMLLoadError(message string) string {
+	for _, replacement := range yamlPathPrefixReplacements() {
+		message = replacePathPrefix(message, replacement.absolute, replacement.relative)
+	}
+	return message
+}
+
+func yamlPathPrefixReplacements() []pathPrefixReplacement {
+	replacements := make([]pathPrefixReplacement, 0, 8)
+	seen := map[string]bool{}
+	addRoot := func(root string) {
+		root = strings.TrimSpace(root)
+		if root == "" {
+			return
+		}
+		absolute, err := filepath.Abs(root)
+		if err != nil {
+			return
+		}
+		absolute = filepath.Clean(absolute)
+		if seen[absolute] {
+			return
+		}
+		seen[absolute] = true
+		replacements = append(replacements, pathPrefixReplacement{
+			absolute: absolute,
+			relative: relativeDisplayRoot(absolute),
+		})
+	}
+
+	if cwd, err := os.Getwd(); err == nil {
+		addRoot(cwd)
+	}
+	addRoot(core.ModuleDirectories.ModulesRoot)
+	addRoot(core.ModuleDirectories.ModuleDir)
+	addRoot(core.ModuleDirectories.HyperbricksDir)
+	addRoot(core.ModuleDirectories.TemplateDir)
+	addRoot(core.ModuleDirectories.ResourcesDir)
+	addRoot(core.ModuleDirectories.StaticDir)
+	addRoot(core.ModuleDirectories.RenderedDir)
+
+	return replacements
+}
+
+func relativeDisplayRoot(absolute string) string {
+	if cwd, err := os.Getwd(); err == nil {
+		if relative, err := filepath.Rel(cwd, absolute); err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+			return filepath.Clean(relative)
+		}
+	}
+	return filepath.Base(absolute)
+}
+
+func replacePathPrefix(message string, absolute string, relative string) string {
+	if absolute == "" || relative == "" {
+		return message
+	}
+	separator := string(filepath.Separator)
+	prefixReplacement := relative + separator
+	if relative == "." {
+		prefixReplacement = ""
+	}
+	message = strings.ReplaceAll(message, absolute+separator, prefixReplacement)
+	return strings.ReplaceAll(message, absolute, relative)
 }
 
 func formatYAMLDiagnosticMessage(diagnostic yamlparser.Diagnostic) string {
@@ -533,6 +606,10 @@ func getRouteSourceErrors(route string) []error {
 	routeSourceErrorsMutex.RLock()
 	defer routeSourceErrorsMutex.RUnlock()
 	return append([]error(nil), routeSourceErrors[route]...)
+}
+
+func getConfigSourceErrors() []error {
+	return getRouteSourceErrors(configDiagnosticsRoute)
 }
 
 func cloneErrorsByRoute(source map[string][]error) map[string][]error {

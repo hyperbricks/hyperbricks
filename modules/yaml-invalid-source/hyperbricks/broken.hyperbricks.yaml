@@ -1,0 +1,4 @@
+broken:
+  - type: hypermedia
+  - route: broken-route
+  - main: [
