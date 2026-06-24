@@ -25,6 +25,7 @@ type PluginMeta struct {
 	Plugin                string   `json:"plugin"`
 	Version               string   `json:"version"`
 	Source                string   `json:"source"`
+	Runtime               string   `json:"runtime,omitempty"`
 	Binary                string   `json:"binary,omitempty"`
 	CompatibleHyperbricks []string `json:"compatible_hyperbricks"`
 	Description           string   `json:"description"`
@@ -138,31 +139,35 @@ func PluginListCommand() *cobra.Command {
 
 				if compatible != nil {
 					shortName := pluginShortName(name)
-					binaryBase := pluginBinaryBase(*compatible, compatible.Source)
-					soName := fmt.Sprintf("%s@%s.so", binaryBase, compatible.Version)
-					soPath := filepath.Join("./bin/plugins", soName)
+					_, artifactName := pluginOutputNames(*compatible, compatible.Source, "", compatible.Version)
+					artifactPath := filepath.Join("./bin/plugins", artifactName)
 
 					installed := "no"
 					installedRaw := "no"
-					installedSo := ""
+					installedArtifact := ""
 
-					if _, err := os.Stat(soPath); err == nil {
-						installedSo = soName
-						ver, err := extractHyperbricksVersionFromBinary(soPath)
-						if err != nil {
-							installed = "\033[1;33myes (might be incompatible)\033[0m"
-							installedRaw = "yes-maybe"
+					if _, err := os.Stat(artifactPath); err == nil {
+						installedArtifact = artifactName
+						if pluginRuntime(*compatible) == "wasm" {
+							installed = "\033[1;32myes\033[0m"
+							installedRaw = "yes"
 						} else {
-							parsed, err := semver.NewVersion(ver)
+							ver, err := extractHyperbricksVersionFromBinary(artifactPath)
 							if err != nil {
 								installed = "\033[1;33myes (might be incompatible)\033[0m"
 								installedRaw = "yes-maybe"
-							} else if parsed.Equal(hbVer) {
-								installed = "\033[1;32myes\033[0m"
-								installedRaw = "yes"
 							} else {
-								installed = "\033[1;31myes (incompatible)\033[0m"
-								installedRaw = "no"
+								parsed, err := semver.NewVersion(ver)
+								if err != nil {
+									installed = "\033[1;33myes (might be incompatible)\033[0m"
+									installedRaw = "yes-maybe"
+								} else if parsed.Equal(hbVer) {
+									installed = "\033[1;32myes\033[0m"
+									installedRaw = "yes"
+								} else {
+									installed = "\033[1;31myes (incompatible)\033[0m"
+									installedRaw = "no"
+								}
 							}
 						}
 					}
@@ -182,7 +187,7 @@ func PluginListCommand() *cobra.Command {
 						Compat:       compatList,
 						Installed:    installed,
 						InstalledRaw: installedRaw,
-						InstalledSo:  installedSo,
+						InstalledSo:  installedArtifact,
 					})
 				}
 			}
@@ -225,13 +230,13 @@ func PluginListCommand() *cobra.Command {
 				fmt.Println("\033[0;36mThis can be done automatically using:\033[0m")
 				fmt.Println("\033[1;32m hyperbricks plugin install <name>@<plugin_version>\033[0m")
 				fmt.Println("")
-				fmt.Println("\033[0;36m# To preload the plugin, add the binary name (without the .so extension) to your package.hyperbricks.yaml\033[0m")
+				fmt.Println("\033[0;36m# To preload the plugin, add the artifact name (without .so or .wasm) to your package.hyperbricks.yaml\033[0m")
 				fmt.Println("\033[0;36m# under the `plugins.enabled` array:\033[0m")
 				fmt.Println("\033[0;36m# Plugin binaries are named as <name>@<plugin_version> for clarity.\033[0m")
 
 				fmt.Print("\033[1;34mhyperbricks:\n  plugins:\n    enabled:\n")
 				for _, bin := range installedBinaries {
-					binName := strings.TrimSuffix(bin, ".so") // remove the .so suffix
+					binName := pluginConfigNameFromArtifact(bin)
 					fmt.Printf("\033[1;34m      - \033[1;32m%s\033[0m\n", binName)
 				}
 				fmt.Println("")
@@ -336,6 +341,7 @@ func PluginInstallCommand() *cobra.Command {
 				OutputName:         outputName,
 				DisplayName:        pluginShort,
 				ExpectedModulePath: expectedModulePathForBuild("", pluginShort),
+				Runtime:            pluginRuntime(meta),
 			}); err != nil {
 				fmt.Printf("Build failed: %v\n", err)
 				return
@@ -411,6 +417,7 @@ func PluginBuildCommand() *cobra.Command {
 				OutputName:         outputName,
 				DisplayName:        name,
 				ExpectedModulePath: expectedModulePathForBuild(module, name),
+				Runtime:            pluginRuntime(meta),
 			}); err != nil {
 				fmt.Printf("Build failed: %v\n", err)
 				return
@@ -428,6 +435,7 @@ type pluginBuildSpec struct {
 	OutputName         string
 	DisplayName        string
 	ExpectedModulePath string
+	Runtime            string
 	LogWriter          io.Writer
 }
 
@@ -481,6 +489,17 @@ func buildPlugin(spec pluginBuildSpec) error {
 		writer = os.Stdout
 	}
 	fmt.Fprintf(writer, "Building plugin: %s\n", spec.DisplayName)
+	switch pluginRuntimeFromString(spec.Runtime) {
+	case "native":
+		return buildNativePlugin(spec, writer)
+	case "wasm":
+		return buildWasmPlugin(spec, writer)
+	default:
+		return fmt.Errorf("unsupported plugin runtime %q", spec.Runtime)
+	}
+}
+
+func buildNativePlugin(spec pluginBuildSpec, writer io.Writer) error {
 	fmt.Fprintf(writer, "Using Go toolchain: %s\n", goToolPath())
 	pluginDir := filepath.Join(".", "bin", "plugins")
 	if err := os.MkdirAll(pluginDir, 0755); err != nil {
@@ -581,6 +600,84 @@ func buildPlugin(spec pluginBuildSpec) error {
 	buildCmd.Stderr = writer
 	if err := buildCmd.Run(); err != nil {
 		return fmt.Errorf("failed to build plugin: %v", err)
+	}
+	fmt.Fprintf(writer, "Build successful: %s\n", outputPath)
+	return nil
+}
+
+func buildWasmPlugin(spec pluginBuildSpec, writer io.Writer) error {
+	pluginDir := filepath.Join(".", "bin", "plugins")
+	if err := os.MkdirAll(pluginDir, 0755); err != nil {
+		return fmt.Errorf("failed to create plugin directory: %v", err)
+	}
+
+	pluginSourceDir := spec.SourceDir
+	if abs, err := filepath.Abs(pluginSourceDir); err == nil {
+		pluginSourceDir = abs
+	}
+	pluginSourcePath := filepath.Join(pluginSourceDir, spec.SourceFile)
+	if _, err := os.Stat(pluginSourcePath); os.IsNotExist(err) {
+		return fmt.Errorf("plugin source file %s does not exist", pluginSourcePath)
+	}
+
+	outputPath := filepath.Join(pluginDir, spec.OutputName)
+	if abs, err := filepath.Abs(outputPath); err == nil {
+		outputPath = abs
+	}
+	if !strings.HasSuffix(outputPath, ".wasm") {
+		return fmt.Errorf("wasm plugin output must end with .wasm: %s", outputPath)
+	}
+
+	switch strings.ToLower(filepath.Ext(spec.SourceFile)) {
+	case ".go":
+		return buildGoWasmPlugin(writer, pluginSourceDir, pluginSourcePath, outputPath)
+	case ".c":
+		return buildClangWasmPlugin(writer, pluginSourceDir, pluginSourcePath, outputPath)
+	default:
+		return fmt.Errorf("unsupported wasm plugin source type %q", filepath.Ext(spec.SourceFile))
+	}
+}
+
+func buildGoWasmPlugin(writer io.Writer, pluginSourceDir string, pluginSourcePath string, outputPath string) error {
+	fmt.Fprintf(writer, "Using Go WASM toolchain: %s\n", goToolPath())
+	buildCmd := goToolCommand("build", "-buildmode=c-shared", "-o", outputPath, pluginSourcePath)
+	buildCmd.Dir = pluginSourceDir
+	buildCmd.Env = append(os.Environ(), "GOOS=wasip1", "GOARCH=wasm")
+	buildCmd.Stdout = writer
+	buildCmd.Stderr = writer
+	if err := buildCmd.Run(); err != nil {
+		return fmt.Errorf("failed to build go wasm plugin: %v", err)
+	}
+	fmt.Fprintf(writer, "Build successful: %s\n", outputPath)
+	return nil
+}
+
+func buildClangWasmPlugin(writer io.Writer, pluginSourceDir string, pluginSourcePath string, outputPath string) error {
+	clangPath, err := exec.LookPath("clang")
+	if err != nil {
+		return fmt.Errorf("clang is required to build C wasm plugins: %v", err)
+	}
+	fmt.Fprintf(writer, "Using clang toolchain: %s\n", clangPath)
+	buildCmd := exec.Command(
+		clangPath,
+		"--target=wasm32",
+		"-O2",
+		"-nostdlib",
+		"-Wl,--no-entry",
+		"-Wl,--export-memory",
+		"-Wl,--export=alloc",
+		"-Wl,--export=render",
+		"-Wl,--initial-memory=131072",
+		"-Wl,--max-memory=131072",
+		"-o",
+		outputPath,
+		pluginSourcePath,
+	)
+	buildCmd.Dir = pluginSourceDir
+	buildCmd.Stdout = writer
+	buildCmd.Stderr = writer
+	if err := buildCmd.Run(); err != nil {
+		return fmt.Errorf("failed to build C wasm plugin: %v", err)
 	}
 	fmt.Fprintf(writer, "Build successful: %s\n", outputPath)
 	return nil
@@ -738,9 +835,9 @@ func pluginManifestPathFor(module string, pluginShortName string, version string
 func pluginBinaryBase(meta PluginMeta, source string) string {
 	if strings.TrimSpace(meta.Binary) != "" {
 		base := strings.TrimSpace(meta.Binary)
-		return strings.TrimSuffix(base, ".so")
+		return pluginConfigNameFromArtifact(base)
 	}
-	return toCamelCase(strings.TrimSuffix(source, ".go"))
+	return toCamelCase(strings.TrimSuffix(source, filepath.Ext(source)))
 }
 
 func pluginOutputNames(meta PluginMeta, source string, module string, version string) (string, string) {
@@ -749,7 +846,35 @@ func pluginOutputNames(meta PluginMeta, source string, module string, version st
 		base = fmt.Sprintf("%s__%s", base, module)
 	}
 	configName := fmt.Sprintf("%s@%s", base, version)
-	return configName, configName + ".so"
+	return configName, configName + pluginArtifactExtension(pluginRuntime(meta))
+}
+
+func pluginRuntime(meta PluginMeta) string {
+	return pluginRuntimeFromString(meta.Runtime)
+}
+
+func pluginRuntimeFromString(runtimeName string) string {
+	switch strings.ToLower(strings.TrimSpace(runtimeName)) {
+	case "", "native", "go":
+		return "native"
+	case "wasm", "webassembly":
+		return "wasm"
+	default:
+		return strings.ToLower(strings.TrimSpace(runtimeName))
+	}
+}
+
+func pluginArtifactExtension(runtimeName string) string {
+	if pluginRuntimeFromString(runtimeName) == "wasm" {
+		return ".wasm"
+	}
+	return ".so"
+}
+
+func pluginConfigNameFromArtifact(name string) string {
+	name = strings.TrimSuffix(name, ".so")
+	name = strings.TrimSuffix(name, ".wasm")
+	return name
 }
 
 type PluginBuildSpec = pluginBuildSpec

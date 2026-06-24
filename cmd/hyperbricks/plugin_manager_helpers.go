@@ -57,10 +57,10 @@ func listPluginBinaries(pluginDir string, includeCustom bool) ([]pluginListEntry
 			continue
 		}
 		name := entry.Name()
-		if !strings.HasSuffix(name, ".so") {
+		if !isPluginArtifactName(name) {
 			continue
 		}
-		configName := strings.TrimSuffix(name, ".so")
+		configName := pluginConfigNameFromArtifactName(name)
 		if !includeCustom && strings.Contains(configName, "__") {
 			continue
 		}
@@ -83,6 +83,10 @@ func pluginBinaryExists(pluginDir string, outputName string) bool {
 	return err == nil
 }
 
+func pluginArtifactExists(pluginDir string, configName string) bool {
+	return pluginBinaryExists(pluginDir, configName+".so") || pluginBinaryExists(pluginDir, configName+".wasm")
+}
+
 func removePluginBinary(workingDir string, configName string) (bool, error) {
 	name := strings.TrimSpace(configName)
 	if name == "" {
@@ -92,17 +96,31 @@ func removePluginBinary(workingDir string, configName string) (bool, error) {
 		return false, fmt.Errorf("invalid plugin name: %s", name)
 	}
 	pluginDir := filepath.Join(workingDir, "bin", "plugins")
-	target := filepath.Join(pluginDir, name+".so")
-	if _, err := os.Stat(target); err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
+	removed := false
+	for _, ext := range []string{".so", ".wasm"} {
+		target := filepath.Join(pluginDir, name+ext)
+		if _, err := os.Stat(target); err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return removed, err
 		}
-		return false, err
+		if err := os.Remove(target); err != nil {
+			return removed, err
+		}
+		removed = true
 	}
-	if err := os.Remove(target); err != nil {
-		return false, err
-	}
-	return true, nil
+	return removed, nil
+}
+
+func isPluginArtifactName(name string) bool {
+	return strings.HasSuffix(name, ".so") || strings.HasSuffix(name, ".wasm")
+}
+
+func pluginConfigNameFromArtifactName(name string) string {
+	name = strings.TrimSuffix(name, ".so")
+	name = strings.TrimSuffix(name, ".wasm")
+	return name
 }
 
 func readPluginConfigNames(configPath string) ([]string, error) {

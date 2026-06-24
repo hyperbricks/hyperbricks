@@ -10,6 +10,7 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/pluginruntime"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
 )
@@ -143,6 +144,25 @@ func (rm *RenderManager) SetPlugin(name string, pr shared.PluginRenderer) {
 	rm.Plugins[name] = pr
 }
 
+func (rm *RenderManager) RegisterAndLoadPluginByName(ctx context.Context, pluginDir string, name string) (pluginruntime.Runtime, error) {
+	artifact, err := pluginruntime.ResolveArtifact(pluginDir, name)
+	if err != nil {
+		return "", err
+	}
+	return artifact.Runtime, rm.RegisterAndLoadPluginArtifact(ctx, artifact, name)
+}
+
+func (rm *RenderManager) RegisterAndLoadPluginArtifact(ctx context.Context, artifact pluginruntime.Artifact, name string) error {
+	switch artifact.Runtime {
+	case pluginruntime.RuntimeWasm:
+		return rm.RegisterAndLoadWasmPlugin(ctx, artifact.Path, name)
+	case pluginruntime.RuntimeNative:
+		return rm.RegisterAndLoadPlugin(artifact.Path, name)
+	default:
+		return fmt.Errorf("unsupported plugin runtime %q for %s", artifact.Runtime, name)
+	}
+}
+
 // RegisterAndLoadPlugin loads a Go plugin dynamically and registers it.
 func (rm *RenderManager) RegisterAndLoadPlugin(path string, name string) error {
 	logger := logging.GetLogger()
@@ -176,6 +196,23 @@ func (rm *RenderManager) RegisterAndLoadPlugin(path string, name string) error {
 	rm.SetPlugin(name, renderer)
 
 	return nil // No error
+}
+
+// RegisterAndLoadWasmPlugin loads a WebAssembly plugin adapter and registers it.
+func (rm *RenderManager) RegisterAndLoadWasmPlugin(ctx context.Context, path string, name string) error {
+	logger := logging.GetLogger()
+	logger.Infof("Preloading wasm plugin: %s", path)
+
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	renderer, err := pluginruntime.NewWasmPluginRenderer(ctx, path, name)
+	if err != nil {
+		return err
+	}
+
+	rm.SetPlugin(name, renderer)
+	return nil
 }
 
 // Render renders content based on its type using registered components or plugins.

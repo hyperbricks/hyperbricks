@@ -1,0 +1,9 @@
+{
+  "plugin": "github.com/hyperbricks/plugins/markdown-wasm",
+  "source": "markdown_wasm_plugin.go",
+  "runtime": "wasm",
+  "binary": "MarkdownWasmPlugin",
+  "version": "1.0.0",
+  "compatible_hyperbricks": [">=1.2.1-beta"],
+  "description": "Hyperbricks WASM markdown plugin proof of concept"
+}

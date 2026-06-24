@@ -529,7 +529,7 @@ func (api *deployLocalServer) handleLocalCustomPluginsList(w http.ResponseWriter
 				status = "installed"
 			}
 		}
-		if !ok && pluginBinaryExists(pluginDir, outputName) {
+		if !ok && pluginArtifactExists(pluginDir, configName) {
 			status = "installed"
 		}
 		plugins = append(plugins, pluginListEntry{
@@ -584,6 +584,7 @@ func (api *deployLocalServer) handleLocalCustomPluginCompile(w http.ResponseWrit
 			SourceFile:  entry.Meta.Source,
 			OutputName:  entry.OutputName,
 			DisplayName: entry.ConfigName,
+			Runtime:     entry.Meta.Runtime,
 			LogWriter:   &buffer,
 		}
 		err := commands.BuildPlugin(spec)
