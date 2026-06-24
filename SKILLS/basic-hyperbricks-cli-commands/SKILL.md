@@ -376,7 +376,7 @@ init-starter   List or install official starters.
 plugin         Manage plugins.
 select         Select active module.
 start          Start server.
-static         Render static content.
+static         Snapshot static content through the runtime HTTP path.
 version        Show version.
 ```
 
@@ -395,6 +395,10 @@ hyperbricks static -m demo
 hyperbricks build --hra -m demo
 hyperbricks build --zip -m demo
 ```
+
+`hyperbricks static` starts an internal localhost runtime, requests configured
+routes, and writes the responses to the render directory. Use
+`hyperbricks static --serve` only to serve already-rendered files.
 
 Deploy runtime commands:
 

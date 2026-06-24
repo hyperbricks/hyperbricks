@@ -59,6 +59,46 @@ status as `.Status`, and `values` merged into the template root.
 </section>
 ```
 
+### Static Snapshots
+
+`api_render` works with `hyperbricks static` because static rendering now starts
+an internal localhost runtime and requests routes over HTTP. This means nested
+`api_render` blocks receive normal request context and their rendered HTML is
+written into the static output file.
+
+Use this for public or cacheable API-backed pages, for example a product list,
+blog feed, documentation index, or catalog page. The upstream API must be
+reachable when `hyperbricks static` runs. A non-2xx upstream response from
+`api_render` is treated as a render error, so static snapshot builds fail
+instead of freezing a broken API result into HTML.
+
+Explicit targets in `package.hyperbricks.yaml` win over automatic route
+discovery:
+
+```yaml
+hyperbricks:
+  static:
+    routes:
+      - path: /products
+        output: products.html
+```
+
+Configured variants can snapshot the same route with different queries:
+
+```yaml
+hyperbricks:
+  static:
+    variants:
+      - path: /products
+        query:
+          category: shoes
+        output: products/shoes.html
+```
+
+See `modules/sampleapis-coffee-static` for a runnable module that fetches the
+SampleAPIs Coffee endpoint with `api_render` and freezes the result into
+`rendered/index.html`.
+
 ## API Fragment Render
 
 `api_fragment_render` owns a route. It receives the browser request, optionally

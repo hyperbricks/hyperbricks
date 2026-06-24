@@ -211,6 +211,11 @@ Static output is written to the module render directory, by default:
 modules/demo/rendered/
 ```
 
+Static rendering requests your routes through an internal localhost runtime
+before writing files. Nested `api_render` blocks run during this snapshot, so
+public API-backed pages can be exported as plain HTML. For a runnable example,
+see `modules/sampleapis-coffee-static`.
+
 ## Next Steps
 
 - [YAML_USAGE.md](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.

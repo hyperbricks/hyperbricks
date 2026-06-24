@@ -64,7 +64,9 @@ func PreProcessAndPopulateConfigs() error {
 
 	// prepare for static rendering
 	if commands.RenderStatic {
-		PrepareForStaticRendering(tempConfigs)
+		if err := PrepareForStaticRendering(tempConfigs); err != nil {
+			return err
+		}
 	} else {
 		// Print mapping from filename to routes
 		printFilenameToRoutesMapping(filenameToRoutes)

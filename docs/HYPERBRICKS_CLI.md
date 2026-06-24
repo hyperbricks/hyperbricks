@@ -105,11 +105,19 @@ Render static output:
 hyperbricks static -m demo
 ```
 
+Static rendering starts an internal localhost runtime, requests the configured
+routes over HTTP, and writes the responses into the module render directory.
+This means nested `api_render` blocks use the same request path as normal
+runtime rendering.
+
 Serve rendered static files:
 
 ```bash
 hyperbricks static -m demo --serve
 ```
+
+`--serve` only serves files that already exist in the render directory. It does
+not call APIs, render routes, or run the runtime gateway.
 
 Overwrite existing output:
 
@@ -128,6 +136,32 @@ Exclude paths relative to the render root:
 ```bash
 hyperbricks static -m demo --zip --exclude cache,tmp
 ```
+
+Configured query variants can be added in `package.hyperbricks.yaml` when one
+route should be snapshotted into multiple output files:
+
+```yaml
+hyperbricks:
+  static:
+    variants:
+      - path: /products
+        query:
+          category: shoes
+        output: products/shoes.html
+      - path: /products
+        query:
+          category: hats
+        output: products/hats.html
+```
+
+Explicit `hyperbricks.static.routes` and `hyperbricks.static.variants` entries
+win over automatic route discovery. Use package-level targets when a route needs
+configured query parameters, headers, host selection, or a clearer output path.
+
+The `modules/sampleapis-coffee-static` module demonstrates a static snapshot
+that renders `api_render` data from `https://api.sampleapis.com/coffee/hot`.
+If a nested `api_render` receives a non-2xx upstream response, static rendering
+fails through the route render-error diagnostics.
 
 ## Build Archives
 

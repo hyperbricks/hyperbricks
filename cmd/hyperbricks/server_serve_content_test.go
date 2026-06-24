@@ -16,6 +16,7 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
+	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
@@ -57,6 +58,16 @@ type staticContextTestPlugin struct {
 func (p *staticContextTestPlugin) Render(_ interface{}, ctx context.Context) (any, []error) {
 	p.ctx = ctx
 	return "static plugin output", nil
+}
+
+type requestEchoTestPlugin struct{}
+
+func (p requestEchoTestPlugin) Render(_ interface{}, ctx context.Context) (any, []error) {
+	req, _ := ctx.Value(shared.Request).(*http.Request)
+	if req == nil {
+		return "missing request", nil
+	}
+	return "host=" + req.Host + " header=" + req.Header.Get("X-Snapshot"), nil
 }
 
 func setupLiveModeServeContentTest(t testing.TB) {
@@ -197,6 +208,352 @@ func TestMakeStaticProvidesContextToPluginRender(t *testing.T) {
 	}
 	if string(body) != "static plugin output" {
 		t.Fatalf("static file body = %q, want plugin output", string(body))
+	}
+}
+
+func TestSnapshotStaticRoutesRendersAPIRenderThroughRuntime(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	oldParserHbConfig := parser.HbConfig
+	parser.HbConfig = map[string]interface{}{}
+	t.Cleanup(func() {
+		parser.HbConfig = oldParserHbConfig
+	})
+
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `[{"name":"Static Shoe"}]`)
+	}))
+	defer api.Close()
+
+	routeConfig := map[string]interface{}{
+		"@type":  composite.HyperMediaConfigGetName(),
+		"route":  "products",
+		"static": "products.html",
+		"10": map[string]interface{}{
+			"@type":    component.APIConfigGetName(),
+			"endpoint": api.URL,
+			"method":   http.MethodGet,
+			"inline":   `{{ range .Data }}<p>{{ index . "name" }}</p>{{ end }}`,
+		},
+	}
+	setTestRouteConfig("products", routeConfig)
+
+	renderDir := t.TempDir()
+	err := snapshotStaticRoutes(map[string]map[string]interface{}{
+		"products": routeConfig,
+	}, renderDir)
+	if err != nil {
+		t.Fatalf("snapshotStaticRoutes returned error: %v", err)
+	}
+
+	body, err := os.ReadFile(filepath.Join(renderDir, "products.html"))
+	if err != nil {
+		t.Fatalf("failed to read rendered static file: %v", err)
+	}
+	if got := string(body); !strings.Contains(got, "<p>Static Shoe</p>") {
+		t.Fatalf("static API render output missing product, got %q", got)
+	}
+}
+
+func TestSnapshotStaticRoutesRendersConfiguredQueryVariant(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	oldParserHbConfig := parser.HbConfig
+	parser.HbConfig = map[string]interface{}{
+		"hyperbricks": map[string]interface{}{
+			"static": map[string]interface{}{
+				"variants": []interface{}{
+					map[string]interface{}{
+						"path":   "/products",
+						"output": "products/shoes.html",
+						"query": map[string]interface{}{
+							"category": "shoes",
+						},
+					},
+				},
+			},
+		},
+	}
+	t.Cleanup(func() {
+		parser.HbConfig = oldParserHbConfig
+	})
+
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		category := r.URL.Query().Get("category")
+		if category == "" {
+			category = "all"
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `[{"name":"`+category+`"}]`)
+	}))
+	defer api.Close()
+
+	routeConfig := map[string]interface{}{
+		"@type": composite.HyperMediaConfigGetName(),
+		"route": "products",
+		"10": map[string]interface{}{
+			"@type":     component.APIConfigGetName(),
+			"endpoint":  api.URL,
+			"method":    http.MethodGet,
+			"querykeys": []string{"category"},
+			"inline":    `{{ range .Data }}<p>{{ index . "name" }}</p>{{ end }}`,
+		},
+	}
+	setTestRouteConfig("products", routeConfig)
+
+	renderDir := t.TempDir()
+	err := snapshotStaticRoutes(map[string]map[string]interface{}{
+		"products": routeConfig,
+	}, renderDir)
+	if err != nil {
+		t.Fatalf("snapshotStaticRoutes returned error: %v", err)
+	}
+
+	body, err := os.ReadFile(filepath.Join(renderDir, "products", "shoes.html"))
+	if err != nil {
+		t.Fatalf("failed to read rendered query variant: %v", err)
+	}
+	if got := string(body); !strings.Contains(got, "<p>shoes</p>") {
+		t.Fatalf("static query variant output missing category, got %q", got)
+	}
+}
+
+func TestCollectStaticSnapshotTargetsPackageConfigWinsOverRouteDiscovery(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	oldParserHbConfig := parser.HbConfig
+	parser.HbConfig = map[string]interface{}{
+		"hyperbricks": map[string]interface{}{
+			"static": map[string]interface{}{
+				"routes": []interface{}{
+					map[string]interface{}{
+						"path":   "/index.html",
+						"output": "index.html",
+						"headers": map[string]interface{}{
+							"X-Snapshot": "package",
+						},
+					},
+				},
+			},
+		},
+	}
+	t.Cleanup(func() {
+		parser.HbConfig = oldParserHbConfig
+	})
+
+	targets, err := collectStaticSnapshotTargets(map[string]map[string]interface{}{
+		"index.html": {
+			"@type":  composite.HyperMediaConfigGetName(),
+			"route":  "index.html",
+			"static": "index.html",
+		},
+	})
+	if err != nil {
+		t.Fatalf("collectStaticSnapshotTargets returned error: %v", err)
+	}
+	if len(targets) != 1 {
+		t.Fatalf("target count = %d, want 1: %#v", len(targets), targets)
+	}
+	if got := targets[0].Headers["X-Snapshot"]; got != "package" {
+		t.Fatalf("package target headers were not preserved, got X-Snapshot=%q", got)
+	}
+	if got := targets[0].Source; got != "static.routes[0]" {
+		t.Fatalf("target source = %q, want package config source", got)
+	}
+}
+
+func TestSnapshotStaticRoutesUsesConfiguredHostAndHeaders(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	oldParserHbConfig := parser.HbConfig
+	parser.HbConfig = map[string]interface{}{
+		"hyperbricks": map[string]interface{}{
+			"static": map[string]interface{}{
+				"routes": []interface{}{
+					map[string]interface{}{
+						"path":   "/headers",
+						"output": "headers.html",
+						"host":   "snapshot.example.test",
+						"headers": map[string]interface{}{
+							"X-Snapshot": "package",
+						},
+					},
+				},
+			},
+		},
+	}
+	t.Cleanup(func() {
+		parser.HbConfig = oldParserHbConfig
+	})
+
+	rm.SetPlugin("request_echo_test", requestEchoTestPlugin{})
+	routeConfig := map[string]interface{}{
+		"@type":  component.PluginRenderGetName(),
+		"route":  "headers",
+		"static": "headers.html",
+		"plugin": "request_echo_test",
+	}
+	setTestRouteConfig("headers", routeConfig)
+
+	renderDir := t.TempDir()
+	err := snapshotStaticRoutes(map[string]map[string]interface{}{
+		"headers": routeConfig,
+	}, renderDir)
+	if err != nil {
+		t.Fatalf("snapshotStaticRoutes returned error: %v", err)
+	}
+
+	body, err := os.ReadFile(filepath.Join(renderDir, "headers.html"))
+	if err != nil {
+		t.Fatalf("failed to read rendered static file: %v", err)
+	}
+	got := string(body)
+	if !strings.Contains(got, "host=snapshot.example.test") || !strings.Contains(got, "header=package") {
+		t.Fatalf("static snapshot did not use configured host/header, got %q", got)
+	}
+}
+
+func TestCollectStaticSnapshotTargetsRejectsDuplicateOutputConflicts(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	oldParserHbConfig := parser.HbConfig
+	parser.HbConfig = map[string]interface{}{
+		"hyperbricks": map[string]interface{}{
+			"static": map[string]interface{}{
+				"variants": []interface{}{
+					map[string]interface{}{
+						"path":   "/products",
+						"output": "products.html",
+						"query": map[string]interface{}{
+							"category": "shoes",
+						},
+					},
+					map[string]interface{}{
+						"path":   "/products",
+						"output": "products.html",
+						"query": map[string]interface{}{
+							"category": "hats",
+						},
+					},
+				},
+			},
+		},
+	}
+	t.Cleanup(func() {
+		parser.HbConfig = oldParserHbConfig
+	})
+
+	_, err := collectStaticSnapshotTargets(map[string]map[string]interface{}{})
+	if err == nil {
+		t.Fatal("expected duplicate output conflict")
+	}
+	if !strings.Contains(err.Error(), `static output "products.html" is configured more than once`) {
+		t.Fatalf("unexpected duplicate output error: %v", err)
+	}
+}
+
+func TestCollectStaticSnapshotTargetsRejectsDuplicateOutputWithDifferentHeaders(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	oldParserHbConfig := parser.HbConfig
+	parser.HbConfig = map[string]interface{}{
+		"hyperbricks": map[string]interface{}{
+			"static": map[string]interface{}{
+				"routes": []interface{}{
+					map[string]interface{}{
+						"path":   "/products",
+						"output": "products.html",
+						"headers": map[string]interface{}{
+							"X-Variant": "one",
+						},
+					},
+					map[string]interface{}{
+						"path":   "/products",
+						"output": "products.html",
+						"headers": map[string]interface{}{
+							"X-Variant": "two",
+						},
+					},
+				},
+			},
+		},
+	}
+	t.Cleanup(func() {
+		parser.HbConfig = oldParserHbConfig
+	})
+
+	_, err := collectStaticSnapshotTargets(map[string]map[string]interface{}{})
+	if err == nil {
+		t.Fatal("expected duplicate output conflict for different headers")
+	}
+	if !strings.Contains(err.Error(), `static output "products.html" is configured more than once`) {
+		t.Fatalf("unexpected duplicate output error: %v", err)
+	}
+}
+
+func TestSnapshotStaticRoutesRejectsRedirectResponses(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	oldParserHbConfig := parser.HbConfig
+	parser.HbConfig = map[string]interface{}{}
+	t.Cleanup(func() {
+		parser.HbConfig = oldParserHbConfig
+	})
+
+	rm.SetPlugin("redirect_test", handledResponseTestPlugin{
+		status: http.StatusFound,
+		headers: map[string]string{
+			"Location": "/next",
+		},
+		body: []byte("redirecting"),
+	})
+	routeConfig := map[string]interface{}{
+		"@type":  component.PluginRenderGetName(),
+		"route":  "redirect",
+		"static": "redirect.html",
+		"plugin": "redirect_test",
+	}
+	setTestRouteConfig("redirect", routeConfig)
+
+	err := snapshotStaticRoutes(map[string]map[string]interface{}{
+		"redirect": routeConfig,
+	}, t.TempDir())
+	if err == nil {
+		t.Fatal("expected redirect response to fail static snapshot")
+	}
+	if !strings.Contains(err.Error(), "returned 302 Found") {
+		t.Fatalf("unexpected redirect error: %v", err)
+	}
+}
+
+func TestSnapshotStaticRoutesRejectsAPIRenderUpstreamFailure(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	oldParserHbConfig := parser.HbConfig
+	parser.HbConfig = map[string]interface{}{}
+	t.Cleanup(func() {
+		parser.HbConfig = oldParserHbConfig
+	})
+
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "upstream down", http.StatusBadGateway)
+	}))
+	defer api.Close()
+
+	routeConfig := map[string]interface{}{
+		"@type":  composite.HyperMediaConfigGetName(),
+		"route":  "broken-feed",
+		"static": "broken-feed.html",
+		"10": map[string]interface{}{
+			"@type":    component.APIConfigGetName(),
+			"endpoint": api.URL,
+			"method":   http.MethodGet,
+			"inline":   `<p>{{.Status}}</p>`,
+		},
+	}
+	setTestRouteConfig("broken-feed", routeConfig)
+
+	err := snapshotStaticRoutes(map[string]map[string]interface{}{
+		"broken-feed": routeConfig,
+	}, t.TempDir())
+	if err == nil {
+		t.Fatal("expected upstream API failure to fail static snapshot")
+	}
+	if !strings.Contains(err.Error(), "produced 1 render error") {
+		t.Fatalf("unexpected API render failure error: %v", err)
 	}
 }
 
