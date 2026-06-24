@@ -1,0 +1,30 @@
+<section class="coffee-menu" aria-labelledby="coffee-menu-title">
+  <div class="coffee-menu-head">
+    <div>
+      <p class="coffee-kicker">{{.source_label}}</p>
+      <h2 id="coffee-menu-title">{{.heading}}</h2>
+    </div>
+    <a class="coffee-source" href="{{.source_url}}">API source</a>
+  </div>
+
+  <div class="coffee-grid">
+    {{range $index, $coffee := .Data}}
+      {{if lt $index 12}}
+        <article class="coffee-card">
+          {{with index $coffee "image"}}
+            <img src="{{.}}" alt="" loading="lazy" decoding="async">
+          {{end}}
+          <div class="coffee-card-body">
+            <h3>{{index $coffee "title"}}</h3>
+            <p>{{index $coffee "description"}}</p>
+            <ul>
+              {{range index $coffee "ingredients"}}
+                {{if .}}<li>{{.}}</li>{{end}}
+              {{end}}
+            </ul>
+          </div>
+        </article>
+      {{end}}
+    {{end}}
+  </div>
+</section>

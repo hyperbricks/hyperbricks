@@ -371,6 +371,10 @@ hyperbricks static -m demo
 hyperbricks static -m demo --zip --out ./exports/demo
 ```
 
+Static rendering snapshots routes through the normal runtime HTTP path before
+writing files. Public `api_render` content is fetched during this step, so the
+build environment must be able to reach those upstream APIs.
+
 See [HyperBricks CLI](HYPERBRICKS_CLI.md) for static flags.
 
 ## Rollbacks

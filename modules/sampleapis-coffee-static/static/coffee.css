@@ -1,0 +1,189 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f7f8f6;
+  color: #1d2528;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f7f8f6 42%, #edf4f2 100%);
+}
+
+a {
+  color: inherit;
+}
+
+.coffee-shell {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 48px 0 72px;
+}
+
+.coffee-hero {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 24px;
+  max-width: 760px;
+}
+
+.coffee-eyebrow,
+.coffee-kicker {
+  margin: 0;
+  color: #0b766d;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.coffee-hero h1,
+.coffee-menu h2 {
+  margin: 0;
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.coffee-hero h1 {
+  max-width: 720px;
+  font-size: clamp(2.25rem, 6vw, 4.8rem);
+}
+
+.coffee-lead {
+  margin: 0;
+  color: #506065;
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.coffee-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  margin: 0 0 28px;
+  padding: 14px 16px;
+  border: 1px solid #cfdedb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #3b4b50;
+}
+
+.coffee-note span {
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.9rem;
+}
+
+.coffee-menu {
+  display: grid;
+  gap: 20px;
+}
+
+.coffee-menu-head {
+  display: flex;
+  gap: 16px;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.coffee-menu h2 {
+  margin-top: 4px;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+}
+
+.coffee-source {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid #1d2528;
+  border-radius: 8px;
+  color: #1d2528;
+  font-size: 0.94rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.coffee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.coffee-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #dae4e1;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgb(38 54 60 / 8%);
+}
+
+.coffee-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #dfe8e5;
+}
+
+.coffee-card-body {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.coffee-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.coffee-card p {
+  margin: 0;
+  color: #526368;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.coffee-card ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.coffee-card li {
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: #eef7f5;
+  color: #176159;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .coffee-shell {
+    width: min(100% - 24px, 1120px);
+    padding: 30px 0 48px;
+  }
+
+  .coffee-menu-head {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .coffee-source {
+    width: 100%;
+  }
+}

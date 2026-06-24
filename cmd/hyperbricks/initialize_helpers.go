@@ -317,6 +317,9 @@ func PreProcessAndPopulateHyperbricksConfigurations() {
 	if err != nil {
 		logger.Errorw("Error preprocessing HyperBricks", "error", err)
 		recordConfigDiagnostics([]error{preprocessErrorToComponentError(err)})
+		if commands.RenderStatic {
+			logger.Fatalw("Static rendering failed", "error", err)
+		}
 	}
 }
 

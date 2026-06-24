@@ -1,0 +1,59 @@
+vars:
+  page:
+    title: SampleAPIs Coffee Static Demo
+    eyebrow: Runtime static snapshot
+    heading: Coffee menu rendered from a live API
+    intro: This page is rendered through HyperBricks, fetches a public JSON API with api_render, and can be frozen into static HTML with the static command.
+
+page:
+  - type: hypermedia
+  - route: index.html
+  - static: index.html
+  - title:
+      var: page.title
+  - head:
+      - type: head
+      - title:
+          var: page.title
+      - meta:
+          description: HyperBricks static snapshot example using api_render and the SampleAPIs Coffee endpoint.
+      - css:
+          - /static/coffee.css
+  - main:
+      - type: tree
+      - enclose: <main class="coffee-shell">|</main>
+      - intro:
+          - type: html
+          - value:
+              format: |
+                <header class="coffee-hero">
+                  <p class="coffee-eyebrow">%s</p>
+                  <h1>%s</h1>
+                  <p class="coffee-lead">%s</p>
+                </header>
+              args:
+                - var: page.eyebrow
+                - var: page.heading
+                - var: page.intro
+      - api_note:
+          - type: html
+          - value:
+              format: |
+                <section class="coffee-note" aria-label="Snapshot inputs">
+                  <strong>Snapshot input</strong>
+                  <span>%s</span>
+                </section>
+              args:
+                - config: myconf.coffee.api_url
+      - coffee_menu:
+          - type: api_render
+          - endpoint:
+              config: myconf.coffee.api_url
+          - method: GET
+          - template:
+              file: coffee-cards.html
+          - values:
+              heading: Hot coffee catalog
+              source_label: SampleAPIs Coffee
+              source_url:
+                config: myconf.coffee.docs_url

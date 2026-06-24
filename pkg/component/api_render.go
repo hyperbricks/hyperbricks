@@ -395,8 +395,9 @@ func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, 
 	}
 
 	// Handle empty response body
+	statusErr := apiRenderStatusError(resp)
 	if resp.Body == nil || resp.ContentLength == 0 {
-		return nil, resp.StatusCode, nil
+		return nil, resp.StatusCode, statusErr
 	}
 
 	// Decode JSON response
@@ -419,7 +420,14 @@ func fetchDataFromAPI(config APIConfig, ctx context.Context) (interface{}, int, 
 		}
 	}
 
-	return result, resp.StatusCode, nil
+	return result, resp.StatusCode, statusErr
+}
+
+func apiRenderStatusError(resp *http.Response) error {
+	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+		return nil
+	}
+	return fmt.Errorf("upstream API returned %s", resp.Status)
 }
 
 func applyApiTemplate(templateStr string, data interface{}, config APIConfig) (string, []error) {
