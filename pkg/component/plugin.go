@@ -3,8 +3,6 @@ package component
 import (
 	"context"
 	"fmt"
-	"path/filepath"
-	"plugin"
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
@@ -92,9 +90,7 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 	if tbplugindir, ok := hbConfig.Directories["plugins"]; ok {
 		pluginDir = tbplugindir
 	}
-	pluginPath := filepath.Join(pluginDir, config.PluginName+".so")
-
-	p, err := plugin.Open(pluginPath)
+	_, err := r.RenderManager.RegisterAndLoadPluginByName(ctx, pluginDir, config.PluginName)
 	if err != nil {
 		builder.WriteString(fmt.Sprintf("<!-- Error loading plugin %v: %v -->\n", config.PluginName, err))
 		errors = append(errors, shared.ComponentError{
@@ -108,55 +104,21 @@ func (r *PluginRenderer) LoadAndRender(instance interface{}, ctx context.Context
 		return builder.String(), errors
 	}
 
-	symbol, err := p.Lookup("Plugin")
-	if err != nil {
-		builder.WriteString(fmt.Sprintf("<!-- Failed to lookup plugin %v: %v -->\n", config.PluginName, err))
+	pluginRenderer, pluginExists := r.RenderManager.GetPlugin(config.PluginName)
+	if !pluginExists {
+		builder.WriteString(fmt.Sprintf("<!-- Plugin %v was loaded but not registered -->\n", config.PluginName))
 		errors = append(errors, shared.ComponentError{
 			Hash: shared.GenerateHash(),
 			Key:  config.Component.Meta.HyperBricksKey,
 			Path: config.Component.Meta.HyperBricksPath,
 			File: config.Component.Meta.HyperBricksFile,
 			Type: PluginRenderGetName(),
-			Err:  fmt.Sprintf("Failed to lookup plugin %v: %v\n", config.PluginName, err),
+			Err:  fmt.Sprintf("Plugin %v was loaded but not registered", config.PluginName),
 		})
 		return builder.String(), errors
 	}
 
-	pluginFactory, ok := symbol.(func() (shared.PluginRenderer, error))
-	if !ok {
-		builder.WriteString(fmt.Sprintf(
-			"<!-- Plugin symbol is not of expected type 'func() (shared.Renderer, error)' %v -->\n",
-			config.PluginName,
-		))
-		errors = append(errors, shared.ComponentError{
-			Hash: shared.GenerateHash(),
-			Key:  config.Component.Meta.HyperBricksKey,
-			Path: config.Component.Meta.HyperBricksPath,
-			File: config.Component.Meta.HyperBricksFile,
-			Type: PluginRenderGetName(),
-			Err:  fmt.Sprintf("Plugin symbol is not of expected type 'func() (shared.Renderer, error)' %v", config.PluginName),
-		})
-		return builder.String(), errors
-	}
-
-	renderer, err := pluginFactory()
-	if err != nil {
-		builder.WriteString(fmt.Sprintf("<!--Error initializing plugin: %v: %v -->\n", config.PluginName, err))
-		errors = append(errors, shared.ComponentError{
-			Hash: shared.GenerateHash(),
-			Key:  config.Component.Meta.HyperBricksKey,
-			Path: config.Component.Meta.HyperBricksPath,
-			File: config.Component.Meta.HyperBricksFile,
-			Type: PluginRenderGetName(),
-			Err:  fmt.Sprintf("Error initializing plugin: %v: %v\n", config.PluginName, err),
-		})
-		return builder.String(), errors
-	}
-
-	// Store hot-loaded plugin so it's available next time
-	r.RenderManager.SetPlugin(config.PluginName, renderer)
-
-	return r.renderAndWrap(renderer, config, instance, ctx, errors)
+	return r.renderAndWrap(pluginRenderer, config, instance, ctx, errors)
 }
 
 func (r *PluginRenderer) renderAndWrap(pluginRenderer shared.PluginRenderer, config PluginConfig, instance interface{}, ctx context.Context, errs []error) (string, []error) {

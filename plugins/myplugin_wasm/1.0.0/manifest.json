@@ -1,0 +1,9 @@
+{
+  "plugin": "github.com/hyperbricks/plugins/myplugin_wasm",
+  "source": "myplugin_wasm.go",
+  "runtime": "wasm",
+  "binary": "MyPluginWasmPlugin",
+  "version": "1.0.0",
+  "compatible_hyperbricks": [">=1.2.1-beta"],
+  "description": "Basic Go/WASM plugin example for HyperBricks"
+}

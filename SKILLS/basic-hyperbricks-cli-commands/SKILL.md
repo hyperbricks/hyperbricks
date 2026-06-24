@@ -500,6 +500,7 @@ Plugin commands:
 hyperbricks plugin list
 hyperbricks plugin install example@1.0.0
 hyperbricks plugin build example@1.0.0
+hyperbricks plugin build markdown-wasm@1.0.0
 hyperbricks plugin build widget@1.0.0 --module demo
 hyperbricks plugin update example
 hyperbricks plugin remove example@1.0.0
@@ -517,7 +518,8 @@ Custom module plugin pattern:
 <Binary>__<module>@<version>
 ```
 
-Do not include `.so` in `plugins.enabled` or plugin component configuration.
+Do not include `.so` or `.wasm` in `plugins.enabled` or plugin component
+configuration.
 
 ## Plugin Manifest
 
@@ -614,7 +616,7 @@ Runtime cannot find plugin:
 ```text
 directories.plugins points to ./bin/plugins or the intended directory.
 The process working directory is stable.
-The config name exactly matches the binary name without .so.
+The config name exactly matches the artifact name without `.so` or `.wasm`.
 The plugin was built for the same HyperBricks version that is running.
 ```
 

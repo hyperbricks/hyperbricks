@@ -221,6 +221,7 @@ Plugin management is available under `hyperbricks plugin`.
 hyperbricks plugin list
 hyperbricks plugin install example@1.0.0
 hyperbricks plugin build example@1.0.0
+hyperbricks plugin build markdown-wasm@1.0.0
 hyperbricks plugin update example
 hyperbricks plugin remove example@1.0.0
 ```
