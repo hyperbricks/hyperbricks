@@ -105,7 +105,7 @@ wait_for_url "http://localhost:8090/echo/query?ready=1" "local API test server" 
 
 echo "Starting PostgREST docker stack..."
 docker compose -f "${COMPOSE_FILE}" down -v >/dev/null 2>&1 || true
-docker compose -f "${COMPOSE_FILE}" up -d
+docker compose -f "${COMPOSE_FILE}" up -d postgres server
 wait_for_url "http://localhost:3000/" "PostgREST docker stack"
 
 echo "Running Docker YAML API_RENDER and API_FRAGMENT_RENDER tests..."
