@@ -67,7 +67,7 @@ Reserved runtime field names such as css and js remain properties; custom compon
 </style><script>
 console.log("reserved-name fixture");
 
-</script><meta name="generator" content="hyperbricks runtime"><title>Reserved names fixture</title>
+</script><meta name="generator" content="HyperBricks"><title>Reserved names fixture</title>
 <link rel="stylesheet" href="resources/css/base.css">
 <script src="resources/js/app.js"></script>
 </head><body></body></html>

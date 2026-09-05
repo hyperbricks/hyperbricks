@@ -162,6 +162,96 @@ hyperbricks:
 	}
 }
 
+func TestLoadHyperBricksConfigurationUsesAbsoluteModuleAndConfigPathsOnce(t *testing.T) {
+	Init_configuration()
+	resetConfigurationForTest(t)
+
+	workingDirectory := t.TempDir()
+	moduleRoot := filepath.Join(t.TempDir(), "modules", "demo")
+	configPath := filepath.Join(moduleRoot, PackageConfigFileName)
+	if err := os.MkdirAll(moduleRoot, 0755); err != nil {
+		t.Fatalf("create module directory: %v", err)
+	}
+	if err := os.WriteFile(configPath, []byte(`
+hyperbricks:
+  server:
+    port: 7070
+  directories:
+    render:
+      path:
+        base: module
+        path: rendered
+    templates:
+      path:
+        base: module
+        path: templates
+    hyperbricks:
+      path:
+        base: module
+        path: hyperbricks
+    static:
+      path:
+        base: module
+        path: static
+    resources:
+      path:
+        base: module
+        path: resources
+`), 0644); err != nil {
+		t.Fatalf("write package config: %v", err)
+	}
+	chdirForTest(t, workingDirectory)
+
+	Module = configPath
+	SetRuntimeOptions(RuntimeOptions{ModuleRoot: moduleRoot})
+	config := GetHyperBricksConfiguration()
+
+	if config.Server.Port != 7070 {
+		t.Fatalf("server.port = %d, want 7070", config.Server.Port)
+	}
+	wantDirectories := map[string]string{
+		"render":      filepath.Join(moduleRoot, "rendered"),
+		"templates":   filepath.Join(moduleRoot, "templates"),
+		"hyperbricks": filepath.Join(moduleRoot, "hyperbricks"),
+		"static":      filepath.Join(moduleRoot, "static"),
+		"resources":   filepath.Join(moduleRoot, "resources"),
+	}
+	for name, want := range wantDirectories {
+		if got := config.Directories[name]; got != want {
+			t.Fatalf("%s directory = %q, want %q", name, got, want)
+		}
+	}
+}
+
+func TestLoadHyperBricksConfigurationRateLimiterProfiles(t *testing.T) {
+	tests := []struct {
+		name        string
+		rateLimit   string
+		wantEnabled bool
+	}{
+		{name: "enabled by default", wantEnabled: true},
+		{name: "explicitly disabled", rateLimit: "  rate_limit:\n    enabled: false\n", wantEnabled: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			Init_configuration()
+			resetConfigurationForTest(t)
+
+			root := t.TempDir()
+			moduleRoot := filepath.ToSlash(filepath.Join("modules", "demo"))
+			writePackageConfig(t, root, moduleRoot, "hyperbricks:\n"+tt.rateLimit)
+			chdirForTest(t, root)
+
+			Module = filepath.Join(moduleRoot, PackageConfigFileName)
+			config := GetHyperBricksConfiguration()
+			if config.RateLimit.Enabled != tt.wantEnabled {
+				t.Fatalf("rate_limit.enabled = %t, want %t", config.RateLimit.Enabled, tt.wantEnabled)
+			}
+		})
+	}
+}
+
 func TestLoadHyperBricksConfigurationIgnoresRuntimePortWithoutOverride(t *testing.T) {
 	Init_configuration()
 	resetConfigurationForTest(t)

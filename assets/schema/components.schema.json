@@ -1430,6 +1430,304 @@
       ]
     },
     {
+      "name": "Esbuild",
+      "token": "<ESBUILD>",
+      "category": "resources",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.EsbuildConfig",
+      "description": "Native JavaScript, TypeScript, and CSS bundling with lazy cached or per-render builds.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "source",
+            "label": "Source and output",
+            "fields": [
+              "entry",
+              "outfile",
+              "binary",
+              "enclose"
+            ]
+          },
+          {
+            "key": "build",
+            "label": "Build options",
+            "fields": [
+              "minify",
+              "minify_identifiers",
+              "mangle",
+              "sourcemap",
+              "cache",
+              "fingerprint",
+              "debug",
+              "target",
+              "loader",
+              "external"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "binary",
+          "key": "binary",
+          "go_name": "Binary",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional external esbuild executable; empty uses the embedded Go API.",
+          "authoring": {
+            "label": "Binary",
+            "control": "text",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache",
+          "key": "cache",
+          "go_name": "Cache",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "True reuses valid builds; false rebuilds on every component render. Default false. Independent of page caching.",
+          "authoring": {
+            "label": "Cache",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "debug",
+          "key": "debug",
+          "go_name": "Debug",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Log effective build options, engine, and cache diagnostics.",
+          "authoring": {
+            "label": "Debug",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true,
+              "scalar_style": "literal",
+              "scalar_language": "html"
+            }
+          }
+        },
+        {
+          "path": "entry",
+          "key": "entry",
+          "go_name": "Entry",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Source filename. Use path with an explicit resources base.",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Entry",
+            "control": "text",
+            "group": "source",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "external",
+          "key": "external",
+          "go_name": "External",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "Import or asset URL patterns to leave unbundled, e.g. /static/vendor/*.",
+          "authoring": {
+            "label": "External",
+            "control": "list",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "fingerprint",
+          "key": "fingerprint",
+          "go_name": "Fingerprint",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Old assets are retained.",
+          "authoring": {
+            "label": "Fingerprint",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "loader",
+          "key": "loader",
+          "go_name": "Loader",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "Extension loader overrides, e.g. .woff2: file or .png: dataurl.",
+          "authoring": {
+            "label": "Loader",
+            "control": "key-value",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "mangle",
+          "key": "mangle",
+          "go_name": "Mangle",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Advanced: mangle JavaScript properties using .*; may break external property contracts. Default false; not allowed for CSS-only entries.",
+          "authoring": {
+            "label": "Mangle",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "minify",
+          "key": "minify",
+          "go_name": "Minify",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Minify whitespace and syntax. Default false.",
+          "authoring": {
+            "label": "Minify",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "minify_identifiers",
+          "key": "minify_identifiers",
+          "go_name": "MinifyIdentifiers",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Minify identifiers independently of whitespace/syntax. Default false. YAML also accepts the legacy minifyident alias.",
+          "authoring": {
+            "label": "Minify Identifiers",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "outfile",
+          "key": "outfile",
+          "go_name": "Outfile",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Output filename inside the configured static directory. Use an explicit static path base.",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Outfile",
+            "control": "text",
+            "group": "source",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "sourcemap",
+          "key": "sourcemap",
+          "go_name": "Sourcemap",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Emit a linked source map. Default false.",
+          "authoring": {
+            "label": "Sourcemap",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "target",
+          "key": "target",
+          "go_name": "Target",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "Optional browser/language targets, e.g. chrome110, safari16, es2020.",
+          "authoring": {
+            "label": "Target",
+            "control": "list",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Fragment",
       "token": "<FRAGMENT>",
       "category": "composite",
@@ -2291,6 +2589,180 @@
             "publish": {
               "omit_empty": true,
               "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Goja_Render",
+      "token": "<GOJA_RENDER>",
+      "category": "data",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.GojaRenderConfig",
+      "description": "Trusted server-side JavaScript with request-local state and template output.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "script",
+            "label": "Script",
+            "fields": [
+              "script",
+              "timeout",
+              "querykeys",
+              "values"
+            ]
+          },
+          {
+            "key": "template",
+            "label": "Template",
+            "description": "Template source, query proxy, value map, and enclosure fields.",
+            "collapsed": true,
+            "fields": [
+              "template",
+              "inline",
+              "enclose"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true,
+              "scalar_style": "literal",
+              "scalar_language": "html"
+            }
+          }
+        },
+        {
+          "path": "inline",
+          "key": "inline",
+          "go_name": "Inline",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Inline Go HTML template. Mutually exclusive with template.",
+          "authoring": {
+            "label": "Inline",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true,
+              "scalar_style": "literal"
+            }
+          }
+        },
+        {
+          "path": "querykeys",
+          "key": "querykeys",
+          "go_name": "AllowedQueryKeys",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "Explicitly allowed query keys. No query parameters are exposed by default.",
+          "authoring": {
+            "label": "Query keys",
+            "control": "list",
+            "group": "script",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "script",
+          "key": "script",
+          "go_name": "Script",
+          "go_type": "string",
+          "kind": "string",
+          "description": "JavaScript declaring main(input). Use the file resolver to load source from resources.",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Script",
+            "control": "text",
+            "group": "script",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "template",
+          "key": "template",
+          "go_name": "Template",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Preloaded Go template file. The script result is available as .Data.",
+          "authoring": {
+            "label": "Template",
+            "control": "template-asset",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "timeout",
+          "key": "timeout",
+          "go_name": "Timeout",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Script deadline, default 100ms. Must be positive and at most 5s.",
+          "authoring": {
+            "label": "Timeout",
+            "control": "text",
+            "group": "script",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "values",
+          "key": "values",
+          "go_name": "Values",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Plain input data, copied into each script execution. Nested components are not rendered.",
+          "value_dynamic": true,
+          "authoring": {
+            "label": "Values",
+            "control": "template-values",
+            "group": "script",
+            "publish": {
+              "omit_empty": true
             }
           }
         }

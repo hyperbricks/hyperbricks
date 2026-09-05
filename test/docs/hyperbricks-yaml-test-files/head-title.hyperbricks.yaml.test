@@ -38,5 +38,5 @@ The title of the hypermedia document
 }
 
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>Home</title>
+<!DOCTYPE html><html><head><meta name="generator" content="HyperBricks"><title>Home</title>
         </head><body></body></html> 

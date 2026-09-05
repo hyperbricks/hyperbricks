@@ -216,6 +216,30 @@ func Definitions() []Definition {
 			},
 		},
 		{
+			Name:        "Esbuild",
+			Token:       component.EsbuildConfigGetName(),
+			Category:    CategoryResource,
+			ChildModel:  ChildModelNone,
+			ConfigType:  reflect.TypeOf(component.EsbuildConfig{}),
+			Description: "Native JavaScript, TypeScript, and CSS bundling with lazy cached or per-render builds.",
+			FormGroups: []FormGroup{
+				{Key: "source", Label: "Source and output", Fields: []string{"entry", "outfile", "binary", "enclose"}},
+				{Key: "build", Label: "Build options", Fields: []string{"minify", "minify_identifiers", "mangle", "sourcemap", "cache", "fingerprint", "debug", "target", "loader", "external"}},
+			},
+		},
+		{
+			Name:        "Goja_Render",
+			Token:       component.GojaRenderConfigGetName(),
+			Category:    CategoryData,
+			ChildModel:  ChildModelNone,
+			ConfigType:  reflect.TypeOf(component.GojaRenderConfig{}),
+			Description: "Trusted server-side JavaScript with request-local state and template output.",
+			FormGroups: []FormGroup{
+				{Key: "script", Label: "Script", Fields: []string{"script", "timeout", "querykeys", "values"}},
+				templateGroup("template", "inline", "enclose"),
+			},
+		},
+		{
 			Name:        "Api_Render",
 			Token:       component.APIConfigGetName(),
 			Category:    CategoryData,

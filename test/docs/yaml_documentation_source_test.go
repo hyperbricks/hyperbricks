@@ -400,6 +400,7 @@ func yamlDocumentationRenderCase(t *testing.T, rm *render.RenderManager, testCas
 	if strings.TrimSpace(testCase.ExpectedOutput) == "" {
 		return
 	}
+	prepareYAMLProfileGoja(t, rm, scope)
 	output, renderErrors := rm.Render(typeName, scope, createMockContext())
 	if len(renderErrors) > 0 {
 		t.Fatalf("render %s returned errors: %v", testCase.Scope, renderErrors)

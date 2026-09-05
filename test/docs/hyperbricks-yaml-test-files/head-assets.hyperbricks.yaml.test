@@ -77,7 +77,7 @@ HEAD keeps reserved css/js fields as properties while non-colliding named childr
 </style><script>
 console.log("yaml head fixture");
 
-</script><meta name="generator" content="hyperbricks runtime"><link rel="icon" type="image/x-icon" href="resources/favicon.svg">
+</script><meta name="generator" content="HyperBricks"><link rel="icon" type="image/x-icon" href="resources/favicon.svg">
 <title>YAML Head Fixture</title>
 <meta name="description" content="Head properties stay properties.">
 <link rel="stylesheet" href="resources/css/base.css">

@@ -50,6 +50,7 @@ hyperbricks:
     metrics_watch_interval: 10s
 
   rate_limit:
+    enabled: true
     requests_per_second: 100
     burst: 500
 

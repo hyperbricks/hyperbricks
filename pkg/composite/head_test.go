@@ -33,7 +33,7 @@ func TestHeadRendererAppendsGeneratedItemsToYAMLOrder(t *testing.T) {
 	}
 	assertContainsInOrder(t, output,
 		"<style>",
-		`<meta name="generator" content="hyperbricks runtime">`,
+		`<meta name="generator" content="HyperBricks">`,
 		"<title>Generated title</title>",
 	)
 
@@ -79,7 +79,7 @@ func TestHeadRendererAllowsNamedGeneratedItemsToBeOverridden(t *testing.T) {
 		`<meta name="custom" content="yes">`,
 		`<meta name="generator" content="manual">`,
 	)
-	if strings.Contains(output, "hyperbricks runtime") {
+	if strings.Contains(output, `<meta name="generator" content="HyperBricks">`) {
 		t.Fatalf("default generator rendered despite explicit generator item:\n%s", output)
 	}
 	if strings.Contains(output, "Generated title should not render") {

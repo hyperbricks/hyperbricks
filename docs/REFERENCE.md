@@ -1,7 +1,7 @@
 **Licence:** MIT
 **Version:** v1.2.2-beta
 
-**Build time:** 2026-06-24 05:55 UTC
+**Build time:** 2026-09-05 19:16 UTC
 
 
 # HyperBricks Component Reference
@@ -412,7 +412,7 @@ Expected output:
 </style><script>
 console.log("yaml head fixture");
 
-</script><meta name="generator" content="hyperbricks runtime"><link rel="icon" type="image/x-icon" href="resources/favicon.svg">
+</script><meta name="generator" content="HyperBricks"><link rel="icon" type="image/x-icon" href="resources/favicon.svg">
 <title>YAML Head Fixture</title>
 <meta name="description" content="Head properties stay properties.">
 <link rel="stylesheet" href="resources/css/base.css">
@@ -523,7 +523,7 @@ Expected output:
     color:green;
 }
 
-</style><meta name="generator" content="hyperbricks runtime"></head><body><p>SOME CONTENT</p></body></html>
+</style><meta name="generator" content="HyperBricks"></head><body><p>SOME CONTENT</p></body></html>
 ```
 
 
@@ -612,6 +612,48 @@ api_render:
   - type: api_render
   - endpoint: https://example.com/api
   - method: GET
+```
+
+
+### `<GOJA_RENDER>`
+
+
+Trusted server-side JavaScript with request-local state and template output.
+
+| Field | Kind | Required | Description |
+| --- | --- | --- | --- |
+| `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
+| `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
+| `inline` | `string` | no | Inline Go HTML template. Mutually exclusive with template. |
+| `querykeys` | `list` | no | Explicitly allowed query keys. No query parameters are exposed by default. |
+| `script` | `string` | yes | JavaScript declaring main(input). Use the file resolver to load source from resources. |
+| `template` | `string` | no | Preloaded Go template file. The script result is available as .Data. |
+| `timeout` | `string` | no | Script deadline, default 100ms. Must be positive and at most 5s. |
+| `values` | `map` | no | Plain input data, copied into each script execution. Nested components are not rendered. |
+
+#### Example
+
+Fixture: `goja-render-@doc.hyperbricks.yaml.test`
+
+Run trusted server-side JavaScript in a fresh runtime per request. The returned object is available as .Data in the Go HTML template. Use the existing file resolver under script to load source from resources; see GOJA_RENDER.md for the file-based example and execution limits.
+
+
+```yaml
+greeting:
+  - type: goja_render
+  - script: |
+      function main(input) {
+        return { message: input.values.message };
+      }
+  - values:
+      message: Hello from the server
+  - inline: '<p>{{.Data.message}}</p>'
+```
+
+Expected output:
+
+```html
+<p>Hello from the server</p>
 ```
 
 
@@ -781,6 +823,50 @@ Expected output:
       background-color: red;
   }
 </style>
+```
+
+
+### `<ESBUILD>`
+
+
+Native JavaScript, TypeScript, and CSS bundling with lazy cached or per-render builds.
+
+| Field | Kind | Required | Description |
+| --- | --- | --- | --- |
+| `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
+| `binary` | `string` | no | Optional external esbuild executable; empty uses the embedded Go API. |
+| `cache` | `bool` | no | True reuses valid builds; false rebuilds on every component render. Default false. Independent of page caching. |
+| `debug` | `bool` | no | Log effective build options, engine, and cache diagnostics. |
+| `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
+| `entry` | `string` | yes | Source filename. Use path with an explicit resources base. |
+| `external` | `list` | no | Import or asset URL patterns to leave unbundled, e.g. /static/vendor/*. |
+| `fingerprint` | `bool` | no | Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Old assets are retained. |
+| `loader` | `map` | no | Extension loader overrides, e.g. .woff2: file or .png: dataurl. |
+| `mangle` | `bool` | no | Advanced: mangle JavaScript properties using .*; may break external property contracts. Default false; not allowed for CSS-only entries. |
+| `minify` | `bool` | no | Minify whitespace and syntax. Default false. |
+| `minify_identifiers` | `bool` | no | Minify identifiers independently of whitespace/syntax. Default false. YAML also accepts the legacy minifyident alias. |
+| `outfile` | `string` | yes | Output filename inside the configured static directory. Use an explicit static path base. |
+| `sourcemap` | `bool` | no | Emit a linked source map. Default false. |
+| `target` | `list` | no | Optional browser/language targets, e.g. chrome110, safari16, es2020. |
+
+#### Example
+
+Fixture: `esbuild-@doc.hyperbricks.yaml.test`
+
+Build browser JavaScript, TypeScript, or CSS with embedded esbuild. Use path, not file, because the engine needs filenames rather than file contents. With cache true a render restores a validated persistent build or compiles, and later renders reuse valid output. With cache false every component render builds. Fingerprint true emits app.<hash>.js inside the configured directory and retains old assets. This example verifies configuration materialization; the esbuild-demo module and component integration tests exercise compilation and publication. See ESBUILD.md for CSS, migration, watching, and the complete option list.
+
+
+```yaml
+scripts:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: js/main.js}
+  - outfile:
+      path: {base: static, path: js/app.js}
+  - minify: true
+  - cache: true
+  - fingerprint: true
+  - enclose: '<script src="|" defer></script>'
 ```
 
 

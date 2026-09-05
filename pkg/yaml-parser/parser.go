@@ -608,6 +608,8 @@ func reservedRuntimeChildName(parentType string, childName string) bool {
 var canonicalTypeTokens = map[string]string{
 	"api_fragment_render": "<API_FRAGMENT_RENDER>",
 	"api_render":          "<API_RENDER>",
+	"goja_render":         "<GOJA_RENDER>",
+	"esbuild":             "<ESBUILD>",
 	"css":                 "<CSS>",
 	"fragment":            "<FRAGMENT>",
 	"head":                "<HEAD>",
@@ -920,9 +922,16 @@ func resolveNode(node *Node, roots map[string]*Node, resolved map[string]*Node, 
 		if err != nil {
 			return nil, nodeErrorFromNode(node, err.Error())
 		}
-		out = mergeNodes(base, nodeWithoutInherit(node))
+		override := nodeWithoutInherit(node)
+		if err := normalizeEsbuildAlias(override, base.Type); err != nil {
+			return nil, err
+		}
+		out = mergeNodes(base, override)
 	} else {
 		out = cloneNode(node)
+		if err := normalizeEsbuildAlias(out, ""); err != nil {
+			return nil, err
+		}
 	}
 
 	for index, child := range out.Children {
@@ -944,6 +953,25 @@ func resolveNode(node *Node, roots map[string]*Node, resolved map[string]*Node, 
 		resolved[node.Name] = cloneNode(out)
 	}
 	return out, nil
+}
+
+// Normalize before merging so either spelling can override an inherited value.
+func normalizeEsbuildAlias(node *Node, inheritedType string) error {
+	typeName := node.Type
+	if typeName == "" {
+		typeName = inheritedType
+	}
+	if formatType(typeName) != "<ESBUILD>" {
+		return nil
+	}
+	if value, ok := node.Props["minifyident"]; ok {
+		if _, duplicate := node.Props["minify_identifiers"]; duplicate {
+			return nodeErrorFromNode(node, "use only one of minifyident and minify_identifiers")
+		}
+		delete(node.Props, "minifyident")
+		node.Props["minify_identifiers"] = value
+	}
+	return nil
 }
 
 func resolveNodeValue(value interface{}, roots map[string]*Node, resolved map[string]*Node, resolving map[string]bool) (interface{}, error) {

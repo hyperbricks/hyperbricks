@@ -26,9 +26,9 @@ func TestDefaultInitAssetsWriteYAMLHelloWorld(t *testing.T) {
 		}
 	})
 
-	createModuleDirectories("demo")
-	createHbConfig("demo")
-	extractEmbeddedFiles("demo")
+	if err := initializeModule("demo"); err != nil {
+		t.Fatalf("initialize module: %v", err)
+	}
 
 	packagePath := filepath.Join("modules", "demo", "package.hyperbricks.yaml")
 	packageContent, err := os.ReadFile(packagePath)
@@ -218,4 +218,225 @@ func TestDefaultInitAssetsWriteYAMLHelloWorld(t *testing.T) {
 		t.Fatalf("status fragment response = %#v", response)
 	}
 
+}
+
+func TestInitializeModulePreservesExistingFilesAndRepairsMissingScaffold(t *testing.T) {
+	tmpDir := t.TempDir()
+	prevWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("chdir temp dir: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(prevWD); err != nil {
+			t.Fatalf("restore working directory: %v", err)
+		}
+	})
+
+	if err := initializeModule("demo"); err != nil {
+		t.Fatalf("first initialize module: %v", err)
+	}
+
+	configPath := filepath.Join("modules", "demo", PackageConfigFileName)
+	yamlPath := filepath.Join("modules", "demo", "hyperbricks", "hello-world.hyperbricks.yaml")
+	missingTemplatePath := filepath.Join("modules", "demo", "templates", "hello-status.html")
+	missingDirectoryPath := filepath.Join("modules", "demo", "static")
+	customConfig := []byte("custom: preserved\n")
+	customYAML := []byte("custom_page:\n  - type: text\n  - value: preserved\n")
+	if err := os.WriteFile(configPath, customConfig, 0644); err != nil {
+		t.Fatalf("replace config fixture: %v", err)
+	}
+	if err := os.WriteFile(yamlPath, customYAML, 0644); err != nil {
+		t.Fatalf("replace YAML fixture: %v", err)
+	}
+	if err := os.Remove(missingTemplatePath); err != nil {
+		t.Fatalf("remove template fixture: %v", err)
+	}
+	if err := os.Remove(missingDirectoryPath); err != nil {
+		t.Fatalf("remove directory fixture: %v", err)
+	}
+
+	if err := initializeModule("demo"); err != nil {
+		t.Fatalf("second initialize module: %v", err)
+	}
+
+	if got, err := os.ReadFile(configPath); err != nil || !reflect.DeepEqual(got, customConfig) {
+		t.Fatalf("config after second init = %q, %v; want preserved content", got, err)
+	}
+	if got, err := os.ReadFile(yamlPath); err != nil || !reflect.DeepEqual(got, customYAML) {
+		t.Fatalf("YAML after second init = %q, %v; want preserved content", got, err)
+	}
+	if _, err := os.Stat(missingTemplatePath); err != nil {
+		t.Fatalf("missing template was not restored: %v", err)
+	}
+	if info, err := os.Stat(missingDirectoryPath); err != nil || !info.IsDir() {
+		t.Fatalf("missing directory was not restored: info=%v err=%v", info, err)
+	}
+}
+
+func TestInitializeModulePreflightsConflictsBeforeWriting(t *testing.T) {
+	tmpDir := t.TempDir()
+	prevWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("chdir temp dir: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(prevWD); err != nil {
+			t.Fatalf("restore working directory: %v", err)
+		}
+	})
+
+	moduleDir := filepath.Join("modules", "demo")
+	if err := os.MkdirAll(moduleDir, 0755); err != nil {
+		t.Fatalf("create module fixture: %v", err)
+	}
+	conflictPath := filepath.Join(moduleDir, "templates")
+	if err := os.WriteFile(conflictPath, []byte("not a directory"), 0644); err != nil {
+		t.Fatalf("create conflicting file: %v", err)
+	}
+
+	err = initializeModule("demo")
+	if err == nil || !strings.Contains(err.Error(), "not a directory") {
+		t.Fatalf("initialize module error = %v, want directory conflict", err)
+	}
+	for _, path := range []string{
+		filepath.Join(moduleDir, PackageConfigFileName),
+		filepath.Join(moduleDir, "rendered"),
+		filepath.Join("bin", "plugins"),
+	} {
+		if _, statErr := os.Stat(path); !os.IsNotExist(statErr) {
+			t.Fatalf("preflight created %s before reporting conflict: %v", path, statErr)
+		}
+	}
+}
+
+func TestInitializeModulePreflightsFileConflictsBeforeWriting(t *testing.T) {
+	tmpDir := t.TempDir()
+	prevWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("chdir temp dir: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(prevWD); err != nil {
+			t.Fatalf("restore working directory: %v", err)
+		}
+	})
+
+	moduleDir := filepath.Join("modules", "demo")
+	configPath := filepath.Join(moduleDir, PackageConfigFileName)
+	if err := os.MkdirAll(configPath, 0755); err != nil {
+		t.Fatalf("create conflicting config directory: %v", err)
+	}
+
+	err = initializeModule("demo")
+	if err == nil || !strings.Contains(err.Error(), "not a regular file") {
+		t.Fatalf("initialize module error = %v, want file conflict", err)
+	}
+	for _, path := range []string{
+		filepath.Join(moduleDir, "rendered"),
+		filepath.Join("bin", "plugins"),
+	} {
+		if _, statErr := os.Stat(path); !os.IsNotExist(statErr) {
+			t.Fatalf("preflight created %s before reporting conflict: %v", path, statErr)
+		}
+	}
+}
+
+func TestValidateInitModuleNameRejectsPathsAndEmptyValues(t *testing.T) {
+	invalidNames := []string{
+		"",
+		"   ",
+		".",
+		"..",
+		filepath.Join("..", "outside"),
+		filepath.Join("nested", "module"),
+		filepath.Join(t.TempDir(), "absolute"),
+	}
+	for _, name := range invalidNames {
+		if _, err := validateInitModuleName(name); err == nil {
+			t.Fatalf("expected module name %q to be rejected", name)
+		}
+	}
+
+	if got, err := validateInitModuleName("  demo  "); err != nil || got != "demo" {
+		t.Fatalf("validated module name = %q, %v; want demo", got, err)
+	}
+}
+
+func TestInitCommandUsesDefaultModuleAndReturnsWithoutProcessExit(t *testing.T) {
+	tmpDir := t.TempDir()
+	prevWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("chdir temp dir: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(prevWD); err != nil {
+			t.Fatalf("restore working directory: %v", err)
+		}
+	})
+
+	previousModule, previousExit, previousExitCode := module, Exit, ExitCode
+	t.Cleanup(func() {
+		module, Exit, ExitCode = previousModule, previousExit, previousExitCode
+	})
+	Exit = false
+	ExitCode = 0
+
+	command := NewInitCommand()
+	command.SetArgs(nil)
+	if err := command.Execute(); err != nil {
+		t.Fatalf("execute init command: %v", err)
+	}
+	if !Exit || ExitCode != 0 {
+		t.Fatalf("exit state = (%t, %d), want successful command exit", Exit, ExitCode)
+	}
+	if _, err := os.Stat(filepath.Join("modules", "default", PackageConfigFileName)); err != nil {
+		t.Fatalf("default module config was not created: %v", err)
+	}
+}
+
+func TestInitCommandRejectsInvalidModuleWithFailureStatus(t *testing.T) {
+	tmpDir := t.TempDir()
+	prevWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("chdir temp dir: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(prevWD); err != nil {
+			t.Fatalf("restore working directory: %v", err)
+		}
+	})
+
+	previousModule, previousExit, previousExitCode := module, Exit, ExitCode
+	t.Cleanup(func() {
+		module, Exit, ExitCode = previousModule, previousExit, previousExitCode
+	})
+	Exit = false
+	ExitCode = 0
+
+	command := NewInitCommand()
+	command.SetArgs([]string{"--module", "../outside"})
+	if err := command.Execute(); err == nil {
+		t.Fatal("execute init command returned nil, want invalid module error")
+	}
+	if !Exit || ExitCode != 1 {
+		t.Fatalf("exit state = (%t, %d), want failed command exit", Exit, ExitCode)
+	}
+	if _, err := os.Stat(filepath.Join(tmpDir, "outside")); !os.IsNotExist(err) {
+		t.Fatalf("invalid module selection created an outside path: %v", err)
+	}
 }

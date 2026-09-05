@@ -8,7 +8,7 @@ hypermedia:
       - type: head
       - html_20:
           - type: html
-          - value: <meta name="generator" content="hyperbricks runtime">
+          - value: <meta name="generator" content="HyperBricks">
       - html_999:
           - type: html
           - value: <!-- 999 overrides default generator meta tag -->
@@ -55,7 +55,7 @@ Builds header content. See <HEADER> for details
     },
     "html_20": {
       "@type": "<HTML>",
-      "value": "<meta name=\"generator\" content=\"hyperbricks runtime\">"
+      "value": "<meta name=\"generator\" content=\"HyperBricks\">"
     },
     "html_999": {
       "@type": "<HTML>",
@@ -87,13 +87,13 @@ Builds header content. See <HEADER> for details
 }
 
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><!-- 999 overrides default generator meta tag --><style>
+<!DOCTYPE html><html><head><meta name="generator" content="HyperBricks"><!-- 999 overrides default generator meta tag --><style>
 
 body {
   padding:10px;
 }
     
-</style><meta name="generator" content="hyperbricks runtime"><meta name="a" content="b">
+</style><meta name="generator" content="HyperBricks"><meta name="a" content="b">
 <meta name="b" content="c">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="xxxx">

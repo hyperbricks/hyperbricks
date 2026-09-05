@@ -39,10 +39,11 @@ hyperbricks <command> --help
 
 ## Init
 
-Create a module:
+Create a named module, or omit `--module` to use `default`:
 
 ```bash
 hyperbricks init -m demo
+hyperbricks init
 ```
 
 This creates:
@@ -61,13 +62,91 @@ The generated module is YAML based and includes a working hello-world route,
 template file usage, inline templates, imports, inheritance, resource loading,
 and a fragment example.
 
+`init` creates missing scaffold directories and files and preserves existing
+files, including `package.hyperbricks.yaml`. `--module` accepts a bare name below
+`./modules`; use direct `start` when selecting a module by directory path.
+
 ## Start
 
-Start a module:
+Start a module by its name below `./modules`:
 
 ```bash
 hyperbricks start -m demo
 ```
+
+For direct startup, `--module` also accepts relative and absolute directory
+paths:
+
+```bash
+hyperbricks start -m ./modules/demo
+hyperbricks start -m ../other-site/modules/demo
+hyperbricks start -m /srv/sites/demo
+```
+
+### Module selection
+
+For these examples, assume the command is invoked from `/work/site`:
+
+| `--module` value | Selection | Resolved directory |
+| --- | --- | --- |
+| `demo` | Bare module name | `/work/site/modules/demo` |
+| `modules/demo` | Relative directory path | `/work/site/modules/demo` |
+| `./modules/demo` | Explicit relative directory path | `/work/site/modules/demo` |
+| `../other/modules/demo` | Parent-relative directory path | `/work/other/modules/demo` |
+| `/srv/sites/demo` | Absolute directory path | `/srv/sites/demo` |
+| `.` | Current directory is the module | `/work/site` |
+| Flag omitted | Default module name | `/work/site/modules/default` |
+
+A value is treated as a path when it is absolute, contains a platform directory
+separator, or is exactly `.` or `..`. Classification happens before the value is
+cleaned, so `./demo` selects `/work/site/demo`, while the bare name `demo`
+selects `/work/site/modules/demo`.
+
+Bare names always retain the `modules/<name>` meaning. HyperBricks does not
+change the meaning by checking whether a same-named directory exists elsewhere.
+Quote paths containing spaces:
+
+```bash
+hyperbricks start -m "./modules/my module"
+```
+
+Relative paths are resolved once from the directory where the command is
+invoked. Selecting a module does not change the process working directory. In
+runtime path values, `root` remains the invocation directory, `module` is the
+selected module directory, and `module_root` is its parent.
+
+The selected directory must contain `package.hyperbricks.yaml`, unless
+`--config` selects another package configuration inside it. When the file is
+missing, HyperBricks reports the resolved path and exits with a non-zero status;
+it does not fall back to another module.
+
+Path selection applies only to direct `start`. Deploy startup, build, static,
+init, and plugin commands retain their existing module-selection contracts.
+Shell completion suggests bare names from `./modules` while retaining normal
+filesystem completion for paths.
+
+Because the working directory does not change, bare package directory settings
+such as `plugins: ./bin/plugins` remain relative to the invocation directory.
+For module-owned directories, prefer an explicit module base:
+
+```yaml
+hyperbricks:
+  directories:
+    resources:
+      path: {base: module, path: resources}
+    templates:
+      path: {base: module, path: templates}
+    static:
+      path: {base: module, path: static}
+    hyperbricks:
+      path: {base: module, path: hyperbricks}
+    render:
+      path: {base: module, path: rendered}
+```
+
+> Note: `/static/somefile.ext` serves `somefile.ext` from the configured
+> `hyperbricks.directories.static` directory, regardless of its name or `base`.
+> A custom path does not require an additional directory named `static`.
 
 Choose a port:
 
@@ -80,6 +159,18 @@ Start in production mode:
 ```bash
 hyperbricks start -m demo --production
 ```
+
+Start the same module with an alternate package configuration stored inside
+that module:
+
+```bash
+hyperbricks start -m demo --config package.raw.hyperbricks.yaml
+hyperbricks start -m ./modules/demo --config profiles/development.hyperbricks.yaml
+```
+
+`--config` is relative to the selected module directory, must stay inside that
+directory, and cannot be combined with `--deploy`. Absolute paths and paths that
+escape through `..` are rejected.
 
 Enable debug logging:
 

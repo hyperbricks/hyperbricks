@@ -4,6 +4,7 @@ Live mode has two separate concerns:
 
 - `live.cache` controls rendered output reuse.
 - `server.*` controls HTTP connection behavior.
+- `rate_limit.*` controls the process-level request limiter.
 
 Those settings solve different problems. Cache settings decide whether a route
 can reuse rendered content. Server settings decide how long clients may hold
@@ -47,6 +48,23 @@ When omitted, HyperBricks uses these defaults:
 
 These defaults apply even when the `server` block does not explicitly list the
 settings.
+
+## Request Limiter
+
+The request limiter is enabled by default and uses a token bucket. It is
+independent from output caching and runs before route rendering.
+
+```yaml
+hyperbricks:
+  rate_limit:
+    enabled: true
+    requests_per_second: 100
+    burst: 500
+```
+
+Set `enabled: false` when a trusted reverse proxy owns rate limiting, or for a
+controlled renderer benchmark. Setting `requests_per_second` to zero is not a
+disable switch; an enabled zero-rate limiter rejects requests.
 
 ## Output Cache
 
@@ -171,6 +189,8 @@ default.
 Use `live.cache` for rendered output reuse.
 
 Use `server.*` for connection safety and transport behavior.
+
+Use `rate_limit.*` for process-level admission control.
 
 Set `nocache: true` on the routed component when the response depends on the
 current request.

@@ -123,7 +123,7 @@ func initialisation(ctx context.Context) {
 	basic_initialisation()
 
 	hbConfig := getHyperBricksConfiguration()
-	limiter := rate.NewLimiter(rate.Limit(hbConfig.RateLimit.RequestsPerSecond), hbConfig.RateLimit.Burst)
+	limiter := newRequestRateLimiter(hbConfig.RateLimit)
 
 	// Initialize Static File Server with Rate Limiting
 	initStaticFileServer(limiter)
@@ -131,6 +131,13 @@ func initialisation(ctx context.Context) {
 	// Now everything is ready, start the server
 	StartServer(ctx)
 
+}
+
+func newRequestRateLimiter(config shared.RateLimitConfig) *rate.Limiter {
+	if !config.Enabled {
+		return nil
+	}
+	return rate.NewLimiter(rate.Limit(config.RequestsPerSecond), config.Burst)
 }
 
 // minimal initialisation (also for static rendering)

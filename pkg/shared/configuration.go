@@ -178,8 +178,9 @@ type ServerConfig struct {
 }
 
 type RateLimitConfig struct {
-	RequestsPerSecond int `mapstructure:"requests_per_second"`
-	Burst             int `mapstructure:"burst"`
+	Enabled           bool `mapstructure:"enabled"`
+	RequestsPerSecond int  `mapstructure:"requests_per_second"`
+	Burst             int  `mapstructure:"burst"`
 }
 
 type DeployConfig struct {
@@ -243,7 +244,10 @@ func loadHyperBricksConfiguration() *Config {
 		GetLogger().Errorf("Failed to get working directory", "error", err)
 	}
 
-	configFilePath := filepath.Join(dir, Module)
+	configFilePath := Module
+	if !filepath.IsAbs(configFilePath) {
+		configFilePath = filepath.Join(dir, configFilePath)
+	}
 
 	runtimeOptions := GetRuntimeOptions()
 	moduleDir := runtimeModuleRoot(runtimeOptions)
@@ -292,6 +296,7 @@ func loadHyperBricksConfiguration() *Config {
 		},
 		RateLimit: RateLimitConfig{
 			// Default Low traffic (~50-500 daily visitors).
+			Enabled:           true,
 			Burst:             10,
 			RequestsPerSecond: 5,
 		},

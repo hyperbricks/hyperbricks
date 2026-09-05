@@ -18,9 +18,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/renderplan"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/shared/apiutil"
 	"github.com/mitchellh/mapstructure"
@@ -633,29 +633,6 @@ func cloneRequestBody(r *http.Request) ([]byte, error) {
 	return body, nil
 }
 
-func routeNeedsAPIRequestContext(node interface{}) bool {
-	switch typed := node.(type) {
-	case map[string]interface{}:
-		if configType, ok := typed["@type"].(string); ok {
-			if configType == component.APIConfigGetName() || configType == composite.ApiFragmentRenderConfigGetName() {
-				return true
-			}
-		}
-		for _, value := range typed {
-			if routeNeedsAPIRequestContext(value) {
-				return true
-			}
-		}
-	case []interface{}:
-		for _, value := range typed {
-			if routeNeedsAPIRequestContext(value) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 func resolveRoute(route string, routing shared.RoutingConfig) (string, bool) {
 	routing = normalizeRoutingConfig(routing)
 	route = strings.Trim(route, "/")
@@ -786,7 +763,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	nocache := false
 	status := http.StatusOK
 
-	_config, found := getConfig(route)
+	_config, routePlan, found := getConfigAndPlan(route)
 	headers := map[string]string(nil)
 	cookies := []string(nil)
 
@@ -804,10 +781,11 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 				ErrorCount:  len(sourceErrors),
 			}
 		}
-		__config, _found := getConfig("404")
+		__config, fallbackPlan, _found := getConfigAndPlan("404")
 		if _found {
 			logging.GetLogger().Info("Redirecting to 404", " from ", route)
 			_config = __config
+			routePlan = fallbackPlan
 			status = http.StatusNotFound
 		} else {
 			if route == "favicon.ico" {
@@ -848,23 +826,28 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 		contentType = headerContentType(headers)
 	}
 
-	configCopy := make(map[string]interface{})
-	for key, value := range _config {
-		configCopy[key] = value
-	}
-
-	// TO DO: Clean this  up if possible use context (see ctx definition)
-	if configCopy["@type"].(string) == composite.FragmentConfigGetName() {
-		configCopy["hx_response"] = w
-	}
-
-	if configCopy["@type"].(string) == composite.ApiFragmentRenderConfigGetName() {
-		configCopy["hx_response"] = w
+	configCopy := _config
+	if routePlan == nil {
+		// Legacy renderers may receive request-owned fields. Compiled plans
+		// own their configuration and only read route metadata below.
+		configCopy = make(map[string]interface{}, len(_config))
+		for key, value := range _config {
+			configCopy[key] = value
+		}
+		configType := configCopy["@type"].(string)
+		if configType == composite.FragmentConfigGetName() || configType == composite.ApiFragmentRenderConfigGetName() {
+			configCopy["hx_response"] = w
+		}
 	}
 
 	// ============ START OF API CONTEXT AND TOKEN CAPTURE ============
 	var requestBodyReader io.ReadCloser = http.NoBody
-	needsAPIRequestContext := routeNeedsAPIRequestContext(configCopy)
+	var needsAPIRequestContext bool
+	if routePlan != nil {
+		needsAPIRequestContext = routePlan.NeedsAPIRequestContext()
+	} else {
+		needsAPIRequestContext = renderplan.NeedsAPIRequestContext(configCopy)
+	}
 	if needsAPIRequestContext {
 		requestBodyBytes, err := cloneRequestBody(r)
 		if err != nil {
@@ -892,18 +875,17 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	ctx = context.WithValue(ctx, shared.HandledResponseCaptureKey, handledCapture)
 	// ============ END OF API CONTEXT AND TOKEN CAPTURE ============
 
-	var htmlContent strings.Builder
-
-	renderOutput, renderErrors := rm.Render(configCopy["@type"].(string), configCopy, ctx)
+	var renderOutput string
+	var renderErrors []error
+	if routePlan != nil {
+		renderOutput, renderErrors = routePlan.Render(ctx)
+	} else {
+		renderOutput, renderErrors = rm.Render(configCopy["@type"].(string), configCopy, ctx)
+	}
 	renderErrors = append(renderErrors, getRouteSourceErrors(route)...)
 
-	htmlContent.WriteString(renderOutput)
-	var output strings.Builder
-
 	if resolveBeautify(configCopy, hbConfig.Server.Beautify) {
-		output.WriteString(gohtml.Format(htmlContent.String()))
-	} else {
-		output.WriteString(htmlContent.String())
+		renderOutput = gohtml.Format(renderOutput)
 	}
 
 	if hbConfig.Mode != shared.LIVE_MODE {
@@ -915,7 +897,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	}
 
 	return RenderContent{
-		Content:     output.String(),
+		Content:     renderOutput,
 		NoCache:     nocache,
 		ContentType: contentType,
 		Status:      status,

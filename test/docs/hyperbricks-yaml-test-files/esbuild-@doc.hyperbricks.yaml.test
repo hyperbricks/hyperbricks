@@ -1,0 +1,23 @@
+==== hyperbricks yaml {!{scripts}} ====
+scripts:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: js/main.js}
+  - outfile:
+      path: {base: static, path: js/app.js}
+  - minify: true
+  - cache: true
+  - fingerprint: true
+  - enclose: '<script src="|" defer></script>'
+==== explainer ====
+Build browser JavaScript, TypeScript, or CSS with embedded esbuild. Use path, not file, because the engine needs filenames rather than file contents. With cache true a render restores a validated persistent build or compiles, and later renders reuse valid output. With cache false every component render builds. Fingerprint true emits app.<hash>.js inside the configured directory and retains old assets. This example verifies configuration materialization; the esbuild-demo module and component integration tests exercise compilation and publication. See ESBUILD.md for CSS, migration, watching, and the complete option list.
+==== expected materialized json ====
+{
+  "@type": "<ESBUILD>",
+  "entry": "resources/js/main.js",
+  "outfile": "static/js/app.js",
+  "minify": "true",
+  "cache": "true",
+  "fingerprint": "true",
+  "enclose": "<script src=\"|\" defer></script>"
+}

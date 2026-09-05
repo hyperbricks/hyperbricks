@@ -128,6 +128,7 @@ func TestYAMLProfileReadableCases(t *testing.T) {
 			if !ok || typeName == "" {
 				t.Fatalf("%s @type = %#v, want runtime type string", testCase.Scope, scope["@type"])
 			}
+			prepareYAMLProfileGoja(t, rm, scope)
 			output, renderErrors := rm.Render(typeName, scope, createMockContext())
 			if len(renderErrors) > 0 {
 				t.Fatalf("render %s returned errors: %v", testCase.Scope, renderErrors)
@@ -518,6 +519,9 @@ func runtimeConfigProjection(t *testing.T, rm *render.RenderManager, testCase ya
 
 func yamlProfileOptionsForCase(t *testing.T, path string) yamlparser.Options {
 	t.Helper()
+	if filepath.Base(path) == "esbuild-@doc.hyperbricks.yaml.test" {
+		return yamlparser.Options{Paths: yamlparser.PathMarkers{Resources: "resources", Static: "static"}}
+	}
 	if filepath.Base(path) != "pipeline-pre-parse-post.hyperbricks.yaml.test" {
 		return yamlparser.Options{
 			Paths: yamlparser.PathMarkers{
@@ -545,7 +549,7 @@ func yamlProfileOptionsForCase(t *testing.T, path string) yamlparser.Options {
 	}
 }
 
-func newYAMLProfileRenderManager(t *testing.T) *render.RenderManager {
+func newYAMLProfileRenderManager(t testing.TB) *render.RenderManager {
 	t.Helper()
 	shared.Init_configuration()
 	conf := shared.GetHyperBricksConfiguration()
@@ -562,6 +566,7 @@ func newYAMLProfileRenderManager(t *testing.T) *render.RenderManager {
 		return content, exists
 	}
 	rm.RegisterComponent(component.TextConfigGetName(), &component.TextRenderer{}, reflect.TypeOf(component.TextConfig{}))
+	rm.RegisterComponent(component.GojaRenderConfigGetName(), &component.GojaRenderer{}, reflect.TypeOf(component.GojaRenderConfig{}))
 	rm.RegisterComponent(component.HTMLConfigGetName(), &component.HTMLRenderer{}, reflect.TypeOf(component.HTMLConfig{}))
 	rm.RegisterComponent(component.CssConfigGetName(), &component.CssRenderer{}, reflect.TypeOf(component.CssConfig{}))
 	rm.RegisterComponent(component.StyleConfigGetName(), &component.StyleRenderer{}, reflect.TypeOf(component.StyleConfig{}))

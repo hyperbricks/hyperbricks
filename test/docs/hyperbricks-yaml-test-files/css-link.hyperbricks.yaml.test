@@ -46,4 +46,4 @@ Use link for a link tag to a css file.
 }
 
 ==== expected output ====
-<!DOCTYPE html><html><head><link rel="stylesheet" href="styles.css"><meta name="generator" content="hyperbricks runtime"></head><body></body></html>
+<!DOCTYPE html><html><head><link rel="stylesheet" href="styles.css"><meta name="generator" content="HyperBricks"></head><body></body></html>

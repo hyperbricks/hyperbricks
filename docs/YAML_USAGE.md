@@ -559,6 +559,22 @@ card_list:
 
 Use YAML block scalars when the template itself spans multiple lines.
 
+Templates expose allowlisted request query parameters through `.Params`
+independently of `values`. Omit `querykeys` to use the default allowlist, use an
+empty list to expose none, or list the accepted keys explicitly. A key with one
+value is a string; repeated values are a list.
+
+```yaml
+search_result:
+  - type: template
+  - querykeys: [q]
+  - inline: '<p>Search: {{.Params.q}}</p>'
+```
+
+For a request such as `?q=hypermedia`, this renders the query value without an
+otherwise unnecessary `values: {}` field. The separate `queryparams` field is
+reserved and does not currently add values to `.Params`.
+
 ## Unsupported Source Features
 
 The HyperBricks YAML source profile does not support YAML anchors or aliases.
@@ -634,6 +650,10 @@ hyperbricks:
     write_timeout: 10s
     idle_timeout: 20s
     keep_alives_enabled: true
+  rate_limit:
+    enabled: true
+    requests_per_second: 100
+    burst: 500
   directories:
     render:
       path:
@@ -668,7 +688,8 @@ Common `hyperbricks` package fields:
 | `server.keep_alives_enabled` | Enable or disable HTTP keep-alive connections. |
 | `server.routing` | Clean URL and extension routing settings. See [Routing](ROUTING.md). |
 | `server.runtime_gateway` | Runtime host gateway settings. See [Runtime Gateway](RUNTIME_GATEWAY.md). |
-| `rate_limit.requests_per_second`, `rate_limit.burst` | Basic request rate limit settings. |
+| `rate_limit.enabled` | Enable the request rate limiter. Defaults to `true`; set it to `false` only when another layer owns rate limiting or for controlled measurements. |
+| `rate_limit.requests_per_second`, `rate_limit.burst` | Token-bucket request rate and burst settings used when the limiter is enabled. |
 | `plugins.enabled` | Plugin config names to preload, without `.so`. See [Plugins](PLUGINS.md). |
 | `plugins.config` | Optional plugin-specific config map. |
 | `directories` | Module directory locations. Resolver path objects are supported here. |
@@ -695,6 +716,10 @@ Directory roles:
 | `resources` | Source assets or data that can be read through `file` and path resolvers. |
 | `static` | Public files served directly by the runtime. |
 | `rendered` | Static output written by `hyperbricks static`. |
+
+> Note: `/static/somefile.ext` serves `somefile.ext` from the configured
+> `hyperbricks.directories.static` directory, regardless of its name or `base`.
+> A custom path does not require an additional directory named `static`.
 
 Subdirectories below `hyperbricks/` are not loaded automatically. Add a root
 source file and load shared files with `imports`.

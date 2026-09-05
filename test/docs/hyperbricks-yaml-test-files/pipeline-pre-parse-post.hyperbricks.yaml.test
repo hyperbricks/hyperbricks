@@ -110,7 +110,7 @@ page:
   }
 }
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><title>Pipeline Page</title>
+<!DOCTYPE html><html><head><meta name="generator" content="HyperBricks"><title>Pipeline Page</title>
 </head><body># This comment stays because it is inside the block scalar.
 <section class="from-file">
   <p>File body</p>

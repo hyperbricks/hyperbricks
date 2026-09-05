@@ -204,6 +204,9 @@ func watchDirectories(directories []string, reloadFunc func()) error {
 					return
 				}
 				logger.Debugw("File system event detected", "event", event)
+				if strings.HasPrefix(filepath.Base(event.Name), ".hb-esbuild-") || isEsbuildOutput(event.Name) {
+					continue
+				}
 				// If a new directory is created, add it to the watcher
 				if event.Op&fsnotify.Create == fsnotify.Create {
 					fileInfo, err := os.Stat(event.Name)

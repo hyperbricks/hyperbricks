@@ -14,9 +14,9 @@ development.
 
 HyperBricks is a Go-based system for building and serving hypermedia web
 applications from modular YAML source files. It supports full pages, HTMX
-fragments, static rendering, dynamic rendering, Go templates, plugin-based
-components, Tailwind CLI integration, and optional JS/TS bundling through
-plugins.
+fragments, static rendering, dynamic rendering, Go templates, server-side
+JavaScript through `goja_render`, native JS/TS/CSS bundling through `esbuild`,
+and plugin-based components including Tailwind CLI integration.
 
 ## Source Of Truth
 
@@ -27,6 +27,8 @@ Before answering details, prefer the repo docs over memory:
 - `docs/REFERENCE.md` for generated component fields and fixture examples.
 - `docs/HYPERBRICKS_CLI.md` for CLI commands and flags.
 - `docs/API_RENDER.md` for `api_render` and `api_fragment_render`.
+- `docs/GOJA_RENDER.md` for server-side JavaScript and template rendering.
+- `docs/ESBUILD.md` for native asset bundling, fingerprinting, and build caching.
 - `docs/ROUTE_GUARD.md` for route guard behavior.
 - `docs/PLUGINS.md` for plugin naming, manifests, and YAML usage.
 - `docs/DEPLOY.md`, `docs/DOCKER.md`, and `docs/RUNTIME_GATEWAY.md` for
@@ -67,11 +69,13 @@ Use lowercase type names in YAML:
 - type: tree
 - type: head
 - type: template
+- type: goja_render
 - type: html
 - type: text
 - type: css
 - type: javascript
 - type: js
+- type: esbuild
 - type: image
 - type: images
 - type: json
@@ -255,6 +259,62 @@ card:
 Use YAML block scalars for multiline HTML, CSS, JavaScript, JSON, text, or
 inline template content.
 
+Templates expose allowed query parameters through `.Params`, independently of
+`values`. Set `querykeys` to select keys; `[]` exposes none, and omitting it uses
+the default allowlist.
+
+```yaml
+search:
+  - type: template
+  - querykeys: [q]
+  - inline: '<p>{{.Params.q}}</p>'
+```
+
+## Goja Render
+
+Use built-in `goja_render` for trusted project JavaScript that calculates data
+for server-rendered HTML. Resource scripts define synchronous `main(input)`,
+receive `input.values` and explicitly allowed `input.query` keys, and return a
+plain JSON-compatible object exposed to the template as `.Data`.
+
+```yaml
+availability:
+  - type: goja_render
+  - script:
+      file: {base: resources, path: scripts/availability.js}
+  - querykeys: [quantity]
+  - values:
+      stock: 12
+  - timeout: 100ms
+  - inline: '<p>{{.Data.message}}</p>'
+```
+
+Choose one of `inline` or `template`. Execution has a timeout; filesystem,
+network, and Node.js APIs are not exposed. Routes containing `goja_render`
+automatically disable response caching.
+
+## Native esbuild
+
+Use built-in `esbuild` to bundle browser JavaScript, TypeScript, or CSS. No
+plugin install is needed. Use `path` resolvers for source and output filenames:
+
+```yaml
+scripts:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: js/main.js}
+  - outfile:
+      path: {base: static, path: js/app.js}
+  - cache: true
+  - fingerprint: true
+  - enclose: '<script src="|" defer></script>'
+```
+
+Output must stay inside the configured static directory. Fingerprinting adds a
+lowercase hash to the output filename. Use the component's returned URL; keep
+`outfile` as a normal filename. `cache: true` reuses valid builds independently
+of route caching. Tailwind remains an optional plugin.
+
 ## Route Guards
 
 Route guards apply only to route-owning components: `hypermedia`, `fragment`,
@@ -302,12 +362,20 @@ Directory purposes:
 
 ```text
 hyperbricks/                 YAML component source files.
-rendered/                    Static output from `hyperbricks static`.
+rendered/                    Static rendered output from `hyperbricks static command`.
 resources/                   Raw assets, JS sources, markdown, and data.
-static/                      Public files served directly.
+static/                      Public files served directly (use /static/somedir/yourfile.ext in actual html).
 templates/                   Go HTML templates used by template providers.
 package.hyperbricks.yaml     Module entrypoint and runtime config.
 ```
+
+For disk paths, `base: module` starts at the selected module and `base: root`
+at the CLI working directory. `base: static` resolves within the configured
+static directory; it produces a filesystem path, not a browser URL.
+
+> Note: `/static/somefile.ext` serves `somefile.ext` from the configured
+> `hyperbricks.directories.static` directory, regardless of its name or `base`.
+> A custom path does not require an additional directory named `static`.
 
 The runtime scans `*.hyperbricks.yaml` files in the configured `hyperbricks/`
 directory. Subdirectories are not automatically loaded; use YAML `imports` when
@@ -391,10 +459,22 @@ Common workflows:
 ```bash
 hyperbricks init -m demo
 hyperbricks start -m demo
+hyperbricks start -m ./modules/demo
 hyperbricks static -m demo
 hyperbricks build --hra -m demo
 hyperbricks build --zip -m demo
 ```
+
+For direct `start`, `-m` accepts either a bare module name below `./modules` or
+an explicit relative or absolute directory path. Relative paths are resolved
+from the command's working directory. Other commands keep their documented
+module-name contracts.
+
+Selecting a module does not change the working directory. For direct `start`,
+`--config` is relative to the selected module and must stay inside it.
+
+`hyperbricks init -m <name>` creates missing scaffold files below
+`./modules/<name>` and preserves existing files. Omit `-m` to use `default`.
 
 `hyperbricks static` starts an internal localhost runtime, requests configured
 routes, and writes the responses to the render directory. Use
@@ -588,7 +668,7 @@ hyperbricks plugin build myplugin@1.0.0 \
 Global plugin install against local core:
 
 ```bash
-hyperbricks plugin install esbuild@2.0.0 \
+hyperbricks plugin install example@1.0.0 \
   --hyperbricks-path "$HOME/GitHub/hyperbricks"
 ```
 
