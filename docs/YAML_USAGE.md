@@ -647,10 +647,12 @@ a plain or quoted scalar when its value is valid for that field.
 
 ## Template Syntax
 
-HyperBricks templates use Go `html/template` with Sprig functions plus the
-small HyperBricks helper set (`safe`, `random`, and `valueOrEmpty`). Template
-syntax stays literal in YAML values. The YAML pipeline does not resolve Go
-template expressions.
+HyperBricks templates use Go `html/template`. The
+[template helper](../pkg/shared/helpers_templating.go) registers Sprig v3's
+`GenericFuncMap()` and adds the HyperBricks helpers `safe`, `random`, and
+`valueOrEmpty`. See the [Sprig function reference](https://masterminds.github.io/sprig/)
+for the complete function list. Template syntax stays literal in YAML values;
+the YAML pipeline does not resolve Go template expressions.
 
 ```yaml
 card:
@@ -659,6 +661,49 @@ card:
       <h2>{{.title}}</h2>
       <p>{{ .body | upper }}</p>
 ```
+
+### Using Sprig functions
+
+You can call a function directly or build a pipeline with `|`. A pipeline reads
+from left to right and passes its result as the final argument to the next
+function. For example, `{{ .tags | join ", " }}` is equivalent to
+`{{ join ", " .tags }}`.
+
+This example shows four common uses: cleaning text, providing a default,
+sorting and joining a list, and calculating a price:
+
+```yaml
+product_summary:
+  - type: template
+  - inline: |
+      <article>
+        <h2>{{ .title | trim | title }}</h2>
+        <p>{{ .description | default "Description coming soon." }}</p>
+        <p>Tags: {{ .tags | sortAlpha | join ", " }}</p>
+        <p>Total: €{{ mulf .unit_price .quantity | printf "%.2f" }}</p>
+      </article>
+  - values:
+      title: "  starter kit  "
+      description: ""
+      tags:
+        - yaml
+        - htmx
+        - go
+      unit_price: 19.95
+      quantity: 3
+```
+
+The rendered values are `Starter Kit`, the default description,
+`go, htmx, yaml`, and `€59.85`. Sprig's `default` function considers `0`,
+`false`, empty strings, empty lists and maps, and `null` to be empty. When zero
+or false is a meaningful value, check it explicitly instead of replacing it
+with `default`.
+
+Sprig helpers format or transform values inside the template; they do not add
+new data to the template context. Keep application logic in components,
+`goja_render`, or plugins, and use template functions for presentation tasks.
+Function output is still escaped by Go's `html/template`. The HyperBricks
+`safe` helper bypasses that escaping, so use it only for HTML you already trust.
 
 Use YAML lists and maps directly when the data belongs to the template context:
 
