@@ -47,6 +47,60 @@ page:
 
 Each object is an ordered sequence of single-key entries. Source order matters.
 
+### Ordered objects and ordinary mappings
+
+HyperBricks component objects use a specific YAML shape: a name followed by an
+ordered sequence. Every leading `-` adds one entry to that object.
+
+```yaml
+scripts:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: js/main.js}
+  - outfile:
+      path: {base: static, path: js/bundle.min.main.js}
+  - cache: true
+
+page:
+  - type: hypermedia
+  - route: index
+  - head:
+      - type: head
+      - application_script:
+          - inherit: scripts
+```
+
+In this example, `scripts` and `page` are named HyperBricks objects. The `type`
+entry selects the component, entries such as `entry`, `outfile`, `cache`, and
+`route` set fields, and `head` contains another component object.
+`application_script` is a named child of `head`; it inherits the complete
+`scripts` object at that position in the tree. The child name is chosen by the
+author and can describe the child's purpose.
+
+The sequence form is part of HyperBricks notation. It preserves the order of
+fields, inherited overrides, and renderable children. A component object should
+therefore keep the dashes instead of being rewritten as an ordinary YAML mapping.
+
+The value under `path` is different: it is ordinary data passed to a field. YAML
+allows that mapping to be written in compact **flow style**:
+
+```yaml
+path: {base: resources, path: js/main.js}
+```
+
+or in the equivalent **block style**:
+
+```yaml
+path:
+  base: resources
+  path: js/main.js
+```
+
+Both forms produce the same path-resolver data. Flow style is convenient for a
+short mapping that fits on one line. Block style is easier to read when a mapping
+contains more fields or nested values. These data mappings do not control render
+order; the surrounding component sequence does.
+
 The reserved entries inside a component node are:
 
 | Entry | Meaning |
@@ -465,7 +519,64 @@ data:
 and the template content is available through the runtime template provider
 under that same key.
 
-## Multiline Strings
+## String Values And Quoting
+
+YAML provides several ways to declare a string. HyperBricks receives the
+resulting string, so the best style depends on the characters in the value and
+whether line breaks must be preserved.
+
+| Style | Example | Use it for |
+| --- | --- | --- |
+| Plain | `title: Welcome` | Simple words, paths, and values without YAML punctuation. |
+| Single-quoted | `selector: '#status'` | Literal strings, HTML, and JavaScript that may contain double quotes or backslashes. |
+| Double-quoted | `message: "Line one\nLine two"` | Strings that need escapes such as `\n`, `\t`, `\"`, or `\\`. |
+| Literal block | `value: \|-` | Multiline content whose line breaks must remain intact. |
+| Folded block | `value: >-` | Multiline prose that should become a single wrapped line. |
+
+Plain strings are the most readable choice for simple values:
+
+```yaml
+title: Estimate calculator
+route: estimate
+source: js/main.js
+```
+
+Add quotes when YAML punctuation could change how the value is read. In a plain
+string, `#` can start a comment and a colon followed by a space can start a new
+mapping entry. Quotes are also useful when a value such as `true`, `null`, or
+`001` is intended to be text and that exact spelling should be obvious.
+
+```yaml
+selector: '#estimate-form'
+label: 'Status: ready'
+enabled_text: 'true'
+release_code: '001'
+```
+
+Single quotes treat backslashes and double quotes as ordinary characters, which
+makes them a good fit for HTML attributes and small template fragments. Write two
+single quotes to include one literal apostrophe:
+
+```yaml
+enclose: '<script src="|" defer></script>'
+message: 'It''s ready'
+windows_path: 'C:\assets\main.js'
+```
+
+Double quotes interpret YAML escape sequences. Use them when the string needs an
+escaped newline, tab, quote, or backslash:
+
+```yaml
+message: "First line\nSecond line"
+quoted_word: "Say \"ready\""
+empty_value: ""
+```
+
+If a value needs neither quoting nor escapes, plain, single-quoted, and
+double-quoted forms produce the same text. Quoting controls YAML parsing; it does
+not add quote characters to the value received by HyperBricks.
+
+### Multiline strings
 
 Use YAML block scalars for multiline HTML, CSS, JavaScript, JSON, or text.
 
@@ -478,6 +589,21 @@ inline:
         <p>{{.body}}</p>
       </section>
 ```
+
+The literal marker `|` preserves line breaks. The folded marker `>` replaces
+most line breaks with spaces, which is useful for long prose:
+
+```yaml
+summary: >-
+  HyperBricks keeps this readable in YAML
+  and receives it as one line of text.
+```
+
+By default, a block scalar keeps one final newline. Add `-` to strip that final
+newline (`|-` or `>-`), or add `+` to preserve all trailing blank lines (`|+` or
+`>+`). For HTML, CSS, JavaScript, templates, and other code, prefer `|` or `|-`
+because folding can change the content. The indentation below the marker defines
+which lines belong to the string.
 
 Comments inside block scalars are part of the string:
 
@@ -515,13 +641,9 @@ fragment:
   - nocache: true
 ```
 
-Quote values when YAML would otherwise treat them as syntax or when preserving
-the exact string matters:
-
-```yaml
-hx_target: "#status"
-bodytag: '<body data-page="home">|</body>'
-```
+The string styles described above do not prevent component decoding. For
+example, a typed numeric or boolean component field can be converted from either
+a plain or quoted scalar when its value is valid for that field.
 
 ## Template Syntax
 
