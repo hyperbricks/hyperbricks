@@ -1,0 +1,21 @@
+basics_styles:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: css/site.css}
+  - outfile:
+      path: {base: static, path: css/site.css}
+  - minify: true
+  - cache: true
+  - fingerprint: true
+  - enclose: '<link rel="stylesheet" href="|">'
+
+basics_scripts:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: js/main.js}
+  - outfile:
+      path: {base: static, path: js/app.js}
+  - minify: true
+  - cache: true
+  - fingerprint: true
+  - enclose: '<script src="|" defer></script>'

@@ -1,0 +1,31 @@
+# The static lesson loads only its own homepage route, not the application.
+hyperbricks:
+  mode: development
+  metadata:
+    module: hyperbricks-basics
+    moduleversion: "1.0.0"
+  development:
+    watch: false
+    reload: false
+    frontend_errors: false
+    dashboard: false
+  server:
+    port: 8106
+    beautify: false
+    read_timeout: 10s
+    write_timeout: 10s
+    idle_timeout: 30s
+  plugins:
+    enabled: []
+  directories:
+    hyperbricks:
+      path: {base: module, path: lessons/handbook/hyperbricks}
+    resources:
+      path: {base: module, path: resources}
+    templates:
+      path: {base: module, path: templates}
+    static:
+      path: {base: module, path: static}
+    render:
+      path: {base: module, path: rendered}
+    plugins: ./bin/plugins

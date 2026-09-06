@@ -29,6 +29,13 @@ With HyperBricks, you can:
 
 ## Docs
 
+New to HyperBricks? Start with the [Quickstart](docs/QUICKSTART.md), then explore
+[Project Desk](modules/hyperbricks-basics/README.md), a small application that
+connects shared pages, fragments, assets, and server-side calculations. Its
+[pattern guide](docs/PROJECT_PATTERNS.md) explains when to use each piece, and
+the [general HyperBricks skill](SKILLS/hyperbricks/SKILL.md) helps agents apply the
+same workflows in your project.
+
 - [Introduction](docs/INTRODUCTION.md)
 - [Quickstart](docs/QUICKSTART.md)
 - [Routing](docs/ROUTING.md)

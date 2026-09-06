@@ -1,0 +1,13 @@
+<section class="panel">
+  <h1>One plugin, two actions</h1>
+  <p>Review a project name in two small steps. The routes select the action, one Go plugin prepares the values, and a template renders the result.</p>
+  <p>This lesson is a preview only. It does not save a project or retain state between requests.</p>
+  <form method="post" action="/actions/advanced-name-preview"
+        hx-post="/actions/advanced-name-preview" hx-target="#name-review" hx-swap="innerHTML">
+    <label for="review-name">Project name</label>
+    <input id="review-name" name="name" value="Community garden" maxlength="80" required>
+    <button type="submit">Preview name</button>
+  </form>
+  <div id="name-review" aria-live="polite"></div>
+  <p><a href="/">Back to Project Desk</a></p>
+</section>

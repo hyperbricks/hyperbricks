@@ -1,0 +1,32 @@
+imports:
+  - assets.hyperbricks.yaml
+  - navigation.hyperbricks.yaml
+
+# Pages override title and body.values.content; the shell stays in one place.
+basics_page:
+  - type: hypermedia
+  - title: Project Desk · HyperBricks
+  - doctype: '<!DOCTYPE html>'
+  - htmltag: '<html lang="en">'
+  - head:
+      - type: head
+      - metadata:
+          - type: html
+          - value: |
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+      - styles:
+          - inherit: basics_styles
+      - scripts:
+          - inherit: basics_scripts
+  - body:
+      - type: template
+      - template:
+          file: shell.html
+      - values:
+          page_title: Project Desk
+          navigation:
+            - inherit: basics_navigation
+          content:
+            - type: html
+            - value: '<p>Choose a page to explore.</p>'

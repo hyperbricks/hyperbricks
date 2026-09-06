@@ -1,0 +1,10 @@
+<p>Current project: <strong>{{.Data.name}}</strong> · version <span data-project-version>{{.Data.version}}</span></p>
+<form method="post" action="/actions/advanced-project-save"
+      hx-post="/actions/advanced-project-save" hx-target="#advanced-save-feedback" hx-swap="innerHTML">
+  <label for="advanced-project-name">Project name</label>
+  <input id="advanced-project-name" name="name" value="{{.Data.name}}" maxlength="80">
+  <input type="hidden" name="version" value="{{.Data.version}}">
+  <button type="submit">Save name</button>
+</form>
+<button type="button" hx-get="/fragments/advanced-project" hx-target="#advanced-project-panel" hx-swap="innerHTML">Reload project</button>
+<p><small>A blank name is allowed through this form so you can try the API's validation response.</small></p>

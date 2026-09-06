@@ -1,0 +1,16 @@
+<section data-page-title="Projects" class="page-section">
+  <p class="eyebrow">A place for the work</p>
+  <h1>Projects</h1>
+  <p class="lede">Two ideas, each with a clear next step.</p>
+  <div class="card-grid projects-grid">
+    {{range .projects}}
+    <article class="card project-card">
+      <span class="badge">{{.status}}</span>
+      <h2><a href="{{.url}}" hx-get="{{.fragment}}" hx-target="#main-content" hx-push-url="{{.url}}">{{.name}}</a></h2>
+      <p>{{.summary}}</p>
+      <p class="quiet">{{.tags | sortAlpha | join " · "}}</p>
+      <a href="{{.url}}" hx-get="{{.fragment}}" hx-target="#main-content" hx-push-url="{{.url}}">Open project <span aria-hidden="true">→</span></a>
+    </article>
+    {{end}}
+  </div>
+</section>

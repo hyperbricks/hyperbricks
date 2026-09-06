@@ -218,6 +218,13 @@ see `modules/sampleapis-coffee-static`.
 
 ## Next Steps
 
+- [Project Desk](../modules/hyperbricks-basics/README.md): run a small application
+  with shared layouts, page and fragment navigation, bundled assets, and a
+  server-rendered estimate. Its README includes setup and exercises.
+- [Recommended project patterns](PROJECT_PATTERNS.md): choose a working pattern
+  for the next thing you want to build, with examples and verification guidance.
+- [General HyperBricks skill](../SKILLS/hyperbricks/SKILL.md): give an agent the
+  project conventions, CLI workflow, and task-based Source Of Truth.
 - [YAML_USAGE.md](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
 - [REFERENCE.md](REFERENCE.md): component fields and executable examples.
 - [ROUTING.md](ROUTING.md): route resolution and clean URLs.

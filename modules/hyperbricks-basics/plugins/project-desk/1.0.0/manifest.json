@@ -1,0 +1,8 @@
+{
+  "plugin": "github.com/hyperbricks/hyperbricks/modules/hyperbricks-basics/plugins/project-desk",
+  "source": "project_desk_plugin.go",
+  "binary": "ProjectDeskPlugin",
+  "version": "1.0.0",
+  "compatible_hyperbricks": [">=1.2.2-beta"],
+  "description": "Teaching plugin: two explicit project-name review actions return template data."
+}

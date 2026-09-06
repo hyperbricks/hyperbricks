@@ -1,0 +1,169 @@
+imports:
+  - ../../hyperbricks/app.hyperbricks.yaml
+
+vars:
+  advanced_api:
+    env:
+      name: HYPERBRICKS_BASICS_API_URL
+      default: http://127.0.0.1:8099
+
+advanced_shell:
+  - inherit: basics_page
+  - nocache: true
+  - head:
+      - advanced_script:
+          - type: esbuild
+          - entry:
+              path: {base: module, path: lessons/advanced/feedback.js}
+          - outfile:
+              path: {base: static, path: js/advanced.js}
+          - cache: true
+          - fingerprint: true
+          - enclose: '<script src="|" defer></script>'
+  - body:
+      - values:
+          navigation:
+            - inherit: basics_navigation
+            - values:
+                active: /advanced
+
+advanced_project_panel:
+  - type: api_render
+  - endpoint:
+      format: '%s/api/project'
+      args:
+        - var: advanced_api
+  - method: GET
+  - querykeys: []
+  - template:
+      file: ../lessons/advanced/templates/project-panel.html
+
+advanced_page:
+  - inherit: advanced_shell
+  - route: advanced
+  - title: Project Desk — API lesson
+  - body:
+      - values:
+          page_title: API read and write
+          content:
+            - type: template
+            - template:
+                file: ../lessons/advanced/templates/api.html
+            - values:
+                project:
+                  - inherit: advanced_project_panel
+
+advanced_project_fragment:
+  - type: fragment
+  - route: fragments/advanced-project
+  - nocache: true
+  - content:
+      - inherit: advanced_project_panel
+
+advanced_project_save:
+  - type: api_fragment_render
+  - route: actions/advanced-project-save
+  - endpoint:
+      format: '%s/api/project'
+      args:
+        - var: advanced_api
+  - method: POST
+  - querykeys: []
+  - headers:
+      Content-Type: application/json
+  - body: '{"name":"$name","version":"$version"}'
+  - template:
+      file: ../lessons/advanced/templates/save-result.html
+
+advanced_login_page:
+  - inherit: advanced_shell
+  - route: advanced/login
+  - title: Project Desk — Demo roles
+  - body:
+      - values:
+          page_title: Try a demo role
+          content:
+            - type: template
+            - template:
+                file: ../lessons/advanced/templates/login.html
+
+advanced_login_action:
+  - type: api_fragment_render
+  - route: actions/demo-login
+  - endpoint:
+      format: '%s/auth/demo-login'
+      args:
+        - var: advanced_api
+  - method: POST
+  - querykeys: []
+  - headers:
+      Content-Type: application/json
+  - body: '{"role":"$role"}'
+  - setcookies:
+      - 'token={{.Data.token}}; Path=/; HttpOnly; SameSite=Lax'
+  - template:
+      file: ../lessons/advanced/templates/login-result.html
+
+advanced_logout_action:
+  - type: api_fragment_render
+  - route: actions/demo-logout
+  - endpoint:
+      format: '%s/auth/demo-logout'
+      args:
+        - var: advanced_api
+  - method: POST
+  - querykeys: []
+  - setcookies:
+      - 'token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0'
+  - template:
+      file: ../lessons/advanced/templates/logout-result.html
+
+advanced_settings_page:
+  - inherit: advanced_shell
+  - route: advanced/settings
+  - title: Project Desk — Owner settings
+  - guard:
+      enabled: true
+      auth:
+        cookie: token
+        header: Authorization
+        scheme: Bearer
+      require:
+        authenticated: true
+      authorize:
+        endpoint:
+          format: '%s/auth/owner'
+          args:
+            - var: advanced_api
+        method: GET
+      on_unauthenticated:
+        redirect: /advanced/login
+        hx_redirect: /advanced/login
+      on_forbidden:
+        redirect: /advanced/forbidden
+        hx_redirect: /advanced/forbidden
+  - body:
+      - values:
+          page_title: Owner settings
+          content:
+            - type: api_render
+            - endpoint:
+                format: '%s/api/settings'
+                args:
+                  - var: advanced_api
+            - method: GET
+            - querykeys: []
+            - template:
+                file: ../lessons/advanced/templates/settings.html
+
+advanced_forbidden_page:
+  - inherit: advanced_shell
+  - route: advanced/forbidden
+  - title: Project Desk — Owner role needed
+  - body:
+      - values:
+          page_title: An owner role is needed
+          content:
+            - type: template
+            - template:
+                file: ../lessons/advanced/templates/forbidden.html
