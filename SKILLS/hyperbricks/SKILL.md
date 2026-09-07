@@ -32,7 +32,7 @@ paths are relative to the HyperBricks repository:
 - `docs/GOJA_RENDER.md`, `docs/API_RENDER.md`, and `docs/PLUGINS.md`: server-side logic.
 - `docs/ROUTE_GUARD.md`: authentication and authorization checks on routes.
 - `docs/DEPLOY.md` and `docs/DOCKER.md`: deployment.
-- `docs/PROJECT_PATTERNS.md`: working examples and recommended project patterns.
+
 
 In an application outside that repository, use the references included with
 this skill and the installed CLI's `--help`. For complete manuals or component
@@ -315,9 +315,10 @@ Load HTMX once in the shared layout. Also include UTF-8 charset and viewport
 metadata in its head; the [page recipe](references/authoring.md#one-view-a-full-page-and-a-fragment)
 shows that configuration.
 
-The `modules/hyperbricks-basics/README.md` example adds shared navigation,
-active-link styling, page-title updates, and Back/Forward handling. Its source
-files demonstrate the patterns listed in `docs/PROJECT_PATTERNS.md`.
+For menu generation, page and fragment navigation, and configuration-driven
+sections, use the [patterns example module README](/path/to/hyperbricks/modules/hyperbricks-patterns-yaml/README.md).
+Its version 2 topic guide points to the example source files. This module lives
+in the separate testing project, outside the HyperBricks repository.
 
 ## Native esbuild
 

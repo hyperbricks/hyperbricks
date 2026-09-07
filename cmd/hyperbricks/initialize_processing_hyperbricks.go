@@ -165,7 +165,7 @@ func recordConfigDiagnostics(errors []error) {
 	if len(errors) == 0 || getHyperBricksConfiguration().Mode == shared.LIVE_MODE {
 		return
 	}
-	recordRenderDiagnostics(nextRenderRequestID(), "__config", errors)
+	recordRenderDiagnostics(nil, nextRenderRequestID(), "__config", errors)
 }
 
 func yamlRuntimeOptions() yamlparser.Options {

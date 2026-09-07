@@ -37,7 +37,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleRenderDiagnosticsEndpoint(w http.ResponseWriter, r *http.Request) bool {
-	if strings.Trim(r.URL.Path, "/") != "__hyperbricks/render-diagnostics" {
+	if "/"+strings.Trim(r.URL.Path, "/") != renderDiagnosticsPath {
 		return false
 	}
 	if shared.GetHyperBricksConfiguration().Mode == shared.LIVE_MODE {

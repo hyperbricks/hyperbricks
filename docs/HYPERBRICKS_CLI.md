@@ -188,6 +188,33 @@ hyperbricks start -m demo \
   --runtime-resolver http://127.0.0.1:8080/resolve-runtime
 ```
 
+### Render diagnostics
+
+In development and debug mode, the `Render diagnostics recorded` log message
+includes a URL for that error. Open it in your browser to see the JSON details:
+
+```text
+http://localhost:8080/__hyperbricks/render-diagnostics?request_id=hb-12
+```
+
+The details include the source file, component path, key, type, and error message
+where available. The link uses the host and port of the request. Errors found
+while loading configuration use `localhost` and your configured server port;
+open those links after the server has started. Fix the reported source and
+reload the page to check again.
+
+You can also open `/__hyperbricks/render-diagnostics` on your running server to
+see the ten most recent diagnostic records. HyperBricks keeps the latest 200
+records in memory, so older links expire and records are cleared when the
+process restarts.
+
+The endpoint is disabled in live mode. Static exports omit the link because
+their temporary server stops after rendering.
+
+Server setup failures, such as unusable directories, listener, watcher, or
+gateway configuration, can still prevent startup. If the server cannot start,
+read the error in the terminal; the diagnostics endpoint is not available yet.
+
 ## Static Rendering
 
 Render static output:

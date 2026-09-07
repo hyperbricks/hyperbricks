@@ -761,12 +761,10 @@ The old uppercase marker forms such as `{{VAR:...}}`, `{{ENV:...}}`,
 `{{FILE:...}}`, and `{{TEMPLATE:...}}` are not YAML resolvers. Use the resolver
 mappings documented above.
 
-## Recovery And Diagnostics
+## YAML Errors And Recovery
 
-HyperBricks treats user-authored runtime config like browser input: it tries to
-render what it can and reports diagnostics for the rest.
-
-Current behavior:
+HyperBricks reports errors in YAML sources and continues loading files that can
+be parsed. The response depends on the kind of error:
 
 | Situation | Runtime behavior |
 | --- | --- |
@@ -774,10 +772,6 @@ Current behavior:
 | Unknown component type | Node stays in the runtime map; renderer reports no registered type. |
 | Duplicate child names | Runtime recovers with `_2`, `_3`, etc. and reports diagnostics. |
 | Missing var/env/config/file resolver | Value resolves to empty string or default and reports diagnostics. |
-| Bootstrap infrastructure failure | Startup can still fail when required directories, listener, watcher, or gateway config are structurally unusable. |
-
-Render diagnostics include request/source context such as file, path, key, type,
-and message where available.
 
 ## Test Corpus
 

@@ -231,8 +231,6 @@ See [source staging](SOURCE_FILES.txt) and
 
 ## Continue learning
 
-- [Recommended project patterns](../../docs/PROJECT_PATTERNS.md) connects each
-  practical task to its source, explanation, and checks.
 - [Optional API, guards, and plugin lessons](docs/advanced.md) add real local
   request flows with explicit prerequisites.
 - [General HyperBricks skill](../../SKILLS/hyperbricks/SKILL.md) gives agents a

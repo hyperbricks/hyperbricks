@@ -18,6 +18,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/renderplan"
@@ -32,6 +33,7 @@ const (
 	liveCacheExpiresAtHeader  = "X-Hyperbricks-Cache-Expires-At"
 	requestIDHeader           = "X-Hyperbricks-Request-ID"
 	renderErrorCountHeader    = "X-Hyperbricks-Render-Error-Count"
+	renderDiagnosticsPath     = "/__hyperbricks/render-diagnostics"
 	maxRenderDiagnostics      = 200
 )
 
@@ -771,7 +773,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 		sourceErrors := getConfigSourceErrors()
 		if len(sourceErrors) > 0 && hbConfig.Mode != shared.LIVE_MODE {
 			logging.GetLogger().Info("Config not found for route; returning source load diagnostics", "route", route, "error_count", len(sourceErrors))
-			recordRenderDiagnostics(requestID, route, sourceErrors)
+			recordRenderDiagnostics(r, requestID, route, sourceErrors)
 			return RenderContent{
 				Content:     missingRouteSourceErrorContent(route, sourceErrors),
 				NoCache:     true,
@@ -889,7 +891,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	}
 
 	if hbConfig.Mode != shared.LIVE_MODE {
-		recordRenderDiagnostics(requestID, route, renderErrors)
+		recordRenderDiagnostics(r, requestID, route, renderErrors)
 	}
 
 	if handledCapture != nil && handledCapture.Response != nil {
@@ -1104,7 +1106,41 @@ func nextRenderRequestID() string {
 	return "hb-" + strconv.FormatInt(sequence, 10)
 }
 
-func recordRenderDiagnostics(requestID string, route string, renderErrors []error) {
+func renderDiagnosticsURL(r *http.Request, requestID string) string {
+	hbConfig := getHyperBricksConfiguration()
+	// Static exports stop their temporary server when rendering finishes.
+	if hbConfig.Mode == shared.LIVE_MODE || commands.RenderStatic {
+		return ""
+	}
+
+	diagnosticsURL := url.URL{
+		Scheme:   "http",
+		Host:     "localhost:" + strconv.Itoa(hbConfig.Server.Port),
+		Path:     renderDiagnosticsPath,
+		RawQuery: url.Values{"request_id": {requestID}}.Encode(),
+	}
+	if r != nil {
+		if r.Host != "" {
+			diagnosticsURL.Host = r.Host
+		} else if r.URL != nil && r.URL.Host != "" {
+			diagnosticsURL.Host = r.URL.Host
+		}
+		if r.URL != nil && (r.URL.Scheme == "http" || r.URL.Scheme == "https") {
+			diagnosticsURL.Scheme = r.URL.Scheme
+		}
+		if r.TLS != nil {
+			diagnosticsURL.Scheme = "https"
+		}
+		// Match the existing request URL handling for proxied HTTPS requests.
+		proto := strings.TrimSpace(strings.Split(r.Header.Get("X-Forwarded-Proto"), ",")[0])
+		if proto == "http" || proto == "https" {
+			diagnosticsURL.Scheme = proto
+		}
+	}
+	return diagnosticsURL.String()
+}
+
+func recordRenderDiagnostics(r *http.Request, requestID string, route string, renderErrors []error) {
 	if len(renderErrors) == 0 {
 		return
 	}
@@ -1127,7 +1163,12 @@ func recordRenderDiagnostics(requestID string, route string, renderErrors []erro
 	renderDiagnosticsMutex.Unlock()
 
 	if shouldLogRenderDiagnosticsAsError(renderErrors) {
-		logging.GetLogger().Errorw("Render diagnostics recorded", "request_id", requestID, "route", route, "error_count", len(diagnostics.Errors))
+		message := "Render diagnostics recorded"
+		if diagnosticsURL := renderDiagnosticsURL(r, requestID); diagnosticsURL != "" {
+			// The dashboard log buffer keeps the message, but not structured fields.
+			message += ": " + diagnosticsURL
+		}
+		logging.GetLogger().Errorw(message, "request_id", requestID, "route", route, "error_count", len(diagnostics.Errors))
 	}
 }
 

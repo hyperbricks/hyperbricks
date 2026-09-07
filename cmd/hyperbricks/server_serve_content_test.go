@@ -1706,7 +1706,7 @@ func TestRenderDiagnosticsEndpointReturnsRecordedRequest(t *testing.T) {
 	})
 
 	sourceWriter := httptest.NewRecorder()
-	sourceRequest := httptest.NewRequest(http.MethodGet, "/missing-plugin", nil)
+	sourceRequest := httptest.NewRequest(http.MethodGet, "http://localhost:8097/missing-plugin?token=private", nil)
 	handler(sourceWriter, sourceRequest)
 
 	requestID := sourceWriter.Header().Get(requestIDHeader)
@@ -1715,7 +1715,11 @@ func TestRenderDiagnosticsEndpointReturnsRecordedRequest(t *testing.T) {
 	}
 
 	diagnosticsWriter := httptest.NewRecorder()
-	diagnosticsRequest := httptest.NewRequest(http.MethodGet, "/__hyperbricks/render-diagnostics?request_id="+requestID, nil)
+	diagnosticsURL := loggedRenderDiagnosticsURL(t, requestID)
+	if want := "http://localhost:8097/__hyperbricks/render-diagnostics?request_id=" + requestID; diagnosticsURL != want {
+		t.Fatalf("logged diagnostics URL = %q, want %q", diagnosticsURL, want)
+	}
+	diagnosticsRequest := httptest.NewRequest(http.MethodGet, diagnosticsURL, nil)
 	handler(diagnosticsWriter, diagnosticsRequest)
 
 	if diagnosticsWriter.Code != http.StatusOK {
