@@ -4,7 +4,7 @@ imports:
 api_fragment_write_demo_shell:
   - inherit: "pattern_site_page"
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/api-fragment-write-demo.html
@@ -13,7 +13,7 @@ api_fragment_write_refresh_probe:
   - type: fragment
   - route: fragments/api-fragment-write-refresh-probe
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/api-fragment-write-refresh-probe.html
@@ -22,7 +22,7 @@ api_fragment_write_mock_success:
   - type: fragment
   - route: fragments/mock-postgrest-file-save-success
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/mock-postgrest-file-save-success.json
@@ -31,7 +31,7 @@ api_fragment_write_mock_conflict:
   - type: fragment
   - route: fragments/mock-postgrest-file-save-conflict
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/mock-postgrest-file-save-conflict.json

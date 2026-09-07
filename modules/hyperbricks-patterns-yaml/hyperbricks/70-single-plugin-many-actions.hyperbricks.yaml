@@ -3,7 +3,7 @@ imports:
 
 single_plugin_actions_shell:
   - inherit: "pattern_site_page"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/single-plugin-actions-shell.html
@@ -60,7 +60,7 @@ app_single_plugin_actions_demo:
   - inherit: "single_plugin_actions_shell"
   - route: single-plugin-actions-demo
   - title: Single Plugin Many Actions Demo
-  - template_10:
+  - content:
       - values:
           page_title: "Single Plugin, Many Actions"
           page_intro: "This page shows a workflow that has several clear steps, while one plugin keeps the decision-making in one place. Each route still has its own name, but the plugin decides what each step should show next."

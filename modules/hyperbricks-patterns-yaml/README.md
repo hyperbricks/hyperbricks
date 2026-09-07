@@ -41,8 +41,78 @@ The rule is simple:
 - only invent a new pattern when none of these fits
 - if you add a new pattern, add both a working demo and a short doc
 
-## Start Here
+## Build The Plugins
 
+Run these commands from the project root, which contains `modules/` and `bin/`:
+
+```sh
+cd /path/to/hyperbricks
+export HYPERBRICKS_LOCAL_PATH=/path/to/hyperbricks
+```
+
+Use a `hyperbricks` executable built from that same checkout. The export makes
+plugin builds use your local HyperBricks source instead of a published release.
+It applies to both global and module plugins in the current terminal session.
+
+### Global Plugins
+
+The package enables Markdown, Tailwind CSS, and the legacy Esbuild plugin.
+Their source directories belong under the project's `plugins/` directory.
+`HYPERBRICKS_LOCAL_PATH` does not change where plugin sources are found.
+
+Rebuild global plugins whose source is already present:
+
+```sh
+hyperbricks plugin build markdown@2.0.0
+hyperbricks plugin build tailwindcss@2.0.0
+hyperbricks plugin build esbuild@2.0.0
+```
+
+If a source directory is missing, run the matching `install` command instead.
+This downloads the source and builds it using the same local checkout export:
+
+```sh
+# Run only for plugins whose source is missing from plugins/.
+hyperbricks plugin install markdown@2.0.0
+hyperbricks plugin install tailwindcss@2.0.0
+hyperbricks plugin install esbuild@2.0.0
+```
+
+Use `build` for subsequent rebuilds, including after editing plugin source.
+
+### Module Plugins
+
+The demo plugin sources are included under this module's `plugins/` directory.
+Build them from the project root with `--module`:
+
+```sh
+hyperbricks plugin build template-config-demo@2.0.0 --module hyperbricks-patterns-yaml
+hyperbricks plugin build guarded-demo-auth@1.0.0 --module hyperbricks-patterns-yaml
+hyperbricks plugin build workflow-actions-demo@1.0.0 --module hyperbricks-patterns-yaml
+hyperbricks plugin build route-split-demo@1.0.0 --module hyperbricks-patterns-yaml
+```
+
+Both global and module builds write their compiled plugins to `bin/plugins/`.
+Module plugin names include `__hyperbricks-patterns-yaml`; the matching names
+are already enabled in `package.hyperbricks.yaml`. Check that each build reports
+`Build successful`.
+
+### Start Or Restart
+
+Stop any running instance, then start the module again to load the rebuilt
+plugins:
+
+```sh
+hyperbricks start -m hyperbricks-patterns-yaml --port 8080
+```
+
+After rebuilding the HyperBricks executable, rebuild these plugins against the
+same checkout and restart the server. Reloading a page does not replace a native
+plugin that is already loaded.
+
+Open `/guarded-demo/login` and use `demo` / `open-sesame` to check the login flow.
+
+## Start Here
 
 Read these files first:
 
@@ -99,3 +169,8 @@ Add all of these:
 - an entry in `docs/patterns-index.md`
 
 Keep the pattern small. It should teach one decision clearly.
+
+## Project patterns guides
+
+- [Project patterns, version 2](docs/PROJECT_PATTERNS_V2.md): find examples by topic.
+- [Original project patterns](docs/PROJECT_PATTERNS.md): retained for comparison.

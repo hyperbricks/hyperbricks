@@ -3,7 +3,7 @@ imports:
 
 status_demo_shell:
   - inherit: "pattern_site_page"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/layout-shell.html
@@ -17,7 +17,7 @@ status_demo_summary:
   - type: fragment
   - route: fragments/status-demo-summary
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/status-summary.html
@@ -26,14 +26,14 @@ status_demo_settings:
   - type: fragment
   - route: fragments/status-demo-settings
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/status-settings.html
 
 status_demo_overview_panel:
   - type: tree
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/status-overview.html
@@ -56,7 +56,7 @@ status_demo_plugin:
 
 status_demo_base_view:
   - type: tree
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/status-demo.html
@@ -72,36 +72,36 @@ status_demo_base_view:
           plugin_page_url: /status-demo/plugin
           active_panel: overview
           panel:
-            - inherit: "status_demo_overview_panel.template_10"
+            - inherit: "status_demo_overview_panel.content"
 
 status_demo:
   - type: fragment
   - route: fragments/status-demo
   - nocache: "true"
   - "10_10":
-      - inherit: "status_demo_base_view.template_10"
+      - inherit: "status_demo_base_view.content"
 
 status_demo_summary_view:
   - inherit: "status_demo_base_view"
-  - template_10:
+  - content:
       - values:
           page_url: /status-demo/summary
           active_panel: summary
           panel:
-            - inherit: "status_demo_summary.template_10"
+            - inherit: "status_demo_summary.content"
 
 status_demo_settings_view:
   - inherit: "status_demo_base_view"
-  - template_10:
+  - content:
       - values:
           page_url: /status-demo/settings
           active_panel: settings
           panel:
-            - inherit: "status_demo_settings.template_10"
+            - inherit: "status_demo_settings.content"
 
 status_demo_plugin_view:
   - inherit: "status_demo_base_view"
-  - template_10:
+  - content:
       - values:
           page_url: /status-demo/plugin
           active_panel: plugin
@@ -111,31 +111,31 @@ status_demo_plugin_view:
 app_status_demo_summary:
   - inherit: "status_demo_shell"
   - route: status-demo/summary
-  - template_10:
+  - content:
       - values:
           content_right:
-            - inherit: "status_demo_summary_view.template_10"
+            - inherit: "status_demo_summary_view.content"
 
 app_status_demo:
   - inherit: "status_demo_shell"
   - route: status-demo
-  - template_10:
+  - content:
       - values:
           content_right:
-            - inherit: "status_demo_base_view.template_10"
+            - inherit: "status_demo_base_view.content"
 
 app_status_demo_settings:
   - inherit: "status_demo_shell"
   - route: status-demo/settings
-  - template_10:
+  - content:
       - values:
           content_right:
-            - inherit: "status_demo_settings_view.template_10"
+            - inherit: "status_demo_settings_view.content"
 
 app_status_demo_plugin:
   - inherit: "status_demo_shell"
   - route: status-demo/plugin
-  - template_10:
+  - content:
       - values:
           content_right:
-            - inherit: "status_demo_plugin_view.template_10"
+            - inherit: "status_demo_plugin_view.content"

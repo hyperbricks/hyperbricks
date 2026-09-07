@@ -4,7 +4,7 @@ imports:
 route_split_demo_shell:
   - inherit: "pattern_site_page"
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/route-split-demo.html
@@ -13,7 +13,7 @@ route_split_mock_rename_success:
   - type: fragment
   - route: fragments/mock-postgrest-rename-success
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/mock-postgrest-rename-success.json
@@ -22,7 +22,7 @@ route_split_mock_rename_conflict:
   - type: fragment
   - route: fragments/mock-postgrest-rename-conflict
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/mock-postgrest-rename-conflict.json
