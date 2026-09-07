@@ -6,12 +6,31 @@ hypermedia:
         cookie: session
       enabled: "true"
       on_forbidden:
-        redirect: /denied
-        status: "403"
+        default:
+          status: 303
+          headers:
+            Location: /denied
+        variants:
+          - when:
+              request_headers:
+                HX-Request: "true"
+            response:
+              status: "403"
+              headers:
+                HX-Redirect: /denied
       on_unauthenticated:
-        hx_redirect: /login
-        redirect: /login
-        status: "401"
+        default:
+          status: 303
+          headers:
+            Location: /login
+        variants:
+          - when:
+              request_headers:
+                HX-Request: "true"
+            response:
+              status: "401"
+              headers:
+                HX-Redirect: /login
       require:
         authenticated: "true"
 ==== explainer ====
@@ -36,14 +55,50 @@ Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA be
     "Authorize": null,
     "Enabled": true,
     "OnForbidden": {
-      "HxRedirect": "",
-      "Redirect": "/denied",
-      "Status": 403
+      "Default": {
+        "Headers": {
+          "Location": "/denied"
+        },
+        "Status": 303
+      },
+      "Variants": [
+        {
+          "Response": {
+            "Headers": {
+              "HX-Redirect": "/denied"
+            },
+            "Status": 403
+          },
+          "When": {
+            "RequestHeaders": {
+              "HX-Request": "true"
+            }
+          }
+        }
+      ]
     },
     "OnUnauthenticated": {
-      "HxRedirect": "/login",
-      "Redirect": "/login",
-      "Status": 401
+      "Default": {
+        "Headers": {
+          "Location": "/login"
+        },
+        "Status": 303
+      },
+      "Variants": [
+        {
+          "Response": {
+            "Headers": {
+              "HX-Redirect": "/login"
+            },
+            "Status": 401
+          },
+          "When": {
+            "RequestHeaders": {
+              "HX-Request": "true"
+            }
+          }
+        }
+      ]
     },
     "Require": {
       "Authenticated": true,
@@ -60,6 +115,10 @@ Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA be
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

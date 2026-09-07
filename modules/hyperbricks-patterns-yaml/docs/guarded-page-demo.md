@@ -64,6 +64,12 @@ The important detail is the authorize contract for the native route guard.
 - HyperBricks resolves that cookie on the incoming request and forwards the value to `authorize.endpoint` as `Authorization: Bearer <token>`.
 - The authorize endpoint must validate that bearer token. It should not rely only on reading the cookie again.
 
+The guard explicitly configures each denial response. Ordinary requests receive
+`303` and `Location`. A variant matching `HX-Request: "true"` uses `401` or
+`403` with `HX-Redirect`. The first matching variant replaces the default;
+HyperBricks does not convert the redirect automatically. The plugin's own
+HTMX login/logout handling remains application logic.
+
 ## Pattern rule
 
 Keep responsibilities separate:

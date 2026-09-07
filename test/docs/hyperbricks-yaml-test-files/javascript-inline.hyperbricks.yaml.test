@@ -38,6 +38,10 @@ Inline JavaScript source. Use a normal YAML string, or a YAML block scalar when 
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

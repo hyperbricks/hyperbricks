@@ -79,6 +79,10 @@ Builds header content. See <HEADER> for details
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "index",
   "Section": "",
   "Static": "",

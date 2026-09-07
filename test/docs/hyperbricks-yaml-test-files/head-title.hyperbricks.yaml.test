@@ -30,6 +30,10 @@ The title of the hypermedia document
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

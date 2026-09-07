@@ -38,6 +38,10 @@ Extra attributes like id, data-role, data-action, media
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

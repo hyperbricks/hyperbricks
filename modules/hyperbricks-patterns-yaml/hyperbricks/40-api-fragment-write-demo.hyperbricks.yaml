@@ -42,16 +42,16 @@ api_fragment_write_save_success:
   - nocache: "true"
   - method: POST
   - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-file-save-success"
-  - request:
-      headers:
-        Content-Type: application/json
-        Accept: application/json
+  - headers:
+      Content-Type: application/json
+      Accept: application/json
   - querykeys: []
   - body: "{\"p_project_slug\":\"$project\",\"p_file_id\":$file_id,\"p_kind\":\"$kind\",\"p_path\":\"$path\",\"p_content\":\"$content\"}"
   - template:
       file: patterns/api-file-write-result.html
   - response:
-      hx_trigger: hb-pattern-assets-refresh
+      headers:
+        HX-Trigger: hb-pattern-assets-refresh
 
 api_fragment_write_save_conflict:
   - type: api_fragment_render
@@ -59,16 +59,16 @@ api_fragment_write_save_conflict:
   - nocache: "true"
   - method: POST
   - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-file-save-conflict"
-  - request:
-      headers:
-        Content-Type: application/json
-        Accept: application/json
+  - headers:
+      Content-Type: application/json
+      Accept: application/json
   - querykeys: []
   - body: "{\"p_project_slug\":\"$project\",\"p_file_id\":$file_id,\"p_kind\":\"$kind\",\"p_path\":\"$path\",\"p_content\":\"$content\"}"
   - template:
       file: patterns/api-file-write-result.html
   - response:
-      hx_trigger: hb-pattern-assets-refresh
+      headers:
+        HX-Trigger: hb-pattern-assets-refresh
 
 app_api_fragment_write_demo:
   - inherit: "api_fragment_write_demo_shell"

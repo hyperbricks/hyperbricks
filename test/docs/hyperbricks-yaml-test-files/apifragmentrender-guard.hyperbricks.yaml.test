@@ -12,13 +12,31 @@ api_fragment:
         method: GET
       enabled: "true"
       on_forbidden:
-        hx_redirect: /forbidden
-        redirect: /forbidden
-        status: "403"
+        default:
+          status: 303
+          headers:
+            Location: /forbidden
+        variants:
+          - when:
+              request_headers:
+                HX-Request: "true"
+            response:
+              status: "403"
+              headers:
+                HX-Redirect: /forbidden
       on_unauthenticated:
-        hx_redirect: /login
-        redirect: /login
-        status: "401"
+        default:
+          status: 303
+          headers:
+            Location: /login
+        variants:
+          - when:
+              request_headers:
+                HX-Request: "true"
+            response:
+              status: "401"
+              headers:
+                HX-Redirect: /login
       require:
         authenticated: "true"
         query:
@@ -53,14 +71,50 @@ Optional pre-render route guard. When omitted or disabled, current API_FRAGMENT_
     },
     "Enabled": true,
     "OnForbidden": {
-      "HxRedirect": "/forbidden",
-      "Redirect": "/forbidden",
-      "Status": 403
+      "Default": {
+        "Headers": {
+          "Location": "/forbidden"
+        },
+        "Status": 303
+      },
+      "Variants": [
+        {
+          "Response": {
+            "Headers": {
+              "HX-Redirect": "/forbidden"
+            },
+            "Status": 403
+          },
+          "When": {
+            "RequestHeaders": {
+              "HX-Request": "true"
+            }
+          }
+        }
+      ]
     },
     "OnUnauthenticated": {
-      "HxRedirect": "/login",
-      "Redirect": "/login",
-      "Status": 401
+      "Default": {
+        "Headers": {
+          "Location": "/login"
+        },
+        "Status": 303
+      },
+      "Variants": [
+        {
+          "Response": {
+            "Headers": {
+              "HX-Redirect": "/login"
+            },
+            "Status": 401
+          },
+          "When": {
+            "RequestHeaders": {
+              "HX-Request": "true"
+            }
+          }
+        }
+      ]
     },
     "Require": {
       "Authenticated": true,
@@ -70,19 +124,6 @@ Optional pre-render route guard. When omitted or disabled, current API_FRAGMENT_
     }
   },
   "Headers": null,
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReselect": "",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxTemplateResult": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -96,6 +137,10 @@ Optional pre-render route guard. When omitted or disabled, current API_FRAGMENT_
   "NoCache": false,
   "Password": "",
   "QueryParams": null,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "protected-api-fragment",
   "Section": "",
   "SetCookie": "",

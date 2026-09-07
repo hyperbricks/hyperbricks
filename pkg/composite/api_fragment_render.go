@@ -24,16 +24,15 @@ import (
 type ApiFragmentRenderConfig struct {
 	shared.Composite   `mapstructure:",squash"`
 	APIConfig          `mapstructure:",squash"`
-	HxResponse         `mapstructure:"response" description:"HTMX response header configuration." example:"{!{api-fragment-render-response.hyperbricks.yaml}}"`
-	MetaDocDescription string              `mapstructure:"@doc" description:"A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience." example:"{!{api-fragment-render-@doc.hyperbricks.yaml}}"`
-	HxResponseWriter   http.ResponseWriter `mapstructure:"hx_response" exclude:"true"`
-	Title              string              `mapstructure:"title" description:"The title of the fragment" example:"{!{api-fragment-render-title.hyperbricks.yaml}}"`
-	Route              string              `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{api-fragment-render-route.hyperbricks.yaml}}"`
-	Section            string              `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{api-fragment-render-section.hyperbricks.yaml}}"`
-	Enclose            string              `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{api-fragment-render-enclose.hyperbricks.yaml}}"`
-	NoCache            bool                `mapstructure:"nocache" exclude:"true"` // description:"Explicitly disable cache" example:"{!{api-fragment-render-nocache.hyperbricks.yaml}}"`
-	Index              int                 `mapstructure:"index" description:"Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks.yaml}}"`
-	Guard              *RouteGuardConfig   `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current API_FRAGMENT_RENDER behavior remains unchanged"`
+	Response           HTTPResponseConfig `mapstructure:"response" description:"Browser HTTP status and headers; separate from upstream request headers"`
+	MetaDocDescription string             `mapstructure:"@doc" description:"A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience." example:"{!{api-fragment-render-@doc.hyperbricks.yaml}}"`
+	Title              string             `mapstructure:"title" description:"The title of the fragment" example:"{!{api-fragment-render-title.hyperbricks.yaml}}"`
+	Route              string             `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{api-fragment-render-route.hyperbricks.yaml}}"`
+	Section            string             `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{api-fragment-render-section.hyperbricks.yaml}}"`
+	Enclose            string             `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{api-fragment-render-enclose.hyperbricks.yaml}}"`
+	NoCache            bool               `mapstructure:"nocache" exclude:"true"` // description:"Explicitly disable cache" example:"{!{api-fragment-render-nocache.hyperbricks.yaml}}"`
+	Index              int                `mapstructure:"index" description:"Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks.yaml}}"`
+	Guard              *RouteGuardConfig  `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current API_FRAGMENT_RENDER behavior remains unchanged"`
 }
 
 type APIConfig struct {
@@ -280,9 +279,6 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 	}
 
 	builder.WriteString(apiContent)
-	if config.HxResponseWriter != nil {
-		SetHeadersFromHxRequest(&config.HxResponse, writer)
-	}
 
 	return builder.String(), errors
 }

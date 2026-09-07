@@ -53,17 +53,8 @@
             "label": "Response",
             "collapsed": true,
             "fields": [
-              "response.hx_location",
-              "response.hx_push_url",
-              "response.hx_redirect",
-              "response.hx_refresh",
-              "response.hx_replace_url",
-              "response.hx_reswap",
-              "response.hx_retarget",
-              "response.hx_reselect",
-              "response.hx_trigger",
-              "response.hx_trigger_after_settle",
-              "response.hx_trigger_after_swap"
+              "response.status",
+              "response.headers"
             ]
           },
           {
@@ -81,12 +72,12 @@
               "guard.authorize.method",
               "guard.authorize.headers",
               "guard.authorize.body",
-              "guard.on_unauthenticated.redirect",
-              "guard.on_unauthenticated.hx_redirect",
-              "guard.on_unauthenticated.status",
-              "guard.on_forbidden.redirect",
-              "guard.on_forbidden.hx_redirect",
-              "guard.on_forbidden.status"
+              "guard.on_unauthenticated.default.status",
+              "guard.on_unauthenticated.default.headers",
+              "guard.on_unauthenticated.variants",
+              "guard.on_forbidden.default.status",
+              "guard.on_forbidden.default.headers",
+              "guard.on_forbidden.variants"
             ]
           }
         ]
@@ -324,15 +315,15 @@
           }
         },
         {
-          "path": "guard.on_forbidden.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -341,29 +332,12 @@
           }
         },
         {
-          "path": "guard.on_forbidden.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
-          "authoring": {
-            "label": "Redirect",
-            "control": "text",
-            "group": "guard",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "guard.on_forbidden.status",
+          "path": "guard.on_forbidden.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
@@ -375,15 +349,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -392,15 +366,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
+          "path": "guard.on_unauthenticated.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -409,15 +383,32 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.status",
+          "path": "guard.on_unauthenticated.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
+          "authoring": {
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -625,16 +616,15 @@
           }
         },
         {
-          "path": "response.hx_location",
-          "key": "hx_location",
-          "go_name": "HxLocation",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to do a client-side redirect that does not do a full page reload",
-          "header": "HX-Location",
+          "path": "response.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "HX Location",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "response",
             "publish": {
               "omit_empty": true,
@@ -643,178 +633,15 @@
           }
         },
         {
-          "path": "response.hx_push_url",
-          "key": "hx_push_url",
-          "go_name": "HxPushedUrl",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Pushes a new URL into the history stack",
-          "header": "HX-Push-Url",
+          "path": "response.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
-            "label": "HX Push URL",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "can be used to do a client-side redirect to a new location",
-          "header": "HX-Redirect",
-          "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_refresh",
-          "key": "hx_refresh",
-          "go_name": "HxRefresh",
-          "go_type": "string",
-          "kind": "string",
-          "description": "if set to 'true' the client-side will do a full refresh of the page",
-          "header": "HX-Refresh",
-          "authoring": {
-            "label": "HX Refresh",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_replace_url",
-          "key": "hx_replace_url",
-          "go_name": "HxReplaceUrl",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Replaces the current URL in the location bar",
-          "header": "HX-Replace-Url",
-          "authoring": {
-            "label": "HX Replace URL",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_reselect",
-          "key": "hx_reselect",
-          "go_name": "HxReselect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "CSS selector that selects which part of the response is swapped in",
-          "header": "HX-Reselect",
-          "authoring": {
-            "label": "HX Reselect",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_reswap",
-          "key": "hx_reswap",
-          "go_name": "HxReswap",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to specify how the response will be swapped",
-          "header": "HX-Reswap",
-          "authoring": {
-            "label": "HX Reswap",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_retarget",
-          "key": "hx_retarget",
-          "go_name": "HxRetarget",
-          "go_type": "string",
-          "kind": "string",
-          "description": "CSS selector that updates the target of the content update",
-          "header": "HX-Retarget",
-          "authoring": {
-            "label": "HX Retarget",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger",
-          "key": "hx_trigger",
-          "go_name": "HxTrigger",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events",
-          "header": "HX-Trigger",
-          "authoring": {
-            "label": "HX Trigger",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger_after_settle",
-          "key": "hx_trigger_after_settle",
-          "go_name": "HxTriggerafterSettle",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events after the settle step",
-          "header": "HX-Trigger-After-Settle",
-          "authoring": {
-            "label": "HX Trigger After Settle",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger_after_swap",
-          "key": "hx_trigger_after_swap",
-          "go_name": "HxTriggerafterSwap",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events after the swap step",
-          "header": "HX-Trigger-After-Swap",
-          "authoring": {
-            "label": "HX Trigger After Swap",
-            "control": "text",
+            "label": "Status",
+            "control": "number",
             "group": "response",
             "publish": {
               "omit_empty": true,
@@ -1770,17 +1597,8 @@
             "label": "Response",
             "collapsed": true,
             "fields": [
-              "response.hx_location",
-              "response.hx_push_url",
-              "response.hx_redirect",
-              "response.hx_refresh",
-              "response.hx_replace_url",
-              "response.hx_reswap",
-              "response.hx_retarget",
-              "response.hx_reselect",
-              "response.hx_trigger",
-              "response.hx_trigger_after_settle",
-              "response.hx_trigger_after_swap"
+              "response.status",
+              "response.headers"
             ]
           },
           {
@@ -1798,12 +1616,12 @@
               "guard.authorize.method",
               "guard.authorize.headers",
               "guard.authorize.body",
-              "guard.on_unauthenticated.redirect",
-              "guard.on_unauthenticated.hx_redirect",
-              "guard.on_unauthenticated.status",
-              "guard.on_forbidden.redirect",
-              "guard.on_forbidden.hx_redirect",
-              "guard.on_forbidden.status"
+              "guard.on_unauthenticated.default.status",
+              "guard.on_unauthenticated.default.headers",
+              "guard.on_unauthenticated.variants",
+              "guard.on_forbidden.default.status",
+              "guard.on_forbidden.default.headers",
+              "guard.on_forbidden.variants"
             ]
           }
         ],
@@ -2033,15 +1851,15 @@
           }
         },
         {
-          "path": "guard.on_forbidden.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -2050,29 +1868,12 @@
           }
         },
         {
-          "path": "guard.on_forbidden.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
-          "authoring": {
-            "label": "Redirect",
-            "control": "text",
-            "group": "guard",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "guard.on_forbidden.status",
+          "path": "guard.on_forbidden.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
@@ -2084,15 +1885,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -2101,15 +1902,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
+          "path": "guard.on_unauthenticated.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -2118,15 +1919,32 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.status",
+          "path": "guard.on_unauthenticated.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
+          "authoring": {
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -2205,16 +2023,15 @@
           }
         },
         {
-          "path": "response.hx_location",
-          "key": "hx_location",
-          "go_name": "HxLocation",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to do a client-side redirect that does not do a full page reload",
-          "header": "HX-Location",
+          "path": "response.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "HX Location",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "response",
             "publish": {
               "omit_empty": true,
@@ -2223,178 +2040,15 @@
           }
         },
         {
-          "path": "response.hx_push_url",
-          "key": "hx_push_url",
-          "go_name": "HxPushedUrl",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Pushes a new URL into the history stack",
-          "header": "HX-Push-Url",
+          "path": "response.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
-            "label": "HX Push URL",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "can be used to do a client-side redirect to a new location",
-          "header": "HX-Redirect",
-          "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_refresh",
-          "key": "hx_refresh",
-          "go_name": "HxRefresh",
-          "go_type": "string",
-          "kind": "string",
-          "description": "if set to 'true' the client-side will do a full refresh of the page",
-          "header": "HX-Refresh",
-          "authoring": {
-            "label": "HX Refresh",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_replace_url",
-          "key": "hx_replace_url",
-          "go_name": "HxReplaceUrl",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Replaces the current URL in the location bar",
-          "header": "HX-Replace-Url",
-          "authoring": {
-            "label": "HX Replace URL",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_reselect",
-          "key": "hx_reselect",
-          "go_name": "HxReselect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "CSS selector that selects which part of the response is swapped in",
-          "header": "HX-Reselect",
-          "authoring": {
-            "label": "HX Reselect",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_reswap",
-          "key": "hx_reswap",
-          "go_name": "HxReswap",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to specify how the response will be swapped",
-          "header": "HX-Reswap",
-          "authoring": {
-            "label": "HX Reswap",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_retarget",
-          "key": "hx_retarget",
-          "go_name": "HxRetarget",
-          "go_type": "string",
-          "kind": "string",
-          "description": "CSS selector that updates the target of the content update",
-          "header": "HX-Retarget",
-          "authoring": {
-            "label": "HX Retarget",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger",
-          "key": "hx_trigger",
-          "go_name": "HxTrigger",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events",
-          "header": "HX-Trigger",
-          "authoring": {
-            "label": "HX Trigger",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger_after_settle",
-          "key": "hx_trigger_after_settle",
-          "go_name": "HxTriggerafterSettle",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events after the settle step",
-          "header": "HX-Trigger-After-Settle",
-          "authoring": {
-            "label": "HX Trigger After Settle",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger_after_swap",
-          "key": "hx_trigger_after_swap",
-          "go_name": "HxTriggerafterSwap",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events after the swap step",
-          "header": "HX-Trigger-After-Swap",
-          "authoring": {
-            "label": "HX Trigger After Swap",
-            "control": "text",
+            "label": "Status",
+            "control": "number",
             "group": "response",
             "publish": {
               "omit_empty": true,
@@ -3047,6 +2701,15 @@
             ]
           },
           {
+            "key": "response",
+            "label": "Response",
+            "collapsed": true,
+            "fields": [
+              "response.status",
+              "response.headers"
+            ]
+          },
+          {
             "key": "guard",
             "label": "Guard",
             "collapsed": true,
@@ -3061,12 +2724,12 @@
               "guard.authorize.method",
               "guard.authorize.headers",
               "guard.authorize.body",
-              "guard.on_unauthenticated.redirect",
-              "guard.on_unauthenticated.hx_redirect",
-              "guard.on_unauthenticated.status",
-              "guard.on_forbidden.redirect",
-              "guard.on_forbidden.hx_redirect",
-              "guard.on_forbidden.status"
+              "guard.on_unauthenticated.default.status",
+              "guard.on_unauthenticated.default.headers",
+              "guard.on_unauthenticated.variants",
+              "guard.on_forbidden.default.status",
+              "guard.on_forbidden.default.headers",
+              "guard.on_forbidden.variants"
             ]
           }
         ],
@@ -3380,15 +3043,15 @@
           }
         },
         {
-          "path": "guard.on_forbidden.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -3397,29 +3060,12 @@
           }
         },
         {
-          "path": "guard.on_forbidden.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
-          "authoring": {
-            "label": "Redirect",
-            "control": "text",
-            "group": "guard",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "guard.on_forbidden.status",
+          "path": "guard.on_forbidden.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
@@ -3431,15 +3077,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -3448,15 +3094,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
+          "path": "guard.on_unauthenticated.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -3465,15 +3111,32 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.status",
+          "path": "guard.on_unauthenticated.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
+          "authoring": {
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -3601,6 +3264,40 @@
             "label": "No cache",
             "control": "checkbox",
             "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
+          "authoring": {
+            "label": "Headers",
+            "control": "key-value",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
+          "authoring": {
+            "label": "Status",
+            "control": "number",
+            "group": "response",
             "publish": {
               "omit_empty": true,
               "omit_false": true

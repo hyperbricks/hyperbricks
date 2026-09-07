@@ -2,7 +2,8 @@
 fragment:
   - type: fragment
   - response:
-      hx_trigger_after_swap: myAfterSwapEvent
+      headers:
+        HX-Trigger-After-Swap: myAfterSwapEvent
 ==== explainer ====
 allows you to trigger client-side events after the swap step
 ==== expected json ====
@@ -12,19 +13,6 @@ allows you to trigger client-side events after the swap step
   "ConfigType": "<FRAGMENT>",
   "ContentType": "",
   "Enclose": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReselect": "",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxTemplateResult": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "myAfterSwapEvent",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -32,6 +20,12 @@ allows you to trigger client-side events after the swap step
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": {
+      "HX-Trigger-After-Swap": "myAfterSwapEvent"
+    },
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

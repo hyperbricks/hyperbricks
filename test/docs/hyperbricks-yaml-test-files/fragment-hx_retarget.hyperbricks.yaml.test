@@ -2,7 +2,8 @@
 fragment:
   - type: fragment
   - response:
-      hx_retarget: '#someid'
+      headers:
+        HX-Retarget: '#someid'
 ==== explainer ====
 CSS selector that updates the target of the content update
 ==== expected json ====
@@ -12,19 +13,6 @@ CSS selector that updates the target of the content update
   "ConfigType": "<FRAGMENT>",
   "ContentType": "",
   "Enclose": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReselect": "",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "#someid",
-  "HxTemplateResult": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -32,6 +20,12 @@ CSS selector that updates the target of the content update
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": {
+      "HX-Retarget": "#someid"
+    },
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

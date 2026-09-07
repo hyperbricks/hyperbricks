@@ -3,8 +3,6 @@ package composite
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"reflect"
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
@@ -12,28 +10,12 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type HxResponse struct {
-	HxTemplateResult     string // just for output of the parsed template
-	HxLocation           string `mapstructure:"hx_location" header:"HX-Location"  description:"allows you to do a client-side redirect that does not do a full page reload" `
-	HxPushedUrl          string `mapstructure:"hx_push_url" header:"HX-Push-Url" description:"Pushes a new URL into the history stack"`
-	HxRedirect           string `mapstructure:"hx_redirect" header:"HX-Redirect" description:"can be used to do a client-side redirect to a new location"`
-	HxRefresh            string `mapstructure:"hx_refresh" header:"HX-Refresh" description:"if set to 'true' the client-side will do a full refresh of the page"`
-	HxReplaceUrl         string `mapstructure:"hx_replace_url" header:"HX-Replace-Url" description:"Replaces the current URL in the location bar"`
-	HxReswap             string `mapstructure:"hx_reswap" header:"HX-Reswap" description:"allows you to specify how the response will be swapped"`
-	HxRetarget           string `mapstructure:"hx_retarget" header:"HX-Retarget" description:"CSS selector that updates the target of the content update"`
-	HxReselect           string `mapstructure:"hx_reselect" header:"HX-Reselect" description:"CSS selector that selects which part of the response is swapped in"`
-	HxTrigger            string `mapstructure:"hx_trigger" header:"HX-Trigger" description:"allows you to trigger client-side events"`
-	HxTriggerafterSettle string `mapstructure:"hx_trigger_after_settle"  header:"HX-Trigger-After-Settle" description:"allows you to trigger client-side events after the settle step"`
-	HxTriggerafterSwap   string `mapstructure:"hx_trigger_after_swap"  header:"HX-Trigger-After-Swap" description:"allows you to trigger client-side events after the swap step"`
-}
-
 // FragmentConfig represents configuration for a single fragment.
 type FragmentConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	HxResponse         `mapstructure:"response" description:"HTMX response header configuration." example:"{!{fragment-response.hyperbricks.yaml}}"`
+	Response           HTTPResponseConfig     `mapstructure:"response" description:"HTTP status and response headers for this fragment route"`
 	MetaDocDescription string                 `mapstructure:"@doc" description:"A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience." example:"{!{fragment-@doc.hyperbricks.yaml}}"`
 	Beautify           *bool                  `mapstructure:"beautify" json:"Beautify,omitempty" description:"Override server.beautify for this object when rendered directly"`
-	HxResponseWriter   http.ResponseWriter    `mapstructure:"hx_response" exclude:"true"`
 	Title              string                 `mapstructure:"title" description:"The title of the fragment" example:"{!{fragment-title.hyperbricks.yaml}}"`
 	Route              string                 `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{fragment-route.hyperbricks.yaml}}"`
 	Section            string                 `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{fragment-section.hyperbricks.yaml}}"`
@@ -146,44 +128,6 @@ func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (s
 
 	// Wrap the content with the HTML structure
 	finalHTML := outputHtml
-	if config.HxResponseWriter != nil {
-		SetHeadersFromHxRequest(&config.HxResponse, config.HxResponseWriter)
-	}
 
 	return finalHTML, errors
-}
-
-func SetHeadersFromHxRequest(config *HxResponse, writer http.ResponseWriter) {
-	// Use reflection to access struct fields
-	v := reflect.ValueOf(*config)
-	t := reflect.TypeOf(*config)
-
-	for i := 0; i < v.NumField(); i++ {
-		field := v.Field(i)
-		fieldType := t.Field(i)
-
-		// Use the "header" tag to get the HTTP header name
-		headerName := fieldType.Tag.Get("header")
-		if headerName == "" || !field.IsValid() || (field.Kind() == reflect.String && field.String() == "") {
-			// Skip fields without a header tag or empty string fields
-			continue
-		}
-
-		// Convert the field value to a string
-		headerValue := ""
-		switch field.Kind() {
-		case reflect.String:
-			headerValue = field.String()
-		case reflect.Int, reflect.Int64, reflect.Float64, reflect.Bool:
-			headerValue = fmt.Sprintf("%v", field.Interface())
-		default:
-			// Skip unsupported types
-			continue
-		}
-
-		// Set the header using Go's default canonicalization
-		writer.Header().Set(headerName, headerValue)
-		// log.Printf("htmx response headers:%v", writer.Header())
-
-	}
 }

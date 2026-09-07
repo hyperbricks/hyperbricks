@@ -81,6 +81,28 @@ hyperbricks:
 When a route is cacheable, HyperBricks can add live cache metadata headers and
 serve repeated requests from the cache until the entry expires.
 
+The cached response retains its configured status and headers. Configure
+request-header variation with a literal `Vary` response header:
+
+```yaml
+status:
+  - type: fragment
+  - route: fragments/status
+  - response:
+      headers:
+        Vary: Accept-Language
+  - content:
+      - type: html
+      - value: '<section id="status">Ready</section>'
+```
+
+The named request headers become part of the internal cache key as well as the
+HTTP `Vary` contract. `Vary: "*"` bypasses internal caching. On `hypermedia`,
+the existing top-level `headers.Vary` is also supported; `response.headers`
+takes precedence for the same header. This declares cache separation only; it
+does not choose different rendered content by itself. There is no implicit
+`HX-Request` cache variant. See [HTTP responses](HTTP_RESPONSES.md).
+
 ## No-Cache Routes
 
 Set `nocache: true` on the route owner when a route must stay dynamic.
@@ -106,8 +128,9 @@ account_status:
   - route: fragments/account-status
   - nocache: true
   - response:
-      hx_target: "#account-status"
-      hx_reswap: outerHTML
+      headers:
+        HX-Retarget: "#account-status"
+        HX-Reswap: outerHTML
   - body:
       - type: html
       - value: <div id="account-status">Updated</div>

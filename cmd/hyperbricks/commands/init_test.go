@@ -214,8 +214,12 @@ func TestDefaultInitAssetsWriteYAMLHelloWorld(t *testing.T) {
 	if !ok {
 		t.Fatalf("status fragment response = %T, want map", statusFragment["response"])
 	}
-	if response["hx_target"] != "#hello-status" || response["hx_reswap"] != "outerHTML" {
-		t.Fatalf("status fragment response = %#v", response)
+	headers, ok := response["headers"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("status fragment response.headers = %T, want map", response["headers"])
+	}
+	if headers["HX-Trigger"] != "init-fixture-status" || headers["HX-Retarget"] != "#hello-status" || headers["HX-Reswap"] != "outerHTML" {
+		t.Fatalf("status fragment response.headers = %#v", headers)
 	}
 
 }

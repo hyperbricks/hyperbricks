@@ -114,27 +114,27 @@ profile_fragment:
   - querykeys:
       - user_id
   - response:
-      hx_target: "#profile"
-      hx_reswap: outerHTML
+      headers:
+        HX-Retarget: "#profile"
+        HX-Reswap: outerHTML
   - template:
       file: fragments/profile.html
 ```
 
-The `response` block maps to HTMX response headers.
+`response.headers` contains literal HTTP headers returned to the browser.
+HTMX uses the `HX-*` headers in this example; HyperBricks does not add or
+interpret them. Any valid HTTP header name can be configured here.
 
-| Field | Header |
-| --- | --- |
-| `hx_location` | `HX-Location` |
-| `hx_push_url` | `HX-Push-Url` |
-| `hx_redirect` | `HX-Redirect` |
-| `hx_refresh` | `HX-Refresh` |
-| `hx_replace_url` | `HX-Replace-Url` |
-| `hx_reswap` | `HX-Reswap` |
-| `hx_retarget` | `HX-Retarget` |
-| `hx_reselect` | `HX-Reselect` |
-| `hx_trigger` | `HX-Trigger` |
-| `hx_trigger_after_settle` | `HX-Trigger-After-Settle` |
-| `hx_trigger_after_swap` | `HX-Trigger-After-Swap` |
+`response.status` optionally sets the browser HTTP status, which defaults to
+`200`. It is independent of the upstream `.Status` available to the template.
+For example, an upstream `409` may render feedback inside a browser response
+with status `200`. A fixed `response.headers.HX-Trigger` is sent for every
+rendered response, so it does not indicate whether the upstream write succeeded.
+
+Top-level `headers` still configures the **upstream request**. It is separate
+from `response.headers`, which configures the **browser response**. See
+[HTTP responses](HTTP_RESPONSES.md) for header precedence, status behavior, and
+the migration from `response.hx_*` fields.
 
 A typical HTMX flow is:
 
@@ -194,7 +194,8 @@ login:
   - body: |
       {"email":"$email","password":"$password"}
   - response:
-      hx_trigger: login-updated
+      headers:
+        HX-Trigger: login-updated
   - inline: |
       <div id="login-result">{{.Data.message}}</div>
 ```
@@ -253,9 +254,13 @@ secure_profile:
   - route: fragments/secure-profile
   - guard:
       enabled: true
-      endpoint: http://127.0.0.1:9000/auth/authorize
-      method: POST
-      deny_status: 403
+      auth:
+        cookie: token
+      require:
+        authenticated: true
+      authorize:
+        endpoint: http://127.0.0.1:9000/auth/authorize
+        method: POST
   - endpoint: http://127.0.0.1:9000/api/profile
   - method: GET
   - template:

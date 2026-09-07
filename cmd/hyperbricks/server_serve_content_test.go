@@ -966,7 +966,10 @@ func TestServeContent_HyperMediaGuardRedirectsUnauthenticated(t *testing.T) {
 				"authenticated": true,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 		},
 		"template": map[string]interface{}{
@@ -1008,7 +1011,17 @@ func TestServeContent_HyperMediaGuardUsesHxRedirectForHTMX(t *testing.T) {
 				"authenticated": true,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"variants": []interface{}{map[string]interface{}{
+					"when": map[string]interface{}{"request_headers": map[string]interface{}{"HX-Request": "true"}},
+					"response": map[string]interface{}{
+						"status":  http.StatusUnauthorized,
+						"headers": map[string]interface{}{"HX-Redirect": "/login"},
+					},
+				}},
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 		},
 		"template": map[string]interface{}{
@@ -1048,7 +1061,10 @@ func TestServeContent_FragmentGuardDeniesBeforeRender(t *testing.T) {
 				"authenticated": true,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 		},
 		"10": map[string]interface{}{
@@ -1090,7 +1106,17 @@ func TestServeContent_FragmentGuardUsesHxRedirectForHTMX(t *testing.T) {
 				"authenticated": true,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"variants": []interface{}{map[string]interface{}{
+					"when": map[string]interface{}{"request_headers": map[string]interface{}{"HX-Request": "true"}},
+					"response": map[string]interface{}{
+						"status":  http.StatusUnauthorized,
+						"headers": map[string]interface{}{"HX-Redirect": "/login"},
+					},
+				}},
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 		},
 		"10": map[string]interface{}{
@@ -1141,7 +1167,10 @@ func TestServeContent_APIFragmentGuardDeniesBeforeUpstreamCall(t *testing.T) {
 				"authenticated": true,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 		},
 	})
@@ -1309,10 +1338,16 @@ func TestServeContent_HyperMediaGuardAuthorizesBeforeRender(t *testing.T) {
 				"body":     `{"project_slug":"$project"}`,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 			"on_forbidden": map[string]interface{}{
-				"redirect": "/forbidden",
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/forbidden"},
+				},
 			},
 		},
 		"template": map[string]interface{}{

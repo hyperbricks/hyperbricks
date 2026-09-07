@@ -14,6 +14,7 @@ user_add_task:
   - inline: |
       {{ if eq .Status 201 }}created{{ else }}failed{{ end }}
   - response:
-      hx_trigger: update_list
+      headers:
+        HX-Trigger: update_list
 ==== expected output ====
 created

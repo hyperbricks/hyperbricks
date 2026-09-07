@@ -41,7 +41,8 @@ help_fragment:
   - type: fragment
   - route: fragments/help
   - response:
-      hx_push_url: /help
+      headers:
+        HX-Push-Url: /help
   - body:
       - inherit: help_content
 ```
@@ -74,8 +75,9 @@ push the fragment URL. Verify reload, Back, and Forward with the project's HTMX
 configuration. Without JavaScript, `href` still opens the full page.
 
 For a refresh button that stays on the same page, use a separate fragment
-without `hx_push_url`. Give it an existing target and choose `innerHTML` for
-contents or `outerHTML` when the response includes the replacement target itself.
+without `response.headers.HX-Push-Url`. Give it an existing target and choose
+`innerHTML` for contents or `outerHTML` when the response includes the replacement
+target itself.
 Avoid nested `<main>` or duplicate target IDs after a swap.
 
 ## Move reusable pieces without losing them

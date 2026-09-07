@@ -953,6 +953,7 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 		"fragments/status-demo-plugin",
 		"fragments/status-demo-settings",
 		"fragments/status-demo-summary",
+		"fragments/unpoly-demo",
 		"guarded-demo",
 		"guarded-demo/auth/authorize",
 		"guarded-demo/auth/login",
@@ -980,6 +981,8 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 		"status-demo/plugin",
 		"status-demo/settings",
 		"status-demo/summary",
+		"unpoly-demo",
+		"unpoly-demo/loaded",
 		"workflow-actions-demo/complete",
 		"workflow-actions-demo/landing",
 		"workflow-actions-demo/lookup",
@@ -1031,6 +1034,26 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 	}
 	if got := fragmentResponse.Header().Get("X-Hyperbricks-Render-Error-Count"); got != "0" {
 		t.Fatalf("summary fragment render error count = %q, want 0; body:\n%s", got, fragmentBody)
+	}
+
+	unpolyRequest := httptest.NewRequest(http.MethodGet, "/fragments/unpoly-demo", nil)
+	unpolyResponse := httptest.NewRecorder()
+	ServeContent(unpolyResponse, unpolyRequest)
+	if unpolyResponse.Code != http.StatusOK {
+		t.Fatalf("Unpoly fragment status = %d, body:\n%s", unpolyResponse.Code, unpolyResponse.Body.String())
+	}
+	if got := unpolyResponse.Header().Get("X-Demo-Frontend"); got != "unpoly" {
+		t.Fatalf("Unpoly fragment X-Demo-Frontend = %q, want unpoly", got)
+	}
+	unpolyBody := unpolyResponse.Body.String()
+	if !strings.Contains(unpolyBody, `id="unpoly-panel"`) || !strings.Contains(unpolyBody, "Fragment loaded") {
+		t.Fatalf("Unpoly fragment is missing its matching target or loaded content:\n%s", unpolyBody)
+	}
+	if strings.Contains(strings.ToLower(unpolyBody), "<!doctype") || strings.Contains(strings.ToLower(unpolyBody), "<html") {
+		t.Fatalf("Unpoly fragment contains a full-page wrapper:\n%s", unpolyBody)
+	}
+	if got := unpolyResponse.Header().Get("X-Hyperbricks-Render-Error-Count"); got != "0" {
+		t.Fatalf("Unpoly fragment render error count = %q, want 0; body:\n%s", got, unpolyBody)
 	}
 }
 

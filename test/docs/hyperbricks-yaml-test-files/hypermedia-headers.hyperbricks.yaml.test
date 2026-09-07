@@ -30,6 +30,10 @@ HTTP response headers to include when serving this hypermedia
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

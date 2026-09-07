@@ -17,7 +17,8 @@ fragment:
             - type: text
             - value: some text
   - response:
-      hx_trigger: myEvent
+      headers:
+        HX-Trigger: myEvent
 ==== explainer ====
 A FRAGMENT dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
 ==== expected json ====
@@ -27,19 +28,6 @@ A FRAGMENT dynamically renders a part of an HTML page, allowing updates without 
   "ConfigType": "<FRAGMENT>",
   "ContentType": "",
   "Enclose": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReselect": "",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxTemplateResult": "",
-  "HxTrigger": "myEvent",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -47,6 +35,12 @@ A FRAGMENT dynamically renders a part of an HTML page, allowing updates without 
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": {
+      "HX-Trigger": "myEvent"
+    },
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

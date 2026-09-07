@@ -30,6 +30,10 @@ Template configurations for rendering the hypermedia. See <TEMPLATE> for field d
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

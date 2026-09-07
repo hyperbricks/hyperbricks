@@ -495,7 +495,7 @@ func runtimeConfigProjection(t *testing.T, rm *render.RenderManager, testCase ya
 		return map[string]interface{}{
 			"ConfigType": config.Composite.Meta.ConfigType,
 			"Route":      config.Route,
-			"Response":   config.HxResponse,
+			"Response":   config.Response,
 			"Items":      config.Composite.Items,
 		}
 	case composite.TreeConfig:

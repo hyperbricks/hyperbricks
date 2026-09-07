@@ -53,8 +53,9 @@ assets_fragment:
   - type: fragment
   - route: fragments/assets
   - response:
-      hx_target: "#content"
-      hx_reswap: innerHTML
+      headers:
+        HX-Retarget: "#content"
+        HX-Reswap: innerHTML
   - content:
       - inherit: assets_content
 
@@ -98,9 +99,10 @@ assets_fragment:
   - type: fragment
   - route: fragments/assets
   - response:
-      hx_target: "#content"
-      hx_reswap: innerHTML
-      hx_push_url: /assets
+      headers:
+        HX-Retarget: "#content"
+        HX-Reswap: innerHTML
+        HX-Push-Url: /assets
   - content:
       - inherit: assets_content
 ```

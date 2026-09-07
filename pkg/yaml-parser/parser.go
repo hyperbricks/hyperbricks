@@ -641,7 +641,7 @@ var globalRuntimeFields = map[string]bool{
 var runtimeFieldsByType = map[string]map[string]bool{
 	"<API_FRAGMENT_RENDER>": fieldSet(
 		"beautify", "body", "cache", "content_type", "debug", "debugpanel",
-		"endpoint", "guard", "headers", "hx_response", "index", "inline",
+		"endpoint", "guard", "headers", "index", "inline",
 		"jwtclaims", "jwtsecret", "method", "nocache", "password",
 		"querykeys", "queryparams", "response", "route", "section",
 		"setcookie", "setcookies", "static", "status", "template", "title",
@@ -655,7 +655,7 @@ var runtimeFieldsByType = map[string]map[string]bool{
 	),
 	"<CSS>": fieldSet("file", "inline", "link"),
 	"<FRAGMENT>": fieldSet(
-		"beautify", "cache", "content_type", "guard", "hx_response", "index",
+		"beautify", "cache", "content_type", "guard", "index",
 		"nocache", "response", "route", "section", "static", "template",
 		"title",
 	),
@@ -664,7 +664,7 @@ var runtimeFieldsByType = map[string]map[string]bool{
 	"<HYPERMEDIA>": fieldSet(
 		"beautify", "bodytag", "cache", "content_type", "cookies",
 		"doctype", "favicon", "guard", "head", "headers", "htmltag", "index",
-		"nocache", "route", "section", "static", "template", "title",
+		"nocache", "response", "route", "section", "static", "template", "title",
 	),
 	"<IMAGE>": fieldSet(
 		"alt", "class", "height", "id", "is_static", "loading", "quality",
@@ -687,7 +687,7 @@ var runtimeFieldsByType = map[string]map[string]bool{
 var structuredFieldChildren = map[string]map[string]bool{
 	"<API_FRAGMENT_RENDER>": fieldSet("guard", "response"),
 	"<FRAGMENT>":            fieldSet("guard", "response", "template"),
-	"<HYPERMEDIA>":          fieldSet("guard", "head", "template"),
+	"<HYPERMEDIA>":          fieldSet("guard", "head", "response", "template"),
 }
 
 func fieldSet(names ...string) map[string]bool {

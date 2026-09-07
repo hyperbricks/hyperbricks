@@ -120,9 +120,10 @@ status_fragment:
   - type: fragment
   - route: hello-status
   - response:
-      hx_trigger: init-fixture-status
-      hx_target: "#hello-status"
-      hx_reswap: outerHTML
+      headers:
+        HX-Trigger: init-fixture-status
+        HX-Retarget: "#hello-status"
+        HX-Reswap: outerHTML
   - status:
       - type: template
       - template:

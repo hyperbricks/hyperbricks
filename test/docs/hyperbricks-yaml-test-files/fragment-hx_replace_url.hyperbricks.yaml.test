@@ -2,7 +2,8 @@
 fragment:
   - type: fragment
   - response:
-      hx_replace_url: /alternative/url
+      headers:
+        HX-Replace-Url: /alternative/url
 ==== explainer ====
 Replaces the current URL in the location bar
 ==== expected json ====
@@ -12,19 +13,6 @@ Replaces the current URL in the location bar
   "ConfigType": "<FRAGMENT>",
   "ContentType": "",
   "Enclose": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "/alternative/url",
-  "HxReselect": "",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxTemplateResult": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -32,6 +20,12 @@ Replaces the current URL in the location bar
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": {
+      "HX-Replace-Url": "/alternative/url"
+    },
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

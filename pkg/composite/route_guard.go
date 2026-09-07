@@ -30,9 +30,17 @@ type RouteGuardAuthorizeConfig struct {
 }
 
 type RouteGuardActionConfig struct {
-	Redirect   string `mapstructure:"redirect" description:"Full-page redirect target used for non-HTMX requests"`
-	HxRedirect string `mapstructure:"hx_redirect" description:"HTMX redirect target used for HX requests; defaults to redirect when omitted"`
-	Status     int    `mapstructure:"status" description:"Override HTTP status code for this denied response"`
+	Default  HTTPResponseConfig          `mapstructure:"default" description:"Default browser response when this guard denies access"`
+	Variants []RouteGuardResponseVariant `mapstructure:"variants" description:"Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely"`
+}
+
+type RouteGuardResponseVariant struct {
+	When     RouteGuardRequestMatch `mapstructure:"when"`
+	Response HTTPResponseConfig     `mapstructure:"response"`
+}
+
+type RouteGuardRequestMatch struct {
+	RequestHeaders map[string]string `mapstructure:"request_headers"`
 }
 
 // Backward-compatible aliases for the original hypermedia-specific naming.

@@ -70,7 +70,8 @@ dashboard:
       require:
         authenticated: true
       on_unauthenticated:
-        status: 401
+        default:
+          status: 401
   - body:
       - type: tree
       - hero:
@@ -107,9 +108,10 @@ metric_fragment:
   - type: fragment
   - route: fragments/metric
   - response:
-      hx_target: "#metric"
-      hx_reswap: outerHTML
-      hx_trigger_after_swap: metric-updated
+      headers:
+        HX-Retarget: "#metric"
+        HX-Reswap: outerHTML
+        HX-Trigger-After-Swap: metric-updated
   - body:
       - type: template
       - inline: |
@@ -133,7 +135,8 @@ dashboard:
       require:
         authenticated: true
       on_unauthenticated:
-        status: 401
+        default:
+          status: 401
   - body:
       - type: tree
       - hero:
@@ -171,9 +174,10 @@ metric_fragment:
   - type: fragment
   - route: fragments/metric
   - response:
-      hx_target: "#metric"
-      hx_reswap: outerHTML
-      hx_trigger_after_swap: metric-updated
+      headers:
+        HX-Retarget: "#metric"
+        HX-Reswap: outerHTML
+        HX-Trigger-After-Swap: metric-updated
   - body:
       - type: template
       - inline: |

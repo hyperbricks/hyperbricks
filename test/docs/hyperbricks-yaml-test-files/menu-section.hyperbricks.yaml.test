@@ -74,6 +74,10 @@ The section of the menu to display.
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "doc3",
   "Section": "demo_main_menu",
   "Static": "",

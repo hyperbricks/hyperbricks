@@ -1,7 +1,7 @@
 **Licence:** MIT
-**Version:** v1.2.2-beta
+**Version:** v1.2.3-beta
 
-**Build time:** 2026-09-05 19:16 UTC
+**Build time:** 2026-09-07 12:52 UTC
 
 
 # HyperBricks Component Reference
@@ -203,12 +203,12 @@ Request-time API fragment that forwards to an upstream endpoint and renders the 
 | `guard.authorize.headers` | `map` | no | Optional headers sent to the authorization endpoint |
 | `guard.authorize.method` | `string` | no | HTTP method for the authorization endpoint |
 | `guard.enabled` | `bool` | no | Enable route guarding before the route is rendered |
-| `guard.on_forbidden.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_forbidden.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_forbidden.status` | `int` | no | Override HTTP status code for this denied response |
-| `guard.on_unauthenticated.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_unauthenticated.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_unauthenticated.status` | `int` | no | Override HTTP status code for this denied response |
+| `guard.on_forbidden.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_forbidden.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_forbidden.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
+| `guard.on_unauthenticated.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_unauthenticated.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_unauthenticated.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
 | `guard.require.authenticated` | `bool` | no | Require an authenticated request before rendering |
 | `guard.require.query` | `map` | no | Required query keys, set each key to true to enforce presence |
 | `headers` | `map` | no | Optional HTTP headers for API requests |
@@ -220,17 +220,8 @@ Request-time API fragment that forwards to an upstream endpoint and renders the 
 | `password` | `string` | no | Password for basic auth |
 | `querykeys` | `list` | no | Set allowed proxy query keys |
 | `queryparams` | `map` | no | Set proxy query keys in the configuration |
-| `response.hx_location` | `string` | no | allows you to do a client-side redirect that does not do a full page reload |
-| `response.hx_push_url` | `string` | no | Pushes a new URL into the history stack |
-| `response.hx_redirect` | `string` | no | can be used to do a client-side redirect to a new location |
-| `response.hx_refresh` | `string` | no | if set to 'true' the client-side will do a full refresh of the page |
-| `response.hx_replace_url` | `string` | no | Replaces the current URL in the location bar |
-| `response.hx_reselect` | `string` | no | CSS selector that selects which part of the response is swapped in |
-| `response.hx_reswap` | `string` | no | allows you to specify how the response will be swapped |
-| `response.hx_retarget` | `string` | no | CSS selector that updates the target of the content update |
-| `response.hx_trigger` | `string` | no | allows you to trigger client-side events |
-| `response.hx_trigger_after_settle` | `string` | no | allows you to trigger client-side events after the settle step |
-| `response.hx_trigger_after_swap` | `string` | no | allows you to trigger client-side events after the swap step |
+| `response.headers` | `map` | no | HTTP response headers sent to the browser |
+| `response.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
 | `route` | `string` | no | The route (URL-friendly identifier) for the fragment |
 | `section` | `string` | no | The section the fragment belongs to |
 | `setcookie` | `string` | no | Single Set-Cookie response template shorthand. Applied on any 2xx upstream response. |
@@ -275,27 +266,18 @@ A `<FRAGMENT>` dynamically renders part of an HTML page, allowing updates withou
 | `guard.authorize.headers` | `map` | no | Optional headers sent to the authorization endpoint |
 | `guard.authorize.method` | `string` | no | HTTP method for the authorization endpoint |
 | `guard.enabled` | `bool` | no | Enable route guarding before the route is rendered |
-| `guard.on_forbidden.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_forbidden.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_forbidden.status` | `int` | no | Override HTTP status code for this denied response |
-| `guard.on_unauthenticated.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_unauthenticated.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_unauthenticated.status` | `int` | no | Override HTTP status code for this denied response |
+| `guard.on_forbidden.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_forbidden.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_forbidden.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
+| `guard.on_unauthenticated.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_unauthenticated.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_unauthenticated.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
 | `guard.require.authenticated` | `bool` | no | Require an authenticated request before rendering |
 | `guard.require.query` | `map` | no | Required query keys, set each key to true to enforce presence |
 | `index` | `int` | no | Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation |
 | `nocache` | `bool` | no | Explicitly disable cache |
-| `response.hx_location` | `string` | no | allows you to do a client-side redirect that does not do a full page reload |
-| `response.hx_push_url` | `string` | no | Pushes a new URL into the history stack |
-| `response.hx_redirect` | `string` | no | can be used to do a client-side redirect to a new location |
-| `response.hx_refresh` | `string` | no | if set to 'true' the client-side will do a full refresh of the page |
-| `response.hx_replace_url` | `string` | no | Replaces the current URL in the location bar |
-| `response.hx_reselect` | `string` | no | CSS selector that selects which part of the response is swapped in |
-| `response.hx_reswap` | `string` | no | allows you to specify how the response will be swapped |
-| `response.hx_retarget` | `string` | no | CSS selector that updates the target of the content update |
-| `response.hx_trigger` | `string` | no | allows you to trigger client-side events |
-| `response.hx_trigger_after_settle` | `string` | no | allows you to trigger client-side events after the settle step |
-| `response.hx_trigger_after_swap` | `string` | no | allows you to trigger client-side events after the swap step |
+| `response.headers` | `map` | no | HTTP response headers sent to the browser |
+| `response.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
 | `route` | `string` | no | The route (URL-friendly identifier) for the fragment |
 | `section` | `string` | no | The section the fragment belongs to |
 | `static` | `string` | no | Static file path associated with the fragment |
@@ -333,7 +315,8 @@ fragment:
             - type: text
             - value: some text
   - response:
-      hx_trigger: myEvent
+      headers:
+        HX-Trigger: myEvent
 ```
 
 Expected output:
@@ -444,12 +427,12 @@ Route-owning page shell that renders the main HyperBricks document.
 | `guard.authorize.headers` | `map` | no | Optional headers sent to the authorization endpoint |
 | `guard.authorize.method` | `string` | no | HTTP method for the authorization endpoint |
 | `guard.enabled` | `bool` | no | Enable route guarding before the route is rendered |
-| `guard.on_forbidden.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_forbidden.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_forbidden.status` | `int` | no | Override HTTP status code for this denied response |
-| `guard.on_unauthenticated.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_unauthenticated.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_unauthenticated.status` | `int` | no | Override HTTP status code for this denied response |
+| `guard.on_forbidden.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_forbidden.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_forbidden.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
+| `guard.on_unauthenticated.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_unauthenticated.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_unauthenticated.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
 | `guard.require.authenticated` | `bool` | no | Require an authenticated request before rendering |
 | `guard.require.query` | `map` | no | Required query keys, set each key to true to enforce presence |
 | `head` | `map` | no | Configurations for the head section of the hypermedia |
@@ -457,6 +440,8 @@ Route-owning page shell that renders the main HyperBricks document.
 | `htmltag` | `string` | no | The opening HTML tag with attributes |
 | `index` | `int` | no | Index number is a sort order option for the hypermedia defined in the section field. See `<MENU>` for further explanation and field options |
 | `nocache` | `bool` | no | Explicitly disable cache |
+| `response.headers` | `map` | no | HTTP response headers sent to the browser |
+| `response.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
 | `route` | `string` | no | The route (URL-friendly identifier) for the hypermedia |
 | `section` | `string` | no | The section the hypermedia belongs to. This can be used with the component `<MENU>` for example. |
 | `static` | `string` | no | Static file path associated with the hypermedia, for rendering out the hypermedia to static files. |

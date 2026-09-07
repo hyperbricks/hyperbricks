@@ -107,8 +107,9 @@ hello_fragment:
   - type: fragment
   - route: hello-fragment
   - response:
-      hx_trigger: helloLoaded
-      hx_reswap: innerHTML
+      headers:
+        HX-Trigger: helloLoaded
+        HX-Reswap: innerHTML
   - panel:
       - type: html
       - value: |
@@ -118,8 +119,9 @@ hello_fragment:
           </section>
 ```
 
-`type: fragment` creates an HTMX-friendly partial route. The `response` block
-can set HTMX response headers.
+`type: fragment` creates a partial HTML route. `response.headers` configures
+the HTTP headers sent with it; the `HX-*` headers above are explicit settings
+for this example's HTMX client. See [HTTP responses](HTTP_RESPONSES.md).
 
 ## Run The Dev Server
 

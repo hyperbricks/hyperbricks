@@ -137,11 +137,31 @@ advanced_settings_page:
             - var: advanced_api
         method: GET
       on_unauthenticated:
-        redirect: /advanced/login
-        hx_redirect: /advanced/login
+        default:
+          status: 303
+          headers:
+            Location: /advanced/login
+        variants:
+          - when:
+              request_headers:
+                HX-Request: "true"
+            response:
+              status: 401
+              headers:
+                HX-Redirect: /advanced/login
       on_forbidden:
-        redirect: /advanced/forbidden
-        hx_redirect: /advanced/forbidden
+        default:
+          status: 303
+          headers:
+            Location: /advanced/forbidden
+        variants:
+          - when:
+              request_headers:
+                HX-Request: "true"
+            response:
+              status: 403
+              headers:
+                HX-Redirect: /advanced/forbidden
   - body:
       - values:
           page_title: Owner settings

@@ -21,3 +21,4 @@ Current patterns:
 - ./config-driven-section-rail.md
 - ./single-plugin-many-actions.md
 - ./plugin-vs-api-route-split.md
+- ./unpoly-fragment-demo.md

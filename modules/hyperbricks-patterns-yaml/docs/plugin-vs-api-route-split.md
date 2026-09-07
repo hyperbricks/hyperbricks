@@ -56,7 +56,7 @@ Use `<PLUGIN>` when:
 
 ## Why the API side is mocked
 
-The API branch still uses the real `endpoint`, `body`, `template`, and `response.hx_trigger` behavior, but the upstream JSON is served by local fragment routes. That keeps the demo easy to run and inspect without needing a live PostgREST service first.
+The API branch still uses the real `endpoint`, `body`, `template`, and `response.headers.HX-Trigger` behavior, but the upstream JSON is served by local fragment routes. That keeps the demo easy to run and inspect without needing a live PostgREST service first.
 
 ## What the page is trying to teach
 

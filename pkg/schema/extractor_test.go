@@ -74,37 +74,49 @@ func TestExtractorFindsNestedTemplateFields(t *testing.T) {
 
 func TestExtractorFindsGuardAndResponseFields(t *testing.T) {
 	schema := ExtractRegistry(Definitions())
-
-	hypermedia := findType(schema, "<HYPERMEDIA>")
-	if hypermedia == nil {
-		t.Fatal("missing <HYPERMEDIA>")
-	}
-	for _, path := range []string{
-		"guard.auth.cookie",
-		"guard.require.authenticated",
-		"guard.authorize.endpoint",
-		"guard.on_unauthenticated.hx_redirect",
-		"guard.on_forbidden.status",
-	} {
-		if findField(*hypermedia, path) == nil {
-			t.Fatalf("hypermedia missing field %s", path)
-		}
-	}
-
-	fragment := findType(schema, "<FRAGMENT>")
-	if fragment == nil {
-		t.Fatal("missing <FRAGMENT>")
-	}
-	if findField(*fragment, "response.hx_trigger") == nil {
-		t.Fatal("fragment missing response.hx_trigger")
-	}
-
-	apiFragment := findType(schema, "<API_FRAGMENT_RENDER>")
-	if apiFragment == nil {
-		t.Fatal("missing <API_FRAGMENT_RENDER>")
-	}
-	if findField(*apiFragment, "response.hx_trigger") == nil {
-		t.Fatal("api fragment missing response.hx_trigger")
+	for _, token := range []string{"<HYPERMEDIA>", "<FRAGMENT>", "<API_FRAGMENT_RENDER>"} {
+		t.Run(token, func(t *testing.T) {
+			typeSchema := findType(schema, token)
+			if typeSchema == nil {
+				t.Fatalf("missing %s", token)
+			}
+			for path, kind := range map[string]string{
+				"response.status":                          "int",
+				"response.headers":                         "map",
+				"guard.auth.cookie":                        "string",
+				"guard.require.authenticated":              "bool",
+				"guard.authorize.endpoint":                 "string",
+				"guard.on_unauthenticated.default.status":  "int",
+				"guard.on_unauthenticated.default.headers": "map",
+				"guard.on_unauthenticated.variants":        "list",
+				"guard.on_forbidden.default.status":        "int",
+				"guard.on_forbidden.default.headers":       "map",
+				"guard.on_forbidden.variants":              "list",
+			} {
+				field := findField(*typeSchema, path)
+				if field == nil || field.Kind != kind {
+					t.Fatalf("%s field %s = %+v, want kind %s", token, path, field, kind)
+				}
+				if field.Description == "" {
+					t.Errorf("%s field %s has no description", token, path)
+				}
+			}
+			for _, path := range []string{"response.status", "response.headers"} {
+				field := findField(*typeSchema, path)
+				if field.Authoring == nil || field.Authoring.Group != "response" {
+					t.Errorf("%s field %s is not in the response group", token, path)
+				}
+			}
+			for _, path := range []string{
+				"response.hx_trigger", "response.hx_retarget", "response.hx_redirect",
+				"guard.on_unauthenticated.redirect", "guard.on_unauthenticated.hx_redirect", "guard.on_unauthenticated.status",
+				"guard.on_forbidden.redirect", "guard.on_forbidden.hx_redirect", "guard.on_forbidden.status",
+			} {
+				if field := findField(*typeSchema, path); field != nil {
+					t.Errorf("%s still exposes removed field %s", token, path)
+				}
+			}
+		})
 	}
 }
 

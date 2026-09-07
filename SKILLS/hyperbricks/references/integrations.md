@@ -107,7 +107,7 @@ manual before forwarding fields or credentials.
 
 Inspect both upstream `.Status` and the browser's HTTP response: do not assume
 an upstream error is automatically forwarded as the same browser status. A fixed
-`response.hx_trigger` is response metadata, not a success condition. Emit or
+`response.headers.HX-Trigger` is response metadata, not a success condition. Emit or
 handle the refresh event only when the operation actually succeeded. Exercise
 validation, conflict, unavailable service, and success in the browser. Use the
 integrated optional lesson as the verified complete flow when available.
@@ -126,12 +126,28 @@ A guard has separate concerns:
 - `require.query` requires named query values to be non-empty.
 - `authorize.endpoint`, when configured, calls the authorization owner to decide
   whether this request may continue.
-- `on_unauthenticated` and `on_forbidden` define status and normal/HTMX redirects.
+- `on_unauthenticated` and `on_forbidden` each define a `default` HTTP response
+  and optional ordered `variants` selected by `when.request_headers`.
 
 The authorization endpoint allows `2xx`, treats `401` as unauthenticated and
 `403`/`406` as forbidden, and rejects other outcomes. It can receive the resolved
 bearer token. The storage/API/plugin operation must also enforce the user's
 permissions; a route guard does not replace data-level authorization.
+
+Each response contains optional `status` and a `headers` map of literal strings.
+All configured request headers in a variant must match; names are
+case-insensitive and values are exact and case-sensitive. The first match
+replaces the default response completely. Without a match, the default is used.
+For HTMX redirects, explicitly configure a variant matching `HX-Request: "true"`
+with `response.headers.HX-Redirect`; the core has no implicit HTMX redirect rule.
+See `docs/ROUTE_GUARD.md` for complete examples and `docs/HTTP_RESPONSES.md` for
+the migration from removed `response.hx_*`, `redirect`, and `hx_redirect` fields.
+
+Route owners also use `response.status` and `response.headers` for the browser
+response. In API components, top-level `headers` remains the upstream request
+headers. An API template's `.Status` remains the upstream status, independently
+of `response.status`. Only the root route determines response metadata; a
+nested fragment cannot change the enclosing page's status or headers.
 
 Guarded responses are non-cacheable. Sample fixed tokens or an in-memory service
 are useful for trying the flow, but do not constitute production identity or

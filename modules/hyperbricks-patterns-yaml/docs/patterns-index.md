@@ -18,6 +18,7 @@ If you are new to the module, this order has the gentlest learning curve:
 5. [Single plugin, many actions](/single-plugin-actions-demo)
 6. [Plugin vs API route split](/plugin-vs-api-route-split)
 7. [Guarded page demo](/guarded-demo)
+8. [Unpoly fragment demo](/unpoly-demo)
 
 ## Pattern index
 
@@ -55,6 +56,11 @@ If you are new to the module, this order has the gentlest learning curve:
 
 - Live demo: [open](/guarded-demo)
 - Notes: shows public login, protected page, forbidden page, and a native route guard working together.
+
+### 8. Unpoly fragment demo
+
+- Live demo: [open](/unpoly-demo)
+- Notes: reuse one panel in a full page and a fragment, then let Unpoly replace the panel using an explicit browser dependency and ordinary HTTP responses.
 
 ## Quick glossary
 

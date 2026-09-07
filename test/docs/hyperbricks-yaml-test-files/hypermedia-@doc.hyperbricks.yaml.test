@@ -67,6 +67,10 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

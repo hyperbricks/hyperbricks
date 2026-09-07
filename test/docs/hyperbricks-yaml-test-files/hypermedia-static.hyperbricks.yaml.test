@@ -25,6 +25,10 @@ Static file path associated with the hypermedia, for rendering out the hypermedi
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "index.html",

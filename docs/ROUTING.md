@@ -4,6 +4,8 @@ This document explains how HyperBricks resolves routes and clean URLs for
 dynamic rendering and static output.
 
 Route guard behavior is documented in [ROUTE_GUARD.md](ROUTE_GUARD.md).
+Configure browser status and headers with the route's `response` block; see
+[HTTP responses](HTTP_RESPONSES.md).
 
 ## Route Owners
 

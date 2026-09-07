@@ -67,7 +67,7 @@ func TestRenderContentLegacyConfigOwnership(t *testing.T) {
 			before := configOwnershipSnapshot(t, source)
 			var retained []map[string]interface{}
 			var writers []*httptest.ResponseRecorder
-			needsWriter := configType != composite.HyperMediaConfigGetName()
+			var retainedWriters []http.ResponseWriter
 			renderer := configOwnershipRenderer(func(instance interface{}, ctx context.Context) (string, []error) {
 				requestConfig, ok := instance.(map[string]interface{})
 				if !ok {
@@ -76,10 +76,14 @@ func TestRenderContentLegacyConfigOwnership(t *testing.T) {
 				if requestConfig["route"] != "ownership" || requestConfig["request_marker"] != nil {
 					t.Fatal("renderer received mutations from an earlier request")
 				}
-				writer, hasWriter := requestConfig["hx_response"]
-				if hasWriter != needsWriter || (needsWriter && writer != ctx.Value(shared.ResponseWriter)) {
-					t.Fatal("hx_response does not match the current request writer")
+				if _, hasWriter := requestConfig["hx_response"]; hasWriter {
+					t.Fatal("legacy renderer received the removed hx_response field")
 				}
+				writer, ok := ctx.Value(shared.ResponseWriter).(http.ResponseWriter)
+				if !ok || writer != writers[len(writers)-1] {
+					t.Fatal("response writer context does not match the current request")
+				}
+				retainedWriters = append(retainedWriters, writer)
 				request := ctx.Value(shared.Request).(*http.Request)
 				marker := request.URL.Query().Get("rid")
 				requestConfig["request_marker"] = marker
@@ -105,9 +109,9 @@ func TestRenderContentLegacyConfigOwnership(t *testing.T) {
 			if len(retained) != 2 || retained[0]["request_marker"] != "first" || retained[1]["request_marker"] != "second" {
 				t.Fatal("legacy requests shared a mutable config map")
 			}
-			for i, requestConfig := range retained {
-				if needsWriter && requestConfig["hx_response"] != writers[i] {
-					t.Fatalf("request %d retained another request's hx_response", i)
+			for i, writer := range retainedWriters {
+				if writer != writers[i] {
+					t.Fatalf("request %d retained another request's response writer", i)
 				}
 			}
 		})

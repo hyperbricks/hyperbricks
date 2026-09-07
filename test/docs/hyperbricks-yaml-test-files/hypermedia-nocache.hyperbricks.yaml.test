@@ -31,6 +31,10 @@ Explicitly disable cache
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": true,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "index",
   "Section": "",
   "Static": "",

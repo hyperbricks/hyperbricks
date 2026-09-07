@@ -107,9 +107,31 @@ guarded_demo_secret_shell:
         endpoint: /guarded-demo/auth/authorize
         method: GET
       on_unauthenticated:
-        redirect: /guarded-demo/login
+        default:
+          status: 303
+          headers:
+            Location: /guarded-demo/login
+        variants:
+          - when:
+              request_headers:
+                HX-Request: "true"
+            response:
+              status: 401
+              headers:
+                HX-Redirect: /guarded-demo/login
       on_forbidden:
-        redirect: /guarded-demo/forbidden
+        default:
+          status: 303
+          headers:
+            Location: /guarded-demo/forbidden
+        variants:
+          - when:
+              request_headers:
+                HX-Request: "true"
+            response:
+              status: 403
+              headers:
+                HX-Redirect: /guarded-demo/forbidden
 
 app_guarded_demo_secret:
   - inherit: "guarded_demo_secret_shell"

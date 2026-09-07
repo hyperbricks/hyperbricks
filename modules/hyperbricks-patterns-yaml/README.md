@@ -27,6 +27,7 @@ a working pattern for it.
 Use this module when you need a concrete example for:
 
 - canonical page routes plus HTMX fragment routes
+- a full page and fragment updated with Unpoly
 - menu navigation enhanced with HTMX
 - config-driven section rails
 - guarded pages and login/forbidden flows
@@ -142,6 +143,9 @@ Read these files first:
 - `docs/guarded-page-demo.md`
   Use when public login, protected pages, and forbidden redirects must work
   together.
+- `docs/unpoly-fragment-demo.md`
+  Use when a browser client should replace a fragment through ordinary HTML
+  routes and explicit HTTP response configuration.
 
 ## Live Demo Routes
 
@@ -156,6 +160,7 @@ These are the current demo entry points:
 - `/single-plugin-actions-demo`
 - `/plugin-vs-api-route-split`
 - `/guarded-demo`
+- `/unpoly-demo`
 
 ## When Adding A New Pattern
 

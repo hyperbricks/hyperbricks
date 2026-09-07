@@ -33,7 +33,7 @@ shape the renderer expects.
 Route owners are top-level components that can answer a request.
 
 - `hypermedia` renders full HTML documents.
-- `fragment` renders HTMX-oriented partial responses.
+- `fragment` renders partial HTML responses.
 - `api_fragment_render` proxies an API request and renders the response as a
   fragment.
 
@@ -62,13 +62,18 @@ status:
   - type: fragment
   - route: fragments/status
   - response:
-      hx_target: "#status"
-      hx_reswap: outerHTML
+      headers:
+        HX-Retarget: "#status"
+        HX-Reswap: outerHTML
   - body:
       - type: html
       - value: |
           <div id="status">Ready</div>
 ```
+
+This fragment explicitly configures HTTP headers for an HTMX client. Routes
+can use any browser library that consumes their HTML; see
+[HTTP responses](HTTP_RESPONSES.md) for the shared status and header contract.
 
 ## Components
 
