@@ -13,20 +13,21 @@ function updateStatusDemoLocation() {
   setText('pattern-current-url', window.location.pathname + window.location.search)
 }
 
+function updateStatusDemoRequest(event) {
+  const path = event.detail?.ctx?.request?.action
+  if (path) {
+    setText('pattern-last-fragment', path)
+  }
+}
+
 function installStatusDemoDiagnostics() {
   document.addEventListener('DOMContentLoaded', updateStatusDemoLocation)
-  document.body.addEventListener('htmx:pushedIntoHistory', updateStatusDemoLocation)
-  document.body.addEventListener('htmx:afterSwap', (event) => {
-    if (event.target && event.target.id === 'status-demo-panel') {
-      updateStatusDemoLocation()
-    }
+  document.addEventListener('htmx:after:history:update', updateStatusDemoLocation)
+  document.addEventListener('htmx:after:swap', (event) => {
+    updateStatusDemoLocation()
+    updateStatusDemoRequest(event)
   })
-  document.body.addEventListener('htmx:beforeRequest', (event) => {
-    const path = event.detail && event.detail.pathInfo ? event.detail.pathInfo.requestPath : ''
-    if (path) {
-      setText('pattern-last-fragment', path)
-    }
-  })
+  document.addEventListener('htmx:before:request', updateStatusDemoRequest)
 }
 
 function currentSectionHash() {
@@ -103,10 +104,11 @@ function installSectionRailScrolling() {
     pendingRailHash = href.slice(href.indexOf('#') + 1).trim()
   })
 
-  document.body.addEventListener('htmx:afterSettle', (event) => {
-    const target = event.target instanceof Element ? event.target : null
+  document.addEventListener('htmx:after:settle', (event) => {
+    const target = event.detail?.task?.target
     const rightColumn = document.querySelector('#right_column')
-    if (!(target && rightColumn instanceof Element && rightColumn.contains(target))) {
+    if (!(target instanceof Element && rightColumn instanceof Element &&
+      (rightColumn.contains(target) || target.contains(rightColumn)))) {
       return
     }
 

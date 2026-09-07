@@ -3,11 +3,11 @@
     <p class="eyebrow">Start small, build with confidence</p>
     <h1>Your projects,<br>a little clearer.</h1>
     <p class="lede">A small workspace for exploring projects, checking an estimate, and learning how the pieces fit together.</p>
-    <a class="button" href="/projects" hx-get="/fragments/projects" hx-target="#main-content" hx-push-url="/projects">Explore the projects <span aria-hidden="true">→</span></a>
+    <a class="button" href="/projects" hx-get="/fragments/projects" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="/projects">Explore the projects <span aria-hidden="true">→</span></a>
   </div>
   <div class="card-grid">
-    <article class="card"><span class="card-number">01</span><h2>Find your bearings</h2><p>Two sample projects share one view. Each has a real address you can bookmark.</p><a href="/projects" hx-get="/fragments/projects" hx-target="#main-content" hx-push-url="/projects">View projects</a></article>
-    <article class="card"><span class="card-number">02</span><h2>Try a calculation</h2><p>Choose a quantity and get an estimate, calculated on the server.</p><a href="/estimate" hx-get="/fragments/estimate" hx-target="#main-content" hx-push-url="/estimate">Open estimate</a></article>
+    <article class="card"><span class="card-number">01</span><h2>Find your bearings</h2><p>Two sample projects share one view. Each has a real address you can bookmark.</p><a href="/projects" hx-get="/fragments/projects" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="/projects">View projects</a></article>
+    <article class="card"><span class="card-number">02</span><h2>Try a calculation</h2><p>Choose a quantity and get an estimate, calculated on the server.</p><a href="/estimate" hx-get="/fragments/estimate" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="/estimate">Open estimate</a></article>
     {{.status}}
   </div>
   <p class="quiet">Sample content for learning. There are no accounts or saved changes in the basic workspace.</p>

@@ -144,8 +144,15 @@ extra browser request just to display its main content.
 ordinary `href`, an `hx-get` fragment address, an `hx-target`, and a canonical
 `hx-push-url`. Only the content inside `#main-content` is replaced. The small
 browser entrypoint updates the title, active navigation item, and keyboard focus
-after a swap. Browser history refetches canonical pages; HTMX's local history
-cache is disabled here so it does not retain request-bound estimate results.
+after a swap. HTMX 4 uses `htmx:after:settle`; its settle task identifies the
+updated target. `history: "reload"` makes Back and Forward reload the canonical
+page with fresh request-bound estimate results. HTMX 4 no longer stores local
+history snapshots, so no `hx-history` attribute or history-cache setting is needed.
+
+Every request declares its own target and swap mode. Main-content links use
+`innerHTML`, preserving the focusable `<main>` element; the status refresh uses
+`outerHTML` to replace its complete panel. These elements do not depend on parent
+attribute inheritance.
 
 **A panel can refresh independently.** The overview includes `basics_status`
 during the initial render. Its refresh link requests `/fragments/status` and
@@ -268,11 +275,14 @@ Native bundling uses [esbuild](https://esbuild.github.io/), by Evan Wallace,
 under its [MIT license](https://github.com/evanw/esbuild/blob/main/LICENSE.md).
 Server-side JavaScript uses [Goja](https://github.com/dop251/goja).
 
-HTMX **2.0.10** is included locally as `resources/vendor/htmx-2.0.10.js`, copied
+HTMX **4.0.0** is included locally as `resources/vendor/htmx-4.0.0.js`, copied
 unchanged from the npm package's `dist/htmx.esm.js`. Its SHA-256 is
-`17d652c25110a39e92b23a572b8a9bf1d4fefd3b42485f27db8374ae7bcc5f40`.
+`077b8017a057e3e6dd6834d20012f75c6387bde189bbd26172c6b3a853125cbc`.
 The original [0BSD license](static/vendor/HTMX-LICENSE.txt) is included.
 See the [HTMX website](https://htmx.org/) and
 [source repository](https://github.com/bigskysoftware/htmx).
 To update it deliberately, obtain the named npm release, replace the source and
 license together, record the version and hash here, and rerun navigation checks.
+The basic app and both interactive lessons use this same source. See the pinned
+[HTMX 4 migration guide](https://raw.githubusercontent.com/bigskysoftware/htmx/v4.0.0/dist/skills/htmx-upgrade-from-htmx2.md)
+and [HTMX 4 guidance](https://raw.githubusercontent.com/bigskysoftware/htmx/v4.0.0/dist/skills/htmx-guidance.md).

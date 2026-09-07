@@ -113,7 +113,8 @@ status:
       - value: '<section id="status">Ready</section>'
 ```
 
-Move each old field under `response.headers` and use its literal header name:
+The old fields map to the following literal response headers. HyperBricks accepts
+arbitrary valid header names; check which headers your browser library supports:
 
 | Removed field under `response` | Key under `response.headers` |
 | --- | --- |
@@ -126,8 +127,16 @@ Move each old field under `response.headers` and use its literal header name:
 | `hx_retarget` | `HX-Retarget` |
 | `hx_reselect` | `HX-Reselect` |
 | `hx_trigger` | `HX-Trigger` |
-| `hx_trigger_after_settle` | `HX-Trigger-After-Settle` |
-| `hx_trigger_after_swap` | `HX-Trigger-After-Swap` |
+| `hx_trigger_after_settle` | `HX-Trigger-After-Settle` (removed in HTMX 4) |
+| `hx_trigger_after_swap` | `HX-Trigger-After-Swap` (removed in HTMX 4) |
+
+HTMX 4 removed `HX-Trigger-After-Swap` and `HX-Trigger-After-Settle`. Use
+`response.headers.HX-Trigger` for application events. If an action needs the
+updated DOM, register an explicit `htmx:after:swap` browser listener; use
+`htmx:after:settle` when it must wait for settling. `HX-Trigger` does not preserve
+the old headers' timing. The generic HTTP core can still emit those header names
+for clients that support them. See the
+[HTMX 4 upgrade guide](https://raw.githubusercontent.com/bigskysoftware/htmx/v4.0.0/dist/skills/htmx-upgrade-from-htmx2.md).
 
 Some older examples used `hx_target`, which was not the renderer's actual
 retarget field. Correct those examples to `response.headers.HX-Retarget` too.

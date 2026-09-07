@@ -1,9 +1,8 @@
-import htmx from "../vendor/htmx-2.0.10.js";
+import htmx from "../vendor/htmx-4.0.0.js";
 
 window.htmx = htmx;
-// History should refetch canonical pages, including fresh request-bound results.
-htmx.config.historyCacheSize = 0;
-htmx.config.historyRestoreAsHxRequest = false;
+// Back/Forward reload canonical pages, including fresh request-bound results.
+htmx.config.history = "reload";
 
 function updatePage() {
   const section = document.querySelector("#main-content [data-page-title]");
@@ -18,11 +17,10 @@ function updatePage() {
 }
 
 document.addEventListener("DOMContentLoaded", updatePage);
-document.addEventListener("htmx:afterSettle", (event) => {
+document.addEventListener("htmx:after:settle", (event) => {
   updatePage();
-  if (event.detail.target?.id === "main-content") {
+  if (event.detail?.task?.target?.id === "main-content") {
     document.getElementById("main-content").focus({ preventScroll: true });
     window.scrollTo(0, 0);
   }
 });
-document.addEventListener("htmx:historyRestore", updatePage);

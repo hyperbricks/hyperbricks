@@ -6,10 +6,10 @@
     {{range .projects}}
     <article class="card project-card">
       <span class="badge">{{.status}}</span>
-      <h2><a href="{{.url}}" hx-get="{{.fragment}}" hx-target="#main-content" hx-push-url="{{.url}}">{{.name}}</a></h2>
+      <h2><a href="{{.url}}" hx-get="{{.fragment}}" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="{{.url}}">{{.name}}</a></h2>
       <p>{{.summary}}</p>
       <p class="quiet">{{.tags | sortAlpha | join " · "}}</p>
-      <a href="{{.url}}" hx-get="{{.fragment}}" hx-target="#main-content" hx-push-url="{{.url}}">Open project <span aria-hidden="true">→</span></a>
+      <a href="{{.url}}" hx-get="{{.fragment}}" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="{{.url}}">Open project <span aria-hidden="true">→</span></a>
     </article>
     {{end}}
   </div>

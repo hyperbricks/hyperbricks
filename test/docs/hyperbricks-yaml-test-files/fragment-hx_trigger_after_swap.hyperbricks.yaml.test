@@ -3,9 +3,9 @@ fragment:
   - type: fragment
   - response:
       headers:
-        HX-Trigger-After-Swap: myAfterSwapEvent
+        HX-Trigger: contentUpdated
 ==== explainer ====
-allows you to trigger client-side events after the swap step
+Sends an application event with HX-Trigger in HTMX 4. To run browser code after the DOM swap, use an explicit htmx:after:swap listener; this header does not preserve the removed HX-Trigger-After-Swap timing.
 ==== expected json ====
 {
   "Cache": "",
@@ -22,7 +22,7 @@ allows you to trigger client-side events after the swap step
   "NoCache": false,
   "Response": {
     "Headers": {
-      "HX-Trigger-After-Swap": "myAfterSwapEvent"
+      "HX-Trigger": "contentUpdated"
     },
     "Status": 0
   },

@@ -111,7 +111,7 @@ metric_fragment:
       headers:
         HX-Retarget: "#metric"
         HX-Reswap: outerHTML
-        HX-Trigger-After-Swap: metric-updated
+        HX-Trigger: metric-updated
   - body:
       - type: template
       - inline: |
@@ -177,7 +177,7 @@ metric_fragment:
       headers:
         HX-Retarget: "#metric"
         HX-Reswap: outerHTML
-        HX-Trigger-After-Swap: metric-updated
+        HX-Trigger: metric-updated
   - body:
       - type: template
       - inline: |

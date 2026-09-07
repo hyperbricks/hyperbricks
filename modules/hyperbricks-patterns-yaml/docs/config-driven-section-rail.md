@@ -42,6 +42,18 @@ That is the important pattern. The template then derives:
 - `hx-get="/fragments/<fragment>"`
 - `hx-target="#<target>"`
 
+Subsection links use the complete canonical page and anchor in both `href` and
+`hx-push-url`, for example `/rail-assets#rail-assets-files`. HTMX 4 allows native
+navigation for hash-only links, so using only `#rail-assets-files` would add an
+intermediate history entry before the HTMX page update. The complete link also
+opens the correct page and section when JavaScript is unavailable.
+
+Each generated request link also declares `hx-swap="innerHTML"`, preserving
+the scrollable right-column element with HTMX 4. The browser helper waits for
+`htmx:after:settle` and reads `event.detail.task.target` before scrolling to the
+selected subsection. It also handles a restored full-page body so Back and
+Forward can restore an anchored section.
+
 ## When to use it
 
 Use this when:

@@ -3,9 +3,9 @@ fragment:
   - type: fragment
   - response:
       headers:
-        HX-Trigger-After-Settle: myAfterSettleEvent
+        HX-Trigger: statusUpdated
 ==== explainer ====
-allows you to trigger client-side events after the settle step
+Sends an application event with HX-Trigger in HTMX 4. To run browser code after settling, use an explicit htmx:after:settle listener; this header does not preserve the removed HX-Trigger-After-Settle timing.
 ==== expected json ====
 {
   "Cache": "",
@@ -22,7 +22,7 @@ allows you to trigger client-side events after the settle step
   "NoCache": false,
   "Response": {
     "Headers": {
-      "HX-Trigger-After-Settle": "myAfterSettleEvent"
+      "HX-Trigger": "statusUpdated"
     },
     "Status": 0
   },

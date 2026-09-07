@@ -53,7 +53,7 @@ page:
   - head:
       - type: head
       - js:
-          - https://unpkg.com/htmx.org@2.0.4
+          - https://unpkg.com/htmx.org@4.0.0/dist/htmx.min.js
       - inline_styles:
           - type: css
           - inline: |

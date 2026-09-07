@@ -6,6 +6,31 @@ Its job is to give agents and developers small, working examples of common
 HyperBricks composition patterns so they can copy an existing shape instead of
 inventing a new one.
 
+## Browser Runtime
+
+The shared browser entry imports the repository's pinned `htmx.org` 4.0.0
+package. Request elements declare their own targets and `hx-swap="innerHTML"`
+so updates preserve the surrounding panel. These templates require no implicit
+attribute inheritance or compatibility extension.
+
+The browser helpers use HTMX 4's colon-separated events. Request diagnostics
+read `event.detail.ctx.request.action`; section scrolling reads the settled
+swap task's target. Listeners are attached to `document`, including history
+updates, so they also work when Back or Forward restores page content.
+
+After rebuilding browser assets, check `/status-demo` navigation and diagnostics,
+`/menu-demo` and `/docs` content/sidebar updates, section-rail anchors, and the
+login and write forms. The menu and docs templates use `hx-select-oob` to update
+their sibling sidebar after the content swap. API refresh probes listen for
+the configured `HX-Trigger` events. GET buttons that restart the workflow do
+not need the enclosing form's values.
+
+The module follows HTMX 4's response handling: error responses can render in
+the declared feedback target, while `HX-Redirect` handles navigation when
+configured. See the official
+[HTMX 4 upgrade guide](https://raw.githubusercontent.com/bigskysoftware/htmx/v4.0.0/dist/skills/htmx-upgrade-from-htmx2.md)
+for the changed browser contract. The Unpoly demo keeps its own browser runtime.
+
 ## What This Module Contains
 
 - `hyperbricks/`

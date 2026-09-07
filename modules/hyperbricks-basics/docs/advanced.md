@@ -59,6 +59,13 @@ The panel listens for that event with `hx-trigger`. It refreshes once when the
 save succeeds, with no polling. Both page and fragment are non-cacheable because
 this lesson reads changing data.
 
+The feedback script listens for HTMX 4's `htmx:after:swap` and reads the request
+target from `event.detail.ctx.target`. It checks only the save-feedback panel's
+API-status marker, so rendering another panel cannot trigger a save refresh.
+The POST forms declare their own target and swap mode; HTMX submits their fields
+and the clicked role button as form data. Reloading the project is a separate
+GET and intentionally submits no unsaved form fields.
+
 The API owns validation and the version check. YAML forwards selected input;
 templates present the result. `querykeys: []` blocks incoming query forwarding.
 Submitted form fields are a separate input source, so the API must still

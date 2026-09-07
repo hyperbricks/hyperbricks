@@ -12,6 +12,18 @@ It demonstrates:
 - `hx-push-url` preserving the canonical page URL
 - a plugin-rendered panel integrated into the same flow
 
+The shared browser script uses HTMX 4. Each link declares `hx-swap="innerHTML"`
+to preserve `#status-demo-panel`. The URL diagnostic observes
+`htmx:after:history:update` and `htmx:after:swap`; the last-request diagnostic
+uses `event.detail.ctx.request.action` before the request and after the swap.
+Updating it after the swap preserves the actual request URL when a history
+restore replaces the diagnostic itself. It shows **No HTMX request yet** on
+initial page access and the canonical page URL for an HTMX history request.
+
+Check direct page access, panel navigation, reload, Back, and Forward. History
+restoration requests the canonical full page, so each pushed URL must keep its
+complete-page route.
+
 ## Composer reference shape
 
 Composer uses:

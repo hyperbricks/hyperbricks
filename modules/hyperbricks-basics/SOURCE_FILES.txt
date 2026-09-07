@@ -34,7 +34,7 @@ rendered/.gitkeep
 resources/css/site.css
 resources/js/main.js
 resources/scripts/line-total.js
-resources/vendor/htmx-2.0.10.js
+resources/vendor/htmx-4.0.0.js
 static/vendor/HTMX-LICENSE.txt
 templates/estimate.html
 templates/handbook.html
