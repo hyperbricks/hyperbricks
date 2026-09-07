@@ -1,0 +1,25 @@
+hyperbricks:
+  mode: development
+  development:
+    watch: false
+    reload: false
+    frontend_errors: false
+    dashboard: false
+  server:
+    port: 8096
+    beautify: false
+  plugins:
+    enabled: []
+  directories:
+    hyperbricks:
+      path: {base: module, path: hyperbricks}
+    templates:
+      path: {base: module, path: templates}
+    resources:
+      path: {base: module, path: resources}
+    plugins:
+      path: {base: module, path: plugins}
+    render:
+      path: {base: module, path: render-output}
+    static:
+      path: {base: root, path: modules/static-paths-demo/root-assets}

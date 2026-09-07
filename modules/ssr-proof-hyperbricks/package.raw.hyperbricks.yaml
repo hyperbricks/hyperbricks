@@ -1,0 +1,63 @@
+hyperbricks:
+  mode: live
+
+  development:
+    watch: false
+    reload: false
+    frontend_errors: false
+    dashboard: false
+
+  live:
+    cache: 30s
+
+  server:
+    port: 8093
+    beautify: false
+    self_closing_tags: false
+    routing:
+      clean_urls: true
+      index_files:
+        - index.html
+        - index.htm
+      extensions:
+        - html
+        - htm
+    read_timeout: 0s
+    write_timeout: 0s
+    idle_timeout: 0s
+    keep_alives_enabled: true
+
+  system:
+    metrics_watch_interval: 1h
+
+  rate_limit:
+    enabled: false
+    requests_per_second: 1000000
+    burst: 1000000
+
+  plugins:
+    enabled: []
+
+  directories:
+    render:
+      path:
+        base: module
+        path: rendered
+    static:
+      path:
+        base: module
+        path: static
+    resources:
+      path:
+        base: module
+        path: resources
+    plugins:
+      path: {base: module, path: plugins}
+    templates:
+      path:
+        base: module
+        path: templates
+    hyperbricks:
+      path:
+        base: module
+        path: hyperbricks

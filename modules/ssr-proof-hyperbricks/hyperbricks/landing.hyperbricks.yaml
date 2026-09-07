@@ -1,0 +1,64 @@
+ssr_proof_health:
+  - type: fragment
+  - route: healthz
+  - nocache: true
+  - content_type: text/plain; charset=utf-8
+  - status:
+      - type: text
+      - value: ok
+
+ssr_start:
+  - type: fragment
+  - route: start
+  - content_type: text/plain; charset=utf-8
+  - status:
+      - type: text
+      - value: start
+
+ssr_proof_page:
+  - type: hypermedia
+  - route: index
+  - nocache: true
+  - beautify: false
+  - content_type: text/html; charset=utf-8
+  - headers:
+      Cache-Control: no-store
+  - template:
+      inline: '{{.document}}'
+      values:
+        document:
+          - type: template
+          - inline: '<!DOCTYPE html><html><head><title>SSR Proof Landing</title></head><body><main id="landing" data-request-id="{{.Params.rid}}">{{.content}}</main></body></html>'
+          - querykeys:
+              - rid
+          - values:
+              content:
+                - type: tree
+                - hero:
+                    - type: template
+                    - inline: '<section class="hero"><h1>SSR Proof Landing</h1><p>Nested server-rendered output with request isolation.</p><a href="/start">Start</a></section>'
+                - features:
+                    - type: template
+                    - inline: '<section class="features"><div class="feature-list">{{.cards}}</div></section>'
+                    - values:
+                        cards:
+                          - type: tree
+                          - native_rendering:
+                              - type: template
+                              - inline: '<article class="feature-card"><h2>Native rendering</h2><p>HTML is generated on the server.</p></article>'
+                          - nested_composition:
+                              - type: template
+                              - inline: '<article class="feature-card"><h2>Nested composition</h2><p>Components contain components across three levels.</p></article>'
+                          - request_state:
+                              - type: template
+                              - inline: '<article class="feature-card"><h2>Request state</h2><p>Request {{.Params.rid}} stays isolated.</p></article>'
+                              - querykeys:
+                                  - rid
+                              - values: {}
+                - proof:
+                    - type: template
+                    - inline: '<section class="proof"><dl class="metrics"><div class="metric"><dt>Request</dt><dd>{{.Params.rid}}</dd></div><div class="metric"><dt>Mode</dt><dd>{{.mode}}</dd></div></dl></section>'
+                    - querykeys:
+                        - rid
+                    - values:
+                        mode: SSR

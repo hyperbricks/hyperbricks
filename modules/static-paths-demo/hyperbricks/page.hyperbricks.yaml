@@ -1,0 +1,13 @@
+home:
+  - type: hypermedia
+  - route: index
+  - template:
+      template:
+        file: page.html
+      values:
+        resolved_static_file:
+          path: {base: static, path: thefile.txt}
+
+nested:
+  - inherit: home
+  - route: nested/demo

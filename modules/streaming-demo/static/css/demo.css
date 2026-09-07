@@ -1,0 +1,37 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #24342e;
+  background: #f5f7f4;
+  line-height: 1.55;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { width: min(860px, calc(100% - 40px)); margin: 54px auto; }
+h1 { margin: 0 0 12px; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; letter-spacing: -.035em; }
+h2 { margin: 0 0 14px; font-size: 1.25rem; }
+p { margin: 10px 0; }
+.eyebrow { margin: 0 0 12px; color: #547165; font-size: .8rem; letter-spacing: .09em; text-transform: uppercase; font-weight: 650; }
+.intro { max-width: 620px; color: #53665d; font-size: 1.08rem; }
+.controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 28px 0 18px; }
+button { border: 1px solid #245941; border-radius: 7px; background: #245941; color: white; padding: 11px 18px; font: inherit; font-weight: 600; cursor: pointer; }
+button.secondary { background: transparent; color: #245941; }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid #e8b55c; outline-offset: 3px; }
+#connection-status { flex-basis: 100%; font-size: .9rem; color: #53665d; min-height: 1.4em; }
+.panel { background: white; border: 1px solid #cddbd1; border-radius: 12px; padding: 28px; min-height: 212px; }
+.panel h2 { font-size: 1.65rem; }
+progress { display: block; width: 100%; height: 18px; accent-color: #318058; margin: 18px 0; }
+.details { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 32px; }
+label { display: block; font-size: .9rem; margin-bottom: 7px; }
+input { width: 100%; padding: 10px 12px; border: 1px solid #b9c9bd; border-radius: 6px; font: inherit; background: white; }
+.details p, ol { font-size: .9rem; color: #53665d; }
+ol { margin: 0; padding-left: 24px; }
+li { padding: 4px 0; }
+footer { margin-top: 36px; border-top: 1px solid #d8e0d8; padding-top: 18px; color: #617267; font-size: .85rem; }
+a { color: #245941; text-underline-offset: 3px; }
+@media (max-width: 620px) {
+  main { margin-top: 28px; }
+  .details { grid-template-columns: 1fr; gap: 24px; }
+  .panel { padding: 22px; }
+}

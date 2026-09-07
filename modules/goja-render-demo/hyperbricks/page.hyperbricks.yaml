@@ -1,0 +1,33 @@
+availability_page:
+  - type: hypermedia
+  - route: index
+  - template:
+      inline: |
+        <!DOCTYPE html>
+          <html lang="nl">
+          <head>
+              <meta charset="utf-8">
+              <title>Beschikbaarheid</title>
+          </head>
+          <body>
+              <main>
+                  <h1>Beschikbaarheid!</h1>
+                  <form method="get">
+                      <label>Aantal <input type="number" name="quantity" min="1" max="10000" value="1" required></label><button type="submit">Controleer</button>
+                  </form>{{.availability}}
+              </main>
+          </body>
+          </html>
+      values:
+        availability:
+          - type: goja_render
+          - script:
+              file:
+                base: resources
+                path: scripts/availability.js
+          - querykeys:
+              - quantity
+          - values:
+              stock: 12
+          - timeout: 100ms
+          - inline: '<p role="status">{{.Data.message}}</p>'

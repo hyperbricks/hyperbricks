@@ -1,0 +1,9 @@
+{
+  "plugin": "github.com/hyperbricks/plugins/streaming-demo",
+  "source": "streaming_demo_plugin.go",
+  "runtime": "native",
+  "version": "1.0.0",
+  "binary": "StreamingDemoPlugin",
+  "compatible_hyperbricks": [">=1.2.3-beta"],
+  "description": "Four-step SSE demo using the native handled-response stream callback"
+}

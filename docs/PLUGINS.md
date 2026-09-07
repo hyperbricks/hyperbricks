@@ -61,6 +61,96 @@ page:
 The `plugin` field must match the enabled artifact name exactly, without `.so`
 or `.wasm`. The `data` map is plugin-specific input.
 
+## Native Streaming Responses
+
+A native Go plugin can return `shared.HandledResponse` with a `Stream` callback
+to produce its HTTP body incrementally. Use this for a plugin-owned response,
+such as a finite stream of SSE HTML updates. A regular rendered string remains
+a buffered response; this contract does not automatically stream nested page
+components or proxy an upstream API stream. The current WASM ABI returns HTML
+and does not support a Go stream callback.
+
+The callback type is:
+
+```go
+func(context.Context, io.Writer, func() error) error
+```
+
+Prepare status, content type, headers and cookies in `Render`, then return the
+callback. Do not start writing during `Render` or retain its context for later
+use. HyperBricks evaluates the route guard before rendering and calls the
+stream only after rendering finishes. The callback receives the live HTTP
+request context, a body writer and a flush function.
+
+Read any request data you need during `Render` and capture client-specific
+values in that request's callback. The registered plugin instance is shared
+between requests; a shared field representing the current user or current
+response would not be request-scoped. Shared configuration and connection pools
+can stay on the plugin instance. Keep mutable customer data local to the request.
+
+Before streaming begins, HyperBricks consumes up to 256 KiB of any unread request
+body, with a maximum wait of five seconds. An existing shorter server read timeout
+still applies. Excess unread data receives `413`, incomplete or malformed data
+receives `400`, and a read timeout receives `408`; the producer does not run.
+This limit applies to leftover data, not the size of a body the plugin has already
+fully read. Consume larger uploads during `Render`, with the application's own
+size and validation rules, before returning a streaming response. Leave request
+body closure to the HTTP server so it can verify that reading reached EOF. This ensures
+that a disconnected HTTP/1 client can be detected while the producer is idle.
+
+For example, a plugin can return a single SSE message like this:
+
+```go
+return shared.HandledResponse{
+    Status:      http.StatusOK,
+    ContentType: "text/event-stream",
+    Headers:     map[string]string{"Cache-Control": "no-store"},
+    NoCache:     true,
+    Stream: func(requestContext context.Context, output io.Writer, flush func() error) error {
+        ctx, cancel := context.WithTimeout(requestContext, 4*time.Second)
+        defer cancel()
+        if err := ctx.Err(); err != nil {
+            return err
+        }
+        if _, err := fmt.Fprint(output, "data: <p>Ready</p>\n\n"); err != nil {
+            return err
+        }
+        return flush()
+    },
+}, nil
+```
+
+This Go example uses `context`, `fmt`, `io`, `net/http`, `time` and the
+HyperBricks `shared` package. For several updates, write and flush each complete
+message, and make waits select on `ctx.Done()` as well as their timer. Stop on
+cancellation or a write/flush error and return the error to the server. Do not
+retain the writer or flush function after the callback returns, and do not write
+from background goroutines. Cancellation is cooperative: the server cannot stop
+arbitrary plugin code that ignores its context or blocks outside these calls.
+
+`Body` and `Stream` are mutually exclusive. One response has one owner: if
+multiple rendered plugins return handled responses, HyperBricks rejects the
+conflict before running a stream. Only the server writes status and headers;
+the callback writes body bytes. It must not fetch a response writer from the
+render context or try to change metadata after streaming starts.
+
+Stream responses bypass the rendered-output cache and do not receive a
+`Content-Length`. Set `nocache: true` on dynamic plugin routes, especially ones
+that sometimes return ordinary HTML: route cache lookup happens before plugin
+rendering, so an earlier cached HTML response could otherwise hide a later stream.
+Flushing publishes each completed chunk without waiting for
+the rest of the stream. The configured `hyperbricks.server.write_timeout`
+continues to apply; streaming does not silently extend it. Set an appropriate
+server timeout and an application deadline for the stream. Once the response
+has started, a callback error ends it and is recorded by the server; it cannot
+be replaced with a new error status or an HTML error page. Intermediary proxies
+may need their own buffering settings for early delivery.
+
+The [native streaming demo](../modules/streaming-demo/README.md) provides a
+complete module, build instructions and cancellation tests. Its existing
+`fragment` route contains one `plugin` component; no additional streaming YAML
+component or HTMX-specific core behavior is required.
+
 ## WASM Plugins
 
 WASM plugins use the same `<PLUGIN>` component contract as native plugins. The

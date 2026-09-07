@@ -1074,6 +1074,10 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 		renderOutput, renderErrors = rm.Render(configCopy["@type"].(string), configCopy, ctx)
 	}
 	renderErrors = append(renderErrors, getRouteSourceErrors(route)...)
+	handledResponse, captureErr := handledCapture.Result()
+	if captureErr != nil {
+		renderErrors = append(renderErrors, captureErr)
+	}
 
 	if resolveBeautify(configCopy, hbConfig.Server.Beautify) {
 		renderOutput = gohtml.Format(renderOutput)
@@ -1083,8 +1087,20 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 		recordRenderDiagnostics(r, requestID, route, renderErrors)
 	}
 
-	if handledCapture != nil && handledCapture.Response != nil {
-		return renderHandledContent(requestID, status, contentType, headers, cookies, nocache, len(renderErrors), handledCapture.Response)
+	if captureErr != nil {
+		logging.GetLogger().Errorw("Invalid plugin response ownership", "route", route, "request_id", requestID, "error", captureErr)
+		return RenderContent{
+			Content:     "invalid plugin response",
+			NoCache:     true,
+			ContentType: "text/plain; charset=utf-8",
+			Status:      http.StatusInternalServerError,
+			Headers:     map[string]string{"Cache-Control": "no-store"},
+			RequestID:   requestID,
+			ErrorCount:  len(renderErrors),
+		}
+	}
+	if handledResponse != nil {
+		return renderHandledContent(requestID, status, contentType, headers, cookies, nocache, len(renderErrors), handledResponse)
 	}
 
 	return RenderContent{
@@ -1185,6 +1201,7 @@ func cloneHandledResponseData(response *shared.HandledResponse) *shared.HandledR
 		Status:      response.Status,
 		ContentType: response.ContentType,
 		NoCache:     response.NoCache,
+		Stream:      response.Stream,
 	}
 	if len(response.Body) > 0 {
 		cloned.Body = append([]byte(nil), response.Body...)
@@ -1416,6 +1433,21 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 	logging.GetLogger().Debugw("Received request for route", "route", route)
 	if hbConfig.Mode == shared.LIVE_MODE {
 		cacheEntry := handleLiveMode(w, route, r, requestID)
+		if cacheEntry.Handled != nil && cacheEntry.Handled.Stream != nil {
+			content := RenderContent{
+				Handled:     cacheEntry.Handled,
+				Headers:     cacheEntry.Headers,
+				Cookies:     cacheEntry.Cookies,
+				ContentType: cacheEntry.ContentType,
+				Status:      cacheEntry.Status,
+				RequestID:   requestID,
+				ErrorCount:  cacheEntry.ErrorCount,
+			}
+			if err := writeStreamResponse(w, r, content); err != nil {
+				logStreamResponseError(r.Context(), route, requestID, err)
+			}
+			return
+		}
 		if writeNotModifiedResponse(w, route, requestID, r, cacheEntry) {
 			return
 		}
@@ -1424,6 +1456,12 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		renderContent := handleDeveloperMode(w, route, r, requestID)
+		if renderContent.Handled != nil && renderContent.Handled.Stream != nil {
+			if err := writeStreamResponse(w, r, renderContent); err != nil {
+				logStreamResponseError(r.Context(), route, requestID, err)
+			}
+			return
+		}
 		if !writeRenderResponse(w, route, requestID, renderContent.Content, "", renderContent.Handled, renderContent.Headers, renderContent.Cookies, renderContent.ContentType, renderContent.Status, renderContent.ErrorCount) {
 			return
 		}

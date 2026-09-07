@@ -1,0 +1,52 @@
+scripts:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: js/main.ts}
+  - outfile:
+      path: {base: static, path: js/app.js}
+  - minify: true
+  - minify_identifiers: true
+  - sourcemap: true
+  - cache: true
+  - fingerprint: true
+  - target: [es2020, chrome110, safari16]
+  - enclose: '<script src="|" defer></script>'
+
+styles:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: css/site.css}
+  - outfile:
+      path: {base: static, path: css/site.css}
+  - minify: true
+  - sourcemap: true
+  - cache: true
+  - fingerprint: true
+  - target: [chrome110, safari16]
+  - loader:
+      .png: file
+  - enclose: '<link rel="stylesheet" href="|">'
+
+estimate:
+  - type: hypermedia
+  - route: index
+  - static: index.html
+  - nocache: true
+  - doctype: '<!DOCTYPE html>'
+  - htmltag: '<html lang="en">'
+  - head:
+      - type: head
+      - metadata:
+          - type: html
+          - value: |
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>Order estimate | HyperBricks</title>
+      - stylesheet:
+          - inherit: styles
+      - calculator:
+          - inherit: scripts
+  - body:
+      - type: template
+      - template:
+          file: {base: templates, path: estimate.html}

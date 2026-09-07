@@ -1,0 +1,5 @@
+/static/*
+!/static/.gitkeep
+!/rendered/
+/rendered/*
+!/rendered/.gitkeep

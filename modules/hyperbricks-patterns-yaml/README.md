@@ -72,8 +72,7 @@ The rule is simple:
 Run these commands from the project root, which contains `modules/` and `bin/`:
 
 ```sh
-cd /path/to/hyperbricks
-export HYPERBRICKS_LOCAL_PATH=/path/to/hyperbricks
+export HYPERBRICKS_LOCAL_PATH="$PWD"
 ```
 
 Use a `hyperbricks` executable built from that same checkout. The export makes

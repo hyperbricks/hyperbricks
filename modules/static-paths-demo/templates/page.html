@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Static paths demo</title>
+  <link rel="stylesheet" href="/static/demo.css">
+</head>
+<body>
+  <main>
+    <h1>One URL, configurable disk location</h1>
+    <nav aria-label="Demo pages"><a href="/">Home</a> · <a href="/nested/demo">Nested page</a></nav>
+    <p>Both pages load their stylesheet and marker file through <code>/static/</code>.</p>
+    <h2>Browser URL</h2>
+    <p><a href="/static/thefile.txt">/static/thefile.txt</a></p>
+    <iframe src="/static/thefile.txt" title="Marker from the active static directory"></iframe>
+    <h2>Resolved disk path</h2>
+    <p><code id="resolved-static-file">{{.resolved_static_file}}</code></p>
+    <p>This is the result of <code>path: {base: static, path: thefile.txt}</code>, not an HTML URL.</p>
+    <p><code>base: module</code> starts at the selected module; <code>base: root</code> starts at the CLI working directory. Neither changes <code>/static/</code>.</p>
+    <p>On the nested page, a relative URL such as <code>static/thefile.txt</code> would request <code>/nested/static/thefile.txt</code>. Use the leading slash.</p>
+  </main>
+</body>
+</html>
