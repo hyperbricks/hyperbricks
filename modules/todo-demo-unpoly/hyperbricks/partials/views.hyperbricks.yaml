@@ -1,0 +1,27 @@
+todo_panel:
+  - type: template
+  - template:
+      file: tasks.html
+  - querykeys: [state, filter, request]
+
+todo_dashboard:
+  - type: tree
+  - heading:
+      - type: text
+      - value: My tasks
+      - enclose: '<h1>|</h1>'
+  - introduction:
+      - type: html
+      - value: '<p class="lede">Make room for the next thing. Your list stays in this browser.</p>'
+  - workspace:
+      - type: template
+      - template:
+          file: dashboard.html
+      - values:
+          panel:
+            - inherit: todo_panel
+
+todo_about:
+  - type: template
+  - template:
+      file: about.html

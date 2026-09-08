@@ -1,0 +1,9 @@
+<main>
+  <h1>{{.title}}</h1>
+  <p>HyperBricks renders the HTML. HTMX updates the card below.</p>
+  <button hx-get="/hello-fragment" hx-target="#target" hx-swap="innerHTML">
+    Load fragment
+  </button>
+  <p id="update-status" role="status">No updates yet.</p>
+  <div id="target">{{.card}}</div>
+</main>

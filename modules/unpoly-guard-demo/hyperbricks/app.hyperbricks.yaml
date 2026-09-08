@@ -1,0 +1,185 @@
+styles:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: css/app.css}
+  - outfile:
+      path: {base: static, path: css/app.css}
+  - cache: true
+  - fingerprint: true
+  - enclose: <link rel="stylesheet" href="|">
+scripts:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: js/app.js}
+  - outfile:
+      path: {base: static, path: js/app.js}
+  - cache: true
+  - fingerprint: true
+  - enclose: <script src="|" defer></script>
+base_page:
+  - type: hypermedia
+  - nocache: true
+  - response:
+      headers:
+        Cache-Control: no-store
+  - head:
+      - type: head
+      - meta:
+          viewport: width=device-width, initial-scale=1
+      - js:
+          - /static/vendor/unpoly-3.14.3.js
+      - styles:
+          - inherit: styles
+      - scripts:
+          - inherit: scripts
+  - body:
+      - type: template
+      - template:
+          file: shell.html
+      - values:
+          content:
+            - type: tree
+
+home_page:
+  - inherit: base_page
+  - route: index
+  - title: Unpoly guard demo
+  - body:
+      - values:
+          content:
+            - type: template
+            - template:
+                file: home.html
+
+login_page:
+  - inherit: base_page
+  - route: login
+  - title: Sign in
+  - body:
+      - values:
+          content:
+            - type: template
+            - template:
+                file: login.html
+
+forbidden_page:
+  - inherit: base_page
+  - route: forbidden
+  - title: Access denied
+  - body:
+      - values:
+          content:
+            - type: template
+            - template:
+                file: forbidden.html
+
+private_page:
+  - inherit: base_page
+  - route: private
+  - title: Protected page
+  - guard:
+      enabled: true
+      auth:
+        cookie: unpoly_guard_session
+      require:
+        authenticated: true
+      authorize:
+        endpoint: /auth/authorize
+        method: GET
+      on_unauthenticated:
+        default:
+          status: 303
+          headers:
+            Location: /login
+        variants:
+          - when:
+              request_headers:
+                X-Demo-Client: unpoly
+            response:
+              status: 401
+      on_forbidden:
+        default:
+          status: 303
+          headers:
+            Location: /forbidden
+        variants:
+          - when:
+              request_headers:
+                X-Demo-Client: unpoly
+            response:
+              status: 403
+  - body:
+      - values:
+          content:
+            - type: template
+            - template:
+                file: private.html
+
+private_fragment:
+  - type: fragment
+  - route: fragments/private
+  - guard:
+      enabled: true
+      auth:
+        cookie: unpoly_guard_session
+      require:
+        authenticated: true
+      authorize:
+        endpoint: /auth/authorize
+        method: GET
+      on_unauthenticated:
+        default:
+          status: 303
+          headers:
+            Location: /login
+        variants:
+          - when:
+              request_headers:
+                X-Demo-Client: unpoly
+            response:
+              status: 401
+      on_forbidden:
+        default:
+          status: 303
+          headers:
+            Location: /forbidden
+        variants:
+          - when:
+              request_headers:
+                X-Demo-Client: unpoly
+            response:
+              status: 403
+  - content:
+      - type: html
+      - value: |
+          <section id="protected-panel">PRIVATE-FRAGMENT: Authorized by the server.</section>
+
+auth_login:
+  - type: fragment
+  - route: auth/login
+  - nocache: true
+  - handler:
+      - type: plugin
+      - plugin: UnpolyGuardAuth__unpoly-guard-demo@1.0.0
+      - data:
+          action: login
+
+auth_logout:
+  - type: fragment
+  - route: auth/logout
+  - nocache: true
+  - handler:
+      - type: plugin
+      - plugin: UnpolyGuardAuth__unpoly-guard-demo@1.0.0
+      - data:
+          action: logout
+
+auth_authorize:
+  - type: fragment
+  - route: auth/authorize
+  - nocache: true
+  - handler:
+      - type: plugin
+      - plugin: UnpolyGuardAuth__unpoly-guard-demo@1.0.0
+      - data:
+          action: authorize

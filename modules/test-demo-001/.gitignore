@@ -1,0 +1,4 @@
+/static/css/
+/static/js/
+/rendered/*
+!/rendered/.gitkeep

@@ -1,0 +1,33 @@
+imports:
+  - assets.hyperbricks.yaml
+  - navigation.hyperbricks.yaml
+
+todo_page:
+  - type: hypermedia
+  - doctype: '<!DOCTYPE html>'
+  - htmltag: '<html lang="en">'
+  - response:
+      headers:
+        Cache-Control: no-store
+        X-Content-Type-Options: nosniff
+  - head:
+      - type: head
+      - metadata:
+          - type: html
+          - value: |
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <script src="/static/vendor/unpoly-3.14.3.js" defer></script>
+      - styles:
+          - inherit: todo_styles
+      - scripts:
+          - inherit: todo_scripts
+  - body:
+      - type: template
+      - template:
+          file: shell.html
+      - values:
+          navigation:
+            - inherit: todo_navigation
+          content:
+            - type: tree

@@ -1,0 +1,59 @@
+{{- /* Validate untrusted query data before using it as template records. */ -}}
+{{- $items := list -}}
+{{- $error := "" -}}
+{{- $raw := .Params.state | default "[]" -}}
+{{- if not (kindIs "string" $raw) -}}
+  {{- $error = "The task list must be supplied once." -}}
+{{- else if gt (len $raw) 20000 -}}
+  {{- $error = "The task list is too large." -}}
+{{- else -}}
+  {{- $parsed := fromJson $raw -}}
+  {{- if not (kindIs "slice" $parsed) -}}
+    {{- $error = "The task list must be a JSON array." -}}
+  {{- else if gt (len $parsed) 20 -}}
+    {{- $error = "This demo supports up to 20 tasks." -}}
+  {{- else -}}
+    {{- $seen := dict -}}
+    {{- range $parsed -}}
+      {{- if not (kindIs "map" .) -}}
+        {{- $error = "A task has an invalid format." -}}
+      {{- else if not (and (kindIs "string" .id) (kindIs "string" .title) (kindIs "bool" .done)) -}}
+        {{- $error = "Each task needs an ID, a title and a completion value." -}}
+      {{- else if not (and (regexMatch "^[a-zA-Z0-9-]{1,64}$" .id) (ne (trim .title) "") (le (len .title) 512)) -}}
+        {{- $error = "A task has an invalid ID or title." -}}
+      {{- else if hasKey $seen .id -}}
+        {{- $error = "Task IDs must be unique." -}}
+      {{- else -}}
+        {{- $_ := set $seen .id true -}}
+        {{- $items = append $items . -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $filter := .Params.filter | default "all" -}}
+{{- if not (kindIs "string" $filter) -}}{{- $filter = "all" -}}{{- end -}}
+{{- $visible := list -}}
+{{- $completed := 0 -}}
+{{- range $items -}}
+  {{- if .done -}}{{- $completed = add1 $completed -}}{{- end -}}
+  {{- if or (eq $filter "all") (and (eq $filter "active") (not .done)) (and (eq $filter "completed") .done) -}}
+    {{- $visible = append $visible . -}}
+  {{- end -}}
+{{- end -}}
+<turbo-frame id="todo-panel" aria-label="Task list">
+  <div data-render-result data-request="{{.Params.request}}" data-filter="{{$filter}}">
+  {{if $error}}
+    <p class="error" data-render-error>{{$error}}</p>
+  {{else}}
+    <div class="progress-summary"><div><span class="eyebrow">Your progress</span><p><strong>{{sub (len $items) $completed}}</strong> left to do <span class="muted">/ {{len $items}} total</span></p></div><span class="completion">{{$completed}} completed</span></div>
+    <progress aria-label="Task completion" value="{{$completed}}" max="{{if $items}}{{len $items}}{{else}}1{{end}}"></progress>
+    <ul class="task-list" aria-label="Tasks">
+    {{range $visible}}
+      <li data-task-id="{{.id}}" class="task {{if .done}}is-done{{end}}"><label class="task-label"><input type="checkbox" data-toggle="{{.id}}" {{if .done}}checked{{end}}><span class="task-title">{{.title}}</span></label><button type="button" class="delete-task" data-delete="{{.id}}" aria-label="Delete {{.title}}">×</button></li>
+    {{else}}
+      <li class="empty-state"><span class="empty-mark" aria-hidden="true">✓</span><h2>{{if $items}}All clear here.{{else}}Start with one small task.{{end}}</h2><p>{{if $items}}No tasks match this filter.{{else}}Add something above and make a little progress.{{end}}</p></li>
+    {{end}}
+    </ul>
+  {{end}}
+  </div>
+</turbo-frame>

@@ -1,0 +1,10 @@
+{
+  "plugin": "github.com/hyperbricks/plugins/unpoly-guard-demo",
+  "source": "auth.go",
+  "version": "1.0.0",
+  "binary": "UnpolyGuardAuth",
+  "compatible_hyperbricks": [
+    ">=1.2.3-beta"
+  ],
+  "description": "Local Unpoly guard demonstration"
+}
