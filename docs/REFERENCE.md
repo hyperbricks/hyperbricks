@@ -293,7 +293,9 @@ A `<FRAGMENT>` dynamically renders part of an HTML page, allowing updates withou
 
 Fixture: `fragment-@doc.hyperbricks.yaml.test`
 
-A FRAGMENT dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+A FRAGMENT renders partial HTML without a full document wrapper. A browser library can load that HTML into an existing page.
+
+This example configures a response header for [HTMX 4](https://four.htmx.org/): `HX-Trigger` tells HTMX to dispatch the `myEvent` event. HyperBricks sends the configured header; HTMX handles it in the browser.
 
 
 ```yaml
@@ -457,7 +459,7 @@ Route-owning page shell that renders the main HyperBricks document.
 
 Fixture: `hypermedia-@doc.hyperbricks.yaml.test`
 
-HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use `<FRAGMENT>` to utilize hx-[method] (GET,POST etc) requests.
+HYPERMEDIA renders a complete HTML document. The route property defines its URL. Use `fragment` to return partial HTML without the document wrapper.
 
 
 ```yaml

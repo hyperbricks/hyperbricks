@@ -31,7 +31,7 @@ hypermedia:
                   color:green;
               }
 ==== explainer ====
-HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use <FRAGMENT> to utilize hx-[method] (GET,POST etc) requests.
+HYPERMEDIA renders a complete HTML document. The route property defines its URL. Use `fragment` to return partial HTML without the document wrapper.
 ==== expected json ====
 {
   "BodyTag": "",

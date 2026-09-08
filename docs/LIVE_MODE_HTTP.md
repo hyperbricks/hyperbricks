@@ -1,6 +1,6 @@
 # Live Mode HTTP Settings
 
-Live mode has two separate concerns:
+Live mode has three separate concerns:
 
 - `live.cache` controls rendered output reuse.
 - `server.*` controls HTTP connection behavior.
@@ -8,7 +8,8 @@ Live mode has two separate concerns:
 
 Those settings solve different problems. Cache settings decide whether a route
 can reuse rendered content. Server settings decide how long clients may hold
-network resources.
+network resources. Rate limiting controls how many requests the process accepts.
+These settings work independently of the browser library used by the application.
 
 ## Connection Settings
 
@@ -120,7 +121,7 @@ page:
       - value: <main>Account content</main>
 ```
 
-Fragment:
+Fragment with [HTMX 4](https://four.htmx.org/) response headers:
 
 ```yaml
 account_status:
@@ -136,11 +137,15 @@ account_status:
       - value: <div id="account-status">Updated</div>
 ```
 
+In this HTMX example, `HX-Retarget` and `HX-Reswap` tell HTMX where and how to
+insert the HTML. They do not control caching. The same `nocache: true` setting
+applies to fragments used by any browser client.
+
 The `nocache` field belongs on the route owner because the live cache decision
 is made before child components render. Setting it only inside a nested template
 or tree item is not enough.
 
-Routes with `guard` are also treated as non-cacheable, because authorization is
+Routes with an enabled `guard` are also treated as non-cacheable, because authorization is
 request-specific. See [Route Guard](ROUTE_GUARD.md).
 
 `api_fragment_render` routes are always dynamic.

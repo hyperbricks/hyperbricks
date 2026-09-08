@@ -1,7 +1,8 @@
 # HTTP Responses
 
-The route owners `hypermedia`, `fragment`, and `api_fragment_render` share one
-browser response contract:
+Use `response` on a `hypermedia`, `fragment`, or `api_fragment_render` route to
+configure the HTTP status and headers returned to the browser. These settings
+work independently of the JavaScript library used by the page:
 
 ```yaml
 status_fragment:
@@ -24,11 +25,11 @@ otherwise interpret as booleans or numbers, such as `"true"` and `"60"`.
 Names are case-insensitive; duplicate names with different capitalization and
 invalid header names or values are rejected.
 
-HyperBricks renders the HTML and applies the configured HTTP response. It does
-not detect HTMX, invent HTMX response headers, or convert redirects based on a
-browser library. Templates and application plugins may still use HTMX or
-another client explicitly. The browser library interprets its own attributes
-and headers.
+HyperBricks renders the HTML and applies the configured HTTP response. The
+application chooses any library-specific headers; the browser library
+interprets them. For example, a project using HTMX can configure `HX-Redirect`,
+while a normal browser redirect uses a `3xx` status and `Location`. HyperBricks
+does not automatically convert one into the other.
 
 ## Browser And Upstream Responses
 
@@ -41,10 +42,11 @@ and headers.
 | `guard.authorize.headers` | Headers sent to the authorization endpoint. |
 
 In an API template, `.Status` remains the upstream API status. It is independent
-of `response.status`. A static `HX-Trigger` response header is sent whenever the
-route produces its response; it does not establish that an upstream write
-succeeded. Let the template or application logic inspect the upstream result
-before triggering a success-only refresh. See [API Render](API_RENDER.md).
+of `response.status`. A configured response header does not establish that an
+upstream write succeeded. For example, in an HTMX integration, a static
+`HX-Trigger` header is sent whenever the route produces its response. Let the
+template or application logic inspect the upstream result before triggering a
+success-only refresh. See [API Render](API_RENDER.md).
 
 ## Ownership And Precedence
 
@@ -80,7 +82,11 @@ than silently translated or ignored. Migrate reusable base definitions as well
 as the routes that inherit them. Browser markup such as `hx-get`, `hx-target`,
 and `hx-swap` continues to belong to the application; it is unchanged.
 
-### Fragment And API Fragment Headers
+### HTMX Example: Fragment And API Fragment Headers
+
+This example keeps the HTMX integration while replacing the removed
+HTMX-specific fields with general HTTP headers. The resulting example uses
+[HTMX 4](https://four.htmx.org/).
 
 Before:
 
@@ -145,7 +151,11 @@ Keep API request headers at the top-level `headers` field. Moving them under
 `response.headers` would send credentials or request metadata to the browser
 instead of the API.
 
-### Guard Denials
+### HTMX Example: Guard Denials
+
+The guard checks access on the server, independently of the browser library.
+This example configures a normal browser redirect by default and an HTMX
+response when the request contains `HX-Request: "true"`.
 
 Before:
 

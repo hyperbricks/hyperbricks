@@ -28,6 +28,9 @@ Examples:
 
 Route guard is evaluated before rendering starts.
 
+The access check runs on the server and does not depend on HTMX. After a
+denial, the configured response determines how the browser is notified.
+
 If the guard denies the request:
 
 - no child items render
@@ -36,6 +39,10 @@ If the guard denies the request:
 - no upstream request is made for `api_fragment_render`
 
 ## Guard Shape
+
+This example supports ordinary browser navigation and [HTMX 4](https://four.htmx.org/)
+requests. The `HX-*` headers configure the HTMX response variants; they do not
+affect the authorization decision.
 
 ```yaml
 guard:
@@ -167,6 +174,8 @@ Rules:
 
 Defines what happens when authentication is missing or invalid.
 
+Example with a normal redirect and an HTMX response variant:
+
 ```yaml
 guard:
   on_unauthenticated:
@@ -187,6 +196,8 @@ guard:
 ### `on_forbidden`
 
 Defines what happens when the request is authenticated but not allowed.
+
+Example with a normal redirect and an HTMX response variant:
 
 ```yaml
 guard:
@@ -269,6 +280,8 @@ their existing meanings.
 
 ## Protected Page
 
+Example with HTMX-aware denial responses:
+
 ```yaml
 dashboard:
   - type: hypermedia
@@ -316,6 +329,8 @@ dashboard:
 Anonymous requests are redirected before the page renders.
 
 ## Owner-Only Page
+
+Example with an upstream authorization check and HTMX-aware denial responses:
 
 ```yaml
 builder:
@@ -373,6 +388,8 @@ upstream authorization check before rendering starts.
 
 ## Protected Fragment
 
+Example with HTMX-aware denial responses:
+
 ```yaml
 project_members:
   - type: fragment
@@ -424,6 +441,8 @@ project_members:
 If the route is denied, `panel` does not render.
 
 ## Protected API Fragment
+
+Example with HTMX-aware denial responses:
 
 ```yaml
 project_status:

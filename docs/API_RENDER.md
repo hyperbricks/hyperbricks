@@ -8,15 +8,15 @@ There are two API-oriented components:
 - `api_fragment_render` owns its own route and returns a dynamic fragment.
 
 Use `api_render` for public, cacheable, nested content. Use
-`api_fragment_render` for interactive, request-specific, authenticated, or HTMX
-fragment flows.
+`api_fragment_render` for interactive, request-specific, or authenticated
+fragment responses.
 
 ## At A Glance
 
 | YAML type | Runtime type | Route owner | Cache behavior | Typical use |
 | --- | --- | --- | --- | --- |
 | `api_render` | `<API_RENDER>` | no | cacheable by parent route | public feeds, public widgets, read-only API content |
-| `api_fragment_render` | `<API_FRAGMENT_RENDER>` | yes | always dynamic | forms, authenticated fragments, HTMX islands |
+| `api_fragment_render` | `<API_FRAGMENT_RENDER>` | yes | always dynamic | forms, authenticated fragments, API-backed page sections |
 
 `api_fragment_render` is forced to `nocache` at runtime.
 
@@ -105,6 +105,11 @@ SampleAPIs Coffee endpoint with `api_render` and freezes the result into
 maps query/form/body data to an upstream API request, renders the upstream
 response, and returns fragment HTML.
 
+### Example With HTMX
+
+This example configures response headers for [HTMX 4](https://four.htmx.org/).
+It assumes HTMX is loaded on the page and requests this route.
+
 ```yaml
 profile_fragment:
   - type: api_fragment_render
@@ -143,7 +148,8 @@ A typical HTMX flow is:
 3. If a `guard` is configured, it runs before any upstream API call.
 4. HyperBricks forwards the allowed request data to the upstream API.
 5. The upstream response is rendered through `inline` or `template`.
-6. HyperBricks returns fragment HTML plus any configured HTMX response headers.
+6. HyperBricks returns fragment HTML plus the configured response headers.
+7. HTMX processes the response and updates the target in the page.
 
 If the rendered body contains `hx-swap-oob` elements, HTMX applies those
 out-of-band swaps after the normal target swap.
@@ -182,6 +188,11 @@ Incoming data is merged before placeholders are applied:
 `body` placeholders use `$key` names resolved from that merged request data.
 Prefer simple placeholder names such as `$id`, `$name`, or `$email`; they are
 matched as word-like tokens.
+
+The following HTMX example forwards login data to an API and configures an
+`HX-Trigger` response header. The `login-updated` event signals that a response
+was rendered, not that authentication succeeded; inspect the upstream result
+before treating the login as successful.
 
 ```yaml
 login:

@@ -21,7 +21,7 @@ With HyperBricks, you can:
 * **Maintain** full control over templates, routing, and rendering — with no boilerplate or JavaScript lock-in
 * **Manage** state and logic for your app in a modular, versionable, and scalable way
 
-> **No JavaScript lock-in** — bundle JavaScript, TypeScript, and ordinary CSS using the **[native esbuild component](docs/ESBUILD.md)**, without an external plugin.
+> **No JavaScript lock-in** — bundle JavaScript, TypeScript, and ordinary CSS using the **[native esbuild component](docs/ESBUILD.md)**
 
 **[esbuild](https://esbuild.github.io/)** is a third-party Go library and an extremely fast bundler for the web.
 

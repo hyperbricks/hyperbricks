@@ -20,7 +20,9 @@ fragment:
       headers:
         HX-Trigger: myEvent
 ==== explainer ====
-A FRAGMENT dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+A FRAGMENT renders partial HTML without a full document wrapper. A browser library can load that HTML into an existing page.
+
+This example configures a response header for [HTMX 4](https://four.htmx.org/): `HX-Trigger` tells HTMX to dispatch the `myEvent` event. HyperBricks sends the configured header; HTMX handles it in the browser.
 ==== expected json ====
 {
   "Cache": "",

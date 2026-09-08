@@ -82,11 +82,19 @@ use. HyperBricks evaluates the route guard before rendering and calls the
 stream only after rendering finishes. The callback receives the live HTTP
 request context, a body writer and a flush function.
 
+The server sends and flushes the response headers before invoking the callback.
+Perform validation that may require a different HTTP status during `Render`.
+For `HEAD` requests and statuses without a response body (`204`, `205`, `304`),
+the callback is not invoked, although `Render` can still run. Keep work needed
+only to produce the stream inside the callback.
+
 Read any request data you need during `Render` and capture client-specific
 values in that request's callback. The registered plugin instance is shared
 between requests; a shared field representing the current user or current
 response would not be request-scoped. Shared configuration and connection pools
 can stay on the plugin instance. Keep mutable customer data local to the request.
+Capturing a map or pointer in a callback does not copy its contents; ensure that
+mutable client data belongs to that request rather than shared plugin state.
 
 Before streaming begins, HyperBricks consumes up to 256 KiB of any unread request
 body, with a maximum wait of five seconds. An existing shorter server read timeout
@@ -128,14 +136,20 @@ retain the writer or flush function after the callback returns, and do not write
 from background goroutines. Cancellation is cooperative: the server cannot stop
 arbitrary plugin code that ignores its context or blocks outside these calls.
 
+The writer sends the bytes supplied by the plugin; it does not HTML-escape them.
+When producing HTML containing user input, render it with Go `html/template`
+or escape the values appropriately. The example above sends only constant HTML.
+
 `Body` and `Stream` are mutually exclusive. One response has one owner: if
 multiple rendered plugins return handled responses, HyperBricks rejects the
 conflict before running a stream. Only the server writes status and headers;
 the callback writes body bytes. It must not fetch a response writer from the
 render context or try to change metadata after streaming starts.
 
-Stream responses bypass the rendered-output cache and do not receive a
-`Content-Length`. Set `nocache: true` on dynamic plugin routes, especially ones
+Stream responses bypass the rendered-output cache. The server enforces
+`Cache-Control: no-store` and removes `Content-Length`, `ETag` and HyperBricks
+cache metadata, including values supplied by the plugin.
+Set `nocache: true` on dynamic plugin routes, especially ones
 that sometimes return ordinary HTML: route cache lookup happens before plugin
 rendering, so an earlier cached HTML response could otherwise hide a later stream.
 Flushing publishes each completed chunk without waiting for
@@ -146,10 +160,11 @@ has started, a callback error ends it and is recorded by the server; it cannot
 be replaced with a new error status or an HTML error page. Intermediary proxies
 may need their own buffering settings for early delivery.
 
-The [native streaming demo](../modules/streaming-demo/README.md) provides a
-complete module, build instructions and cancellation tests. Its existing
-`fragment` route contains one `plugin` component; no additional streaming YAML
-component or HTMX-specific core behavior is required.
+The [native streaming demo](../modules/streaming-demo/README.md) uses HTMX in
+the browser to display the streamed HTML updates. It provides a complete module,
+build instructions and cancellation tests. Its `fragment` route contains one
+`plugin` component. The streaming response contract is independent of HTMX;
+no additional streaming YAML component is required.
 
 ## WASM Plugins
 

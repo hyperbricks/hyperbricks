@@ -1,6 +1,6 @@
 # Introduction
 
-HyperBricks is a Go runtime and build system for HTMX-powered hypermedia
+HyperBricks is a Go runtime and build system for hypermedia
 applications. You describe pages, fragments, templates, data calls, and route
 behavior in `*.hyperbricks.yaml` files; HyperBricks materializes that
 configuration into the same runtime component model for serving or static
@@ -55,7 +55,7 @@ page:
               </main>
 ```
 
-Example fragment:
+Example fragment for optional hypermedia library [HTMX 4](https://four.htmx.org/):
 
 ```yaml
 status:
@@ -71,9 +71,14 @@ status:
           <div id="status">Ready</div>
 ```
 
-This fragment explicitly configures HTTP headers for an HTMX client. Routes
-can use any browser library that consumes their HTML; see
-[HTTP responses](HTTP_RESPONSES.md) for the shared status and header contract.
+This example assumes HTMX is loaded on the page and requests this route.
+`HX-Retarget` tells HTMX which element to update; `HX-Reswap: outerHTML`
+tells it to replace that element, including its wrapper.
+
+HyperBricks renders the fragment and sends the configured headers. HTMX
+interprets those headers in the browser. The `fragment` component itself does
+not depend on HTMX, and HyperBricks does not add HTMX headers automatically.
+See [HTTP responses](HTTP_RESPONSES.md) for the shared status and header contract.
 
 ## Components
 
