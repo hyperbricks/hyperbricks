@@ -10,7 +10,7 @@
 
 
 
-**HyperBricks** is a fullstack **Web App Build System** [hypermedia](https://hypermedia.systems/book/contents/) applications. It enables you to build dynamic, modular web applications by describing your app’s state, structure, and behavior in declarative configuration files — called *hyperbricks*.
+**HyperBricks** is a fullstack **Web App Build System** [hypermedia](https://hypermedia.systems/book/contents/) applications. It enables you to build dynamic, modular web applications by describing your app’s state, structure, and behavior in declarative configuration files, called *hyperbricks*.
 
 HyperBricks is designed to provide full control over both the front-end and back-end of an application — without the complexity of traditional fullstack frameworks or CMSs.
 
