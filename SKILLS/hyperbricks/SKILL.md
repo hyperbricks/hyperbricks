@@ -24,7 +24,7 @@ Use the documentation for the HyperBricks version running the project. These
 paths are relative to the HyperBricks repository:
 
 - `docs/INTRODUCTION.md` and `docs/QUICKSTART.md`: introduction and first module.
-- `docs/HYPERBRICKS_CLI.md`: commands, flags, and module selection.
+- `docs/HYPERBRICKS_CLI.md`: commands, flags, module selection, and render diagnostics.
 - `docs/YAML_USAGE.md`: component syntax, imports, inheritance, resolvers, and templates.
 - `docs/REFERENCE.md`: component fields and supported values.
 - `docs/ROUTING.md`: URL matching and route configuration.
@@ -90,6 +90,9 @@ commands retain their documented module-name options; inspect
 Use the project's pinned or built binary when it needs unreleased components.
 A development binary can retain an older version label; compare its source
 revision as well when checking compatibility.
+
+For configuration or rendering problems, inspect the server log and its JSON
+diagnostic URL first; see [Troubleshooting and verification](#troubleshooting-and-verification).
 
 See [Project lifecycle](references/project-lifecycle.md) for installation,
 starters, module selection, and additional CLI commands.
@@ -409,6 +412,38 @@ source files; the archive builder does not apply Git ignore rules.
 See [Delivery formats](references/project-lifecycle.md#choose-the-delivery-format).
 
 ## Troubleshooting And Verification
+
+HyperBricks has built-in error reporting in the server log and a JSON render
+diagnostics endpoint. Use these when diagnosing broken output or assessing
+the runtime's error feedback; a missing value or incomplete page alone does
+not establish that diagnostics are absent.
+
+In development or debug mode, look for `Render diagnostics recorded` in the
+log. An error-level entry includes a URL such as:
+
+```text
+http://localhost:8080/__hyperbricks/render-diagnostics?request_id=hb-12
+```
+
+Open or fetch the actual logged URL, preserving its host, port, and request ID.
+The JSON identifies the request and route; its `errors` entries include `file`,
+`path` (component path), `key`, `type`, and `err` (message), where available.
+Use those details to locate the owning source, fix it, and request the affected
+route again to verify the result. An HTTP 200 response can still have component
+errors; check `X-Hyperbricks-Render-Error-Count` and use
+`X-Hyperbricks-Request-ID` to correlate a rendered response with its record.
+
+Without a request ID, `/__hyperbricks/render-diagnostics` returns the ten most
+recent records. Warning-only records may exist without the error-level log
+entry. The runtime retains the latest 200 records in memory; older links expire
+and restarting clears them.
+
+Configuration-load diagnostic links use `localhost` and the configured server
+port; open them after startup completes. The endpoint is disabled in live mode,
+and static exports omit the link because their temporary server stops. If a
+setup failure prevents the server from starting, use the terminal error; the
+endpoint is not available yet. Check the selected runtime version and mode
+before interpreting an unavailable endpoint as missing error reporting.
 
 | Problem | Check |
 | --- | --- |
