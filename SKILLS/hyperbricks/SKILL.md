@@ -20,16 +20,20 @@ With HyperBricks, you can:
 
 HyperBricks uses `*.hyperbricks.yaml` configuration files to define pages and HTML
 fragments, supply template data, and connect server-side logic. Templates control
-the HTML markup using Go’s `html/template` and Sprig functions. The native
-`esbuild` component bundles JavaScript, TypeScript, and CSS. For server-side logic,
-projects can call APIs, run trusted JavaScript with `goja_render`, or use Go
-plugins. The CLI creates and runs modules, exports static pages, and packages
-modules for deployment.
+the HTML markup using Go’s `html/template` and Sprig functions. 
 
-> **No JavaScript lock-in** — bundle JavaScript, TypeScript, and ordinary CSS using the **[native esbuild component](docs/ESBUILD.md)**
+**YAML is the source format; the runtime contract is component-based.** YAML
+source becomes ordered runtime configuration maps, which the runtime uses to
+configure and dispatch registered components. When implementing or diagnosing
+behavior, distinguish source parsing, runtime configuration, and component
+execution, and make changes in the layer that owns the behavior.
 
-**[esbuild](https://esbuild.github.io/)** is a third-party Go library and an extremely fast bundler for the web.
+**[esbuild](https://esbuild.github.io/)** is a third-party Go library and a fast bundler for web assets.
 
+**No JavaScript lock-in** — The hyperbricks native `esbuild` component bundles JavaScript, TypeScript, and CSS. See the documentation on how to use **[esbuild ](docs/ESBUILD.md)** component.
+
+For server-side logic, projects can call APIs, run trusted JavaScript with `goja_render`, or use Go
+plugins. The CLI creates and runs modules, exports static pages, and packages modules for deployment.
 
 ## Source Of Truth
 

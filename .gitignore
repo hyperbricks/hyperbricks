@@ -2,7 +2,7 @@
 
 /plugins/
 /bin/
-
+tmp/
 **/archive
 /archive/
 .cache/

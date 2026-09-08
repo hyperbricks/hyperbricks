@@ -347,6 +347,10 @@ hyperbricks start --deploy-init-config remote
 
 ## Starters
 
+`init` creates a module from the scaffold embedded in the installed HyperBricks
+binary. `init-starter` downloads a starter from the official
+[starters repository](https://github.com/hyperbricks/hyperbricks-starters).
+
 List compatible starters:
 
 ```bash
@@ -364,6 +368,17 @@ Install a specific starter version:
 ```bash
 hyperbricks init-starter get hello-world@1.0.0 -m demo
 ```
+
+Without `@version`, HyperBricks selects the highest starter version compatible
+with the running HyperBricks version. Compatibility is declared in the starter
+index through `compatible_hyperbricks`. An explicitly requested starter version
+must also pass this check; installation fails if it is incompatible. An omitted
+or empty compatibility list allows any HyperBricks version.
+
+The index and archive are downloaded from the starters repository's `main`
+branch. `@version` selects a versioned starter directory within that archive,
+not a Git tag or commit. Published starter version directories therefore need
+to remain unchanged for repeatable installations.
 
 ## Plugins
 
