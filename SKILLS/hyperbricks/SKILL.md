@@ -11,12 +11,13 @@ HyperBricks is a fullstack web application build system and Go runtime.
 Applications are organized in modules. Each module contains YAML component
 definitions, HTML templates, assets, and its own configuration.
 
-YAML defines pages, fragment responses, template data, and calls to server-side
-logic. HyperBricks renders these definitions into HTML. Templates use Go
-`html/template` and Sprig; browser assets can be bundled with native `esbuild`.
-Server-side logic can use APIs, trusted JavaScript through `goja_render`, or Go
-plugins. The CLI creates and runs modules, exports static pages, and builds
-archives for deployment.
+HyperBricks uses `*.hyperbricks.yaml` configuration files to define pages and HTML
+fragments, supply template data, and connect server-side logic. Templates control
+the HTML markup using Go’s `html/template` and Sprig functions. The native
+`esbuild` component bundles JavaScript, TypeScript, and CSS. For server-side logic,
+projects can call APIs, run trusted JavaScript with `goja_render`, or use Go
+plugins. The CLI creates and runs modules, exports static pages, and packages
+modules for deployment.
 
 ## Source Of Truth
 
