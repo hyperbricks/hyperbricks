@@ -7,7 +7,7 @@ metadata:
 
 ## HyperBricks
 
-**HyperBricks** is a fullstack **Web App Build System** for [HTMX](https://htmx.org/)-powered [hypermedia](https://hypermedia.systems/book/contents/) applications. It enables you to build dynamic, modular web applications by describing your app’s state, structure, and behavior in declarative configuration files — called *hyperbricks*.
+**HyperBricks** is a fullstack **web application build system and component runtime** for [hypermedia](https://hypermedia.systems/book/contents/) applications. It enables you to build dynamic, modular web applications by describing your app’s state, structure, and behavior in declarative configuration files — called *hyperbricks*.
 
 HyperBricks is designed to provide full control over both the front-end and back-end of an application — without the complexity of traditional fullstack frameworks or CMSs.
 
@@ -20,7 +20,7 @@ With HyperBricks, you can:
 
 HyperBricks uses `*.hyperbricks.yaml` configuration files to define pages and HTML
 fragments, supply template data, and connect server-side logic. Templates control
-the HTML markup using Go’s `html/template` and Sprig functions. 
+the HTML markup using Go’s `html/template` and Sprig functions.
 
 **YAML is the source format; the runtime contract is component-based.** YAML
 source becomes ordered runtime configuration maps, which the runtime uses to
@@ -28,9 +28,9 @@ configure and dispatch registered components. When implementing or diagnosing
 behavior, distinguish source parsing, runtime configuration, and component
 execution, and make changes in the layer that owns the behavior.
 
-**[esbuild](https://esbuild.github.io/)** is a third-party Go library and a fast bundler for web assets.
-
-**No JavaScript lock-in** — The hyperbricks native `esbuild` component bundles JavaScript, TypeScript, and CSS. See the documentation on how to use **[esbuild ](docs/ESBUILD.md)** component.
+HyperBricks’ native `esbuild` component bundles JavaScript, TypeScript, and CSS.
+See the [esbuild component documentation](docs/ESBUILD.md) for usage. It uses
+[esbuild](https://esbuild.github.io/), a third-party Go library for fast web asset bundling.
 
 For server-side logic, projects can call APIs, run trusted JavaScript with `goja_render`, or use Go
 plugins. The CLI creates and runs modules, exports static pages, and packages modules for deployment.
