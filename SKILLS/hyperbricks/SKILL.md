@@ -31,7 +31,8 @@ paths are relative to the HyperBricks repository:
 - `docs/ESBUILD.md`: browser asset bundling.
 - `docs/GOJA_RENDER.md`, `docs/API_RENDER.md`, and `docs/PLUGINS.md`: server-side logic.
 - `docs/ROUTE_GUARD.md`: authentication and authorization checks on routes.
-- `docs/DEPLOY.md` and `docs/DOCKER.md`: deployment.
+- `docs/DEPLOY.md`: archives, upload, activation, and runtime deployment.
+- `docs/DOCKER.md`: Docker deploy host, configuration, persistence, and plugin builds.
 
 
 In an application outside that repository, use the references included with

@@ -1,0 +1,16 @@
+.git
+.agents
+.codex
+node_modules
+modules
+logs
+bin
+deploy
+exports
+output
+docker/data
+**/.DS_Store
+**/node_modules
+**/.git
+**/*.so
+**/*.wasm

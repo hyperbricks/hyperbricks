@@ -176,7 +176,15 @@ unless the application's deployment design explicitly changes that contract.
 
 Remote delivery uses an existing deploy target, credentials, and the deployment
 manual. Building or testing locally does not authorize `--push` or remote
-activation. Docker is optional; read `docs/DOCKER.md` when it is the chosen host.
+activation.
+
+The optional Docker deploy host runs the Deploy API, accepts HRA uploads, and
+starts deployed module processes. It builds the current checkout by default;
+published-release selection is explicit. Archives and compiled global plugins
+use persistent storage, and plugins can be built inside the container against
+the matching runtime. Read `docs/DOCKER.md` for setup, the required deploy secret,
+port mappings, and restart behavior; `docker/README.md` includes the repeatable
+deploy-chain test. Resolve these paths from the HyperBricks repository root.
 
 ## Starters
 

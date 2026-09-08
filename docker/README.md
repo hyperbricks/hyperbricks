@@ -1,39 +1,52 @@
-# Hyperbricks Alpine Deploy (Docker)
+# HyperBricks Docker Deploy Host
 
-This setup runs the HyperBricks Deploy API inside an Alpine-based container with
-HTTP HRA upload, optional OpenRC service wiring, and plugin build support.
+This container runs the Deploy API, accepts HRA uploads, and starts deployed
+module processes. Go and native build tools are included for plugin builds.
 
-## Build + run
-From repo root:
-```
-docker compose -f docker/docker-compose.yml up --build
-```
+From the repository root:
 
-## Verify
-- `curl http://localhost:9090/` should return the deploy UI HTML.
-
-## Deploy API
-The API is exposed on `http://localhost:9090` and uses HMAC-signed HTTP upload.
-Set `HB_DEPLOY_SECRET` in `docker/docker-compose.yml` (or override via env).
-
-## Plugin builds (manual)
-Build plugins inside the running container as the `deploy` user:
-```
-docker exec -u deploy -w /opt/hyperbricks <container_name> hyperbricks plugin build tailwindcss@1.0.1
-docker exec -u deploy -w /opt/hyperbricks <container_name> hyperbricks plugin build esbuild@1.0.1
-docker exec -u deploy -w /opt/hyperbricks <container_name> hyperbricks plugin build markdown@1.0.0
+```bash
+export HB_DEPLOY_SECRET="$(openssl rand -hex 32)"
+docker compose -f docker/docker-compose.yml up --build -d
 ```
 
-## Build args
-- `TAILWIND_VERSION`: set to empty to skip installing the Tailwind CLI.
+Keep the secret and use it for the deploy client too. It is required by Compose.
+The default image builds the current checkout, including local source changes.
+The dashboard is at http://localhost:9090/; runtime ports 8080–8100 bind locally.
 
-Example:
-```
-docker build -f docker/Dockerfile --build-arg TAILWIND_VERSION="" .
+See [Docker Deploy Host](../docs/DOCKER.md) for release selection, alternate
+ports, upload/activation, plugin builds, persistence and troubleshooting.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `HB_BUILD_SOURCE` | `checkout` | Build local source, or use `release`. |
+| `HB_VERSION` | `v1.2.3-beta` | Published version installed in release mode. |
+| `HB_DEPLOY_SECRET` | Required | Shared client/server HMAC secret. |
+| `HB_BIND_ADDRESS` | `127.0.0.1` | Host address for published ports. |
+| `HB_API_PORT` | `9090` | Host Deploy API port. |
+| `HB_RUNTIME_PORTS` | `8080-8100` | Host range mapped to container ports 8080–8100. |
+| `TAILWIND_VERSION` | Empty | Optional standalone Tailwind CLI version. |
+
+Archives and extracted runtimes persist in `docker/data/deploy`; compiled global
+plugins persist in the Compose `plugin-builds` volume. Rebuild plugins when the
+runtime/toolchain changes. Native esbuild requires no external plugin.
+
+The image runs the daemon directly as `deploy`; OpenRC is no longer used.
+
+## Verify The Deploy Chain
+
+Build the checkout image, then run the isolated test (Python 3 and recent Docker
+Compose with `!override` support are required):
+
+```bash
+docker build -f docker/Dockerfile -t hyperbricks-deploy-check:local .
+python3 docker/tests/smoke.py
 ```
 
-## Notes
-- Hyperbricks and plugins are built as the `deploy` user for plugin compatibility.
-- Plugin build steps require network access to fetch the plugin index and sources.
-- The deploy root is persisted at `docker/data/deploy`.
-- The entrypoint runs the Deploy API directly by default; set `HB_USE_OPENRC=1` to start it through OpenRC.
+The test uses its own Compose project, temporary deploy directory, plugin volume,
+and loopback ports 29090 and 28080–28100. It checks HMAC rejection, native plugin
+build/load, HRA upload/activation, a page with native esbuild CSS, and persistence
+after container recreation. It restarts the persisted module explicitly and
+removes only its own containers and volume afterward. Change `--api-port` and
+`--runtime-port` if those ports are occupied. It does not test the optional
+Tailwind download, release installation, external TLS proxy or production load.
