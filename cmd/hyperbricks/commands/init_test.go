@@ -11,217 +11,121 @@ import (
 	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
 )
 
-func TestDefaultInitAssetsWriteYAMLHelloWorld(t *testing.T) {
-	tmpDir := t.TempDir()
-	prevWD, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("getwd: %v", err)
-	}
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("chdir temp dir: %v", err)
-	}
-	t.Cleanup(func() {
-		if err := os.Chdir(prevWD); err != nil {
-			t.Fatalf("restore working directory: %v", err)
-		}
-	})
-
+func TestDefaultInitAssetsWriteThreePageStarter(t *testing.T) {
+	t.Chdir(t.TempDir())
+	t.Setenv("HYPERBRICKS_INIT_FIXTURE", "starter test value")
 	if err := initializeModule("demo"); err != nil {
-		t.Fatalf("initialize module: %v", err)
+		t.Fatal(err)
 	}
-
-	packagePath := filepath.Join("modules", "demo", "package.hyperbricks.yaml")
-	packageContent, err := os.ReadFile(packagePath)
-	if err != nil {
-		t.Fatalf("read package.hyperbricks.yaml: %v", err)
-	}
-	for _, want := range []string{
-		"hyperbricks:",
-		"directories:",
-		"base: module",
-		"path: hyperbricks",
-	} {
-		if !strings.Contains(string(packageContent), want) {
-			t.Fatalf("package.hyperbricks.yaml missing %q:\n%s", want, packageContent)
-		}
-	}
-	packageResult, err := yamlparser.ProcessConfigFile(packagePath, yamlparser.Options{
-		Paths: yamlparser.PathMarkers{
-			Module: filepath.Join("modules", "demo"),
-		},
+	root := filepath.Join("modules", "demo")
+	config, err := yamlparser.ProcessConfigFile(filepath.Join(root, PackageConfigFileName), yamlparser.Options{
+		Paths: yamlparser.PathMarkers{Module: root},
 	})
 	if err != nil {
-		t.Fatalf("process package.hyperbricks.yaml: %v", err)
+		t.Fatal(err)
 	}
-	hyperbricks, ok := packageResult.Materialized["hyperbricks"].(map[string]interface{})
-	if !ok {
-		t.Fatalf("package hyperbricks = %T, want map", packageResult.Materialized["hyperbricks"])
+	hb := config.Materialized["hyperbricks"].(map[string]interface{})
+	if got := hb["metadata"].(map[string]interface{})["module"]; got != "demo" {
+		t.Fatalf("module = %v", got)
 	}
-	directories, ok := hyperbricks["directories"].(map[string]interface{})
-	if !ok {
-		t.Fatalf("package directories = %T, want map", hyperbricks["directories"])
+	if got := hb["directories"].(map[string]interface{})["render"]; got != filepath.Join(root, "rendered") {
+		t.Fatalf("render = %v", got)
 	}
-	if directories["render"] != filepath.Join("modules", "demo", "rendered") {
-		t.Fatalf("package render directory = %#v", directories["render"])
-	}
-
-	yamlPath := filepath.Join("modules", "demo", "hyperbricks", "hello-world.hyperbricks.yaml")
-	yamlContent, err := os.ReadFile(yamlPath)
-	if err != nil {
-		t.Fatalf("read YAML hello world fixture: %v", err)
-	}
-	for _, want := range []string{
-		"page:",
-		"- type: hypermedia",
-		"- route: index",
-		"imports:",
-		"partials/init-components.hyperbricks.yaml",
-		"Nested TREE",
-		"status_fragment:",
-		"file: hello-status.html",
-		"Inline template",
-	} {
-		if !strings.Contains(string(yamlContent), want) {
-			t.Fatalf("YAML hello world missing %q:\n%s", want, yamlContent)
-		}
-	}
-	partialPath := filepath.Join("modules", "demo", "hyperbricks", "partials", "init-components.hyperbricks.yaml")
-	partialContent, err := os.ReadFile(partialPath)
-	if err != nil {
-		t.Fatalf("read imported YAML partial: %v", err)
-	}
-	for _, want := range []string{
-		"init_card:",
-		"template:",
-		"file: hello-card.html",
-	} {
-		if !strings.Contains(string(partialContent), want) {
-			t.Fatalf("YAML partial missing %q:\n%s", want, partialContent)
-		}
-	}
-
-	templatePath := filepath.Join("modules", "demo", "templates", "hello-card.html")
-	templateContent, err := os.ReadFile(templatePath)
-	if err != nil {
-		t.Fatalf("read extracted template file: %v", err)
-	}
-	if !strings.Contains(string(templateContent), "{{.heading}}") {
-		t.Fatalf("template file does not contain value placeholders:\n%s", templateContent)
-	}
-	statusTemplatePath := filepath.Join("modules", "demo", "templates", "hello-status.html")
-	statusTemplateContent, err := os.ReadFile(statusTemplatePath)
-	if err != nil {
-		t.Fatalf("read extracted status template file: %v", err)
-	}
-	if !strings.Contains(string(statusTemplateContent), `id="hello-status"`) {
-		t.Fatalf("status template does not contain fragment marker:\n%s", statusTemplateContent)
-	}
-	resourcePath := filepath.Join("modules", "demo", "resources", "init-copy.txt")
-	resourceContent, err := os.ReadFile(resourcePath)
-	if err != nil {
-		t.Fatalf("read extracted resource file: %v", err)
-	}
-	if !strings.Contains(string(resourceContent), "YAML file resolver") {
-		t.Fatalf("resource fixture does not contain resolver copy:\n%s", resourceContent)
-	}
-
 	parser.ClearTemplateStore()
-	result, err := yamlparser.ProcessFile(yamlPath, yamlparser.Options{
-		TemplateDir: filepath.Join("modules", "demo", "templates"),
-		Config:      packageResult.Materialized,
-		Paths: yamlparser.PathMarkers{
-			Module:    filepath.Join("modules", "demo"),
-			Resources: filepath.Join("modules", "demo", "resources"),
-			Static:    filepath.Join("modules", "demo", "static"),
-		},
+	result, err := yamlparser.ProcessFile(filepath.Join(root, "hyperbricks", "hello-world.hyperbricks.yaml"), yamlparser.Options{
+		TemplateDir: filepath.Join(root, "templates"), Config: config.Materialized,
+		Paths: yamlparser.PathMarkers{Module: root, Resources: filepath.Join(root, "resources"), Static: filepath.Join(root, "static")},
 	})
 	if err != nil {
-		t.Fatalf("process generated YAML hello world: %v", err)
+		t.Fatal(err)
 	}
-	if _, ok := result.Materialized["init_card"].(map[string]interface{}); !ok {
-		t.Fatalf("imported init_card = %T, want map", result.Materialized["init_card"])
+	for i, name := range []string{"overview_page", "templates_page", "fragments_page"} {
+		page := result.Materialized[name].(map[string]interface{})
+		if page["route"] != []string{"index", "templates", "fragments"}[i] || page["section"] != "scaffold_navigation" {
+			t.Fatalf("incorrect route or section for %s: %#v", name, page)
+		}
+		if page["title"] != []string{"Overview", "Templates", "Fragments"}[i] {
+			t.Fatalf("title = %v", page["title"])
+		}
+		content := page["content"].(map[string]interface{})
+		if content["template"] != "shell.html" {
+			t.Fatalf("missing shared shell: %v", content)
+		}
 	}
-	page, ok := result.Materialized["page"].(map[string]interface{})
-	if !ok {
-		t.Fatalf("materialized page = %T, want map", result.Materialized["page"])
+	menu := result.Materialized["scaffold_navigation"].(map[string]interface{})
+	if menu["section"] != "scaffold_navigation" || menu["sort"] != "index" {
+		t.Fatalf("menu = %#v", menu)
 	}
-	if page["title"] != "Hello World | init-module" {
-		t.Fatalf("materialized page title = %#v", page["title"])
+	if !strings.Contains(menu["item"].(string), "hx-select-oob") || !strings.Contains(menu["active"].(string), `aria-current="page"`) {
+		t.Fatal("missing HTMX menu or active state")
 	}
-	head, ok := page["head"].(map[string]interface{})
-	if !ok {
-		t.Fatalf("materialized page.head = %T, want map", page["head"])
+	templates := result.Materialized["templates_content"].(map[string]interface{})
+	values := templates["inline_template"].(map[string]interface{})["values"].(map[string]interface{})
+	if values["environment"] != "starter test value" || !strings.Contains(values["resource_copy"].(string), "YAML file resolver") {
+		t.Fatalf("resolver values = %#v", values)
 	}
-	meta, ok := head["meta"].(map[string]interface{})
-	if !ok {
-		t.Fatalf("materialized page.head.meta = %T, want map", head["meta"])
+	article := templates["nested_tree"].(map[string]interface{})["article"].(map[string]interface{})
+	if !reflect.DeepEqual(article["@order"], []string{"heading", "copy"}) {
+		t.Fatalf("nested order = %#v", article["@order"])
 	}
-	if meta["description"] != "YAML Runtime Fixture generated by the init module." {
-		t.Fatalf("materialized meta.description = %#v", meta["description"])
+	fragments := result.Materialized["fragments_content"].(map[string]interface{})
+	if _, present := fragments["path_probe"]; present {
+		t.Fatal("filesystem path probe must not ship")
 	}
-	main, ok := page["main"].(map[string]interface{})
-	if !ok {
-		t.Fatalf("materialized page.main = %T, want map", page["main"])
+	cta := fragments["template_file"].(map[string]interface{})["values"].(map[string]interface{})["cta"].(map[string]interface{})["value"].(string)
+	for _, attr := range []string{`hx-get="/hello-status"`, `hx-target="#hello-status"`, `hx-swap="outerHTML"`} {
+		if !strings.Contains(cta, attr) {
+			t.Fatalf("missing %s in CTA", attr)
+		}
 	}
-	wantOrder := []string{"intro", "template_file", "inline_template", "nested_tree", "path_probe"}
-	if got := main["@order"]; !reflect.DeepEqual(got, wantOrder) {
-		t.Fatalf("page.main @order = %#v, want %#v", got, wantOrder)
+	status := result.Materialized["status_fragment"].(map[string]interface{})
+	if status["route"] != "hello-status" {
+		t.Fatalf("fragment route = %v", status["route"])
 	}
-	templateFile, ok := main["template_file"].(map[string]interface{})
-	if !ok {
-		t.Fatalf("template_file = %T, want map", main["template_file"])
+	for _, file := range []string{"README.md", "VENDOR.md", ".gitignore", "resources/vendor/htmx-4.0.0.js", "resources/css/app.css", "resources/js/app.js", "templates/overview.html", "templates/shell.html"} {
+		if _, err := os.Stat(filepath.Join(root, file)); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if templateFile["template"] != "hello-card.html" {
-		t.Fatalf("template.file resolver was not resolved, got %#v", templateFile["template"])
+	readme, err := os.ReadFile(filepath.Join(root, "README.md"))
+	if err != nil {
+		t.Fatal(err)
 	}
-	templateValues := templateFile["values"].(map[string]interface{})
-	cta := templateValues["cta"].(map[string]interface{})
-	if cta["value"] != `<a href="/hello-status">Open status fragment</a>` {
-		t.Fatalf("template cta value = %#v", cta["value"])
+	if !strings.Contains(string(readme), "hyperbricks start -m 'demo'") || strings.Contains(string(readme), "__MODULE") || strings.Contains(string(readme), "scaffold-upgrade") {
+		t.Fatalf("unpersonalized README: %s", readme)
 	}
-	inlineTemplate := main["inline_template"].(map[string]interface{})
-	inlineValues := inlineTemplate["values"].(map[string]interface{})
-	if !strings.Contains(inlineValues["resource_copy"].(string), "modules/demo/resources/init-copy.txt") {
-		t.Fatalf("file resolver value = %#v", inlineValues["resource_copy"])
+	for _, dir := range []string{"rendered", "static"} {
+		entries, err := os.ReadDir(filepath.Join(root, dir))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(entries) != 0 {
+			t.Fatalf("generated files embedded in %s", dir)
+		}
 	}
-	if inlineValues["environment"] != "Environment resolver fallback is active." {
-		t.Fatalf("env resolver fallback = %#v", inlineValues["environment"])
-	}
-	pathProbe := main["path_probe"].(map[string]interface{})
-	pathValues := pathProbe["values"].(map[string]interface{})
-	if pathValues["static_path"] != filepath.Join("modules", "demo", "static", "css", "app.css") {
-		t.Fatalf("path resolver value = %#v", pathValues["static_path"])
-	}
-	nestedTree := main["nested_tree"].(map[string]interface{})
-	article := nestedTree["article"].(map[string]interface{})
-	if got := article["@order"]; !reflect.DeepEqual(got, []string{"heading", "copy"}) {
-		t.Fatalf("nested article @order = %#v", got)
-	}
-	if storedTemplate, found := parser.GetTemplate("hello-card.html"); !found || !strings.Contains(storedTemplate, "{{.body}}") {
-		t.Fatalf("template.file resolver did not cache hello-card.html, found=%v content=%q", found, storedTemplate)
-	}
-	if storedTemplate, found := parser.GetTemplate("hello-status.html"); !found || !strings.Contains(storedTemplate, "hello-status") {
-		t.Fatalf("template.file resolver did not cache hello-status.html, found=%v content=%q", found, storedTemplate)
-	}
-	statusFragment, ok := result.Materialized["status_fragment"].(map[string]interface{})
-	if !ok {
-		t.Fatalf("status_fragment = %T, want map", result.Materialized["status_fragment"])
-	}
-	if statusFragment["route"] != "hello-status" {
-		t.Fatalf("status fragment route = %#v", statusFragment["route"])
-	}
-	response, ok := statusFragment["response"].(map[string]interface{})
-	if !ok {
-		t.Fatalf("status fragment response = %T, want map", statusFragment["response"])
-	}
-	headers, ok := response["headers"].(map[string]interface{})
-	if !ok {
-		t.Fatalf("status fragment response.headers = %T, want map", response["headers"])
-	}
-	if headers["HX-Trigger"] != "init-fixture-status" || headers["HX-Retarget"] != "#hello-status" || headers["HX-Reswap"] != "outerHTML" {
-		t.Fatalf("status fragment response.headers = %#v", headers)
-	}
+}
 
+func TestInitPersonalizesQuotedModuleNames(t *testing.T) {
+	t.Chdir(t.TempDir())
+	name := "demo's project"
+	if err := initializeModule(name); err != nil {
+		t.Fatal(err)
+	}
+	result, err := yamlparser.ProcessConfigFile(filepath.Join("modules", name, PackageConfigFileName), yamlparser.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	metadata := result.Materialized["hyperbricks"].(map[string]interface{})["metadata"].(map[string]interface{})
+	if metadata["module"] != name {
+		t.Fatalf("module = %v", metadata["module"])
+	}
+	readme, err := os.ReadFile(filepath.Join("modules", name, "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(readme), `-m 'demo'"'"'s project'`) {
+		t.Fatalf("README module argument is not shell quoted: %s", readme)
+	}
 }
 
 func TestInitializeModulePreservesExistingFilesAndRepairsMissingScaffold(t *testing.T) {

@@ -24,6 +24,8 @@ From your project root, the directory that will contain `modules/`:
 hyperbricks init -m demo
 ```
 
+The generated HyperBricks Starter already runs with `hyperbricks start -m demo`: it includes Overview, Templates and Fragments pages with HTMX 4 navigation. Continue below to replace those pages with a smaller custom example.
+
 **3. Create the asset directories**
 
 ```bash

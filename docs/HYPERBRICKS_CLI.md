@@ -56,7 +56,9 @@ modules/demo/
   package.hyperbricks.yaml
 ```
 
-The generated module is YAML based and includes a working hello-world route, template file usage, inline templates, imports, inheritance, resource loading, and a fragment example.
+The embedded **HyperBricks Starter** generates three complete pages: Overview (`/`), Templates (`/templates`), and Fragments (`/fragments`). A section-based `menu` provides HTMX 4 navigation, and `/hello-status` demonstrates a targeted fragment response. The starter includes responsive CSS, templates, file/environment values, and locally bundled HTMX 4.0.0 with attribution. Native esbuild generates the browser bundles at runtime; no npm install or starter download is required.
+
+The generated configuration and README use the selected module name. The README includes run commands and static ZIP export/serving instructions. Generated bundles and rendered exports are excluded by the module's `.gitignore`.
 
 `init` creates missing scaffold directories and files and preserves existing files, including `package.hyperbricks.yaml`. `--module` accepts a bare name below `./modules`; use direct `start` when selecting a module by directory path.
 

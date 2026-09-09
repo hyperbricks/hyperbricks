@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -116,7 +117,7 @@ func buildInitPlan(moduleName string) (initPlan, error) {
 	plan.files = append(plan.files, initFile{
 		source: defaultConfigPath,
 		target: filepath.Join(moduleDir, PackageConfigFileName),
-		data:   defaultConfigContent,
+		data:   []byte(strings.Replace(string(defaultConfigContent), "    module: default\n", "    module: "+strconv.Quote(moduleName)+"\n", 1)),
 	})
 
 	const embeddedDir = "assets/default"
@@ -140,6 +141,19 @@ func buildInitPlan(moduleName string) (initPlan, error) {
 		data, err := embeddedFiles.ReadFile(path)
 		if err != nil {
 			return fmt.Errorf("read embedded file %s: %w", path, err)
+		}
+		if relativePath == "README.md" {
+			shellQuote := func(value string) string {
+				return "'" + strings.ReplaceAll(value, "'", "'\"'\"'") + "'"
+			}
+			data = []byte(strings.NewReplacer(
+				"__MODULE_NAME__", moduleName,
+				"__MODULE_SHELL__", shellQuote(moduleName),
+				"__EXPORT_SHELL__", shellQuote("exports/"+moduleName),
+			).Replace(string(data)))
+		}
+		if relativePath == "gitignore.txt" {
+			relativePath = ".gitignore"
 		}
 		targetPath := filepath.Join(moduleDir, relativePath)
 		addDirectory(filepath.Dir(targetPath))
@@ -256,7 +270,7 @@ func initializeModule(value string) error {
 func NewInitCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "init",
-		Short:         "Create package.hyperbricks.yaml and required directories",
+		Short:         "Create a three-page HyperBricks Starter with HTMX 4",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		RunE: func(cmd *cobra.Command, args []string) error {

@@ -1,0 +1,45 @@
+* { box-sizing: border-box; }
+:root { color-scheme: light; --ink: #223a35; --muted: #62736d; --line: #dce4de; --accent: #28604d; }
+body { margin: 0; background: #f5f6f0; color: var(--ink); font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+a { color: var(--accent); text-underline-offset: 4px; }
+a:hover { color: #173e30; }
+a:focus-visible { outline: 3px solid #b98727; outline-offset: 5px; border-radius: 3px; }
+h1, h2 { line-height: 1.15; letter-spacing: -.035em; }
+h1 { font-size: clamp(2.3rem, 5vw, 3.6rem); margin: 18px 0 20px; font-weight: 650; }
+h2 { font-size: 1.45rem; margin: 0 0 18px; font-weight: 650; }
+p { margin: 0 0 18px; overflow-wrap: anywhere; }
+p:last-child { margin-bottom: 0; }
+.hello-fixture { max-width: 1080px; margin: auto; padding: clamp(32px, 6vw, 76px) 28px 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.page-intro { grid-column: 1 / -1; padding-bottom: 22px; }
+.page-intro > p:first-child { display: inline-block; padding: 5px 12px; border: 1px solid #ccdbcb; border-radius: 999px; color: var(--accent); background: #eaf0e6; font-size: .75rem; font-weight: 650; }
+.lede { max-width: 62ch; color: var(--muted); font-size: 1.1rem; }
+.hello-card, .hello-inline, .hello-panel, .status-panel { min-width: 0; padding: clamp(24px, 3vw, 36px); border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.hello-card > p:not(.eyebrow), .hello-inline > p:not(.eyebrow), .hello-panel { color: var(--muted); }
+.eyebrow { font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; font-weight: 750; color: var(--muted); margin-bottom: 24px; }
+.card-action { margin: 28px 0 16px; }
+.button { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; padding: 12px 18px; border-radius: 7px; background: var(--accent); color: #fff; font-size: .9rem; font-weight: 650; text-decoration: none; }
+.button:hover { background: #204d3e; color: #fff; }
+.button[disabled] { opacity: .6; pointer-events: none; }
+.hint { font-size: .8rem; }
+.status-panel { background: #edf2e7; border-color: #d5dfcd; display: flex; flex-direction: column; align-items: flex-start; }
+.status-panel > p:not(.eyebrow) { color: #53654f; }
+.status-badge { display: inline-block; font-size: .75rem; font-weight: 650; padding: 5px 10px; background: #dfe8d6; border-radius: 5px; margin-top: auto; }
+.is-loaded { border-color: #9cbaa4; }
+.is-loaded .status-badge { background: #d2e6d7; color: #255438; }
+.hello-grid { display: grid; min-width: 0; }
+.hello-panel h2 { color: var(--ink); }
+.site-footer { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px; border-top: 1px solid var(--line); margin-top: 20px; padding-top: 24px; color: var(--muted); font-size: .8rem; }
+@media (max-width: 650px) { .hello-fixture { grid-template-columns: minmax(0, 1fr); padding: 32px 18px 24px; gap: 18px; } .page-intro { padding-bottom: 8px; } .button { width: 100%; } }
+
+.site-header { max-width: 1080px; margin: auto; padding: 26px 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--line); }
+.site-brand { color: var(--ink); text-decoration: none; font-weight: 700; }
+#scaffold-navigation { display: flex; flex-wrap: wrap; gap: 6px; }
+#scaffold-navigation a { padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: .9rem; }
+#scaffold-navigation a[aria-current="page"] { background: #e3ebde; color: #254e3d; font-weight: 700; }
+body > .site-footer { max-width: 1024px; margin: 24px auto; padding: 24px 0; }
+code { font-family: ui-monospace, monospace; font-size: .85em; overflow-wrap: anywhere; }
+pre { padding: 18px; background: #f3f5ef; border: 1px solid var(--line); border-radius: 6px; overflow-x: auto; }
+.skip-link { position: absolute; left: 20px; top: -100px; padding: 10px 16px; background: #fff; z-index: 10; }
+.skip-link:focus { top: 10px; }
+@media (max-width: 1100px) { body > .site-footer { margin-inline: 28px; } }
+@media (max-width: 650px) { .site-header { align-items: flex-start; flex-direction: column; padding: 22px 18px; gap: 14px; } #scaffold-navigation a { padding: 8px 10px; } body > .site-footer { margin-inline: 18px; } }
