@@ -30,4 +30,4 @@ Id of image
 }
 
 ==== expected output ====
-<img src="static/images/cute_cat_w310_h310.jpg" width="310" height="310" id="#cat" /> 
+<img src="/static/images/cute_cat_aac2716ad97a07c3fe4793ca93c23f03_w310_h310.jpg" width="310" height="310" alt="" id="#cat" />

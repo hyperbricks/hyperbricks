@@ -10,15 +10,15 @@ import (
 
 type SingleImageConfig struct {
 	shared.Component   `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"Processes a single image from src and writes an optimized copy to static/images using the configured width, height, and quality, then returns the corresponding HTML img tag." example:"{!{image-@doc.hyperbricks.yaml}}"`
-	Src                string `mapstructure:"src" validate:"required" description:"The source URL of the image" example:"{!{image-src.hyperbricks.yaml}}"`
-	Width              int    `mapstructure:"width" validate:"min=1" description:"The width of the image (can be a number or percentage)" example:"{!{image-width.hyperbricks.yaml}}"`
-	Height             int    `mapstructure:"height" validate:"min=1" description:"The height of the image (can be a number or percentage)" example:"{!{image-height.hyperbricks.yaml}}"`
-	Alt                string `mapstructure:"alt" description:"Alternative text for the image" example:"{!{image-alt.hyperbricks.yaml}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Processes a local image and writes a copy to the configured static/images directory. The filename includes a fingerprint of the source content and resize settings; the img tag uses a root-relative /static/images/ URL and escaped attribute values." example:"{!{image-@doc.hyperbricks.yaml}}"`
+	Src                string `mapstructure:"src" validate:"required" description:"Local filesystem path to a JPEG, PNG, or GIF image, relative to the working directory unless absolute. Use a path resolver for module resources. Remote URLs and SVG processing are not supported." example:"{!{image-src.hyperbricks.yaml}}"`
+	Width              int    `mapstructure:"width" validate:"min=0" description:"Output width in integer pixels; omit or use 0 to preserve aspect ratio from height. Omit both dimensions to keep the source size." example:"{!{image-width.hyperbricks.yaml}}"`
+	Height             int    `mapstructure:"height" validate:"min=0" description:"Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size." example:"{!{image-height.hyperbricks.yaml}}"`
+	Alt                string `mapstructure:"alt" description:"Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images." example:"{!{image-alt.hyperbricks.yaml}}"`
 	Title              string `mapstructure:"title" description:"The title attribute of the image" example:"{!{image-title.hyperbricks.yaml}}"`
 	Id                 string `mapstructure:"id" description:"Id of image" example:"{!{image-id.hyperbricks.yaml}}"`
 	Class              string `mapstructure:"class" description:"CSS class for styling the image" example:"{!{image-class.hyperbricks.yaml}}"`
-	Quality            int    `mapstructure:"quality" description:"Image quality for optimization" example:"{!{image-quality.hyperbricks.yaml}}"`
+	Quality            int    `mapstructure:"quality" description:"JPEG encoding quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding." example:"{!{image-quality.hyperbricks.yaml}}"`
 	Loading            string `mapstructure:"loading" description:"Lazy loading strategy (e.g., 'lazy', 'eager')" example:"{!{image-loading.hyperbricks.yaml}}"`
 	IsStatic           bool   `mapstructure:"is_static" exclude:"true" description:"Flag indicating if the image is static" example:"{!{image-is_static.hyperbricks.yaml}}"`
 }
@@ -42,7 +42,7 @@ func (r *SingleImageRenderer) Types() []string {
 func (config *SingleImageConfig) Validate() []error {
 	errors := shared.Validate(config)
 
-	if config.Quality <= 0 {
+	if config.Quality == 0 {
 		config.Quality = 90
 	}
 

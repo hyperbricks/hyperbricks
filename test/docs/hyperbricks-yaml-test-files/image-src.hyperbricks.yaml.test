@@ -8,7 +8,7 @@ image:
   - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
   - width: "300"
 ==== explainer ====
-The source URL of the image
+Local filesystem path to a JPEG, PNG, or GIF image. Remote URLs and SVG processing are not supported.
 ==== expected json ====
 {
   "Alt": "",
@@ -34,4 +34,4 @@ The source URL of the image
 }
 
 ==== expected output ====
-<div id="#logo"><img src="static/images/cute_cat_w300_h300.jpg" width="300" height="300" loading="lazy" /></div> 
+<div id="#logo"><img src="/static/images/cute_cat_143e045c3d0ffdc34d7e7dc697f469de_w300_h300.jpg" width="300" height="300" alt="" loading="lazy" /></div>

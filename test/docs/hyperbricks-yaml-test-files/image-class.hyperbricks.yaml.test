@@ -30,4 +30,4 @@ CSS class for styling the image
 }
 
 ==== expected output ====
-<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" title="Some Cute Cat!" class="aclass bclass cclass" /> 
+<img src="/static/images/cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="" title="Some Cute Cat!" class="aclass bclass cclass" />

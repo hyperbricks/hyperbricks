@@ -37,4 +37,4 @@ if config.IsStatic {
 }
 
 ==== expected output ====
-<img src="static/images/cute_cat.jpg" /> 
+<img src="/static/images/cute_cat.jpg" alt="" />

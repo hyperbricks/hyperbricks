@@ -324,7 +324,7 @@ Expected output:
 ```html
 <h2>SOME HEADER</h2>
 <p>some text</p>
-<img src="static/images/cute_cat_w800_h800.jpg" width="800" height="800" />
+<img src="/static/images/cute_cat_c8c4b21c311ec78f82af3515e383d5a4_w800_h800.jpg" width="800" height="800" alt="" />
 ```
 
 
@@ -862,21 +862,23 @@ Single image renderer with optional optimization and HTML output.
 
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
-| `alt` | `string` | no | Alternative text for the image |
+| `alt` | `string` | no | Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images. |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `class` | `string` | no | CSS class for styling the image |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
-| `height` | `int` | no | The height of the image (can be a number or percentage) |
+| `height` | `int` | no | Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size. |
 | `id` | `string` | no | Id of image |
 | `loading` | `string` | no | Lazy loading strategy (e.g., 'lazy', 'eager') |
-| `quality` | `int` | no | Image quality for optimization |
-| `src` | `string` | yes | The source URL of the image |
+| `quality` | `int` | no | JPEG encoding quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding. |
+| `src` | `string` | yes | Local filesystem path to a JPEG, PNG, or GIF image, relative to the working directory unless absolute. Use a path resolver for module resources. Remote URLs and SVG processing are not supported. |
 | `title` | `string` | no | The title attribute of the image |
-| `width` | `int` | no | The width of the image (can be a number or percentage) |
+| `width` | `int` | no | Output width in integer pixels; omit or use 0 to preserve aspect ratio from height. Omit both dimensions to keep the source size. |
 
 #### Example
 
 Fixture: `image-@doc.hyperbricks.yaml.test`
+
+Process a local JPEG, PNG, or GIF. The generated /static/images/ URL works at nested routes and uses a fingerprint of the source bytes and resize settings. Width and height are integer pixels. See [Image usage](IMAGES.md) for module path resolvers, responsive CSS, gallery behavior, and migration notes.
 
 
 ```yaml
@@ -896,7 +898,7 @@ image:
 Expected output:
 
 ```html
-<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" alt="cat but cute" title="Some Cute Cat!" class="class-a class-b class-c" id="#cat" usemap="#catmap" />
+<img src="/static/images/cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="cat but cute" title="Some Cute Cat!" class="class-a class-b class-c" id="#cat" usemap="#catmap" />
 ```
 
 
@@ -907,28 +909,26 @@ Multiple image renderer for a directory of images.
 
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
-| `alt` | `string` | no | Alternative text for the image |
+| `alt` | `string` | no | Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images. |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `class` | `string` | no | CSS class for styling the image |
-| `directory` | `string` | yes | The directory path containing the images |
+| `directory` | `string` | yes | Local filesystem directory containing JPEG, PNG, or GIF images. Reads files in filename order without descending into subdirectories; other extensions are skipped. |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
-| `height` | `int` | no | The height of the images (can be a number or percentage) |
+| `height` | `int` | no | Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size. |
 | `id` | `string` | no | Id of images with a index added to it |
 | `loading` | `string` | no | Lazy loading strategy (e.g., 'lazy', 'eager') |
-| `quality` | `int` | no | Image quality for optimization |
+| `quality` | `int` | no | JPEG encoding quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding. |
 | `title` | `string` | no | The title attribute of the image |
-| `width` | `int` | no | The width of the images (can be a number or percentage) |
+| `width` | `int` | no | Output width in integer pixels; omit or use 0 to preserve aspect ratio from height. Omit both dimensions to keep each source size. |
 
 #### Example
 
 Fixture: `images-@doc.hyperbricks.yaml.test`
 
-Id of images with a index added to it
+Process a directory in filename order. Each generated URL includes the source content and resize settings. A configured id gets an index suffix; no id is added when omitted. Invalid images produce render errors. See [Image usage](IMAGES.md) for file formats and gallery accessibility.
 
 
 ```yaml
-image:
-  - enclose: <div id="#gallery">|</div>
 images:
   - type: images
   - attributes:
@@ -942,8 +942,8 @@ images:
 Expected output:
 
 ```html
-<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" decoding="async" />
-<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" decoding="async" />
+<img src="/static/images/cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="" id="#img_0" loading="lazy" decoding="async" />
+<img src="/static/images/same_cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="" id="#img_1" loading="lazy" decoding="async" />
 ```
 
 
