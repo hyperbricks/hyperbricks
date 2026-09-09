@@ -175,7 +175,10 @@ func staticSnapshotTargetFromRoute(route string, config map[string]interface{}) 
 }
 
 func staticSnapshotTargetsFromPackageConfig() ([]staticSnapshotTarget, error) {
-	staticConfig := packageStaticConfigMap()
+	staticConfig, err := packageStaticConfigMap()
+	if err != nil {
+		return nil, err
+	}
 	if len(staticConfig) == 0 {
 		return nil, nil
 	}
@@ -189,7 +192,11 @@ func staticSnapshotTargetsFromPackageConfig() ([]staticSnapshotTarget, error) {
 		targets = append(targets, parsed...)
 	}
 
-	if crawl, ok := staticConfig["crawl"].(map[string]interface{}); ok {
+	if crawlRaw, exists := staticConfig["crawl"]; exists {
+		crawl, ok := crawlRaw.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("hyperbricks.static.crawl must be a mapping containing routes or variants lists")
+		}
 		for _, key := range []string{"routes", "variants"} {
 			parsed, err := staticSnapshotTargetsFromList(crawl[key], "static.crawl."+key)
 			if err != nil {
@@ -202,20 +209,20 @@ func staticSnapshotTargetsFromPackageConfig() ([]staticSnapshotTarget, error) {
 	return targets, nil
 }
 
-func packageStaticConfigMap() map[string]interface{} {
+func packageStaticConfigMap() (map[string]interface{}, error) {
 	root, ok := parser.HbConfig["hyperbricks"].(map[string]interface{})
 	if !ok {
-		return nil
+		return nil, nil
 	}
 	staticRaw, ok := root["static"]
 	if !ok {
-		return nil
+		return nil, nil
 	}
 	staticConfig, ok := staticRaw.(map[string]interface{})
 	if !ok {
-		return nil
+		return nil, fmt.Errorf("hyperbricks.static must be a mapping containing routes or variants lists")
 	}
-	return staticConfig
+	return staticConfig, nil
 }
 
 func staticSnapshotTargetsFromList(raw interface{}, source string) ([]staticSnapshotTarget, error) {

@@ -215,23 +215,88 @@ Exclude paths relative to the render root:
 hyperbricks static -m demo --zip --exclude cache,tmp
 ```
 
-Configured query variants can be added in `package.hyperbricks.yaml` when one route should be snapshotted into multiple output files:
+### Package configuration
+
+Configure export requests under `hyperbricks.static` in `package.hyperbricks.yaml`. This is separate from `hyperbricks.directories.static`, which identifies the assets served at `/static/`. The render directory receives the generated HTML and a copy of those assets.
+
+The following complete package example assumes the module contains an `index` route and a `products` route. Keep any other application settings, plugins, and directory overrides that your module needs:
 
 ```yaml
 hyperbricks:
+  mode: development
+  development:
+    watch: false
+    reload: false
+  directories:
+    hyperbricks:
+      path: {base: module, path: hyperbricks}
+    templates:
+      path: {base: module, path: templates}
+    resources:
+      path: {base: module, path: resources}
+    static:
+      path: {base: module, path: static}
+    render:
+      path: {base: module, path: rendered}
   static:
+    routes:
+      - path: /products
+        output: products.html
+        host: catalog.example.test
+        headers:
+          Accept-Language: en
     variants:
       - path: /products
         query:
           category: shoes
+          tag: [sale, summer]
         output: products/shoes.html
+        host: catalog.example.test
+        headers:
+          Accept-Language: en
       - path: /products
         query:
           category: hats
         output: products/hats.html
+        host: catalog.example.test
+        headers:
+          Accept-Language: nl
 ```
 
-Explicit `hyperbricks.static.routes` and `hyperbricks.static.variants` entries win over automatic route discovery. Use package-level targets when a route needs configured query parameters, headers, host selection, or a clearer output path.
+| Field | Meaning |
+| --- | --- |
+| `routes`, `variants` | Lists of requests to export. Both lists accept the same fields; `variants` groups alternate versions of a route. |
+| `path` | Request path, optionally including a query string. The request always goes to the temporary local HyperBricks runtime. An absolute URL supplies its path, query, and Host; it does not fetch that remote website. |
+| `query` | Query parameters added to the request. A list creates repeated values, such as `tag=sale&tag=summer`. The route must use those parameters for the exported content to differ. |
+| `headers` | Request headers, such as `Accept-Language`. They affect rendering only when the route reads or forwards them. |
+| `host` | The request Host value. Use this field for host-dependent rendering, rather than a `Host` entry in `headers`. It overrides the host from an absolute `path` URL. |
+| `output` | File path relative to the render directory. A trailing slash appends `index.html`. Traversal outside that directory is rejected. An explicit output is required when query parameters are present. |
+
+**These lists supplement automatic route discovery; they are not an allowlist.** Every loaded route is still considered for export. Without an explicit output, `/` becomes the first configured index file (normally `index.html`), an extensionless route appends the first configured `server.routing.extensions` value (normally `.html`, making `/products` become `products.html`), and a route with an extension keeps it. A route owner's `static` field can override its output path. With the default routing configuration, the `index` route also exports to `index.html`.
+
+A package entry overrides a discovered target only when both have the same request path/query and output file. In the example, `/products` keeps the configured Host and language, while `index` is still discovered automatically. A different explicit output adds a second snapshot; it does not remove the discovered output. Different requests cannot write to the same file: the export reports the conflicting entries instead of overwriting one. For an `index` route override, use `path: /index` so it matches that discovered request.
+
+For a selected set of pages, use a separate export module with its own `package.hyperbricks.yaml` and a source directory that loads only those routes. Reuse shared components/templates through the normal imports and directory settings. Run `hyperbricks static -m demo-export --force --zip`; the static command does not accept the startup-only `--config` flag. `--exclude` removes files from the ZIP after rendering, so it does not prevent a route from executing during export.
+
+`hyperbricks.static` must be a YAML mapping, and `routes`/`variants` must be lists of mappings. Existing `static.crawl.routes` and `static.crawl.variants` aliases remain supported; `crawl` must also be a mapping. Use the direct lists for new configurations. Each request must return a successful 2xx response without render errors; redirects and failures stop the export. Cookies and `Cache-Control: no-store` produce warnings, but the response body is still written. Only export content intended to be published as static files.
+
+### Serving the export
+
+Extract the ZIP into an empty directory and serve that directory as the site root. For example:
+
+```bash
+npx serve ./site -l 8080
+```
+
+`serve` supports [clean URLs](https://github.com/vercel/serve-handler#cleanurls-booleanarray) such as `/products` for `products.html`. Use its regular file-serving mode; a single-page-app fallback would hide missing exported pages.
+
+Python also serves the files:
+
+```bash
+python3 -m http.server 8080 --directory ./site
+```
+
+With Python, use explicit file links such as `/products.html`, or export directory indexes and link to `/products/`. Python's [basic file server](https://docs.python.org/3/library/http.server.html#http.server.SimpleHTTPRequestHandler) does not rewrite `/products` to `products.html`. Query variants are separate files: visiting `/products.html?category=shoes` does not select `products/shoes.html`. Link to each variant's output URL in the generated site.
 
 The `modules/sampleapis-coffee-static` module demonstrates a static snapshot that renders `api_render` data from `https://api.sampleapis.com/coffee/hot`. If a nested `api_render` receives a non-2xx upstream response, static rendering fails through the route render-error diagnostics.
 
