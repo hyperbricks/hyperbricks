@@ -1,10 +1,8 @@
 # HyperBricks CLI
 
-The `hyperbricks` command initializes modules, starts the runtime, renders
-static output, builds deploy archives, and manages plugins.
+The `hyperbricks` command initializes modules, starts the runtime, renders static output, builds deploy archives, and manages plugins.
 
-Run commands from the repository or project root: the directory that contains
-`modules/`.
+Run commands from the repository or project root: the directory that contains `modules/`.
 
 ## Install
 
@@ -58,13 +56,9 @@ modules/demo/
   package.hyperbricks.yaml
 ```
 
-The generated module is YAML based and includes a working hello-world route,
-template file usage, inline templates, imports, inheritance, resource loading,
-and a fragment example.
+The generated module is YAML based and includes a working hello-world route, template file usage, inline templates, imports, inheritance, resource loading, and a fragment example.
 
-`init` creates missing scaffold directories and files and preserves existing
-files, including `package.hyperbricks.yaml`. `--module` accepts a bare name below
-`./modules`; use direct `start` when selecting a module by directory path.
+`init` creates missing scaffold directories and files and preserves existing files, including `package.hyperbricks.yaml`. `--module` accepts a bare name below `./modules`; use direct `start` when selecting a module by directory path.
 
 ## Start
 
@@ -74,8 +68,7 @@ Start a module by its name below `./modules`:
 hyperbricks start -m demo
 ```
 
-For direct startup, `--module` also accepts relative and absolute directory
-paths:
+For direct startup, `--module` also accepts relative and absolute directory paths:
 
 ```bash
 hyperbricks start -m ./modules/demo
@@ -97,37 +90,21 @@ For these examples, assume the command is invoked from `/work/site`:
 | `.` | Current directory is the module | `/work/site` |
 | Flag omitted | Default module name | `/work/site/modules/default` |
 
-A value is treated as a path when it is absolute, contains a platform directory
-separator, or is exactly `.` or `..`. Classification happens before the value is
-cleaned, so `./demo` selects `/work/site/demo`, while the bare name `demo`
-selects `/work/site/modules/demo`.
+A value is treated as a path when it is absolute, contains a platform directory separator, or is exactly `.` or `..`. Classification happens before the value is cleaned, so `./demo` selects `/work/site/demo`, while the bare name `demo` selects `/work/site/modules/demo`.
 
-Bare names always retain the `modules/<name>` meaning. HyperBricks does not
-change the meaning by checking whether a same-named directory exists elsewhere.
-Quote paths containing spaces:
+Bare names always retain the `modules/<name>` meaning. HyperBricks does not change the meaning by checking whether a same-named directory exists elsewhere. Quote paths containing spaces:
 
 ```bash
 hyperbricks start -m "./modules/my module"
 ```
 
-Relative paths are resolved once from the directory where the command is
-invoked. Selecting a module does not change the process working directory. In
-runtime path values, `root` remains the invocation directory, `module` is the
-selected module directory, and `module_root` is its parent.
+Relative paths are resolved once from the directory where the command is invoked. Selecting a module does not change the process working directory. In runtime path values, `root` remains the invocation directory, `module` is the selected module directory, and `module_root` is its parent.
 
-The selected directory must contain `package.hyperbricks.yaml`, unless
-`--config` selects another package configuration inside it. When the file is
-missing, HyperBricks reports the resolved path and exits with a non-zero status;
-it does not fall back to another module.
+The selected directory must contain `package.hyperbricks.yaml`, unless `--config` selects another package configuration inside it. When the file is missing, HyperBricks reports the resolved path and exits with a non-zero status; it does not fall back to another module.
 
-Path selection applies only to direct `start`. Deploy startup, build, static,
-init, and plugin commands retain their existing module-selection contracts.
-Shell completion suggests bare names from `./modules` while retaining normal
-filesystem completion for paths.
+Path selection applies only to direct `start`. Deploy startup, build, static, init, and plugin commands retain their existing module-selection contracts. Shell completion suggests bare names from `./modules` while retaining normal filesystem completion for paths.
 
-Because the working directory does not change, bare package directory settings
-such as `plugins: ./bin/plugins` remain relative to the invocation directory.
-For module-owned directories, prefer an explicit module base:
+Because the working directory does not change, bare package directory settings such as `plugins: ./bin/plugins` remain relative to the invocation directory. For module-owned directories, prefer an explicit module base:
 
 ```yaml
 hyperbricks:
@@ -160,17 +137,14 @@ Start in production mode:
 hyperbricks start -m demo --production
 ```
 
-Start the same module with an alternate package configuration stored inside
-that module:
+Start the same module with an alternate package configuration stored inside that module:
 
 ```bash
 hyperbricks start -m demo --config package.raw.hyperbricks.yaml
 hyperbricks start -m ./modules/demo --config profiles/development.hyperbricks.yaml
 ```
 
-`--config` is relative to the selected module directory, must stay inside that
-directory, and cannot be combined with `--deploy`. Absolute paths and paths that
-escape through `..` are rejected.
+`--config` is relative to the selected module directory, must stay inside that directory, and cannot be combined with `--deploy`. Absolute paths and paths that escape through `..` are rejected.
 
 Enable debug logging:
 
@@ -178,8 +152,7 @@ Enable debug logging:
 hyperbricks start -m demo --debug
 ```
 
-Runtime gateway flags are available on `start`, but the full contract lives in
-[Runtime Gateway](RUNTIME_GATEWAY.md).
+Runtime gateway flags are available on `start`, but the full contract lives in [Runtime Gateway](RUNTIME_GATEWAY.md).
 
 ```bash
 hyperbricks start -m demo \
@@ -190,30 +163,19 @@ hyperbricks start -m demo \
 
 ### Render diagnostics
 
-In development and debug mode, the `Render diagnostics recorded` log message
-includes a URL for that error. Open it in your browser to see the JSON details:
+In development and debug mode, the `Render diagnostics recorded` log message includes a URL for that error. Open it in your browser to see the JSON details:
 
 ```text
 http://localhost:8080/__hyperbricks/render-diagnostics?request_id=hb-12
 ```
 
-The details include the source file, component path, key, type, and error message
-where available. The link uses the host and port of the request. Errors found
-while loading configuration use `localhost` and your configured server port;
-open those links after the server has started. Fix the reported source and
-reload the page to check again.
+The details include the source file, component path, key, type, and error message where available. The link uses the host and port of the request. Errors found while loading configuration use `localhost` and your configured server port; open those links after the server has started. Fix the reported source and reload the page to check again.
 
-You can also open `/__hyperbricks/render-diagnostics` on your running server to
-see the ten most recent diagnostic records. HyperBricks keeps the latest 200
-records in memory, so older links expire and records are cleared when the
-process restarts.
+You can also open `/__hyperbricks/render-diagnostics` on your running server to see the ten most recent diagnostic records. HyperBricks keeps the latest 200 records in memory, so older links expire and records are cleared when the process restarts.
 
-The endpoint is disabled in live mode. Static exports omit the link because
-their temporary server stops after rendering.
+The endpoint is disabled in live mode. Static exports omit the link because their temporary server stops after rendering.
 
-Server setup failures, such as unusable directories, listener, watcher, or
-gateway configuration, can still prevent startup. If the server cannot start,
-read the error in the terminal; the diagnostics endpoint is not available yet.
+Server setup failures, such as unusable directories, listener, watcher, or gateway configuration, can still prevent startup. If the server cannot start, read the error in the terminal; the diagnostics endpoint is not available yet.
 
 ## Static Rendering
 
@@ -223,10 +185,7 @@ Render static output:
 hyperbricks static -m demo
 ```
 
-Static rendering starts an internal localhost runtime, requests the configured
-routes over HTTP, and writes the responses into the module render directory.
-This means nested `api_render` blocks use the same request path as normal
-runtime rendering.
+Static rendering starts an internal localhost runtime, requests the configured routes over HTTP, and writes the responses into the module render directory. This means nested `api_render` blocks use the same request path as normal runtime rendering.
 
 Serve rendered static files:
 
@@ -234,8 +193,7 @@ Serve rendered static files:
 hyperbricks static -m demo --serve
 ```
 
-`--serve` only serves files that already exist in the render directory. It does
-not call APIs, render routes, or run the runtime gateway.
+`--serve` only serves files that already exist in the render directory. It does not call APIs, render routes, or run the runtime gateway.
 
 Overwrite existing output:
 
@@ -255,8 +213,7 @@ Exclude paths relative to the render root:
 hyperbricks static -m demo --zip --exclude cache,tmp
 ```
 
-Configured query variants can be added in `package.hyperbricks.yaml` when one
-route should be snapshotted into multiple output files:
+Configured query variants can be added in `package.hyperbricks.yaml` when one route should be snapshotted into multiple output files:
 
 ```yaml
 hyperbricks:
@@ -272,14 +229,9 @@ hyperbricks:
         output: products/hats.html
 ```
 
-Explicit `hyperbricks.static.routes` and `hyperbricks.static.variants` entries
-win over automatic route discovery. Use package-level targets when a route needs
-configured query parameters, headers, host selection, or a clearer output path.
+Explicit `hyperbricks.static.routes` and `hyperbricks.static.variants` entries win over automatic route discovery. Use package-level targets when a route needs configured query parameters, headers, host selection, or a clearer output path.
 
-The `modules/sampleapis-coffee-static` module demonstrates a static snapshot
-that renders `api_render` data from `https://api.sampleapis.com/coffee/hot`.
-If a nested `api_render` receives a non-2xx upstream response, static rendering
-fails through the route render-error diagnostics.
+The `modules/sampleapis-coffee-static` module demonstrates a static snapshot that renders `api_render` data from `https://api.sampleapis.com/coffee/hot`. If a nested `api_render` receives a non-2xx upstream response, static rendering fails through the route render-error diagnostics.
 
 ## Build Archives
 
@@ -334,9 +286,7 @@ hyperbricks start --deploy-remote
 hyperbricks start --deploy-local
 ```
 
-`deploy-daemon` starts the remote deploy daemon. If `deploy.hyperbricks.yaml`
-does not exist, it writes a minimal remote config and prints the Composer deploy
-secret/env-var setup instructions.
+`deploy-daemon` starts the remote deploy daemon. If `deploy.hyperbricks.yaml` does not exist, it writes a minimal remote config and prints the Composer deploy secret/env-var setup instructions.
 
 Create a deploy config:
 
@@ -347,9 +297,7 @@ hyperbricks start --deploy-init-config remote
 
 ## Starters
 
-`init` creates a module from the scaffold embedded in the installed HyperBricks
-binary. `init-starter` downloads a starter from the official
-[starters repository](https://github.com/hyperbricks/hyperbricks-starters).
+`init` creates a module from the scaffold embedded in the installed HyperBricks binary. `init-starter` downloads a starter from the official [starters repository](https://github.com/hyperbricks/hyperbricks-starters).
 
 List compatible starters:
 
@@ -369,16 +317,9 @@ Install a specific starter version:
 hyperbricks init-starter get hello-world@1.0.0 -m demo
 ```
 
-Without `@version`, HyperBricks selects the highest starter version compatible
-with the running HyperBricks version. Compatibility is declared in the starter
-index through `compatible_hyperbricks`. An explicitly requested starter version
-must also pass this check; installation fails if it is incompatible. An omitted
-or empty compatibility list allows any HyperBricks version.
+Without `@version`, HyperBricks selects the highest starter version compatible with the running HyperBricks version. Compatibility is declared in the starter index through `compatible_hyperbricks`. An explicitly requested starter version must also pass this check; installation fails if it is incompatible. An omitted or empty compatibility list allows any HyperBricks version.
 
-The index and archive are downloaded from the starters repository's `main`
-branch. `@version` selects a versioned starter directory within that archive,
-not a Git tag or commit. Published starter version directories therefore need
-to remain unchanged for repeatable installations.
+The index and archive are downloaded from the starters repository's `main` branch. `@version` selects a versioned starter directory within that archive, not a Git tag or commit. Published starter version directories therefore need to remain unchanged for repeatable installations.
 
 ## Plugins
 
@@ -393,8 +334,7 @@ hyperbricks plugin update example
 hyperbricks plugin remove example@1.0.0
 ```
 
-Use `--module <module>` with `plugin build` or `plugin remove` for custom module
-plugins.
+Use `--module <module>` with `plugin build` or `plugin remove` for custom module plugins.
 
 See [Plugins](PLUGINS.md) for naming, manifests, and YAML usage.
 

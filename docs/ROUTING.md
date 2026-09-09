@@ -1,11 +1,8 @@
 # Routing
 
-This document explains how HyperBricks resolves routes and clean URLs for
-dynamic rendering and static output.
+This document explains how HyperBricks resolves routes and clean URLs for dynamic rendering and static output.
 
-Route guard behavior is documented in [ROUTE_GUARD.md](ROUTE_GUARD.md).
-Configure browser status and headers with the route's `response` block; see
-[HTTP responses](HTTP_RESPONSES.md).
+Route guard behavior is documented in [ROUTE_GUARD.md](ROUTE_GUARD.md). Configure browser status and headers with the route's `response` block; see [HTTP responses](HTTP_RESPONSES.md).
 
 ## Route Owners
 
@@ -78,8 +75,7 @@ Examples:
 /help   can resolve to help or help.html
 ```
 
-If you want canonical redirects such as `/help.html` to `/help`, add them at a
-reverse proxy such as Caddy, Nginx, or Cloudflare.
+If you want canonical redirects such as `/help.html` to `/help`, add them at a reverse proxy such as Caddy, Nginx, or Cloudflare.
 
 ## Dynamic Route Resolution
 
@@ -99,12 +95,10 @@ This allows clean browser URLs while still supporting explicit `.html` routes.
 When serving static files, for example after `hyperbricks static`:
 
 1. If the URL ends with `/`, try configured `index_files`.
-2. If `clean_urls` is `true` and the URL has no extension, try configured
-   `extensions`.
+2. If `clean_urls` is `true` and the URL has no extension, try configured `extensions`.
 3. Otherwise serve the file as requested.
 
-Go's static file server can still redirect `/index.html` to `/`. HyperBricks
-serves `/` directly to avoid redirect loops.
+Go's static file server can still redirect `/index.html` to `/`. HyperBricks serves `/` directly to avoid redirect loops.
 
 ## Practical Examples
 
@@ -180,8 +174,7 @@ X-Hyperbricks-Rendered-At
 X-Hyperbricks-Cache-Expires-At
 ```
 
-These are response metadata. They do not affect route matching. Development mode
-does not add these headers.
+These are response metadata. They do not affect route matching. Development mode does not add these headers.
 
 ## Notes
 

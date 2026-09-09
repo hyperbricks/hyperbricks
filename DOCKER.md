@@ -1,7 +1,6 @@
 # Docker Deploy Setup (Hyperbricks)
 
-This repo includes a Docker-based Alpine deploy setup. It builds HyperBricks as
-the `deploy` user, supports plugin compilation, and exposes the HTTP Deploy API.
+This repo includes a Docker-based Alpine deploy setup. It builds HyperBricks as the `deploy` user, supports plugin compilation, and exposes the HTTP Deploy API.
 
 ## Quick start
 From repo root:
@@ -31,8 +30,7 @@ client:
 - 8080-8100: runtime ports for deployed modules
 
 ## Plugin builds
-The container creates `/opt/hyperbricks/bin/plugins` on startup. You can build
-plugins via the Deploy UI or manually inside the container as `deploy`:
+The container creates `/opt/hyperbricks/bin/plugins` on startup. You can build plugins via the Deploy UI or manually inside the container as `deploy`:
 ```
 docker exec -u deploy -w /opt/hyperbricks <container_name> \
   hyperbricks plugin build tailwindcss@1.0.1
@@ -41,10 +39,7 @@ docker exec -u deploy -w /opt/hyperbricks <container_name> \
 Plugin source is available at `/opt/hyperbricks/plugins` (copied from this repo).
 
 ## Tailwind CLI
-The image downloads a Tailwind CLI binary based on the container architecture
-(x86_64 or arm64). For arm64 Alpine, the image includes `gcompat` so glibc-linked
-binaries work. To skip Tailwind installation, set `TAILWIND_VERSION` to empty in
-`docker/docker-compose.yml`.
+The image downloads a Tailwind CLI binary based on the container architecture (x86_64 or arm64). For arm64 Alpine, the image includes `gcompat` so glibc-linked binaries work. To skip Tailwind installation, set `TAILWIND_VERSION` to empty in `docker/docker-compose.yml`.
 
 ## Troubleshooting
 - Module not reachable from host:

@@ -17,9 +17,7 @@ The advanced HyperBricks term for that route shape is `<API_FRAGMENT_RENDER>`, b
 - Config: `hyperbricks/40-api-fragment-write-demo.hyperbricks.yaml`
 - Page template: `templates/patterns/api-fragment-write-demo.html`
 - Result template: `templates/patterns/api-file-write-result.html`
-- Mock responses:
-  `templates/patterns/mock-postgrest-file-save-success.json`
-  `templates/patterns/mock-postgrest-file-save-conflict.json`
+- Mock responses: `templates/patterns/mock-postgrest-file-save-success.json` `templates/patterns/mock-postgrest-file-save-conflict.json`
 
 ## Routes
 

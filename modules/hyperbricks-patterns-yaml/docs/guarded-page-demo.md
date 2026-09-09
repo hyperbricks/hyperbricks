@@ -27,11 +27,7 @@ Auth endpoints:
 
 - Config: `hyperbricks/30-guarded-page-demo.hyperbricks.yaml`
 - Plugin: `plugins/guarded-demo-auth/1.0.0/guarded_demo_auth_plugin.go`
-- Templates:
-  `templates/patterns/guarded-shell.html`
-  `templates/patterns/guarded-login.html`
-  `templates/patterns/guarded-secret.html`
-  `templates/patterns/guarded-forbidden.html`
+- Templates: `templates/patterns/guarded-shell.html` `templates/patterns/guarded-login.html` `templates/patterns/guarded-secret.html` `templates/patterns/guarded-forbidden.html`
 
 ## Demo behavior
 
@@ -64,11 +60,7 @@ The important detail is the authorize contract for the native route guard.
 - HyperBricks resolves that cookie on the incoming request and forwards the value to `authorize.endpoint` as `Authorization: Bearer <token>`.
 - The authorize endpoint must validate that bearer token. It should not rely only on reading the cookie again.
 
-The guard explicitly configures each denial response. Ordinary requests receive
-`303` and `Location`. A variant matching `HX-Request: "true"` uses `401` or
-`403` with `HX-Redirect`. The first matching variant replaces the default;
-HyperBricks does not convert the redirect automatically. The plugin's own
-HTMX login/logout handling remains application logic.
+The guard explicitly configures each denial response. Ordinary requests receive `303` and `Location`. A variant matching `HX-Request: "true"` uses `401` or `403` with `HX-Redirect`. The first matching variant replaces the default; HyperBricks does not convert the redirect automatically. The plugin's own HTMX login/logout handling remains application logic.
 
 ## Pattern rule
 
@@ -78,5 +70,4 @@ Keep responsibilities separate:
 - auth plugin handles login/logout/authorize request mechanics
 - forbidden is a real route, not just an inline message
 
-That matches the same ownership pattern used by Composer: page shells own route
-access, while auth endpoints own login/logout/authorize mechanics.
+That matches the same ownership pattern used by Composer: page shells own route access, while auth endpoints own login/logout/authorize mechanics.

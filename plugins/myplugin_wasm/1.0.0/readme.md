@@ -1,8 +1,6 @@
 # MyPlugin WASM
 
-`myplugin_wasm` is a small Go/WASM plugin example for HyperBricks. It renders a
-simple content card from plugin `data` and is meant to show the full path from
-source code to a usable `.wasm` plugin artifact.
+`myplugin_wasm` is a small Go/WASM plugin example for HyperBricks. It renders a simple content card from plugin `data` and is meant to show the full path from source code to a usable `.wasm` plugin artifact.
 
 The example uses the v1 WASM plugin ABI:
 
@@ -18,8 +16,7 @@ Because this plugin is written in Go, the CLI builds it as a WASI module:
 GOOS=wasip1 GOARCH=wasm go build -buildmode=c-shared
 ```
 
-HyperBricks provides the required WASI imports with wazero, but does not mount a
-filesystem or expose network/process APIs to the plugin.
+HyperBricks provides the required WASI imports with wazero, but does not mount a filesystem or expose network/process APIs to the plugin.
 
 ## Source Layout
 
@@ -43,8 +40,7 @@ The manifest marks the plugin as a WASM plugin:
 }
 ```
 
-The `binary` field controls the config name. With this manifest, the global
-artifact name is:
+The `binary` field controls the config name. With this manifest, the global artifact name is:
 
 ```text
 MyPluginWasmPlugin@1.0.0
@@ -122,8 +118,7 @@ hyperbricks start -m demo
 
 ## Build As A Module-Local Plugin
 
-Use a module-local plugin when the plugin belongs to one SaaS tenant/module or
-when you do not want the source to live in the global `plugins/` folder.
+Use a module-local plugin when the plugin belongs to one SaaS tenant/module or when you do not want the source to live in the global `plugins/` folder.
 
 Create this folder:
 
@@ -185,17 +180,14 @@ demo_card:
 For a global plugin deployment:
 
 1. Build the global artifact before starting or packaging the module.
-2. Ensure `bin/plugins/MyPluginWasmPlugin@1.0.0.wasm` exists on the deployed
-   runtime host.
-3. Keep `plugins.enabled` and the component `plugin` field set to
-   `MyPluginWasmPlugin@1.0.0`.
+2. Ensure `bin/plugins/MyPluginWasmPlugin@1.0.0.wasm` exists on the deployed runtime host.
+3. Keep `plugins.enabled` and the component `plugin` field set to `MyPluginWasmPlugin@1.0.0`.
 
 For a module-local plugin deployment:
 
 1. Keep the source under `modules/<module>/plugins/myplugin_wasm/1.0.0/`.
 2. Build it with `hyperbricks plugin build myplugin_wasm@1.0.0 --module <module>`.
-3. Enable and render the suffixed config name:
-   `MyPluginWasmPlugin__<module>@1.0.0`.
+3. Enable and render the suffixed config name: `MyPluginWasmPlugin__<module>@1.0.0`.
 4. Build or deploy the module after the `.wasm` artifact exists.
 
 Do not include `.wasm` in `plugins.enabled` or in the component `plugin` field.
@@ -215,10 +207,7 @@ Do not include `.wasm` in `plugins.enabled` or in the component `plugin` field.
 ## How The Plugin Works
 
 1. HyperBricks normalizes the `<PLUGIN>` component into JSON.
-2. The host calls `alloc` in the WASM module and writes that JSON into guest
-   memory.
+2. The host calls `alloc` in the WASM module and writes that JSON into guest memory.
 3. The host calls `render(input_ptr, input_len)`.
-4. The plugin decodes `data`, renders escaped HTML, encodes
-   `{"kind":"html","html":"..."}`, and returns a packed pointer/length.
-5. HyperBricks reads the JSON and sends the HTML through the existing plugin
-   renderer contract.
+4. The plugin decodes `data`, renders escaped HTML, encodes `{"kind":"html","html":"..."}`, and returns a packed pointer/length.
+5. HyperBricks reads the JSON and sends the HTML through the existing plugin renderer contract.

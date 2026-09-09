@@ -13,11 +13,7 @@ This pattern shows how to keep normal page links while making them feel faster w
 
 - Config: `hyperbricks/50-menu-htmx-demo.hyperbricks.yaml`
 - Shell template: `templates/patterns/menu-htmx-shell.html`
-- Content templates:
-  `templates/patterns/menu-htmx-intro.html`
-  `templates/patterns/menu-htmx-doc1.html`
-  `templates/patterns/menu-htmx-doc2.html`
-  `templates/patterns/menu-htmx-doc3.html`
+- Content templates: `templates/patterns/menu-htmx-intro.html` `templates/patterns/menu-htmx-doc1.html` `templates/patterns/menu-htmx-doc2.html` `templates/patterns/menu-htmx-doc3.html`
 
 ## Routes
 
@@ -42,11 +38,7 @@ The core trick is in the `<MENU>.item` template:
 - `hx-target="#menu-demo-panel"` swaps in place
 - `hx-push-url` updates the browser URL to the canonical destination
 
-The link explicitly uses `hx-swap="innerHTML"` to preserve the panel.
-Its `hx-select-oob` selection replaces the
-sibling sidebar after the main content swap, keeping the menu's active state
-in sync. Both selections are declared on each request link, so this flow does
-not rely on inherited attributes.
+The link explicitly uses `hx-swap="innerHTML"` to preserve the panel. Its `hx-select-oob` selection replaces the sibling sidebar after the main content swap, keeping the menu's active state in sync. Both selections are declared on each request link, so this flow does not rely on inherited attributes.
 
 ## Use a fragment instead when
 

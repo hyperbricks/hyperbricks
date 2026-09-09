@@ -2,8 +2,7 @@
 
 Swup 4.10.0, MIT license.
 
-Source: https://registry.npmjs.org/swup/-/swup-4.10.0.tgz
-Repository: https://github.com/swup/swup
+Source: https://registry.npmjs.org/swup/-/swup-4.10.0.tgz Repository: https://github.com/swup/swup
 
 The UMD distribution bundles its runtime dependencies and is imported by native esbuild.
 

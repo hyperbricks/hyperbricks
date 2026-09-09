@@ -16,9 +16,7 @@ The point is not that plugins are “better.” The point is that they solve a d
 - API result template: `templates/patterns/route-split-api-result.html`
 - Plugin result template: `templates/patterns/route-split-plugin-result.html`
 - Plugin: `plugins/route-split-demo/1.0.0/route_split_demo_plugin.go`
-- Mock PostgREST responses:
-  `templates/patterns/mock-postgrest-rename-success.json`
-  `templates/patterns/mock-postgrest-rename-conflict.json`
+- Mock PostgREST responses: `templates/patterns/mock-postgrest-rename-success.json` `templates/patterns/mock-postgrest-rename-conflict.json`
 
 ## Routes
 

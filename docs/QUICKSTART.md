@@ -1,8 +1,6 @@
 # Quickstart
 
-Build a small module with external HTML templates, JavaScript and CSS. HyperBricks
-renders the page and fragment; native esbuild bundles the browser assets. This
-example uses [HTMX 4](https://four.htmx.org/) to update part of the page.
+Build a small module with external HTML templates, JavaScript and CSS. HyperBricks renders the page and fragment; native esbuild bundles the browser assets. This example uses [HTMX 4](https://four.htmx.org/) to update part of the page.
 
 ## Install And Create A Module
 
@@ -16,8 +14,7 @@ Install `v1.2.3-beta`:
 go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@v1.2.3-beta
 ```
 
-Make sure your Go binary directory
-(`GOBIN`, or `$(go env GOPATH)/bin` by default) is on your `PATH`.
+Make sure your Go binary directory (`GOBIN`, or `$(go env GOPATH)/bin` by default) is on your `PATH`.
 
 **2. Create the module**
 
@@ -36,9 +33,7 @@ mkdir -p \
   modules/demo/resources/vendor
 ```
 
-Keep the generated `package.hyperbricks.yaml`. Replace the contents of the
-starter's `hyperbricks/hello-world.hyperbricks.yaml` with the configuration below.
-This replaces the starter route instead of creating a second route for `/`.
+Keep the generated `package.hyperbricks.yaml`. Replace the contents of the starter's `hyperbricks/hello-world.hyperbricks.yaml` with the configuration below. This replaces the starter route instead of creating a second route for `/`.
 
 The files you will work with are:
 
@@ -83,8 +78,7 @@ Create `modules/demo/templates/card.html`:
 </section>
 ```
 
-The same card template supplies the initial page content and the fragment.
-YAML values provide its text; the template owns the HTML markup.
+The same card template supplies the initial page content and the fragment. YAML values provide its text; the template owns the HTML markup.
 
 ## Add JavaScript And CSS
 
@@ -109,9 +103,7 @@ document.addEventListener("htmx:after:swap", () => {
 });
 ```
 
-The import includes HTMX in your application bundle. There is no separate CDN
-script in the page. The small event handler shows where your own JavaScript
-belongs: it updates the status after HTMX replaces the card.
+The import includes HTMX in your application bundle. There is no separate CDN script in the page. The small event handler shows where your own JavaScript belongs: it updates the status after HTMX replaces the card.
 
 Create `modules/demo/resources/css/app.css`:
 
@@ -214,17 +206,11 @@ hello_fragment:
 
 - `hypermedia` serves a full page at `/` and `/index` with the default routing settings.
 - `template.file` loads a file from the module's templates directory.
-- `inherit` reuses a component. The fragment overrides the card's text while
-  keeping its template.
-- The two `esbuild` components bundle JavaScript and CSS into `static/` and emit
-  their script and stylesheet tags. `fingerprint` adds a content hash to asset
-  URLs; `cache` reuses build results when the source files have not changed.
-- The `fragment` route returns only the card HTML. The `hx-*` attributes in
-  `page.html` tell HTMX to request it and replace the contents of `#target`.
-  HyperBricks does not require HTMX to render this route.
+- `inherit` reuses a component. The fragment overrides the card's text while keeping its template.
+- The two `esbuild` components bundle JavaScript and CSS into `static/` and emit their script and stylesheet tags. `fingerprint` adds a content hash to asset URLs; `cache` reuses build results when the source files have not changed.
+- The `fragment` route returns only the card HTML. The `hx-*` attributes in `page.html` tell HTMX to request it and replace the contents of `#target`. HyperBricks does not require HTMX to render this route.
 
-Edit files under `resources/` and `templates/`; the files under `static/` are
-build output. See [JavaScript and CSS](ESBUILD.md) for more esbuild options.
+Edit files under `resources/` and `templates/`; the files under `static/` are build output. See [JavaScript and CSS](ESBUILD.md) for more esbuild options.
 
 ## Run And Try It
 
@@ -234,18 +220,11 @@ From the project root:
 hyperbricks start -m demo
 ```
 
-Open [localhost:8080](http://localhost:8080/). The first page render builds the
-assets, including the imported HTMX source. No npm installation or separate
-asset build command is needed for this example.
+Open [localhost:8080](http://localhost:8080/). The first page render builds the assets, including the imported HTMX source. No npm installation or separate asset build command is needed for this example.
 
-Click **Load fragment**. The card changes and your JavaScript increments the
-status counter. Click again: the counter increases without reloading the page.
-A full reload restores the initial card and resets the counter.
+Click **Load fragment**. The card changes and your JavaScript increments the status counter. Click again: the counter increases without reloading the page. A full reload restores the initial card and resets the counter.
 
-Try changing the card text in YAML, the markup in `templates/card.html`, or the
-styles in `resources/css/app.css`. With development watching enabled, save and
-reload the page to see the change. Keep browser behavior in `app.js`, styling
-in `app.css`, and route composition in YAML.
+Try changing the card text in YAML, the markup in `templates/card.html`, or the styles in `resources/css/app.css`. With development watching enabled, save and reload the page to see the change. Keep browser behavior in `app.js`, styling in `app.css`, and route composition in YAML.
 
 ## Render Static Output
 
@@ -253,15 +232,11 @@ in `app.css`, and route composition in YAML.
 hyperbricks static -m demo
 ```
 
-The generated site is written to `modules/demo/rendered/`. Static rendering
-requests routes through an internal runtime before writing the HTML and assets.
-On a separate static host, the fragment URL `/hello-fragment` must resolve to its
-exported HTML file; configure clean-URL handling to match your runtime routes.
+The generated site is written to `modules/demo/rendered/`. Static rendering requests routes through an internal runtime before writing the HTML and assets. On a separate static host, the fragment URL `/hello-fragment` must resolve to its exported HTML file; configure clean-URL handling to match your runtime routes.
 
 ## Next Steps
 
-- [General HyperBricks skill](../SKILLS/hyperbricks/SKILL.md): give an agent the
-  project conventions, CLI workflow, and task-based Source Of Truth.
+- [General HyperBricks skill](../SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
 - [YAML_USAGE.md](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
 - [REFERENCE.md](REFERENCE.md): component fields and executable examples.
 - [ROUTING.md](ROUTING.md): route resolution and clean URLs.

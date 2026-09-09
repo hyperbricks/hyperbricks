@@ -1,12 +1,8 @@
 # HTMX Fragments And Canonical URLs
 
-HyperBricks serves full HTML pages with `hypermedia` and HTML fragments with
-`fragment`. This guide shows how to use those routes with
-[HTMX 4](https://four.htmx.org/), while keeping a full page URL available for
-direct visits, reloads, and links without JavaScript.
+HyperBricks serves full HTML pages with `hypermedia` and HTML fragments with `fragment`. This guide shows how to use those routes with [HTMX 4](https://four.htmx.org/), while keeping a full page URL available for direct visits, reloads, and links without JavaScript.
 
-Pages, fragments, and shared content are general HyperBricks features. The
-`hx-*` attributes and `HX-*` response headers below configure the HTMX integration.
+Pages, fragments, and shared content are general HyperBricks features. The `hx-*` attributes and `HX-*` response headers below configure the HTMX integration.
 
 The recommended pattern is:
 
@@ -76,14 +72,11 @@ assets_content:
       - value: Shared page and fragment content.
 ```
 
-The page owns `/assets`. The fragment owns `/fragments/assets`. The reusable
-content lives in `assets_content`. The page wraps it in `#content`, which is
-the target for fragment updates.
+The page owns `/assets`. The fragment owns `/fragments/assets`. The reusable content lives in `assets_content`. The page wraps it in `#content`, which is the target for fragment updates.
 
 ## HTMX Link
 
-Use normal `href` for the canonical fallback and `hx-get` for the fragment.
-Load HTMX in the page and place this link in a layout containing `#content`:
+Use normal `href` for the canonical fallback and `hx-get` for the fragment. Load HTMX in the page and place this link in a layout containing `#content`:
 
 ```html
 <a
@@ -96,14 +89,11 @@ Load HTMX in the page and place this link in a layout containing `#content`:
 </a>
 ```
 
-This gives the browser and crawler a stable URL while HTMX can update part of
-the page.
+This gives the browser and crawler a stable URL while HTMX can update part of the page.
 
 ## Fragment Response Headers
 
-Set these HTMX response headers under the fragment route's general
-`response.headers` mapping. HyperBricks sends the configured headers; HTMX
-interprets them in the browser.
+Set these HTMX response headers under the fragment route's general `response.headers` mapping. HyperBricks sends the configured headers; HTMX interprets them in the browser.
 
 ```yaml
 assets_fragment:
@@ -118,23 +108,16 @@ assets_fragment:
       - inherit: assets_content
 ```
 
-Use response headers when the fragment itself should tell HTMX how to apply the
-response. Use attributes in HTML links or buttons when the trigger should own
-the behavior.
+Use response headers when the fragment itself should tell HTMX how to apply the response. Use attributes in HTML links or buttons when the trigger should own the behavior.
 
 ## When Same-URL Fragment Selection Is Appropriate
 
-Some frameworks intentionally render a full page for a normal request and a
-fragment for the same URL when `HX-Request` is present.
+Some frameworks intentionally render a full page for a normal request and a fragment for the same URL when `HX-Request` is present.
 
-HyperBricks does not automatically select a page or fragment based on
-`HX-Request`. Configuring `Vary: HX-Request` only separates cache entries; it
-does not select different content. Use separate fragment routes and shared
-content for the pattern described here.
+HyperBricks does not automatically select a page or fragment based on `HX-Request`. Configuring `Vary: HX-Request` only separates cache entries; it does not select different content. Use separate fragment routes and shared content for the pattern described here.
 
 ## Rule
 
 Do not use route collisions to model HTMX fragments.
 
-Use canonical page routes for browser state, explicit fragment routes for HTMX
-requests, and reusable content nodes for shared rendering.
+Use canonical page routes for browser state, explicit fragment routes for HTMX requests, and reusable content nodes for shared rendering.

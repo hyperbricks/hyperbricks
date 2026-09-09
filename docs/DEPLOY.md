@@ -1,15 +1,11 @@
 # Deploy
 
-HyperBricks can build a module into a deploy archive, push it to a remote deploy
-host, activate it through the Deploy API, and run the selected build from the
-remote `deploy/` folder.
+HyperBricks can build a module into a deploy archive, push it to a remote deploy host, activate it through the Deploy API, and run the selected build from the remote `deploy/` folder.
 
 Deploy has two roles:
 
-- Local build hub: builds archives, keeps local build history, and can push to a
-  remote target.
-- Remote runtime hub: accepts builds, activates one build per module, starts or
-  stops module processes, and serves logs/status.
+- Local build hub: builds archives, keeps local build history, and can push to a remote target.
+- Remote runtime hub: accepts builds, activates one build per module, starts or stops module processes, and serves logs/status.
 
 ## Build A Deploy Archive
 
@@ -44,8 +40,7 @@ deploy/<module>/
   hyperbricks.versions.json
 ```
 
-The versions index stores the current build pointer, build metadata, archive
-path, and source hash.
+The versions index stores the current build pointer, build metadata, archive path, and source hash.
 
 ## Run From Deploy
 
@@ -83,9 +78,7 @@ For Composer-managed deploys, start the remote daemon directly:
 hyperbricks deploy-daemon
 ```
 
-If `deploy.hyperbricks.yaml` does not exist yet, the command writes a minimal
-remote config and prints the next steps. Composer shows the exact env var name
-for each deploy target, using this pattern:
+If `deploy.hyperbricks.yaml` does not exist yet, the command writes a minimal remote config and prints the next steps. Composer shows the exact env var name for each deploy target, using this pattern:
 
 ```text
 HB_DEPLOY_SECRET_<NORMALIZED_MODULE>_<NORMALIZED_KEY_ID>
@@ -104,10 +97,7 @@ Composer can then upload and activate an already-built HRA through:
 POST /deploy/v1/modules/{module}/releases
 ```
 
-That endpoint writes the archive to the normal deploy root and reuses the same
-activation path as the dashboard. Uploaded builds therefore appear in the
-remote dashboard build list, status, logs, restart, stop, rollback, and
-production controls.
+That endpoint writes the archive to the normal deploy root and reuses the same activation path as the dashboard. Uploaded builds therefore appear in the remote dashboard build list, status, logs, restart, stop, rollback, and production controls.
 
 Legacy start command:
 
@@ -167,13 +157,11 @@ The local dashboard:
 - syncs remote status on demand
 - keeps local and remote state separate
 
-Local dashboard requests are not HMAC-signed. Keep the local dashboard bound to
-`127.0.0.1`.
+Local dashboard requests are not HMAC-signed. Keep the local dashboard bound to `127.0.0.1`.
 
 ## Deploy Config
 
-Deploy commands read `deploy.hyperbricks.yaml` from the project root unless
-`HB_DEPLOY_CONFIG` points to another file.
+Deploy commands read `deploy.hyperbricks.yaml` from the project root unless `HB_DEPLOY_CONFIG` points to another file.
 
 Create a starter config with:
 
@@ -211,9 +199,7 @@ deploy:
         key_id: staging
 ```
 
-The deploy config uses the same generic YAML resolver model as other
-HyperBricks YAML config files. `hmac_secret.env` reads the value from the
-environment at load time.
+The deploy config uses the same generic YAML resolver model as other HyperBricks YAML config files. `hmac_secret.env` reads the value from the environment at load time.
 
 ## Push Flow
 
@@ -236,8 +222,7 @@ The push flow is:
 3. The remote daemon validates, stores, and activates the archive.
 4. Refresh local metadata from the remote status.
 
-If upload succeeds but activation fails, the local build stays intact and the
-error is surfaced to the operator.
+If upload succeeds but activation fails, the local build stays intact and the error is surfaced to the operator.
 
 ## Authentication
 
@@ -301,21 +286,17 @@ Deploy services support these environment variables:
 | `HB_DEPLOY_LOGS` | Enable or disable remote logs |
 | `HB_DEPLOY_BIN` | Binary path used to start module processes |
 
-Module processes also receive runtime environment values such as module name,
-build ID, assigned port, deploy root, and production mode.
+Module processes also receive runtime environment values such as module name, build ID, assigned port, deploy root, and production mode.
 
 ## Security
 
 - Keep `HB_DEPLOY_SECRET` out of the repository.
 - Keep the local dashboard on `127.0.0.1`.
-- Bind the remote API to localhost or a private network unless it is behind
-  trusted HTTPS infrastructure.
+- Bind the remote API to localhost or a private network unless it is behind trusted HTTPS infrastructure.
 - Use HTTPS, VPN, firewall rules, or a reverse proxy for remote access.
 - Keep clocks in sync; HMAC timestamps allow only limited drift.
 
-HMAC provides request integrity and authentication. It does not provide
-confidentiality. Use HTTPS or a private network when secrets or
-archives cross an untrusted network.
+HMAC provides request integrity and authentication. It does not provide confidentiality. Use HTTPS or a private network when secrets or archives cross an untrusted network.
 
 ## Systemd Example
 
@@ -371,20 +352,14 @@ hyperbricks static -m demo
 hyperbricks static -m demo --zip --out ./exports/demo
 ```
 
-Static rendering snapshots routes through the normal runtime HTTP path before
-writing files. Public `api_render` content is fetched during this step, so the
-build environment must be able to reach those upstream APIs.
+Static rendering snapshots routes through the normal runtime HTTP path before writing files. Public `api_render` content is fetched during this step, so the build environment must be able to reach those upstream APIs.
 
 See [HyperBricks CLI](HYPERBRICKS_CLI.md) for static flags.
 
 ## Rollbacks
 
-The remote Deploy API can roll back a module to an earlier build. Manual
-rollback is also possible by changing the `current` build pointer in
-`deploy/<module>/hyperbricks.versions.json` and restarting the module.
+The remote Deploy API can roll back a module to an earlier build. Manual rollback is also possible by changing the `current` build pointer in `deploy/<module>/hyperbricks.versions.json` and restarting the module.
 
 ## Metadata
 
-Each module should define `hyperbricks.metadata.moduleversion` in
-`package.hyperbricks.yaml`. The build command reads module metadata and updates
-archive metadata when creating deploy artifacts.
+Each module should define `hyperbricks.metadata.moduleversion` in `package.hyperbricks.yaml`. The build command reads module metadata and updates archive metadata when creating deploy artifacts.

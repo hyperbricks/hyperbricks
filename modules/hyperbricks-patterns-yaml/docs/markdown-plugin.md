@@ -29,12 +29,9 @@ my_doc:
 
 ## Input fields
 
-- `plugin`
-  The plugin name. In this case: `MarkdownPlugin@2.0.0`
-- `data.class`
-  Optional CSS class added around the rendered HTML
-- `data.content`
-  The Markdown source string
+- `plugin` The plugin name. In this case: `MarkdownPlugin@2.0.0`
+- `data.class` Optional CSS class added around the rendered HTML
+- `data.content` The Markdown source string
 
 ## Why this docs browser uses it
 
