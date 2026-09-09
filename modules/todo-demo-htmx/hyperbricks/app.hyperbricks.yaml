@@ -16,7 +16,7 @@ tasks_page:
 
 about_page:
   - inherit: todo_page
-  - route: about
+  - route: how-it-works
   - title: How it works
   - section: todo_navigation
   - index: 20

@@ -6,13 +6,9 @@ todo_panel:
 
 todo_dashboard:
   - type: tree
-  - heading:
-      - type: text
-      - value: My tasks
-      - enclose: '<h1>|</h1>'
   - introduction:
       - type: html
-      - value: '<p class="lede">Make room for the next thing. Your list stays in this browser.</p>'
+      - value: '<p class="lede">Create your to do list here. The list is stored local in your browser data.</p>'
   - workspace:
       - type: template
       - template:

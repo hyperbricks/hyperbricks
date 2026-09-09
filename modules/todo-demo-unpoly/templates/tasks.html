@@ -51,7 +51,7 @@
     {{range $visible}}
       <li data-task-id="{{.id}}" class="task {{if .done}}is-done{{end}}"><label class="task-label"><input type="checkbox" data-toggle="{{.id}}" {{if .done}}checked{{end}}><span class="task-title">{{.title}}</span></label><button type="button" class="delete-task" data-delete="{{.id}}" aria-label="Delete {{.title}}">×</button></li>
     {{else}}
-      <li class="empty-state"><span class="empty-mark" aria-hidden="true">✓</span><h2>{{if $items}}All clear here.{{else}}Start with one small task.{{end}}</h2><p>{{if $items}}No tasks match this filter.{{else}}Add something above and make a little progress.{{end}}</p></li>
+      <li class="empty-state"><h2>{{if $items}}All clear here.{{else}}Add your first item{{end}}</h2>{{if $items}}<p>No tasks match this filter.</p>{{end}}</li>
     {{end}}
     </ul>
   {{end}}

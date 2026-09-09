@@ -19,7 +19,7 @@ Open [localhost:8123](http://localhost:8123/). Native esbuild builds the JavaScr
 1. Add a task, mark it complete, switch between All / Active / Completed, and delete it or clear completed tasks.
 2. Type a note in the scratchpad. Change your list: the note stays because only the task panel updates.
 3. Reload the page: tasks and your scratchpad note return from localStorage. Notes are saved automatically on every edit.
-4. Open [How it works](http://localhost:8123/about) for the component overview.
+4. Open [How it works](http://localhost:8123/how-it-works) for the component overview.
 
 ## What this demonstrates
 
