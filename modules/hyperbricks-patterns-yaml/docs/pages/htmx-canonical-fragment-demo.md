@@ -16,35 +16,32 @@ The shared browser script uses HTMX 4. Each link declares `hx-swap="innerHTML"` 
 
 Check direct page access, panel navigation, reload, Back, and Forward. History restoration requests the canonical full page, so each pushed URL must keep its complete-page route.
 
-## Composer reference shape
+## Configuration in this module
 
-Composer uses:
+The canonical page inserts the shared section into the page shell:
 
 ```yaml
-app_status:
-  - inherit: app_section
-  - route: status
-  - template_10:
+app_status_demo:
+  - inherit: status_demo_shell
+  - route: status-demo
+  - content:
       - values:
           content_right:
-            - inherit: status.template_10
+            - inherit: status_demo_base_view.content
 ```
 
-and the reusable section source:
+The reusable section has its own fragment route:
 
 ```yaml
-status:
+status_demo:
   - type: fragment
-  - route: fragments/status
-  - template_10:
-      - type: tree
+  - route: fragments/status-demo
+  - nocache: "true"
+  - "10_10":
+      - inherit: status_demo_base_view.content
 ```
 
-It also exposes explicit request-time partial endpoints in YAML source, such as:
-
-- `project/status/summary`
-- `project/status/settings`
-- `project/status/invites`
+The summary, settings, and plugin links fetch separate panel fragments and push their corresponding full-page URLs. Their canonical pages select the same panel through inherited template values.
 
 ## Pattern demo in this module
 
@@ -79,4 +76,4 @@ Use:
 - rooted fragment route for reusable section content
 - explicit fragment endpoints for HTMX requests
 
-That keeps ownership clear and matches the preferred Composer pattern.
+The complete page owns direct access and history restoration; the fragment owns the partial response.

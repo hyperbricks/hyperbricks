@@ -49,7 +49,8 @@ Think of the flow like this:
 - the user opens a public login page
 - the login request sets a browser cookie
 - the protected page checks that cookie before it renders
-- if the check fails, the user is sent to a forbidden page instead
+- missing or invalid credentials send the user to `/guarded-demo/login`
+- valid credentials without access send the user to `/guarded-demo/forbidden`
 
 ## Guard contract
 

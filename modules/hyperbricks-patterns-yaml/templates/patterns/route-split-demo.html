@@ -126,7 +126,7 @@
       <div class="split-card">
         <h2 class="page-copy-subtitle mb-2">Refresh probe</h2>
         <p class="page-copy-text mb-3">
-          The API-side action sends a small HTMX event after it finishes. That gives other parts of the UI a simple way to refresh themselves after a save.
+          The API-side action sends a small HTMX event after it finishes. Both mock success and conflict actions send the event. The probe shows event delivery; it does not confirm a save.
         </p>
         <div id="split-refresh-probe" hx-get="/fragments/route-split-refresh-probe" hx-trigger="load, hb-pattern-route-split-refresh from:body" hx-swap="innerHTML"></div>
       </div>

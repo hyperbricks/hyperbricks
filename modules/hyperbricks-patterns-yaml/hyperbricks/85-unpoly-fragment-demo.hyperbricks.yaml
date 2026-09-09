@@ -40,7 +40,10 @@ unpoly_demo_page:
       - type: template
       - inline: |
           <main id="unpoly-demo-shell">
-            <p><a href="/docs">HyperBricks patterns</a></p>
+            <nav aria-label="Pattern navigation">
+              <a href="/index">← Pattern index</a>
+              <a href="/docs">Docs</a>
+            </nav>
             <h1>Unpoly fragment demo</h1>
             <p>HyperBricks renders the panel. Unpoly replaces it in this page.</p>
             <a href="/unpoly-demo/loaded" up-href="/fragments/unpoly-demo"

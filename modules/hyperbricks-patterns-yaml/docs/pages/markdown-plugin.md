@@ -24,7 +24,7 @@ my_doc:
       content:
         file:
           base: module
-          path: docs/markdown-plugin.md
+          path: docs/pages/markdown-plugin.md
 ```
 
 ## Input fields

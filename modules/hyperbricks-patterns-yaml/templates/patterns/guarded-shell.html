@@ -1,5 +1,9 @@
 <main class="guarded-shell">
   <header class="page-header">
+    <nav class="page-topnav">
+      <a href="/index" class="page-link">← Pattern index</a>
+      <a href="/docs" class="page-link-muted">Docs</a>
+    </nav>
     <p class="page-kicker">Guarded Pattern</p>
     <h1 class="page-title">{{ .section_title }}</h1>
     <p class="page-lead max-w-[72ch]">{{ .section_intro }}</p>
@@ -8,7 +12,6 @@
   <section class="guarded-grid">
     <aside class="guarded-nav">
       <h2 class="page-copy-subtitle mb-2">Routes</h2>
-      <a href="/">Pattern index</a>
       <a href="/guarded-demo">Login landing</a>
       <a href="/guarded-demo/secret">Secret page</a>
       <a href="/guarded-demo/forbidden">Forbidden page</a>

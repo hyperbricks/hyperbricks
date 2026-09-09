@@ -32,7 +32,10 @@ route_split_api_rename_success:
   - route: patterns/route-split/rename-success
   - nocache: "true"
   - method: POST
-  - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-rename-success"
+  - endpoint:
+      format: "%s/fragments/mock-postgrest-rename-success"
+      args:
+        - config: myconf.patterns.mock_api_base
   - headers:
       Content-Type: application/json
       Accept: application/json
@@ -49,7 +52,10 @@ route_split_api_rename_conflict:
   - route: patterns/route-split/rename-conflict
   - nocache: "true"
   - method: POST
-  - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-rename-conflict"
+  - endpoint:
+      format: "%s/fragments/mock-postgrest-rename-conflict"
+      args:
+        - config: myconf.patterns.mock_api_base
   - headers:
       Content-Type: application/json
       Accept: application/json

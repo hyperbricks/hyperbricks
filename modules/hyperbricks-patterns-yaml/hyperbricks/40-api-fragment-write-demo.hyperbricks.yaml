@@ -41,7 +41,10 @@ api_fragment_write_save_success:
   - route: patterns/assets/file-save-success
   - nocache: "true"
   - method: POST
-  - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-file-save-success"
+  - endpoint:
+      format: "%s/fragments/mock-postgrest-file-save-success"
+      args:
+        - config: myconf.patterns.mock_api_base
   - headers:
       Content-Type: application/json
       Accept: application/json
@@ -58,7 +61,10 @@ api_fragment_write_save_conflict:
   - route: patterns/assets/file-save-conflict
   - nocache: "true"
   - method: POST
-  - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-file-save-conflict"
+  - endpoint:
+      format: "%s/fragments/mock-postgrest-file-save-conflict"
+      args:
+        - config: myconf.patterns.mock_api_base
   - headers:
       Content-Type: application/json
       Accept: application/json

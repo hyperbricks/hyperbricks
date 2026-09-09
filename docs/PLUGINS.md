@@ -14,6 +14,14 @@ There are two plugin source types:
 
 Both artifact formats are installed into `./bin/plugins` and enabled from `package.hyperbricks.yaml`.
 
+## Platform Support
+
+**Native Go plugins (`.so`) are not supported on Windows.** They cannot be built or loaded when HyperBricks runs directly on Windows. Go's plugin system supports Linux, FreeBSD, and macOS only; see the [official Go plugin documentation](https://pkg.go.dev/plugin#hdr-Warnings).
+
+To use native plugins from a Windows machine, run both HyperBricks and the plugin build in a Linux environment, such as WSL2 or a Linux container. See [building plugins in Docker](DOCKER.md#build-plugins). Build native plugins for the runtime's operating system and architecture, using the same Go toolchain and matching shared dependencies; a plugin built for macOS cannot be loaded by a Linux runtime.
+
+This Go plugin restriction does not apply to [WebAssembly plugins](#wasm-plugins), which use HyperBricks' separate WASM runtime. WASM plugins have their own execution limits and do not provide all native Go plugin capabilities, including streaming callbacks, network access, or process spawning.
+
 ## Enable Plugins
 
 Enable compiled plugin artifacts without the `.so` or `.wasm` suffix:

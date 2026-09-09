@@ -1,5 +1,10 @@
 myconf:
   some: value
+  patterns:
+    mock_api_base:
+      env:
+        name: PATTERNS_API_BASE_URL
+        default: http://127.0.0.1:8080
 
 hyperbricks:
   mode: development

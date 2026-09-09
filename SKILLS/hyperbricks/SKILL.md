@@ -36,6 +36,8 @@ Use the documentation for the HyperBricks version running the project. These pat
 - `docs/HYPERBRICKS_CLI.md`: commands, flags, module selection, and render diagnostics.
 - `docs/YAML_USAGE.md`: component syntax, imports, inheritance, resolvers, and templates.
 - `docs/REFERENCE.md`: component fields and supported values.
+- `docs/PROJECT_PATTERNS.md`: recommended project patterns and the Project Desk learning path.
+- `modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md`: standalone pattern demos and their source files.
 - `docs/ROUTING.md`: URL matching and route configuration.
 - `docs/ESBUILD.md`: browser asset bundling.
 - `docs/GOJA_RENDER.md`, `docs/API_RENDER.md`, and `docs/PLUGINS.md`: server-side logic.
@@ -266,7 +268,7 @@ In a shared page layout containing that same `#content` element, use:
 
 With HTMX loaded, the link replaces the contents of `#content` and changes the browser URL to `/help`. Without JavaScript, `href` opens the complete page. Load HTMX once in the shared layout. Also include UTF-8 charset and viewport metadata in its head; the [page recipe](references/authoring.md#one-view-a-full-page-and-a-fragment) shows that configuration.
 
-For menu generation, page and fragment navigation, and configuration-driven sections, use the [patterns example module README](/path/to/hyperbricks/modules/hyperbricks-patterns-yaml/README.md). Its version 2 topic guide points to the example source files. This module lives in the separate testing project, outside the HyperBricks repository.
+For menu generation, page and fragment navigation, and configuration-driven sections, use the [patterns module source guide](../../modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md). These examples live in this repository. For the broader Project Desk learning path, use [Recommended project patterns](../../docs/PROJECT_PATTERNS.md).
 
 ## Native esbuild
 

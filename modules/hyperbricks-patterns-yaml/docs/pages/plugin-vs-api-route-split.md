@@ -73,3 +73,17 @@ The right side is intentionally not boring:
 - the template shows that computed plan
 
 That difference is the boundary.
+
+## Running the local mock API
+
+The mock API base address comes from `myconf.patterns.mock_api_base` in `package.hyperbricks.yaml`. It reads `PATTERNS_API_BASE_URL`, defaulting to `http://127.0.0.1:8080`. Match that address to the module's listening port. For example, from the repository root after building the runtime and plugins:
+
+```sh
+PATTERNS_API_BASE_URL=http://127.0.0.1:8129 ./bin/hyperbricks-patterns start -m hyperbricks-patterns-yaml --port 8129
+```
+
+Both mock outcomes return HTTP 200 with different JSON shapes. They do not save data. The result templates check the response shape before reading its fields and show feedback for an unavailable or unexpected upstream response.
+
+The configured `HX-Trigger` refresh event is sent for both success and conflict actions. The probe demonstrates event delivery, not confirmation that a save succeeded. A real integration should decide whether to refresh from the actual upstream outcome; `.Status` is the upstream status and can differ from the status returned to the browser.
+
+The plugin branch computes a plan from submitted fields. It does not fetch the manifest or write imported files, including when the form selects **Apply import**.

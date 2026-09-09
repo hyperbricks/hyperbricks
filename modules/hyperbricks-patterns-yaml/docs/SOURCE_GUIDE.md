@@ -1,8 +1,8 @@
-# Project patterns
+# Patterns module source guide
 
 This guide helps you find examples of common HyperBricks tasks in the [patterns module](../README.md). It describes what each example covers and where its configuration and templates live. The implementation stays in the module so examples can evolve without copying their code into this document.
 
-This is a second draft for comparison with [the existing guide](PROJECT_PATTERNS.md). It is an index of examples, not a claim that every example is ready to copy unchanged into a production project.
+Use this guide to locate a working example and its source files. For the broader learning path covering module setup, templates, server calculations, and packaging, see [Recommended project patterns](../../../docs/PROJECT_PATTERNS.md).
 
 ## Pages and fragments
 
@@ -57,7 +57,7 @@ Let a plugin prepare values and return a template configuration. Keep the markup
 The **Plugin panel integration** example uses this handoff within the same page and fragment structure as the other status panels.
 
 - Configuration: [plugin panel and its routes](../hyperbricks/20-htmx-canonical-fragment-demo.hyperbricks.yaml).
-- Contract and source locations: [template-config plugin guide](../docs/template-config-plugin.md).
+- Contract and source locations: [template-config plugin guide](../docs/pages/template-config-plugin.md).
 
 ## Several actions in one workflow
 
@@ -97,6 +97,13 @@ The **Documentation** example brings the module overview and individual pattern 
 - Configuration: [documentation pages](../hyperbricks/90-docs.hyperbricks.yaml).
 - Template: [documentation layout](../templates/patterns/docs-shell.html).
 
+## Unpoly fragment replacement
+
+The Unpoly example reuses a panel in a full page and a fragment, with a normal link fallback. It loads its own pinned client dependency.
+
+- Configuration: [page and fragment routes](../hyperbricks/85-unpoly-fragment-demo.hyperbricks.yaml).
+- Contract and verification: [Unpoly guide](pages/unpoly-fragment-demo.md).
+
 ## Related guidance
 
-Module setup, template formatting, small server scripts, and packaging remain useful topics in the existing guide. They have not been removed or treated as covered by these examples. Consult [the existing guide](PROJECT_PATTERNS.md) when comparing coverage, and the relevant manuals for the full contracts: [CLI](../../../docs/HYPERBRICKS_CLI.md), [YAML](../../../docs/YAML_USAGE.md), [routing](../../../docs/ROUTING.md), [assets](../../../docs/ESBUILD.md), [API rendering](../../../docs/API_RENDER.md), [guards](../../../docs/ROUTE_GUARD.md), [plugins](../../../docs/PLUGINS.md), and [deployment](../../../docs/DEPLOY.md).
+For setup, template formatting, server calculations, and packaging, use [Recommended project patterns](../../../docs/PROJECT_PATTERNS.md). For complete component contracts, consult [CLI](../../../docs/HYPERBRICKS_CLI.md), [YAML](../../../docs/YAML_USAGE.md), [routing](../../../docs/ROUTING.md), [assets](../../../docs/ESBUILD.md), [API rendering](../../../docs/API_RENDER.md), [guards](../../../docs/ROUTE_GUARD.md), [plugins](../../../docs/PLUGINS.md), and [deployment](../../../docs/DEPLOY.md).

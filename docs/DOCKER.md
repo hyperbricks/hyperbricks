@@ -79,7 +79,7 @@ docker compose -f docker/docker-compose.yml exec \
 
 Replace `example@1.0.0` with an existing plugin source name and version. For a release build, omit the `HYPERBRICKS_LOCAL_PATH` override so the plugin resolves the released dependency. Enable the resulting artifact in the module package; building it does not enable it automatically.
 
-Rebuild native plugins after changing the runtime or toolchain. Persistence does not make an old binary compatible. Do not copy macOS or Windows native plugin binaries into the Linux host. See [Plugins](PLUGINS.md) for module-local plugin names, build locations and compatibility requirements.
+Rebuild native plugins after changing the runtime or toolchain. Persistence does not make an old binary compatible. Do not copy macOS native plugin binaries into the Linux host. Windows cannot build or load native Go plugins directly; on a Windows machine, build and run them inside the Linux container. See [plugin platform support](PLUGINS.md#platform-support) for the platform limitation and [Plugins](PLUGINS.md) for module-local plugin names, build locations and compatibility requirements.
 
 ## Optional Tailwind CLI
 

@@ -1,5 +1,5 @@
 {{ $data := .Data }}
-{{ if eq .Status 200 }}
+{{ if and (eq .Status 200) (kindIs "slice" $data) }}
   {{ if gt (len $data) 0 }}
     {{ $item := index $data 0 }}
     <div class="split-result" data-state="success">
@@ -15,6 +15,8 @@
 {{ else }}
   <div class="split-result" data-state="error">
     <strong>Rename rejected</strong><br>
-    {{ index $data "message" }}
+    {{ if kindIs "map" $data }}{{ index $data "message" }}{{ else }}
+    The mock API request failed. Check PATTERNS_API_BASE_URL for this server.
+    {{ end }}
   </div>
 {{ end }}

@@ -42,3 +42,9 @@ The important part is that HyperBricks still names each route separately, but th
 ## Avoid it when
 
 Avoid this pattern when the actions are unrelated in ownership or lifecycle. In that case, separate plugins or `API_FRAGMENT_RENDER` endpoints are usually clearer.
+
+## Demo data and state
+
+An address ending in `@member.test` follows the existing-member branch; other nonempty addresses follow signup. The signup step also requires a display name. Completion renders a result only: no member is stored or registered. Each request receives its workflow fields from the form; there is no persistent server-side workflow session.
+
+Try `alex@member.test` and `new@prospect.test` to exercise both branches. The demo illustrates route dispatch and template handoff, rather than a complete membership service.

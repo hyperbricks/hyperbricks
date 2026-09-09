@@ -940,6 +940,7 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 		"docs/readme",
 		"docs/single-plugin-many-actions",
 		"docs/template-config-plugin",
+		"docs/unpoly-fragment-demo",
 		"fragments/api-fragment-write-refresh-probe",
 		"fragments/mock-postgrest-file-save-conflict",
 		"fragments/mock-postgrest-file-save-success",

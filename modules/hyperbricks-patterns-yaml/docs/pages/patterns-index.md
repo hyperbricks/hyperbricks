@@ -1,6 +1,6 @@
 # HyperBricks Patterns Documentation
 
-This page is the documentation landing page for the `hyperbricks-patterns` module.
+This page is the documentation landing page for the `hyperbricks-patterns-yaml` module.
 
 Use it in two ways:
 
@@ -21,6 +21,8 @@ If you are new to the module, this order has the gentlest learning curve:
 8. [Unpoly fragment demo](/unpoly-demo)
 
 ## Pattern index
+
+For plugin-to-template composition, start with the [Template Config Plugin guide](/docs/template-config-plugin). The [Markdown plugin guide](/docs/markdown-plugin) explains how these articles are rendered.
 
 ### 1. HTMX canonical page + fragment demo
 
