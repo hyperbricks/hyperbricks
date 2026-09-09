@@ -36,3 +36,7 @@ Every link works without JavaScript. Direct URLs and reloads return full HTML. E
 ## Verify
 
 Open each route directly; follow the section menu and Next stop links; check the title and active menu after each visit. Check Back/Forward, reload, narrow screens, keyboard navigation, reduced motion, and operation without JavaScript. See VENDOR.md for the library source and license.
+
+## Visual theme
+
+A Starry Night-inspired palette uses saturated midnight blues and warm yellows. Each venue has its own accent and background mood; CSS selects the palette from the rendered page content, so direct loads and Swup visits stay consistent. The backgrounds use solid colours without gradients or image assets. Fraunces headings load from Google Fonts with a Georgia fallback; body text uses the system font. This font request requires an internet connection, but page navigation and the vendored Swup library still work locally.
