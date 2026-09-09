@@ -1,10 +1,10 @@
 * { box-sizing: border-box; }
 :root { color-scheme: dark; --paper: #071a3b; --ink: #fff4cd; --muted: #bcccec; --line: #9fbaff35; --accent: #ffda62; --panel: #102d58; }
-:root:has(.place-page.cafe) { --paper: #091c38; --accent: #ffd16a; --panel: #132e50; }
-:root:has(.place-page.records) { --paper: #071f36; --accent: #70eee2; --panel: #10364c; }
-:root:has(.place-page.cinema) { --paper: #101737; --accent: #d3bbff; --panel: #242951; }
-:root:has(.place-page.food) { --paper: #092532; --accent: #ffd078; --panel: #153b48; }
-:root:has(.developer-guide) { --paper: #08172f; --accent: #9bdcf5; --panel: #122a49; }
+:root:has(.place-page.cafe) { --paper: #102d58; --accent: #ffe38a; --panel: #071a3b; }
+:root:has(.place-page.records) { --paper: #040e20; --accent: #ffda62; --panel: #102d58; }
+:root:has(.place-page.cinema) { --paper: #071a3b; --accent: #fff4cd; --panel: #040e20; }
+:root:has(.place-page.food) { --paper: #102d58; --accent: #ffda62; --panel: #040e20; }
+:root:has(.developer-guide) { --paper: #040e20; --accent: #ffe38a; --panel: #071a3b; }
 body { margin: 0; background-color: var(--paper); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.6; }
 a { color: inherit; text-underline-offset: 5px; }
 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; border-radius: 2px; }
@@ -44,10 +44,6 @@ h3 { font-size: 18px; font-weight: 600; line-height: 1.35; }
 .guide-note p { font-size: 14px; color: var(--muted); max-width: 650px; margin: 0; }
 .site-footer { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--line); padding-top: 24px; padding-bottom: 28px; color: var(--muted); font-size: 12px; }
 .site-footer p { margin: 0; }
-.cafe { --accent: #ffd16a; --tint: #132e50; }
-.records { --accent: #70eee2; --tint: #10364c; }
-.cinema { --accent: #d3bbff; --tint: #242951; }
-.food { --accent: #ffd078; --tint: #153b48; }
 .breadcrumb { display: flex; align-items: center; gap: 16px; margin-bottom: 38px; font-size: 13px; color: var(--muted); }
 .place-intro { margin-bottom: 42px; }
 .place-intro h1 { color: var(--accent); }
@@ -57,7 +53,7 @@ h3 { font-size: 18px; font-weight: 600; line-height: 1.35; }
 .highlight { border-top: 1px solid var(--line); padding: 18px 0; }
 .highlight h3 { margin-bottom: 6px; }
 .highlight p { margin: 0; color: var(--muted); font-size: 15px; }
-.visit-details { padding: 28px; background: var(--tint); border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 6px; }
+.visit-details { padding: 28px; background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 6px; }
 .visit-details h2 { font-size: 18px; }
 dt { margin-top: 20px; font-size: 12px; font-weight: 650; }
 dd { margin: 5px 0 0; font-size: 15px; }
@@ -125,3 +121,8 @@ html.is-rendering .place-row:nth-child(5) { transition-delay: 90ms; }
   .guide-note { padding: 20px; }
   .place-name h3 { font-size: 24px; }
 }
+
+.place-row.cafe { --accent: #ffe38a; }
+.place-row.records { --accent: #ffda62; }
+.place-row.cinema { --accent: #fff4cd; }
+.place-row.food { --accent: #ffda62; }
