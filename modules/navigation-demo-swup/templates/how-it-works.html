@@ -1,0 +1,26 @@
+<article class="developer-guide">
+  <header class="transition-item"><p class="eyebrow">FOR DEVELOPERS</p><h1>How it works</h1><p class="lede">HyperBricks renders the pages. Swup handles navigation between them. This page uses the same setup as the rest of the demo.</p></header>
+
+  <section class="transition-item"><h2>What happens when you click a link?</h2><ol><li>Swup intercepts an internal link and requests the destination page.</li><li>HyperBricks returns a complete HTML document, including its section menu.</li><li>The current content fades out. Swup replaces the main content and navigation with the matching containers from the response.</li><li>The new content fades in, the URL and document title update, and the menu marks the current page.</li></ol><p>Open any URL directly or reload it and HyperBricks serves that same complete page. Without JavaScript, the links work as ordinary page navigation.</p></section>
+
+  <section class="transition-item"><h2>The section menu comes from the pages</h2><p>Each page declares a <code>section</code> and an <code>index</code>. HyperBricks builds the menu from that section, sorts it by index, and renders the active link with <code>aria-current="page"</code>.</p><pre><code>night_owl_cafe_page:
+  - inherit: guide_page
+  - route: night-owl-cafe
+  - title: Night Owl Café
+  - section: guide_navigation
+  - index: 20</code></pre><p>The menu definition lives in <code>hyperbricks/partials/navigation.hyperbricks.yaml</code>. Adding a page to the section adds its navigation link; no JavaScript menu list needs updating.</p></section>
+
+  <section class="transition-item"><h2>Content and menus, one page request</h2><pre><code>const swup = new Swup({
+  containers: ["#swup", "#guide-navigation", "#developer-navigation"],
+  animationSelector: ".transition-page, .transition-item",
+  cache: false
+});</code></pre><p><code>#swup</code> contains the page content. <code>#guide-navigation</code> contains the section menu, so its active state arrives with the new page. The surrounding header and footer stay in place.</p><p>The separate <code>#developer-navigation</code> section menu places How it works at the top-right of the header, outside the location index. Every route provides all three containers. There is no separate fragment endpoint, JSON API, or client-side HTML renderer. Swup caching is disabled so the next visit picks up development edits.</p></section>
+
+  <section class="transition-item"><h2>The animation is CSS</h2><p>Swup adds classes to the HTML element during navigation and waits for the CSS transitions to finish. This demo uses a 180ms page fade, a 240ms entrance with 8px of vertical movement, and a short stagger on the directory rows.</p><p>The animation rules live in <code>resources/css/app.css</code>. No animation plugin is required. A reduced-motion media query and a <code>visit:start</code> hook disable animated visits when the browser reports that preference.</p></section>
+
+  <section class="transition-item"><h2>History, focus, and page titles</h2><p>Swup manages the URL and document title. Back and Forward use its default nonanimated history handling. After a page view, a small hook focuses the new main region without changing the scroll position and announces the page title to screen readers.</p><p>The shared assets load once. If you add interactive widgets later, initialise them after a page view and clean them up before their container is replaced.</p></section>
+
+  <section class="transition-item"><h2>Where to look in the module</h2><dl class="source-list"><dt><code>hyperbricks/app.hyperbricks.yaml</code></dt><dd>Routes, section membership, ordering, and venue content.</dd><dt><code>hyperbricks/partials/site.hyperbricks.yaml</code></dt><dd>The shared page definition and asset imports.</dd><dt><code>templates/shell.html</code></dt><dd>The persistent layout and replaceable containers.</dd><dt><code>templates/place.html</code></dt><dd>One template reused by all four venues.</dd><dt><code>resources/js/app.js</code></dt><dd>Swup setup, reduced-motion handling, and focus announcements.</dd><dt><code>hyperbricks/partials/assets.hyperbricks.yaml</code></dt><dd>Native esbuild bundling for the local JavaScript and CSS.</dd></dl></section>
+
+  <section class="transition-item"><h2>Try it yourself</h2><ul><li>Follow a venue link, then use Next stop, Back, and Forward.</li><li>Reload a venue URL to see the same page served directly.</li><li>Watch the Network panel: navigation requests HTML documents.</li><li>Enable reduced motion or disable JavaScript and follow the links again.</li><li>Add a page with <code>section: guide_navigation</code> and a new index to extend the menu.</li></ul><p>For more examples, see the <a href="https://swup.js.org/getting-started/">Swup getting started guide</a>, <a href="https://swup.js.org/getting-started/demos/">animation demos</a>, and <a href="https://github.com/hyperbricks/hyperbricks/blob/main/docs/REFERENCE.md">HyperBricks component reference</a>.</p></section>
+</article>
