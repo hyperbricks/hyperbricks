@@ -47,14 +47,27 @@ The rule is simple:
 
 ## Install Or Build The Plugins
 
-Run these commands from the project root, which contains `modules/` and `bin/`:
+`HYPERBRICKS_LOCAL_PATH` is a development-only override for a local HyperBricks checkout. Normal plugin builds for an installed published release leave it unset. See [plugin build modes](../../docs/PLUGINS.md#local-runtime-development).
+
+Run the commands below from the project root with a compatible installed published `hyperbricks` release. A release installation does **not** require `HYPERBRICKS_LOCAL_PATH`; leave it unset. If you exported it in an earlier session, run `unset HYPERBRICKS_LOCAL_PATH` first.
+
+For local-source development, install the CLI from this checkout and set the override so plugins use the same source:
 
 ```sh
-go build -o bin/hyperbricks-patterns ./cmd/hyperbricks
+go install ./cmd/hyperbricks
 export HYPERBRICKS_LOCAL_PATH="$PWD"
 ```
 
-The commands below use `./bin/hyperbricks-patterns`, built from this checkout. Native plugins and the runtime must share the same build inputs; matching the displayed version number alone is not sufficient. The export makes plugin builds use your local HyperBricks source instead of a published release. It applies to both global and module plugins in the current terminal session.
+Ensure Go's installation directory is on `PATH`. Installing with `go install ./cmd/hyperbricks` still produces a local-source build. Native plugins and their host must use matching source, toolchains, and shared dependencies.
+
+Alternatively, run the local CLI directly:
+
+```sh
+HYPERBRICKS_LOCAL_PATH="$PWD" go run ./cmd/hyperbricks plugin build template-config-demo@2.0.0 --module hyperbricks-patterns-yaml
+go run ./cmd/hyperbricks start -m hyperbricks-patterns-yaml --port 8080
+```
+
+The override selects the **HyperBricks source checkout**, not the plugin source directory. Building a plugin from its source files for an installed published release does not itself require this override.
 
 ### Option 1: Build Global Plugins From Source
 
@@ -63,33 +76,33 @@ The package enables Markdown, Tailwind CSS, and the legacy Esbuild plugin. Their
 Rebuild global plugins whose source is already present:
 
 ```sh
-./bin/hyperbricks-patterns plugin build markdown@2.0.0
-./bin/hyperbricks-patterns plugin build tailwindcss@2.0.0
-./bin/hyperbricks-patterns plugin build esbuild@2.0.0
+hyperbricks plugin build markdown@2.0.0
+hyperbricks plugin build tailwindcss@2.0.0
+hyperbricks plugin build esbuild@2.0.0
 ```
 
-If a source directory is missing, run the matching `install` command instead. This downloads the source and builds it using the same local checkout export:
+If a source directory is missing, run the matching `install` command instead. This downloads and builds the source for the selected runtime:
 
 ```sh
 # Run only for plugins whose source is missing from plugins/.
-./bin/hyperbricks-patterns plugin install markdown@2.0.0
-./bin/hyperbricks-patterns plugin install tailwindcss@2.0.0
-./bin/hyperbricks-patterns plugin install esbuild@2.0.0
+hyperbricks plugin install markdown@2.0.0
+hyperbricks plugin install tailwindcss@2.0.0
+hyperbricks plugin install esbuild@2.0.0
 ```
 
 Use `build` for subsequent rebuilds, including after editing plugin source.
 
 ### Option 2: Install Published Global Plugins
 
-`plugin install` downloads source from the plugin registry's repository and compiles it locally; it does not download a prebuilt native binary. It requires Git, Go, and network access. Use the same runtime binary and `HYPERBRICKS_LOCAL_PATH` export shown above.
+`plugin install` downloads source from the plugin registry's repository and compiles it locally; it does not download a prebuilt native binary. It requires Git, Go, and network access. Use the same runtime as the server; set `HYPERBRICKS_LOCAL_PATH` only when targeting a local HyperBricks checkout.
 
 For this module's configured versions, use the pinned `install` commands in Option 1. To select the highest published version instead, omit `@<version>`:
 
 ```sh
-./bin/hyperbricks-patterns plugin list
-./bin/hyperbricks-patterns plugin install markdown
-./bin/hyperbricks-patterns plugin install tailwindcss
-./bin/hyperbricks-patterns plugin install esbuild
+hyperbricks plugin list
+hyperbricks plugin install markdown
+hyperbricks plugin install tailwindcss
+hyperbricks plugin install esbuild
 ```
 
 Omitting the version selects the highest semantic version in the registry, not necessarily the latest compatible version. Check the compatibility information before adopting it. The CLI does not treat `@latest` as an alias. Use `install` for this operation; `plugin update` is currently a placeholder.
@@ -104,10 +117,10 @@ Installing again copies the published source into `plugins/<name>/<version>/`. U
 The four demo plugins are module-local sources, not global registry installs. Their sources are included under this module's `plugins/` directory. Both global-plugin options above still require this step. Build them from the project root with `--module`:
 
 ```sh
-./bin/hyperbricks-patterns plugin build template-config-demo@2.0.0 --module hyperbricks-patterns-yaml
-./bin/hyperbricks-patterns plugin build guarded-demo-auth@1.0.0 --module hyperbricks-patterns-yaml
-./bin/hyperbricks-patterns plugin build workflow-actions-demo@1.0.0 --module hyperbricks-patterns-yaml
-./bin/hyperbricks-patterns plugin build route-split-demo@1.0.0 --module hyperbricks-patterns-yaml
+hyperbricks plugin build template-config-demo@2.0.0 --module hyperbricks-patterns-yaml
+hyperbricks plugin build guarded-demo-auth@1.0.0 --module hyperbricks-patterns-yaml
+hyperbricks plugin build workflow-actions-demo@1.0.0 --module hyperbricks-patterns-yaml
+hyperbricks plugin build route-split-demo@1.0.0 --module hyperbricks-patterns-yaml
 ```
 
 Both global and module builds write their compiled plugins to `bin/plugins/`. Module plugin names include `__hyperbricks-patterns-yaml`; the matching names are already enabled in `package.hyperbricks.yaml`. Check that each build reports `Build successful`.
@@ -117,15 +130,15 @@ Both global and module builds write their compiled plugins to `bin/plugins/`. Mo
 Stop any running instance, then start the module again to load the rebuilt plugins:
 
 ```sh
-./bin/hyperbricks-patterns start -m hyperbricks-patterns-yaml --port 8080
+hyperbricks start -m hyperbricks-patterns-yaml --port 8080
 ```
 
-After rebuilding the HyperBricks executable, rebuild these plugins against the same checkout and restart the server. Reloading a page does not replace a native plugin that is already loaded.
+After changing the HyperBricks checkout, rerun `go install ./cmd/hyperbricks` if using the installed command, rebuild these plugins, and restart the server. Reloading a page does not replace a native plugin that is already loaded.
 
 The API write and route-split examples call mock endpoints on this same server. Their default base URL is `http://127.0.0.1:8080`. When using a different port, set the matching address before starting:
 
 ```sh
-PATTERNS_API_BASE_URL=http://127.0.0.1:8129 ./bin/hyperbricks-patterns start -m hyperbricks-patterns-yaml --port 8129
+PATTERNS_API_BASE_URL=http://127.0.0.1:8129 hyperbricks start -m hyperbricks-patterns-yaml --port 8129
 ```
 
 Open `/guarded-demo/login` and use `demo` / `open-sesame` to check the login flow.

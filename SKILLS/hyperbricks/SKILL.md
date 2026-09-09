@@ -310,6 +310,8 @@ Add a `guard` to each page, fragment, or API action that requires access checks.
 
 See [Server logic and integrations](references/integrations.md) for calculation, API, form, and guard examples. See [Plugins](references/plugins.md) for manifests, exact plugin names, and building against the runtime used by the project.
 
+For native plugin builds, leave `HYPERBRICKS_LOCAL_PATH` unset with an installed published release. Set it only for development against local HyperBricks source, including a CLI installed from that checkout with `go install ./cmd/hyperbricks`. See [plugin build modes](references/plugins.md#module-local-source-versus-local-runtime).
+
 ## Static Output And Runtime Archives
 
 Export static HTML and assets:

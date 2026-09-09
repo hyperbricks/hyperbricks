@@ -58,10 +58,10 @@ Real PostgREST errors may return `4xx` or `5xx`. In that case `<API_FRAGMENT_REN
 
 ## Running the local mock API
 
-The mock API base address comes from `myconf.patterns.mock_api_base` in `package.hyperbricks.yaml`. It reads `PATTERNS_API_BASE_URL`, defaulting to `http://127.0.0.1:8080`. Match that address to the module's listening port. For example, from the repository root after building the runtime and plugins:
+The mock API base address comes from `myconf.patterns.mock_api_base` in `package.hyperbricks.yaml`. It reads `PATTERNS_API_BASE_URL`, defaulting to `http://127.0.0.1:8080`. Match that address to the module's listening port. For example, from the repository root after installing the CLI and building the plugins as described in the module README:
 
 ```sh
-PATTERNS_API_BASE_URL=http://127.0.0.1:8129 ./bin/hyperbricks-patterns start -m hyperbricks-patterns-yaml --port 8129
+PATTERNS_API_BASE_URL=http://127.0.0.1:8129 hyperbricks start -m hyperbricks-patterns-yaml --port 8129
 ```
 
 Both mock outcomes return HTTP 200 with different JSON shapes. They do not save data. The result templates check the response shape before reading its fields and show feedback for an unavailable or unexpected upstream response.

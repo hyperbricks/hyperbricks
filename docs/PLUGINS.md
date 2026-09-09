@@ -250,6 +250,10 @@ example_plugin.go -> ExamplePlugin
 
 ## CLI
 
+For a compatible installed published HyperBricks release, use the commands below with `HYPERBRICKS_LOCAL_PATH` **unset**. If it was exported during development, run `unset HYPERBRICKS_LOCAL_PATH` before returning to release builds.
+
+Both `plugin install` and `plugin build` compile plugin source. That alone does not require a local HyperBricks checkout. `HYPERBRICKS_LOCAL_PATH` is a **development-only override** that selects local HyperBricks source instead of the release dependency. See [Local runtime development](#local-runtime-development).
+
 List compatible global plugins:
 
 ```bash
@@ -262,7 +266,7 @@ Install and build a global plugin:
 hyperbricks plugin install example@1.0.0
 ```
 
-Build a plugin from local source:
+Build a plugin from its existing source files:
 
 ```bash
 hyperbricks plugin build example@1.0.0
@@ -286,22 +290,40 @@ Remove a compiled plugin:
 hyperbricks plugin remove example@1.0.0
 ```
 
-Update a global plugin to the latest compatible version:
+Install the highest published version of a global plugin by omitting the version:
 
 ```bash
-hyperbricks plugin update example
+hyperbricks plugin install example
 ```
+
+Check its compatibility before adopting it: this selects the highest published semantic version, not necessarily the latest compatible version. `plugin update` is currently a placeholder; use `install` and update the module's configured plugin names when the version changes.
 
 ## Local Runtime Development
 
-When testing plugin compatibility against a local HyperBricks checkout, build the plugin with a local runtime path:
+Use `HYPERBRICKS_LOCAL_PATH` only when building plugins for a HyperBricks runtime built from a local source checkout. From that checkout's root:
 
 ```bash
-hyperbricks plugin build example@1.0.0 \
-  --hyperbricks-path /path/to/hyperbricks
+HYPERBRICKS_LOCAL_PATH="$PWD" go run ./cmd/hyperbricks plugin build widget@1.0.0 --module demo
+go run ./cmd/hyperbricks start -m demo
 ```
 
-This avoids publishing temporary runtime versions just to test plugin changes.
+You can also install the local CLI before building:
+
+```bash
+go install ./cmd/hyperbricks
+HYPERBRICKS_LOCAL_PATH="$PWD" hyperbricks plugin build widget@1.0.0 --module demo
+hyperbricks start -m demo
+```
+
+Installing with `go install ./cmd/hyperbricks` still produces a local-source runtime. Ensure the `hyperbricks` command on `PATH` is that installation. Native plugins and their host must match in source, toolchain, platform, and shared dependencies.
+
+The override works with both `plugin build` and `plugin install`. It points at the **HyperBricks checkout**, not the plugin directory. `plugin build` does not accept `--hyperbricks-path`; use the environment variable. No local path is needed for normal builds targeting an installed published release.
+
+### How The CLI Selects The Dependency
+
+The native plugin builder uses two paths. With a local override, it adds a Go module `replace` directive pointing to the HyperBricks checkout. Without one, it selects the CLI's embedded HyperBricks version and removes the unversioned local replacement. The embedded version is not an exact Git revision, so a development runtime can contain newer code than its version label suggests. Installing that checkout with `go install ./cmd/hyperbricks` does not turn it into a published-release build.
+
+See the [native plugin builder](../cmd/hyperbricks/commands/plugin-commands.go), Go's [module replacement contract](https://go.dev/ref/mod#go-mod-file-replace), and the official [native plugin compatibility requirements](https://pkg.go.dev/plugin#hdr-Warnings). The local override selects source; it does not by itself guarantee matching toolchains, build settings, or shared dependencies.
 
 ## Rules
 

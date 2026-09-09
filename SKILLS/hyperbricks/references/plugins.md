@@ -76,7 +76,9 @@ Required fields are `plugin`, `source`, `version`, `compatible_hyperbricks`, and
 
 ## Module-local source versus local runtime
 
-A module-local plugin can target a released runtime. A **local core** build means the plugin must compile against an unreleased HyperBricks checkout too. Use the existing local override instead of temporary public Git tags:
+`HYPERBRICKS_LOCAL_PATH` is a development override for targeting local HyperBricks source. Leave it unset when building plugins for an installed published release. Compiling plugin source alone does not require the override; it selects the HyperBricks dependency, not the plugin directory.
+
+A CLI installed from a checkout with `go install ./cmd/hyperbricks` is still a local-source build. Build its plugins against that same checkout:
 
 ```sh
 export HYPERBRICKS_LOCAL_PATH=/absolute/path/to/hyperbricks

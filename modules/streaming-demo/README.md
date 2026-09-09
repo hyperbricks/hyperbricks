@@ -6,15 +6,35 @@ HyperBricks serves both the page and `POST /demo/events`. The event route contai
 
 ## Build And Run
 
-Run these commands from this HyperBricks repository root with Go 1.26.1 or newer. Build the executable and plugin from the same checkout and Go toolchain; a previously installed HyperBricks binary may not have this streaming contract. The browser dependencies are included locally, so no npm installation is needed.
+`HYPERBRICKS_LOCAL_PATH` is a development-only override for a local HyperBricks checkout. Normal plugin builds for an installed published release leave it unset. See [plugin build modes](../../docs/PLUGINS.md#local-runtime-development).
+
+Run these commands from this HyperBricks repository root with Go 1.26.1 or newer. The browser dependencies are included locally, so no npm installation is needed.
+
+### Run From Source
+
+Use the CLI directly from this checkout to build the module plugin and start the demo:
 
 ```sh
-go build -o ./bin/hyperbricks-streaming-demo ./cmd/hyperbricks
-HYPERBRICKS_LOCAL_PATH="$PWD" ./bin/hyperbricks-streaming-demo plugin build streaming-demo@1.0.0 --module streaming-demo
-./bin/hyperbricks-streaming-demo start -m streaming-demo --port 18110 --non-interactive
+HYPERBRICKS_LOCAL_PATH="$PWD" go run ./cmd/hyperbricks plugin build streaming-demo@1.0.0 --module streaming-demo
+go run ./cmd/hyperbricks start -m streaming-demo --port 18110 --non-interactive
 ```
 
-The plugin build writes `bin/plugins/StreamingDemoPlugin__streaming-demo@1.0.0.so`. The module already enables that exact name. `HYPERBRICKS_LOCAL_PATH` makes the plugin build use the same local source as the executable; it is required while this API is unreleased. Rebuild both artifacts together after changing the shared plugin contract.
+`HYPERBRICKS_LOCAL_PATH` makes the plugin build against this checkout. Native plugins and their host must use the same source, Go toolchain, and shared dependencies.
+
+### Use An Installed Release
+
+With a compatible HyperBricks release already installed, build the plugin and start the demo without a local source override:
+
+```sh
+hyperbricks plugin build streaming-demo@1.0.0 --module streaming-demo
+hyperbricks start -m streaming-demo --port 18110 --non-interactive
+```
+
+Leave `HYPERBRICKS_LOCAL_PATH` unset for this option. If you exported it earlier, run `unset HYPERBRICKS_LOCAL_PATH` first. The installed published release must support the native streaming contract; an older release may not include it.
+
+If you instead install the CLI from this checkout with `go install ./cmd/hyperbricks`, it is still a local-source build. Use `HYPERBRICKS_LOCAL_PATH="$PWD"` for its plugin build, just as in the source option above. Ensure Go's installation directory is on `PATH`.
+
+Both options write `bin/plugins/StreamingDemoPlugin__streaming-demo@1.0.0.so`. The module already enables that exact name. Rebuild the plugin and restart the server after changing the runtime or shared plugin contract.
 
 Open [the streaming demo](http://127.0.0.1:18110/). That HyperBricks listener owns the page, assets and stream. Stop it with Ctrl+C when finished. If the earlier two-server prototype is still running, stop those processes before starting this single-server version on its port.
 
@@ -80,7 +100,7 @@ The original `tools/demo-server` remains available to compare the browser intera
 Stop the primary demo first. In one terminal run:
 
 ```sh
-./bin/hyperbricks-streaming-demo start -m streaming-demo --port 18111 --non-interactive
+go run ./cmd/hyperbricks start -m streaming-demo --port 18111 --non-interactive
 ```
 
 In another terminal run:

@@ -6,17 +6,17 @@ The basic project runs without a database, credentials, Docker, npm installation
 
 ## Run it
 
-Use a HyperBricks runtime built from the same source checkout as this module. This example uses native `esbuild` and beta `goja_render`; an older installed CLI may not include them. The source checkout currently still reports `v1.2.2-beta`, so the version label alone does not prove feature compatibility.
+Use a HyperBricks runtime built from the same source checkout as this module. This example uses native `esbuild` and beta `goja_render`; an older installed CLI may not include them. A development checkout may retain an older version label, so the label alone does not prove feature compatibility.
 
 From the HyperBricks repository root, with the Go version required by `go.mod`:
 
 ```sh
-go build -o ./bin/hyperbricks ./cmd/hyperbricks
+go install ./cmd/hyperbricks
 mkdir -p bin/plugins modules/hyperbricks-basics/rendered
-./bin/hyperbricks start -m hyperbricks-basics
+hyperbricks start -m hyperbricks-basics
 ```
 
-Open [Project Desk](http://localhost:8104/). Stop the server with Ctrl+C. For a different port, add `--port 8105`. Once a compatible released CLI is installed, use `hyperbricks` in place of `./bin/hyperbricks` in the commands below.
+Open [Project Desk](http://localhost:8104/). Stop the server with Ctrl+C. For a different port, add `--port 8105`. Ensure Go’s installation directory (`GOBIN`, or `$(go env GOPATH)/bin` when unset) is on `PATH`, and that `hyperbricks` resolves to the command installed from this checkout. To start directly from source instead, run `go run ./cmd/hyperbricks start -m hyperbricks-basics` from the repository root. The packaging examples below use the installed command because they run from staged project directories.
 
 Keep the terminal open. It reports loaded routes, missing files, and render errors. Development watch is enabled for YAML, templates, and resources; save a change, allow the rebuild to finish, and refresh the browser. Restart after changing the package configuration.
 
@@ -130,10 +130,10 @@ The handbook is standalone public content. It contains only in-page anchors and 
 ```sh
 python3 modules/hyperbricks-basics/tools/stage_source.py /tmp/project-desk-handbook --handbook
 cd /tmp/project-desk-handbook
-/absolute/path/to/hyperbricks/bin/hyperbricks static -m hyperbricks-basics --force --zip
+hyperbricks static -m hyperbricks-basics --force --zip
 ```
 
-Replace the absolute binary path with the source-matched runtime built above. The staging helper selects `lessons/handbook/package.hyperbricks.yaml` as the copied module's default configuration. The page and assets are written to `modules/hyperbricks-basics/rendered/` inside that new project, and a zip is written to the export directory shown by the command. Serve the generated directory to preview it.
+Use the command installed from this checkout above. The staging helper selects `lessons/handbook/package.hyperbricks.yaml` as the copied module's default configuration. The page and assets are written to `modules/hyperbricks-basics/rendered/` inside that new project, and a zip is written to the export directory shown by the command. Serve the generated directory to preview it.
 
 Keep the static lesson separate from the application: the current static renderer discovers routes as well as configured targets, so a `static.routes` entry alone does not limit an application export to one page. A static host serves generated files; it cannot run the estimate, optional API actions, route guards, or Go plugins. The original running application still exposes the same handbook content at `/handbook`.
 
@@ -142,11 +142,11 @@ For the complete application, build a runtime archive from a clean copy of the d
 ```sh
 python3 modules/hyperbricks-basics/tools/stage_source.py /tmp/project-desk-release
 cd /tmp/project-desk-release
-/absolute/path/to/hyperbricks/bin/hyperbricks build --hra -m hyperbricks-basics
-/absolute/path/to/hyperbricks/bin/hyperbricks start --deploy -m hyperbricks-basics --port 8105
+hyperbricks build --hra -m hyperbricks-basics
+hyperbricks start --deploy -m hyperbricks-basics --port 8105
 ```
 
-Replace `/absolute/path/to/hyperbricks/bin/hyperbricks` with the source-matched binary you built above. The staging destination must be new; the helper refuses to overwrite an existing directory. The archive goes into `deploy/`. Inspect its contents and open the local deployment before choosing a real hosting target. Use `build --zip` for the alternative runtime archive format.
+Use the command installed from this checkout above. The staging destination must be new; the helper refuses to overwrite an existing directory. The archive goes into `deploy/`. Inspect its contents and open the local deployment before choosing a real hosting target. Use `build --zip` for the alternative runtime archive format.
 
 See [source staging](SOURCE_FILES.txt) and [CLI archive commands](../../docs/HYPERBRICKS_CLI.md#build-archives).
 
@@ -156,12 +156,28 @@ See [source staging](SOURCE_FILES.txt) and [CLI archive commands](../../docs/HYP
 - [General HyperBricks skill](../../SKILLS/hyperbricks/SKILL.md) gives agents a concise workflow and a task-based Source Of Truth.
 - [CLI reference](../../docs/HYPERBRICKS_CLI.md), [routing](../../docs/ROUTING.md), and [component reference](../../docs/REFERENCE.md) cover the complete options.
 
+## Optional Plugin Build Modes
+
+The basic module needs no plugin. For the optional plugin lesson, use a compatible installed published release from the project root:
+
+```sh
+hyperbricks plugin build project-desk@1.0.0 --module hyperbricks-basics
+```
+
+Leave `HYPERBRICKS_LOCAL_PATH` unset for release builds. For development against this local HyperBricks checkout, use:
+
+```sh
+HYPERBRICKS_LOCAL_PATH="$PWD" go run ./cmd/hyperbricks plugin build project-desk@1.0.0 --module hyperbricks-basics
+```
+
+The override is development-only and selects the HyperBricks source, not the plugin source. A CLI installed locally with `go install ./cmd/hyperbricks` also uses this override for matching plugin builds. See [plugin build modes](../../docs/PLUGINS.md#local-runtime-development) and the [lesson instructions](docs/advanced.md#one-go-plugin-two-explicit-actions).
+
 ## Check the example
 
 From the matching HyperBricks repository root, run the reusable checks with Python 3.9+, Go, and your source-matched binary:
 
 ```sh
-python3 scripts/test_hyperbricks_basics.py --binary /absolute/path/to/hyperbricks
+python3 scripts/test_hyperbricks_basics.py --binary "$(command -v hyperbricks)"
 ```
 
 The check creates temporary projects and local servers. It exercises pages, fragments, assets, request validation, concurrent estimates, development reload, the exact add-page exercise above, API outcomes, guards, and both delivery formats. It stops its servers afterward and keeps diagnostics if a check fails. Add `--with-plugin` to also build and check the native Go plugin against this checkout; that requires a compatible native plugin platform and Go toolchain.

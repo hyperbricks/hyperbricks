@@ -4,16 +4,25 @@ A protected page and fragment served by HyperBricks, with Unpoly 3.14.3 handling
 
 ## Build and run
 
-From the HyperBricks repository root, using Go 1.26.1 or newer:
+From the project root, with Go 1.26.1 or newer and a compatible installed published HyperBricks release:
 
 ```sh
-go build -o ./bin/hyperbricks-unpoly-guard ./cmd/hyperbricks
-HYPERBRICKS_LOCAL_PATH="$PWD" ./bin/hyperbricks-unpoly-guard \
-  plugin build guard-auth@1.0.0 --module unpoly-guard-demo
-./bin/hyperbricks-unpoly-guard start -m unpoly-guard-demo --non-interactive
+hyperbricks plugin build guard-auth@1.0.0 --module unpoly-guard-demo
+hyperbricks start -m unpoly-guard-demo --non-interactive
 ```
 
-Build the binary and plugin from the same checkout and Go toolchain. Open http://localhost:8132/. Unpoly is included locally; native esbuild builds the application JavaScript and CSS. No separate authorization server is needed.
+Leave `HYPERBRICKS_LOCAL_PATH` unset for an installed published release. Building plugin source does not require a local HyperBricks checkout.
+
+For development against the local HyperBricks source, run from the checkout root:
+
+```sh
+HYPERBRICKS_LOCAL_PATH="$PWD" go run ./cmd/hyperbricks plugin build guard-auth@1.0.0 --module unpoly-guard-demo
+go run ./cmd/hyperbricks start -m unpoly-guard-demo --non-interactive
+```
+
+`HYPERBRICKS_LOCAL_PATH` is a development-only override. If the local CLI was installed with `go install ./cmd/hyperbricks`, use the same override with `hyperbricks plugin build`. Native plugins and their host must use matching source and toolchains. See [plugin build modes](../../docs/PLUGINS.md#local-runtime-development).
+
+Open [localhost:8132](http://localhost:8132/). Unpoly is included locally; native esbuild builds the application JavaScript and CSS. No separate authorization server is needed.
 
 ## Try it
 

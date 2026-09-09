@@ -95,7 +95,7 @@ hyperbricks start -m hyperbricks-basics \
   --config lessons/plugin/package.hyperbricks.yaml
 ```
 
-Use your actual checkout path. `plugin build` reads `HYPERBRICKS_LOCAL_PATH`; the current command does not accept `--hyperbricks-path`. The build updates the plugin's Go dependency files and writes `bin/plugins/ProjectDeskPlugin__hyperbricks-basics@1.0.0.so`. Review those dependency changes before committing, especially a machine-specific local replacement. For release builds, use a published runtime version and rebuild the plugin to match it. See [Plugins](../../../docs/PLUGINS.md).
+Use your actual checkout path. `plugin build` reads `HYPERBRICKS_LOCAL_PATH`; the current command does not accept `--hyperbricks-path`. The build updates the plugin's Go dependency files and writes `bin/plugins/ProjectDeskPlugin__hyperbricks-basics@1.0.0.so`. Review those dependency changes before committing, especially a machine-specific local replacement. For an installed published release, leave `HYPERBRICKS_LOCAL_PATH` unset and run `hyperbricks plugin build project-desk@1.0.0 --module hyperbricks-basics` without the environment prefix. The plugin must match that installed runtime. See [Plugins](../../../docs/PLUGINS.md).
 
 Stop any earlier server using port 8104, or supply `--port` to run this lesson on another port. Open [the plugin lesson](http://localhost:8104/advanced/workflow).
 

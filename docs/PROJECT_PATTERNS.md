@@ -149,7 +149,7 @@ In the current implementation, an API fragment can return HTTP 200 to the browse
 
 The [optional plugin lesson](../modules/hyperbricks-basics/docs/advanced.md) shows explicit actions sharing one small plugin. The plugin computes values and returns a template configuration; the normal renderer produces the HTML. A synthetic `tree` is optional when several components need composing.
 
-Use this when server-side behavior exceeds the simple template/API/script contracts. Keep route selection visible in YAML and workflow decisions in the plugin. The sample performs calculations and previews; it does not save data. Build native plugins against the same HyperBricks checkout and compatible Go toolchain as the host. See [Plugins](PLUGINS.md).
+Use this when server-side behavior exceeds the simple template/API/script contracts. Keep route selection visible in YAML and workflow decisions in the plugin. The sample performs calculations and previews; it does not save data. Build native plugins for the same HyperBricks runtime and compatible Go toolchain as the host. Leave `HYPERBRICKS_LOCAL_PATH` unset for an installed published release; use it only when targeting local HyperBricks source during development. See [Plugins](PLUGINS.md).
 
 **Try it:** invoke both action routes and compare the template output. Both should use the same plugin contract and report invalid input clearly.
 
