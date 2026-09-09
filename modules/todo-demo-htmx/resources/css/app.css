@@ -16,6 +16,7 @@ main { max-width: 1160px; margin: 0 auto; padding: 54px 32px 24px; }
 .library-badge { display: inline-block; padding: 7px 12px; border: 1px solid #cddac6; border-radius: 20px; background: #edf2e7; color: #436046; font-size: 12px; font-weight: 650; }
 h1 { font-size: clamp(32px, 4.4vw, 52px); line-height: 1.12; font-weight: 650; letter-spacing: -2px; margin: 20px 0 16px; }
 .lede { color: #6a746b; font-size: 17px; line-height: 1.7; margin: 0 0 34px; }
+.library-badge + .lede { margin-top: 20px; }
 #add-task { max-width: 714px; }
 label { font-size: 13px; font-weight: 600; }
 .add-row { display: flex; gap: 10px; margin-top: 10px; }
