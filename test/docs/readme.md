@@ -1,4 +1,7 @@
-{{define "main"}}**Licence:** MIT
+{{/* Source template for the generated repository README.md. */}}
+{{define "main"}}<!-- Generated from test/docs/readme.md by scripts/build_docs.sh. Do not edit README.md directly. -->
+
+**Licence:** MIT
 **Version:** {{.version}}
 {{if .buildtime}}
 **Build time:** {{.buildtime}}

@@ -1,3 +1,5 @@
+<!-- Generated from test/docs/readme.md by scripts/build_docs.sh. Do not edit README.md directly. -->
+
 **Licence:** MIT
 **Version:** v2.0.0-beta
 
