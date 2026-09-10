@@ -2,7 +2,8 @@
 fragment:
   - type: fragment
   - response:
-      hx_trigger: myEvent
+      headers:
+        HX-Trigger: myEvent
 ==== explainer ====
 allows you to trigger client-side events
 ==== expected json ====
@@ -12,19 +13,6 @@ allows you to trigger client-side events
   "ConfigType": "<FRAGMENT>",
   "ContentType": "",
   "Enclose": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReselect": "",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxTemplateResult": "",
-  "HxTrigger": "myEvent",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -32,6 +20,12 @@ allows you to trigger client-side events
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": {
+      "HX-Trigger": "myEvent"
+    },
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

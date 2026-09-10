@@ -1,5 +1,6 @@
 /**
- * https://github.com/xzitlou/jsontr.ee - MIT License
+ * Derived from https://github.com/The-01-Company/jsontr.ee.
+ * Distributed under the MIT License; see LICENSE.jsontr.ee in this directory.
  * Generates an SVG visualization of a JSON object as a tree.
  */
 

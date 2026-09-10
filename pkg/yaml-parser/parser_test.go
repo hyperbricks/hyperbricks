@@ -377,9 +377,10 @@ fragment:
   - type: fragment # inline comment is ignored by YAML
   - route: comments
   - response:
-      hx_trigger: fixture-updated
-      hx_target: "#status"
-      hx_reswap: outerHTML
+      headers:
+        HX-Trigger: fixture-updated
+        HX-Retarget: "#status"
+        HX-Reswap: outerHTML
   - body:
       - type: html
       - value: |
@@ -395,11 +396,12 @@ fragment:
 	}
 	fragment := materialized["fragment"].(map[string]interface{})
 	response := fragment["response"].(map[string]interface{})
-	if response["hx_target"] != "#status" {
-		t.Fatalf("hx_target = %#v", response["hx_target"])
+	headers := response["headers"].(map[string]interface{})
+	if headers["HX-Retarget"] != "#status" {
+		t.Fatalf("HX-Retarget = %#v", headers["HX-Retarget"])
 	}
-	if response["hx_reswap"] != "outerHTML" {
-		t.Fatalf("hx_reswap = %#v", response["hx_reswap"])
+	if headers["HX-Reswap"] != "outerHTML" {
+		t.Fatalf("HX-Reswap = %#v", headers["HX-Reswap"])
 	}
 	body := fragment["body"].(map[string]interface{})
 	if !strings.Contains(body["value"].(string), "#status stays literal") {

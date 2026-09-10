@@ -1,0 +1,59 @@
+# Config-Driven Section Rail
+
+## Summary
+
+This pattern shows how to build a left rail from data instead of hand-writing every link.
+
+- navigation is defined as structured config, not handwritten markup
+- the template derives canonical routes and fragment routes from each config row
+- each row can optionally define subsection anchors
+- the same config also determines the HTMX swap target
+
+## Files
+
+- Config: `hyperbricks/60-config-driven-section-rail.hyperbricks.yaml`
+- Shell template: `templates/patterns/section-rail-shell.html`
+
+## Routes
+
+- Page routes:
+  - `/section-rail-demo`
+  - `/rail-builder`
+  - `/rail-assets`
+  - `/rail-status`
+- Fragment routes:
+  - `/fragments/rail-builder`
+  - `/fragments/rail-assets`
+  - `/fragments/rail-status`
+
+## Config shape
+
+Each rail item uses the same shape:
+
+- `target`
+- `fragment`
+- `label`
+- optional `sub_section`
+- optional `sub_labels`
+
+That is the important pattern. The template then derives:
+
+- `href="/<fragment>"`
+- `hx-get="/fragments/<fragment>"`
+- `hx-target="#<target>"`
+
+Subsection links use the complete canonical page and anchor in both `href` and `hx-push-url`, for example `/rail-assets#rail-assets-files`. HTMX 4 allows native navigation for hash-only links, so using only `#rail-assets-files` would add an intermediate history entry before the HTMX page update. The complete link also opens the correct page and section when JavaScript is unavailable.
+
+Each generated request link also declares `hx-swap="innerHTML"`, preserving the scrollable right-column element with HTMX 4. The browser helper waits for `htmx:after:settle` and reads `event.detail.task.target` before scrolling to the selected subsection. It also handles a restored full-page body so Back and Forward can restore an anchored section.
+
+## When to use it
+
+Use this when:
+
+- one shell owns several section panels
+- the rail should be data-driven
+- subsection anchors should stay coupled to the section definition
+
+## Avoid it when
+
+Avoid this pattern when each menu item needs unrelated routing logic or radically different UI behavior. In that case, a plain custom template may be clearer than forcing everything through one config schema.

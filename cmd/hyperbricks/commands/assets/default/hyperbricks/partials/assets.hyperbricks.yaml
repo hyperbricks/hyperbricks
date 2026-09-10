@@ -1,0 +1,21 @@
+scaffold_styles:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: css/app.css}
+  - outfile:
+      path: {base: static, path: css/app.css}
+  - minify: true
+  - cache: true
+  - fingerprint: true
+  - enclose: '<link rel="stylesheet" href="|">'
+
+scaffold_scripts:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: js/app.js}
+  - outfile:
+      path: {base: static, path: js/app.js}
+  - minify: true
+  - cache: true
+  - fingerprint: true
+  - enclose: '<script src="|" defer></script>'

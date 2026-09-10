@@ -8,6 +8,7 @@ import (
 
 var (
 	Exit           = false
+	ExitCode       = 0
 	NonInteractive bool
 )
 var RootCmd = &cobra.Command{

@@ -8,6 +8,17 @@ import (
 	"testing"
 )
 
+func TestRenderAllowedAttributesEscapesValues(t *testing.T) {
+	got := RenderAllowedAttributes(map[string]interface{}{
+		"title": `A "quote" & <tag> '`, "tabindex": 0, "disabled": true,
+		"onerror": "alert(1)",
+	}, []string{"title", "tabindex", "disabled"})
+	want := ` title="A &#34;quote&#34; &amp; &lt;tag&gt; &#39;" tabindex="0" disabled="true"`
+	if got != want {
+		t.Fatalf("attributes = %q, want %q", got, want)
+	}
+}
+
 func TestSortedUniqueKeysIgnoresTypeAndSortsNumbersBeforeStrings(t *testing.T) {
 	input := map[string]interface{}{
 		"beta":  true,

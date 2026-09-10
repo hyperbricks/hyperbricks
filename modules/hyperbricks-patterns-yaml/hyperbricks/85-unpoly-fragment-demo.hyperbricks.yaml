@@ -1,0 +1,76 @@
+unpoly_demo_panel:
+  - type: template
+  - inline: |
+      <section id="unpoly-panel" aria-live="polite">
+        <h2>{{.heading}}</h2>
+        <p>{{.message}}</p>
+      </section>
+  - values:
+      heading: Initial panel
+      message: Load the fragment to replace this panel with server-rendered HTML.
+
+unpoly_demo_loaded_panel:
+  - inherit: unpoly_demo_panel
+  - values:
+      heading: Fragment loaded
+      message: The shared panel template now contains the fragment response.
+
+unpoly_demo_page:
+  - type: hypermedia
+  - route: unpoly-demo
+  - title: Unpoly fragment demo
+  - head:
+      - type: head
+      - metadata:
+          - type: html
+          - value: |
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/unpoly@3.14.3/unpoly.css">
+              <script src="https://cdn.jsdelivr.net/npm/unpoly@3.14.3/unpoly.js" defer></script>
+      - styles:
+          - type: css
+          - inline: |
+              body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.5; }
+              main { max-width: 44rem; margin: auto; }
+              #unpoly-panel { padding: 1rem; margin-top: 1.5rem; border: 1px solid #b8c4ce; border-radius: .5rem; }
+              label { display: block; margin-top: 1.5rem; }
+              input { display: block; padding: .5rem; width: min(24rem, 90%); }
+  - content:
+      - type: template
+      - inline: |
+          <main id="unpoly-demo-shell">
+            <nav aria-label="Pattern navigation">
+              <a href="/index">← Pattern index</a>
+              <a href="/docs">Docs</a>
+            </nav>
+            <h1>Unpoly fragment demo</h1>
+            <p>HyperBricks renders the panel. Unpoly replaces it in this page.</p>
+            <a href="/unpoly-demo/loaded" up-href="/fragments/unpoly-demo"
+               up-follow up-target="#unpoly-panel" up-history="false"
+               up-cache="false" up-fallback="false">Load fragment</a>
+            <label for="unpoly-kept-input">This input stays outside the updated panel</label>
+            <input id="unpoly-kept-input" placeholder="Type something, then load the fragment">
+            {{.panel}}
+          </main>
+      - values:
+          panel:
+            - inherit: unpoly_demo_panel
+
+unpoly_demo_loaded_page:
+  - inherit: unpoly_demo_page
+  - route: unpoly-demo/loaded
+  - content:
+      - values:
+          panel:
+            - inherit: unpoly_demo_loaded_panel
+
+unpoly_demo_fragment:
+  - type: fragment
+  - route: fragments/unpoly-demo
+  - response:
+      status: 200
+      headers:
+        X-Demo-Frontend: unpoly
+  - content:
+      - inherit: unpoly_demo_loaded_panel

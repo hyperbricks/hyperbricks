@@ -2,7 +2,8 @@
 fragment:
   - type: fragment
   - response:
-      hx_trigger: trigger-element-id
+      headers:
+        HX-Trigger: trigger-element-id
 ==== explainer ====
 HTMX response header configuration.
 ==== expected json ====
@@ -12,19 +13,6 @@ HTMX response header configuration.
   "ConfigType": "<FRAGMENT>",
   "ContentType": "",
   "Enclose": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReselect": "",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxTemplateResult": "",
-  "HxTrigger": "trigger-element-id",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -32,6 +20,12 @@ HTMX response header configuration.
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": {
+      "HX-Trigger": "trigger-element-id"
+    },
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

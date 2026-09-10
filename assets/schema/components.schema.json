@@ -7,7 +7,7 @@
       "category": "composite",
       "child_model": "none",
       "config_struct": "github.com/hyperbricks/hyperbricks/pkg/composite.ApiFragmentRenderConfig",
-      "description": "Request-time API fragment that forwards to an upstream endpoint and renders the response.",
+      "description": "Route-owning API fragment that always bypasses rendered-output caching and makes a fresh upstream request when invoked.",
       "authoring": {
         "groups": [
           {
@@ -53,17 +53,8 @@
             "label": "Response",
             "collapsed": true,
             "fields": [
-              "response.hx_location",
-              "response.hx_push_url",
-              "response.hx_redirect",
-              "response.hx_refresh",
-              "response.hx_replace_url",
-              "response.hx_reswap",
-              "response.hx_retarget",
-              "response.hx_reselect",
-              "response.hx_trigger",
-              "response.hx_trigger_after_settle",
-              "response.hx_trigger_after_swap"
+              "response.status",
+              "response.headers"
             ]
           },
           {
@@ -81,12 +72,12 @@
               "guard.authorize.method",
               "guard.authorize.headers",
               "guard.authorize.body",
-              "guard.on_unauthenticated.redirect",
-              "guard.on_unauthenticated.hx_redirect",
-              "guard.on_unauthenticated.status",
-              "guard.on_forbidden.redirect",
-              "guard.on_forbidden.hx_redirect",
-              "guard.on_forbidden.status"
+              "guard.on_unauthenticated.default.status",
+              "guard.on_unauthenticated.default.headers",
+              "guard.on_unauthenticated.variants",
+              "guard.on_forbidden.default.status",
+              "guard.on_forbidden.default.headers",
+              "guard.on_forbidden.variants"
             ]
           }
         ]
@@ -324,15 +315,15 @@
           }
         },
         {
-          "path": "guard.on_forbidden.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -341,29 +332,12 @@
           }
         },
         {
-          "path": "guard.on_forbidden.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
-          "authoring": {
-            "label": "Redirect",
-            "control": "text",
-            "group": "guard",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "guard.on_forbidden.status",
+          "path": "guard.on_forbidden.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
@@ -375,15 +349,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -392,15 +366,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
+          "path": "guard.on_unauthenticated.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -409,15 +383,32 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.status",
+          "path": "guard.on_unauthenticated.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
+          "authoring": {
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -625,16 +616,15 @@
           }
         },
         {
-          "path": "response.hx_location",
-          "key": "hx_location",
-          "go_name": "HxLocation",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to do a client-side redirect that does not do a full page reload",
-          "header": "HX-Location",
+          "path": "response.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "HX Location",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "response",
             "publish": {
               "omit_empty": true,
@@ -643,178 +633,15 @@
           }
         },
         {
-          "path": "response.hx_push_url",
-          "key": "hx_push_url",
-          "go_name": "HxPushedUrl",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Pushes a new URL into the history stack",
-          "header": "HX-Push-Url",
+          "path": "response.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
-            "label": "HX Push URL",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "can be used to do a client-side redirect to a new location",
-          "header": "HX-Redirect",
-          "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_refresh",
-          "key": "hx_refresh",
-          "go_name": "HxRefresh",
-          "go_type": "string",
-          "kind": "string",
-          "description": "if set to 'true' the client-side will do a full refresh of the page",
-          "header": "HX-Refresh",
-          "authoring": {
-            "label": "HX Refresh",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_replace_url",
-          "key": "hx_replace_url",
-          "go_name": "HxReplaceUrl",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Replaces the current URL in the location bar",
-          "header": "HX-Replace-Url",
-          "authoring": {
-            "label": "HX Replace URL",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_reselect",
-          "key": "hx_reselect",
-          "go_name": "HxReselect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "CSS selector that selects which part of the response is swapped in",
-          "header": "HX-Reselect",
-          "authoring": {
-            "label": "HX Reselect",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_reswap",
-          "key": "hx_reswap",
-          "go_name": "HxReswap",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to specify how the response will be swapped",
-          "header": "HX-Reswap",
-          "authoring": {
-            "label": "HX Reswap",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_retarget",
-          "key": "hx_retarget",
-          "go_name": "HxRetarget",
-          "go_type": "string",
-          "kind": "string",
-          "description": "CSS selector that updates the target of the content update",
-          "header": "HX-Retarget",
-          "authoring": {
-            "label": "HX Retarget",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger",
-          "key": "hx_trigger",
-          "go_name": "HxTrigger",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events",
-          "header": "HX-Trigger",
-          "authoring": {
-            "label": "HX Trigger",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger_after_settle",
-          "key": "hx_trigger_after_settle",
-          "go_name": "HxTriggerafterSettle",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events after the settle step",
-          "header": "HX-Trigger-After-Settle",
-          "authoring": {
-            "label": "HX Trigger After Settle",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger_after_swap",
-          "key": "hx_trigger_after_swap",
-          "go_name": "HxTriggerafterSwap",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events after the swap step",
-          "header": "HX-Trigger-After-Swap",
-          "authoring": {
-            "label": "HX Trigger After Swap",
-            "control": "text",
+            "label": "Status",
+            "control": "number",
             "group": "response",
             "publish": {
               "omit_empty": true,
@@ -973,7 +800,7 @@
       "category": "data",
       "child_model": "none",
       "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.APIConfig",
-      "description": "Remote API fetcher that renders the upstream response through a template.",
+      "description": "Nested API fetcher with no upstream-response cache or nocache field. It makes a fresh upstream request whenever its parent route renders; the parent owns rendered-output caching.",
       "authoring": {
         "groups": [
           {
@@ -1430,6 +1257,304 @@
       ]
     },
     {
+      "name": "Esbuild",
+      "token": "<ESBUILD>",
+      "category": "resources",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.EsbuildConfig",
+      "description": "Native JavaScript, TypeScript, and CSS bundling with lazy cached or per-render builds.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "source",
+            "label": "Source and output",
+            "fields": [
+              "entry",
+              "outfile",
+              "binary",
+              "enclose"
+            ]
+          },
+          {
+            "key": "build",
+            "label": "Build options",
+            "fields": [
+              "minify",
+              "minify_identifiers",
+              "mangle",
+              "sourcemap",
+              "cache",
+              "fingerprint",
+              "debug",
+              "target",
+              "loader",
+              "external"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "binary",
+          "key": "binary",
+          "go_name": "Binary",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional external esbuild executable; empty uses the embedded Go API.",
+          "authoring": {
+            "label": "Binary",
+            "control": "text",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache",
+          "key": "cache",
+          "go_name": "Cache",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "True reuses valid builds; false rebuilds on every component render. Default false. Independent of page caching.",
+          "authoring": {
+            "label": "Cache",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "debug",
+          "key": "debug",
+          "go_name": "Debug",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Log effective build options, engine, and cache diagnostics.",
+          "authoring": {
+            "label": "Debug",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "source",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true,
+              "scalar_style": "literal",
+              "scalar_language": "html"
+            }
+          }
+        },
+        {
+          "path": "entry",
+          "key": "entry",
+          "go_name": "Entry",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Source filename. Use path with an explicit resources base.",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Entry",
+            "control": "text",
+            "group": "source",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "external",
+          "key": "external",
+          "go_name": "External",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "Import or asset URL patterns to leave unbundled, e.g. /static/vendor/*.",
+          "authoring": {
+            "label": "External",
+            "control": "list",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "fingerprint",
+          "key": "fingerprint",
+          "go_name": "Fingerprint",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Old assets are retained.",
+          "authoring": {
+            "label": "Fingerprint",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "loader",
+          "key": "loader",
+          "go_name": "Loader",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "Extension loader overrides, e.g. .woff2: file or .png: dataurl.",
+          "authoring": {
+            "label": "Loader",
+            "control": "key-value",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "mangle",
+          "key": "mangle",
+          "go_name": "Mangle",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Advanced: mangle JavaScript properties using .*; may break external property contracts. Default false; not allowed for CSS-only entries.",
+          "authoring": {
+            "label": "Mangle",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "minify",
+          "key": "minify",
+          "go_name": "Minify",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Minify whitespace and syntax. Default false.",
+          "authoring": {
+            "label": "Minify",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "minify_identifiers",
+          "key": "minify_identifiers",
+          "go_name": "MinifyIdentifiers",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Minify identifiers independently of whitespace/syntax. Default false. YAML also accepts the legacy minifyident alias.",
+          "authoring": {
+            "label": "Minify Identifiers",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "outfile",
+          "key": "outfile",
+          "go_name": "Outfile",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Output filename inside the configured static directory. Use an explicit static path base.",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Outfile",
+            "control": "text",
+            "group": "source",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "sourcemap",
+          "key": "sourcemap",
+          "go_name": "Sourcemap",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Emit a linked source map. Default false.",
+          "authoring": {
+            "label": "Sourcemap",
+            "control": "checkbox",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "target",
+          "key": "target",
+          "go_name": "Target",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "Optional browser/language targets, e.g. chrome110, safari16, es2020.",
+          "authoring": {
+            "label": "Target",
+            "control": "list",
+            "group": "build",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Fragment",
       "token": "<FRAGMENT>",
       "category": "composite",
@@ -1472,17 +1597,8 @@
             "label": "Response",
             "collapsed": true,
             "fields": [
-              "response.hx_location",
-              "response.hx_push_url",
-              "response.hx_redirect",
-              "response.hx_refresh",
-              "response.hx_replace_url",
-              "response.hx_reswap",
-              "response.hx_retarget",
-              "response.hx_reselect",
-              "response.hx_trigger",
-              "response.hx_trigger_after_settle",
-              "response.hx_trigger_after_swap"
+              "response.status",
+              "response.headers"
             ]
           },
           {
@@ -1500,12 +1616,12 @@
               "guard.authorize.method",
               "guard.authorize.headers",
               "guard.authorize.body",
-              "guard.on_unauthenticated.redirect",
-              "guard.on_unauthenticated.hx_redirect",
-              "guard.on_unauthenticated.status",
-              "guard.on_forbidden.redirect",
-              "guard.on_forbidden.hx_redirect",
-              "guard.on_forbidden.status"
+              "guard.on_unauthenticated.default.status",
+              "guard.on_unauthenticated.default.headers",
+              "guard.on_unauthenticated.variants",
+              "guard.on_forbidden.default.status",
+              "guard.on_forbidden.default.headers",
+              "guard.on_forbidden.variants"
             ]
           }
         ],
@@ -1735,15 +1851,15 @@
           }
         },
         {
-          "path": "guard.on_forbidden.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -1752,29 +1868,12 @@
           }
         },
         {
-          "path": "guard.on_forbidden.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
-          "authoring": {
-            "label": "Redirect",
-            "control": "text",
-            "group": "guard",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "guard.on_forbidden.status",
+          "path": "guard.on_forbidden.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
@@ -1786,15 +1885,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -1803,15 +1902,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
+          "path": "guard.on_unauthenticated.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -1820,15 +1919,32 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.status",
+          "path": "guard.on_unauthenticated.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
+          "authoring": {
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -1907,16 +2023,15 @@
           }
         },
         {
-          "path": "response.hx_location",
-          "key": "hx_location",
-          "go_name": "HxLocation",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to do a client-side redirect that does not do a full page reload",
-          "header": "HX-Location",
+          "path": "response.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "HX Location",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "response",
             "publish": {
               "omit_empty": true,
@@ -1925,178 +2040,15 @@
           }
         },
         {
-          "path": "response.hx_push_url",
-          "key": "hx_push_url",
-          "go_name": "HxPushedUrl",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Pushes a new URL into the history stack",
-          "header": "HX-Push-Url",
+          "path": "response.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
-            "label": "HX Push URL",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "can be used to do a client-side redirect to a new location",
-          "header": "HX-Redirect",
-          "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_refresh",
-          "key": "hx_refresh",
-          "go_name": "HxRefresh",
-          "go_type": "string",
-          "kind": "string",
-          "description": "if set to 'true' the client-side will do a full refresh of the page",
-          "header": "HX-Refresh",
-          "authoring": {
-            "label": "HX Refresh",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_replace_url",
-          "key": "hx_replace_url",
-          "go_name": "HxReplaceUrl",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Replaces the current URL in the location bar",
-          "header": "HX-Replace-Url",
-          "authoring": {
-            "label": "HX Replace URL",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_reselect",
-          "key": "hx_reselect",
-          "go_name": "HxReselect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "CSS selector that selects which part of the response is swapped in",
-          "header": "HX-Reselect",
-          "authoring": {
-            "label": "HX Reselect",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_reswap",
-          "key": "hx_reswap",
-          "go_name": "HxReswap",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to specify how the response will be swapped",
-          "header": "HX-Reswap",
-          "authoring": {
-            "label": "HX Reswap",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_retarget",
-          "key": "hx_retarget",
-          "go_name": "HxRetarget",
-          "go_type": "string",
-          "kind": "string",
-          "description": "CSS selector that updates the target of the content update",
-          "header": "HX-Retarget",
-          "authoring": {
-            "label": "HX Retarget",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger",
-          "key": "hx_trigger",
-          "go_name": "HxTrigger",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events",
-          "header": "HX-Trigger",
-          "authoring": {
-            "label": "HX Trigger",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger_after_settle",
-          "key": "hx_trigger_after_settle",
-          "go_name": "HxTriggerafterSettle",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events after the settle step",
-          "header": "HX-Trigger-After-Settle",
-          "authoring": {
-            "label": "HX Trigger After Settle",
-            "control": "text",
-            "group": "response",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "response.hx_trigger_after_swap",
-          "key": "hx_trigger_after_swap",
-          "go_name": "HxTriggerafterSwap",
-          "go_type": "string",
-          "kind": "string",
-          "description": "allows you to trigger client-side events after the swap step",
-          "header": "HX-Trigger-After-Swap",
-          "authoring": {
-            "label": "HX Trigger After Swap",
-            "control": "text",
+            "label": "Status",
+            "control": "number",
             "group": "response",
             "publish": {
               "omit_empty": true,
@@ -2291,6 +2243,180 @@
             "publish": {
               "omit_empty": true,
               "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Goja_Render",
+      "token": "<GOJA_RENDER>",
+      "category": "data",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.GojaRenderConfig",
+      "description": "Trusted server-side JavaScript with request-local state and template output.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "script",
+            "label": "Script",
+            "fields": [
+              "script",
+              "timeout",
+              "querykeys",
+              "values"
+            ]
+          },
+          {
+            "key": "template",
+            "label": "Template",
+            "description": "Template source, query proxy, value map, and enclosure fields.",
+            "collapsed": true,
+            "fields": [
+              "template",
+              "inline",
+              "enclose"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true,
+              "scalar_style": "literal",
+              "scalar_language": "html"
+            }
+          }
+        },
+        {
+          "path": "inline",
+          "key": "inline",
+          "go_name": "Inline",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Inline Go HTML template. Mutually exclusive with template.",
+          "authoring": {
+            "label": "Inline",
+            "control": "textarea",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true,
+              "scalar_style": "literal"
+            }
+          }
+        },
+        {
+          "path": "querykeys",
+          "key": "querykeys",
+          "go_name": "AllowedQueryKeys",
+          "go_type": "[]string",
+          "kind": "list",
+          "description": "Explicitly allowed query keys. No query parameters are exposed by default.",
+          "authoring": {
+            "label": "Query keys",
+            "control": "list",
+            "group": "script",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "script",
+          "key": "script",
+          "go_name": "Script",
+          "go_type": "string",
+          "kind": "string",
+          "description": "JavaScript declaring main(input). Use the file resolver to load source from resources.",
+          "validate": "required",
+          "required": true,
+          "authoring": {
+            "label": "Script",
+            "control": "text",
+            "group": "script",
+            "publish": {
+              "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "template",
+          "key": "template",
+          "go_name": "Template",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Preloaded Go template file. The script result is available as .Data.",
+          "authoring": {
+            "label": "Template",
+            "control": "template-asset",
+            "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "timeout",
+          "key": "timeout",
+          "go_name": "Timeout",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Script deadline, default 100ms. Must be positive and at most 5s.",
+          "authoring": {
+            "label": "Timeout",
+            "control": "text",
+            "group": "script",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "values",
+          "key": "values",
+          "go_name": "Values",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Plain input data, copied into each script execution. Nested components are not rendered.",
+          "value_dynamic": true,
+          "authoring": {
+            "label": "Values",
+            "control": "template-values",
+            "group": "script",
+            "publish": {
+              "omit_empty": true
             }
           }
         }
@@ -2575,6 +2701,15 @@
             ]
           },
           {
+            "key": "response",
+            "label": "Response",
+            "collapsed": true,
+            "fields": [
+              "response.status",
+              "response.headers"
+            ]
+          },
+          {
             "key": "guard",
             "label": "Guard",
             "collapsed": true,
@@ -2589,12 +2724,12 @@
               "guard.authorize.method",
               "guard.authorize.headers",
               "guard.authorize.body",
-              "guard.on_unauthenticated.redirect",
-              "guard.on_unauthenticated.hx_redirect",
-              "guard.on_unauthenticated.status",
-              "guard.on_forbidden.redirect",
-              "guard.on_forbidden.hx_redirect",
-              "guard.on_forbidden.status"
+              "guard.on_unauthenticated.default.status",
+              "guard.on_unauthenticated.default.headers",
+              "guard.on_unauthenticated.variants",
+              "guard.on_forbidden.default.status",
+              "guard.on_forbidden.default.headers",
+              "guard.on_forbidden.variants"
             ]
           }
         ],
@@ -2908,15 +3043,15 @@
           }
         },
         {
-          "path": "guard.on_forbidden.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -2925,29 +3060,12 @@
           }
         },
         {
-          "path": "guard.on_forbidden.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
-          "authoring": {
-            "label": "Redirect",
-            "control": "text",
-            "group": "guard",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "guard.on_forbidden.status",
+          "path": "guard.on_forbidden.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
@@ -2959,15 +3077,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.hx_redirect",
-          "key": "hx_redirect",
-          "go_name": "HxRedirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "HTMX redirect target used for HX requests; defaults to redirect when omitted",
+          "path": "guard.on_forbidden.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
           "authoring": {
-            "label": "HX Redirect",
-            "control": "text",
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -2976,15 +3094,15 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.redirect",
-          "key": "redirect",
-          "go_name": "Redirect",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Full-page redirect target used for non-HTMX requests",
+          "path": "guard.on_unauthenticated.default.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
           "authoring": {
-            "label": "Redirect",
-            "control": "text",
+            "label": "Headers",
+            "control": "key-value",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -2993,15 +3111,32 @@
           }
         },
         {
-          "path": "guard.on_unauthenticated.status",
+          "path": "guard.on_unauthenticated.default.status",
           "key": "status",
           "go_name": "Status",
           "go_type": "int",
           "kind": "int",
-          "description": "Override HTTP status code for this denied response",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
           "authoring": {
             "label": "Status",
             "control": "number",
+            "group": "guard",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "guard.on_unauthenticated.variants",
+          "key": "variants",
+          "go_name": "Variants",
+          "go_type": "[]composite.RouteGuardResponseVariant",
+          "kind": "list",
+          "description": "Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely",
+          "authoring": {
+            "label": "Variants",
+            "control": "list",
             "group": "guard",
             "publish": {
               "omit_empty": true,
@@ -3129,6 +3264,40 @@
             "label": "No cache",
             "control": "checkbox",
             "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.headers",
+          "key": "headers",
+          "go_name": "Headers",
+          "go_type": "map[string]string",
+          "kind": "map",
+          "description": "HTTP response headers sent to the browser",
+          "authoring": {
+            "label": "Headers",
+            "control": "key-value",
+            "group": "response",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response.status",
+          "key": "status",
+          "go_name": "Status",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Browser HTTP status (200–599); omit to retain the route or guard default",
+          "authoring": {
+            "label": "Status",
+            "control": "number",
+            "group": "response",
             "publish": {
               "omit_empty": true,
               "omit_false": true
@@ -3360,7 +3529,7 @@
           "go_name": "Alt",
           "go_type": "string",
           "kind": "string",
-          "description": "Alternative text for the image",
+          "description": "Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images.",
           "example": "{!{image-alt.hyperbricks.yaml}}",
           "authoring": {
             "label": "Alt text",
@@ -3430,9 +3599,9 @@
           "go_name": "Height",
           "go_type": "int",
           "kind": "int",
-          "description": "The height of the image (can be a number or percentage)",
+          "description": "Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size.",
           "example": "{!{image-height.hyperbricks.yaml}}",
-          "validate": "min=1",
+          "validate": "min=0",
           "authoring": {
             "label": "Height",
             "control": "number",
@@ -3485,7 +3654,7 @@
           "go_name": "Quality",
           "go_type": "int",
           "kind": "int",
-          "description": "Image quality for optimization",
+          "description": "JPEG encoding quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding.",
           "example": "{!{image-quality.hyperbricks.yaml}}",
           "authoring": {
             "label": "Quality",
@@ -3503,7 +3672,7 @@
           "go_name": "Src",
           "go_type": "string",
           "kind": "string",
-          "description": "The source URL of the image",
+          "description": "Local filesystem path to a JPEG, PNG, or GIF image, relative to the working directory unless absolute. Use a path resolver for module resources. Remote URLs and SVG processing are not supported.",
           "example": "{!{image-src.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
@@ -3540,9 +3709,9 @@
           "go_name": "Width",
           "go_type": "int",
           "kind": "int",
-          "description": "The width of the image (can be a number or percentage)",
+          "description": "Output width in integer pixels; omit or use 0 to preserve aspect ratio from height. Omit both dimensions to keep the source size.",
           "example": "{!{image-width.hyperbricks.yaml}}",
-          "validate": "min=1",
+          "validate": "min=0",
           "authoring": {
             "label": "Width",
             "control": "number",
@@ -3588,7 +3757,7 @@
           "go_name": "Alt",
           "go_type": "string",
           "kind": "string",
-          "description": "Alternative text for the image",
+          "description": "Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images.",
           "example": "{!{images-alt.hyperbricks.yaml}}",
           "authoring": {
             "label": "Alt text",
@@ -3640,7 +3809,7 @@
           "go_name": "Directory",
           "go_type": "string",
           "kind": "string",
-          "description": "The directory path containing the images",
+          "description": "Local filesystem directory containing JPEG, PNG, or GIF images. Reads files in filename order without descending into subdirectories; other extensions are skipped.",
           "example": "{!{images-directory.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
@@ -3677,9 +3846,9 @@
           "go_name": "Height",
           "go_type": "int",
           "kind": "int",
-          "description": "The height of the images (can be a number or percentage)",
+          "description": "Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size.",
           "example": "{!{images-height.hyperbricks.yaml}}",
-          "validate": "min=1",
+          "validate": "min=0",
           "authoring": {
             "label": "Height",
             "control": "number",
@@ -3732,7 +3901,7 @@
           "go_name": "Quality",
           "go_type": "int",
           "kind": "int",
-          "description": "Image quality for optimization",
+          "description": "JPEG encoding quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding.",
           "example": "{!{images-quality.hyperbricks.yaml}}",
           "authoring": {
             "label": "Quality",
@@ -3768,9 +3937,9 @@
           "go_name": "Width",
           "go_type": "int",
           "kind": "int",
-          "description": "The width of the images (can be a number or percentage)",
+          "description": "Output width in integer pixels; omit or use 0 to preserve aspect ratio from height. Omit both dimensions to keep each source size.",
           "example": "{!{images-width.hyperbricks.yaml}}",
-          "validate": "min=1",
+          "validate": "min=0",
           "authoring": {
             "label": "Width",
             "control": "number",

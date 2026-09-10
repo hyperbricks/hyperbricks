@@ -1,0 +1,18 @@
+<section data-page-title="Estimate" class="page-section">
+  <p class="eyebrow">A small calculation</p>
+  <h1>Make an estimate</h1>
+  <p class="lede">Each item is €{{.Data.unit_price}}. Choose a quantity to see the total.</p>
+  <div class="detail-grid">
+    <form class="card estimate-form" method="get" action="/estimate">
+      <label for="quantity">Number of items</label>
+      <p class="quiet" id="quantity-help">A whole number from 1 to {{.Data.max_quantity}}.</p>
+      <input id="quantity" name="quantity" type="number" min="1" max="{{.Data.max_quantity}}" step="1" value="{{.Data.quantity}}" required aria-describedby="quantity-help estimate-result">
+      <button class="button" type="submit">Calculate total</button>
+    </form>
+    <div class="card result-card" id="estimate-result" role="status">
+      {{if .Data.valid}}<span class="eyebrow">Estimated total</span><p class="total" id="estimate-total">€{{.Data.total}}</p>{{else}}<h2>Check the quantity</h2>{{end}}
+      <p id="estimate-message">{{.Data.message}}</p>
+      <p class="quiet">An example estimate. Nothing is ordered or saved.</p>
+    </div>
+  </div>
+</section>

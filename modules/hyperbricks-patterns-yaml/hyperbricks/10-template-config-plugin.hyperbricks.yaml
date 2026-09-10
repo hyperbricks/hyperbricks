@@ -4,7 +4,7 @@ imports:
 patterns_index:
   - inherit: "pattern_site_page"
   - route: index
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/index.html

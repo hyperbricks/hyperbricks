@@ -2,7 +2,8 @@
 fragment:
   - type: fragment
   - response:
-      hx_location: someurl
+      headers:
+        HX-Location: someurl
 ==== explainer ====
 Allows you to do a client-side redirect that does not do a full page reload
 ==== expected json ====
@@ -12,19 +13,6 @@ Allows you to do a client-side redirect that does not do a full page reload
   "ConfigType": "<FRAGMENT>",
   "ContentType": "",
   "Enclose": "",
-  "HxLocation": "someurl",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReselect": "",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxTemplateResult": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -32,6 +20,12 @@ Allows you to do a client-side redirect that does not do a full page reload
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": {
+      "HX-Location": "someurl"
+    },
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

@@ -35,6 +35,10 @@ JavaScript files to include
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",
@@ -43,6 +47,6 @@ JavaScript files to include
 }
 
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><script src="main.js"></script>
+<!DOCTYPE html><html><head><meta name="generator" content="HyperBricks"><script src="main.js"></script>
 <script src="helpers.js"></script>
 </head><body></body></html> 

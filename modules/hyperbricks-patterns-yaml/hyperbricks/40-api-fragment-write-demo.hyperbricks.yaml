@@ -4,7 +4,7 @@ imports:
 api_fragment_write_demo_shell:
   - inherit: "pattern_site_page"
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/api-fragment-write-demo.html
@@ -13,7 +13,7 @@ api_fragment_write_refresh_probe:
   - type: fragment
   - route: fragments/api-fragment-write-refresh-probe
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/api-fragment-write-refresh-probe.html
@@ -22,7 +22,7 @@ api_fragment_write_mock_success:
   - type: fragment
   - route: fragments/mock-postgrest-file-save-success
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/mock-postgrest-file-save-success.json
@@ -31,7 +31,7 @@ api_fragment_write_mock_conflict:
   - type: fragment
   - route: fragments/mock-postgrest-file-save-conflict
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/mock-postgrest-file-save-conflict.json
@@ -41,34 +41,40 @@ api_fragment_write_save_success:
   - route: patterns/assets/file-save-success
   - nocache: "true"
   - method: POST
-  - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-file-save-success"
-  - request:
-      headers:
-        Content-Type: application/json
-        Accept: application/json
+  - endpoint:
+      format: "%s/fragments/mock-postgrest-file-save-success"
+      args:
+        - config: myconf.patterns.mock_api_base
+  - headers:
+      Content-Type: application/json
+      Accept: application/json
   - querykeys: []
   - body: "{\"p_project_slug\":\"$project\",\"p_file_id\":$file_id,\"p_kind\":\"$kind\",\"p_path\":\"$path\",\"p_content\":\"$content\"}"
   - template:
       file: patterns/api-file-write-result.html
   - response:
-      hx_trigger: hb-pattern-assets-refresh
+      headers:
+        HX-Trigger: hb-pattern-assets-refresh
 
 api_fragment_write_save_conflict:
   - type: api_fragment_render
   - route: patterns/assets/file-save-conflict
   - nocache: "true"
   - method: POST
-  - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-file-save-conflict"
-  - request:
-      headers:
-        Content-Type: application/json
-        Accept: application/json
+  - endpoint:
+      format: "%s/fragments/mock-postgrest-file-save-conflict"
+      args:
+        - config: myconf.patterns.mock_api_base
+  - headers:
+      Content-Type: application/json
+      Accept: application/json
   - querykeys: []
   - body: "{\"p_project_slug\":\"$project\",\"p_file_id\":$file_id,\"p_kind\":\"$kind\",\"p_path\":\"$path\",\"p_content\":\"$content\"}"
   - template:
       file: patterns/api-file-write-result.html
   - response:
-      hx_trigger: hb-pattern-assets-refresh
+      headers:
+        HX-Trigger: hb-pattern-assets-refresh
 
 app_api_fragment_write_demo:
   - inherit: "api_fragment_write_demo_shell"

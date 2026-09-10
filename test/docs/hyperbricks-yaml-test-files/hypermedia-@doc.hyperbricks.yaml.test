@@ -31,7 +31,7 @@ hypermedia:
                   color:green;
               }
 ==== explainer ====
-HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use <FRAGMENT> to utilize hx-[method] (GET,POST etc) requests.
+HYPERMEDIA renders a complete HTML document. The route property defines its URL. Use `fragment` to return partial HTML without the document wrapper.
 ==== expected json ====
 {
   "BodyTag": "",
@@ -67,6 +67,10 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",
@@ -86,4 +90,4 @@ HYPERMEDIA type is the main initiator of a htmx document. Its location is define
     color:green;
 }
 
-</style><meta name="generator" content="hyperbricks runtime"></head><body><p>SOME CONTENT</p></body></html>
+</style><meta name="generator" content="HyperBricks"></head><body><p>SOME CONTENT</p></body></html>

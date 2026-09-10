@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/core"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/renderplan"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
 	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
@@ -47,15 +49,18 @@ func PreProcessAndPopulateConfigs() error {
 		}
 	}
 
-	// populate configurations
+	// Populate the related indexes before linking renderer resources.
 	addRouteSourceErrors(tempRouteSourceErrors, configDiagnosticsRoute, sourceErrors)
-	updateGlobalConfigs(tempConfigs)
 	updateGlobalHyperMediasBySection(tempHyperMediasBySection)
-	updateGlobalRouteSourceErrors(tempRouteSourceErrors)
 	recordConfigDiagnostics(sourceErrors)
 
 	// linking resources to the renderers
 	linkRendererResources()
+	prepareGojaRouteConfigs(tempConfigs, tempRouteSourceErrors)
+	prepareEsbuildRouteConfigs(tempConfigs, tempRouteSourceErrors)
+	updateGlobalRouteSourceErrors(tempRouteSourceErrors)
+	tempRoutePlans := compileRoutePlans(tempConfigs, logger)
+	updateGlobalRoutes(tempConfigs, tempRoutePlans)
 
 	// clear cache
 	clearHTMLCache()
@@ -160,7 +165,7 @@ func recordConfigDiagnostics(errors []error) {
 	if len(errors) == 0 || getHyperBricksConfiguration().Mode == shared.LIVE_MODE {
 		return
 	}
-	recordRenderDiagnostics(nextRenderRequestID(), "__config", errors)
+	recordRenderDiagnostics(nil, nextRenderRequestID(), "__config", errors)
 }
 
 func yamlRuntimeOptions() yamlparser.Options {
@@ -570,11 +575,39 @@ func ensureUniqueRoute(original, filename string, tempConfigs map[string]map[str
 // 	return endpoint
 // }
 
-// updateGlobalConfigs safely updates the global configs map.
-func updateGlobalConfigs(tempConfigs map[string]map[string]interface{}) {
+func compileRoutePlans(
+	tempConfigs map[string]map[string]interface{},
+	logger *zap.SugaredLogger,
+) map[string]*renderplan.Plan {
+	plans := make(map[string]*renderplan.Plan, len(tempConfigs))
+	if shared.GetHyperBricksConfiguration().Mode != shared.LIVE_MODE {
+		return plans
+	}
+	for route, config := range tempConfigs {
+		plan, err := renderplan.Compile(rm, config, parser.GetTemplate)
+		if err != nil {
+			if !errors.Is(err, renderplan.ErrNotEligible) {
+				logger.Warnw("Route uses legacy render pipeline", "route", route, "error", err)
+			}
+			continue
+		}
+		plans[route] = plan
+		if os.Getenv("HB_RENDER_PLAN_TRACE") == "1" {
+			logger.Infof("Compiled route render plan: %s", route)
+		}
+	}
+	return plans
+}
+
+// updateGlobalRoutes publishes raw configs and their matching plans together.
+func updateGlobalRoutes(
+	tempConfigs map[string]map[string]interface{},
+	tempRoutePlans map[string]*renderplan.Plan,
+) {
 	configMutex.Lock()
 	defer configMutex.Unlock()
 	configs = tempConfigs
+	routePlans = tempRoutePlans
 }
 
 // updateGlobalHyperMediasBySection safely updates the global hypermediasBySection map.

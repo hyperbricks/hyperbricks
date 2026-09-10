@@ -1,0 +1,39 @@
+imports:
+  - partials/site.hyperbricks.yaml
+  - partials/views.hyperbricks.yaml
+
+tasks_page:
+  - inherit: todo_page
+  - route: index
+  - title: Tasks
+  - section: todo_navigation
+  - index: 10
+  - nocache: true
+  - body:
+      - values:
+          content:
+            - inherit: todo_dashboard
+
+about_page:
+  - inherit: todo_page
+  - route: how-it-works
+  - title: How it works
+  - section: todo_navigation
+  - index: 20
+  - body:
+      - values:
+          content:
+            - inherit: todo_about
+
+# This endpoint renders a supplied list. It does not write to server storage.
+tasks_fragment:
+  - type: fragment
+  - route: fragments/tasks
+  - nocache: true
+  - response:
+      headers:
+        Cache-Control: no-store
+        X-Content-Type-Options: nosniff
+        X-Rendered-By: HyperBricks
+  - content:
+      - inherit: todo_panel

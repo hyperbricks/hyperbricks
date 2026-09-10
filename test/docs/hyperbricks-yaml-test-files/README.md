@@ -1,23 +1,18 @@
 # HyperBricks YAML Fixture Set
 
-This directory is the migration fixture set for the new HyperBricks YAML
-profile.
+This directory is the migration fixture set for the new HyperBricks YAML profile.
 
 Migration rules for this directory:
 
 - keep assets local under `assets/`
 - use `.hyperbricks.yaml.test` as the executable fixture/documentation format
 - keep source-order cases explicit
-- include inheritance, nested values, imports, arrays, route composites,
-  template values, guards, API render configs, and collision/reserved-name
-  cases
+- include inheritance, nested values, imports, arrays, route composites, template values, guards, API render configs, and collision/reserved-name cases
 - keep readable YAML fixtures as the executable documentation corpus
-- do not add detached JSON golden files; expected materialized/runtime JSON
-  belongs inside the readable `.hyperbricks.yaml.test` fixture
+- do not add detached JSON golden files; expected materialized/runtime JSON belongs inside the readable `.hyperbricks.yaml.test` fixture
 - avoid generated numeric child keys such as `.10`, `.20`, `.30`
 
-Readable executable cases can use the same section style as the legacy docs
-tests:
+Readable executable cases can use the same section style as the legacy docs tests:
 
 ```text
 ==== hyperbricks yaml {!{page}} ====
@@ -30,13 +25,11 @@ tests:
 ...
 ```
 
-The `{!{page}}` value is the selected root object for the expected JSON and
-rendered output checks.
+The `{!{page}}` value is the selected root object for the expected JSON and rendered output checks.
 
 ## Core Corpus
 
-The first migration corpus is intentionally scenario-based and uses readable
-executable cases:
+The first migration corpus is intentionally scenario-based and uses readable executable cases:
 
 - `text-html-tree.hyperbricks.yaml.test`
 - `template-values-data.hyperbricks.yaml.test`
@@ -51,5 +44,4 @@ executable cases:
 - `api-render-request.hyperbricks.yaml.test`
 - `reserved-name-collision.hyperbricks.yaml.test`
 
-These fixtures are the first layer of proof for the new YAML profile and can
-also serve as compact documentation examples.
+These fixtures are the first layer of proof for the new YAML profile and can also serve as compact documentation examples.

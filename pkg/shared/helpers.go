@@ -2,6 +2,7 @@ package shared
 
 import (
 	"fmt"
+	"html"
 	"sort"
 	"strconv"
 	"strings"
@@ -156,7 +157,7 @@ func RenderAllowedAttributes(attributes map[string]interface{}, allowed []string
 	// Iterate over the allowed attributes in order
 	for _, key := range allowed {
 		if value, exists := attributes[key]; exists {
-			attrBuilder.WriteString(fmt.Sprintf(` %s="%s"`, key, value))
+			attrBuilder.WriteString(fmt.Sprintf(` %s="%s"`, key, html.EscapeString(fmt.Sprint(value))))
 		}
 	}
 

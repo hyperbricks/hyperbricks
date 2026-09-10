@@ -10,6 +10,19 @@ TEST_SERVER_PID=""
 
 cd "${REPO_ROOT}"
 
+if ! command -v openssl >/dev/null 2>&1; then
+  echo "openssl is required to generate temporary Docker test credentials." >&2
+  exit 1
+fi
+
+# Keep credentials process-local: Docker Compose and the YAML fixtures receive
+# the same fresh values without writing them into the repository.
+export POSTGRES_DB="${POSTGRES_DB:-postgres}"
+export POSTGRES_USER="${POSTGRES_USER:-postgres}"
+export POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-$(openssl rand -hex 24)}"
+export PGRST_JWT_SECRET="${PGRST_JWT_SECRET:-$(openssl rand -hex 32)}"
+export PGADMIN_DEFAULT_PASSWORD="${PGADMIN_DEFAULT_PASSWORD:-$(openssl rand -hex 24)}"
+
 command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
@@ -106,7 +119,7 @@ wait_for_url "http://localhost:8090/echo/query?ready=1" "local API test server" 
 echo "Starting PostgREST docker stack..."
 docker compose -f "${COMPOSE_FILE}" down -v >/dev/null 2>&1 || true
 docker compose -f "${COMPOSE_FILE}" up -d postgres server
-wait_for_url "http://localhost:3000/" "PostgREST docker stack"
+wait_for_url "http://127.0.0.1:${POSTGREST_PORT:-3000}/" "PostgREST docker stack"
 
 echo "Running Docker YAML API_RENDER and API_FRAGMENT_RENDER tests..."
 go test -v ./test/dedicated -run '^Test_All_Dedicated_YAML_Tests$' -args -directory="./yaml-api-tests/"

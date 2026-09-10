@@ -1,0 +1,5 @@
+<div role="status" data-project-save-status="{{.Status}}">
+  <p><strong>API status: {{.Status}}</strong></p>
+  {{if .Data}}<p>{{.Data.message}}</p>{{else}}<p>The local API could not be reached. Check that the fixture is running.</p>{{end}}
+  <p><a href="/advanced">Open the project page</a></p>
+</div>

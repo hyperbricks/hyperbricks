@@ -1,0 +1,16 @@
+<section data-review-step="{{.step}}">
+  {{if eq .step "preview"}}
+    <h2>Review “{{.name}}”</h2>
+    <p>The name contains {{.words}} words.</p>
+    <form method="post" action="/actions/advanced-name-confirm"
+          hx-post="/actions/advanced-name-confirm" hx-target="#name-review" hx-swap="innerHTML">
+      <input type="hidden" name="name" value="{{.name}}">
+      <button type="submit">Confirm this preview</button>
+    </form>
+  {{else if eq .step "confirmed"}}
+    <p role="status">Name reviewed: <strong>{{.name}}</strong>. No project data was saved.</p>
+  {{else}}
+    <p role="status">{{.message}}</p>
+  {{end}}
+  <p><a href="/advanced/workflow">Start another review</a></p>
+</section>

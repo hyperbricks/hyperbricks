@@ -4,7 +4,7 @@ imports:
 guarded_demo_shell:
   - inherit: "pattern_site_page"
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/guarded-shell.html
@@ -16,21 +16,21 @@ guarded_demo_shell:
 
 guarded_demo_login_panel:
   - type: tree
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/guarded-login.html
 
 guarded_demo_forbidden_panel:
   - type: tree
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/guarded-forbidden.html
 
 guarded_demo_secret_panel:
   - type: tree
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/guarded-secret.html
@@ -74,26 +74,26 @@ guarded_demo_auth_authorize:
 app_guarded_demo_login:
   - inherit: "guarded_demo_shell"
   - route: guarded-demo
-  - template_10:
+  - content:
       - values:
           content_right:
-            - inherit: "guarded_demo_login_panel.template_10"
+            - inherit: "guarded_demo_login_panel.content"
 
 app_guarded_demo_login_alias:
   - inherit: "guarded_demo_shell"
   - route: guarded-demo/login
-  - template_10:
+  - content:
       - values:
           content_right:
-            - inherit: "guarded_demo_login_panel.template_10"
+            - inherit: "guarded_demo_login_panel.content"
 
 app_guarded_demo_forbidden:
   - inherit: "guarded_demo_shell"
   - route: guarded-demo/forbidden
-  - template_10:
+  - content:
       - values:
           content_right:
-            - inherit: "guarded_demo_forbidden_panel.template_10"
+            - inherit: "guarded_demo_forbidden_panel.content"
 
 guarded_demo_secret_shell:
   - inherit: "guarded_demo_shell"
@@ -107,14 +107,36 @@ guarded_demo_secret_shell:
         endpoint: /guarded-demo/auth/authorize
         method: GET
       on_unauthenticated:
-        redirect: /guarded-demo/login
+        default:
+          status: 303
+          headers:
+            Location: /guarded-demo/login
+        variants:
+          - when:
+              request_headers:
+                HX-Request: "true"
+            response:
+              status: 401
+              headers:
+                HX-Redirect: /guarded-demo/login
       on_forbidden:
-        redirect: /guarded-demo/forbidden
+        default:
+          status: 303
+          headers:
+            Location: /guarded-demo/forbidden
+        variants:
+          - when:
+              request_headers:
+                HX-Request: "true"
+            response:
+              status: 403
+              headers:
+                HX-Redirect: /guarded-demo/forbidden
 
 app_guarded_demo_secret:
   - inherit: "guarded_demo_secret_shell"
   - route: guarded-demo/secret
-  - template_10:
+  - content:
       - values:
           content_right:
-            - inherit: "guarded_demo_secret_panel.template_10"
+            - inherit: "guarded_demo_secret_panel.content"

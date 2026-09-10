@@ -1,0 +1,6 @@
+<article class="card" id="status-panel">
+  <span class="card-number">03</span>
+  <h2>{{.message}}</h2>
+  <p>Last rendered <time id="status-time">{{now | date "15:04:05 MST"}}</time>.</p>
+  <a href="/" hx-get="/fragments/status" hx-target="#status-panel" hx-swap="outerHTML" hx-push-url="false">Refresh this panel</a>
+</article>

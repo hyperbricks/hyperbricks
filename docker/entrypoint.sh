@@ -4,10 +4,6 @@ set -e
 HB_HOME=${HB_HOME:-/opt/hyperbricks}
 HB_USER=${HB_USER:-deploy}
 HB_GROUP=${HB_GROUP:-deploy}
-HB_USE_OPENRC=${HB_USE_OPENRC:-0}
-
-mkdir -p /run/openrc
-: > /run/openrc/softlevel
 
 if [ -n "${TZ:-}" ] && [ -f "/usr/share/zoneinfo/${TZ}" ]; then
   cp "/usr/share/zoneinfo/${TZ}" /etc/localtime
@@ -31,13 +27,9 @@ if [ -z "${HB_DEPLOY_SECRET:-}" ]; then
   echo "warning: HB_DEPLOY_SECRET is not set" >&2
 fi
 
-if [ "${HB_USE_OPENRC}" = "1" ] && [ -x /etc/init.d/hyperbricks-deploy ]; then
-  if ! rc-service hyperbricks-deploy start; then
-    echo "warning: OpenRC failed; starting Hyperbricks directly" >&2
-    exec su -s /bin/sh -c "cd ${HB_HOME} && ${HB_HOME}/bin/hyperbricks deploy-daemon" "${HB_USER}"
-  fi
-  echo "OpenRC started hyperbricks-deploy; set HB_USE_OPENRC=0 for foreground logs." >&2
-  exec tail -f /dev/null
+if [ "${HB_BUILD_SOURCE:-checkout}" = "checkout" ]; then
+  export HYPERBRICKS_LOCAL_PATH=/opt/hyperbricks-source
 fi
 
-exec su -s /bin/sh -c "cd ${HB_HOME} && ${HB_HOME}/bin/hyperbricks deploy-daemon" "${HB_USER}"
+cd "${HB_HOME}"
+exec su-exec "${HB_USER}:${HB_GROUP}" "${HB_HOME}/bin/hyperbricks" deploy-daemon

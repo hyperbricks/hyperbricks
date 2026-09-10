@@ -1,0 +1,7 @@
+/* Module-relative static directory. */
+body { margin: 0; background: #edf5ee; color: #173d25; font: 1rem/1.6 system-ui, sans-serif; }
+main { max-width: 48rem; margin: 3rem auto; padding: 1.5rem; }
+h1 { line-height: 1.2; }
+a { color: #146638; }
+code { overflow-wrap: anywhere; }
+iframe { box-sizing: border-box; width: 100%; height: 5rem; border: 1px solid #557e60; background: white; }

@@ -4,7 +4,8 @@ api_fragment:
   - endpoint: https://example.com/fragment
   - method: GET
   - response:
-      hx_trigger: myEvent
+      headers:
+        HX-Trigger: myEvent
   - route: api-fragment
 ==== explainer ====
 HTMX response header configuration.
@@ -19,19 +20,6 @@ HTMX response header configuration.
   "Enclose": "",
   "Endpoint": "https://example.com/fragment",
   "Headers": null,
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReselect": "",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxTemplateResult": "",
-  "HxTrigger": "myEvent",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -45,6 +33,12 @@ HTMX response header configuration.
   "NoCache": false,
   "Password": "",
   "QueryParams": null,
+  "Response": {
+    "Headers": {
+      "HX-Trigger": "myEvent"
+    },
+    "Status": 0
+  },
   "Route": "api-fragment",
   "Section": "",
   "SetCookie": "",

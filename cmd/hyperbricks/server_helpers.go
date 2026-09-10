@@ -4,6 +4,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/hyperbricks/hyperbricks/pkg/renderplan"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
@@ -15,6 +16,14 @@ func getConfig(requestedSlug string) (map[string]interface{}, bool) {
 	// Retrieve the map for the requestedSlug
 	config, found := configs[requestedSlug]
 	return config, found
+}
+
+func getConfigAndPlan(requestedSlug string) (map[string]interface{}, *renderplan.Plan, bool) {
+	configMutex.RLock()
+	defer configMutex.RUnlock()
+
+	config, found := configs[requestedSlug]
+	return config, routePlans[requestedSlug], found
 }
 
 func getHostIPv4s() ([]string, error) {

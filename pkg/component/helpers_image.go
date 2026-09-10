@@ -2,16 +2,22 @@ package component
 
 import (
 	"context"
+	"crypto/sha256"
+	"errors"
 	"fmt"
+	"html"
 
 	"image"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/disintegration/imaging"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
@@ -23,7 +29,6 @@ var SupportedExtensions = map[string]bool{
 	".jpeg": true,
 	".png":  true,
 	".gif":  true,
-	".svg":  true,
 }
 
 type ImageProcessor struct{}
@@ -93,9 +98,10 @@ func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (st
 		destDir = hbConfig.Directories["render"] + "/images/"
 	}
 	imgcount := 0
+	var processingErrors []error
 	for _, file := range files {
 		ext := strings.ToLower(filepath.Ext(file.Name()))
-		if !SupportedExtensions[ext] || ext == ".svg" {
+		if file.IsDir() || !SupportedExtensions[ext] {
 			continue
 		}
 
@@ -114,21 +120,24 @@ func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (st
 			Loading: config.Loading,
 			Alt:     config.Alt,
 			Title:   config.Title,
-			Id:      config.Id + fmt.Sprintf("%d", imgcount),
 			Class:   config.Class,
 			Quality: config.Quality,
+		}
+		if config.Id != "" {
+			fileConfig.Id = config.Id + strconv.Itoa(imgcount)
 		}
 
 		logging.GetLogger().Debugf("Creating new image file", "source", srcFilePath, "destination", destDir)
 		err := ir.processAndBuildImgTag(srcFilePath, destDir, fileConfig, builder)
 		if err != nil {
 			logging.GetLogger().Errorw("Error processing image", "file", srcFilePath, "error", err)
+			processingErrors = append(processingErrors, fmt.Errorf("%s: %w", srcFilePath, err))
 			continue
 		}
 		imgcount++
 	}
 
-	return builder.String(), nil
+	return builder.String(), errors.Join(processingErrors...)
 }
 
 func (ir *ImageProcessor) processAndBuildImgTag(srcPath, destDir string, config SingleImageConfig, builder *strings.Builder) error {
@@ -138,7 +147,9 @@ func (ir *ImageProcessor) processAndBuildImgTag(srcPath, destDir string, config 
 	}
 
 	builder.WriteString("<img src=\"")
-	builder.WriteString(fmt.Sprintf("static/images/%s\"", newFileName))
+	publicURL := &url.URL{Path: "/static/images/" + newFileName}
+	builder.WriteString(html.EscapeString(publicURL.EscapedPath()))
+	builder.WriteString("\"")
 
 	addDimensions(newFileName, builder)
 	addOptionalAttributes(config, builder)
@@ -153,42 +164,49 @@ func (ir *ImageProcessor) processAndBuildImgTag(srcPath, destDir string, config 
 }
 
 func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleImageConfig) (string, error) {
+	if config.Width < 0 || config.Height < 0 {
+		return "", fmt.Errorf("image width and height must be non-negative pixel counts")
+	}
+	if config.Quality < 0 || config.Quality > 100 {
+		return "", fmt.Errorf("image quality must be between 1 and 100, or 0 for the default")
+	}
 	if config.IsStatic {
 		return srcPath, nil
 	}
 
 	srcFile, err := os.Open(srcPath)
 	if err != nil {
-		return "", fmt.Errorf("failed to open source image: %v", err)
+		return "", fmt.Errorf("failed to open source image: %w", err)
 	}
 	defer srcFile.Close()
 
+	// Include the source bytes, not just its basename, in the generated asset name.
+	fingerprint := sha256.New()
+	if _, err := io.Copy(fingerprint, srcFile); err != nil {
+		return "", fmt.Errorf("failed to read source image: %w", err)
+	}
+	if _, err := srcFile.Seek(0, io.SeekStart); err != nil {
+		return "", fmt.Errorf("failed to rewind source image: %w", err)
+	}
+
 	srcImage, format, err := image.Decode(srcFile)
 	if err != nil {
-		return "", fmt.Errorf("failed to decode image: %v", err)
+		return "", fmt.Errorf("failed to decode image: %w", err)
 	}
 
 	baseName := filepath.Base(srcPath)
-	ext := strings.ToLower(filepath.Ext(baseName))
+	ext := filepath.Ext(baseName)
 	nameWithoutExt := strings.TrimSuffix(baseName, ext)
-
-	width, err := getInt(config.Width)
-	if err != nil && config.Width > 0 {
-		return "", err
-	}
-
-	height, err := getInt(config.Height)
-	if err != nil && config.Height > 0 {
-		return "", err
-	}
+	ext = strings.ToLower(ext)
+	width, height := config.Width, config.Height
 
 	if width == 0 && height == 0 {
 		width = srcImage.Bounds().Dx()
 		height = srcImage.Bounds().Dy()
 	} else if width == 0 {
-		width = (height * srcImage.Bounds().Dx()) / srcImage.Bounds().Dy()
+		width = max(1, (height*srcImage.Bounds().Dx())/srcImage.Bounds().Dy())
 	} else if height == 0 {
-		height = (width * srcImage.Bounds().Dy()) / srcImage.Bounds().Dx()
+		height = max(1, (width*srcImage.Bounds().Dy())/srcImage.Bounds().Dx())
 	}
 
 	resizedImage := imaging.Resize(srcImage, width, height, imaging.Lanczos)
@@ -197,24 +215,34 @@ func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleIma
 		return "", fmt.Errorf("failed to create destination directory: %v", err)
 	}
 
-	newFileName := fmt.Sprintf("%s_w%d_h%d%s", nameWithoutExt, width, height, ext)
+	quality := 0
+	if format == "jpeg" {
+		quality = config.Quality
+		if quality == 0 {
+			quality = 90
+		}
+	}
+	fmt.Fprintf(fingerprint, "\x00resize-v1:%s:%d:%d:%d", format, width, height, quality)
+	// Leave space for the fingerprint and dimensions within common 255-byte limits.
+	if len(nameWithoutExt) > 160 {
+		nameWithoutExt = nameWithoutExt[:160]
+		for !utf8.ValidString(nameWithoutExt) {
+			nameWithoutExt = nameWithoutExt[:len(nameWithoutExt)-1]
+		}
+	}
+	newFileName := fmt.Sprintf("%s_%x_w%d_h%d%s", nameWithoutExt, fingerprint.Sum(nil)[:16], width, height, ext)
 	destPath := filepath.Join(destDir, newFileName)
 
-	destFile, err := os.Create(destPath)
+	// Publish only a complete image, even when concurrent renders share this name.
+	destFile, err := os.CreateTemp(destDir, ".image-*")
 	if err != nil {
 		return "", fmt.Errorf("failed to create destination file: %v", err)
 	}
+	defer os.Remove(destFile.Name())
 	defer destFile.Close()
 
 	switch format {
 	case "jpeg":
-		quality := 90
-		if config.Quality > 0 {
-			quality, err = getInt(config.Quality)
-			if err != nil {
-				return "", err
-			}
-		}
 		err = jpeg.Encode(destFile, resizedImage, &jpeg.Options{Quality: quality})
 	case "png":
 		err = png.Encode(destFile, resizedImage)
@@ -226,6 +254,15 @@ func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleIma
 
 	if err != nil {
 		return "", fmt.Errorf("failed to encode and save image: %v", err)
+	}
+	if err := destFile.Chmod(0o644); err != nil {
+		return "", fmt.Errorf("failed to set image permissions: %w", err)
+	}
+	if err := destFile.Close(); err != nil {
+		return "", fmt.Errorf("failed to close generated image: %w", err)
+	}
+	if err := os.Rename(destFile.Name(), destPath); err != nil {
+		return "", fmt.Errorf("failed to publish generated image: %w", err)
 	}
 
 	return newFileName, nil
@@ -269,24 +306,22 @@ func imageDimensionsFromFileName(fileName string) (string, string, bool) {
 }
 
 func addOptionalAttributes(config SingleImageConfig, builder *strings.Builder) {
-	if config.Alt != "" {
-		builder.WriteString(fmt.Sprintf(` alt="%s"`, config.Alt))
-	}
+	builder.WriteString(fmt.Sprintf(` alt="%s"`, html.EscapeString(config.Alt)))
 
 	if config.Title != "" {
-		builder.WriteString(fmt.Sprintf(` title="%s"`, config.Title))
+		builder.WriteString(fmt.Sprintf(` title="%s"`, html.EscapeString(config.Title)))
 	}
 
 	if config.Class != "" {
-		builder.WriteString(fmt.Sprintf(` class="%s"`, config.Class))
+		builder.WriteString(fmt.Sprintf(` class="%s"`, html.EscapeString(config.Class)))
 	}
 
 	if config.Id != "" {
-		builder.WriteString(fmt.Sprintf(` id="%s"`, config.Id))
+		builder.WriteString(fmt.Sprintf(` id="%s"`, html.EscapeString(config.Id)))
 	}
 
-	if config.Loading == "lazy" {
-		builder.WriteString(` loading="lazy"`)
+	if config.Loading == "lazy" || config.Loading == "eager" {
+		builder.WriteString(fmt.Sprintf(` loading="%s"`, config.Loading))
 	}
 
 	allowedAttributes := []string{
@@ -303,20 +338,15 @@ func addOptionalAttributes(config SingleImageConfig, builder *strings.Builder) {
 		"tabindex",
 	}
 
-	extraAttributes := shared.RenderAllowedAttributes(config.ExtraAttributes, allowedAttributes)
+	// A first-class field takes precedence over the same extra attribute.
+	attributes := make(map[string]interface{}, len(config.ExtraAttributes))
+	for key, value := range config.ExtraAttributes {
+		if (key == "class" && config.Class != "") || (key == "loading" && config.Loading != "") {
+			continue
+		}
+		attributes[key] = value
+	}
+	extraAttributes := shared.RenderAllowedAttributes(attributes, allowedAttributes)
 
 	builder.WriteString(extraAttributes)
-}
-
-func getInt(value interface{}) (int, error) {
-	switch v := value.(type) {
-	case int:
-		return v, nil
-	case float64:
-		return int(v), nil
-	case string:
-		return strconv.Atoi(v)
-	default:
-		return 0, fmt.Errorf("unsupported type for integer conversion: %T", v)
-	}
 }

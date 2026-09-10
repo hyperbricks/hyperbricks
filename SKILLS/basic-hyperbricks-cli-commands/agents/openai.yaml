@@ -1,6 +1,0 @@
-interface:
-  display_name: "HyperBricks Basic Cli Skills"
-  short_description: "Work on HyperBricks routes, fragments, templates, plugins, and deploys"
-  icon_small: "./assets/Hyperbricks_logo.svg"
-  icon_large: "./assets/Hyperbricks_logo.jpg"
-  default_prompt: "Use $hyperbricks to inspect and modify this HyperBricks project according to the HyperBricks skill."

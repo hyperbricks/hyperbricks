@@ -1,0 +1,10 @@
+<section data-page-title="{{.project.name}}" class="page-section">
+  <a class="back-link" href="/projects" hx-get="/fragments/projects" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="/projects">← All projects</a>
+  <p class="eyebrow">Project overview</p>
+  <h1>{{.project.name}}</h1>
+  <p class="lede">{{.project.summary}}</p>
+  <div class="detail-grid">
+    <article class="card"><h2>The next step</h2><p>Agree on the first useful page, make it work, and share it for feedback.</p><a href="/estimate" hx-get="/fragments/estimate" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="/estimate">Check a simple estimate</a></article>
+    <dl class="card facts"><dt>Status</dt><dd>{{.project.status}}</dd><dt>Team</dt><dd>{{.project.owner}}</dd><dt>Focus</dt><dd>{{.project.tags | sortAlpha | join ", "}}</dd></dl>
+  </div>
+</section>

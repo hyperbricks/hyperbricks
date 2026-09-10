@@ -38,6 +38,10 @@ file overrides link and inline, it loads contents of a file and renders it in a 
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",
@@ -50,4 +54,4 @@ file overrides link and inline, it loads contents of a file and renders it in a 
 body {
     background-color: red;
 }
-</style><meta name="generator" content="hyperbricks runtime"></head><body></body></html>
+</style><meta name="generator" content="HyperBricks"></head><body></body></html>

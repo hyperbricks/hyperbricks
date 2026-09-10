@@ -13,14 +13,16 @@ import (
 	"net/url"
 	"path"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 
-	"github.com/hyperbricks/hyperbricks/pkg/component"
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/renderplan"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/shared/apiutil"
 	"github.com/mitchellh/mapstructure"
@@ -32,6 +34,7 @@ const (
 	liveCacheExpiresAtHeader  = "X-Hyperbricks-Cache-Expires-At"
 	requestIDHeader           = "X-Hyperbricks-Request-ID"
 	renderErrorCountHeader    = "X-Hyperbricks-Render-Error-Count"
+	renderDiagnosticsPath     = "/__hyperbricks/render-diagnostics"
 	maxRenderDiagnostics      = 200
 )
 
@@ -44,43 +47,178 @@ func routeSupportsGuard(configType string) bool {
 	}
 }
 
-func resolveRouteGuard(config map[string]interface{}) (composite.RouteGuardConfig, bool) {
-	if config == nil {
-		return composite.RouteGuardConfig{}, false
-	}
-	configType, _ := config["@type"].(string)
-	if !routeSupportsGuard(configType) {
-		return composite.RouteGuardConfig{}, false
-	}
-	rawGuard, ok := config["guard"]
-	if !ok || rawGuard == nil {
-		return composite.RouteGuardConfig{}, false
-	}
-	var guard composite.RouteGuardConfig
+func decodeHTTPConfig(raw interface{}, result interface{}) error {
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		WeaklyTypedInput: true,
-		Result:           &guard,
-		TagName:          "mapstructure",
+		WeaklyTypedInput: true, ErrorUnused: true, Result: result, TagName: "mapstructure",
 	})
 	if err != nil {
-		logging.GetLogger().Warnw("guard resolver: decoder setup failed", "route", config["route"], "error", err)
-		return composite.RouteGuardConfig{}, false
+		return err
 	}
-	if err := decoder.Decode(rawGuard); err != nil {
-		logging.GetLogger().Warnw("guard resolver: decode failed", "route", config["route"], "error", err)
-		return composite.RouteGuardConfig{}, false
+	data, err := httpConfigData(raw)
+	if err != nil {
+		return err
 	}
-	if !guard.Enabled {
-		return composite.RouteGuardConfig{}, false
-	}
-	return guard, true
+	return decoder.Decode(data)
 }
 
-func requestUsesHTMX(r *http.Request) bool {
-	if r == nil {
+// Ordered YAML blocks carry parser metadata. It is not a public HTTP field.
+// Copy it away so strict decoding still rejects misspelled configuration keys.
+func httpConfigData(raw interface{}) (interface{}, error) {
+	switch value := raw.(type) {
+	case map[string]interface{}:
+		out := make(map[string]interface{}, len(value))
+		for name, child := range value {
+			if name != "@order" {
+				// Header names and required query keys are user data, even when
+				// a key happens to have the same spelling as parser metadata.
+				switch strings.ToLower(name) {
+				case "headers", "request_headers", "query":
+					out[name] = child
+				default:
+					if strings.EqualFold(name, "status") {
+						status, err := strconv.Atoi(fmt.Sprint(child))
+						if err != nil || (status != 0 && (status < 200 || status > 599)) {
+							return nil, fmt.Errorf("response.status must be an integer between 200 and 599, or 0 for the default")
+						}
+						out[name] = status
+					} else {
+						parsed, err := httpConfigData(child)
+						if err != nil {
+							return nil, err
+						}
+						out[name] = parsed
+					}
+				}
+			}
+		}
+		return out, nil
+	case []interface{}:
+		out := make([]interface{}, len(value))
+		for index, child := range value {
+			parsed, err := httpConfigData(child)
+			if err != nil {
+				return nil, err
+			}
+			out[index] = parsed
+		}
+		return out, nil
+	default:
+		return raw, nil
+	}
+}
+
+func resolveRouteGuard(config map[string]interface{}) (composite.RouteGuardConfig, bool, error) {
+	var guard composite.RouteGuardConfig
+	configType, _ := config["@type"].(string)
+	if !routeSupportsGuard(configType) {
+		return guard, false, nil
+	}
+	raw, ok := config["guard"]
+	if !ok || raw == nil {
+		return guard, false, nil
+	}
+	if err := decodeHTTPConfig(raw, &guard); err != nil {
+		return guard, true, fmt.Errorf("invalid guard configuration: %w", err)
+	}
+	if !guard.Enabled {
+		return guard, false, nil
+	}
+	if name := strings.TrimSpace(guard.Auth.Header); name != "" {
+		if err := composite.ValidateHTTPHeaders(map[string]string{name: ""}); err != nil {
+			return guard, true, err
+		}
+	}
+	for _, action := range []composite.RouteGuardActionConfig{guard.OnUnauthenticated, guard.OnForbidden} {
+		if err := action.Default.Validate(); err != nil {
+			return guard, true, err
+		}
+		for _, variant := range action.Variants {
+			if len(variant.When.RequestHeaders) == 0 {
+				return guard, true, fmt.Errorf("guard variant requires when.request_headers")
+			}
+			if err := composite.ValidateHTTPHeaders(variant.When.RequestHeaders); err != nil {
+				return guard, true, err
+			}
+			if err := variant.Response.Validate(); err != nil {
+				return guard, true, err
+			}
+		}
+	}
+	return guard, true, nil
+}
+
+// Route metadata is collected once by the HTTP owner, never by nested renderers.
+func resolveHTTPResponse(config map[string]interface{}) (composite.HTTPResponseConfig, error) {
+	var response composite.HTTPResponseConfig
+	if raw, ok := config["response"]; ok && raw != nil {
+		if err := decodeHTTPConfig(raw, &response); err != nil {
+			return response, fmt.Errorf("invalid response configuration (use response.status and response.headers): %w", err)
+		}
+	}
+	return response, response.Validate()
+}
+
+func configurationErrorResponse(err error) RenderContent {
+	logging.GetLogger().Errorw("Invalid route HTTP configuration", "error", err)
+	return RenderContent{Content: "invalid route HTTP configuration", NoCache: true,
+		Status: http.StatusInternalServerError, ContentType: "text/plain; charset=utf-8",
+		Headers: map[string]string{"Cache-Control": "no-store"}}
+}
+
+func requestHeadersMatch(r *http.Request, expected map[string]string) bool {
+	if r == nil || len(expected) == 0 {
 		return false
 	}
-	return strings.EqualFold(strings.TrimSpace(r.Header.Get("HX-Request")), "true")
+	for name, value := range expected {
+		actual := requestHeaderValues(r, name)
+		if len(actual) != 1 || actual[0] != value {
+			return false
+		}
+	}
+	return true
+}
+
+func requestHeaderValues(r *http.Request, name string) []string {
+	if strings.EqualFold(name, "Host") {
+		if r.Host == "" {
+			return nil
+		}
+		return []string{r.Host}
+	}
+	return r.Header.Values(name)
+}
+
+func mergeVary(values ...string) string {
+	names := map[string]bool{}
+	for _, value := range values {
+		for _, name := range strings.Split(value, ",") {
+			name = strings.TrimSpace(name)
+			if name == "*" {
+				return "*"
+			}
+			if name != "" {
+				names[http.CanonicalHeaderKey(name)] = true
+			}
+		}
+	}
+	keys := make([]string, 0, len(names))
+	for name := range names {
+		keys = append(keys, name)
+	}
+	sort.Strings(keys)
+	return strings.Join(keys, ", ")
+}
+
+func guardVary(guard composite.RouteGuardConfig) string {
+	names := []string{"Cookie", "Authorization", strings.TrimSpace(guard.Auth.Header)}
+	for _, action := range []composite.RouteGuardActionConfig{guard.OnUnauthenticated, guard.OnForbidden} {
+		for _, variant := range action.Variants {
+			for name := range variant.When.RequestHeaders {
+				names = append(names, name)
+			}
+		}
+	}
+	return mergeVary(names...)
 }
 
 func resolveGuardToken(r *http.Request, guard *composite.RouteGuardConfig) string {
@@ -211,45 +349,29 @@ func missingGuardQueryKeys(r *http.Request, guard composite.RouteGuardConfig) []
 	return missing
 }
 
-func guardDeniedResponse(r *http.Request, action composite.RouteGuardActionConfig, fallbackStatus int, fallbackContent string) RenderContent {
-	headers := map[string]string{
-		"Cache-Control": "no-store",
-		"Vary":          "Cookie, Authorization, HX-Request",
+func guardDeniedResponse(r *http.Request, action composite.RouteGuardActionConfig, fallbackStatus int, fallbackContent string, vary string) RenderContent {
+	response := action.Default
+	for _, variant := range action.Variants {
+		if requestHeadersMatch(r, variant.When.RequestHeaders) {
+			response = variant.Response
+			break
+		}
 	}
-	status := action.Status
-	if requestUsesHTMX(r) {
-		target := strings.TrimSpace(action.HxRedirect)
-		if target == "" {
-			target = strings.TrimSpace(action.Redirect)
-		}
-		if target != "" {
-			headers["HX-Redirect"] = target
-		}
-		if status == 0 {
-			status = fallbackStatus
-		}
-	} else {
-		target := strings.TrimSpace(action.Redirect)
-		if target != "" {
-			headers["Location"] = target
-			if status == 0 {
-				status = http.StatusSeeOther
-			}
-		}
-		if status == 0 {
-			status = fallbackStatus
-		}
+	headers := canonicalResponseHeaders(response.Headers)
+	headers["Cache-Control"] = "no-store"
+	headers["Vary"] = mergeVary(headers["Vary"], vary)
+	status := response.Status
+	if status == 0 {
+		status = fallbackStatus
 	}
 	if fallbackContent == "" {
 		fallbackContent = http.StatusText(status)
 	}
-	return RenderContent{
-		Content:     fallbackContent,
-		NoCache:     true,
-		ContentType: "text/plain; charset=utf-8",
-		Status:      status,
-		Headers:     headers,
+	contentType := headerContentType(headers)
+	if contentType == "" {
+		contentType = "text/plain; charset=utf-8"
 	}
+	return RenderContent{Content: fallbackContent, NoCache: true, ContentType: contentType, Status: status, Headers: headers}
 }
 
 func authorizeRouteGuard(r *http.Request, guard composite.RouteGuardConfig, token string) (int, error) {
@@ -294,17 +416,21 @@ func authorizeRouteGuard(r *http.Request, guard composite.RouteGuardConfig, toke
 }
 
 func evaluateRouteGuard(config map[string]interface{}, r *http.Request) (*RenderContent, string) {
-	guard, enabled := resolveRouteGuard(config)
+	guard, enabled, guardErr := resolveRouteGuard(config)
+	if guardErr != nil {
+		response := configurationErrorResponse(guardErr)
+		return &response, ""
+	}
 	if !enabled {
 		return nil, resolveGuardToken(r, nil)
 	}
 	token := resolveGuardToken(r, &guard)
 	if guard.Require.Authenticated && token == "" {
-		response := guardDeniedResponse(r, guard.OnUnauthenticated, http.StatusUnauthorized, "authentication required")
+		response := guardDeniedResponse(r, guard.OnUnauthenticated, http.StatusUnauthorized, "authentication required", guardVary(guard))
 		return &response, token
 	}
 	if missing := missingGuardQueryKeys(r, guard); len(missing) > 0 {
-		response := guardDeniedResponse(r, guard.OnForbidden, http.StatusForbidden, "missing required query keys")
+		response := guardDeniedResponse(r, guard.OnForbidden, http.StatusForbidden, "missing required query keys", guardVary(guard))
 		return &response, token
 	}
 	status, err := authorizeRouteGuard(r, guard, token)
@@ -316,7 +442,7 @@ func evaluateRouteGuard(config map[string]interface{}, r *http.Request) (*Render
 			Status:      http.StatusBadGateway,
 			Headers: map[string]string{
 				"Cache-Control": "no-store",
-				"Vary":          "Cookie, Authorization, HX-Request",
+				"Vary":          guardVary(guard),
 			},
 		}
 		return &response, token
@@ -325,10 +451,10 @@ func evaluateRouteGuard(config map[string]interface{}, r *http.Request) (*Render
 	case status >= 200 && status < 300:
 		return nil, token
 	case status == http.StatusUnauthorized:
-		response := guardDeniedResponse(r, guard.OnUnauthenticated, http.StatusUnauthorized, "authentication required")
+		response := guardDeniedResponse(r, guard.OnUnauthenticated, http.StatusUnauthorized, "authentication required", guardVary(guard))
 		return &response, token
 	case status == http.StatusForbidden || status == http.StatusNotAcceptable:
-		response := guardDeniedResponse(r, guard.OnForbidden, http.StatusForbidden, "forbidden")
+		response := guardDeniedResponse(r, guard.OnForbidden, http.StatusForbidden, "forbidden", guardVary(guard))
 		return &response, token
 	default:
 		response := RenderContent{
@@ -338,7 +464,7 @@ func evaluateRouteGuard(config map[string]interface{}, r *http.Request) (*Render
 			Status:      http.StatusBadGateway,
 			Headers: map[string]string{
 				"Cache-Control": "no-store",
-				"Vary":          "Cookie, Authorization, HX-Request",
+				"Vary":          guardVary(guard),
 			},
 		}
 		return &response, token
@@ -391,8 +517,15 @@ func resolveConfiguredNoCache(config map[string]interface{}) bool {
 	if configType == composite.ApiFragmentRenderConfigGetName() {
 		return true
 	}
-	_, guardEnabled := resolveRouteGuard(config)
-	return guardEnabled
+	_, guardEnabled, guardErr := resolveRouteGuard(config)
+	if guardEnabled || guardErr != nil {
+		return true
+	}
+	response, err := resolveHTTPResponse(config)
+	if err != nil {
+		return true
+	}
+	return routeResponseVary(config, response) == "*"
 }
 
 func routeConfiguredNoCache(route string) bool {
@@ -457,6 +590,25 @@ func extractResponseHeaders(raw map[string]interface{}) map[string]string {
 	return headers
 }
 
+func canonicalResponseHeaders(source map[string]string) map[string]string {
+	headers := make(map[string]string, len(source))
+	for name, value := range source {
+		headers[http.CanonicalHeaderKey(name)] = value
+	}
+	return headers
+}
+
+func routeResponseVary(config map[string]interface{}, response composite.HTTPResponseConfig) string {
+	headers := make(map[string]string)
+	if configType, _ := config["@type"].(string); configType == composite.HyperMediaConfigGetName() {
+		headers = canonicalResponseHeaders(extractResponseHeaders(config))
+	}
+	for name, value := range response.Headers {
+		headers[http.CanonicalHeaderKey(name)] = value
+	}
+	return mergeVary(headers["Vary"])
+}
+
 func extractResponseCookies(raw map[string]interface{}) []string {
 	value, ok := raw["cookies"]
 	if !ok || value == nil {
@@ -501,7 +653,11 @@ func applyResponseHeaders(headers map[string]string, writer http.ResponseWriter)
 		if strings.TrimSpace(key) == "" {
 			continue
 		}
-		writer.Header().Set(key, val)
+		if strings.EqualFold(key, "Set-Cookie") {
+			writer.Header().Add(key, val)
+		} else {
+			writer.Header().Set(key, val)
+		}
 	}
 }
 
@@ -531,7 +687,7 @@ func applyLiveCacheMetadataHeaders(headers map[string]string, renderedAt string,
 	headers[liveCacheRenderedAtHeader] = renderedAt
 	headers[liveCacheExpiresAtHeader] = expiresAt
 	if etag != "" {
-		headers["ETag"] = etag
+		headers[http.CanonicalHeaderKey("ETag")] = etag
 	}
 	return headers
 }
@@ -555,6 +711,33 @@ func resolveLiveCacheKey(route string, r *http.Request) (string, bool) {
 		return "", false
 	}
 
+	config, found := getConfig(route)
+	if !found {
+		config, _ = getConfig("404")
+	}
+	response, responseErr := resolveHTTPResponse(config)
+	if responseErr != nil {
+		return "", false
+	}
+	vary := routeResponseVary(config, response)
+	if vary == "*" {
+		return "", false
+	}
+	if vary != "" {
+		var value strings.Builder
+		value.WriteString(signature)
+		for _, name := range strings.Split(vary, ", ") {
+			value.WriteString("\n" + name + "=")
+			values := requestHeaderValues(r, name)
+			value.WriteString(strconv.Itoa(len(values)))
+			for _, entry := range values {
+				value.WriteString("\x00" + entry)
+			}
+		}
+		sum := sha256.Sum256([]byte(value.String()))
+		signature = hex.EncodeToString(sum[:])
+		hasVariant = true
+	}
 	if !hasVariant {
 		return route, true
 	}
@@ -631,29 +814,6 @@ func cloneRequestBody(r *http.Request) ([]byte, error) {
 
 	r.Body = io.NopCloser(bytes.NewReader(body))
 	return body, nil
-}
-
-func routeNeedsAPIRequestContext(node interface{}) bool {
-	switch typed := node.(type) {
-	case map[string]interface{}:
-		if configType, ok := typed["@type"].(string); ok {
-			if configType == component.APIConfigGetName() || configType == composite.ApiFragmentRenderConfigGetName() {
-				return true
-			}
-		}
-		for _, value := range typed {
-			if routeNeedsAPIRequestContext(value) {
-				return true
-			}
-		}
-	case []interface{}:
-		for _, value := range typed {
-			if routeNeedsAPIRequestContext(value) {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 func resolveRoute(route string, routing shared.RoutingConfig) (string, bool) {
@@ -786,7 +946,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	nocache := false
 	status := http.StatusOK
 
-	_config, found := getConfig(route)
+	_config, routePlan, found := getConfigAndPlan(route)
 	headers := map[string]string(nil)
 	cookies := []string(nil)
 
@@ -794,7 +954,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 		sourceErrors := getConfigSourceErrors()
 		if len(sourceErrors) > 0 && hbConfig.Mode != shared.LIVE_MODE {
 			logging.GetLogger().Info("Config not found for route; returning source load diagnostics", "route", route, "error_count", len(sourceErrors))
-			recordRenderDiagnostics(requestID, route, sourceErrors)
+			recordRenderDiagnostics(r, requestID, route, sourceErrors)
 			return RenderContent{
 				Content:     missingRouteSourceErrorContent(route, sourceErrors),
 				NoCache:     true,
@@ -804,10 +964,11 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 				ErrorCount:  len(sourceErrors),
 			}
 		}
-		__config, _found := getConfig("404")
+		__config, fallbackPlan, _found := getConfigAndPlan("404")
 		if _found {
 			logging.GetLogger().Info("Redirecting to 404", " from ", route)
 			_config = __config
+			routePlan = fallbackPlan
 			status = http.StatusNotFound
 		} else {
 			if route == "favicon.ico" {
@@ -835,36 +996,49 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 		return *guardResponse
 	}
 
+	response, responseErr := resolveHTTPResponse(_config)
+	if responseErr != nil {
+		return configurationErrorResponse(responseErr)
+	}
 	nocache = resolveConfiguredNoCache(_config)
-	var contentType = ""
+	if response.Status != 0 {
+		status = response.Status
+	}
+	var contentType string
 	if ct, ok := _config["content_type"].(string); ok {
 		contentType = ct
 	}
-	if configType, ok := _config["@type"].(string); ok && configType == composite.HyperMediaConfigGetName() {
-		headers = extractResponseHeaders(_config)
+	headers = make(map[string]string)
+	if configType, _ := _config["@type"].(string); configType == composite.HyperMediaConfigGetName() {
+		headers = canonicalResponseHeaders(extractResponseHeaders(_config))
 		cookies = extractResponseCookies(_config)
 	}
-	if contentType == "" && len(headers) > 0 {
+	for name, value := range response.Headers {
+		headers[http.CanonicalHeaderKey(name)] = value
+	}
+	if guard, enabled, err := resolveRouteGuard(_config); enabled && err == nil {
+		headers["Vary"] = mergeVary(headers["Vary"], guardVary(guard))
+	}
+	if contentType == "" {
 		contentType = headerContentType(headers)
 	}
 
-	configCopy := make(map[string]interface{})
-	for key, value := range _config {
-		configCopy[key] = value
-	}
-
-	// TO DO: Clean this  up if possible use context (see ctx definition)
-	if configCopy["@type"].(string) == composite.FragmentConfigGetName() {
-		configCopy["hx_response"] = w
-	}
-
-	if configCopy["@type"].(string) == composite.ApiFragmentRenderConfigGetName() {
-		configCopy["hx_response"] = w
+	configCopy := _config
+	if routePlan == nil {
+		configCopy = make(map[string]interface{}, len(_config))
+		for key, value := range _config {
+			configCopy[key] = value
+		}
 	}
 
 	// ============ START OF API CONTEXT AND TOKEN CAPTURE ============
 	var requestBodyReader io.ReadCloser = http.NoBody
-	needsAPIRequestContext := routeNeedsAPIRequestContext(configCopy)
+	var needsAPIRequestContext bool
+	if routePlan != nil {
+		needsAPIRequestContext = routePlan.NeedsAPIRequestContext()
+	} else {
+		needsAPIRequestContext = renderplan.NeedsAPIRequestContext(configCopy)
+	}
 	if needsAPIRequestContext {
 		requestBodyBytes, err := cloneRequestBody(r)
 		if err != nil {
@@ -892,30 +1066,45 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	ctx = context.WithValue(ctx, shared.HandledResponseCaptureKey, handledCapture)
 	// ============ END OF API CONTEXT AND TOKEN CAPTURE ============
 
-	var htmlContent strings.Builder
-
-	renderOutput, renderErrors := rm.Render(configCopy["@type"].(string), configCopy, ctx)
+	var renderOutput string
+	var renderErrors []error
+	if routePlan != nil {
+		renderOutput, renderErrors = routePlan.Render(ctx)
+	} else {
+		renderOutput, renderErrors = rm.Render(configCopy["@type"].(string), configCopy, ctx)
+	}
 	renderErrors = append(renderErrors, getRouteSourceErrors(route)...)
-
-	htmlContent.WriteString(renderOutput)
-	var output strings.Builder
+	handledResponse, captureErr := handledCapture.Result()
+	if captureErr != nil {
+		renderErrors = append(renderErrors, captureErr)
+	}
 
 	if resolveBeautify(configCopy, hbConfig.Server.Beautify) {
-		output.WriteString(gohtml.Format(htmlContent.String()))
-	} else {
-		output.WriteString(htmlContent.String())
+		renderOutput = gohtml.Format(renderOutput)
 	}
 
 	if hbConfig.Mode != shared.LIVE_MODE {
-		recordRenderDiagnostics(requestID, route, renderErrors)
+		recordRenderDiagnostics(r, requestID, route, renderErrors)
 	}
 
-	if handledCapture != nil && handledCapture.Response != nil {
-		return renderHandledContent(requestID, status, contentType, headers, cookies, nocache, len(renderErrors), handledCapture.Response)
+	if captureErr != nil {
+		logging.GetLogger().Errorw("Invalid plugin response ownership", "route", route, "request_id", requestID, "error", captureErr)
+		return RenderContent{
+			Content:     "invalid plugin response",
+			NoCache:     true,
+			ContentType: "text/plain; charset=utf-8",
+			Status:      http.StatusInternalServerError,
+			Headers:     map[string]string{"Cache-Control": "no-store"},
+			RequestID:   requestID,
+			ErrorCount:  len(renderErrors),
+		}
+	}
+	if handledResponse != nil {
+		return renderHandledContent(requestID, status, contentType, headers, cookies, nocache, len(renderErrors), handledResponse)
 	}
 
 	return RenderContent{
-		Content:     output.String(),
+		Content:     renderOutput,
 		NoCache:     nocache,
 		ContentType: contentType,
 		Status:      status,
@@ -963,12 +1152,16 @@ func renderHandledContent(requestID string, defaultStatus int, defaultContentTyp
 		contentType = strings.TrimSpace(defaultContentType)
 	}
 
-	headers := cloneStringMap(defaultHeaders)
-	if headers == nil && len(handled.Headers) > 0 {
-		headers = make(map[string]string, len(handled.Headers))
-	}
+	headers := canonicalResponseHeaders(defaultHeaders)
 	for key, value := range handled.Headers {
-		headers[key] = value
+		if strings.EqualFold(key, "Vary") {
+			headers["Vary"] = mergeVary(headers["Vary"], value)
+		} else {
+			headers[http.CanonicalHeaderKey(key)] = value
+		}
+	}
+	if strings.TrimSpace(handled.ContentType) == "" && headerContentType(handled.Headers) != "" {
+		contentType = headerContentType(handled.Headers)
 	}
 
 	cookies := append([]string(nil), defaultCookies...)
@@ -1008,6 +1201,7 @@ func cloneHandledResponseData(response *shared.HandledResponse) *shared.HandledR
 		Status:      response.Status,
 		ContentType: response.ContentType,
 		NoCache:     response.NoCache,
+		Stream:      response.Stream,
 	}
 	if len(response.Body) > 0 {
 		cloned.Body = append([]byte(nil), response.Body...)
@@ -1122,7 +1316,41 @@ func nextRenderRequestID() string {
 	return "hb-" + strconv.FormatInt(sequence, 10)
 }
 
-func recordRenderDiagnostics(requestID string, route string, renderErrors []error) {
+func renderDiagnosticsURL(r *http.Request, requestID string) string {
+	hbConfig := getHyperBricksConfiguration()
+	// Static exports stop their temporary server when rendering finishes.
+	if hbConfig.Mode == shared.LIVE_MODE || commands.RenderStatic {
+		return ""
+	}
+
+	diagnosticsURL := url.URL{
+		Scheme:   "http",
+		Host:     "localhost:" + strconv.Itoa(hbConfig.Server.Port),
+		Path:     renderDiagnosticsPath,
+		RawQuery: url.Values{"request_id": {requestID}}.Encode(),
+	}
+	if r != nil {
+		if r.Host != "" {
+			diagnosticsURL.Host = r.Host
+		} else if r.URL != nil && r.URL.Host != "" {
+			diagnosticsURL.Host = r.URL.Host
+		}
+		if r.URL != nil && (r.URL.Scheme == "http" || r.URL.Scheme == "https") {
+			diagnosticsURL.Scheme = r.URL.Scheme
+		}
+		if r.TLS != nil {
+			diagnosticsURL.Scheme = "https"
+		}
+		// Match the existing request URL handling for proxied HTTPS requests.
+		proto := strings.TrimSpace(strings.Split(r.Header.Get("X-Forwarded-Proto"), ",")[0])
+		if proto == "http" || proto == "https" {
+			diagnosticsURL.Scheme = proto
+		}
+	}
+	return diagnosticsURL.String()
+}
+
+func recordRenderDiagnostics(r *http.Request, requestID string, route string, renderErrors []error) {
 	if len(renderErrors) == 0 {
 		return
 	}
@@ -1145,7 +1373,12 @@ func recordRenderDiagnostics(requestID string, route string, renderErrors []erro
 	renderDiagnosticsMutex.Unlock()
 
 	if shouldLogRenderDiagnosticsAsError(renderErrors) {
-		logging.GetLogger().Errorw("Render diagnostics recorded", "request_id", requestID, "route", route, "error_count", len(diagnostics.Errors))
+		message := "Render diagnostics recorded"
+		if diagnosticsURL := renderDiagnosticsURL(r, requestID); diagnosticsURL != "" {
+			// The dashboard log buffer keeps the message, but not structured fields.
+			message += ": " + diagnosticsURL
+		}
+		logging.GetLogger().Errorw(message, "request_id", requestID, "route", route, "error_count", len(diagnostics.Errors))
 	}
 }
 
@@ -1200,6 +1433,21 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 	logging.GetLogger().Debugw("Received request for route", "route", route)
 	if hbConfig.Mode == shared.LIVE_MODE {
 		cacheEntry := handleLiveMode(w, route, r, requestID)
+		if cacheEntry.Handled != nil && cacheEntry.Handled.Stream != nil {
+			content := RenderContent{
+				Handled:     cacheEntry.Handled,
+				Headers:     cacheEntry.Headers,
+				Cookies:     cacheEntry.Cookies,
+				ContentType: cacheEntry.ContentType,
+				Status:      cacheEntry.Status,
+				RequestID:   requestID,
+				ErrorCount:  cacheEntry.ErrorCount,
+			}
+			if err := writeStreamResponse(w, r, content); err != nil {
+				logStreamResponseError(r.Context(), route, requestID, err)
+			}
+			return
+		}
 		if writeNotModifiedResponse(w, route, requestID, r, cacheEntry) {
 			return
 		}
@@ -1208,6 +1456,12 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		renderContent := handleDeveloperMode(w, route, r, requestID)
+		if renderContent.Handled != nil && renderContent.Handled.Stream != nil {
+			if err := writeStreamResponse(w, r, renderContent); err != nil {
+				logStreamResponseError(r.Context(), route, requestID, err)
+			}
+			return
+		}
 		if !writeRenderResponse(w, route, requestID, renderContent.Content, "", renderContent.Handled, renderContent.Headers, renderContent.Cookies, renderContent.ContentType, renderContent.Status, renderContent.ErrorCount) {
 			return
 		}
@@ -1271,6 +1525,12 @@ func writeRenderResponse(w http.ResponseWriter, route string, requestID string, 
 		status = http.StatusOK
 	}
 
+	if !responseAllowsBody(status) {
+		w.Header().Del("Content-Length")
+		w.WriteHeader(status)
+		return true
+	}
+
 	if handled != nil {
 		if responseAllowsBody(status) {
 			w.Header().Set("Content-Length", strconv.Itoa(len(handled.Body)))
@@ -1309,7 +1569,7 @@ func writeRenderResponse(w http.ResponseWriter, route string, requestID string, 
 }
 
 func responseAllowsBody(status int) bool {
-	return status != http.StatusNoContent && status != http.StatusNotModified
+	return status >= 200 && status != http.StatusNoContent && status != http.StatusResetContent && status != http.StatusNotModified
 }
 
 // RENDER WITHOUT CACHE

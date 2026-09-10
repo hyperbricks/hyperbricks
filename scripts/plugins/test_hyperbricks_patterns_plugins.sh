@@ -76,13 +76,17 @@ assert_contains "$TMP_DIR/status-demo-plugin.body" "Template Config Plugin"
 
 request "/docs/readme" "docs-readme"
 assert_contains "$TMP_DIR/docs-readme.body" "HyperBricks Patterns"
-assert_contains "$TMP_DIR/docs-readme.body" 'hx-select-oob="#pattern-docs-sidebar-shell:outerHTML"'
+assert_contains "$TMP_DIR/docs-readme.body" 'hx-select-oob="#pattern-docs-sidebar-shell:outerHTML, #pattern-docs-header:outerHTML"'
 if grep -Fq 'hx-select="#pattern-docs-panel > *, #pattern-docs-sidebar-shell"' "$TMP_DIR/docs-readme.body"; then
   echo "Docs navigation must update the sidebar out-of-band, not inside the panel selection." >&2
   exit 1
 fi
 if [[ "$(grep -Fo 'id="pattern-docs-sidebar-shell"' "$TMP_DIR/docs-readme.body" | wc -l | tr -d ' ')" != "1" ]]; then
   echo "Expected docs sidebar shell id to appear exactly once." >&2
+  exit 1
+fi
+if [[ "$(grep -Fo 'id="pattern-docs-header"' "$TMP_DIR/docs-readme.body" | wc -l | tr -d ' ')" != "1" ]]; then
+  echo "Expected docs header id to appear exactly once." >&2
   exit 1
 fi
 

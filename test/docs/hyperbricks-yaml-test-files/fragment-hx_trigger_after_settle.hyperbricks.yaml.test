@@ -2,9 +2,10 @@
 fragment:
   - type: fragment
   - response:
-      hx_trigger_after_settle: myAfterSettleEvent
+      headers:
+        HX-Trigger: statusUpdated
 ==== explainer ====
-allows you to trigger client-side events after the settle step
+Sends an application event with HX-Trigger in HTMX 4. To run browser code after settling, use an explicit htmx:after:settle listener; this header does not preserve the removed HX-Trigger-After-Settle timing.
 ==== expected json ====
 {
   "Cache": "",
@@ -12,19 +13,6 @@ allows you to trigger client-side events after the settle step
   "ConfigType": "<FRAGMENT>",
   "ContentType": "",
   "Enclose": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReselect": "",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxTemplateResult": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "myAfterSettleEvent",
-  "HxTriggerafterSwap": "",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -32,6 +20,12 @@ allows you to trigger client-side events after the settle step
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": {
+      "HX-Trigger": "statusUpdated"
+    },
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

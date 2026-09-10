@@ -4,13 +4,19 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
       args:
-        TAILWIND_VERSION: "4.1.10"
+        HB_BUILD_SOURCE: "${HB_BUILD_SOURCE:-checkout}"
+        HB_VERSION: "${HB_VERSION:-v1.2.3-beta}"
+        TAILWIND_VERSION: "${TAILWIND_VERSION-}"
     ports:
-      - "9090:9090"
-      - "8080-8100:8080-8100"
+      - "${HB_BIND_ADDRESS:-127.0.0.1}:${HB_API_PORT:-9090}:9090"
+      - "${HB_BIND_ADDRESS:-127.0.0.1}:${HB_RUNTIME_PORTS:-8080-8100}:8080-8100"
     environment:
-      HB_DEPLOY_SECRET: "change-me"
+      HB_DEPLOY_SECRET: "${HB_DEPLOY_SECRET:?Set HB_DEPLOY_SECRET before starting the deploy host}"
     volumes:
       - ./data/deploy:/opt/hyperbricks/deploy
+      - plugin-builds:/opt/hyperbricks/bin/plugins
       - ./deploy.hyperbricks.yaml:/opt/hyperbricks/deploy.hyperbricks.yaml:ro
     restart: unless-stopped
+
+volumes:
+  plugin-builds:

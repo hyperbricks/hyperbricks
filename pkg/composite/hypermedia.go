@@ -30,6 +30,7 @@ type HyperMediaConfig struct {
 	Doctype            string                 `mapstructure:"doctype" description:"Alternative Doctype for the HTML document" example:"{!{hypermedia-doctype.hyperbricks.yaml}}"`
 	HtmlTag            string                 `mapstructure:"htmltag" description:"The opening HTML tag with attributes" example:"{!{hypermedia-htmltag.hyperbricks.yaml}}"`
 	Head               map[string]interface{} `mapstructure:"head" description:"Configurations for the head section of the hypermedia" example:"{!{hypermedia-head.hyperbricks.yaml}}"`
+	Response           HTTPResponseConfig     `mapstructure:"response" description:"Browser HTTP status and headers; response.headers override top-level headers with the same name"`
 	Headers            map[string]string      `mapstructure:"headers" description:"HTTP response headers to include when serving this hypermedia" example:"{!{hypermedia-headers.hyperbricks.yaml}}"`
 	Cookies            []string               `mapstructure:"cookies" description:"Set-Cookie values to include when serving this hypermedia" example:"{!{hypermedia-cookies.hyperbricks.yaml}}"`
 	Guard              *RouteGuardConfig      `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current HYPERMEDIA behavior remains unchanged" example:"{!{hypermedia-guard.hyperbricks.yaml}}"`

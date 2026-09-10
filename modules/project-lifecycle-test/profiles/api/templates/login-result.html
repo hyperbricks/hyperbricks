@@ -1,0 +1,2 @@
+<p role="status">{{if .Data}}{{.Data.message}}{{else}}Start the local fixture API and try again.{{end}}</p>
+{{if eq .Status 200}}<p><a href="/advanced/settings">Open owner settings</a></p>{{end}}

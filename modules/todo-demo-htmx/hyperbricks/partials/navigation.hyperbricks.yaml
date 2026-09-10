@@ -1,0 +1,10 @@
+todo_navigation:
+  - type: menu
+  - section: todo_navigation
+  - sort: index
+  - order: asc
+  - item: |
+      <a href="{{if eq .Route "index"}}/{{else}}/{{.Route}}{{end}}">{{.Title}}</a>
+  - active: |
+      <a href="{{if eq .Route "index"}}/{{else}}/{{.Route}}{{end}}" aria-current="page">{{.Title}}</a>
+  - enclose: '<nav class="navigation" aria-label="Main navigation">|</nav>'

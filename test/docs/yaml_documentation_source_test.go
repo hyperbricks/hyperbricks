@@ -126,7 +126,7 @@ func TestYAMLDocumentationReference(t *testing.T) {
 	buildTime := *buildTimeFlag
 	if !*updateYAMLDocsFlag && !*updateDocsFlag {
 		if expected, err := os.ReadFile(yamlReferencePath); err == nil {
-			version, buildTime = yamlDocumentationHeaderValues(string(expected), version, buildTime)
+			_, buildTime = yamlDocumentationHeaderValues(string(expected), version, buildTime)
 		}
 	}
 
@@ -179,13 +179,29 @@ func TestYAMLDocumentationReferenceIncludesAliases(t *testing.T) {
 }
 
 func TestYAMLDocumentationReadme(t *testing.T) {
-	rendered := renderYAMLReadme(t, resolvedDocumentationVersion(t), *buildTimeFlag)
-	outputPath := filepath.Join(t.TempDir(), "README.md")
-	if *updateDocsFlag {
-		outputPath = yamlReadmePath
+	version := resolvedDocumentationVersion(t)
+	buildTime := *buildTimeFlag
+	if !*updateDocsFlag {
+		if expected, err := os.ReadFile(yamlReadmePath); err == nil {
+			_, buildTime = yamlDocumentationHeaderValues(string(expected), version, buildTime)
+		}
 	}
-	if err := os.WriteFile(outputPath, rendered, 0o644); err != nil {
-		t.Fatalf("write %s: %v", outputPath, err)
+
+	rendered := renderYAMLReadme(t, version, buildTime)
+	outputPath := yamlReadmePath
+	if *updateDocsFlag {
+		if err := os.WriteFile(outputPath, rendered, 0o644); err != nil {
+			t.Fatalf("write %s: %v", outputPath, err)
+		}
+		return
+	}
+
+	expected, err := os.ReadFile(outputPath)
+	if err != nil {
+		t.Fatalf("read %s: %v; run go test ./test/docs -run TestYAMLDocumentationReadme -update-docs -count=1", outputPath, err)
+	}
+	if !bytes.Equal(rendered, expected) {
+		t.Fatalf("%s is stale; run go test ./test/docs -run TestYAMLDocumentationReadme -update-docs -count=1", outputPath)
 	}
 }
 
@@ -400,6 +416,7 @@ func yamlDocumentationRenderCase(t *testing.T, rm *render.RenderManager, testCas
 	if strings.TrimSpace(testCase.ExpectedOutput) == "" {
 		return
 	}
+	prepareYAMLProfileGoja(t, rm, scope)
 	output, renderErrors := rm.Render(typeName, scope, createMockContext())
 	if len(renderErrors) > 0 {
 		t.Fatalf("render %s returned errors: %v", testCase.Scope, renderErrors)

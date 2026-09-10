@@ -2,7 +2,8 @@
 fragment:
   - type: fragment
   - response:
-      hx_reselect: '#someotherid'
+      headers:
+        HX-Reselect: '#someotherid'
 ==== explainer ====
 CSS selector that selects which part of the response is swapped in.
 ==== expected json ====
@@ -12,19 +13,6 @@ CSS selector that selects which part of the response is swapped in.
   "ConfigType": "<FRAGMENT>",
   "ContentType": "",
   "Enclose": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReselect": "#someotherid",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxTemplateResult": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -32,6 +20,12 @@ CSS selector that selects which part of the response is swapped in.
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": {
+      "HX-Reselect": "#someotherid"
+    },
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

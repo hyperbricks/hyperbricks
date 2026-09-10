@@ -11,6 +11,7 @@ status_code_test:
   - inline: |
       {{.Data.queryParams.code}}
   - response:
-      hx_target: target-element-id
+      headers:
+        HX-Retarget: target-element-id
 ==== expected output ====
 201

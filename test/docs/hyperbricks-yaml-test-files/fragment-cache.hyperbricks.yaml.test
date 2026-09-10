@@ -31,6 +31,10 @@ Cache expire string
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "index",
   "Section": "",
   "Static": "",

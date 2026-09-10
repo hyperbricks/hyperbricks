@@ -730,19 +730,19 @@ func PluginRemoveCommand() *cobra.Command {
 	return cmd
 }
 
-// Update a plugin to latest compatible version (placeholder)
+// PluginUpdateCommand reserves the update subcommand until atomic plugin
+// updates are implemented. It fails without modifying the local installation.
 func PluginUpdateCommand() *cobra.Command {
 	return &cobra.Command{
-		Use:   "update <name>",
-		Short: "Update a plugin to the latest compatible version",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			name := args[0]
-			fmt.Printf("Checking for updates for plugin \"%s\"...\n", name)
-			// TODO: Actually implement update logic!
-			fmt.Println("Found newer version: 1.0.1 (current: 1.0.0)")
-			fmt.Println("Downloading and building update...")
-			fmt.Println("Update successful. Plugin \"markdown\" is now at version 1.0.1.")
+		Use:           "update <name>",
+		Short:         "Update a plugin (not implemented)",
+		Args:          cobra.ExactArgs(1),
+		SilenceErrors: true,
+		SilenceUsage:  true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			Exit = true
+			ExitCode = 1
+			return fmt.Errorf("plugin update is not implemented; install an explicit version with hyperbricks plugin install %s@<version>", args[0])
 		},
 	}
 }

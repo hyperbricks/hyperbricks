@@ -1,17 +1,12 @@
 # Runtime Gateway
 
-The runtime gateway is a host-based proxy hook. It lets a HyperBricks server
-intercept configured hosts before normal route rendering and ask a trusted
-resolver where the request should go.
+The runtime gateway is a host-based proxy hook. It lets a HyperBricks server intercept configured hosts before normal route rendering and ask a trusted resolver where the request should go.
 
-HyperBricks only decides whether a request matches a configured gateway domain
-or host suffix. The resolver decides what the host means and whether the request
-is allowed.
+HyperBricks only decides whether a request matches a configured gateway domain or host suffix. The resolver decides what the host means and whether the request is allowed.
 
 ## Use Cases
 
-The gateway is useful when an integration wants normal browser URLs for isolated
-runtime views:
+The gateway is useful when an integration wants normal browser URLs for isolated runtime views:
 
 ```text
 project-a.runtime.example.test
@@ -92,11 +87,9 @@ control.local                   does not match
 site.other.local                does not match
 ```
 
-The left-hand host label is opaque to HyperBricks. It may contain project names,
-build IDs, variants, or any resolver-specific convention.
+The left-hand host label is opaque to HyperBricks. It may contain project names, build IDs, variants, or any resolver-specific convention.
 
-Given `-runtime.example.test`, HyperBricks matches flat hosts ending in that
-suffix:
+Given `-runtime.example.test`, HyperBricks matches flat hosts ending in that suffix:
 
 ```text
 site-runtime.example.test       matches
@@ -106,9 +99,7 @@ site.runtime.example.test       does not match
 site-other.example.test         does not match
 ```
 
-Use `domain` or `domains` for dotted subhosts such as
-`site.runtime.local`. Use `host_suffix` or `host_suffixes` for flat hosts such
-as `site-runtime.example.test`.
+Use `domain` or `domains` for dotted subhosts such as `site.runtime.local`. Use `host_suffix` or `host_suffixes` for flat hosts such as `site-runtime.example.test`.
 
 ## Resolver Request
 
@@ -137,8 +128,7 @@ The resolver returns a private target:
 }
 ```
 
-The target must be a loopback or private network address. HyperBricks rejects
-public targets before proxying.
+The target must be a loopback or private network address. HyperBricks rejects public targets before proxying.
 
 ## Resolver Deny Response
 
@@ -154,11 +144,9 @@ When a request is not allowed, the resolver can deny it:
 
 ## Cookies And Handoff Tokens
 
-Resolvers may return `set_cookies` values. HyperBricks forwards those cookies to
-the browser.
+Resolvers may return `set_cookies` values. HyperBricks forwards those cookies to the browser.
 
-If the original URL contains `runtime_token`, HyperBricks sets the resolver
-cookies and redirects once to the same URL without the token.
+If the original URL contains `runtime_token`, HyperBricks sets the resolver cookies and redirects once to the same URL without the token.
 
 That supports this flow:
 
@@ -171,8 +159,6 @@ That supports this flow:
 
 - Treat the resolver as the policy boundary.
 - Configure only domains that are dedicated to gateway traffic.
-- Do not put normal app hosts under a gateway domain unless the resolver should
-  own those hosts.
-- Authorize every request in the resolver using cookies, headers, or short-lived
-  handoff tokens.
+- Do not put normal app hosts under a gateway domain unless the resolver should own those hosts.
+- Authorize every request in the resolver using cookies, headers, or short-lived handoff tokens.
 - Return only loopback or private network targets.

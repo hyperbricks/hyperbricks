@@ -1,0 +1,35 @@
+<article class="about">
+  <h1>How it works</h1>
+  <p class="lede">This demo uses HyperBricks and Hotwire Turbo to update your to do list without reloading the page. Your tasks and scratchpad notes are saved in this browser.</p>
+
+  <h2>Updating your list</h2>
+  <ol>
+    <li>When you open the app, it loads your saved tasks from browser storage.</li>
+    <li>When you add, complete or delete a task, the browser sends the updated list to HyperBricks using Hotwire Turbo.</li>
+    <li>HyperBricks checks the task data and returns HTML for the list and progress counts.</li>
+    <li>Hotwire Turbo updates the task panel. The browser saves the changes after the update succeeds.</li>
+  </ol>
+  <p>Filters use the same process to show all, active or completed tasks. If an update fails, the changed list is not saved. Use Refresh list to try again.</p>
+
+  <h2>Using the scratchpad</h2>
+  <p>Use the scratchpad for notes while you work. Notes are saved automatically as you type and restored when you reopen the page. Updating a task leaves the scratchpad in place.</p>
+
+  <h2>Where your data is stored</h2>
+  <p>Tasks and notes are saved in localStorage, which is part of your browser's site data. They are available in the same browser profile at the same site address. They do not sync to another browser or device, and clearing the site's browser data removes them.</p>
+  <p>There is no account or database. HyperBricks receives the task list to render each update but does not save it. Task text is sent in the request URL, which may appear in server logs.</p>
+  <p>You can add up to 20 tasks, with up to 120 characters per task. If browser storage is unavailable, changes cannot be kept after a page reload.</p>
+
+  <h2>How the demo is built</h2>
+  <p>HyperBricks serves both pages and renders the task list. Hotwire Turbo requests and displays list updates. The navigation links load a full page.</p>
+  <table>
+    <thead><tr><th>Component</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td><code>hypermedia</code></td><td>The Tasks and How it works pages.</td></tr>
+      <tr><td><code>fragment</code></td><td>The <code>/fragments/tasks</code> URL that returns updated task-list HTML.</td></tr>
+      <tr><td><code>template</code></td><td>The page layout, task rows, filters and progress counts.</td></tr>
+      <tr><td><code>menu</code></td><td>The navigation links and active page indicator.</td></tr>
+      <tr><td><code>tree</code>, <code>text</code>, <code>html</code></td><td>Page sections, headings and introductory text.</td></tr>
+      <tr><td><code>head</code>, <code>esbuild</code></td><td>Page metadata and bundled JavaScript and CSS.</td></tr>
+    </tbody>
+  </table>
+</article>

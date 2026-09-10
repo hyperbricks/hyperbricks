@@ -8,7 +8,7 @@ image:
   - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
   - width: "310"
 ==== explainer ====
-The height of the image (can be a number or percentage)
+Output height in integer pixels. Omit one dimension to preserve the aspect ratio; percentages belong in CSS.
 ==== expected json ====
 {
   "Alt": "",
@@ -34,4 +34,4 @@ The height of the image (can be a number or percentage)
 }
 
 ==== expected output ====
-<div id="#logo"><img src="static/images/cute_cat_w310_h310.jpg" width="310" height="310" loading="lazy" /></div> 
+<div id="#logo"><img src="/static/images/cute_cat_aac2716ad97a07c3fe4793ca93c23f03_w310_h310.jpg" width="310" height="310" alt="" loading="lazy" /></div>

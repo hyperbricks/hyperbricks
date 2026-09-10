@@ -41,4 +41,4 @@ A custom <style> tag definition |. Will override extraAttributes.
 body {
     background-color: red;
 }
-</style><meta name="generator" content="hyperbricks runtime"></head>
+</style><meta name="generator" content="HyperBricks"></head>

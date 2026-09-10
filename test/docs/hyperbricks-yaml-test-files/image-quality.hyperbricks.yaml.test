@@ -6,7 +6,7 @@ image:
   - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
   - width: "320"
 ==== explainer ====
-Image quality for optimization, bigger is better.
+JPEG quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding.
 ==== expected json ====
 {
   "Alt": "",
@@ -30,4 +30,4 @@ Image quality for optimization, bigger is better.
 }
 
 ==== expected output ====
-<img src="static/images/cute_cat_w320_h320.jpg" width="320" height="320" /> 
+<img src="/static/images/cute_cat_773f157768f524b2646d3b3ebfdd3870_w320_h320.jpg" width="320" height="320" alt="" />

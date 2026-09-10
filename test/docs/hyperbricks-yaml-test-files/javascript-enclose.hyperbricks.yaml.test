@@ -39,4 +39,4 @@ Wrap rendered output using prefix|suffix syntax
 ==== expected output ====
 <head><script defer></script>
         console.log("Hello World!")
-        </script defer></script><meta name="generator" content="hyperbricks runtime"></head>
+        </script defer></script><meta name="generator" content="HyperBricks"></head>

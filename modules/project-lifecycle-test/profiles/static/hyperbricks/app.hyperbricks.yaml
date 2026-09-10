@@ -1,0 +1,24 @@
+imports:
+  - ../../../hyperbricks/partials/assets.hyperbricks.yaml
+
+# This is the only route loaded by the static fixture profile.
+static_homepage:
+  - type: hypermedia
+  - route: index
+  - static: index.html
+  - title: Static profile · Project Lifecycle Fixture
+  - doctype: '<!DOCTYPE html>'
+  - htmltag: '<html lang="en">'
+  - head:
+      - type: head
+      - metadata:
+          - type: html
+          - value: |
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+      - styles:
+          - inherit: lifecycle_styles
+  - body:
+      - type: template
+      - template:
+          file: static-page.html

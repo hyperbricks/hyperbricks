@@ -1,0 +1,68 @@
+vars:
+  projects:
+    atlas:
+      name: Atlas
+      summary: A clear home for a small studio and its work.
+      status: In progress
+      owner: Design team
+      tags: [website, content, design]
+      url: /projects/atlas
+      fragment: /fragments/projects/atlas
+    beacon:
+      name: Beacon
+      summary: Practical project notes for a growing community.
+      status: Planning
+      owner: Community team
+      tags: [documentation, accessibility]
+      url: /projects/beacon
+      fragment: /fragments/projects/beacon
+
+lifecycle_status:
+  - type: template
+  - template:
+      file: status.html
+  - values:
+      message: Ready to explore
+
+overview_view:
+  - type: template
+  - template:
+      file: overview.html
+  - values:
+      status:
+        - inherit: lifecycle_status
+
+projects_view:
+  - type: template
+  - template:
+      file: projects.html
+  - values:
+      projects:
+        var: projects
+
+atlas_view:
+  - type: template
+  - template:
+      file: project.html
+  - values:
+      project:
+        var: projects.atlas
+
+beacon_view:
+  - inherit: atlas_view
+  - values:
+      project:
+        var: projects.beacon
+
+# Beta: trusted project JavaScript, with no network or persistent storage.
+estimate_view:
+  - type: goja_render
+  - script:
+      file: {base: resources, path: scripts/line-total.js}
+  - querykeys: [quantity]
+  - values:
+      unit_price_cents: 1995
+      max_quantity: 100
+  - timeout: 100ms
+  - template:
+      file: estimate.html

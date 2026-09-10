@@ -238,7 +238,13 @@ func (r *PluginRenderer) renderAndWrap(pluginRenderer shared.PluginRenderer, con
 
 	if handledResponse != nil {
 		if capture, _ := ctx.Value(shared.HandledResponseCaptureKey).(*shared.HandledResponseCapture); capture != nil {
-			capture.Response = handledResponse
+			if err := capture.Store(handledResponse); err != nil {
+				errs = append(errs, shared.ComponentError{
+					Hash: shared.GenerateHash(), Key: config.HyperBricksKey,
+					Path: config.HyperBricksPath, File: config.HyperBricksFile,
+					Type: PluginRenderGetName(), Rejected: true, Err: err.Error(),
+				})
+			}
 			return "", errs
 		}
 		errs = append(errs, shared.ComponentError{
@@ -266,6 +272,7 @@ func cloneHandledResponse(response *shared.HandledResponse) *shared.HandledRespo
 		Status:      response.Status,
 		ContentType: response.ContentType,
 		NoCache:     response.NoCache,
+		Stream:      response.Stream,
 	}
 	if len(response.Body) > 0 {
 		cloned.Body = append([]byte(nil), response.Body...)

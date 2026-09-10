@@ -38,6 +38,10 @@ Use link for a script tag with a src attribute
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",
@@ -46,4 +50,4 @@ Use link for a script tag with a src attribute
 }
 
 ==== expected output ====
-<!DOCTYPE html><html><head><script src="hyperbricks-yaml-test-files/assets/main.js" type="text/javascript"></script><meta name="generator" content="hyperbricks runtime"></head><body></body></html>
+<!DOCTYPE html><html><head><script src="hyperbricks-yaml-test-files/assets/main.js" type="text/javascript"></script><meta name="generator" content="HyperBricks"></head><body></body></html>

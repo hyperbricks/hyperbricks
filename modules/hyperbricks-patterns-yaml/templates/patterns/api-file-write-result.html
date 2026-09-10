@@ -1,4 +1,4 @@
-{{ if kindIs "slice" .Data }}
+{{ if and (kindIs "slice" .Data) (gt (len .Data) 0) }}
   {{ $row := index .Data 0 }}
   <div class="write-feedback" data-state="success">
     <strong>Mock RPC call succeeded</strong>
@@ -7,12 +7,17 @@
 project={{ index $row "project_slug" }}
 updated_at={{ index $row "updated_at" }}</code>
   </div>
-{{ else }}
+{{ else if kindIs "map" .Data }}
   <div class="write-feedback" data-state="error">
     <strong>Mock RPC call returned an error payload</strong>
     <p class="mt-2">{{ index .Data "message" }}</p>
     <code class="write-code">code={{ index .Data "code" }}
 hint={{ index .Data "hint" }}
 details={{ index .Data "details" }}</code>
+  </div>
+{{ else }}
+  <div class="write-feedback" data-state="error">
+    <strong>Mock API request failed</strong>
+    <p>Check that PATTERNS_API_BASE_URL points to this module's running server.</p>
   </div>
 {{ end }}

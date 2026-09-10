@@ -1,0 +1,47 @@
+<main>
+  <header>
+    <p class="eyebrow">HyperBricks · Native streaming</p>
+    <h1>One request. Four updates.</h1>
+    <p class="intro">Start a simulated build and watch its progress arrive in stages.
+      Only the progress panel changes; the page stays open.</p>
+  </header>
+
+  <section class="controls" aria-label="Demo controls">
+    <button id="start-stream" type="button" hx-post="/demo/events"
+            hx-target="#stream-panel" hx-swap="innerHTML">Start demo</button>
+    <button id="stop-stream" class="secondary" type="button" disabled>Stop</button>
+    <p id="connection-status" role="status">Ready. The demo takes about three seconds.</p>
+  </section>
+
+  <section id="stream-panel" class="panel" aria-label="Build progress" aria-live="polite">
+    <div data-step="0">
+      <p class="eyebrow">Simulated build</p>
+      <h2>Waiting to start</h2>
+      <progress value="0" max="100" aria-label="Build progress">0%</progress>
+      <p>Four updates will replace the contents of this panel.</p>
+    </div>
+  </section>
+
+  <div class="details">
+    <section aria-labelledby="note-heading">
+      <h2 id="note-heading">Keep your place</h2>
+      <label for="kept-note">Type a note before starting</label>
+      <input id="kept-note" type="text" placeholder="This text should stay here" autocomplete="off">
+      <p>Your note stays while the progress panel updates. It is not submitted or saved.</p>
+    </section>
+    <section aria-labelledby="received-heading">
+      <h2 id="received-heading">Received updates</h2>
+      <ol id="received-updates" aria-live="polite">
+        <li>Each received update will appear here with its arrival time.</li>
+      </ol>
+    </section>
+  </div>
+
+  <footer>
+    <p>This is a simulated task with a real HTTP stream. HyperBricks serves the page
+      and streams the updates through a native plugin. No project is built or deployed.</p>
+    <p><a href="https://four.htmx.org/extensions/hx-sse">Based on the official HTMX 4 SSE example</a>
+      · <a href="https://hyperbricks.eu">HyperBricks</a>
+      · <a href="https://github.com/hyperbricks/hyperbricks">Repository</a></p>
+  </footer>
+</main>

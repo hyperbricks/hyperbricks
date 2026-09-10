@@ -1,29 +1,55 @@
 # API Render
 
-HyperBricks can fetch API data and render it into HTML through Go templates.
-There are two API-oriented components:
+HyperBricks can fetch API data and render it into HTML through Go templates. There are two API-oriented components:
 
-- `api_render` fetches API data inside another route and renders it as part of a
-  page or fragment.
+- `api_render` fetches API data inside another route and renders it as part of a page or fragment.
 - `api_fragment_render` owns its own route and returns a dynamic fragment.
 
-Use `api_render` for public, cacheable, nested content. Use
-`api_fragment_render` for interactive, request-specific, authenticated, or HTMX
-fragment flows.
+Use `api_render` for read-only API content nested in a page or fragment; that parent route owns the rendered-output cache policy. Use `api_fragment_render` for interactive, request-specific, or authenticated fragment responses.
 
 ## At A Glance
 
 | YAML type | Runtime type | Route owner | Cache behavior | Typical use |
 | --- | --- | --- | --- | --- |
-| `api_render` | `<API_RENDER>` | no | cacheable by parent route | public feeds, public widgets, read-only API content |
-| `api_fragment_render` | `<API_FRAGMENT_RENDER>` | yes | always dynamic | forms, authenticated fragments, HTMX islands |
+| `api_render` | `<API_RENDER>` | no | no API-response cache; rendered HTML follows the parent route policy | public feeds, public widgets, read-only API content |
+| `api_fragment_render` | `<API_FRAGMENT_RENDER>` | yes | always renders and calls its upstream API | forms, authenticated fragments, API-backed page sections |
 
-`api_fragment_render` is forced to `nocache` at runtime.
+`api_fragment_render` is forced to `nocache` at runtime; it does not need a configured `nocache` field.
+
+### Cache Ownership
+
+Neither API component caches upstream API responses. Whenever either component executes, it sends a new HTTP request to its configured endpoint. HTTP connection reuse is not response caching.
+
+`api_render` does not own a route and has no `nocache` field. Its parent `hypermedia` or `fragment` route decides whether the complete rendered response may be reused. On a parent-route cache hit, HyperBricks skips the whole render tree, so the nested `api_render` does not execute and makes no API request. Put `nocache: true` on the parent route when every incoming route request must fetch current API data:
+
+```yaml
+products:
+  - type: hypermedia
+  - route: products
+  - nocache: true
+  - content:
+      - type: api_render
+      - endpoint: https://api.example.test/products
+      - method: GET
+      - template:
+          file: api/products.html
+```
+
+Do not put `nocache` on the nested component; it is not an `api_render` option and does not propagate to its parent:
+
+```yaml
+# Unsupported: this does not change route or API caching.
+- type: api_render
+- nocache: true
+```
+
+`api_fragment_render` is different because it is itself a route-owning root component. HyperBricks always bypasses the internal rendered-output cache for that route, so every request executes the component and calls the upstream API. The forced route policy still does not create or configure an API-response cache.
+
+`nocache` controls HyperBricks' internal rendered-route cache. `Cache-Control` controls browsers and HTTP intermediaries. Configure the route's response headers separately when clients must not store its HTML. Upstream caching performed by a proxy, CDN, or API service is outside both component contracts. See [Live-mode HTTP caching](LIVE_MODE_HTTP.md) and [HTTP responses](HTTP_RESPONSES.md).
 
 ## API Render
 
-`api_render` is a nested component. It must live inside a route owner such as
-`hypermedia` or `fragment`.
+`api_render` is a nested component. It must live inside a route owner such as `hypermedia` or `fragment`.
 
 ```yaml
 page:
@@ -44,8 +70,7 @@ page:
               heading: Latest articles
 ```
 
-The template receives the parsed upstream response as `.Data`, the upstream HTTP
-status as `.Status`, and `values` merged into the template root.
+The template receives the parsed upstream response as `.Data`, the upstream HTTP status as `.Status`, and `values` merged into the template root.
 
 ```html
 <section>
@@ -61,19 +86,11 @@ status as `.Status`, and `values` merged into the template root.
 
 ### Static Snapshots
 
-`api_render` works with `hyperbricks static` because static rendering now starts
-an internal localhost runtime and requests routes over HTTP. This means nested
-`api_render` blocks receive normal request context and their rendered HTML is
-written into the static output file.
+`api_render` works with `hyperbricks static` because static rendering now starts an internal localhost runtime and requests routes over HTTP. This means nested `api_render` blocks receive normal request context and their rendered HTML is written into the static output file.
 
-Use this for public or cacheable API-backed pages, for example a product list,
-blog feed, documentation index, or catalog page. The upstream API must be
-reachable when `hyperbricks static` runs. A non-2xx upstream response from
-`api_render` is treated as a render error, so static snapshot builds fail
-instead of freezing a broken API result into HTML.
+Use this for public or cacheable API-backed pages, for example a product list, blog feed, documentation index, or catalog page. The upstream API must be reachable when `hyperbricks static` runs. A non-2xx upstream response from `api_render` is treated as a render error, so static snapshot builds fail instead of freezing a broken API result into HTML.
 
-Explicit targets in `package.hyperbricks.yaml` win over automatic route
-discovery:
+Explicit targets in `package.hyperbricks.yaml` win over automatic route discovery:
 
 ```yaml
 hyperbricks:
@@ -95,15 +112,15 @@ hyperbricks:
         output: products/shoes.html
 ```
 
-See `modules/sampleapis-coffee-static` for a runnable module that fetches the
-SampleAPIs Coffee endpoint with `api_render` and freezes the result into
-`rendered/index.html`.
+See `modules/sampleapis-coffee-static` for a runnable module that fetches the SampleAPIs Coffee endpoint with `api_render` and freezes the result into `rendered/index.html`.
 
 ## API Fragment Render
 
-`api_fragment_render` owns a route. It receives the browser request, optionally
-maps query/form/body data to an upstream API request, renders the upstream
-response, and returns fragment HTML.
+`api_fragment_render` owns a route. It receives the browser request, optionally maps query/form/body data to an upstream API request, renders the upstream response, and returns fragment HTML.
+
+### Example With HTMX
+
+This example configures response headers for [HTMX 4](https://four.htmx.org/). It assumes HTMX is loaded on the page and requests this route.
 
 ```yaml
 profile_fragment:
@@ -114,27 +131,18 @@ profile_fragment:
   - querykeys:
       - user_id
   - response:
-      hx_target: "#profile"
-      hx_reswap: outerHTML
+      headers:
+        HX-Retarget: "#profile"
+        HX-Reswap: outerHTML
   - template:
       file: fragments/profile.html
 ```
 
-The `response` block maps to HTMX response headers.
+`response.headers` contains literal HTTP headers returned to the browser. HTMX uses the `HX-*` headers in this example; HyperBricks does not add or interpret them. Any valid HTTP header name can be configured here.
 
-| Field | Header |
-| --- | --- |
-| `hx_location` | `HX-Location` |
-| `hx_push_url` | `HX-Push-Url` |
-| `hx_redirect` | `HX-Redirect` |
-| `hx_refresh` | `HX-Refresh` |
-| `hx_replace_url` | `HX-Replace-Url` |
-| `hx_reswap` | `HX-Reswap` |
-| `hx_retarget` | `HX-Retarget` |
-| `hx_reselect` | `HX-Reselect` |
-| `hx_trigger` | `HX-Trigger` |
-| `hx_trigger_after_settle` | `HX-Trigger-After-Settle` |
-| `hx_trigger_after_swap` | `HX-Trigger-After-Swap` |
+`response.status` optionally sets the browser HTTP status, which defaults to `200`. It is independent of the upstream `.Status` available to the template. For example, an upstream `409` may render feedback inside a browser response with status `200`. A fixed `response.headers.HX-Trigger` is sent for every rendered response, so it does not indicate whether the upstream write succeeded.
+
+Top-level `headers` still configures the **upstream request**. It is separate from `response.headers`, which configures the **browser response**. See [HTTP responses](HTTP_RESPONSES.md) for header precedence, status behavior, and the migration from `response.hx_*` fields.
 
 A typical HTMX flow is:
 
@@ -143,16 +151,14 @@ A typical HTMX flow is:
 3. If a `guard` is configured, it runs before any upstream API call.
 4. HyperBricks forwards the allowed request data to the upstream API.
 5. The upstream response is rendered through `inline` or `template`.
-6. HyperBricks returns fragment HTML plus any configured HTMX response headers.
+6. HyperBricks returns fragment HTML plus the configured response headers.
+7. HTMX processes the response and updates the target in the page.
 
-If the rendered body contains `hx-swap-oob` elements, HTMX applies those
-out-of-band swaps after the normal target swap.
+If the rendered body contains `hx-swap-oob` elements, HTMX applies those out-of-band swaps after the normal target swap.
 
 ## Request Mapping
 
-Both API components support the same core API request fields. `api_render` uses
-them while rendering inside an owning route; `api_fragment_render` uses them for
-its own route.
+Both API components support the same core API request fields. `api_render` uses them while rendering inside an owning route; `api_fragment_render` uses them for its own route.
 
 | Field | Purpose |
 | --- | --- |
@@ -179,9 +185,9 @@ Incoming data is merged before placeholders are applied:
 | JSON body | Object keys merge into the request data. If a JSON key collides with an existing key, the JSON value is also available as `body_<key>`. |
 | `queryparams` | Static values are appended to the outgoing upstream query. |
 
-`body` placeholders use `$key` names resolved from that merged request data.
-Prefer simple placeholder names such as `$id`, `$name`, or `$email`; they are
-matched as word-like tokens.
+`body` placeholders use `$key` names resolved from that merged request data. Prefer simple placeholder names such as `$id`, `$name`, or `$email`; they are matched as word-like tokens.
+
+The following HTMX example forwards login data to an API and configures an `HX-Trigger` response header. The `login-updated` event signals that a response was rendered, not that authentication succeeded; inspect the upstream result before treating the login as successful.
 
 ```yaml
 login:
@@ -194,7 +200,8 @@ login:
   - body: |
       {"email":"$email","password":"$password"}
   - response:
-      hx_trigger: login-updated
+      headers:
+        HX-Trigger: login-updated
   - inline: |
       <div id="login-result">{{.Data.message}}</div>
 ```
@@ -211,20 +218,16 @@ Template context contains:
 
 Upstream authorization is applied in this order:
 
-1. When `jwtsecret` is set, HyperBricks signs `jwtclaims` and sends a bearer
-   token.
-2. Otherwise, when the incoming request has a `token` cookie, HyperBricks sends
-   it as a bearer token.
-3. Otherwise, when `username` and `password` are set, HyperBricks uses Basic
-   Auth.
+1. When `jwtsecret` is set, HyperBricks signs `jwtclaims` and sends a bearer token.
+2. Otherwise, when the incoming request has a `token` cookie, HyperBricks sends it as a bearer token.
+3. Otherwise, when `username` and `password` are set, HyperBricks uses Basic Auth.
 4. Otherwise, no upstream auth header is added.
 
 `jwtclaims.exp` is treated as a seconds offset from now.
 
 ## Cookies
 
-`api_fragment_render` can set response cookies when the upstream API returns a
-successful `2xx` response.
+`api_fragment_render` can set response cookies when the upstream API returns a successful `2xx` response.
 
 ```yaml
 logout:
@@ -239,13 +242,11 @@ logout:
       <div id="auth-status">Signed out</div>
 ```
 
-Use `setcookies` when one route must emit multiple `Set-Cookie` headers.
-`setcookie` is still accepted as a shorthand for one cookie template.
+Use `setcookies` when one route must emit multiple `Set-Cookie` headers. `setcookie` is still accepted as a shorthand for one cookie template.
 
 ## Guards
 
-`api_fragment_render` can declare a `guard` block. The guard runs before the
-upstream API call. A denied request never reaches the upstream endpoint.
+`api_fragment_render` can declare a `guard` block. The guard runs before the upstream API call. A denied request never reaches the upstream endpoint.
 
 ```yaml
 secure_profile:
@@ -253,9 +254,13 @@ secure_profile:
   - route: fragments/secure-profile
   - guard:
       enabled: true
-      endpoint: http://127.0.0.1:9000/auth/authorize
-      method: POST
-      deny_status: 403
+      auth:
+        cookie: token
+      require:
+        authenticated: true
+      authorize:
+        endpoint: http://127.0.0.1:9000/auth/authorize
+        method: POST
   - endpoint: http://127.0.0.1:9000/api/profile
   - method: GET
   - template:
@@ -266,8 +271,7 @@ See [Route Guard](ROUTE_GUARD.md) for the full guard contract.
 
 ## Security Notes
 
-- Keep `querykeys` narrow. Do not forward arbitrary browser query parameters to
-  upstream APIs.
+- Keep `querykeys` narrow. Do not forward arbitrary browser query parameters to upstream APIs.
 - Use loopback or private upstream URLs for internal services.
 - Prefer `HttpOnly`, `Secure`, `SameSite`, and `Path` on cookies.
 - Do not reflect untrusted input into headers or cookies without validation.

@@ -33,6 +33,10 @@ Inline CSS source. Use a normal YAML string, or a YAML block scalar when the sou
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",
@@ -47,4 +51,4 @@ body {
     background-color: lightblue;
 }
 
-</style><meta name="generator" content="hyperbricks runtime"></head><body></body></html>
+</style><meta name="generator" content="HyperBricks"></head><body></body></html>

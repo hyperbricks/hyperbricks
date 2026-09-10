@@ -4,7 +4,7 @@ api_render:
   - endpoint: https://example.com/api
   - method: GET
 ==== explainer ====
-Fetch a remote API endpoint and render the response through a template or inline template.
+Fetch an upstream API whenever this nested component executes and render the response through a template. The parent route owns rendered-output caching; api_render has no nocache field or upstream-response cache.
 ==== expected json ====
 {
   "AllowedQueryKeys": null,

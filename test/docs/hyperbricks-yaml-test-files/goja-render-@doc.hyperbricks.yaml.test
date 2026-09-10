@@ -1,0 +1,31 @@
+==== hyperbricks yaml {!{greeting}} ====
+greeting:
+  - type: goja_render
+  - script: |
+      function main(input) {
+        return { message: input.values.message };
+      }
+  - values:
+      message: Hello from the server
+  - inline: '<p>{{.Data.message}}</p>'
+==== explainer ====
+Run trusted server-side JavaScript in a fresh runtime per request. The returned object is available as .Data in the Go HTML template. Use the existing file resolver under script to load source from resources; see GOJA_RENDER.md for the file-based example and execution limits.
+==== expected json ====
+{
+  "AllowedQueryKeys": null,
+  "ConfigCategory": "",
+  "ConfigType": "<GOJA_RENDER>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Inline": "<p>{{.Data.message}}</p>",
+  "MetaDocDescription": "",
+  "Script": "function main(input) {\n  return { message: input.values.message };\n}\n",
+  "Template": "",
+  "Timeout": "",
+  "Values": { "message": "Hello from the server" }
+}
+==== expected output ====
+<p>Hello from the server</p>

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
+	"github.com/hyperbricks/hyperbricks/pkg/renderplan"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
@@ -25,6 +26,7 @@ const configDiagnosticsRoute = "__config"
 
 var (
 	configs                = make(map[string]map[string]interface{})
+	routePlans             = make(map[string]*renderplan.Plan)
 	configMutex            sync.RWMutex
 	hypermediasBySection   = make(map[string][]composite.HyperMediaConfig)
 	hypermediasMutex       sync.RWMutex

@@ -1,6 +1,4 @@
 ==== hyperbricks yaml {!{images}} ====
-image:
-  - enclose: <div id="#gallery">|</div>
 images:
   - type: images
   - attributes:
@@ -10,7 +8,7 @@ images:
   - loading: lazy
   - width: "100"
 ==== explainer ====
-Id of images with a index added to it
+Process a directory in filename order. Each generated URL includes the source content and resize settings. A configured id gets an index suffix; no id is added when omitted. Invalid images produce render errors. See [Image usage](IMAGES.md) for file formats and gallery accessibility.
 ==== expected json ====
 {
   "Alt": "",
@@ -36,5 +34,5 @@ Id of images with a index added to it
 }
 
 ==== expected output ====
-<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" decoding="async" />
-<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" decoding="async" /> 
+<img src="/static/images/cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="" id="#img_0" loading="lazy" decoding="async" />
+<img src="/static/images/same_cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="" id="#img_1" loading="lazy" decoding="async" />

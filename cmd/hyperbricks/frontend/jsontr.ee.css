@@ -1,3 +1,8 @@
+/*
+ * Derived from https://github.com/The-01-Company/jsontr.ee.
+ * Distributed under the MIT License; see LICENSE.jsontr.ee in this directory.
+ */
+
 body {
     display: flex;
     margin: 0;

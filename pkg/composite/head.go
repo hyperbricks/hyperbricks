@@ -145,7 +145,7 @@ func addGeneratedHeadItems(items map[string]interface{}, renderedHeadContent str
 	if items[headGeneratorItemKey] == nil {
 		items[headGeneratorItemKey] = map[string]interface{}{
 			"@type": "<HTML>",
-			"value": `<meta name="generator" content="hyperbricks runtime">`,
+			"value": `<meta name="generator" content="HyperBricks">`,
 		}
 	}
 	if renderedHeadContent != "" && items[headPayloadItemKey] == nil {

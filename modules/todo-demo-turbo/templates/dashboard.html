@@ -1,0 +1,16 @@
+<section id="todo-app" aria-label="Your tasks">
+  <form id="add-task" data-turbo="false">
+    <label for="task-title">What needs doing?</label>
+    <div class="add-row"><input id="task-title" name="title" placeholder="e.g. Review the project brief" maxlength="120" required autocomplete="off"><button class="primary" type="submit">Add task <span aria-hidden="true">＋</span></button></div>
+  </form>
+  <p id="app-status" role="status" aria-live="polite">Loading your list…</p>
+  <div class="workspace-grid">
+    <div class="task-card">
+      <div class="toolbar"><div class="filters" role="group" aria-label="Filter tasks"><button type="button" data-filter="all" aria-pressed="true">All</button><button type="button" data-filter="active" aria-pressed="false">Active</button><button type="button" data-filter="completed" aria-pressed="false">Completed</button></div><button class="text-button" id="clear-completed" type="button">Clear completed</button></div>
+      {{.panel}}
+      <div class="card-bottom"><span>Up to 20 tasks · saved in this browser</span><button type="button" class="text-button" id="retry-render">Refresh list</button></div>
+    </div>
+    <aside class="note-card"><h2 id="scratchpad-heading" class="eyebrow">SCRATCHPAD</h2><textarea id="scratchpad" rows="6" aria-labelledby="scratchpad-heading" aria-describedby="scratchpad-status" placeholder="A quick note while you work…"></textarea><p id="scratchpad-status" role="status">Enable JavaScript to save your note in this browser.</p></aside>
+  </div>
+  <noscript><p class="error">Enable JavaScript to use browser storage and interactive task updates.</p></noscript>
+</section>

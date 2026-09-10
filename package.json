@@ -7,7 +7,7 @@
     "@codemirror/lang-markdown": "^6.5.0",
     "@codemirror/language": "^6.12.3",
     "codemirror": "^6.0.2",
-    "htmx.org": "^2.0.10",
+    "htmx.org": "4.0.0",
     "mustache": "^4.2.0",
     "sortablejs": "^1.15.7"
   },

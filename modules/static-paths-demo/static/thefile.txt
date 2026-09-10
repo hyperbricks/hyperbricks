@@ -1,0 +1,1 @@
+Served from the module-relative static directory.

@@ -25,6 +25,10 @@ The route (URL-friendly identifier) for the hypermedia
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "index",
   "Section": "",
   "Static": "",

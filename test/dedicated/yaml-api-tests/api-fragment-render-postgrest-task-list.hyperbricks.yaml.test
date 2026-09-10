@@ -11,7 +11,12 @@ api_test:
       postgrest_url: http://localhost:3000/
   - headers:
       Access-Control-Allow-Credentials: "true"
-      Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiIDogIjEiLCAicm9sZSIgOiAiYXV0aGVudGljYXRlZCJ9.AW7K8SMa3KpCXMpOte1H82-iM0OGTJhB2MH2-0ADdnA
+      Authorization:
+        format: "Bearer %s"
+        args:
+          - env:
+              name: PGRST_TEST_USER_JWT
+              required: true
       Content-Type: application/json
   - inline: |
       {{if gt (len .Data) 0}}

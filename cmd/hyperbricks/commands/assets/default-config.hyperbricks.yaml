@@ -1,9 +1,9 @@
 myconf:
   some: value
   demo:
-    title: YAML Runtime Fixture
-    section: init-module
-    cta_label: Open status fragment
+    title: HyperBricks
+    section: Starter
+    cta_label: Load status fragment
 
 hyperbricks:
   mode: development
@@ -22,7 +22,8 @@ hyperbricks:
 
   development:
     watch: true
-    reload: true
+    reload: false
+    watch_dirs: [hyperbricks, templates, resources]
     frontend_errors: false
     dashboard: false
 
@@ -31,6 +32,8 @@ hyperbricks:
 
   server:
     port: 8080
+    # Auto follows Go CPU/container defaults; fixed integers must be 1..logical CPUs.
+    gomaxprocs: auto
     beautify: true
     self_closing_tags: true
     routing:
@@ -50,6 +53,7 @@ hyperbricks:
     metrics_watch_interval: 10s
 
   rate_limit:
+    enabled: true
     requests_per_second: 100
     burst: 500
 

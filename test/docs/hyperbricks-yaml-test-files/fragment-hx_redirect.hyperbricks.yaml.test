@@ -2,7 +2,8 @@
 fragment:
   - type: fragment
   - response:
-      hx_redirect: /some/new/location
+      headers:
+        HX-Redirect: /some/new/location
 ==== explainer ====
 Can be used to do a client-side redirect to a new location
 ==== expected json ====
@@ -12,19 +13,6 @@ Can be used to do a client-side redirect to a new location
   "ConfigType": "<FRAGMENT>",
   "ContentType": "",
   "Enclose": "",
-  "HxLocation": "",
-  "HxPushedUrl": "",
-  "HxRedirect": "/some/new/location",
-  "HxRefresh": "",
-  "HxReplaceUrl": "",
-  "HxReselect": "",
-  "HxResponseWriter": null,
-  "HxReswap": "",
-  "HxRetarget": "",
-  "HxTemplateResult": "",
-  "HxTrigger": "",
-  "HxTriggerafterSettle": "",
-  "HxTriggerafterSwap": "",
   "HyperBricksFile": "",
   "HyperBricksKey": "",
   "HyperBricksPath": "",
@@ -32,6 +20,12 @@ Can be used to do a client-side redirect to a new location
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": {
+      "HX-Redirect": "/some/new/location"
+    },
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",

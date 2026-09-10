@@ -1,0 +1,23 @@
+todo_panel:
+  - type: template
+  - template:
+      file: tasks.html
+  - querykeys: [state, filter, request]
+
+todo_dashboard:
+  - type: tree
+  - introduction:
+      - type: html
+      - value: '<p class="lede">Create your to do list here. The list is stored local in your browser data.</p>'
+  - workspace:
+      - type: template
+      - template:
+          file: dashboard.html
+      - values:
+          panel:
+            - inherit: todo_panel
+
+todo_about:
+  - type: template
+  - template:
+      file: about.html

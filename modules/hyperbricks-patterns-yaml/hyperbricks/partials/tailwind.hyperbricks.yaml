@@ -19,6 +19,6 @@ tailwind:
       signal: "false"
       minify: "true"
       debug: "true"
-      cache: "false"
+      cache: "true"
       binary: tailwindcss
       enclose: "<link rel=\"stylesheet\" href=\"/|\">"

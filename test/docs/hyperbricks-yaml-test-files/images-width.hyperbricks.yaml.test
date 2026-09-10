@@ -1,16 +1,16 @@
-==== hyperbricks yaml {!{image}} ====
-image:
-  - type: image
-  - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
+==== hyperbricks yaml {!{images}} ====
+images:
+  - type: images
+  - directory: hyperbricks-yaml-test-files/assets/
   - width: "330"
 ==== explainer ====
-The width of the images (can be a number or percentage)
+Output width in integer pixels. Omit one dimension to preserve the aspect ratio; percentages belong in CSS.
 ==== expected json ====
 {
   "Alt": "",
   "Class": "",
   "ConfigCategory": "",
-  "ConfigType": "<IMAGE>",
+  "ConfigType": "<IMAGES>",
   "Enclose": "",
   "ExtraAttributes": null,
   "Height": 0,
@@ -22,10 +22,11 @@ The width of the images (can be a number or percentage)
   "Loading": "",
   "MetaDocDescription": "",
   "Quality": 0,
-  "Src": "hyperbricks-yaml-test-files/assets/cute_cat.jpg",
+  "Directory": "hyperbricks-yaml-test-files/assets/",
   "Title": "",
   "Width": 330
 }
 
 ==== expected output ====
-<img src="static/images/cute_cat_w330_h330.jpg" width="330" height="330" /> 
+<img src="/static/images/cute_cat_d1f054a2f9e0346af9ab3f51c4354456_w330_h330.jpg" width="330" height="330" alt="" />
+<img src="/static/images/same_cute_cat_d1f054a2f9e0346af9ab3f51c4354456_w330_h330.jpg" width="330" height="330" alt="" />

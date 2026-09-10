@@ -30,4 +30,4 @@ Lazy loading strategy (e.g., 'lazy', 'eager')
 }
 
 ==== expected output ====
-<img src="static/images/cute_cat_w320_h320.jpg" width="320" height="320" loading="lazy" /> 
+<img src="/static/images/cute_cat_a8630c43069b12295250dae1ebeb5afe_w320_h320.jpg" width="320" height="320" alt="" loading="lazy" />

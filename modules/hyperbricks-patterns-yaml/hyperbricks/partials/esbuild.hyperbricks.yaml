@@ -1,13 +1,11 @@
 esbuild:
-  - type: plugin
-  - plugin: "EsbuildPlugin@2.0.0"
-  - data:
-      entry: js/main.js
-      outfile: js/bundle.min.main.js
-      minify: "true"
-      minifyident: "true"
-      mangle: "false"
-      sourcemap: "true"
-      debug: "false"
-      cache: "false"
-      enclose: "<script src=\"/|\" defer></script>"
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: js/main.js}
+  - outfile:
+      path: {base: static, path: js/bundle.min.main.js}
+  - minify: true
+  - minify_identifiers: false
+  - sourcemap: true
+  - cache: true
+  - enclose: '<script src="|" defer></script>'

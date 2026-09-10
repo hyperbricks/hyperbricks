@@ -25,6 +25,10 @@ The section the hypermedia belongs to. This can be used with the component <MENU
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "my_section",
   "Static": "",

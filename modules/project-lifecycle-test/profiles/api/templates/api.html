@@ -1,0 +1,22 @@
+<section class="panel">
+  <h1>API read and write</h1>
+  <p>Read a project from a local API, change its name, and refresh the panel after a successful save.</p>
+  <p>This fixture API stores one shared project in memory. Restarting it resets the sample. The basic pages use their own local sample data.</p>
+  <nav aria-label="Advanced profiles"><a href="/advanced/login">Demo roles and guards</a> · <a href="/">Back to Project Lifecycle Fixture</a></nav>
+</section>
+<section class="panel" aria-labelledby="edit-heading">
+  <h2 id="edit-heading">Edit the sample project</h2>
+  <div id="advanced-project-panel"
+       hx-get="/fragments/advanced-project"
+       hx-trigger="lifecycle-project-updated from:body"
+       hx-target="this" hx-swap="innerHTML">{{.project}}</div>
+  <div id="advanced-save-feedback" aria-live="polite"></div>
+</section>
+<section class="panel">
+  <h2>Try three outcomes</h2>
+  <ol>
+    <li>Enter a name and save. The panel shows the new name and version.</li>
+    <li>Clear the name and save. You receive validation feedback; the project stays unchanged.</li>
+    <li>Open this page in two tabs. Save in the first, then save in the second. Its old version receives conflict feedback.</li>
+  </ol>
+</section>

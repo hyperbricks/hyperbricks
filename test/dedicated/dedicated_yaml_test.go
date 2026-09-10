@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -15,6 +17,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -41,6 +44,8 @@ type dedicatedYAMLCase struct {
 }
 
 func Test_All_Dedicated_YAML_Tests(t *testing.T) {
+	configureDedicatedJWTEnvironment(t)
+	validateDedicatedFixturePorts(t)
 	startDedicatedAPIFixtures(t)
 
 	rm := newDedicatedYAMLRenderManager(t)
@@ -277,18 +282,74 @@ func parseDedicatedYAMLContent(content string) (dedicatedYAMLCase, error) {
 func normalizeDedicatedFixtureURLs(config string) string {
 	replacer := strings.NewReplacer(
 		"http://localhost:8090", "http://127.0.0.1:8090",
-		"http://localhost:3000", "http://127.0.0.1:3000",
+		"http://localhost:3000", "http://127.0.0.1:"+dedicatedPostgRESTPort(),
 	)
 	return replacer.Replace(config)
 }
 
-const dedicatedJWTSecret = "a-string-secret-at-least-256-bits-long"
+func dedicatedPostgRESTPort() string {
+	if port := strings.TrimSpace(os.Getenv("POSTGREST_PORT")); port != "" {
+		return port
+	}
+	return "3000"
+}
+
+func dedicatedPostgRESTAddress() string {
+	return ":" + dedicatedPostgRESTPort()
+}
+
+func validateDedicatedFixturePorts(t *testing.T) {
+	t.Helper()
+	port, err := strconv.Atoi(dedicatedPostgRESTPort())
+	if err != nil || port < 1 || port > 65535 {
+		t.Fatalf("POSTGREST_PORT must be a number between 1 and 65535")
+	}
+	if port == 8090 {
+		t.Fatal("POSTGREST_PORT 8090 conflicts with the dedicated echo fixture")
+	}
+}
+
+func configureDedicatedJWTEnvironment(t *testing.T) {
+	t.Helper()
+
+	secret := os.Getenv("PGRST_JWT_SECRET")
+	if secret == "" {
+		secretBytes := make([]byte, 32)
+		if _, err := rand.Read(secretBytes); err != nil {
+			t.Fatalf("generate dedicated JWT secret: %v", err)
+		}
+		secret = hex.EncodeToString(secretBytes)
+		t.Setenv("PGRST_JWT_SECRET", secret)
+	}
+	if len(secret) < 32 {
+		t.Fatal("PGRST_JWT_SECRET must contain at least 32 characters")
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":  "1",
+		"role": "authenticated",
+	})
+	signedToken, err := token.SignedString([]byte(secret))
+	if err != nil {
+		t.Fatalf("sign dedicated user JWT: %v", err)
+	}
+	t.Setenv("PGRST_TEST_USER_JWT", signedToken)
+
+	ownerlessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"role": "authenticated",
+	})
+	signedOwnerlessToken, err := ownerlessToken.SignedString([]byte(secret))
+	if err != nil {
+		t.Fatalf("sign dedicated ownerless JWT: %v", err)
+	}
+	t.Setenv("PGRST_TEST_NO_SUB_JWT", signedOwnerlessToken)
+}
 
 func startDedicatedAPIFixtures(t *testing.T) {
 	t.Helper()
 
 	startDedicatedServer(t, ":8090", dedicatedEchoMux())
-	startDedicatedServer(t, ":3000", dedicatedPostgRESTMux())
+	startDedicatedServer(t, dedicatedPostgRESTAddress(), dedicatedPostgRESTMux())
 }
 
 func startDedicatedServer(t *testing.T, address string, handler http.Handler) {
@@ -330,8 +391,8 @@ func dedicatedFixtureAvailable(address string) bool {
 		return false
 	}
 
-	switch address {
-	case ":8090":
+	switch {
+	case address == ":8090":
 		resp, err := http.Get(baseURL + "/echo/query?code=fixture")
 		if err != nil {
 			return false
@@ -347,7 +408,7 @@ func dedicatedFixtureAvailable(address string) bool {
 			return false
 		}
 		return payload.QueryParams["code"] == "fixture"
-	case ":3000":
+	case address == dedicatedPostgRESTAddress():
 		req, err := http.NewRequest(http.MethodGet, baseURL+"/tasks", nil)
 		if err != nil {
 			return false
@@ -402,6 +463,14 @@ func dedicatedPostgRESTMux() http.Handler {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.Method {
 		case http.MethodPost:
+			claims, valid := dedicatedRequestClaims(r)
+			sub, _ := claims["sub"].(string)
+			if !valid || strings.TrimSpace(sub) == "" {
+				writeDedicatedJSON(w, http.StatusForbidden, map[string]interface{}{
+					"message": "an authenticated task owner is required",
+				})
+				return
+			}
 			w.WriteHeader(http.StatusCreated)
 			_, _ = w.Write([]byte(`{"id":1,"title":"Dit is een test"}`))
 		case http.MethodGet:
@@ -412,6 +481,18 @@ func dedicatedPostgRESTMux() http.Handler {
 		}
 	})
 	return mux
+}
+
+func dedicatedRequestClaims(r *http.Request) (jwt.MapClaims, bool) {
+	tokenString := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("PGRST_JWT_SECRET")), nil
+	})
+	return claims, err == nil && token.Valid
 }
 
 func dedicatedValidateToken(w http.ResponseWriter, r *http.Request) {
@@ -477,7 +558,7 @@ func dedicatedEchoTokenValidation(w http.ResponseWriter, r *http.Request) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(dedicatedJWTSecret), nil
+		return []byte(os.Getenv("PGRST_JWT_SECRET")), nil
 	})
 	writeDedicatedJSON(w, http.StatusOK, map[string]interface{}{
 		"token":  tokenString,

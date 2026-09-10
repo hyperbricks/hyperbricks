@@ -187,27 +187,24 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 	if ctx != nil {
 		req, ok := ctx.Value(shared.Request).(*http.Request)
 		if ok && req != nil && req.URL != nil {
-
 			allowed := apiutil.DefaultQueryKeys
 			if config.AllowedQueryKeys != nil {
 				allowed = config.AllowedQueryKeys
 			}
 			filtered := FilterAllowedQueryParams(req, allowed)
-			// Ensure config.Values exists and has a valid "Params" map
-			if config.Values != nil {
-				config.Values = shared.CloneMapDeep(config.Values)
-				config.Values["Params"] = make(map[string]interface{})
-				if params, ok := config.Values["Params"].(map[string]interface{}); ok && params != nil {
-					for key, values := range filtered {
-						if len(values) == 1 {
-							params[key] = values[0] // Store as a string if only one value
-						} else {
-							params[key] = values // Store as a []string otherwise
-						}
-					}
-
+			config.Values = shared.CloneMapDeep(config.Values)
+			if config.Values == nil {
+				config.Values = make(map[string]interface{}, 1)
+			}
+			params := make(map[string]interface{}, len(filtered))
+			for key, values := range filtered {
+				if len(values) == 1 {
+					params[key] = values[0] // Store as a string if only one value
+				} else {
+					params[key] = append([]string(nil), values...) // Store as a []string otherwise
 				}
 			}
+			config.Values["Params"] = params
 		}
 	}
 

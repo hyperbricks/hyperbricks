@@ -31,7 +31,7 @@ rail_items:
 
 section_rail_shell:
   - inherit: "pattern_site_page"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/section-rail-shell.html
@@ -40,7 +40,7 @@ rail_builder_panel:
   - type: fragment
   - route: fragments/rail-builder
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/section-rail-builder.html
@@ -49,7 +49,7 @@ rail_assets_panel:
   - type: fragment
   - route: fragments/rail-assets
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/section-rail-assets.html
@@ -58,7 +58,7 @@ rail_status_panel:
   - type: fragment
   - route: fragments/rail-status
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/section-rail-status.html
@@ -67,7 +67,7 @@ app_section_rail_demo:
   - inherit: "section_rail_shell"
   - route: section-rail-demo
   - title: Section Rail Demo
-  - template_10:
+  - content:
       - values:
           page_title: Config-Driven Section Rail
           page_intro: "A data map drives the whole rail. The template derives the HTMX fragment route, the swap target, and the subsection anchor links from the same config object."
@@ -76,7 +76,7 @@ app_section_rail_demo:
             - inherit: "rail_items"
           content:
             - type: tree
-            - template_10:
+            - content:
                 - type: template
                 - template:
                     file: patterns/section-rail-landing.html
@@ -85,7 +85,7 @@ app_rail_builder:
   - inherit: "section_rail_shell"
   - route: rail-builder
   - title: Builder
-  - template_10:
+  - content:
       - values:
           page_title: Config-Driven Section Rail
           page_intro: "The Builder entry shows the simple variant: one config row, one fragment route, one target region."
@@ -93,13 +93,13 @@ app_rail_builder:
           items:
             - inherit: "rail_items"
           content:
-            - inherit: "rail_builder_panel.template_10"
+            - inherit: "rail_builder_panel.content"
 
 app_rail_assets:
   - inherit: "section_rail_shell"
   - route: rail-assets
   - title: Assets
-  - template_10:
+  - content:
       - values:
           page_title: Config-Driven Section Rail
           page_intro: The Assets entry shows how one rail item can carry subsection anchors that point into the swapped fragment content.
@@ -107,13 +107,13 @@ app_rail_assets:
           items:
             - inherit: "rail_items"
           content:
-            - inherit: "rail_assets_panel.template_10"
+            - inherit: "rail_assets_panel.content"
 
 app_rail_status:
   - inherit: "section_rail_shell"
   - route: rail-status
   - title: Status
-  - template_10:
+  - content:
       - values:
           page_title: Config-Driven Section Rail
           page_intro: "The Status entry uses the same config shape but with a denser subsection list, which makes the rail act as a mini outline for the target panel."
@@ -121,4 +121,4 @@ app_rail_status:
           items:
             - inherit: "rail_items"
           content:
-            - inherit: "rail_status_panel.template_10"
+            - inherit: "rail_status_panel.content"

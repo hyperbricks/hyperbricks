@@ -35,7 +35,7 @@ func TestLoadDeployPushConfigReadsGeneratedYAML(t *testing.T) {
 		t.Fatalf("remote api port = %d", cfg.Remote.APIPort)
 	}
 	target := cfg.Client.Targets["prod"]
-	if cfg.Client.Target != "prod" || target.API != "http://192.168.2.35:9090" || target.KeyID != "prod" {
+	if cfg.Client.Target != "prod" || target.API != "https://deploy.example.com" || target.KeyID != "prod" {
 		t.Fatalf("client config = %#v", cfg.Client)
 	}
 }

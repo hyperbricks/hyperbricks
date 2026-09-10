@@ -1,0 +1,7 @@
+<nav class="navigation" aria-label="Main navigation">
+  {{range .items}}
+  <a href="{{.url}}" hx-get="{{.fragment}}" hx-target="#main-content"
+     hx-swap="innerHTML" hx-push-url="{{.url}}"
+     {{if eq $.active .url}}aria-current="page"{{end}}>{{.label}}</a>
+  {{end}}
+</nav>

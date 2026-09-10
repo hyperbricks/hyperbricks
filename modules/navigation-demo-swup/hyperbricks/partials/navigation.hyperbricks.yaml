@@ -1,0 +1,19 @@
+guide_navigation:
+  - type: menu
+  - section: guide_navigation
+  - sort: index
+  - order: asc
+  - item: |
+      <a href="{{if eq .Route "index"}}/{{else}}/{{.Route}}{{end}}">{{.Title}}</a>
+  - active: |
+      <a href="{{if eq .Route "index"}}/{{else}}/{{.Route}}{{end}}" aria-current="page">{{.Title}}</a>
+  - enclose: '<nav id="guide-navigation" aria-label="Places">|</nav>'
+
+developer_navigation:
+  - type: menu
+  - section: developer_navigation
+  - sort: index
+  - order: asc
+  - item: '<a href="/{{.Route}}">How this demo works</a>'
+  - active: '<a href="/{{.Route}}" aria-current="page">How this demo works</a>'
+  - enclose: '<nav id="developer-navigation" aria-label="About this demo">|</nav>'

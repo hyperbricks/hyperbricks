@@ -3,7 +3,7 @@ imports:
 
 pattern_docs_shell:
   - inherit: "pattern_site_page"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/docs-shell.html
@@ -18,7 +18,7 @@ pattern_docs_overview:
           content:
             file:
               base: module
-              path: docs/patterns-index.md
+              path: docs/pages/patterns-index.md
 
 pattern_docs_readme:
   - type: fragment
@@ -30,7 +30,7 @@ pattern_docs_readme:
           content:
             file:
               base: module
-              path: docs/README.md
+              path: docs/pages/module-overview.md
 
 pattern_docs_markdown_plugin:
   - type: fragment
@@ -42,7 +42,7 @@ pattern_docs_markdown_plugin:
           content:
             file:
               base: module
-              path: docs/markdown-plugin.md
+              path: docs/pages/markdown-plugin.md
 
 pattern_docs_template_config:
   - type: fragment
@@ -54,7 +54,7 @@ pattern_docs_template_config:
           content:
             file:
               base: module
-              path: docs/template-config-plugin.md
+              path: docs/pages/template-config-plugin.md
 
 pattern_docs_htmx_canonical:
   - type: fragment
@@ -66,7 +66,7 @@ pattern_docs_htmx_canonical:
           content:
             file:
               base: module
-              path: docs/htmx-canonical-fragment-demo.md
+              path: docs/pages/htmx-canonical-fragment-demo.md
 
 pattern_docs_guarded_page:
   - type: fragment
@@ -78,7 +78,7 @@ pattern_docs_guarded_page:
           content:
             file:
               base: module
-              path: docs/guarded-page-demo.md
+              path: docs/pages/guarded-page-demo.md
 
 pattern_docs_api_fragment_write:
   - type: fragment
@@ -90,7 +90,7 @@ pattern_docs_api_fragment_write:
           content:
             file:
               base: module
-              path: docs/api-fragment-write-demo.md
+              path: docs/pages/api-fragment-write-demo.md
 
 pattern_docs_menu_htmx:
   - type: fragment
@@ -102,7 +102,7 @@ pattern_docs_menu_htmx:
           content:
             file:
               base: module
-              path: docs/menu-htmx-demo.md
+              path: docs/pages/menu-htmx-demo.md
 
 pattern_docs_section_rail:
   - type: fragment
@@ -114,7 +114,7 @@ pattern_docs_section_rail:
           content:
             file:
               base: module
-              path: docs/config-driven-section-rail.md
+              path: docs/pages/config-driven-section-rail.md
 
 pattern_docs_single_plugin:
   - type: fragment
@@ -126,7 +126,7 @@ pattern_docs_single_plugin:
           content:
             file:
               base: module
-              path: docs/single-plugin-many-actions.md
+              path: docs/pages/single-plugin-many-actions.md
 
 pattern_docs_route_split:
   - type: fragment
@@ -138,13 +138,13 @@ pattern_docs_route_split:
           content:
             file:
               base: module
-              path: docs/plugin-vs-api-route-split.md
+              path: docs/pages/plugin-vs-api-route-split.md
 
 app_pattern_docs_overview:
   - inherit: "pattern_docs_shell"
   - route: docs
   - title: HyperBricks Patterns Docs
-  - template_10:
+  - content:
       - values:
           current_doc: overview
           doc_title: HyperBricks Patterns Docs
@@ -156,7 +156,7 @@ app_pattern_docs_readme:
   - inherit: "pattern_docs_shell"
   - route: docs/readme
   - title: HyperBricks Patterns Docs
-  - template_10:
+  - content:
       - values:
           current_doc: readme
           doc_title: Module Overview
@@ -168,7 +168,7 @@ app_pattern_docs_markdown_plugin:
   - inherit: "pattern_docs_shell"
   - route: docs/markdown-plugin
   - title: HyperBricks Patterns Docs
-  - template_10:
+  - content:
       - values:
           current_doc: markdown-plugin
           doc_title: Markdown Plugin
@@ -180,7 +180,7 @@ app_pattern_docs_template_config:
   - inherit: "pattern_docs_shell"
   - route: docs/template-config-plugin
   - title: HyperBricks Patterns Docs
-  - template_10:
+  - content:
       - values:
           current_doc: template-config-plugin
           doc_title: Template Config Plugin
@@ -192,7 +192,7 @@ app_pattern_docs_htmx_canonical:
   - inherit: "pattern_docs_shell"
   - route: docs/htmx-canonical-fragment-demo
   - title: HyperBricks Patterns Docs
-  - template_10:
+  - content:
       - values:
           current_doc: htmx-canonical-fragment-demo
           doc_title: HTMX Canonical Page + Fragment Demo
@@ -204,7 +204,7 @@ app_pattern_docs_guarded_page:
   - inherit: "pattern_docs_shell"
   - route: docs/guarded-page-demo
   - title: HyperBricks Patterns Docs
-  - template_10:
+  - content:
       - values:
           current_doc: guarded-page-demo
           doc_title: Guarded Page Demo
@@ -216,7 +216,7 @@ app_pattern_docs_api_fragment_write:
   - inherit: "pattern_docs_shell"
   - route: docs/api-fragment-write-demo
   - title: HyperBricks Patterns Docs
-  - template_10:
+  - content:
       - values:
           current_doc: api-fragment-write-demo
           doc_title: API Fragment Write Demo
@@ -228,7 +228,7 @@ app_pattern_docs_menu_htmx:
   - inherit: "pattern_docs_shell"
   - route: docs/menu-htmx-demo
   - title: HyperBricks Patterns Docs
-  - template_10:
+  - content:
       - values:
           current_doc: menu-htmx-demo
           doc_title: MENU + HTMX Demo
@@ -240,7 +240,7 @@ app_pattern_docs_section_rail:
   - inherit: "pattern_docs_shell"
   - route: docs/config-driven-section-rail
   - title: HyperBricks Patterns Docs
-  - template_10:
+  - content:
       - values:
           current_doc: config-driven-section-rail
           doc_title: Config-Driven Section Rail
@@ -252,7 +252,7 @@ app_pattern_docs_single_plugin:
   - inherit: "pattern_docs_shell"
   - route: docs/single-plugin-many-actions
   - title: HyperBricks Patterns Docs
-  - template_10:
+  - content:
       - values:
           current_doc: single-plugin-many-actions
           doc_title: "Single Plugin, Many Actions"
@@ -264,10 +264,34 @@ app_pattern_docs_route_split:
   - inherit: "pattern_docs_shell"
   - route: docs/plugin-vs-api-route-split
   - title: HyperBricks Patterns Docs
-  - template_10:
+  - content:
       - values:
           current_doc: plugin-vs-api-route-split
           doc_title: Plugin vs API Route Split
           doc_intro: Compare thin backend-forwarding routes with plugin-owned decision-making inside the same docs shell.
           content:
             - inherit: "pattern_docs_route_split.plugin_10"
+
+pattern_docs_unpoly:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content:
+            file:
+              base: module
+              path: docs/pages/unpoly-fragment-demo.md
+
+app_pattern_docs_unpoly:
+  - inherit: "pattern_docs_shell"
+  - route: docs/unpoly-fragment-demo
+  - title: HyperBricks Patterns Docs
+  - content:
+      - values:
+          current_doc: unpoly-fragment-demo
+          doc_title: Unpoly Fragment Demo
+          doc_intro: Reuse a panel in a complete page and a fragment response with Unpoly.
+          content:
+            - inherit: "pattern_docs_unpoly.plugin_10"

@@ -1,0 +1,9 @@
+<article class="place-page {{.theme}}">
+  <div class="breadcrumb transition-item"><a href="/">All places</a><span aria-hidden="true">/</span><span>{{.number}} of 04</span></div>
+  <header class="place-intro transition-item"><p class="eyebrow">{{.category}}</p><h1>{{.title}}</h1><p class="lede">{{.intro}}</p></header>
+  <div class="place-layout">
+    <div class="place-copy"><p class="description transition-item">{{.description}}</p><section class="highlights" aria-labelledby="highlights-heading"><h2 id="highlights-heading" class="transition-item">{{.highlight}}</h2><div class="highlight transition-item"><h3>{{.one}}</h3><p>{{.onebody}}</p></div><div class="highlight transition-item"><h3>{{.two}}</h3><p>{{.twobody}}</p></div><div class="highlight transition-item"><h3>{{.three}}</h3><p>{{.threebody}}</p></div></section></div>
+    <aside class="visit-details transition-item"><h2>Plan your visit</h2><dl><dt>Opening hours</dt><dd>{{.hours}}<span>{{.days}}</span></dd><dt>Find it</dt><dd>{{.address}}</dd></dl><p>{{.note}}</p></aside>
+  </div>
+  <a class="next-stop transition-item" href="/{{.next_route}}"><span><span class="category">Next stop</span><strong>{{.next_title}}</strong></span><span aria-hidden="true">→</span></a>
+</article>

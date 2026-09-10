@@ -17,6 +17,7 @@ type Config struct {
 var (
 	StartMode              bool
 	StartModule            string
+	StartConfigPath        string
 	StartDeploy            bool
 	StartDeployDir         string
 	StartBuildID           string
@@ -83,6 +84,8 @@ func NewStartCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start",
 		Short: "Start server",
+		Example: "  hyperbricks start -m demo\n" +
+			"  hyperbricks start -m ./modules/demo",
 		Run: func(cmd *cobra.Command, args []string) {
 			if strings.TrimSpace(StartDeployInit) != "" {
 				if err := writeDeployInitConfig(StartDeployInit); err != nil {
@@ -112,12 +115,19 @@ func NewStartCommand() *cobra.Command {
 				Port: Port,
 			}
 
-			if StartModule == "" {
+			if StartModule == "" && !cmd.Flags().Changed("module") {
 				StartModule = "default"
 			}
 
 			if StartDeployRemote || StartDeployLocal {
 				StartMode = true
+				return
+			}
+
+			if StartDeploy && strings.TrimSpace(StartConfigPath) != "" {
+				fmt.Println("Use --config only when starting a module directly, not with --deploy.")
+				Exit = true
+				ExitCode = 1
 				return
 			}
 
@@ -133,13 +143,43 @@ func NewStartCommand() *cobra.Command {
 				}
 				ModuleRoot = runtimeDir
 				ModuleConfigPath = filepath.Join(runtimeDir, "package.hyperbricks.yaml")
+			} else {
+				workingDirectory, err := os.Getwd()
+				if err != nil {
+					fmt.Printf("Error resolving the current working directory: %v\n", err)
+					Exit = true
+					ExitCode = 1
+					return
+				}
+				moduleRoot, err := resolveDirectStartModuleRoot(StartModule, workingDirectory)
+				if err != nil {
+					fmt.Printf("Invalid module selection %q: %v\n", StartModule, err)
+					Exit = true
+					ExitCode = 1
+					return
+				}
+				StartModule = strings.TrimSpace(StartModule)
+				ModuleRoot = moduleRoot
+				ModuleConfigPath = ""
+			}
+
+			if strings.TrimSpace(StartConfigPath) != "" {
+				configPath, err := resolveModuleConfigPath(GetModuleRoot(), StartConfigPath)
+				if err != nil {
+					fmt.Printf("Invalid module config path: %v\n", err)
+					Exit = true
+					ExitCode = 1
+					return
+				}
+				ModuleConfigPath = configPath
 			}
 
 			configPath := GetModuleConfigPath()
 			data, err := os.ReadFile(configPath)
 			if err != nil {
-				fmt.Printf("Error reading config file: %v\n", err)
+				fmt.Printf("Error reading module config %q: %v\n", configPath, err)
 				Exit = true
+				ExitCode = 1
 				return
 			}
 			if err := json.Unmarshal(data, &config); err != nil {
@@ -150,7 +190,9 @@ func NewStartCommand() *cobra.Command {
 			fmt.Printf("Starting server with config: %s on port: %d\n", configPath, config.Port)
 		},
 	}
-	cmd.Flags().StringVarP(&StartModule, "module", "m", "default", "module in the modules dorectory")
+	cmd.Flags().StringVarP(&StartModule, "module", "m", "default", "module name or directory path")
+	_ = cmd.RegisterFlagCompletionFunc("module", completeStartModule)
+	cmd.Flags().StringVar(&StartConfigPath, "config", "", "package config path relative to the selected module")
 	cmd.Flags().BoolVar(&StartDeploy, "deploy", false, "Start server from the deploy folder using the current build")
 	cmd.Flags().StringVar(&StartDeployDir, "deploy-dir", "deploy", "deploy directory containing module builds")
 	cmd.Flags().StringVar(&StartBuildID, "build", "", "Deploy build ID to start (defaults to current)")
@@ -165,6 +207,24 @@ func NewStartCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&Production, "production", "P", false, "set production mode")
 	cmd.Flags().BoolVarP(&Debug, "debug", "d", false, "debug")
 	return cmd
+}
+
+func completeStartModule(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if isModulePath(toComplete) {
+		return nil, cobra.ShellCompDirectiveDefault
+	}
+
+	entries, err := os.ReadDir("modules")
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveDefault
+	}
+	completions := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() && strings.HasPrefix(entry.Name(), toComplete) {
+			completions = append(completions, entry.Name()+"\tmodule in ./modules")
+		}
+	}
+	return completions, cobra.ShellCompDirectiveDefault
 }
 
 func writeDeployInitConfig(mode string) error {
@@ -240,7 +300,7 @@ deploy:
     target: prod
     targets:
       prod:
-        api: http://192.168.2.35:9090
+        api: https://deploy.example.com
         # Optional. If set, the client signs with X-HB-Key-ID and reads:
         # HB_DEPLOY_SECRET_<NORMALIZED_MODULE>_<NORMALIZED_KEY_ID>
         key_id: prod

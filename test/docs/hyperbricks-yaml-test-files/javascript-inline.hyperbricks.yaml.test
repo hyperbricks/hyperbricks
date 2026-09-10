@@ -38,6 +38,10 @@ Inline JavaScript source. Use a normal YAML string, or a YAML block scalar when 
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",
@@ -48,4 +52,4 @@ Inline JavaScript source. Use a normal YAML string, or a YAML block scalar when 
 ==== expected output ====
 <!DOCTYPE html><html><head><script type="text/javascript">
 console.log("Hello World!")
-</script><meta name="generator" content="hyperbricks runtime"></head><body></body></html>
+</script><meta name="generator" content="HyperBricks"></head><body></body></html>

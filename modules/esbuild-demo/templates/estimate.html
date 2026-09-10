@@ -1,0 +1,47 @@
+<header class="masthead">
+  <div class="container masthead-inner">
+    <a class="brand" href="/" aria-label="HyperBricks home"></a>
+    <span class="workspace">Project desk</span>
+  </div>
+</header>
+<main class="container">
+  <div class="page-heading">
+    <div><p class="eyebrow">MATERIALS / EST-001</p><h1>Order estimate</h1></div>
+    <span class="draft">Draft</span>
+  </div>
+  <form id="estimate-form">
+    <div class="estimate-layout">
+      <section aria-labelledby="materials-heading">
+        <div class="section-heading"><h2 id="materials-heading">Materials</h2><button type="reset">Reset quantities</button></div>
+        <div class="line-header" aria-hidden="true"><span>Item</span><span>Unit price</span><span>Quantity</span></div>
+        <div class="line-item">
+          <label for="boards"><strong>Deck boards</strong><span>Composite / 240 cm</span></label>
+          <span class="unit-price">EUR 32.50</span>
+          <input id="boards" name="boards" type="number" min="0" max="10000" step="1" value="12" required inputmode="numeric">
+        </div>
+        <div class="line-item">
+          <label for="supports"><strong>Support beams</strong><span>Treated timber / 300 cm</span></label>
+          <span class="unit-price">EUR 18.00</span>
+          <input id="supports" name="supports" type="number" min="0" max="10000" step="1" value="6" required inputmode="numeric">
+        </div>
+        <div class="line-item">
+          <label for="fasteners"><strong>Fastener packs</strong><span>Stainless steel / 100 pieces</span></label>
+          <span class="unit-price">EUR 24.00</span>
+          <input id="fasteners" name="fasteners" type="number" min="0" max="10000" step="1" value="2" required inputmode="numeric">
+        </div>
+        <label class="tax-option"><input type="checkbox" id="tax" name="tax" checked> Include VAT (21%)</label>
+        <p class="validation" id="validation" role="alert"></p>
+        <noscript><p>JavaScript is required to calculate this estimate.</p></noscript>
+      </section>
+      <aside class="summary" aria-labelledby="summary-heading">
+        <h2 id="summary-heading">Estimate summary</h2>
+        <dl>
+          <div><dt>Subtotal</dt><dd id="subtotal">--</dd></div>
+          <div><dt>VAT <span id="tax-rate">21%</span></dt><dd id="tax-total">--</dd></div>
+          <div class="total"><dt>Total</dt><dd><output id="grand-total" for="boards supports fasteners tax" aria-live="polite">--</output></dd></div>
+        </dl>
+        <p class="summary-note">EUR / Delivery not included</p>
+      </aside>
+    </div>
+  </form>
+</main>

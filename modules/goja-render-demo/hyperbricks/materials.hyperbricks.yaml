@@ -1,0 +1,55 @@
+materials_page:
+  - type: hypermedia
+  - route: materialenlijst
+  - template:
+      inline: |
+        <!DOCTYPE html>
+        <html lang="nl">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Materialenlijst</title>
+          <style>
+            * { box-sizing: border-box; }
+            body { margin: 0; color: #202722; background: #fff; font: 16px/1.5 system-ui, sans-serif; }
+            main { max-width: 42rem; margin: 0 auto; padding: 2rem 1rem; }
+            h1 { margin: 0 0 1.5rem; font-size: 1.75rem; }
+            form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+            label { font-weight: 600; }
+            input { display: block; width: 100%; margin-top: .375rem; padding: .625rem; border: 1px solid #89968e; border-radius: 4px; font: inherit; }
+            button { justify-self: start; padding: .625rem 1.25rem; color: #fff; background: #176344; border: 0; border-radius: 4px; font: inherit; cursor: pointer; }
+            input:focus-visible, button:focus-visible { outline: 3px solid #3b78ad; outline-offset: 3px; }
+            dl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .75rem 1rem; }
+            dd { margin: 0; font-weight: 600; }
+            [role="alert"] { color: #a12b28; }
+            @media (max-width: 30rem) { form { grid-template-columns: 1fr; } }
+            @media print { form { display: none; } }
+          </style>
+        </head>
+        <body><main><h1>Materialenlijst</h1>{{.materials}}</main></body>
+        </html>
+      values:
+        materials:
+          - type: goja_render
+          - script:
+              file:
+                base: resources
+                path: scripts/materials.js
+          - querykeys: [width_cm, length_cm]
+          - values:
+              area_per_box_cm2: 12500
+              waste_percent: 10
+          - timeout: 100ms
+          - inline: |
+              <form method="get">
+                <label for="width_cm">Breedte (cm)<input id="width_cm" name="width_cm" type="number" min="1" max="2000" step="1" value="{{.Data.widthInput}}" required></label>
+                <label for="length_cm">Lengte (cm)<input id="length_cm" name="length_cm" type="number" min="1" max="2000" step="1" value="{{.Data.lengthInput}}" required></label>
+                <button type="submit">Bereken</button>
+              </form>
+              {{if .Data.valid}}<dl>
+                <dt>Afmetingen</dt><dd>{{.Data.widthCm}} x {{.Data.lengthCm}} cm</dd>
+                <dt>Vloeroppervlak</dt><dd>{{.Data.floorM2}} m2</dd>
+                <dt>Inclusief snijmarge</dt><dd>{{.Data.requiredM2}} m2</dd>
+                <dt>Hele dozen</dt><dd>{{.Data.boxes}}</dd>
+                <dt>Geleverd oppervlak</dt><dd>{{.Data.suppliedM2}} m2</dd>
+              </dl>{{else if .Data.message}}<p role="alert">{{.Data.message}}</p>{{end}}

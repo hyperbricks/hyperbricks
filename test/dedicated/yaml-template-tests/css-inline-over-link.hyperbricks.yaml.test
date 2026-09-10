@@ -11,4 +11,4 @@ hypermedia:
 ==== expected output ====
 <!DOCTYPE html><html><head><style>
 body{color:red;}
-</style><meta name="generator" content="hyperbricks runtime"></head><body></body></html>
+</style><meta name="generator" content="HyperBricks"></head><body></body></html>

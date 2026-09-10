@@ -17,6 +17,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/renderplan"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
@@ -79,6 +80,7 @@ func setupLiveModeServeContentTest(t testing.TB) {
 	oldMode := hbConfig.Mode
 	oldCacheDuration := hbConfig.Live.CacheTime.Duration
 	oldConfigs := configs
+	oldRoutePlans := routePlans
 	oldRM := rm
 
 	htmlCacheMutex.Lock()
@@ -88,6 +90,7 @@ func setupLiveModeServeContentTest(t testing.TB) {
 
 	configMutex.Lock()
 	configs = make(map[string]map[string]interface{})
+	routePlans = make(map[string]*renderplan.Plan)
 	configMutex.Unlock()
 
 	hbConfig.Mode = shared.LIVE_MODE
@@ -102,6 +105,7 @@ func setupLiveModeServeContentTest(t testing.TB) {
 
 		configMutex.Lock()
 		configs = oldConfigs
+		routePlans = oldRoutePlans
 		configMutex.Unlock()
 
 		htmlCacheMutex.Lock()
@@ -119,6 +123,7 @@ func setupDevelopmentModeServeContentTest(t testing.TB, frontendErrors bool) {
 	oldMode := hbConfig.Mode
 	oldFrontendErrors := hbConfig.Development.FrontendErrors
 	oldConfigs := configs
+	oldRoutePlans := routePlans
 	oldRM := rm
 
 	htmlCacheMutex.Lock()
@@ -135,6 +140,7 @@ func setupDevelopmentModeServeContentTest(t testing.TB, frontendErrors bool) {
 
 	configMutex.Lock()
 	configs = make(map[string]map[string]interface{})
+	routePlans = make(map[string]*renderplan.Plan)
 	configMutex.Unlock()
 
 	renderDiagnosticsSeq = 0
@@ -151,6 +157,7 @@ func setupDevelopmentModeServeContentTest(t testing.TB, frontendErrors bool) {
 
 		configMutex.Lock()
 		configs = oldConfigs
+		routePlans = oldRoutePlans
 		configMutex.Unlock()
 
 		htmlCacheMutex.Lock()
@@ -168,6 +175,7 @@ func setTestRouteConfig(route string, config map[string]interface{}) {
 	configMutex.Lock()
 	defer configMutex.Unlock()
 	configs[route] = config
+	delete(routePlans, route)
 }
 
 func cachedEntry(route string) (CacheEntry, bool) {
@@ -958,7 +966,10 @@ func TestServeContent_HyperMediaGuardRedirectsUnauthenticated(t *testing.T) {
 				"authenticated": true,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 		},
 		"template": map[string]interface{}{
@@ -1000,7 +1011,17 @@ func TestServeContent_HyperMediaGuardUsesHxRedirectForHTMX(t *testing.T) {
 				"authenticated": true,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"variants": []interface{}{map[string]interface{}{
+					"when": map[string]interface{}{"request_headers": map[string]interface{}{"HX-Request": "true"}},
+					"response": map[string]interface{}{
+						"status":  http.StatusUnauthorized,
+						"headers": map[string]interface{}{"HX-Redirect": "/login"},
+					},
+				}},
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 		},
 		"template": map[string]interface{}{
@@ -1040,7 +1061,10 @@ func TestServeContent_FragmentGuardDeniesBeforeRender(t *testing.T) {
 				"authenticated": true,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 		},
 		"10": map[string]interface{}{
@@ -1082,7 +1106,17 @@ func TestServeContent_FragmentGuardUsesHxRedirectForHTMX(t *testing.T) {
 				"authenticated": true,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"variants": []interface{}{map[string]interface{}{
+					"when": map[string]interface{}{"request_headers": map[string]interface{}{"HX-Request": "true"}},
+					"response": map[string]interface{}{
+						"status":  http.StatusUnauthorized,
+						"headers": map[string]interface{}{"HX-Redirect": "/login"},
+					},
+				}},
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 		},
 		"10": map[string]interface{}{
@@ -1133,7 +1167,10 @@ func TestServeContent_APIFragmentGuardDeniesBeforeUpstreamCall(t *testing.T) {
 				"authenticated": true,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 		},
 	})
@@ -1301,10 +1338,16 @@ func TestServeContent_HyperMediaGuardAuthorizesBeforeRender(t *testing.T) {
 				"body":     `{"project_slug":"$project"}`,
 			},
 			"on_unauthenticated": map[string]interface{}{
-				"redirect": "/login",
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/login"},
+				},
 			},
 			"on_forbidden": map[string]interface{}{
-				"redirect": "/forbidden",
+				"default": map[string]interface{}{
+					"status":  http.StatusSeeOther,
+					"headers": map[string]interface{}{"Location": "/forbidden"},
+				},
 			},
 		},
 		"template": map[string]interface{}{
@@ -1698,7 +1741,7 @@ func TestRenderDiagnosticsEndpointReturnsRecordedRequest(t *testing.T) {
 	})
 
 	sourceWriter := httptest.NewRecorder()
-	sourceRequest := httptest.NewRequest(http.MethodGet, "/missing-plugin", nil)
+	sourceRequest := httptest.NewRequest(http.MethodGet, "http://localhost:8097/missing-plugin?token=private", nil)
 	handler(sourceWriter, sourceRequest)
 
 	requestID := sourceWriter.Header().Get(requestIDHeader)
@@ -1707,7 +1750,11 @@ func TestRenderDiagnosticsEndpointReturnsRecordedRequest(t *testing.T) {
 	}
 
 	diagnosticsWriter := httptest.NewRecorder()
-	diagnosticsRequest := httptest.NewRequest(http.MethodGet, "/__hyperbricks/render-diagnostics?request_id="+requestID, nil)
+	diagnosticsURL := loggedRenderDiagnosticsURL(t, requestID)
+	if want := "http://localhost:8097/__hyperbricks/render-diagnostics?request_id=" + requestID; diagnosticsURL != want {
+		t.Fatalf("logged diagnostics URL = %q, want %q", diagnosticsURL, want)
+	}
+	diagnosticsRequest := httptest.NewRequest(http.MethodGet, diagnosticsURL, nil)
 	handler(diagnosticsWriter, diagnosticsRequest)
 
 	if diagnosticsWriter.Code != http.StatusOK {

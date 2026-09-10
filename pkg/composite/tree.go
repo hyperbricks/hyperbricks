@@ -218,6 +218,12 @@ func joinTreePath(base string, key string) string {
 	return base + "." + key
 }
 
+// JoinTreePath exposes the canonical child metadata path for precompiled
+// render plans.
+func JoinTreePath(base string, key string) string {
+	return joinTreePath(base, key)
+}
+
 func orderedTreeKeys(items map[string]interface{}) []string {
 	if len(items) == 0 {
 		return nil
@@ -241,6 +247,12 @@ func orderedTreeKeys(items map[string]interface{}) []string {
 		keys = append(keys, key)
 	}
 	return keys
+}
+
+// OrderedTreeKeys exposes the exact TREE ordering contract to precompiled
+// render plans.
+func OrderedTreeKeys(items map[string]interface{}) []string {
+	return orderedTreeKeys(items)
 }
 
 func extractTreeOrder(raw interface{}) []string {

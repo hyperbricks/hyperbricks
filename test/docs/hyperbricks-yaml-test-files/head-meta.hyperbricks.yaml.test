@@ -35,6 +35,10 @@ Metadata for the head section
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",
@@ -45,7 +49,7 @@ Metadata for the head section
 ==== expected output ====
 <!DOCTYPE html><html>
 <head>
-<meta name="generator" content="hyperbricks runtime">
+<meta name="generator" content="HyperBricks">
 <meta name="a" content="b">
 <meta name="b" content="c">
 </head>

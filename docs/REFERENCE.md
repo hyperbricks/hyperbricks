@@ -1,14 +1,12 @@
 **Licence:** MIT
-**Version:** v1.2.2-beta
+**Version:** v1.2.3-beta
 
-**Build time:** 2026-06-24 05:55 UTC
+**Build time:** 2026-09-10 21:58 UTC
 
 
 # HyperBricks Component Reference
 
-This reference is generated from the runtime schema and YAML documentation
-fixtures. It is intentionally compact: field tables come from Go struct tags,
-while examples come from curated executable YAML fixtures.
+This reference is generated from the runtime schema and YAML documentation fixtures. It is intentionally compact: field tables come from Go struct tags, while examples come from curated executable YAML fixtures.
 
 Regenerate this reference and the root README with:
 
@@ -186,7 +184,7 @@ Expected output:
 ### `<API_FRAGMENT_RENDER>`
 
 
-Request-time API fragment that forwards to an upstream endpoint and renders the response.
+Route-owning API fragment that always bypasses rendered-output caching and makes a fresh upstream request when invoked.
 
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
@@ -203,12 +201,12 @@ Request-time API fragment that forwards to an upstream endpoint and renders the 
 | `guard.authorize.headers` | `map` | no | Optional headers sent to the authorization endpoint |
 | `guard.authorize.method` | `string` | no | HTTP method for the authorization endpoint |
 | `guard.enabled` | `bool` | no | Enable route guarding before the route is rendered |
-| `guard.on_forbidden.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_forbidden.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_forbidden.status` | `int` | no | Override HTTP status code for this denied response |
-| `guard.on_unauthenticated.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_unauthenticated.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_unauthenticated.status` | `int` | no | Override HTTP status code for this denied response |
+| `guard.on_forbidden.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_forbidden.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_forbidden.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
+| `guard.on_unauthenticated.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_unauthenticated.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_unauthenticated.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
 | `guard.require.authenticated` | `bool` | no | Require an authenticated request before rendering |
 | `guard.require.query` | `map` | no | Required query keys, set each key to true to enforce presence |
 | `headers` | `map` | no | Optional HTTP headers for API requests |
@@ -220,17 +218,8 @@ Request-time API fragment that forwards to an upstream endpoint and renders the 
 | `password` | `string` | no | Password for basic auth |
 | `querykeys` | `list` | no | Set allowed proxy query keys |
 | `queryparams` | `map` | no | Set proxy query keys in the configuration |
-| `response.hx_location` | `string` | no | allows you to do a client-side redirect that does not do a full page reload |
-| `response.hx_push_url` | `string` | no | Pushes a new URL into the history stack |
-| `response.hx_redirect` | `string` | no | can be used to do a client-side redirect to a new location |
-| `response.hx_refresh` | `string` | no | if set to 'true' the client-side will do a full refresh of the page |
-| `response.hx_replace_url` | `string` | no | Replaces the current URL in the location bar |
-| `response.hx_reselect` | `string` | no | CSS selector that selects which part of the response is swapped in |
-| `response.hx_reswap` | `string` | no | allows you to specify how the response will be swapped |
-| `response.hx_retarget` | `string` | no | CSS selector that updates the target of the content update |
-| `response.hx_trigger` | `string` | no | allows you to trigger client-side events |
-| `response.hx_trigger_after_settle` | `string` | no | allows you to trigger client-side events after the settle step |
-| `response.hx_trigger_after_swap` | `string` | no | allows you to trigger client-side events after the swap step |
+| `response.headers` | `map` | no | HTTP response headers sent to the browser |
+| `response.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
 | `route` | `string` | no | The route (URL-friendly identifier) for the fragment |
 | `section` | `string` | no | The section the fragment belongs to |
 | `setcookie` | `string` | no | Single Set-Cookie response template shorthand. Applied on any 2xx upstream response. |
@@ -244,7 +233,7 @@ Request-time API fragment that forwards to an upstream endpoint and renders the 
 
 Fixture: `api-fragment-render-@doc.hyperbricks.yaml.test`
 
-A `<FRAGMENT>` dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+Expose a route that calls an upstream API and renders a fragment response. API fragment routes always bypass rendered-output caching and call the upstream whenever invoked.
 
 
 ```yaml
@@ -275,27 +264,18 @@ A `<FRAGMENT>` dynamically renders part of an HTML page, allowing updates withou
 | `guard.authorize.headers` | `map` | no | Optional headers sent to the authorization endpoint |
 | `guard.authorize.method` | `string` | no | HTTP method for the authorization endpoint |
 | `guard.enabled` | `bool` | no | Enable route guarding before the route is rendered |
-| `guard.on_forbidden.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_forbidden.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_forbidden.status` | `int` | no | Override HTTP status code for this denied response |
-| `guard.on_unauthenticated.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_unauthenticated.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_unauthenticated.status` | `int` | no | Override HTTP status code for this denied response |
+| `guard.on_forbidden.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_forbidden.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_forbidden.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
+| `guard.on_unauthenticated.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_unauthenticated.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_unauthenticated.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
 | `guard.require.authenticated` | `bool` | no | Require an authenticated request before rendering |
 | `guard.require.query` | `map` | no | Required query keys, set each key to true to enforce presence |
 | `index` | `int` | no | Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation |
 | `nocache` | `bool` | no | Explicitly disable cache |
-| `response.hx_location` | `string` | no | allows you to do a client-side redirect that does not do a full page reload |
-| `response.hx_push_url` | `string` | no | Pushes a new URL into the history stack |
-| `response.hx_redirect` | `string` | no | can be used to do a client-side redirect to a new location |
-| `response.hx_refresh` | `string` | no | if set to 'true' the client-side will do a full refresh of the page |
-| `response.hx_replace_url` | `string` | no | Replaces the current URL in the location bar |
-| `response.hx_reselect` | `string` | no | CSS selector that selects which part of the response is swapped in |
-| `response.hx_reswap` | `string` | no | allows you to specify how the response will be swapped |
-| `response.hx_retarget` | `string` | no | CSS selector that updates the target of the content update |
-| `response.hx_trigger` | `string` | no | allows you to trigger client-side events |
-| `response.hx_trigger_after_settle` | `string` | no | allows you to trigger client-side events after the settle step |
-| `response.hx_trigger_after_swap` | `string` | no | allows you to trigger client-side events after the swap step |
+| `response.headers` | `map` | no | HTTP response headers sent to the browser |
+| `response.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
 | `route` | `string` | no | The route (URL-friendly identifier) for the fragment |
 | `section` | `string` | no | The section the fragment belongs to |
 | `static` | `string` | no | Static file path associated with the fragment |
@@ -311,7 +291,9 @@ A `<FRAGMENT>` dynamically renders part of an HTML page, allowing updates withou
 
 Fixture: `fragment-@doc.hyperbricks.yaml.test`
 
-A FRAGMENT dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+A FRAGMENT renders partial HTML without a full document wrapper. A browser library can load that HTML into an existing page.
+
+This example configures a response header for [HTMX 4](https://four.htmx.org/): `HX-Trigger` tells HTMX to dispatch the `myEvent` event. HyperBricks sends the configured header; HTMX handles it in the browser.
 
 
 ```yaml
@@ -333,7 +315,8 @@ fragment:
             - type: text
             - value: some text
   - response:
-      hx_trigger: myEvent
+      headers:
+        HX-Trigger: myEvent
 ```
 
 Expected output:
@@ -341,7 +324,7 @@ Expected output:
 ```html
 <h2>SOME HEADER</h2>
 <p>some text</p>
-<img src="static/images/cute_cat_w800_h800.jpg" width="800" height="800" />
+<img src="/static/images/cute_cat_c8c4b21c311ec78f82af3515e383d5a4_w800_h800.jpg" width="800" height="800" alt="" />
 ```
 
 
@@ -412,7 +395,7 @@ Expected output:
 </style><script>
 console.log("yaml head fixture");
 
-</script><meta name="generator" content="hyperbricks runtime"><link rel="icon" type="image/x-icon" href="resources/favicon.svg">
+</script><meta name="generator" content="HyperBricks"><link rel="icon" type="image/x-icon" href="resources/favicon.svg">
 <title>YAML Head Fixture</title>
 <meta name="description" content="Head properties stay properties.">
 <link rel="stylesheet" href="resources/css/base.css">
@@ -444,12 +427,12 @@ Route-owning page shell that renders the main HyperBricks document.
 | `guard.authorize.headers` | `map` | no | Optional headers sent to the authorization endpoint |
 | `guard.authorize.method` | `string` | no | HTTP method for the authorization endpoint |
 | `guard.enabled` | `bool` | no | Enable route guarding before the route is rendered |
-| `guard.on_forbidden.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_forbidden.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_forbidden.status` | `int` | no | Override HTTP status code for this denied response |
-| `guard.on_unauthenticated.hx_redirect` | `string` | no | HTMX redirect target used for HX requests; defaults to redirect when omitted |
-| `guard.on_unauthenticated.redirect` | `string` | no | Full-page redirect target used for non-HTMX requests |
-| `guard.on_unauthenticated.status` | `int` | no | Override HTTP status code for this denied response |
+| `guard.on_forbidden.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_forbidden.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_forbidden.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
+| `guard.on_unauthenticated.default.headers` | `map` | no | HTTP response headers sent to the browser |
+| `guard.on_unauthenticated.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `guard.on_unauthenticated.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
 | `guard.require.authenticated` | `bool` | no | Require an authenticated request before rendering |
 | `guard.require.query` | `map` | no | Required query keys, set each key to true to enforce presence |
 | `head` | `map` | no | Configurations for the head section of the hypermedia |
@@ -457,6 +440,8 @@ Route-owning page shell that renders the main HyperBricks document.
 | `htmltag` | `string` | no | The opening HTML tag with attributes |
 | `index` | `int` | no | Index number is a sort order option for the hypermedia defined in the section field. See `<MENU>` for further explanation and field options |
 | `nocache` | `bool` | no | Explicitly disable cache |
+| `response.headers` | `map` | no | HTTP response headers sent to the browser |
+| `response.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
 | `route` | `string` | no | The route (URL-friendly identifier) for the hypermedia |
 | `section` | `string` | no | The section the hypermedia belongs to. This can be used with the component `<MENU>` for example. |
 | `static` | `string` | no | Static file path associated with the hypermedia, for rendering out the hypermedia to static files. |
@@ -472,7 +457,7 @@ Route-owning page shell that renders the main HyperBricks document.
 
 Fixture: `hypermedia-@doc.hyperbricks.yaml.test`
 
-HYPERMEDIA type is the main initiator of a htmx document. Its location is defined by the route property. Use `<FRAGMENT>` to utilize hx-[method] (GET,POST etc) requests.
+HYPERMEDIA renders a complete HTML document. The route property defines its URL. Use `fragment` to return partial HTML without the document wrapper.
 
 
 ```yaml
@@ -523,7 +508,7 @@ Expected output:
     color:green;
 }
 
-</style><meta name="generator" content="hyperbricks runtime"></head><body><p>SOME CONTENT</p></body></html>
+</style><meta name="generator" content="HyperBricks"></head><body><p>SOME CONTENT</p></body></html>
 ```
 
 
@@ -578,7 +563,7 @@ Expected output:
 ### `<API_RENDER>`
 
 
-Remote API fetcher that renders the upstream response through a template.
+Nested API fetcher with no upstream-response cache or nocache field. It makes a fresh upstream request whenever its parent route renders; the parent owns rendered-output caching.
 
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
@@ -604,7 +589,7 @@ Remote API fetcher that renders the upstream response through a template.
 
 Fixture: `api-render-@doc.hyperbricks.yaml.test`
 
-Fetch a remote API endpoint and render the response through a template or inline template.
+Fetch an upstream API whenever this nested component executes and render the response through a template. The parent route owns rendered-output caching; api_render has no nocache field or upstream-response cache.
 
 
 ```yaml
@@ -612,6 +597,48 @@ api_render:
   - type: api_render
   - endpoint: https://example.com/api
   - method: GET
+```
+
+
+### `<GOJA_RENDER>`
+
+
+Trusted server-side JavaScript with request-local state and template output.
+
+| Field | Kind | Required | Description |
+| --- | --- | --- | --- |
+| `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
+| `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
+| `inline` | `string` | no | Inline Go HTML template. Mutually exclusive with template. |
+| `querykeys` | `list` | no | Explicitly allowed query keys. No query parameters are exposed by default. |
+| `script` | `string` | yes | JavaScript declaring main(input). Use the file resolver to load source from resources. |
+| `template` | `string` | no | Preloaded Go template file. The script result is available as .Data. |
+| `timeout` | `string` | no | Script deadline, default 100ms. Must be positive and at most 5s. |
+| `values` | `map` | no | Plain input data, copied into each script execution. Nested components are not rendered. |
+
+#### Example
+
+Fixture: `goja-render-@doc.hyperbricks.yaml.test`
+
+Run trusted server-side JavaScript in a fresh runtime per request. The returned object is available as .Data in the Go HTML template. Use the existing file resolver under script to load source from resources; see GOJA_RENDER.md for the file-based example and execution limits.
+
+
+```yaml
+greeting:
+  - type: goja_render
+  - script: |
+      function main(input) {
+        return { message: input.values.message };
+      }
+  - values:
+      message: Hello from the server
+  - inline: '<p>{{.Data.message}}</p>'
+```
+
+Expected output:
+
+```html
+<p>Hello from the server</p>
 ```
 
 
@@ -784,6 +811,50 @@ Expected output:
 ```
 
 
+### `<ESBUILD>`
+
+
+Native JavaScript, TypeScript, and CSS bundling with lazy cached or per-render builds.
+
+| Field | Kind | Required | Description |
+| --- | --- | --- | --- |
+| `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
+| `binary` | `string` | no | Optional external esbuild executable; empty uses the embedded Go API. |
+| `cache` | `bool` | no | True reuses valid builds; false rebuilds on every component render. Default false. Independent of page caching. |
+| `debug` | `bool` | no | Log effective build options, engine, and cache diagnostics. |
+| `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
+| `entry` | `string` | yes | Source filename. Use path with an explicit resources base. |
+| `external` | `list` | no | Import or asset URL patterns to leave unbundled, e.g. /static/vendor/*. |
+| `fingerprint` | `bool` | no | Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Old assets are retained. |
+| `loader` | `map` | no | Extension loader overrides, e.g. .woff2: file or .png: dataurl. |
+| `mangle` | `bool` | no | Advanced: mangle JavaScript properties using .*; may break external property contracts. Default false; not allowed for CSS-only entries. |
+| `minify` | `bool` | no | Minify whitespace and syntax. Default false. |
+| `minify_identifiers` | `bool` | no | Minify identifiers independently of whitespace/syntax. Default false. YAML also accepts the legacy minifyident alias. |
+| `outfile` | `string` | yes | Output filename inside the configured static directory. Use an explicit static path base. |
+| `sourcemap` | `bool` | no | Emit a linked source map. Default false. |
+| `target` | `list` | no | Optional browser/language targets, e.g. chrome110, safari16, es2020. |
+
+#### Example
+
+Fixture: `esbuild-@doc.hyperbricks.yaml.test`
+
+Build browser JavaScript, TypeScript, or CSS with embedded esbuild. Use path, not file, because the engine needs filenames rather than file contents. With cache true a render restores a validated persistent build or compiles, and later renders reuse valid output. With cache false every component render builds. Fingerprint true emits app.<hash>.js inside the configured directory and retains old assets. This example verifies configuration materialization; the esbuild-demo module and component integration tests exercise compilation and publication. See ESBUILD.md for CSS, migration, watching, and the complete option list.
+
+
+```yaml
+scripts:
+  - type: esbuild
+  - entry:
+      path: {base: resources, path: js/main.js}
+  - outfile:
+      path: {base: static, path: js/app.js}
+  - minify: true
+  - cache: true
+  - fingerprint: true
+  - enclose: '<script src="|" defer></script>'
+```
+
+
 ### `<IMAGE>`
 
 
@@ -791,21 +862,23 @@ Single image renderer with optional optimization and HTML output.
 
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
-| `alt` | `string` | no | Alternative text for the image |
+| `alt` | `string` | no | Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images. |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `class` | `string` | no | CSS class for styling the image |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
-| `height` | `int` | no | The height of the image (can be a number or percentage) |
+| `height` | `int` | no | Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size. |
 | `id` | `string` | no | Id of image |
 | `loading` | `string` | no | Lazy loading strategy (e.g., 'lazy', 'eager') |
-| `quality` | `int` | no | Image quality for optimization |
-| `src` | `string` | yes | The source URL of the image |
+| `quality` | `int` | no | JPEG encoding quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding. |
+| `src` | `string` | yes | Local filesystem path to a JPEG, PNG, or GIF image, relative to the working directory unless absolute. Use a path resolver for module resources. Remote URLs and SVG processing are not supported. |
 | `title` | `string` | no | The title attribute of the image |
-| `width` | `int` | no | The width of the image (can be a number or percentage) |
+| `width` | `int` | no | Output width in integer pixels; omit or use 0 to preserve aspect ratio from height. Omit both dimensions to keep the source size. |
 
 #### Example
 
 Fixture: `image-@doc.hyperbricks.yaml.test`
+
+Process a local JPEG, PNG, or GIF. The generated /static/images/ URL works at nested routes and uses a fingerprint of the source bytes and resize settings. Width and height are integer pixels. See [Image usage](IMAGES.md) for module path resolvers, responsive CSS, gallery behavior, and migration notes.
 
 
 ```yaml
@@ -825,7 +898,7 @@ image:
 Expected output:
 
 ```html
-<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" alt="cat but cute" title="Some Cute Cat!" class="class-a class-b class-c" id="#cat" usemap="#catmap" />
+<img src="/static/images/cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="cat but cute" title="Some Cute Cat!" class="class-a class-b class-c" id="#cat" usemap="#catmap" />
 ```
 
 
@@ -836,28 +909,26 @@ Multiple image renderer for a directory of images.
 
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
-| `alt` | `string` | no | Alternative text for the image |
+| `alt` | `string` | no | Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images. |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `class` | `string` | no | CSS class for styling the image |
-| `directory` | `string` | yes | The directory path containing the images |
+| `directory` | `string` | yes | Local filesystem directory containing JPEG, PNG, or GIF images. Reads files in filename order without descending into subdirectories; other extensions are skipped. |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
-| `height` | `int` | no | The height of the images (can be a number or percentage) |
+| `height` | `int` | no | Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size. |
 | `id` | `string` | no | Id of images with a index added to it |
 | `loading` | `string` | no | Lazy loading strategy (e.g., 'lazy', 'eager') |
-| `quality` | `int` | no | Image quality for optimization |
+| `quality` | `int` | no | JPEG encoding quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding. |
 | `title` | `string` | no | The title attribute of the image |
-| `width` | `int` | no | The width of the images (can be a number or percentage) |
+| `width` | `int` | no | Output width in integer pixels; omit or use 0 to preserve aspect ratio from height. Omit both dimensions to keep each source size. |
 
 #### Example
 
 Fixture: `images-@doc.hyperbricks.yaml.test`
 
-Id of images with a index added to it
+Process a directory in filename order. Each generated URL includes the source content and resize settings. A configured id gets an index suffix; no id is added when omitted. Invalid images produce render errors. See [Image usage](IMAGES.md) for file formats and gallery accessibility.
 
 
 ```yaml
-image:
-  - enclose: <div id="#gallery">|</div>
 images:
   - type: images
   - attributes:
@@ -871,8 +942,8 @@ images:
 Expected output:
 
 ```html
-<img src="static/images/cute_cat_w100_h100.jpg" width="100" height="100" id="#img_0" loading="lazy" decoding="async" />
-<img src="static/images/same_cute_cat_w100_h100.jpg" width="100" height="100" id="#img_1" loading="lazy" decoding="async" />
+<img src="/static/images/cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="" id="#img_0" loading="lazy" decoding="async" />
+<img src="/static/images/same_cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="" id="#img_1" loading="lazy" decoding="async" />
 ```
 
 

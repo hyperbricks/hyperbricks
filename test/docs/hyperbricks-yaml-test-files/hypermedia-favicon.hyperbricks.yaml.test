@@ -25,6 +25,10 @@ Path to the favicon for the hypermedia
   "Items": null,
   "MetaDocDescription": "",
   "NoCache": false,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
   "Route": "",
   "Section": "",
   "Static": "",
@@ -33,4 +37,4 @@ Path to the favicon for the hypermedia
 }
 
 ==== expected output ====
-<!DOCTYPE html><html><head><meta name="generator" content="hyperbricks runtime"><link rel="icon" type="image/x-icon" href="static/favicon.ico"></head><body></body></html>
+<!DOCTYPE html><html><head><meta name="generator" content="HyperBricks"><link rel="icon" type="image/x-icon" href="static/favicon.ico"></head><body></body></html>

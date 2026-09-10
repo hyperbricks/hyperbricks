@@ -1,0 +1,164 @@
+imports:
+  - partials/site.hyperbricks.yaml
+
+explore_page:
+  - inherit: guide_page
+  - route: index
+  - title: Explore
+  - section: guide_navigation
+  - index: 10
+  - body:
+      - values:
+          content:
+            - type: template
+            - template:
+                file: explore.html
+
+night_owl_cafe_page:
+  - inherit: guide_page
+  - route: night-owl-cafe
+  - title: Night Owl Café
+  - section: guide_navigation
+  - index: 20
+  - body:
+      - values:
+          content:
+            - type: template
+            - template:
+                file: place.html
+            - values:
+                route: "night-owl-cafe"
+                title: "Night Owl Café"
+                category: "Coffee & cake"
+                number: "01"
+                theme: "cafe"
+                hours: "18:00–02:00"
+                days: "Tuesday–Sunday"
+                address: "12 Market Street"
+                intro: "A late coffee, a slice of cake, and somewhere to sit."
+                description: "A small café just off the main street. Come in for an espresso after dinner or take a table by the window for a longer catch-up. The kitchen keeps a few simple things going until closing."
+                highlight: "On the menu"
+                one: "Coffee, your way"
+                onebody: "Espresso, filter coffee, and decaf. Oat milk is available."
+                two: "Something sweet"
+                twobody: "Lemon cake and chocolate brownies, baked each afternoon."
+                three: "A light supper"
+                threebody: "Toasted cheese sandwiches and a changing bowl of soup."
+                note: "Walk in and find a table. The quieter seats are at the back."
+                next_route: "side-b-records"
+                next_title: "Side B Records"
+
+side_b_records_page:
+  - inherit: guide_page
+  - route: side-b-records
+  - title: Side B Records
+  - section: guide_navigation
+  - index: 30
+  - body:
+      - values:
+          content:
+            - type: template
+            - template:
+                file: place.html
+            - values:
+                route: "side-b-records"
+                title: "Side B Records"
+                category: "Records & listening"
+                number: "02"
+                theme: "records"
+                hours: "17:00–00:00"
+                days: "Wednesday–Sunday"
+                address: "28 Market Street"
+                intro: "Browse a few records. Take your time listening."
+                description: "New releases sit next to second-hand finds in this independent record shop. There are two listening stations and a small selection of staff favourites if you need a place to start."
+                highlight: "In the shop"
+                one: "New and used vinyl"
+                onebody: "Jazz, electronic, soul, and a little of everything else."
+                two: "Listening stations"
+                twobody: "Ask at the counter to try a record before taking it home."
+                three: "Friday selections"
+                threebody: "A guest picks records from 20:00. Drop in whenever you like."
+                note: "Browsing is free. The staff are happy to help you find something."
+                next_route: "skyline-cinema"
+                next_title: "Skyline Cinema"
+
+skyline_cinema_page:
+  - inherit: guide_page
+  - route: skyline-cinema
+  - title: Skyline Cinema
+  - section: guide_navigation
+  - index: 40
+  - body:
+      - values:
+          content:
+            - type: template
+            - template:
+                file: place.html
+            - values:
+                route: "skyline-cinema"
+                title: "Skyline Cinema"
+                category: "Film & a rooftop"
+                number: "03"
+                theme: "cinema"
+                hours: "Doors 20:00 · Film 21:00"
+                days: "Friday & Saturday"
+                address: "6 Station Lane, third floor"
+                intro: "An evening film on a small neighbourhood rooftop."
+                description: "The rooftop cinema seats 60 people and shows a different film each weekend. Drinks and blankets are available."
+                highlight: "Your evening"
+                one: "Before the film"
+                onebody: "Doors open at 20:00. Drinks and popcorn are available upstairs."
+                two: "This weekend"
+                twobody: "A classic comedy on Friday; a travel documentary on Saturday."
+                three: "After the credits"
+                threebody: "Stay for a drink and a chat. The rooftop closes at midnight."
+                note: "Book ahead at the venue. Screenings move indoors if it rains. Lift access is available."
+                next_route: "last-bite"
+                next_title: "Last Bite"
+
+last_bite_page:
+  - inherit: guide_page
+  - route: last-bite
+  - title: Last Bite
+  - section: guide_navigation
+  - index: 50
+  - body:
+      - values:
+          content:
+            - type: template
+            - template:
+                file: place.html
+            - values:
+                route: "last-bite"
+                title: "Last Bite"
+                category: "Late-night food"
+                number: "04"
+                theme: "food"
+                hours: "19:00–04:00"
+                days: "Thursday–Sunday"
+                address: "3 Station Lane"
+                intro: "Hot food for the end of the evening."
+                description: "A small counter serving a short menu well into the night. Order something to take away or sit at the shared table."
+                highlight: "What to order"
+                one: "Grilled flatbreads"
+                onebody: "Choose spiced chicken or roasted chickpeas, with salad and yoghurt sauce."
+                two: "Loaded potatoes"
+                twobody: "Crisp potatoes with herbs, pickled onions, and your choice of sauce."
+                three: "Something to drink"
+                threebody: "Homemade lemonade, sparkling water, and hot tea."
+                note: "Order at the counter. Vegetarian options are always available; ask about allergens."
+                next_route: "night-owl-cafe"
+                next_title: "Night Owl Café"
+
+how_it_works_page:
+  - inherit: guide_page
+  - route: how-it-works
+  - title: How it works
+  - section: developer_navigation
+  - index: 10
+  - body:
+      - values:
+          content:
+            - type: template
+            - template:
+                file: how-it-works.html

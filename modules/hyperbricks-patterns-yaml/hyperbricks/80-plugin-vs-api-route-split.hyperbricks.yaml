@@ -4,7 +4,7 @@ imports:
 route_split_demo_shell:
   - inherit: "pattern_site_page"
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/route-split-demo.html
@@ -13,7 +13,7 @@ route_split_mock_rename_success:
   - type: fragment
   - route: fragments/mock-postgrest-rename-success
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/mock-postgrest-rename-success.json
@@ -22,7 +22,7 @@ route_split_mock_rename_conflict:
   - type: fragment
   - route: fragments/mock-postgrest-rename-conflict
   - nocache: "true"
-  - template_10:
+  - content:
       - type: template
       - template:
           file: patterns/mock-postgrest-rename-conflict.json
@@ -32,34 +32,40 @@ route_split_api_rename_success:
   - route: patterns/route-split/rename-success
   - nocache: "true"
   - method: POST
-  - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-rename-success"
-  - request:
-      headers:
-        Content-Type: application/json
-        Accept: application/json
+  - endpoint:
+      format: "%s/fragments/mock-postgrest-rename-success"
+      args:
+        - config: myconf.patterns.mock_api_base
+  - headers:
+      Content-Type: application/json
+      Accept: application/json
   - querykeys: []
   - body: "{\"p_project_slug\":\"$project\",\"p_asset_id\":$asset_id,\"p_old_path\":\"$old_path\",\"p_new_path\":\"$new_path\"}"
   - template:
       file: patterns/route-split-api-result.html
   - response:
-      hx_trigger: hb-pattern-route-split-refresh
+      headers:
+        HX-Trigger: hb-pattern-route-split-refresh
 
 route_split_api_rename_conflict:
   - type: api_fragment_render
   - route: patterns/route-split/rename-conflict
   - nocache: "true"
   - method: POST
-  - endpoint: "http://127.0.0.1:8080/fragments/mock-postgrest-rename-conflict"
-  - request:
-      headers:
-        Content-Type: application/json
-        Accept: application/json
+  - endpoint:
+      format: "%s/fragments/mock-postgrest-rename-conflict"
+      args:
+        - config: myconf.patterns.mock_api_base
+  - headers:
+      Content-Type: application/json
+      Accept: application/json
   - querykeys: []
   - body: "{\"p_project_slug\":\"$project\",\"p_asset_id\":$asset_id,\"p_old_path\":\"$old_path\",\"p_new_path\":\"$new_path\"}"
   - template:
       file: patterns/route-split-api-conflict-result.html
   - response:
-      hx_trigger: hb-pattern-route-split-refresh
+      headers:
+        HX-Trigger: hb-pattern-route-split-refresh
 
 route_split_plugin_import:
   - type: fragment

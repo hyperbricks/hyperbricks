@@ -1,0 +1,37 @@
+imports:
+  - assets.hyperbricks.yaml
+  - navigation.hyperbricks.yaml
+
+guide_page:
+  - type: hypermedia
+  - doctype: '<!DOCTYPE html>'
+  - htmltag: '<html lang="en">'
+  - response:
+      headers:
+        Cache-Control: no-store
+        X-Content-Type-Options: nosniff
+  - head:
+      - type: head
+      - metadata:
+          - type: html
+          - value: |
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <link rel="preconnect" href="https://fonts.googleapis.com">
+              <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+              <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;650;700&amp;display=swap" rel="stylesheet">
+      - styles:
+          - inherit: guide_styles
+      - scripts:
+          - inherit: guide_scripts
+  - body:
+      - type: template
+      - template:
+          file: shell.html
+      - values:
+          developer_navigation:
+            - inherit: developer_navigation
+          navigation:
+            - inherit: guide_navigation
+          content:
+            - type: tree

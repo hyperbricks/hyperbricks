@@ -608,6 +608,8 @@ func reservedRuntimeChildName(parentType string, childName string) bool {
 var canonicalTypeTokens = map[string]string{
 	"api_fragment_render": "<API_FRAGMENT_RENDER>",
 	"api_render":          "<API_RENDER>",
+	"goja_render":         "<GOJA_RENDER>",
+	"esbuild":             "<ESBUILD>",
 	"css":                 "<CSS>",
 	"fragment":            "<FRAGMENT>",
 	"head":                "<HEAD>",
@@ -639,7 +641,7 @@ var globalRuntimeFields = map[string]bool{
 var runtimeFieldsByType = map[string]map[string]bool{
 	"<API_FRAGMENT_RENDER>": fieldSet(
 		"beautify", "body", "cache", "content_type", "debug", "debugpanel",
-		"endpoint", "guard", "headers", "hx_response", "index", "inline",
+		"endpoint", "guard", "headers", "index", "inline",
 		"jwtclaims", "jwtsecret", "method", "nocache", "password",
 		"querykeys", "queryparams", "response", "route", "section",
 		"setcookie", "setcookies", "static", "status", "template", "title",
@@ -653,7 +655,7 @@ var runtimeFieldsByType = map[string]map[string]bool{
 	),
 	"<CSS>": fieldSet("file", "inline", "link"),
 	"<FRAGMENT>": fieldSet(
-		"beautify", "cache", "content_type", "guard", "hx_response", "index",
+		"beautify", "cache", "content_type", "guard", "index",
 		"nocache", "response", "route", "section", "static", "template",
 		"title",
 	),
@@ -662,7 +664,7 @@ var runtimeFieldsByType = map[string]map[string]bool{
 	"<HYPERMEDIA>": fieldSet(
 		"beautify", "bodytag", "cache", "content_type", "cookies",
 		"doctype", "favicon", "guard", "head", "headers", "htmltag", "index",
-		"nocache", "route", "section", "static", "template", "title",
+		"nocache", "response", "route", "section", "static", "template", "title",
 	),
 	"<IMAGE>": fieldSet(
 		"alt", "class", "height", "id", "is_static", "loading", "quality",
@@ -685,7 +687,7 @@ var runtimeFieldsByType = map[string]map[string]bool{
 var structuredFieldChildren = map[string]map[string]bool{
 	"<API_FRAGMENT_RENDER>": fieldSet("guard", "response"),
 	"<FRAGMENT>":            fieldSet("guard", "response", "template"),
-	"<HYPERMEDIA>":          fieldSet("guard", "head", "template"),
+	"<HYPERMEDIA>":          fieldSet("guard", "head", "response", "template"),
 }
 
 func fieldSet(names ...string) map[string]bool {
@@ -920,9 +922,16 @@ func resolveNode(node *Node, roots map[string]*Node, resolved map[string]*Node, 
 		if err != nil {
 			return nil, nodeErrorFromNode(node, err.Error())
 		}
-		out = mergeNodes(base, nodeWithoutInherit(node))
+		override := nodeWithoutInherit(node)
+		if err := normalizeEsbuildAlias(override, base.Type); err != nil {
+			return nil, err
+		}
+		out = mergeNodes(base, override)
 	} else {
 		out = cloneNode(node)
+		if err := normalizeEsbuildAlias(out, ""); err != nil {
+			return nil, err
+		}
 	}
 
 	for index, child := range out.Children {
@@ -944,6 +953,25 @@ func resolveNode(node *Node, roots map[string]*Node, resolved map[string]*Node, 
 		resolved[node.Name] = cloneNode(out)
 	}
 	return out, nil
+}
+
+// Normalize before merging so either spelling can override an inherited value.
+func normalizeEsbuildAlias(node *Node, inheritedType string) error {
+	typeName := node.Type
+	if typeName == "" {
+		typeName = inheritedType
+	}
+	if formatType(typeName) != "<ESBUILD>" {
+		return nil
+	}
+	if value, ok := node.Props["minifyident"]; ok {
+		if _, duplicate := node.Props["minify_identifiers"]; duplicate {
+			return nodeErrorFromNode(node, "use only one of minifyident and minify_identifiers")
+		}
+		delete(node.Props, "minifyident")
+		node.Props["minify_identifiers"] = value
+	}
+	return nil
 }
 
 func resolveNodeValue(value interface{}, roots map[string]*Node, resolved map[string]*Node, resolving map[string]bool) (interface{}, error) {

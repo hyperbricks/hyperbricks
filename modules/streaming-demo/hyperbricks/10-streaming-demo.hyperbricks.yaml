@@ -1,0 +1,31 @@
+streaming_demo:
+  - type: hypermedia
+  - route: index
+  - title: Streaming demo — HyperBricks
+  - nocache: true
+  - response:
+      headers:
+        Cache-Control: no-store
+  - head:
+      - type: head
+      - assets:
+          - type: html
+          - value: |
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <link rel="stylesheet" href="/static/css/demo.css">
+              <script src="/static/vendor/htmx-4.0.0.min.js" defer></script>
+              <script src="/static/vendor/hx-sse-4.0.0.min.js" defer></script>
+              <script src="/static/js/demo.js" defer></script>
+  - content:
+      - type: template
+      - template:
+          file: demo.html
+
+streaming_events:
+  - type: fragment
+  - route: demo/events
+  - nocache: true
+  - events:
+      - type: plugin
+      - plugin: StreamingDemoPlugin__streaming-demo@1.0.0
