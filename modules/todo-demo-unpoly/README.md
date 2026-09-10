@@ -12,7 +12,7 @@ mkdir -p modules/todo-demo-unpoly/rendered
 hyperbricks start -m todo-demo-unpoly
 ```
 
-Open [localhost:8123](http://localhost:8123/). Native esbuild builds the JavaScript and CSS automatically. The browserlibrary is included locally; no npm install, CDN connection, plugin build or extra server is needed.
+Open [localhost:8123](http://localhost:8123/). Native esbuild builds the JavaScript and CSS automatically. The browser library is included locally; no npm install, CDN connection, plugin build or extra server is needed.
 
 ## Try it
 
@@ -49,14 +49,15 @@ The browser computes the candidate list and sends it to HyperBricks. The server 
 - Concurrent editing in different tabs uses last-write-wins localStorage; there is no shared account or collaborative conflict resolution.
 - No Goja, Go plugin or core changes are used.
 
-## Compare the three versions
+## Compare the four versions
 
 - [HTMX](../todo-demo-htmx/README.md) — port 8121
 - [Hotwire Turbo](../todo-demo-turbo/README.md) — port 8122
 - [Unpoly](../todo-demo-unpoly/README.md) — port 8123
+- [Swup](../todo-demo-swup/README.md) — port 8124
 
-These are independent modules with the same UI and application logic. Differences are the library, its integration file, and the Turbo frame wrapper. They prove this todo/fragment workflow, not every feature of each library.
+These are independent modules with the same UI and application logic. Differences are the browser library and its integration with the shared task panel. They prove this todo/fragment workflow, not every feature of each library.
 
 ## Credits
 
-Built with [HyperBricks](https://hyperbricks.org/) ([repository](https://github.com/hyperbricks/hyperbricks)). Browserlibrary sources, pinned versions and checksums are in [VENDOR.md](VENDOR.md); its license is included in [static/vendor/LICENSE.txt](static/vendor/LICENSE.txt). Native bundling uses [esbuild](https://esbuild.github.io/), under the [MIT license](https://github.com/evanw/esbuild/blob/main/LICENSE.md).
+Built with [HyperBricks](https://hyperbricks.eu/) ([repository](https://github.com/hyperbricks/hyperbricks)). Browser library sources, pinned versions and checksums are in [VENDOR.md](VENDOR.md); its license is included in [static/vendor/LICENSE.txt](static/vendor/LICENSE.txt). Native bundling uses [esbuild](https://esbuild.github.io/), under the [MIT license](https://github.com/evanw/esbuild/blob/main/LICENSE.md).

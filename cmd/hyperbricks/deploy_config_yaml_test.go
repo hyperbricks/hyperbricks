@@ -139,7 +139,7 @@ deploy:
     target: staging
     targets:
       staging:
-        api: http://192.168.2.35:9090
+        api: https://deploy.example.com
         key_id: staging
 `), 0o644); err != nil {
 		t.Fatalf("write deploy config: %v", err)
@@ -156,7 +156,7 @@ deploy:
 		t.Fatalf("local config = %#v", cfg.Local)
 	}
 	target := cfg.Client.Targets["staging"]
-	if cfg.Client.Target != "staging" || target.API != "http://192.168.2.35:9090" || target.KeyID != "staging" {
+	if cfg.Client.Target != "staging" || target.API != "https://deploy.example.com" || target.KeyID != "staging" {
 		t.Fatalf("client config = %#v", cfg.Client)
 	}
 }

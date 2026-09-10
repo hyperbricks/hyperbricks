@@ -4,7 +4,7 @@ A text-only guide to four fictional evening venues. HyperBricks renders six comp
 
 ## Run
 
-First, [install the HyperBricks CLI](../../docs/hyperbricks_cli.md#install).
+First, [install the HyperBricks CLI](../../docs/HYPERBRICKS_CLI.md#install).
 
 From the repository root:
 

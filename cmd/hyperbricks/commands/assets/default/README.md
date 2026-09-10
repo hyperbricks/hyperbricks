@@ -85,7 +85,7 @@ After starting either server, visit `/templates` and `/fragments` directly, relo
 - `/templates`: inline templates, file/environment values and nested trees.
 - `/fragments`: a reusable template card and an interactive fragment response.
 
-Navigation follows the section-menu pattern in `hyperbricks-patterns-yaml/hyperbricks/50-menu-htmx-demo.hyperbricks.yaml`. Pages share `section: scaffold_navigation` and use indexes 10, 20 and 30. The `menu` component generates links with `sort: index` and a distinct active template.
+Navigation follows the [section-menu pattern in the HyperBricks repository](https://github.com/hyperbricks/hyperbricks/blob/main/modules/hyperbricks-patterns-yaml/hyperbricks/50-menu-htmx-demo.hyperbricks.yaml). Pages share `section: scaffold_navigation` and use indexes 10, 20 and 30. The `menu` component generates links with `sort: index` and a distinct active template.
 
 HTMX requests canonical page URLs, selects `#scaffold-content > *`, and refreshes `#scaffold-navigation` with `hx-select-oob`. Menu navigation pushes the URL into browser history. Without JavaScript the same links perform ordinary full-page navigation. Each route works directly and on reload.
 

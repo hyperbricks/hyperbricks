@@ -195,7 +195,7 @@ deploy:
     target: staging
     targets:
       staging:
-        api: http://192.168.2.35:9090
+        api: https://deploy.example.com
         key_id: staging
 ```
 

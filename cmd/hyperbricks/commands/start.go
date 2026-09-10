@@ -300,7 +300,7 @@ deploy:
     target: prod
     targets:
       prod:
-        api: http://192.168.2.35:9090
+        api: https://deploy.example.com
         # Optional. If set, the client signs with X-HB-Key-ID and reads:
         # HB_DEPLOY_SECRET_<NORMALIZED_MODULE>_<NORMALIZED_KEY_ID>
         key_id: prod
