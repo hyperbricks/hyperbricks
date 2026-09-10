@@ -128,7 +128,8 @@ func TestServeContent_NativeStreamIncompleteBodyNeverStartsProducer(t *testing.T
 			}
 			defer response.Body.Close()
 			if response.StatusCode != tc.status {
-				t.Fatalf("status=%d, want %d", response.StatusCode, tc.status)
+				body, _ := io.ReadAll(response.Body)
+				t.Fatalf("status=%d, want %d; headers=%v body=%q", response.StatusCode, tc.status, response.Header, body)
 			}
 			if elapsed := time.Since(started); elapsed > time.Second {
 				t.Fatalf("preflight extended the 100ms server read timeout: %s", elapsed)
@@ -172,7 +173,14 @@ func TestWriteStreamResponseBodyReadBoundWithoutServerReadTimeout(t *testing.T) 
 			}
 			select {
 			case err := <-finished:
-				if !errors.Is(err, wantErr) || producers.Load() != 0 {
+				invalidErr := !errors.Is(err, wantErr)
+				if cancelRequest {
+					// Cancellation interrupts the pending socket read by forcing its
+					// deadline. The result retains both causes.
+					var timeout interface{ Timeout() bool }
+					invalidErr = invalidErr || !errors.As(err, &timeout) || !timeout.Timeout()
+				}
+				if invalidErr || producers.Load() != 0 {
 					t.Fatalf("error=%v producers=%d", err, producers.Load())
 				}
 			case <-time.After(wait):
@@ -183,12 +191,8 @@ func TestWriteStreamResponseBodyReadBoundWithoutServerReadTimeout(t *testing.T) 
 				t.Fatal(err)
 			}
 			defer response.Body.Close()
-			wantStatus := http.StatusRequestTimeout
-			if cancelRequest {
-				wantStatus = http.StatusBadRequest
-			}
-			if response.StatusCode != wantStatus {
-				t.Fatalf("status=%d, want %d", response.StatusCode, wantStatus)
+			if response.StatusCode != http.StatusRequestTimeout {
+				t.Fatalf("status=%d, want %d", response.StatusCode, http.StatusRequestTimeout)
 			}
 			assertStreamBodyRejected(t, response, producers.Load())
 		})

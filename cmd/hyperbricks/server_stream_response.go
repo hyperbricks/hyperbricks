@@ -150,14 +150,22 @@ func drainStreamRequestBody(w http.ResponseWriter, r *http.Request) error {
 	finished = true
 	abortErr := aborted
 	mu.Unlock()
-	if abortErr != nil {
-		return abortErr
-	}
 	if n > maxStreamUnreadRequestBody {
 		return errStreamRequestBodyTooLarge
 	}
 	if err != nil && !errors.Is(err, io.EOF) {
+		// net/http cancels the request context before returning connection
+		// read errors. Keep the concrete body result authoritative so a socket
+		// timeout or malformed body cannot be changed by callback scheduling.
+		// Retain a concurrent watchdog or request-cancellation cause without
+		// letting it replace the concrete read result.
+		if abortErr != nil {
+			return errors.Join(err, abortErr)
+		}
 		return err
+	}
+	if abortErr != nil {
+		return abortErr
 	}
 	return r.Context().Err()
 }
