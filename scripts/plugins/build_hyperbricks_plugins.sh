@@ -2,14 +2,20 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
-MODULE_NAME="hyperbricks-patterns-yaml"
+DEFAULT_MODULES=(
+  "hyperbricks-patterns-yaml"
+  "project-lifecycle-test"
+  "streaming-demo"
+  "unpoly-guard-demo"
+)
+MODULE_NAMES=("${DEFAULT_MODULES[@]}")
+MODULES_OVERRIDDEN=0
 HYPERBRICKS_LOCAL_PATH="$ROOT_DIR"
 DRY_RUN=0
 BUILD_CORE=1
 BUILD_CUSTOM=1
 
 CORE_PLUGINS=(
-  "esbuild@2.0.0"
   "tailwindcss@2.0.0"
   "markdown@2.0.0"
 )
@@ -23,8 +29,11 @@ Builds HyperBricks plugins against this checkout:
   - custom module plugins from modules/<module>/plugins/<name>/<version>
 
 Options:
-  --module <name>            Module whose custom plugins should be built.
-                             Default: hyperbricks-patterns-yaml
+  --module <name>            Module whose custom plugins should be built. The
+                             first option replaces the defaults; repeat it to
+                             select multiple modules. Defaults:
+                             hyperbricks-patterns-yaml, project-lifecycle-test,
+                             streaming-demo, and unpoly-guard-demo.
   --hyperbricks-path <path>  Local HyperBricks checkout used in plugin go.mod
                              replace directives. Default: this repository root.
   --skip-core                Do not build shared core plugins.
@@ -44,17 +53,23 @@ Examples:
   scripts/plugins/build_hyperbricks_plugins.sh
   scripts/plugins/build_hyperbricks_plugins.sh --dry-run
   scripts/plugins/build_hyperbricks_plugins.sh --module hyperbricks-patterns-yaml
+  scripts/plugins/build_hyperbricks_plugins.sh --module streaming-demo --skip-core
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --module)
-      MODULE_NAME="${2:-}"
-      if [[ -z "$MODULE_NAME" ]]; then
+      module_name="${2:-}"
+      if [[ -z "$module_name" ]]; then
         echo "--module requires a value" >&2
         exit 2
       fi
+      if [[ "$MODULES_OVERRIDDEN" -eq 0 ]]; then
+        MODULE_NAMES=()
+        MODULES_OVERRIDDEN=1
+      fi
+      MODULE_NAMES+=("$module_name")
       shift 2
       ;;
     --hyperbricks-path)
@@ -104,7 +119,6 @@ fi
 cd "$ROOT_DIR"
 
 BIN_PLUGIN_DIR="$ROOT_DIR/bin/plugins"
-MODULE_PLUGIN_DIR="$ROOT_DIR/modules/$MODULE_NAME/plugins"
 BUILD_MARKER="$BIN_PLUGIN_DIR/hyperbricks-plugin-build-ok"
 
 if [[ "$DRY_RUN" -eq 0 ]]; then
@@ -280,17 +294,25 @@ build_plugin() {
   fi
 }
 
+CUSTOM_PLUGIN_MODULES=()
 CUSTOM_PLUGINS=()
 if [[ "$BUILD_CUSTOM" -eq 1 ]]; then
-  if [[ ! -d "$MODULE_PLUGIN_DIR" ]]; then
-    echo "Module plugin directory not found: $MODULE_PLUGIN_DIR" >&2
-    exit 1
-  fi
-  while IFS= read -r dir; do
-    name="$(basename "$(dirname "$dir")")"
-    version="$(basename "$dir")"
-    CUSTOM_PLUGINS+=("${name}@${version}")
-  done < <(find "$MODULE_PLUGIN_DIR" -mindepth 2 -maxdepth 2 -type d | sort)
+  for module_name in "${MODULE_NAMES[@]}"; do
+    module_plugin_dir="$ROOT_DIR/modules/$module_name/plugins"
+    if [[ ! -d "$module_plugin_dir" ]]; then
+      echo "Module plugin directory not found: $module_plugin_dir" >&2
+      exit 1
+    fi
+    while IFS= read -r dir; do
+      if [[ ! -f "$dir/manifest.json" ]]; then
+        continue
+      fi
+      name="$(basename "$(dirname "$dir")")"
+      version="$(basename "$dir")"
+      CUSTOM_PLUGIN_MODULES+=("$module_name")
+      CUSTOM_PLUGINS+=("${name}@${version}")
+    done < <(find "$module_plugin_dir" -mindepth 2 -maxdepth 2 -type d | sort)
+  done
 fi
 
 echo "Using HYPERBRICKS_LOCAL_PATH=$HYPERBRICKS_LOCAL_PATH"
@@ -301,9 +323,9 @@ if [[ "$BUILD_CORE" -eq 1 ]]; then
   done
 fi
 if [[ "$BUILD_CUSTOM" -eq 1 ]]; then
-  echo "Building custom module plugins for $MODULE_NAME:"
-  for plugin in "${CUSTOM_PLUGINS[@]}"; do
-    echo "  - $plugin"
+  echo "Building custom module plugins:"
+  for index in "${!CUSTOM_PLUGINS[@]}"; do
+    echo "  - ${CUSTOM_PLUGIN_MODULES[$index]}: ${CUSTOM_PLUGINS[$index]}"
   done
 fi
 
@@ -314,15 +336,16 @@ if [[ "$BUILD_CORE" -eq 1 ]]; then
 fi
 
 if [[ "$BUILD_CUSTOM" -eq 1 ]]; then
-  for plugin in "${CUSTOM_PLUGINS[@]}"; do
-    build_plugin "$plugin" "$MODULE_NAME"
+  for index in "${!CUSTOM_PLUGINS[@]}"; do
+    build_plugin "${CUSTOM_PLUGINS[$index]}" "${CUSTOM_PLUGIN_MODULES[$index]}"
   done
 fi
 
 if [[ "$DRY_RUN" -eq 0 ]]; then
+  module_list="$(IFS=,; printf '%s' "${MODULE_NAMES[*]}")"
   mkdir -p "$BIN_PLUGIN_DIR"
   {
-    printf 'module=%s\n' "$MODULE_NAME"
+    printf 'modules=%s\n' "$module_list"
     printf 'core=%s\n' "$([[ "$BUILD_CORE" -eq 1 ]] && echo true || echo false)"
     printf 'custom=%s\n' "$([[ "$BUILD_CUSTOM" -eq 1 ]] && echo true || echo false)"
     printf 'hyperbricks_local_path=%s\n' "$HYPERBRICKS_LOCAL_PATH"

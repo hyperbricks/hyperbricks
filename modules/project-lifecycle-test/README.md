@@ -29,6 +29,8 @@ The complete plugin-backed check is also part of:
 ./tests.sh --with-plugins
 ```
 
+The repository-wide build and smoke workflow is documented in [Plugin build and smoke scripts](../../scripts/plugins/README.md). The fixture's authoritative staged plugin build remains `test_project_lifecycle.py --with-plugin`.
+
 Python 3.9+, Go, and a HyperBricks runtime built from this checkout are required. Without `--binary`, the script builds a temporary HyperBricks binary from `./cmd/hyperbricks`.
 
 ## Profiles

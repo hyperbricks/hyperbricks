@@ -397,11 +397,14 @@ hyperbricks plugin list
 hyperbricks plugin install example@1.0.0
 hyperbricks plugin build example@1.0.0
 hyperbricks plugin build markdown-wasm@1.0.0
-hyperbricks plugin update example
 hyperbricks plugin remove example@1.0.0
 ```
 
 Use `--module <module>` with `plugin build` or `plugin remove` for custom module plugins.
+
+`plugin update` is reserved for a future atomic update workflow. It currently
+returns a nonzero `not implemented` error and does not modify installed plugins.
+Install the required version explicitly with `plugin install <name>@<version>`.
 
 See [Plugins](PLUGINS.md) for naming, manifests, and YAML usage.
 

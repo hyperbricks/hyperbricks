@@ -296,7 +296,7 @@ Install the highest published version of a global plugin by omitting the version
 hyperbricks plugin install example
 ```
 
-Check its compatibility before adopting it: this selects the highest published semantic version, not necessarily the latest compatible version. `plugin update` is currently a placeholder; use `install` and update the module's configured plugin names when the version changes.
+Check its compatibility before adopting it: this selects the highest published semantic version, not necessarily the latest compatible version. `plugin update` is reserved but not implemented; it exits with a nonzero error and makes no changes. Use `install <name>@<version>` and update the module's configured plugin names when the version changes.
 
 ## Local Runtime Development
 
@@ -324,6 +324,10 @@ The override works with both `plugin build` and `plugin install`. It points at t
 The native plugin builder uses two paths. With a local override, it adds a Go module `replace` directive pointing to the HyperBricks checkout. Without one, it selects the CLI's embedded HyperBricks version and removes the unversioned local replacement. The embedded version is not an exact Git revision, so a development runtime can contain newer code than its version label suggests. Installing that checkout with `go install ./cmd/hyperbricks` does not turn it into a published-release build.
 
 See the [native plugin builder](../cmd/hyperbricks/commands/plugin-commands.go), Go's [module replacement contract](https://go.dev/ref/mod#go-mod-file-replace), and the official [native plugin compatibility requirements](https://pkg.go.dev/plugin#hdr-Warnings). The local override selects source; it does not by itself guarantee matching toolchains, build settings, or shared dependencies.
+
+## Repository Maintainer Workflow
+
+The CLI commands above are the application-developer workflow for individual plugins. HyperBricks contributors can use the aggregate [plugin build and smoke scripts](../scripts/plugins/README.md) to rebuild the repository's plugin-backed demos and fixtures against this checkout. `./tests.sh --with-plugins` invokes that workflow as part of the full test suite.
 
 ## Rules
 

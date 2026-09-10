@@ -11,6 +11,10 @@ hyperbricks start -m <module-name>
 Some modules need a plugin build, an external service, or another preparation
 step. Follow the module's own README when it has one.
 
+Repository maintainers can use the centralized [plugin build and smoke
+scripts](../scripts/plugins/README.md) to rebuild the source-matched plugin set
+against the current checkout.
+
 ## Categories and support markers
 
 | Category | Purpose |
@@ -44,7 +48,7 @@ listed as a direct dependency for every row.
 | [`project-lifecycle-test`](project-lifecycle-test/) | Test fixture | **Tests** — [`test_project_lifecycle.py`](../scripts/test_project_lifecycle.py), run with `--with-plugins` for the complete profile set | End-to-end project lifecycle fixture covering development and production rendering, fragments, assets, Goja, APIs, guards, native plugins, static export, and runtime archives. |
 | [`sampleapis-coffee-static`](sampleapis-coffee-static/) | Feature demo | — | Static snapshot example that fetches the public SampleAPIs coffee endpoint through nested `api_render` and exports the rendered result. |
 | [`self-closing-tag`](self-closing-tag/) | Verification fixture | — | Small image-rendering fixture used for manually checking generated image markup and the `self_closing_tags` server option. |
-| [`ssr-proof-hyperbricks`](ssr-proof-hyperbricks/) | Benchmark fixture | **Tests + benchmarks** — render-plan tests, Go rendering benchmarks, and [`benchmarks/ssr-proof`](../benchmarks/ssr-proof/) | Minimal nested SSR workload with request-specific data, health endpoints, cached and raw server profiles, and stable output for throughput and allocation measurements. |
+| [`ssr-proof-hyperbricks`](ssr-proof-hyperbricks/) | Benchmark fixture | **Tests + benchmarks** — render-plan tests and Go rendering benchmarks | Minimal nested SSR workload with request-specific data, health endpoints, cached and raw server profiles, and stable output for throughput and allocation measurements. |
 | [`static-paths-demo`](static-paths-demo/) | Test fixture | **Tests** — [`static_paths_demo_test.go`](../cmd/hyperbricks/static_paths_demo_test.go) | Demonstrates module-relative and repository-root static directories while proving that public asset URLs remain rooted at `/static/`. |
 | [`streaming-demo`](streaming-demo/) | Feature demo | — | Native Go plugin example that streams several HTML progress updates over one response while HTMX swaps the target as chunks arrive. |
 | [`todo-demo-htmx`](todo-demo-htmx/) | Browser integration | — | The Little List todo application using HTMX 4 fragment updates and browser `localStorage`. |

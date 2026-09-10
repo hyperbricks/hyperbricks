@@ -2,7 +2,7 @@ module github.com/hyperbricks/plugins/unpoly-guard-demo
 
 go 1.26.1
 
-require github.com/hyperbricks/hyperbricks v1.2.3-beta
+require github.com/hyperbricks/hyperbricks v0.0.0
 
 require (
 	dario.cat/mergo v1.0.1 // indirect

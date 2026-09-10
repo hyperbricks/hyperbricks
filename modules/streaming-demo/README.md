@@ -21,6 +21,12 @@ go run ./cmd/hyperbricks start -m streaming-demo --port 18110 --non-interactive
 
 `HYPERBRICKS_LOCAL_PATH` makes the plugin build against this checkout. Native plugins and their host must use the same source, Go toolchain, and shared dependencies.
 
+Repository maintainers can also use the centralized [plugin build wrapper](../../scripts/plugins/README.md) for a source-matched rebuild of only this module plugin:
+
+```sh
+scripts/plugins/build_hyperbricks_plugins.sh --module streaming-demo --skip-core
+```
+
 ### Use An Installed Release
 
 With a compatible HyperBricks release already installed, build the plugin and start the demo without a local source override:

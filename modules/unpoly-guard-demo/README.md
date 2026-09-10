@@ -22,6 +22,12 @@ go run ./cmd/hyperbricks start -m unpoly-guard-demo --non-interactive
 
 `HYPERBRICKS_LOCAL_PATH` is a development-only override. If the local CLI was installed with `go install ./cmd/hyperbricks`, use the same override with `hyperbricks plugin build`. Native plugins and their host must use matching source and toolchains. See [plugin build modes](../../docs/PLUGINS.md#local-runtime-development).
 
+Repository maintainers can also use the centralized [plugin build wrapper](../../scripts/plugins/README.md) for a source-matched rebuild of only this module plugin:
+
+```sh
+scripts/plugins/build_hyperbricks_plugins.sh --module unpoly-guard-demo --skip-core
+```
+
 Open [localhost:8132](http://localhost:8132/). Unpoly is included locally; native esbuild builds the application JavaScript and CSS. No separate authorization server is needed.
 
 ## Try it
@@ -59,4 +65,4 @@ Cookies are HttpOnly and SameSite=Lax, and Secure when the request uses TLS. Log
 
 ## Credits
 
-[HyperBricks](https://hyperbricks.org/) · [HyperBricks repository](https://github.com/hyperbricks/hyperbricks) · [Unpoly](https://unpoly.com/) · [Unpoly repository](https://github.com/unpoly/unpoly). Unpoly 3.14.3 is copied from the existing todo-demo-unpoly local distribution; its MIT license is in `static/vendor/LICENSE.txt`.
+[HyperBricks](https://hyperbricks.eu/) · [HyperBricks repository](https://github.com/hyperbricks/hyperbricks) · [Unpoly](https://unpoly.com/) · [Unpoly repository](https://github.com/unpoly/unpoly). Unpoly 3.14.3 is copied from the existing todo-demo-unpoly local distribution; its MIT license is in `static/vendor/LICENSE.txt`.

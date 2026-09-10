@@ -57,7 +57,6 @@ hyperbricks:
     enabled:
       - MarkdownPlugin@2.0.0
       - TailwindcssPlugin@2.0.0
-      - EsbuildPlugin@2.0.0
       - TemplateConfigDemoPlugin__hyperbricks-patterns-yaml@2.0.0
       - GuardedDemoAuthPlugin__hyperbricks-patterns-yaml@1.0.0
       - WorkflowActionsDemoPlugin__hyperbricks-patterns-yaml@1.0.0
