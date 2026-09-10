@@ -48,6 +48,14 @@ New to HyperBricks? Start with the [Quickstart](docs/QUICKSTART.md) and create t
 - [Docker Deploy](docs/DOCKER.md)
 - [API Render](docs/API_RENDER.md)
 
+Build the complete documentation and skills handbooks as standalone Markdown files:
+
+```shell
+python3 scripts/build_markdown_handbooks.py
+```
+
+The command reads from the last committed version (`HEAD`) and writes both handbooks to `output/markdown/`. Pass `--ref <commit-or-tag>` to build another committed snapshot, or `--check` to verify that existing outputs match the selected revision.
+
 ---
 
 The project is released under the [MIT License](https://github.com/hyperbricks/hyperbricks/blob/main/LICENSE) and provided “as-is,” without any warranties or guarantees.

@@ -21,6 +21,7 @@ CHANGES.md
 
 docker/ssh/authorized_keys
 *.pdf
+/output/markdown/
 .gitignore
 .env
 deploy/
