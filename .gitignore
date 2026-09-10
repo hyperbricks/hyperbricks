@@ -17,10 +17,7 @@ tmp/
 
 TO_DO.md
 CHANGES.md
-REFERENCE.generated.md
-alpine-hyperbricks-compile.md
-docs/PLUGIN_REFACTOR_WORKDOCUMENT.md
-docs/PLUGIN_REFACTOR.md
+
 
 docker/ssh/authorized_keys
 *.pdf
