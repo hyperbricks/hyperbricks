@@ -94,9 +94,9 @@ type Proof struct{}
 func (*Proof) Render(any, context.Context) (any, []error) { return "<p>PLUGIN-PROOF</p>", nil }
 func Plugin() (shared.PluginRenderer, error) { return &Proof{}, nil }
 ''')
-        (fixture / 'go.mod').write_text('module github.com/hyperbricks/plugins/docker-proof\n\ngo 1.26.1\n\nrequire github.com/hyperbricks/hyperbricks v2.0.0-beta\n')
+        (fixture / 'go.mod').write_text('module github.com/hyperbricks/plugins/docker-proof\n\ngo 1.26.1\n\nrequire github.com/hyperbricks/hyperbricks v1.2.3-beta\n')
         (fixture / 'manifest.json').write_text(json.dumps(dict(plugin='github.com/hyperbricks/plugins/docker-proof', source='proof.go',
-            binary='DockerProof', version='1.0.0', description='Local Docker smoke test', compatible_hyperbricks=['>=2.0.0-beta'])))
+            binary='DockerProof', version='1.0.0', description='Local Docker smoke test', compatible_hyperbricks=['>=1.2.3-beta'])))
         run('mkdir', '-p', 'plugins/docker-proof/1.0.0')
         command('docker', 'cp', str(fixture) + '/.', container + ':/opt/hyperbricks/plugins/docker-proof/1.0.0/')
         compose('exec', '-T', 'hyperbricks-deploy', 'chown', '-R', 'deploy:deploy', '/opt/hyperbricks/plugins/docker-proof')

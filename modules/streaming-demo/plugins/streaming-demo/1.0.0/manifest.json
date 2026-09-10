@@ -4,6 +4,6 @@
   "runtime": "native",
   "version": "1.0.0",
   "binary": "StreamingDemoPlugin",
-  "compatible_hyperbricks": [">=2.0.0-beta"],
+  "compatible_hyperbricks": [">=1.2.3-beta"],
   "description": "Four-step SSE demo using the native handled-response stream callback"
 }

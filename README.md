@@ -1,9 +1,9 @@
 <!-- Generated from test/docs/readme.md by scripts/build_docs.sh. Do not edit README.md directly. -->
 
 **Licence:** MIT
-**Version:** v2.0.0-beta
+**Version:** v1.2.3-beta
 
-**Build time:** 2026-09-10 13:20 UTC
+**Build time:** 2026-09-10 21:58 UTC
 
 
 ## Build Status

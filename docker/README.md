@@ -16,7 +16,7 @@ See [Docker Deploy Host](../docs/DOCKER.md) for release selection, alternate por
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `HB_BUILD_SOURCE` | `checkout` | Build local source, or use `release`. |
-| `HB_VERSION` | `v2.0.0-beta` | Published version installed in release mode. |
+| `HB_VERSION` | `v1.2.3-beta` | Published version installed in release mode. |
 | `HB_DEPLOY_SECRET` | Required | Shared client/server HMAC secret. |
 | `HB_BIND_ADDRESS` | `127.0.0.1` | Host address for published ports. |
 | `HB_API_PORT` | `9090` | Host Deploy API port. |

@@ -3,7 +3,7 @@ FROM golang:1.26.1-alpine
 ARG HB_USER=deploy
 ARG HB_GROUP=deploy
 ARG HB_HOME=/opt/hyperbricks
-ARG HB_VERSION=v2.0.0-beta
+ARG HB_VERSION=v1.2.3-beta
 ARG HB_BUILD_SOURCE=checkout
 ARG TAILWIND_VERSION=
 

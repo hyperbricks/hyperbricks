@@ -220,7 +220,7 @@ rendered pages.
 - Remove reproducible browser bundles and image derivatives from example
   modules, and correct public documentation links and HyperBricks website URLs.
 - Align stale release, install, Docker, and plugin references with
-  `v2.0.0-beta`.
+  `v1.2.3-beta`.
 - Make the reserved `plugin update` command fail with an explicit nonzero
   `not implemented` error instead of printing a simulated successful update.
 - Expand the repository plugin builder to cover every plugin-backed demo and
