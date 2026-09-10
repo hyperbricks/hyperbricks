@@ -1,1 +1,0 @@
-This text is loaded through the YAML file resolver from modules/demo/resources/init-copy.txt.
