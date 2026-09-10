@@ -7,7 +7,7 @@
       "category": "composite",
       "child_model": "none",
       "config_struct": "github.com/hyperbricks/hyperbricks/pkg/composite.ApiFragmentRenderConfig",
-      "description": "Request-time API fragment that forwards to an upstream endpoint and renders the response.",
+      "description": "Route-owning API fragment that always bypasses rendered-output caching and makes a fresh upstream request when invoked.",
       "authoring": {
         "groups": [
           {
@@ -800,7 +800,7 @@
       "category": "data",
       "child_model": "none",
       "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.APIConfig",
-      "description": "Remote API fetcher that renders the upstream response through a template.",
+      "description": "Nested API fetcher with no upstream-response cache or nocache field. It makes a fresh upstream request whenever its parent route renders; the parent owns rendered-output caching.",
       "authoring": {
         "groups": [
           {
@@ -3529,7 +3529,7 @@
           "go_name": "Alt",
           "go_type": "string",
           "kind": "string",
-          "description": "Alternative text for the image",
+          "description": "Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images.",
           "example": "{!{image-alt.hyperbricks.yaml}}",
           "authoring": {
             "label": "Alt text",
@@ -3599,9 +3599,9 @@
           "go_name": "Height",
           "go_type": "int",
           "kind": "int",
-          "description": "The height of the image (can be a number or percentage)",
+          "description": "Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size.",
           "example": "{!{image-height.hyperbricks.yaml}}",
-          "validate": "min=1",
+          "validate": "min=0",
           "authoring": {
             "label": "Height",
             "control": "number",
@@ -3654,7 +3654,7 @@
           "go_name": "Quality",
           "go_type": "int",
           "kind": "int",
-          "description": "Image quality for optimization",
+          "description": "JPEG encoding quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding.",
           "example": "{!{image-quality.hyperbricks.yaml}}",
           "authoring": {
             "label": "Quality",
@@ -3672,7 +3672,7 @@
           "go_name": "Src",
           "go_type": "string",
           "kind": "string",
-          "description": "The source URL of the image",
+          "description": "Local filesystem path to a JPEG, PNG, or GIF image, relative to the working directory unless absolute. Use a path resolver for module resources. Remote URLs and SVG processing are not supported.",
           "example": "{!{image-src.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
@@ -3709,9 +3709,9 @@
           "go_name": "Width",
           "go_type": "int",
           "kind": "int",
-          "description": "The width of the image (can be a number or percentage)",
+          "description": "Output width in integer pixels; omit or use 0 to preserve aspect ratio from height. Omit both dimensions to keep the source size.",
           "example": "{!{image-width.hyperbricks.yaml}}",
-          "validate": "min=1",
+          "validate": "min=0",
           "authoring": {
             "label": "Width",
             "control": "number",
@@ -3757,7 +3757,7 @@
           "go_name": "Alt",
           "go_type": "string",
           "kind": "string",
-          "description": "Alternative text for the image",
+          "description": "Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images.",
           "example": "{!{images-alt.hyperbricks.yaml}}",
           "authoring": {
             "label": "Alt text",
@@ -3809,7 +3809,7 @@
           "go_name": "Directory",
           "go_type": "string",
           "kind": "string",
-          "description": "The directory path containing the images",
+          "description": "Local filesystem directory containing JPEG, PNG, or GIF images. Reads files in filename order without descending into subdirectories; other extensions are skipped.",
           "example": "{!{images-directory.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
@@ -3846,9 +3846,9 @@
           "go_name": "Height",
           "go_type": "int",
           "kind": "int",
-          "description": "The height of the images (can be a number or percentage)",
+          "description": "Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size.",
           "example": "{!{images-height.hyperbricks.yaml}}",
-          "validate": "min=1",
+          "validate": "min=0",
           "authoring": {
             "label": "Height",
             "control": "number",
@@ -3901,7 +3901,7 @@
           "go_name": "Quality",
           "go_type": "int",
           "kind": "int",
-          "description": "Image quality for optimization",
+          "description": "JPEG encoding quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding.",
           "example": "{!{images-quality.hyperbricks.yaml}}",
           "authoring": {
             "label": "Quality",
@@ -3937,9 +3937,9 @@
           "go_name": "Width",
           "go_type": "int",
           "kind": "int",
-          "description": "The width of the images (can be a number or percentage)",
+          "description": "Output width in integer pixels; omit or use 0 to preserve aspect ratio from height. Omit both dimensions to keep each source size.",
           "example": "{!{images-width.hyperbricks.yaml}}",
-          "validate": "min=1",
+          "validate": "min=0",
           "authoring": {
             "label": "Width",
             "control": "number",

@@ -76,7 +76,7 @@ func Definitions() []Definition {
 			Category:    CategoryComposite,
 			ChildModel:  ChildModelNone,
 			ConfigType:  reflect.TypeOf(composite.ApiFragmentRenderConfig{}),
-			Description: "Request-time API fragment that forwards to an upstream endpoint and renders the response.",
+			Description: "Route-owning API fragment that always bypasses rendered-output caching and makes a fresh upstream request when invoked.",
 			FormGroups: []FormGroup{
 				routeGroup("title", "route", "section", "enclose", "index"),
 				apiGroup("endpoint", "method", "headers", "body", "username", "password", "jwtsecret", "jwtclaims"),
@@ -246,7 +246,7 @@ func Definitions() []Definition {
 			Category:    CategoryData,
 			ChildModel:  ChildModelNone,
 			ConfigType:  reflect.TypeOf(component.APIConfig{}),
-			Description: "Remote API fetcher that renders the upstream response through a template.",
+			Description: "Nested API fetcher with no upstream-response cache or nocache field. It makes a fresh upstream request whenever its parent route renders; the parent owns rendered-output caching.",
 			FormGroups: []FormGroup{
 				apiGroup("endpoint", "method", "headers", "body", "username", "password", "jwtsecret", "jwtclaims"),
 				templateGroup("template", "inline", "querykeys", "queryparams", "values"),

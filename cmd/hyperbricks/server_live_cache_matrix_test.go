@@ -137,6 +137,70 @@ func TestServeContent_LiveCacheMixedPolicies(t *testing.T) {
 	}
 }
 
+func TestServeContent_LiveCacheAPIRenderOwnership(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+	var cachedCalls, uncachedCalls, fragmentCalls atomic.Int32
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		var call int32
+		switch r.URL.Path {
+		case "/cached":
+			call = cachedCalls.Add(1)
+		case "/uncached":
+			call = uncachedCalls.Add(1)
+		case "/fragment":
+			call = fragmentCalls.Add(1)
+		default:
+			http.NotFound(w, r)
+			return
+		}
+		fmt.Fprintf(w, `{"call":%d}`, call)
+	}))
+	defer upstream.Close()
+
+	nestedRoute := func(route, endpoint string, noCache bool) map[string]interface{} {
+		return map[string]interface{}{
+			"@type": composite.FragmentConfigGetName(), "route": route, "nocache": noCache,
+			"10": map[string]interface{}{
+				"@type": component.APIConfigGetName(), "endpoint": endpoint,
+				"method": http.MethodGet, "inline": `call={{.Data.call}}`,
+			},
+		}
+	}
+	setTestRouteConfig("cached-api-render", nestedRoute("cached-api-render", upstream.URL+"/cached", false))
+	setTestRouteConfig("uncached-api-render", nestedRoute("uncached-api-render", upstream.URL+"/uncached", true))
+	setTestRouteConfig("api-fragment", map[string]interface{}{
+		"@type": composite.ApiFragmentRenderConfigGetName(), "route": "api-fragment",
+		"endpoint": upstream.URL + "/fragment", "method": http.MethodGet, "inline": `call={{.Data.call}}`,
+	})
+
+	responses := make(map[string][]*httptest.ResponseRecorder)
+	for attempt := 0; attempt < 2; attempt++ {
+		for _, route := range []string{"cached-api-render", "uncached-api-render", "api-fragment"} {
+			response := serveLiveCacheMatrix(httptest.NewRequest(http.MethodGet, "/"+route, nil))
+			if response.Code != http.StatusOK {
+				t.Fatalf("%s attempt %d: status=%d body=%q", route, attempt+1, response.Code, response.Body.String())
+			}
+			responses[route] = append(responses[route], response)
+		}
+	}
+
+	if cachedCalls.Load() != 1 || responses["cached-api-render"][0].Body.String() != responses["cached-api-render"][1].Body.String() {
+		t.Fatalf("cached parent did not reuse rendered API output: calls=%d bodies=%q/%q", cachedCalls.Load(), responses["cached-api-render"][0].Body.String(), responses["cached-api-render"][1].Body.String())
+	}
+	if uncachedCalls.Load() != 2 || responses["uncached-api-render"][0].Body.String() == responses["uncached-api-render"][1].Body.String() {
+		t.Fatalf("nocache parent did not execute nested API render twice: calls=%d bodies=%q/%q", uncachedCalls.Load(), responses["uncached-api-render"][0].Body.String(), responses["uncached-api-render"][1].Body.String())
+	}
+	if fragmentCalls.Load() != 2 || responses["api-fragment"][0].Body.String() == responses["api-fragment"][1].Body.String() {
+		t.Fatalf("API fragment did not call upstream twice: calls=%d bodies=%q/%q", fragmentCalls.Load(), responses["api-fragment"][0].Body.String(), responses["api-fragment"][1].Body.String())
+	}
+	if responses["cached-api-render"][0].Header().Get(liveCacheRenderedAtHeader) == "" ||
+		responses["uncached-api-render"][0].Header().Get(liveCacheRenderedAtHeader) != "" ||
+		responses["api-fragment"][0].Header().Get(liveCacheRenderedAtHeader) != "" {
+		t.Fatalf("cache metadata does not match API route ownership")
+	}
+}
+
 func TestServeContent_LiveCacheRequestVariantMatrix(t *testing.T) {
 	type requestInput struct {
 		method, target, body string

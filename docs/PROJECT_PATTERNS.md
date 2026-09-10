@@ -126,8 +126,8 @@ Use ordinary CSS for the first project. Introduce tools such as Tailwind only wh
 | --- | --- |
 | Format text, iterate data, display a condition | Go template and Sprig |
 | Small synchronous calculation from configured values and selected query input | `goja_render` |
-| Render a read-only public API inside a page | `api_render` |
-| Forward a form/API action and render its response | `api_fragment_render` |
+| Render API data inside a page whose route owns the HTML cache policy | `api_render`; use `nocache` on the parent route when every request must fetch current data |
+| Expose a request-time API-backed fragment route | `api_fragment_render`; it is a route owner and always bypasses rendered-output caching |
 | Access host services or implement a custom server workflow | A Go plugin |
 | React to browser-only interaction | Browser JavaScript |
 

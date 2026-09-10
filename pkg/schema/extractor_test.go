@@ -1,6 +1,9 @@
 package schema
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestRegistryContainsRuntimeTypes(t *testing.T) {
 	schema := ExtractRegistry(Definitions())
@@ -117,6 +120,34 @@ func TestExtractorFindsGuardAndResponseFields(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestExtractorRepresentsAPICacheOwnership(t *testing.T) {
+	schema := ExtractRegistry(Definitions())
+
+	apiRender := findType(schema, "<API_RENDER>")
+	if apiRender == nil {
+		t.Fatal("missing <API_RENDER>")
+	}
+	if findField(*apiRender, "route") != nil || findField(*apiRender, "nocache") != nil {
+		t.Fatal("api_render must not expose route ownership or a nocache field")
+	}
+	for _, phrase := range []string{"no upstream-response cache", "parent owns rendered-output caching"} {
+		if !strings.Contains(apiRender.Description, phrase) {
+			t.Fatalf("api_render description %q is missing %q", apiRender.Description, phrase)
+		}
+	}
+
+	apiFragment := findType(schema, "<API_FRAGMENT_RENDER>")
+	if apiFragment == nil {
+		t.Fatal("missing <API_FRAGMENT_RENDER>")
+	}
+	if findField(*apiFragment, "route") == nil {
+		t.Fatal("api_fragment_render must expose its route ownership")
+	}
+	if !strings.Contains(apiFragment.Description, "always bypasses rendered-output caching") {
+		t.Fatalf("api_fragment_render description does not state its forced cache policy: %q", apiFragment.Description)
 	}
 }
 

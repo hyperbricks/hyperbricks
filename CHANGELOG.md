@@ -158,3 +158,55 @@ rendered pages.
 - A corrupt gallery image caused the CLI to exit with status 1, identify the
   failed file in render diagnostics, and produce no ZIP.
 - Independent reviews and final diff checks completed before the three commits.
+
+## 2026-09-10 updates
+
+### Go execution parallelism (`27607f1`)
+
+- Replace the hard-coded four-slot `GOMAXPROCS` policy with validated
+  `hyperbricks.server.gomaxprocs` package configuration.
+- Use Go's CPU- and container-aware automatic policy by default. Accept fixed
+  integer values from one through the host's logical CPU count and reject invalid
+  values during startup.
+- Keep automatic runtime CPU-limit updates enabled in `auto` mode and report the
+  effective setting in the startup log.
+- Document the setting and add parsing, validation, startup, and log coverage.
+
+### API render cache ownership
+
+- Define the cache contract for `api_render` and `api_fragment_render` in the
+  component metadata, generated reference, API guide, project patterns, schema,
+  fixtures, and shipped HyperBricks skill.
+- Clarify that neither component caches upstream API responses. A nested
+  `api_render` makes a fresh upstream request whenever it executes, while its
+  parent route owns rendered-output caching. A parent cache hit skips the nested
+  render and API request.
+- Clarify that `api_render` has no `route` or `nocache` field. Fresh data on every
+  route request requires `nocache: true` on the containing `hypermedia` or
+  `fragment` route.
+- Clarify that route-owning `api_fragment_render` always bypasses rendered-output
+  caching and therefore calls its upstream on every invocation.
+- Add regression tests that count upstream calls for cached parents, uncached
+  parents, and API fragment routes, plus schema assertions that keep unsupported
+  cache fields out of `api_render`.
+
+### Benchmark and documentation maintenance
+
+- Move the beautification measurement benchmark into `cmd/hyperbricks`, where
+  its shared SSR benchmark fixture is defined, so `go vet ./...` and clean builds
+  no longer encounter an undefined helper in a separate package.
+- Preserve the Windows plugin-platform note and recommended project-patterns
+  link in the README generator source, then regenerate the root README and
+  component reference.
+
+### Verification of these updates
+
+- `./tests.sh --with-docs` passed, including `go vet`, all Go package tests,
+  Docker-backed API rendering tests, generated documentation checks, template
+  tests, marker tests, and HTTP header, cookie, and cache suites.
+- A follow-up documentation regeneration and `go test ./test/docs` passed after
+  the README generator source was corrected.
+- A 72-sample local SSR matrix exercised one, four, and eight Go execution slots
+  across 1,211,692 validated responses with no status or content failures. These
+  measurements are retained as local benchmark evidence rather than a portable
+  cross-environment performance guarantee.

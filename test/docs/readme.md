@@ -29,6 +29,8 @@ HyperBricks’ native `esbuild` component bundles JavaScript, TypeScript, and CS
 
 For server-side logic, projects can call APIs, run trusted JavaScript with `goja_render`, or use Go plugins. The CLI creates and runs modules, exports static pages, and packages modules for deployment.
 
+**Windows limitation:** Native Go plugins (`.so`) cannot be built or loaded when HyperBricks runs directly on Windows. This restriction comes from Go's plugin system and does not apply to the separate WebAssembly (`.wasm`) plugin format. See [plugin platform support](docs/PLUGINS.md#platform-support) for details and the upstream Go reference.
+
 <br>
 
 ## Docs
@@ -36,6 +38,7 @@ For server-side logic, projects can call APIs, run trusted JavaScript with `goja
 New to HyperBricks? Start with the [Quickstart](docs/QUICKSTART.md), then explore [Project Desk](modules/hyperbricks-basics/README.md), a small application that connects shared pages, fragments, assets, and server-side calculations. The [general HyperBricks skill](SKILLS/hyperbricks/SKILL.md) helps agents apply the same workflows in your project.
 - [Introduction](docs/INTRODUCTION.md)
 - [Quickstart](docs/QUICKSTART.md)
+- [Recommended project patterns](docs/PROJECT_PATTERNS.md)
 - [Routing](docs/ROUTING.md)
 - [Reference](docs/REFERENCE.md)
 - [Deploy Guide](docs/DEPLOY.md)

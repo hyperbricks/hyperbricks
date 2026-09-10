@@ -1,7 +1,7 @@
 **Licence:** MIT
 **Version:** v1.2.3-beta
 
-**Build time:** 2026-09-07 12:52 UTC
+**Build time:** 2026-09-10 10:07 UTC
 
 
 # HyperBricks Component Reference
@@ -184,7 +184,7 @@ Expected output:
 ### `<API_FRAGMENT_RENDER>`
 
 
-Request-time API fragment that forwards to an upstream endpoint and renders the response.
+Route-owning API fragment that always bypasses rendered-output caching and makes a fresh upstream request when invoked.
 
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
@@ -233,7 +233,7 @@ Request-time API fragment that forwards to an upstream endpoint and renders the 
 
 Fixture: `api-fragment-render-@doc.hyperbricks.yaml.test`
 
-A `<FRAGMENT>` dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+Expose a route that calls an upstream API and renders a fragment response. API fragment routes always bypass rendered-output caching and call the upstream whenever invoked.
 
 
 ```yaml
@@ -563,7 +563,7 @@ Expected output:
 ### `<API_RENDER>`
 
 
-Remote API fetcher that renders the upstream response through a template.
+Nested API fetcher with no upstream-response cache or nocache field. It makes a fresh upstream request whenever its parent route renders; the parent owns rendered-output caching.
 
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
@@ -589,7 +589,7 @@ Remote API fetcher that renders the upstream response through a template.
 
 Fixture: `api-render-@doc.hyperbricks.yaml.test`
 
-Fetch a remote API endpoint and render the response through a template or inline template.
+Fetch an upstream API whenever this nested component executes and render the response through a template. The parent route owns rendered-output caching; api_render has no nocache field or upstream-response cache.
 
 
 ```yaml

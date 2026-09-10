@@ -26,7 +26,7 @@ import (
 type APIConfig struct {
 	shared.Component   `mapstructure:",squash"`
 	ApiRenderConfig    `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"Fetch a remote API endpoint and render the response through a template or inline template." example:"{!{api-render-@doc.hyperbricks.yaml}}"`
+	MetaDocDescription string `mapstructure:"@doc" description:"Nested API fetcher with no upstream-response cache. It renders the upstream response through a template; its parent route owns rendered-output caching." example:"{!{api-render-@doc.hyperbricks.yaml}}"`
 }
 
 type ApiRenderConfig struct {

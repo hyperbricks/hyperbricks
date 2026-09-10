@@ -304,7 +304,18 @@ Choose a component for the operation you need:
 
 `goja_render` is beta and intended for trusted project scripts. It exposes no Node.js, filesystem, or network APIs. Each execution receives a fresh JavaScript runtime; its returned object is available in the template as `.Data`.
 
-API templates receive the parsed API response in `.Data` and the upstream status in `.Status`. The current `api_fragment_render` response to the browser can be HTTP 200 even when the API returned an error. Use the API result to decide whether a submitted form succeeded and whether another panel should refresh.
+API templates receive the parsed API response in `.Data` and the upstream status
+in `.Status`. Neither API component caches upstream responses: every component
+execution makes a fresh API request. `api_render` is nested and has no `route`
+or `nocache` field. Its parent `hypermedia` or `fragment` owns the rendered-output
+cache policy; a parent cache hit skips the nested API call. Put `nocache: true`
+on that route owner when every route request must fetch current API data.
+`api_fragment_render` is itself a route owner and always bypasses the
+rendered-output cache, so every invocation calls its upstream.
+
+The current `api_fragment_render` response to the browser can be HTTP 200 even
+when the API returned an error. Use the API result to decide whether a submitted
+form succeeded and whether another panel should refresh.
 
 Add a `guard` to each page, fragment, or API action that requires access checks. A rejected request stops before its child components render. Requiring a token to be present does not validate it: configure `guard.authorize.endpoint` for the service that checks access. The API or storage operation must also enforce permissions when called directly.
 

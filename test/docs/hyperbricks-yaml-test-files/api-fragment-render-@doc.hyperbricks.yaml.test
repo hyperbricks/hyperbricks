@@ -5,7 +5,7 @@ api_fragment:
   - method: GET
   - route: api-fragment
 ==== explainer ====
-A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience.
+Expose a route that calls an upstream API and renders a fragment response. API fragment routes always bypass rendered-output caching and call the upstream whenever invoked.
 ==== expected json ====
 {
   "AllowedQueryKeys": null,

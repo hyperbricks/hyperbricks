@@ -25,7 +25,7 @@ type ApiFragmentRenderConfig struct {
 	shared.Composite   `mapstructure:",squash"`
 	APIConfig          `mapstructure:",squash"`
 	Response           HTTPResponseConfig `mapstructure:"response" description:"Browser HTTP status and headers; separate from upstream request headers"`
-	MetaDocDescription string             `mapstructure:"@doc" description:"A <FRAGMENT> dynamically renders a part of an HTML page, allowing updates without a full page reload and improving performance and user experience." example:"{!{api-fragment-render-@doc.hyperbricks.yaml}}"`
+	MetaDocDescription string             `mapstructure:"@doc" description:"Route-owning API fragment that always bypasses rendered-output caching and makes a fresh upstream request when invoked." example:"{!{api-fragment-render-@doc.hyperbricks.yaml}}"`
 	Title              string             `mapstructure:"title" description:"The title of the fragment" example:"{!{api-fragment-render-title.hyperbricks.yaml}}"`
 	Route              string             `mapstructure:"route" description:"The route (URL-friendly identifier) for the fragment" example:"{!{api-fragment-render-route.hyperbricks.yaml}}"`
 	Section            string             `mapstructure:"section" description:"The section the fragment belongs to" example:"{!{api-fragment-render-section.hyperbricks.yaml}}"`

@@ -47,7 +47,18 @@ Each execution gets a fresh JavaScript runtime and copied input; the compiled sc
 
 ## Read from an API
 
-`api_render` is nested under a page/fragment; its response can be cached with the parent. `api_fragment_render` owns its route and is always dynamic. For example, a fragment against an application-owned service can look like:
+Neither API component caches upstream API responses. Whenever one executes, it
+makes a fresh HTTP request. `api_render` is nested under a page or fragment and
+has no `route` or `nocache` field. Its rendered HTML follows the parent route's
+cache policy: a parent cache hit skips the entire child render, including the API
+call. Put `nocache: true` on the parent route when every request must fetch current
+API data.
+
+`api_fragment_render` is a route-owning root component and always bypasses the
+rendered-output cache. Every route invocation therefore executes the component
+and calls its upstream. This is distinct from browser or proxy caching, which is
+controlled through HTTP response headers. For example, a fragment against an
+application-owned service can look like:
 
 ```yaml
 project_status:

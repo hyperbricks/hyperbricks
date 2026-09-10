@@ -5,16 +5,47 @@ HyperBricks can fetch API data and render it into HTML through Go templates. The
 - `api_render` fetches API data inside another route and renders it as part of a page or fragment.
 - `api_fragment_render` owns its own route and returns a dynamic fragment.
 
-Use `api_render` for public, cacheable, nested content. Use `api_fragment_render` for interactive, request-specific, or authenticated fragment responses.
+Use `api_render` for read-only API content nested in a page or fragment; that parent route owns the rendered-output cache policy. Use `api_fragment_render` for interactive, request-specific, or authenticated fragment responses.
 
 ## At A Glance
 
 | YAML type | Runtime type | Route owner | Cache behavior | Typical use |
 | --- | --- | --- | --- | --- |
-| `api_render` | `<API_RENDER>` | no | cacheable by parent route | public feeds, public widgets, read-only API content |
-| `api_fragment_render` | `<API_FRAGMENT_RENDER>` | yes | always dynamic | forms, authenticated fragments, API-backed page sections |
+| `api_render` | `<API_RENDER>` | no | no API-response cache; rendered HTML follows the parent route policy | public feeds, public widgets, read-only API content |
+| `api_fragment_render` | `<API_FRAGMENT_RENDER>` | yes | always renders and calls its upstream API | forms, authenticated fragments, API-backed page sections |
 
-`api_fragment_render` is forced to `nocache` at runtime.
+`api_fragment_render` is forced to `nocache` at runtime; it does not need a configured `nocache` field.
+
+### Cache Ownership
+
+Neither API component caches upstream API responses. Whenever either component executes, it sends a new HTTP request to its configured endpoint. HTTP connection reuse is not response caching.
+
+`api_render` does not own a route and has no `nocache` field. Its parent `hypermedia` or `fragment` route decides whether the complete rendered response may be reused. On a parent-route cache hit, HyperBricks skips the whole render tree, so the nested `api_render` does not execute and makes no API request. Put `nocache: true` on the parent route when every incoming route request must fetch current API data:
+
+```yaml
+products:
+  - type: hypermedia
+  - route: products
+  - nocache: true
+  - content:
+      - type: api_render
+      - endpoint: https://api.example.test/products
+      - method: GET
+      - template:
+          file: api/products.html
+```
+
+Do not put `nocache` on the nested component; it is not an `api_render` option and does not propagate to its parent:
+
+```yaml
+# Unsupported: this does not change route or API caching.
+- type: api_render
+- nocache: true
+```
+
+`api_fragment_render` is different because it is itself a route-owning root component. HyperBricks always bypasses the internal rendered-output cache for that route, so every request executes the component and calls the upstream API. The forced route policy still does not create or configure an API-response cache.
+
+`nocache` controls HyperBricks' internal rendered-route cache. `Cache-Control` controls browsers and HTTP intermediaries. Configure the route's response headers separately when clients must not store its HTML. Upstream caching performed by a proxy, CDN, or API service is outside both component contracts. See [Live-mode HTTP caching](LIVE_MODE_HTTP.md) and [HTTP responses](HTTP_RESPONSES.md).
 
 ## API Render
 
