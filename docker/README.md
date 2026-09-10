@@ -16,12 +16,12 @@ See [Docker Deploy Host](../docs/DOCKER.md) for release selection, alternate por
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `HB_BUILD_SOURCE` | `checkout` | Build local source, or use `release`. |
-| `HB_VERSION` | `v1.2.3-beta` | Published version installed in release mode. |
+| `HB_VERSION` | `v2.0.0-beta` | Published version installed in release mode. |
 | `HB_DEPLOY_SECRET` | Required | Shared client/server HMAC secret. |
 | `HB_BIND_ADDRESS` | `127.0.0.1` | Host address for published ports. |
 | `HB_API_PORT` | `9090` | Host Deploy API port. |
 | `HB_RUNTIME_PORTS` | `8080-8100` | Host range mapped to container ports 8080–8100. |
-| `TAILWIND_VERSION` | Empty | Optional standalone Tailwind CLI version. |
+| `TAILWIND_VERSION` | Empty | Optional standalone Tailwind CLI version; the download is checked against that release's published SHA-256 manifest. |
 
 Archives and extracted runtimes persist in `docker/data/deploy`; compiled global plugins persist in the Compose `plugin-builds` volume. Rebuild plugins when the runtime/toolchain changes. Native esbuild requires no external plugin.
 

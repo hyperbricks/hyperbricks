@@ -3,7 +3,7 @@ FROM golang:1.26.1-alpine
 ARG HB_USER=deploy
 ARG HB_GROUP=deploy
 ARG HB_HOME=/opt/hyperbricks
-ARG HB_VERSION=v1.2.3-beta
+ARG HB_VERSION=v2.0.0-beta
 ARG HB_BUILD_SOURCE=checkout
 ARG TAILWIND_VERSION=
 
@@ -66,10 +66,15 @@ RUN if [ -n "${TAILWIND_VERSION}" ]; then \
         aarch64) pkgs="tailwindcss-linux-arm64-musl tailwindcss-linux-arm64" ;; \
         *) echo "unsupported arch for tailwind: $arch" >&2; exit 1 ;; \
       esac; \
+      release_url="https://github.com/tailwindlabs/tailwindcss/releases/download/v${TAILWIND_VERSION}"; \
+      wget -qO /tmp/tailwindcss-sha256sums.txt "${release_url}/sha256sums.txt"; \
       for pkg in $pkgs; do \
-        url="https://github.com/tailwindlabs/tailwindcss/releases/download/v${TAILWIND_VERSION}/${pkg}"; \
-        if wget -qO /usr/local/bin/tailwindcss "$url"; then \
-          chmod +x /usr/local/bin/tailwindcss; \
+        if wget -qO /tmp/tailwindcss "${release_url}/${pkg}"; then \
+          checksum="$(awk -v name="./${pkg}" '$2 == name { print $1 }' /tmp/tailwindcss-sha256sums.txt)"; \
+          test -n "$checksum" || { echo "no published checksum for ${pkg}" >&2; exit 1; }; \
+          echo "${checksum}  /tmp/tailwindcss" | sha256sum -c -; \
+          install -m 0755 /tmp/tailwindcss /usr/local/bin/tailwindcss; \
+          rm -f /tmp/tailwindcss /tmp/tailwindcss-sha256sums.txt; \
           echo "Installed tailwindcss from ${pkg}"; \
           exit 0; \
         fi; \

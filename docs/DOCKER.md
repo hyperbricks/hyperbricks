@@ -19,7 +19,7 @@ To build a published release instead:
 
 ```bash
 export HB_BUILD_SOURCE=release
-export HB_VERSION=v1.2.3-beta
+export HB_VERSION=v2.0.0-beta
 docker compose -f docker/docker-compose.yml up --build -d
 ```
 
@@ -90,7 +90,7 @@ export TAILWIND_VERSION=4.1.10
 docker compose -f docker/docker-compose.yml up --build -d
 ```
 
-Set `TAILWIND_VERSION` to an empty value to skip it again. The Dockerfile selects a Linux download for the container architecture. This does not install or enable a HyperBricks Tailwind plugin.
+Set `TAILWIND_VERSION` to an empty value to skip it again. The Dockerfile selects a Linux download for the container architecture and verifies it against the SHA-256 manifest published with that release. This does not install or enable a HyperBricks Tailwind plugin.
 
 ## Inspect And Stop
 

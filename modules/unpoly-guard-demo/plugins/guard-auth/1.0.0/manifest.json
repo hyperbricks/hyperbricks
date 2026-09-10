@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "binary": "UnpolyGuardAuth",
   "compatible_hyperbricks": [
-    ">=1.2.3-beta"
+    ">=2.0.0-beta"
   ],
   "description": "Local Unpoly guard demonstration"
 }
