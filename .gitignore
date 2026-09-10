@@ -11,6 +11,7 @@ tmp/
 
 # Ignore all node_modules directories recursively
 **/node_modules/
+**/dist/
 
 # Ignore Mac OS DS_Store files everywhere
 **/.DS_Store
@@ -21,8 +22,10 @@ CHANGES.md
 
 docker/ssh/authorized_keys
 *.pdf
-/output/markdown/
-.gitignore
+/output/
+/benchmarks/
+/test-results.txt
+/test/docs/yaml_documentation_test_results.txt
 .env
 deploy/
 exports/
@@ -32,3 +35,11 @@ logs/
 design/
 concept/
 articles/**
+
+# Reproducible module build output
+/modules/hyperbricks-patterns-yaml/static/css/styles.css
+/modules/hyperbricks-patterns-yaml/static/js/bundle.min.main.js
+/modules/hyperbricks-patterns-yaml/static/js/bundle.min.main.js.map
+/modules/project-lifecycle-test/static/css/
+/modules/project-lifecycle-test/static/js/
+/modules/self-closing-tag/static/images/
