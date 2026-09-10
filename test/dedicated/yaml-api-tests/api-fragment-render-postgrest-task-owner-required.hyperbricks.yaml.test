@@ -1,0 +1,19 @@
+==== hyperbricks yaml {!{task_without_owner}} ====
+task_without_owner:
+  - type: api_fragment_render
+  - route: index
+  - endpoint: http://localhost:3000/tasks
+  - method: POST
+  - body: '{"title":"This task has no owner"}'
+  - headers:
+      Authorization:
+        format: "Bearer %s"
+        args:
+          - env:
+              name: PGRST_TEST_NO_SUB_JWT
+              required: true
+      Content-Type: application/json
+  - inline: |
+      {{ if eq .Status 403 }}denied{{ else }}unexpected status: {{.Status}}{{ end }}
+==== expected output ====
+denied

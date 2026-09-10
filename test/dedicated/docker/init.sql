@@ -4,6 +4,10 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "pgjwt";
 
+-- The init wrapper supplies a fresh signing value from the local environment.
+-- Store it as a database setting so login_user can use it at request time.
+ALTER DATABASE :"database_name" SET app.jwt_secret TO :'jwt_secret';
+
 -- =========================================================
 -- 8) Role management
 -- =========================================================
@@ -53,8 +57,8 @@ CREATE POLICY tasks_select_policy ON tasks
 CREATE POLICY tasks_insert_policy ON tasks
   FOR INSERT
   WITH CHECK (
-    owner_id = current_setting('request.jwt.claims', true)::json->>'sub'
-    OR owner_id IS NULL
+    NULLIF(BTRIM(current_setting('request.jwt.claims', true)::json->>'sub'), '') IS NOT NULL
+    AND owner_id = current_setting('request.jwt.claims', true)::json->>'sub'
   );
 
 CREATE POLICY tasks_update_policy ON tasks
@@ -68,10 +72,8 @@ CREATE POLICY tasks_delete_policy ON tasks
 
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON tasks TO authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON tasks TO web_anon;
 
 GRANT USAGE, SELECT, UPDATE ON SEQUENCE tasks_id_seq TO authenticated;
-GRANT USAGE, SELECT, UPDATE ON SEQUENCE tasks_id_seq TO web_anon;
 
 
 -- =========================================================
@@ -131,10 +133,11 @@ CREATE OR REPLACE FUNCTION dummy_admin()
   RETURNS TEXT
   LANGUAGE plpgsql
   SECURITY DEFINER
+  SET search_path = pg_catalog, public
 AS $$
 BEGIN
     -- Check the JWT claim
-    IF current_setting('jwt.claims.role', true) <> 'postgres' THEN
+    IF (current_setting('request.jwt.claims', true)::json->>'role') IS DISTINCT FROM 'postgres' THEN
         RAISE EXCEPTION 'Only the "postgres" role can call this function.';
     END IF;
     
@@ -166,6 +169,7 @@ CREATE OR REPLACE FUNCTION create_user(
 RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = pg_catalog, public
 AS
 $$
 BEGIN
@@ -173,7 +177,7 @@ BEGIN
       Only allow execution if the JWT claim "role" is 'postgres'.
       This check ensures only the superuser token can call this.
     */
-    IF current_setting('jwt.claims.role', true) <> 'postgres' THEN
+    IF (current_setting('request.jwt.claims', true)::json->>'role') IS DISTINCT FROM 'postgres' THEN
         RAISE EXCEPTION 'Only a "postgres" (superuser) JWT can create new users.';
     END IF;
 
@@ -204,6 +208,7 @@ CREATE OR REPLACE FUNCTION login_user(
 RETURNS TEXT
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = pg_catalog, public
 AS
 $$
 DECLARE
@@ -231,13 +236,13 @@ BEGIN
         user_role := 'authenticated';
     END IF;
 
-    -- Sign the JWT (change secret to a secure, lengthy phrase)
+    -- Sign the JWT with the per-environment value supplied by Docker Compose.
     token := sign(
         json_build_object(
             'sub',  user_record.id::TEXT,  -- user identifier
             'role', user_role
         )::json,
-        'a-string-secret-at-least-256-bits-long'
+        current_setting('app.jwt_secret')
     );
 
     RETURN token;

@@ -4,9 +4,13 @@ api_add_user:
   - route: index
   - endpoint: http://localhost:3000/rpc/create_user
   - method: POST
-  - jwtsecret: a-string-secret-at-least-256-bits-long
+  - jwtsecret:
+      env:
+        name: PGRST_JWT_SECRET
+        required: true
   - jwtclaims:
       sub: user
+      role: postgres
   - body: '{"p_username":"testuser1","p_email":"testuser1@example.com","p_password":"securepassword"}'
   - headers:
       Access-Control-Allow-Credentials: "true"

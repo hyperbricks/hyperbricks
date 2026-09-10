@@ -4,7 +4,12 @@ echo_jwt_fail:
   - route: index
   - endpoint: http://localhost:8090/echo/token/validate
   - method: POST
-  - jwtsecret: a-string-secret-at-least-256-bits-longXXX
+  - jwtsecret:
+      format: "%s-invalid"
+      args:
+        - env:
+            name: PGRST_JWT_SECRET
+            required: true
   - jwtclaims:
       sub: user
   - inline: |

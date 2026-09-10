@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -47,8 +48,6 @@ func echoQueryHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-const jwtSecret = "a-string-secret-at-least-256-bits-long" // Hardcoded secret for validation
-
 func echoTokenClaimAndValidationHandler(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
@@ -72,7 +71,7 @@ func echoTokenClaimAndValidationHandler(w http.ResponseWriter, r *http.Request) 
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(jwtSecret), nil
+		return []byte(os.Getenv("PGRST_JWT_SECRET")), nil
 	})
 
 	// Prepare the response
@@ -229,6 +228,9 @@ func echoDataHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	if len(os.Getenv("PGRST_JWT_SECRET")) < 32 {
+		log.Fatal("PGRST_JWT_SECRET must contain at least 32 characters")
+	}
 	http.HandleFunc("/validate", tokenHandler)
 	http.HandleFunc("/validate/body", bodyHandler)
 	http.HandleFunc("/echo/query", echoQueryHandler)
