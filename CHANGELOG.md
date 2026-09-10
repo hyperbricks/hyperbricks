@@ -1,6 +1,8 @@
-# Changelog — 2026-09-05
+# Changelog
 
-## Goja render component (`3a32149`)
+## 2026-09-05 updates
+
+### Goja render component
 
 - Add built-in `goja_render` for running trusted project JavaScript on the server
   and rendering its result through Go HTML templates.
@@ -12,7 +14,7 @@
 - Add [component documentation](docs/GOJA_RENDER.md) and a runnable
   `goja-render-demo` module with a printable materials worksheet.
 
-## CLI module paths (`549c5f7`)
+### CLI module paths
 
 - Start modules by name or directory path: `hyperbricks start -m demo`,
   `-m ./modules/demo`, `-m ../site/demo`, or `-m /srv/demo`.
@@ -22,7 +24,7 @@
   exit status `1`.
 - Update CLI help, documentation, and skill examples.
 
-## Init (`51e1488`)
+### Init
 
 - Create missing scaffold directories and files while preserving existing files,
   including `package.hyperbricks.yaml`.
@@ -30,14 +32,14 @@
 - Reject empty and path-like module names; return exit status `1` on failure.
 - Document `hyperbricks init -m demo` and the default `hyperbricks init` usage.
 
-## Esbuild lowercase hashes (`9262098`)
+### Esbuild lowercase hashes
 
 - Generate lowercase hashes in fingerprinted JavaScript and CSS entry filenames.
 - Keep source-map filenames and references aligned with the entry filenames.
 - Invalidate older build caches and correct filename casing on case-insensitive
   filesystems.
 
-## Template query parameters (`82a62f9`)
+### Template query parameters
 
 - Fix `.Params` access when template `values` is omitted or null, removing the
   need for `values: {}`.
@@ -45,7 +47,7 @@
   allowlists and request isolation.
 - Add regression tests and a YAML usage example.
 
-## Skill and static-directory guidance (`1bacf56`)
+### Skill and static-directory guidance
 
 - Extend the CLI skill with concise examples for `goja_render`, native esbuild,
   lowercase fingerprinted asset URLs, and template `.Params` without `values`.
@@ -62,12 +64,11 @@
 - Add `TestStaticPathsDemo` covering module/root bases, changed working
   directories, root/nested pages, asset responses, and incorrect-URL 404s.
 
-The local `modules/static-paths-demo` example uses two alternative package
+The committed `modules/static-paths-demo` fixture uses two alternative package
 configurations and distinct marker files to demonstrate the same `/static/`
-URL serving different configured directories. The module is ignored and is not
-included in this commit.
+URL serving different configured directories.
 
-## Verification
+### Verification
 
 The earlier runtime changes passed `go test ./...` before their commits.
 Compiled CLI checks confirmed module-path startup, route and static asset
@@ -89,12 +90,9 @@ For the skill/static-directory follow-up:
 - Skill frontmatter and all 19 YAML examples parsed successfully; diff checks
   passed. The Python skill validator could not run because PyYAML was missing.
 
-The committed regression test currently reads the ignored demo module, so its
-fixtures must be included or made self-contained for clean-checkout test runs.
-
 ## 2026-09-09 updates
 
-### Image rendering and generated assets (`26a281f`)
+### Image rendering and generated assets
 
 - Escape image attribute values, including extra attributes passed through the
   shared renderer. Preserve quotes and ampersands as text instead of allowing
@@ -117,7 +115,7 @@ Generated image filenames have changed. Regenerate and deploy HTML together
 with its static assets; older generated files remain available for previously
 rendered pages.
 
-### Static export configuration (`65ba142`)
+### Static export configuration
 
 - Reject malformed `hyperbricks.static` and `static.crawl` blocks with
   actionable errors before snapshotting routes.
@@ -130,7 +128,7 @@ rendered pages.
 - Document standalone Node and Python serving, clean URLs, and separate output
   URLs for query variants.
 
-### Mixed live-cache policies (`d7d9ff7`)
+### Mixed live-cache policies
 
 - Add runtime regression coverage for interleaved cached and dynamic routes,
   expiry, query/authentication/cookie/body/method/header/Host variants, guard
@@ -161,7 +159,7 @@ rendered pages.
 
 ## 2026-09-10 updates
 
-### Go execution parallelism (`27607f1`)
+### Go execution parallelism
 
 - Replace the hard-coded four-slot `GOMAXPROCS` policy with validated
   `hyperbricks.server.gomaxprocs` package configuration.
@@ -199,13 +197,56 @@ rendered pages.
   link in the README generator source, then regenerate the root README and
   component reference.
 
+### Repository documentation and fixtures
+
+- Add a categorized module index that records which modules are examples,
+  verification fixtures, test fixtures, or benchmark fixtures.
+- Refactor the former basics module into the `project-lifecycle-test` fixture
+  and document how a public HyperBricks skill resolves its versioned sources.
+- Document canonical HTMX page and fragment URLs, browser history behavior, and
+  static-export compatibility.
+- Add a generator for standalone Markdown documentation and skill handbooks,
+  sourced from an exact committed Git snapshot.
+- Add a Git-archive ZIP helper for sharing the current committed repository
+  state without local or ignored output.
+
+### Public-repository cleanup
+
+- Keep generated documentation, benchmark workspaces, private article drafts,
+  dependency trees, distribution folders, and machine-local test results out of
+  version control.
+- Mark the root README as generated and verify it against its committed source
+  template in the documentation tests.
+- Remove reproducible browser bundles and image derivatives from example
+  modules, and correct public documentation links and HyperBricks website URLs.
+- Align stale release, install, Docker, and plugin references with
+  `v2.0.0-beta`.
+- Make the reserved `plugin update` command fail with an explicit nonzero
+  `not implemented` error instead of printing a simulated successful update.
+- Expand the repository plugin builder to cover every plugin-backed demo and
+  fixture, document the source-matched build workflow, and remove the obsolete
+  Esbuild plugin from the patterns module in favor of the native component.
+- Harden the dedicated PostgREST and pgAdmin test stack with generated local
+  credentials, loopback-only ports, pinned image versions, safer privileged
+  functions, and row-level security that rejects ownerless task inserts.
+- Preserve concrete streaming request-body read errors when cancellation races
+  with the read, retaining both causes while returning a stable timeout response.
+- Verify the downloaded Tailwind executable against the release checksum and
+  include the complete jsontr.ee license beside the copied frontend files.
+- Remove the stale root Docker guide and make the committed-source ZIP helper
+  derive its filename from the release version and committed revision.
+
 ### Verification of these updates
 
-- `./tests.sh --with-docs` passed, including `go vet`, all Go package tests,
-  Docker-backed API rendering tests, generated documentation checks, template
-  tests, marker tests, and HTTP header, cookie, and cache suites.
+- `./tests.sh --with-docs --with-plugins` passed, including source-matched plugin
+  builds and smoke checks, `go vet`, all Go package tests, Docker-backed API
+  rendering tests, generated documentation checks, template tests, marker
+  tests, and HTTP header, cookie, and cache suites.
 - A follow-up documentation regeneration and `go test ./test/docs` passed after
   the README generator source was corrected.
+- The dedicated API suite passed against the real Docker stack, including the
+  negative ownerless-task authorization case, and the source-export helper
+  produced a valid archive without ignored local output.
 - A 72-sample local SSR matrix exercised one, four, and eight Go execution slots
   across 1,211,692 validated responses with no status or content failures. These
   measurements are retained as local benchmark evidence rather than a portable
