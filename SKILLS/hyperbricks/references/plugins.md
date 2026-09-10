@@ -1,6 +1,6 @@
 # Plugins and local core development
 
-Use this reference for plugin installation, custom module plugins, native build compatibility, and plugin-to-template composition. The matching core manual is `docs/PLUGINS.md`. Host-side source changes use the core checkout's own developer instructions; ordinary application authoring does not require a core rebuild.
+Use this reference for plugin installation, custom module plugins, native build compatibility, and plugin-to-template composition. The matching core manual is `docs/PLUGINS.md`; resolve that repository-relative path using the Source Of Truth rules in [the skill](../SKILL.md). Host-side source changes use the core checkout's own developer instructions; ordinary application authoring does not require a core rebuild.
 
 ## Names and files
 

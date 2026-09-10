@@ -1,6 +1,6 @@
 # Authoring pages, fragments, templates, and assets
 
-Use this reference for a small working composition or when adapting a lesson into another project. Core manuals: `docs/YAML_USAGE.md`, `docs/ROUTING.md`, `docs/ESBUILD.md`, and `docs/REFERENCE.md`.
+Use this reference for a small working composition or when adapting a lesson into another project. Core manuals: `docs/YAML_USAGE.md`, `docs/ROUTING.md`, `docs/ESBUILD.md`, and `docs/REFERENCE.md`. Resolve these repository-relative paths using the Source Of Truth rules in [the skill](../SKILL.md).
 
 ## One view, a full page, and a fragment
 

@@ -1,6 +1,6 @@
 # Server logic and integrations
 
-Use this reference when presentation needs a calculation, upstream data, or protected actions. Core manuals: `docs/GOJA_RENDER.md`, `docs/API_RENDER.md`, `docs/ROUTE_GUARD.md`. Read [plugins](plugins.md) for host capabilities and custom server workflows.
+Use this reference when presentation needs a calculation, upstream data, or protected actions. Core manuals: `docs/GOJA_RENDER.md`, `docs/API_RENDER.md`, `docs/ROUTE_GUARD.md`. Resolve these repository-relative paths using the Source Of Truth rules in [the skill](../SKILL.md). Read [plugins](plugins.md) for host capabilities and custom server workflows.
 
 ## Choose the owner
 
@@ -84,7 +84,7 @@ Set `myconf.api.status_endpoint` in the package to the actual reachable service 
 
 Use explicit action routes when an API or plugin owns writes. A typical sequence is: submit form → perform/validate the action → render feedback → refresh the related read panel after success. Keep HTML in templates and backend validation at the operation owner. For API body mapping and authentication, read the API manual before forwarding fields or credentials.
 
-Inspect both upstream `.Status` and the browser's HTTP response: do not assume an upstream error is automatically forwarded as the same browser status. A fixed `response.headers.HX-Trigger` is response metadata, not a success condition. Emit or handle the refresh event only when the operation actually succeeded. Exercise validation, conflict, unavailable service, and success in the browser. The repository-owned [project lifecycle fixture](../../../modules/project-lifecycle-test/README.md) verifies this complete flow.
+Inspect both upstream `.Status` and the browser's HTTP response: do not assume an upstream error is automatically forwarded as the same browser status. A fixed `response.headers.HX-Trigger` is response metadata, not a success condition. Emit or handle the refresh event only when the operation actually succeeded. Exercise validation, conflict, unavailable service, and success in the browser. The repository-owned fixture documented at `modules/project-lifecycle-test/README.md` verifies this complete flow; resolve that path using the skill's Source Of Truth rules.
 
 ## Protect the routes that do the work
 

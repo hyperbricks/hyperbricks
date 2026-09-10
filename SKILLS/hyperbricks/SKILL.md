@@ -24,13 +24,22 @@ HyperBricks uses `*.hyperbricks.yaml` configuration files to define pages and HT
 
 When implementing or diagnosing behavior, distinguish source parsing, runtime configuration, and component execution, and make changes in the layer that owns the behavior.
 
-HyperBricks’ native `esbuild` component bundles JavaScript, TypeScript, and CSS. See the [esbuild component documentation](docs/ESBUILD.md) for usage. It uses [esbuild](https://esbuild.github.io/), a third-party Go library for fast web asset bundling.
+HyperBricks’ native `esbuild` component bundles JavaScript, TypeScript, and CSS. See the repository manual at `docs/ESBUILD.md` for usage. It uses [esbuild](https://esbuild.github.io/), a third-party Go library for fast web asset bundling.
 
 For server-side logic, projects can call APIs, run trusted JavaScript with `goja_render`, or use Go plugins. The CLI creates and runs modules, exports static pages, and packages modules for deployment.
 
 ## Source Of Truth
 
-Use the documentation for the HyperBricks version running the project. These paths are relative to the HyperBricks repository:
+Use documentation and examples that match the HyperBricks runtime. When a binary is available, run `hyperbricks version` before selecting documentation.
+
+Resolve sources in this order:
+
+1. Follow the application's own instructions and module README for project-specific choices.
+2. When a matching HyperBricks checkout is available, read repository files from that checkout. During core development, use its current Git revision.
+3. Otherwise, read the public [HyperBricks repository](https://github.com/hyperbricks/hyperbricks) at the release tag matching the installed CLI. Check the reported version and its `v`-prefixed form when resolving the tag; do not substitute a newer release. Fetch a file with `https://github.com/hyperbricks/hyperbricks/blob/<tag-or-revision>/<path>` and browse a module directory with `https://github.com/hyperbricks/hyperbricks/tree/<tag-or-revision>/<path>`.
+4. Use `main` for a development build or when the user explicitly requests current unreleased documentation. If no matching public tag or checkout exists, use the references bundled with this skill and the installed CLI's `--help`, and disclose that exact-version manuals were unavailable.
+
+Paths beginning with `docs/`, `modules/`, `pkg/`, or `cmd/` below are relative to the HyperBricks repository root. They are not paths inside the installed skill:
 
 - `docs/INTRODUCTION.md` and `docs/QUICKSTART.md`: introduction and first module.
 - `docs/HYPERBRICKS_CLI.md`: commands, flags, module selection, and render diagnostics.
@@ -46,7 +55,7 @@ Use the documentation for the HyperBricks version running the project. These pat
 - `docs/DOCKER.md`: Docker deploy host, configuration, persistence, and plugin builds.
 
 
-In an application outside that repository, use the references included with this skill and the installed CLI's `--help`. For complete manuals or component source, use a [HyperBricks checkout](https://github.com/hyperbricks/hyperbricks) at the matching release or revision. The application's own instructions and module README describe its project-specific configuration.
+The files under this skill's `references/` directory are bundled guidance and remain available without a checkout. Use the public repository or a matching checkout for complete manuals, runnable modules, generated reference material, and component source.
 
 ## Project Structure
 
@@ -268,7 +277,7 @@ In a shared page layout containing that same `#content` element, use:
 
 With HTMX loaded, the link replaces the contents of `#content` and changes the browser URL to `/help`. Without JavaScript, `href` opens the complete page. Load HTMX once in the shared layout. Also include UTF-8 charset and viewport metadata in its head; the [page recipe](references/authoring.md#one-view-a-full-page-and-a-fragment) shows that configuration.
 
-For menu generation, page and fragment navigation, and configuration-driven sections, use the [patterns module source guide](../../modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md). These examples live in this repository. Use [Recommended project patterns](../../docs/PROJECT_PATTERNS.md) to select and combine the relevant patterns in an application.
+For menu generation, page and fragment navigation, and configuration-driven sections, use `modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md`. Use `docs/PROJECT_PATTERNS.md` to select and combine the relevant patterns in an application. Resolve both repository-relative paths through the Source Of Truth rules above.
 
 ## Native esbuild
 
