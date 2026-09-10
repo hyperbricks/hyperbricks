@@ -2,7 +2,7 @@
 
 This guide helps you find examples of common HyperBricks tasks in the [patterns module](../README.md). It describes what each example covers and where its configuration and templates live. The implementation stays in the module so examples can evolve without copying their code into this document.
 
-Use this guide to locate a working example and its source files. For the broader learning path covering module setup, templates, server calculations, and packaging, see [Recommended project patterns](../../../docs/PROJECT_PATTERNS.md).
+Use this guide to locate a working example and its source files. For guidance on selecting and combining patterns for module setup, templates, server calculations, and packaging, see [Recommended project patterns](../../../docs/PROJECT_PATTERNS.md).
 
 ## Pages and fragments
 

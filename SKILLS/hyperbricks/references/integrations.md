@@ -84,7 +84,7 @@ Set `myconf.api.status_endpoint` in the package to the actual reachable service 
 
 Use explicit action routes when an API or plugin owns writes. A typical sequence is: submit form → perform/validate the action → render feedback → refresh the related read panel after success. Keep HTML in templates and backend validation at the operation owner. For API body mapping and authentication, read the API manual before forwarding fields or credentials.
 
-Inspect both upstream `.Status` and the browser's HTTP response: do not assume an upstream error is automatically forwarded as the same browser status. A fixed `response.headers.HX-Trigger` is response metadata, not a success condition. Emit or handle the refresh event only when the operation actually succeeded. Exercise validation, conflict, unavailable service, and success in the browser. Use the integrated optional lesson as the verified complete flow when available.
+Inspect both upstream `.Status` and the browser's HTTP response: do not assume an upstream error is automatically forwarded as the same browser status. A fixed `response.headers.HX-Trigger` is response metadata, not a success condition. Emit or handle the refresh event only when the operation actually succeeded. Exercise validation, conflict, unavailable service, and success in the browser. The repository-owned [project lifecycle fixture](../../../modules/project-lifecycle-test/README.md) verifies this complete flow.
 
 ## Protect the routes that do the work
 
@@ -104,4 +104,4 @@ Each response contains optional `status` and a `headers` map of literal strings.
 
 Route owners also use `response.status` and `response.headers` for the browser response. In API components, top-level `headers` remains the upstream request headers. An API template's `.Status` remains the upstream status, independently of `response.status`. Only the root route determines response metadata; a nested fragment cannot change the enclosing page's status or headers.
 
-Guarded responses are non-cacheable. Sample fixed tokens or an in-memory service are useful for trying the flow, but do not constitute production identity or durable storage. Keep those prerequisites explicit in optional lesson docs.
+Guarded responses are non-cacheable. Sample fixed tokens or an in-memory service are useful for deterministic integration tests, but do not constitute production identity or durable storage. Keep those limits explicit in fixture documentation.

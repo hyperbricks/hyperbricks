@@ -1,0 +1,38 @@
+# API and route-guard profile. Start the local fixture API first; see docs/profiles.md.
+hyperbricks:
+  mode: development
+  metadata:
+    module: project-lifecycle-test
+    moduleversion: "1.0.0"
+  development:
+    watch: true
+    watch_dirs:
+      - hyperbricks
+      - templates
+      - resources
+      - path: {base: module, path: hyperbricks}
+      - path: {base: module, path: profiles}
+    reload: true
+    frontend_errors: false
+    dashboard: false
+  server:
+    port: 8104
+    beautify: true
+  rate_limit:
+    enabled: true
+    requests_per_second: 100
+    burst: 200
+  plugins:
+    enabled: []
+  directories:
+    hyperbricks:
+      path: {base: module, path: profiles/api}
+    templates:
+      path: {base: module, path: templates}
+    resources:
+      path: {base: module, path: resources}
+    static:
+      path: {base: module, path: static}
+    render:
+      path: {base: module, path: rendered}
+    plugins: ./bin/plugins

@@ -1,0 +1,32 @@
+imports:
+  - partials/site.hyperbricks.yaml
+
+about_view:
+  - type: template
+  - inline: |
+      <section data-page-title="About" class="page-section">
+        <p class="eyebrow">Runtime fixture</p>
+        <h1>{{.heading}}</h1>
+        <p class="lede">This route was added while the development server was running.</p>
+      </section>
+  - values:
+      heading: About this fixture
+
+about_page:
+  - inherit: lifecycle_page
+  - route: about
+  - title: About · Project Lifecycle Fixture
+  - body:
+      - values:
+          navigation:
+            - inherit: lifecycle_navigation
+            - values:
+                active: /about
+          content:
+            - inherit: about_view
+
+about_fragment:
+  - type: fragment
+  - route: fragments/about
+  - content:
+      - inherit: about_view

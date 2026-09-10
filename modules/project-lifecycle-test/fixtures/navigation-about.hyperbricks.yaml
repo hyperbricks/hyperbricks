@@ -1,0 +1,4 @@
+        04_about:
+          label: About
+          url: /about
+          fragment: /fragments/about

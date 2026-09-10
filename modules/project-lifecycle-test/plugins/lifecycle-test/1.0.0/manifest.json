@@ -1,0 +1,8 @@
+{
+  "plugin": "github.com/hyperbricks/hyperbricks/modules/project-lifecycle-test/plugins/lifecycle-test",
+  "source": "lifecycle_test_plugin.go",
+  "binary": "LifecycleTestPlugin",
+  "version": "1.0.0",
+  "compatible_hyperbricks": [">=1.2.2-beta"],
+  "description": "Integration fixture: two explicit project-name review actions return template data."
+}

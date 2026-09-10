@@ -1,0 +1,19 @@
+lifecycle_navigation:
+  - type: template
+  - template:
+      file: navigation.html
+  - values:
+      active: /
+      items:
+        01_overview:
+          label: Overview
+          url: /
+          fragment: /fragments/overview
+        02_projects:
+          label: Projects
+          url: /projects
+          fragment: /fragments/projects
+        03_estimate:
+          label: Estimate
+          url: /estimate
+          fragment: /fragments/estimate

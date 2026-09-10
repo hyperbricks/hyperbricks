@@ -43,7 +43,7 @@ bin/plugins/                Compiled plugins, when the module uses them
 
 `init` also creates log directories. Keep generated output and local logs out of the intended source publication set according to the project's existing policy.
 
-To use the integrated learning module, locate `modules/hyperbricks-basics/` in a matching core checkout and follow its README. When bringing it into another project, copy the documented teaching sources and use its dependency setup; copying another module's generated binaries or caches is not a setup procedure. If that module is unavailable, the CLI scaffold plus [the authoring recipe](authoring.md) is sufficient to start a page and fragment.
+Use the maintained `hyperbricks init` scaffold as the starting point for a new project. Continue with [the authoring recipe](authoring.md) for shared pages and fragments, and select runnable examples through the patterns module source guide. Copy source files and declare the receiving project's dependencies; generated binaries and caches are not setup inputs.
 
 ## Choose paths deliberately
 
@@ -122,9 +122,9 @@ hyperbricks:
         output: about.html
 ```
 
-For a public subset of a dynamic application, stage a separate module configuration whose source directory loads only public, static-ready pages. Check discovered routes and output names for collisions before publishing. The Project Desk handbook profile demonstrates this separation.
+For a public subset of a dynamic application, stage a separate module configuration whose source directory loads only public, static-ready pages. Check discovered routes and output names for collisions before publishing.
 
-Use `hyperbricks static --help` for export paths, zip, and overwrite flags. A static snapshot does not retain server actions. A static teaching page should use static navigation and avoid controls that still require fragment routes.
+Use `hyperbricks static --help` for export paths, zip, and overwrite flags. A static snapshot does not retain server actions. A static page should use static navigation and avoid controls that still require fragment routes.
 
 Build and run a runtime archive locally:
 

@@ -52,6 +52,8 @@ if [[ "${WITH_PLUGINS}" == "true" ]]; then
   bash "${SCRIPT_DIR}/plugins/build_hyperbricks_plugins.sh"
   echo "Running plugin-backed runtime smoke tests..."
   bash "${SCRIPT_DIR}/plugins/test_hyperbricks_patterns_plugins.sh"
+  echo "Running the project lifecycle integration fixture..."
+  python3 "${SCRIPT_DIR}/test_project_lifecycle.py" --with-plugin
 else
   echo "Skipping plugin rebuild. Pass --with-plugins to rebuild plugins before tests."
 fi

@@ -36,7 +36,7 @@ Use the documentation for the HyperBricks version running the project. These pat
 - `docs/HYPERBRICKS_CLI.md`: commands, flags, module selection, and render diagnostics.
 - `docs/YAML_USAGE.md`: component syntax, imports, inheritance, resolvers, and templates.
 - `docs/REFERENCE.md`: component fields and supported values.
-- `docs/PROJECT_PATTERNS.md`: recommended project patterns and the Project Desk learning path.
+- `docs/PROJECT_PATTERNS.md`: recommended project structure and feature-selection patterns.
 - `modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md`: standalone pattern demos and their source files.
 - `docs/ROUTING.md`: URL matching and route configuration.
 - `docs/ESBUILD.md`: browser asset bundling.
@@ -268,7 +268,7 @@ In a shared page layout containing that same `#content` element, use:
 
 With HTMX loaded, the link replaces the contents of `#content` and changes the browser URL to `/help`. Without JavaScript, `href` opens the complete page. Load HTMX once in the shared layout. Also include UTF-8 charset and viewport metadata in its head; the [page recipe](references/authoring.md#one-view-a-full-page-and-a-fragment) shows that configuration.
 
-For menu generation, page and fragment navigation, and configuration-driven sections, use the [patterns module source guide](../../modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md). These examples live in this repository. For the broader Project Desk learning path, use [Recommended project patterns](../../docs/PROJECT_PATTERNS.md).
+For menu generation, page and fragment navigation, and configuration-driven sections, use the [patterns module source guide](../../modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md). These examples live in this repository. Use [Recommended project patterns](../../docs/PROJECT_PATTERNS.md) to select and combine the relevant patterns in an application.
 
 ## Native esbuild
 
@@ -343,7 +343,7 @@ hyperbricks start --deploy -m demo --port 8081
 
 The archive is written under `deploy/demo/`. `start --deploy` runs that packaged module. `build --zip` provides the alternative runtime archive format.
 
-Static export discovers routes as well as configured targets: `static.routes` is not an allowlist. To export selected pages, use a separate package configuration whose `hyperbricks.directories.hyperbricks` points to a directory that loads only those page definitions. The Project Desk handbook example includes such a configuration. For runtime archives, stage only the intended source files; the archive builder does not apply Git ignore rules. See [Delivery formats](references/project-lifecycle.md#choose-the-delivery-format).
+Static export discovers routes as well as configured targets: `static.routes` is not an allowlist. To export selected pages, use a separate package configuration whose `hyperbricks.directories.hyperbricks` points to a directory that loads only those page definitions. For runtime archives, stage only the intended source files; the archive builder does not apply Git ignore rules. See [Delivery formats](references/project-lifecycle.md#choose-the-delivery-format).
 
 ## Troubleshooting And Verification
 

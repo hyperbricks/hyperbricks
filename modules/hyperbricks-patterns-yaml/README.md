@@ -194,4 +194,4 @@ Keep the pattern small. It should teach one decision clearly.
 ## Project patterns guides
 
 - [Module source guide](docs/SOURCE_GUIDE.md): find this module’s examples and source files by topic.
-- [Recommended project patterns](../../docs/PROJECT_PATTERNS.md): follow the broader Project Desk learning path, including setup, composition, server logic, and packaging.
+- [Recommended project patterns](../../docs/PROJECT_PATTERNS.md): choose and combine project structure, composition, server logic, and delivery patterns.

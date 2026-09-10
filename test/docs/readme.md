@@ -35,7 +35,7 @@ For server-side logic, projects can call APIs, run trusted JavaScript with `goja
 
 ## Docs
 
-New to HyperBricks? Start with the [Quickstart](docs/QUICKSTART.md), then explore [Project Desk](modules/hyperbricks-basics/README.md), a small application that connects shared pages, fragments, assets, and server-side calculations. The [general HyperBricks skill](SKILLS/hyperbricks/SKILL.md) helps agents apply the same workflows in your project.
+New to HyperBricks? Start with the [Quickstart](docs/QUICKSTART.md) and create the maintained starter with `hyperbricks init`. Continue with [Recommended project patterns](docs/PROJECT_PATTERNS.md) or the focused [YAML pattern examples](modules/hyperbricks-patterns-yaml/README.md). The [general HyperBricks skill](SKILLS/hyperbricks/SKILL.md) helps agents apply the same workflows in your project.
 - [Introduction](docs/INTRODUCTION.md)
 - [Quickstart](docs/QUICKSTART.md)
 - [Recommended project patterns](docs/PROJECT_PATTERNS.md)

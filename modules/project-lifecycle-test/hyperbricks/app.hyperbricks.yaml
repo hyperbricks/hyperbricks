@@ -1,0 +1,119 @@
+imports:
+  - partials/site.hyperbricks.yaml
+  - partials/views.hyperbricks.yaml
+
+overview_page:
+  - inherit: lifecycle_page
+  - route: index
+  - title: Overview · Project Lifecycle Fixture
+  - body:
+      - values:
+          content:
+            - inherit: overview_view
+
+overview_fragment:
+  - type: fragment
+  - route: fragments/overview
+  - nocache: true
+  - content:
+      - inherit: overview_view
+
+status_fragment:
+  - type: fragment
+  - route: fragments/status
+  - nocache: true
+  - content:
+      - inherit: lifecycle_status
+
+projects_page:
+  - inherit: lifecycle_page
+  - route: projects
+  - title: Projects · Project Lifecycle Fixture
+  - body:
+      - values:
+          navigation:
+            - inherit: lifecycle_navigation
+            - values:
+                active: /projects
+          content:
+            - inherit: projects_view
+
+projects_fragment:
+  - type: fragment
+  - route: fragments/projects
+  - content:
+      - inherit: projects_view
+
+atlas_page:
+  - inherit: lifecycle_page
+  - route: projects/atlas
+  - title: Atlas · Project Lifecycle Fixture
+  - body:
+      - values:
+          navigation:
+            - inherit: lifecycle_navigation
+            - values:
+                active: /projects
+          content:
+            - inherit: atlas_view
+
+atlas_fragment:
+  - type: fragment
+  - route: fragments/projects/atlas
+  - content:
+      - inherit: atlas_view
+
+beacon_page:
+  - inherit: atlas_page
+  - route: projects/beacon
+  - title: Beacon · Project Lifecycle Fixture
+  - body:
+      - values:
+          content:
+            - inherit: beacon_view
+
+beacon_fragment:
+  - type: fragment
+  - route: fragments/projects/beacon
+  - content:
+      - inherit: beacon_view
+
+estimate_page:
+  - inherit: lifecycle_page
+  - route: estimate
+  - title: Estimate · Project Lifecycle Fixture
+  - body:
+      - values:
+          navigation:
+            - inherit: lifecycle_navigation
+            - values:
+                active: /estimate
+          content:
+            - inherit: estimate_view
+
+estimate_fragment:
+  - type: fragment
+  - route: fragments/estimate
+  - content:
+      - inherit: estimate_view
+
+# Runtime route containing the same content used by the isolated static profile.
+static_preview_page:
+  - type: hypermedia
+  - route: static-preview
+  - title: Static profile · Project Lifecycle Fixture
+  - doctype: '<!DOCTYPE html>'
+  - htmltag: '<html lang="en">'
+  - head:
+      - type: head
+      - metadata:
+          - type: html
+          - value: |
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+      - styles:
+          - inherit: lifecycle_styles
+  - body:
+      - type: template
+      - template:
+          file: static-page.html
