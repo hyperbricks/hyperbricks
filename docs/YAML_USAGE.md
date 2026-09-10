@@ -725,6 +725,7 @@ hyperbricks:
     cache: 10m
   server:
     port: 8080
+    gomaxprocs: auto
     read_timeout: 5s
     write_timeout: 10s
     idle_timeout: 20s
@@ -760,6 +761,7 @@ Common `hyperbricks` package fields:
 | `development.frontend_errors` | Render frontend error panels when component `debugpanel` is enabled. |
 | `live.cache` | Default live-mode cache duration. Uses Go duration strings such as `10s`, `5m`, or `2h`. |
 | `server.port` | HTTP server port, unless overridden by CLI flags. |
+| `server.gomaxprocs` | Process-wide Go execution parallelism: `auto` (default) or an integer from `1` through the machine’s logical CPU count. Invalid values fail startup. See [CPU parallelism](LIVE_MODE_HTTP.md#cpu-parallelism). |
 | `server.beautify` | Beautify rendered HTML when supported. |
 | `server.self_closing_tags` | Render XHTML-style self-closing tags when enabled. |
 | `server.read_timeout`, `server.write_timeout`, `server.idle_timeout` | HTTP server timeout durations. |

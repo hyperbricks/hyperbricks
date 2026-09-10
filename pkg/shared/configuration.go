@@ -166,6 +166,8 @@ type RuntimeGatewayConfig struct {
 
 // ServerConfig with defaults.
 type ServerConfig struct {
+	// GoMaxProcs retains auto/integer input for strict startup validation.
+	GoMaxProcs        any                  `mapstructure:"gomaxprocs"`
 	Port              int                  `mapstructure:"port"`
 	Beautify          bool                 `mapstructure:"beautify"`
 	SelfClosingTags   bool                 `mapstructure:"self_closing_tags"`

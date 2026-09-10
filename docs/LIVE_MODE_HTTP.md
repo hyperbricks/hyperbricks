@@ -3,7 +3,7 @@
 Live mode has three separate concerns:
 
 - `live.cache` controls rendered output reuse.
-- `server.*` controls HTTP connection behavior.
+- `server.*` controls HTTP connection behavior and CPU parallelism.
 - `rate_limit.*` controls the process-level request limiter.
 
 Those settings solve different problems. Cache settings decide whether a route can reuse rendered content. Server settings decide how long clients may hold network resources. Rate limiting controls how many requests the process accepts. These settings work independently of the browser library used by the application.
@@ -255,3 +255,37 @@ hyperbricks:
 ```
 
 This usually increases connection churn and is not the normal production default.
+
+## CPU parallelism
+
+Configure process-wide Go execution parallelism in the selected module's `package.hyperbricks.yaml`:
+
+```yaml
+hyperbricks:
+  server:
+    gomaxprocs: auto
+```
+
+Omitted or `auto` uses Go's CPU-aware default via `runtime.SetDefaultGOMAXPROCS()`. Go can periodically adjust this default to available CPU resources and supported container CPU limits. This replaces the former hard-coded value of four. Automatic mode does not create a HyperBricks polling loop or try to adjust concurrency based on request traffic.
+
+For reproducible CPU allocation or intentionally reduced parallelism, use a fixed integer:
+
+```yaml
+hyperbricks:
+  server:
+    gomaxprocs: 2
+```
+
+Fixed values must be between **1 and `runtime.NumCPU()`**, inclusive. Zero, negative values, fractions, booleans, unknown strings and values above the detected logical CPU count cause startup to fail before the application starts serving requests. Numeric strings are accepted so environment resolvers can supply the value. An explicitly fixed setting disables Go's automatic updates and can exceed a container's CPU quota; use `auto` for container-aware adjustment.
+
+Package configuration owns this setting: both automatic and fixed modes override a `GOMAXPROCS` environment variable. To configure it through the environment, use the YAML resolver explicitly:
+
+```yaml
+hyperbricks:
+  server:
+    gomaxprocs: {env: {name: HB_GOMAXPROCS, default: auto}}
+```
+
+The limit controls how many OS threads can execute Go code simultaneously. It does not reserve CPU cores, cap the number of goroutines, enforce a memory limit or replace request rate limiting. The setting applies to the entire application process, including static rendering; it is not a per-route or per-request option.
+
+Changing the package value requires restarting the process. In `auto` mode Go's resource-aware updates remain dynamic after startup. Existing fixed-four deployments should set `gomaxprocs: 4` explicitly if the host has at least four logical CPUs and they need to preserve that behavior.

@@ -32,6 +32,8 @@ hyperbricks:
 
   server:
     port: 8080
+    # Auto follows Go CPU/container defaults; fixed integers must be 1..logical CPUs.
+    gomaxprocs: auto
     beautify: true
     self_closing_tags: true
     routing:

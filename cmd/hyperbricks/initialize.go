@@ -21,8 +21,6 @@ func init() {
 		return
 	}
 
-	runtime.GOMAXPROCS(4)
-
 	commands.RegisterSubcommands()
 	commands.PluginCommand()
 
@@ -67,6 +65,10 @@ func init() {
 
 	shared.Module = commands.GetModuleConfigPath()
 	hbConfig := getHyperBricksConfiguration()
+	if err := configureGoMaxProcs(hbConfig.Server.GoMaxProcs); err != nil {
+		log.Fatal(err)
+	}
+	logging.GetLogger().Infow("Go execution parallelism configured", "gomaxprocs", runtime.GOMAXPROCS(0))
 
 	if commands.RenderStatic {
 		basic_initialisation()
