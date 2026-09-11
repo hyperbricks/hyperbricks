@@ -70,6 +70,8 @@ Start a module by its name below `./modules`:
 hyperbricks start -m demo
 ```
 
+See [Runtime request flow](INTRODUCTION.md#runtime-request-flow) for the request path through a running server.
+
 For direct startup, `--module` also accepts relative and absolute directory paths:
 
 ```bash
@@ -207,55 +209,80 @@ rebuilding them, use a standalone static file server as described under
 `static --serve` uses two consecutive HTTP servers for different jobs. The
 first is a temporary HyperBricks runtime used only to create the snapshot. The
 second uses a separate file-only handler to expose the completed render
-directory:
+directory. Hover over or focus a step for details.
 
 ```mermaid
+---
+config:
+  flowchart:
+    htmlLabels: true
+  themeCSS: |
+    .label foreignObject { overflow: visible; }
+    .hb-tip { display: inline-block; position: relative; }
+    .hb-tip::after {
+      background: #ffffff !important;
+      border: 1px solid #111111;
+      border-radius: 6px;
+      bottom: calc(100% + 8px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+      box-sizing: border-box;
+      color: #000000 !important;
+      content: attr(aria-description);
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      left: 50%;
+      line-height: 1.4;
+      max-width: calc(100vw - 32px);
+      opacity: 0;
+      overflow-wrap: anywhere;
+      padding: 8px 10px;
+      pointer-events: none;
+      position: absolute;
+      text-align: left;
+      transform: translateX(-50%);
+      visibility: hidden;
+      white-space: normal;
+      width: 240px;
+      z-index: 1000;
+    }
+    .hb-tip--below::after { bottom: auto; top: calc(100% + 8px); }
+    .node:hover .hb-tip::after,
+    .hb-tip:focus::after { opacity: 1; visibility: visible; }
+---
 flowchart TB
-    CLI(["hyperbricks static -m demo --serve"])
+    CLI("<span class='hb-tip hb-tip--below' tabindex='0' aria-description='Run hyperbricks static -m demo --serve. The command completes a new snapshot before it starts the static file server.'>static --serve</span>")
 
-    subgraph SNAPSHOT["1 · Snapshot rendering"]
+    subgraph SNAPSHOT["1 · Render snapshot"]
         direction TB
-        TARGETS("Discover loaded routes<br/>and configured snapshot targets")
-        CLIENT("Snapshot client<br/>GET each target")
-        RUNTIME("Temporary HyperBricks runtime<br/>routes · components · templates · plugins")
-        WRITE("Snapshot client writes HTML")
-        STOP("Temporary listener stops")
-        ASSETS("Copy module static assets")
-        OUTPUT[("Completed render directory<br/>HTML · assets")]
-        API("Upstream API")
+        RUNTIME("<span class='hb-tip' tabindex='0' aria-description='A temporary HyperBricks runtime discovers and renders the snapshot targets. Components, templates, guards, plugins, and configured API calls run during this phase.'>Render Runtime</span>")
+        OUTPUT[("<span class='hb-tip' tabindex='0' aria-description='Write the rendered HTML and copied module assets to the completed render directory.'>Static Output</span>")]
 
-        TARGETS --> CLIENT
-        CLIENT -->|"HTTP GET"| RUNTIME
-        RUNTIME -->|"rendered response"| WRITE
-        RUNTIME -.->|"api_render / api_fragment_render"| API
-        API -.->|"response data"| RUNTIME
-        WRITE --> STOP --> ASSETS --> OUTPUT
+        RUNTIME -->|"render"| OUTPUT
     end
 
-    subgraph SERVING["2 · Static serving"]
+    subgraph SERVING["2 · Serve snapshot"]
         direction TB
-        FILESERVER("File-only HTTP server<br/>no routes · templates · plugins · upstream API calls")
-        BROWSER(["Browser / HTMX"])
+        FILESERVER("<span class='hb-tip' tabindex='0' aria-description='After rendering finishes, --serve starts a separate file-only server over the completed render directory. It does not run HyperBricks routes or components.'>File Server</span>")
+        BROWSER(["<span class='hb-tip' tabindex='0' aria-description='Receive HTML and assets already stored in the completed render directory.'>Browser</span>"])
 
-        FILESERVER -->|"stored HTML and assets"| BROWSER
+        FILESERVER -->|"files"| BROWSER
     end
 
-    CLI --> TARGETS
-    OUTPUT -->|"only with --serve"| FILESERVER
+    CLI --> RUNTIME
+    OUTPUT -->|"--serve"| FILESERVER
 
     classDef node fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:2.5px;
     classDef emphasis fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
     classDef output fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
-    classDef boundary fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-dasharray:4 3;
 
-    class CLI,TARGETS,CLIENT,WRITE,ASSETS,API,BROWSER node;
+    class CLI,BROWSER node;
     class RUNTIME,FILESERVER emphasis;
     class OUTPUT output;
-    class STOP boundary;
 
     linkStyle default stroke:#ffffff,stroke-width:1.5px;
-    style SNAPSHOT fill:transparent,stroke:#ffffff00,color:#4b5563,stroke-width:1px;
-    style SERVING fill:transparent,stroke:#ffffff00,color:#4b5563,stroke-width:1px;
+    style SNAPSHOT fill:transparent,stroke:#ffffff00,color:#ffffff,stroke-width:1px;
+    style SERVING fill:transparent,stroke:#ffffff00,color:#ffffff,stroke-width:1px;
 ```
 
 Entries under `hyperbricks.static.routes` and `variants` add or customize
