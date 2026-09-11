@@ -187,21 +187,99 @@ Render static output:
 hyperbricks static -m demo
 ```
 
-Static rendering starts an internal localhost runtime, requests the configured routes over HTTP, and writes the responses into the module render directory. This means nested `api_render` blocks use the same request path as normal runtime rendering.
+`hyperbricks static` renders a new snapshot through a temporary localhost
+runtime and writes it to the module's render directory. If a rendered target
+contains `api_render`, the API is called during rendering.
 
-Serve rendered static files:
+Render and then serve the static output:
 
 ```bash
 hyperbricks static -m demo --serve
 ```
 
-`--serve` only serves files that already exist in the render directory. It does not call APIs, render routes, or run the runtime gateway.
+With `--serve`, HyperBricks performs that render first and then serves the new
+snapshot. It does not skip the rendering phase. To serve existing files without
+rebuilding them, use a standalone static file server as described under
+[Serving the export](#serving-the-export).
+
+### Rendering runtime and static file server
+
+`static --serve` uses two consecutive HTTP servers for different jobs. The
+first is a temporary HyperBricks runtime used only to create the snapshot. The
+second uses a separate file-only handler to expose the completed render
+directory:
+
+```mermaid
+flowchart TB
+    CLI(["hyperbricks static -m demo --serve"])
+
+    subgraph SNAPSHOT["1 · Snapshot rendering"]
+        direction TB
+        TARGETS("Discover loaded routes<br/>and configured snapshot targets")
+        CLIENT("Snapshot client<br/>GET each target")
+        RUNTIME("Temporary HyperBricks runtime<br/>routes · components · templates · plugins")
+        WRITE("Snapshot client writes HTML")
+        STOP("Temporary listener stops")
+        ASSETS("Copy module static assets")
+        OUTPUT[("Completed render directory<br/>HTML · assets")]
+        API("Upstream API")
+
+        TARGETS --> CLIENT
+        CLIENT -->|"HTTP GET"| RUNTIME
+        RUNTIME -->|"rendered response"| WRITE
+        RUNTIME -.->|"api_render / api_fragment_render"| API
+        API -.->|"response data"| RUNTIME
+        WRITE --> STOP --> ASSETS --> OUTPUT
+    end
+
+    subgraph SERVING["2 · Static serving"]
+        direction TB
+        FILESERVER("File-only HTTP server<br/>no routes · templates · plugins · upstream API calls")
+        BROWSER(["Browser / HTMX"])
+
+        FILESERVER -->|"stored HTML and assets"| BROWSER
+    end
+
+    CLI --> TARGETS
+    OUTPUT -->|"only with --serve"| FILESERVER
+
+    classDef node fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:2.5px;
+    classDef emphasis fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
+    classDef output fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
+    classDef boundary fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-dasharray:4 3;
+
+    class CLI,TARGETS,CLIENT,WRITE,ASSETS,API,BROWSER node;
+    class RUNTIME,FILESERVER emphasis;
+    class OUTPUT output;
+    class STOP boundary;
+
+    linkStyle default stroke:#ffffff,stroke-width:1.5px;
+    style SNAPSHOT fill:transparent,stroke:#ffffff00,color:#4b5563,stroke-width:1px;
+    style SERVING fill:transparent,stroke:#ffffff00,color:#4b5563,stroke-width:1px;
+```
+
+Entries under `hyperbricks.static.routes` and `variants` add or customize
+snapshot targets; they are not an allowlist. Automatic discovery includes every
+loaded route-owning `hypermedia`, `fragment`, and `api_fragment_render`
+component. A route can therefore be rendered even when it is not listed under
+`hyperbricks.static`.
+
+The snapshot client requests targets with HTTP GET. Components can still call
+upstream APIs, and runtime-gateway routing can handle matching snapshot
+requests. Use a separate export package or source directory when actions,
+guards, or other request-time routes should not run during export.
+
+After rendering, the static server serves stored files only. HTMX can load an
+exported file, but forms, authorization, per-user output, plugins, and fresh
+server-side API reads require a running HyperBricks application.
 
 Overwrite existing output:
 
 ```bash
 hyperbricks static -m demo --force
 ```
+
+`--force` deletes the existing render directory before rebuilding it.
 
 Export rendered output as a zip:
 
@@ -219,7 +297,9 @@ hyperbricks static -m demo --zip --exclude cache,tmp
 
 Configure export requests under `hyperbricks.static` in `package.hyperbricks.yaml`. This is separate from `hyperbricks.directories.static`, which identifies the assets served at `/static/`. The render directory receives the generated HTML and a copy of those assets.
 
-The following complete package example assumes the module contains an `index` route and a `products` route. Keep any other application settings, plugins, and directory overrides that your module needs:
+The following complete package example assumes the module contains `index` and
+`products` routes. Keep any other application settings, plugins, and directory
+overrides that your module needs:
 
 ```yaml
 hyperbricks:
@@ -240,6 +320,8 @@ hyperbricks:
       path: {base: module, path: rendered}
   static:
     routes:
+      - path: /index
+        output: index.html
       - path: /products
         output: products.html
         host: catalog.example.test

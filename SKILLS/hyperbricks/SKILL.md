@@ -341,7 +341,7 @@ hyperbricks static -m demo
 hyperbricks static -m demo --serve
 ```
 
-The first command requests the module's routes through a local runtime and writes the results to its configured render directory. The second serves those generated files. Request-time calculations and server form actions require a running HyperBricks server after deployment.
+`hyperbricks static` renders a new snapshot. With `--serve`, HyperBricks serves that snapshot after rendering completes. If a rendered target contains `api_render`, the API is called during rendering. To serve existing output without rebuilding it, use a standalone static file server; see [Static export boundaries](references/project-lifecycle.md#static-export-boundaries) for route discovery and runtime limitations.
 
 For a runtime deployment, build and run an archive:
 
@@ -352,7 +352,7 @@ hyperbricks start --deploy -m demo --port 8081
 
 The archive is written under `deploy/demo/`. `start --deploy` runs that packaged module. `build --zip` provides the alternative runtime archive format.
 
-Static export discovers routes as well as configured targets: `static.routes` is not an allowlist. To export selected pages, use a separate package configuration whose `hyperbricks.directories.hyperbricks` points to a directory that loads only those page definitions. For runtime archives, stage only the intended source files; the archive builder does not apply Git ignore rules. See [Delivery formats](references/project-lifecycle.md#choose-the-delivery-format).
+For runtime archives, stage only the intended source files; the archive builder does not apply Git ignore rules. See [Delivery formats](references/project-lifecycle.md#choose-the-delivery-format).
 
 ## Troubleshooting And Verification
 
