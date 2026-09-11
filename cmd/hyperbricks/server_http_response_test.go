@@ -303,6 +303,8 @@ func TestServeContent_InvalidHTTPConfigurationFailsBeforeRender(t *testing.T) {
 
 func TestServeContent_APIFragmentSeparatesUpstreamAndBrowserHeaders(t *testing.T) {
 	setupLiveModeServeContentTest(t)
+	// This test uses literal loopback HTTP; production upstream secrets require HTTPS.
+	shared.GetHyperBricksConfiguration().Mode = shared.DEVELOPMENT_MODE
 	var upstreamHeaders http.Header
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		upstreamHeaders = r.Header.Clone()

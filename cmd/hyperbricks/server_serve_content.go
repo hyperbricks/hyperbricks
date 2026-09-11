@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -805,15 +806,39 @@ func cloneRequestBody(r *http.Request) ([]byte, error) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, err
+		markRequestBodyReadFailure(r)
+		return nil, errRequestBodyRead
 	}
 
 	if err := r.Body.Close(); err != nil {
-		return nil, err
+		markRequestBodyReadFailure(r)
+		return nil, errRequestBodyRead
 	}
 
 	r.Body = io.NopCloser(bytes.NewReader(body))
 	return body, nil
+}
+
+var errRequestBodyRead = errors.New("failed to read request body")
+
+type failedRequestBody struct{}
+
+func (failedRequestBody) Read([]byte) (int, error) {
+	return 0, errRequestBodyRead
+}
+
+func (failedRequestBody) Close() error {
+	return nil
+}
+
+func markRequestBodyReadFailure(r *http.Request) {
+	if r == nil {
+		return
+	}
+	if r.Body != nil {
+		_ = r.Body.Close()
+	}
+	r.Body = failedRequestBody{}
 }
 
 func resolveRoute(route string, routing shared.RoutingConfig) (string, bool) {
@@ -1042,14 +1067,14 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	if needsAPIRequestContext {
 		requestBodyBytes, err := cloneRequestBody(r)
 		if err != nil {
-			fmt.Println("Failed to clone request body:", err)
+			return apiRequestPreparationError(requestID)
 		} else if requestBodyBytes != nil {
 			requestBodyReader = io.NopCloser(bytes.NewReader(requestBodyBytes))
 		}
 
 		// Parse form data before using r.Form.
 		if err := r.ParseForm(); err != nil {
-			fmt.Println("Failed to parse form data:", err)
+			return apiRequestPreparationError(requestID)
 		}
 	}
 
@@ -1064,6 +1089,8 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	ctx = context.WithValue(ctx, shared.ResponseWriter, w)
 	handledCapture := &shared.HandledResponseCapture{}
 	ctx = context.WithValue(ctx, shared.HandledResponseCaptureKey, handledCapture)
+	apiResponseCookieCapture := &shared.APIResponseCookieCapture{}
+	ctx = context.WithValue(ctx, shared.APIResponseCookieCaptureKey, apiResponseCookieCapture)
 	// ============ END OF API CONTEXT AND TOKEN CAPTURE ============
 
 	var renderOutput string
@@ -1075,6 +1102,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	}
 	renderErrors = append(renderErrors, getRouteSourceErrors(route)...)
 	handledResponse, captureErr := handledCapture.Result()
+	apiResponseCookies := apiResponseCookieCapture.Result()
 	if captureErr != nil {
 		renderErrors = append(renderErrors, captureErr)
 	}
@@ -1101,6 +1129,11 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	}
 	if handledResponse != nil {
 		return renderHandledContent(requestID, status, contentType, headers, cookies, nocache, len(renderErrors), handledResponse)
+	}
+	if len(renderErrors) == 0 {
+		// The server commits API response cookies with the rest of RenderContent.
+		// A later route/source error or handled plugin response discards them.
+		cookies = append(cookies, apiResponseCookies...)
 	}
 
 	return RenderContent{
@@ -1178,6 +1211,16 @@ func renderHandledContent(requestID string, defaultStatus int, defaultContentTyp
 		RequestID:   requestID,
 		ErrorCount:  errorCount,
 		Handled:     cloneHandledResponseData(handled),
+	}
+}
+
+func apiRequestPreparationError(requestID string) RenderContent {
+	return RenderContent{
+		Content:     http.StatusText(http.StatusBadRequest) + "\n",
+		NoCache:     true,
+		ContentType: "text/plain; charset=utf-8",
+		Status:      http.StatusBadRequest,
+		RequestID:   requestID,
 	}
 }
 

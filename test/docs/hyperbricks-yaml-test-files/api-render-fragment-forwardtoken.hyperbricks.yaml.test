@@ -1,0 +1,49 @@
+==== hyperbricks yaml {!{api_fragment}} ====
+api_fragment:
+  - type: api_fragment_render
+  - endpoint: https://example.com/fragment
+  - method: GET
+  - route: api-fragment
+  - forwardtoken: account_session
+==== explainer ====
+Exact incoming cookie name to forward as Bearer. Omitted or empty disables forwarding. String only; mutually exclusive with other authentication sources
+==== expected json ====
+{
+  "AllowedQueryKeys": null,
+  "Body": "",
+  "ConfigCategory": "",
+  "ConfigType": "<API_FRAGMENT_RENDER>",
+  "Debug": false,
+  "DebugPanel": false,
+  "Enclose": "",
+  "Endpoint": "https://example.com/fragment",
+  "ForwardToken": "account_session",
+  "Headers": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Inline": "",
+  "Items": null,
+  "JwtClaims": null,
+  "JwtSecret": "",
+  "MetaDocDescription": "",
+  "Method": "GET",
+  "NoCache": false,
+  "Password": "",
+  "QueryParams": null,
+  "Response": {
+    "Headers": null,
+    "Status": 0
+  },
+  "Route": "api-fragment",
+  "Section": "",
+  "SetCookie": "",
+  "Status": 0,
+  "Template": "",
+  "Title": "",
+  "Username": "",
+  "Values": null
+}
+
+==== expected output ====

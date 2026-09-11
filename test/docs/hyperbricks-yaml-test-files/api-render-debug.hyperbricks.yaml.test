@@ -6,7 +6,7 @@ api_render:
   - endpoint: https://example.com/api
   - method: GET
 ==== explainer ====
-Debug the response data
+Log request and response metadata only; never header values, URL paths or queries, or payloads
 ==== expected json ====
 {
   "AllowedQueryKeys": null,

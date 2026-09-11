@@ -15,6 +15,6 @@ api_set_token_render:
       {{end}}
   - values:
       someproperty: API_FRAGMENT_RENDER demo
-  - setcookie: token={{.Data.accessToken}}
+  - setcookie: token={{.Data.accessToken}}; Path=/; HttpOnly; SameSite=Lax
 ==== expected output ====
 <p>message:Token is valid</p><p>status:200</p>

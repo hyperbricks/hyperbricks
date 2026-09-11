@@ -54,6 +54,16 @@ func (tf *TypeFactory) CreateInstance(request TypeRequest) (*TypeResponse, error
 
 	instancePtr := reflect.New(typ)
 	instance := instancePtr.Interface()
+	// Components with security-sensitive fields validate their original values
+	// before weak decoding loses type information. Other components keep the
+	// existing conversion rules; this is not a YAML-wide validation policy.
+	if validator, ok := instance.(interface {
+		ValidateRawConfig(map[string]interface{}) error
+	}); ok {
+		if err := validator.ValidateRawConfig(request.Data); err != nil {
+			return nil, err
+		}
+	}
 
 	// Set up the decoder with appropriate configuration
 	decoderConfig := &mapstructure.DecoderConfig{

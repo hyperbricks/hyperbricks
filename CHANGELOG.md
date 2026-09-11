@@ -251,3 +251,50 @@ rendered pages.
   across 1,211,692 validated responses with no status or content failures. These
   measurements are retained as local benchmark evidence rather than a portable
   cross-environment performance guarantee.
+
+## 2026-09-11 updates
+
+### Explicit API credentials and validated response cookies
+
+- Add string `forwardtoken` to `api_render` and `api_fragment_render`. Omission or
+  an empty string disables browser-token forwarding. A configured value selects
+  one exact incoming cookie; duplicate names and malformed values fail before
+  the upstream request. Browser Authorization is never an implicit source.
+- Replace authentication assignment-order precedence with one explicit source:
+  named cookie, configured Authorization, signed JWT, or complete Basic Auth.
+  Reject conflicting sources, incomplete credentials, and endpoint userinfo.
+- Require HTTPS for credential sources, potentially sensitive headers, and
+  request bodies, with literal loopback HTTP allowed in development/debug mode.
+  Restrict all API redirects to the initial origin, remove the API cookie jar,
+  and propagate request cancellation.
+- Replace API request/response dumps with metadata-only diagnostics and sanitize
+  transport errors so payloads, credential values, and sensitive URL details do
+  not enter API debug output.
+- Stop both API renderers before the upstream call when request-body preparation
+  fails, and keep the underlying read error out of rendered diagnostics.
+- Add structured `setcookies` entries and a constrained legacy-string path.
+  Validate names, attributes, dynamic values, domains, and cookie prefixes; keep
+  token bytes separate from cookie syntax and HTML escaping. Reject missing,
+  empty, null, or non-string dynamic values and reserved Data/Status overrides.
+- Emit API fragment cookies only after successful upstream processing, fragment
+  rendering, and validation of the entire cookie group. Preserve explicit logout
+  after bodyless 204 responses and reject malformed upstream JSON.
+  Stage cookies until the HTTP response commit so later render/source errors or
+  handled plugin responses cannot inherit them accidentally.
+- Preserve raw types only for API security fields and validate them in the
+  components before weak decoding. Keep other YAML scalar behavior unchanged.
+- Add the runnable `api-security-test` module, mock upstream, complete research
+  article, and end-to-end regression tests. Migrate authenticated lifecycle
+  fixtures, regenerate the reference/schema, and update API documentation and
+  skills with the new contract and migration requirements.
+
+**Migration:** add `forwardtoken: token` only to API components approved to
+receive that existing browser carrier. Public APIs should leave it omitted.
+Remove competing auth settings, use HTTPS for deployed credential-bearing
+endpoints, and migrate arbitrary cookie-header templates to structured entries.
+
+Verification: `./tests.sh --with-docs` passed after the final changes, including
+Docker-backed API fixtures and generated documentation. Targeted API HTTP tests
+and the changed shared/component/composite/parser/render packages also passed
+with `-race`. The project lifecycle fixture passed its API, guard, runtime-archive,
+and static-export profiles without plugins.

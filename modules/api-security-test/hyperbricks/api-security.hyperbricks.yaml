@@ -1,0 +1,478 @@
+vars:
+  api_security_upstream:
+    env:
+      name: HYPERBRICKS_API_SECURITY_UPSTREAM
+      default: http://127.0.0.1:8098
+
+dashboard:
+  - type: fragment
+  - route: dashboard
+  - nocache: true
+  - content:
+      - type: tree
+      - user_private:
+          - type: api_render
+          - endpoint:
+              format: '%s/private/user'
+              args:
+                - var: api_security_upstream
+          - method: GET
+          - querykeys: []
+          - forwardtoken: user_session
+          - template:
+              file: api-result.html
+      - admin_private:
+          - type: api_render
+          - endpoint:
+              format: '%s/private/admin'
+              args:
+                - var: api_security_upstream
+          - method: GET
+          - querykeys: []
+          - forwardtoken: admin_session
+          - template:
+              file: api-result.html
+      - public_status:
+          - type: api_render
+          - endpoint:
+              format: '%s/public'
+              args:
+                - var: api_security_upstream
+          - method: GET
+          - querykeys: []
+          - template:
+              file: api-result.html
+      - service_status:
+          - type: api_render
+          - endpoint:
+              format: '%s/service'
+              args:
+                - var: api_security_upstream
+          - method: GET
+          - querykeys: []
+          - headers:
+              Authorization: Bearer fixture-service-token
+          - template:
+              file: api-result.html
+
+login:
+  - type: api_fragment_render
+  - route: actions/login
+  - endpoint:
+      format: '%s/issue/valid'
+      args:
+        - var: api_security_upstream
+  - method: POST
+  - querykeys: []
+  - setcookies:
+      - name: user_session
+        value: '{{.Data.user_token}}'
+        path: /
+        http_only: true
+        secure: false
+        same_site: Lax
+      - name: admin_session
+        value: '{{.Data.admin_token}}'
+        path: /
+        http_only: true
+        secure: false
+        same_site: Strict
+  - template:
+      file: action-result.html
+
+login_missing_token:
+  - type: api_fragment_render
+  - route: actions/login-missing-token
+  - endpoint:
+      format: '%s/issue/missing'
+      args:
+        - var: api_security_upstream
+  - method: POST
+  - querykeys: []
+  - setcookies:
+      - name: user_session
+        value: '{{.Data.user_token}}'
+        path: /
+        http_only: true
+        secure: false
+        same_site: Lax
+      - name: admin_session
+        value: '{{.Data.admin_token}}'
+        path: /
+        http_only: true
+        secure: false
+        same_site: Strict
+  - template:
+      file: action-result.html
+
+login_empty_token:
+  - type: api_fragment_render
+  - route: actions/login-empty-token
+  - endpoint:
+      format: '%s/issue/empty'
+      args:
+        - var: api_security_upstream
+  - method: POST
+  - querykeys: []
+  - setcookies:
+      - name: user_session
+        value: '{{.Data.user_token}}'
+        path: /
+        http_only: true
+        secure: false
+        same_site: Lax
+      - name: admin_session
+        value: '{{.Data.admin_token}}'
+        path: /
+        http_only: true
+        secure: false
+        same_site: Strict
+  - template:
+      file: action-result.html
+
+login_invalid_token:
+  - type: api_fragment_render
+  - route: actions/login-invalid-token
+  - endpoint:
+      format: '%s/issue/invalid'
+      args:
+        - var: api_security_upstream
+  - method: POST
+  - querykeys: []
+  - setcookies:
+      - name: user_session
+        value: '{{.Data.user_token}}'
+        path: /
+        http_only: true
+        secure: false
+        same_site: Lax
+      - name: admin_session
+        value: '{{.Data.admin_token}}'
+        path: /
+        http_only: true
+        secure: false
+        same_site: Strict
+  - template:
+      file: action-result.html
+
+login_invalid_json:
+  - type: api_fragment_render
+  - route: actions/login-invalid-json
+  - endpoint:
+      format: '%s/issue/trailing-json'
+      args:
+        - var: api_security_upstream
+  - method: POST
+  - querykeys: []
+  - setcookies:
+      - name: decode_should_not_commit
+        value: otherwise-valid-literal
+        path: /
+        http_only: true
+        secure: false
+        same_site: Lax
+  - inline: '<p>Decoded response accepted.</p>'
+
+login_template_error:
+  - type: api_fragment_render
+  - route: actions/login-template-error
+  - endpoint:
+      format: '%s/issue/valid'
+      args:
+        - var: api_security_upstream
+  - method: POST
+  - querykeys: []
+  - setcookies:
+      - name: template_should_not_commit
+        value: '{{.Data.user_token}}'
+        path: /
+        http_only: true
+        secure: false
+        same_site: Lax
+  - inline: '{{call .Data.user_token}}'
+
+logout:
+  - type: api_fragment_render
+  - route: actions/logout
+  - endpoint:
+      format: '%s/logout'
+      args:
+        - var: api_security_upstream
+  - method: POST
+  - querykeys: []
+  - setcookies:
+      - name: user_session
+        value: ''
+        path: /
+        http_only: true
+        secure: false
+        same_site: Lax
+        max_age: 0
+      - name: admin_session
+        value: ''
+        path: /
+        http_only: true
+        secure: false
+        same_site: Strict
+        max_age: 0
+  - template:
+      file: logout-result.html
+
+private_fragment:
+  - type: api_fragment_render
+  - route: actions/private
+  - endpoint:
+      format: '%s/private/fragment'
+      args:
+        - var: api_security_upstream
+  - method: GET
+  - querykeys: []
+  - forwardtoken: user_session
+  - template:
+      file: api-result.html
+
+public_fragment:
+  - type: api_fragment_render
+  - route: actions/public
+  - endpoint:
+      format: '%s/public/fragment'
+      args:
+        - var: api_security_upstream
+  - method: GET
+  - querykeys: []
+  - forwardtoken: ""
+  - template:
+      file: api-result.html
+
+wrong_cookie:
+  - type: fragment
+  - route: wrong-cookie
+  - nocache: true
+  - content:
+      - type: api_render
+      - endpoint:
+          format: '%s/private/wrong-cookie'
+          args:
+            - var: api_security_upstream
+      - method: GET
+      - querykeys: []
+      - forwardtoken: user_session
+      - template:
+          file: api-result.html
+
+duplicate_cookie:
+  - type: fragment
+  - route: duplicate-cookie
+  - nocache: true
+  - content:
+      - type: api_render
+      - endpoint:
+          format: '%s/private/duplicate'
+          args:
+            - var: api_security_upstream
+      - method: GET
+      - querykeys: []
+      - forwardtoken: user_session
+      - template:
+          file: api-result.html
+
+header_conflict:
+  - type: fragment
+  - route: conflicts/header
+  - nocache: true
+  - content:
+      - type: api_render
+      - endpoint:
+          format: '%s/conflicts/header'
+          args:
+            - var: api_security_upstream
+      - method: GET
+      - querykeys: []
+      - forwardtoken: user_session
+      - headers:
+          Authorization: Bearer configured-conflict
+      - template:
+          file: api-result.html
+
+basic_conflict:
+  - type: api_fragment_render
+  - route: conflicts/basic
+  - endpoint:
+      format: '%s/conflicts/basic'
+      args:
+        - var: api_security_upstream
+  - method: GET
+  - querykeys: []
+  - forwardtoken: user_session
+  - username: conflict-user
+  - password: conflict-password
+  - template:
+      file: api-result.html
+
+invalid_forwardtoken_types:
+  - type: fragment
+  - route: invalid-forwardtoken-types
+  - nocache: true
+  - content:
+      - type: tree
+      - before:
+          - type: html
+          - value: '<p id="invalid-before">before</p>'
+      - boolean_value:
+          - type: api_render
+          - endpoint:
+              format: '%s/invalid/bool'
+              args:
+                - var: api_security_upstream
+          - method: GET
+          - querykeys: []
+          - forwardtoken: false
+          - template:
+              file: api-result.html
+      - numeric_value:
+          - type: api_render
+          - endpoint:
+              format: '%s/invalid/number'
+              args:
+                - var: api_security_upstream
+          - method: GET
+          - querykeys: []
+          - forwardtoken: 7
+          - template:
+              file: api-result.html
+      - after:
+          - type: html
+          - value: '<p id="invalid-after">after</p>'
+
+invalid_forwardtoken_fragment:
+  - type: api_fragment_render
+  - route: invalid-forwardtoken-fragment
+  - endpoint:
+      format: '%s/invalid/fragment-number'
+      args:
+        - var: api_security_upstream
+  - method: GET
+  - querykeys: []
+  - forwardtoken: 11
+  - template:
+      file: api-result.html
+
+redirect_nested:
+  - type: fragment
+  - route: redirects/nested
+  - nocache: true
+  - content:
+      - type: api_render
+      - endpoint:
+          format: '%s/redirect/nested'
+          args:
+            - var: api_security_upstream
+      - method: GET
+      - querykeys: []
+      - forwardtoken: user_session
+      - template:
+          file: api-result.html
+
+redirect_fragment:
+  - type: api_fragment_render
+  - route: redirects/fragment
+  - endpoint:
+      format: '%s/redirect/fragment'
+      args:
+        - var: api_security_upstream
+  - method: GET
+  - querykeys: []
+  - forwardtoken: user_session
+  - template:
+      file: api-result.html
+
+concurrent_fanout:
+  - type: fragment
+  - route: concurrent-fanout
+  - nocache: true
+  - content:
+      - type: tree
+      - user_barrier:
+          - type: api_render
+          - endpoint:
+              format: '%s/barrier/user'
+              args:
+                - var: api_security_upstream
+          - method: GET
+          - querykeys: []
+          - forwardtoken: user_session
+          - template:
+              file: api-result.html
+      - admin_barrier:
+          - type: api_render
+          - endpoint:
+              format: '%s/barrier/admin'
+              args:
+                - var: api_security_upstream
+          - method: GET
+          - querykeys: []
+          - forwardtoken: admin_session
+          - template:
+              file: api-result.html
+
+cancel_nested:
+  - type: fragment
+  - route: cancel/nested
+  - nocache: true
+  - content:
+      - type: api_render
+      - endpoint:
+          format: '%s/cancel/nested'
+          args:
+            - var: api_security_upstream
+      - method: GET
+      - querykeys: []
+      - template:
+          file: api-result.html
+
+cancel_fragment:
+  - type: api_fragment_render
+  - route: cancel/fragment
+  - endpoint:
+      format: '%s/cancel/fragment'
+      args:
+        - var: api_security_upstream
+  - method: GET
+  - querykeys: []
+  - template:
+      file: api-result.html
+
+debug_nested:
+  - type: fragment
+  - route: debug/nested
+  - nocache: true
+  - content:
+      - type: api_render
+      - endpoint:
+          format: '%s/debug/nested/path-secret?api_key=configured-query-secret'
+          args:
+            - var: api_security_upstream
+      - method: GET
+      - querykeys: []
+      - forwardtoken: user_session
+      - headers:
+          X-Api-Key: renderer-api-key-secret
+      - debug: true
+      - template:
+          file: api-result.html
+
+debug_fragment:
+  - type: api_fragment_render
+  - route: debug/fragment
+  - endpoint:
+      format: '%s/debug/fragment/path-secret?api_key=configured-query-secret'
+      args:
+        - var: api_security_upstream
+  - method: GET
+  - querykeys: []
+  - forwardtoken: user_session
+  - headers:
+      X-Api-Key: renderer-api-key-secret
+  - debug: true
+  - template:
+      file: api-result.html

@@ -145,7 +145,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	// If valid, return success
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, `{"message": "Token is valid"}`)
+	fmt.Fprintln(w, `{"message": "Token is valid", "accessToken": "fixture-session-value"}`)
 }
 
 func bodyHandler(w http.ResponseWriter, r *http.Request) {

@@ -80,6 +80,35 @@ Set `myconf.api.status_endpoint` in the package to the actual reachable service 
 
 `.Data` contains the parsed response; `.Status` is the upstream HTTP status; configured `values` are available at the template root. Explicit `querykeys` limits incoming URL query forwarding; `queryparams` supplies static outgoing query values. Templates and APIs default to `id`, `name`, `order` when query keys are omitted. API form and JSON body input have their own mapping rules, so a query allowlist is not validation of a submitted form.
 
+Both API components require explicit credential selection. Omitted or empty
+`forwardtoken` disables browser-cookie forwarding. Set `forwardtoken: account_session`
+to send only that named incoming cookie as Bearer. Missing/empty cookies produce
+no derived Authorization; duplicate matching cookies reject before the API call.
+The field accepts strings only and is validated by the API component before weak
+decoding. Do not use `forwardtoken: true` or `false`.
+
+Choose at most one of `forwardtoken`, explicit `headers.Authorization`, complete
+Basic `username`/`password`, or `jwtsecret` with optional `jwtclaims`. Conflicts and
+incomplete Basic configurations fail; no implicit precedence remains. The browser
+Authorization header is not copied. Existing intended `token` forwarding must be
+migrated to `forwardtoken: token` on the specific recipients.
+
+Use HTTPS for credentials, non-empty custom headers and request bodies. Only
+literal loopback HTTP endpoints in development/debug mode get a local exception.
+API redirects stay within the exact scheme/host/effective-port origin and do not
+use a cookie jar. API diagnostics omit header values, URL paths/queries and bodies.
+
+For API fragment response cookies, prefer structured `setcookies` entries with
+`name`, `value: '{{.Data.token}}'`, `path`, `http_only`, `secure`, and `same_site`.
+The JSON field supplies the value; `name` chooses the browser cookie. On a later
+request `forwardtoken` selects that cookie name. Cookies are validated and staged
+as a group after successful upstream processing and fragment rendering. Missing,
+empty or invalid dynamic tokens produce errors, never implicit logout. Explicit
+`max_age: 0` deletes a literal empty cookie with the same name and scope. Legacy
+raw cookie strings allow templating only within the value. See `docs/API_RENDER.md`
+and `modules/api-security-test/README.md` in the matching source revision for the
+complete contract and executable proof.
+
 ## Forms and refreshes
 
 Use explicit action routes when an API or plugin owns writes. A typical sequence is: submit form → perform/validate the action → render feedback → refresh the related read panel after success. Keep HTML in templates and backend validation at the operation owner. For API body mapping and authentication, read the API manual before forwarding fields or credentials.

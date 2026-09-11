@@ -76,13 +76,14 @@ type ParseOptions struct {
 
 // Node is a named HyperBricks object or nested object extension.
 type Node struct {
-	Name     string
-	Type     string
-	Inherit  string
-	Props    map[string]interface{}
-	Children []*Node
-	Line     int
-	Column   int
+	Name           string
+	Type           string
+	Inherit        string
+	Props          map[string]interface{}
+	Children       []*Node
+	Line           int
+	Column         int
+	nativeAPIProps map[string]interface{}
 }
 
 // ProcessBytes applies YAML-safe HyperBricks preprocessing, parses the source
@@ -319,6 +320,7 @@ func parseNodeSequence(name string, seq *yaml.Node, ctx *parseContext, path stri
 		Line:   seq.Line,
 		Column: seq.Column,
 	}
+	explicitAPIType := isAPIComponentType(explicitNodeType(seq))
 	seenEntries := make(map[string]bool)
 	seenReserved := make(map[string]bool)
 	seenChildren := make(map[string]bool)
@@ -357,7 +359,18 @@ func parseNodeSequence(name string, seq *yaml.Node, ctx *parseContext, path stri
 			}
 			node.Inherit = value
 		default:
-			if valueNode.Kind == yaml.SequenceNode && looksLikeChildNodeSequence(valueNode) {
+			preserveNative := isNativeAPIProperty(key)
+			if preserveNative {
+				value, err := parseNativeAPIValue(valueNode)
+				if err != nil {
+					return nil, err
+				}
+				if node.nativeAPIProps == nil {
+					node.nativeAPIProps = make(map[string]interface{})
+				}
+				node.nativeAPIProps[key] = value
+			}
+			if valueNode.Kind == yaml.SequenceNode && looksLikeChildNodeSequence(valueNode) && !(preserveNative && explicitAPIType) {
 				if looksLikeNodeSequence(valueNode) && reservedRuntimeChildName(formatType(node.Type), key) {
 					return nil, nodeError(keyNode, "child %q at %s collides with a reserved %s field", key, joinPath(path, key), formatType(node.Type))
 				}
@@ -641,14 +654,14 @@ var globalRuntimeFields = map[string]bool{
 var runtimeFieldsByType = map[string]map[string]bool{
 	"<API_FRAGMENT_RENDER>": fieldSet(
 		"beautify", "body", "cache", "content_type", "debug", "debugpanel",
-		"endpoint", "guard", "headers", "index", "inline",
+		"endpoint", "forwardtoken", "guard", "headers", "index", "inline",
 		"jwtclaims", "jwtsecret", "method", "nocache", "password",
 		"querykeys", "queryparams", "response", "route", "section",
 		"setcookie", "setcookies", "static", "status", "template", "title",
 		"username", "values",
 	),
 	"<API_RENDER>": fieldSet(
-		"body", "debug", "debugpanel", "endpoint", "headers", "inline",
+		"body", "debug", "debugpanel", "endpoint", "forwardtoken", "headers", "inline",
 		"jwtclaims", "jwtsecret", "method", "password", "querykeys",
 		"queryparams", "setcookie", "setcookies", "status", "template",
 		"username", "values",
@@ -755,6 +768,90 @@ func parseScalar(node *yaml.Node) (interface{}, error) {
 		return "", nil
 	}
 	return node.Value, nil
+}
+
+func explicitNodeType(seq *yaml.Node) string {
+	if seq == nil {
+		return ""
+	}
+	for _, item := range seq.Content {
+		if item.Kind != yaml.MappingNode || len(item.Content) != 2 || strings.TrimSpace(item.Content[0].Value) != "type" {
+			continue
+		}
+		if item.Content[1].Kind == yaml.ScalarNode {
+			return formatType(item.Content[1].Value)
+		}
+		return ""
+	}
+	return ""
+}
+
+func isAPIComponentType(componentType string) bool {
+	switch formatType(componentType) {
+	case "<API_RENDER>", "<API_FRAGMENT_RENDER>":
+		return true
+	default:
+		return false
+	}
+}
+
+func isNativeAPIProperty(name string) bool {
+	switch name {
+	case "forwardtoken", "setcookie", "setcookies":
+		return true
+	default:
+		return false
+	}
+}
+
+func parseNativeAPIValue(node *yaml.Node) (interface{}, error) {
+	if node == nil {
+		return nil, fmt.Errorf("cannot preserve a nil YAML value")
+	}
+	switch node.Kind {
+	case yaml.ScalarNode:
+		var value interface{}
+		if err := node.Decode(&value); err != nil {
+			return nil, nodeError(node, "could not decode native API value: %v", err)
+		}
+		return value, nil
+	case yaml.MappingNode:
+		out := make(map[string]interface{}, len(node.Content)/2)
+		for index := 0; index < len(node.Content); index += 2 {
+			keyNode := node.Content[index]
+			valueNode := node.Content[index+1]
+			if keyNode.Kind != yaml.ScalarNode {
+				return nil, nodeError(keyNode, "native API map keys must be strings")
+			}
+			key := strings.TrimSpace(keyNode.Value)
+			if key == "" {
+				return nil, nodeError(keyNode, "native API map key cannot be empty")
+			}
+			if _, exists := out[key]; exists {
+				return nil, nodeError(keyNode, "duplicate native API map key %q", key)
+			}
+			value, err := parseNativeAPIValue(valueNode)
+			if err != nil {
+				return nil, err
+			}
+			out[key] = value
+		}
+		return out, nil
+	case yaml.SequenceNode:
+		out := make([]interface{}, 0, len(node.Content))
+		for _, item := range node.Content {
+			value, err := parseNativeAPIValue(item)
+			if err != nil {
+				return nil, err
+			}
+			out = append(out, value)
+		}
+		return out, nil
+	case yaml.AliasNode:
+		return nil, nodeError(node, "YAML aliases are not supported in native API fields")
+	default:
+		return nil, nodeError(node, "unsupported YAML node kind %d in native API field", node.Kind)
+	}
 }
 
 type loadState struct {
@@ -1049,6 +1146,14 @@ func mergeNodes(base *Node, overlay *Node) *Node {
 	for key, value := range overlay.Props {
 		out.Props[key] = mergeValues(out.Props[key], value)
 	}
+	if len(overlay.nativeAPIProps) > 0 {
+		if out.nativeAPIProps == nil {
+			out.nativeAPIProps = make(map[string]interface{})
+		}
+		for key, value := range overlay.nativeAPIProps {
+			out.nativeAPIProps[key] = mergeValues(out.nativeAPIProps[key], value)
+		}
+	}
 
 	indexByName := make(map[string]int, len(out.Children))
 	for index, child := range out.Children {
@@ -1112,12 +1217,13 @@ func cloneNode(node *Node) *Node {
 		return nil
 	}
 	out := &Node{
-		Name:    node.Name,
-		Type:    node.Type,
-		Inherit: node.Inherit,
-		Props:   cloneMap(node.Props),
-		Line:    node.Line,
-		Column:  node.Column,
+		Name:           node.Name,
+		Type:           node.Type,
+		Inherit:        node.Inherit,
+		Props:          cloneMap(node.Props),
+		Line:           node.Line,
+		Column:         node.Column,
+		nativeAPIProps: cloneMap(node.nativeAPIProps),
 	}
 	if len(node.Children) > 0 {
 		out.Children = make([]*Node, 0, len(node.Children))

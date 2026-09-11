@@ -1,7 +1,7 @@
 **Licence:** MIT
 **Version:** v1.2.3-beta
 
-**Build time:** 2026-09-10 21:58 UTC
+**Build time:** 2026-09-11 18:44 UTC
 
 
 # HyperBricks Component Reference
@@ -189,10 +189,11 @@ Route-owning API fragment that always bypasses rendered-output caching and makes
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
 | `body` | `string` | no | Raw request body. Use a scalar string value; nested objects are not parsed for this field. |
-| `debug` | `bool` | no | Debug the response data |
+| `debug` | `bool` | no | Log request and response metadata only; never header values, URL paths or queries, or payloads |
 | `debugpanel` | `bool` | no | Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml |
 | `enclose` | `string` | no | Wrapping property for the fragment rendered output |
 | `endpoint` | `string` | yes | The API endpoint |
+| `forwardtoken` | `string` | no | Exact incoming cookie name to forward as Bearer. Omitted or empty disables forwarding. String only; mutually exclusive with other authentication sources |
 | `guard.auth.cookie` | `string` | no | Cookie name used to resolve the request token |
 | `guard.auth.header` | `string` | no | Header name used to resolve the request token, defaults to Authorization |
 | `guard.auth.scheme` | `string` | no | Optional header scheme, defaults to Bearer for Authorization headers |
@@ -209,24 +210,24 @@ Route-owning API fragment that always bypasses rendered-output caching and makes
 | `guard.on_unauthenticated.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
 | `guard.require.authenticated` | `bool` | no | Require an authenticated request before rendering |
 | `guard.require.query` | `map` | no | Required query keys, set each key to true to enforce presence |
-| `headers` | `map` | no | Optional HTTP headers for API requests |
+| `headers` | `map` | no | Explicit upstream headers. Authorization, JWT, Basic Auth and forwardtoken are mutually exclusive authentication sources |
 | `index` | `int` | no | Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation |
 | `inline` | `string` | no | Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
 | `jwtclaims` | `map` | no | JWT claims to include when signing the bearer token |
-| `jwtsecret` | `string` | no | When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request |
+| `jwtsecret` | `string` | no | Signs jwtclaims as the sole upstream authentication source; cannot be combined with Basic Auth, Authorization or forwardtoken |
 | `method` | `string` | yes | HTTP method to use for API calls, GET POST PUT DELETE etc... |
-| `password` | `string` | no | Password for basic auth |
+| `password` | `string` | no | Basic Auth password; both username and password are required |
 | `querykeys` | `list` | no | Set allowed proxy query keys |
 | `queryparams` | `map` | no | Set proxy query keys in the configuration |
 | `response.headers` | `map` | no | HTTP response headers sent to the browser |
 | `response.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
 | `route` | `string` | no | The route (URL-friendly identifier) for the fragment |
 | `section` | `string` | no | The section the fragment belongs to |
-| `setcookie` | `string` | no | Single Set-Cookie response template shorthand. Applied on any 2xx upstream response. |
-| `setcookies` | `list` | no | Optional list of Set-Cookie response templates. Each entry becomes its own Set-Cookie header on any 2xx upstream response. |
+| `setcookie` | `string` | no | Legacy Set-Cookie shorthand. Only the value may be templated; validated and emitted atomically after successful upstream and fragment rendering. |
+| `setcookies` | `list` | no | List of structured cookie configurations or legacy strings. Cookie values are validated separately; all headers are emitted together only after successful rendering. |
 | `template` | `string` | no | Loads contents of a template file in the modules template directory |
 | `title` | `string` | no | The title of the fragment |
-| `username` | `string` | no | Username for basic auth |
+| `username` | `string` | no | Basic Auth username; both username and password are required |
 | `values` | `map` | no | Key-value pairs for template rendering |
 
 #### Example
@@ -569,20 +570,21 @@ Nested API fetcher with no upstream-response cache or nocache field. It makes a 
 | --- | --- | --- | --- |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `body` | `string` | no | Raw request body. Use a scalar string value; nested objects are not parsed for this field. |
-| `debug` | `bool` | no | Debug the response data |
+| `debug` | `bool` | no | Log request and response metadata only; never header values, URL paths or queries, or payloads |
 | `debugpanel` | `bool` | no | Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
 | `endpoint` | `string` | yes | The API endpoint |
-| `headers` | `map` | no | Optional HTTP headers for API requests |
+| `forwardtoken` | `string` | no | Exact incoming cookie name to forward as Bearer. Omitted or empty disables forwarding. String only; mutually exclusive with other authentication sources |
+| `headers` | `map` | no | Explicit upstream headers. Authorization, JWT, Basic Auth and forwardtoken are mutually exclusive authentication sources |
 | `inline` | `string` | no | Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
 | `jwtclaims` | `map` | no | JWT claims to include when signing the bearer token |
-| `jwtsecret` | `string` | no | When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request |
+| `jwtsecret` | `string` | no | Signs jwtclaims as the sole upstream authentication source; cannot be combined with Basic Auth, Authorization or forwardtoken |
 | `method` | `string` | yes | HTTP method to use for API calls, GET POST PUT DELETE etc... |
-| `password` | `string` | no | Password for basic auth |
+| `password` | `string` | no | Basic Auth password; both username and password are required |
 | `querykeys` | `list` | no | Set allowed proxy query keys |
 | `queryparams` | `map` | no | Set proxy query keys in the configuration |
 | `template` | `string` | no | Loads contents of a template file in the modules template directory |
-| `username` | `string` | no | Username for basic auth |
+| `username` | `string` | no | Basic Auth username; both username and password are required |
 | `values` | `map` | no | Key-value pairs for template rendering |
 
 #### Example

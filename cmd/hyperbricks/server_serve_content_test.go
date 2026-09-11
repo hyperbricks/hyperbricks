@@ -1255,7 +1255,7 @@ func TestServeContent_APIFragmentRenderSetCookieOnNoContentResponse(t *testing.T
 	if writer.Code != http.StatusOK {
 		t.Fatalf("expected served fragment response to remain 200, got %d", writer.Code)
 	}
-	if got := writer.Header().Values("Set-Cookie"); len(got) != 1 || got[0] != "token=; Path=/; HttpOnly; Max-Age=0" {
+	if got := writer.Result().Cookies(); len(got) != 1 || got[0].Name != "token" || got[0].Value != "" || got[0].Path != "/" || !got[0].HttpOnly || got[0].MaxAge != -1 {
 		t.Fatalf("expected single logout cookie on 204 upstream response, got %v", got)
 	}
 }
@@ -1285,18 +1285,18 @@ func TestServeContent_APIFragmentRenderSetCookiesAddsMultipleHeaders(t *testing.
 	if writer.Code != http.StatusOK {
 		t.Fatalf("expected served fragment response to remain 200, got %d", writer.Code)
 	}
-	got := writer.Header().Values("Set-Cookie")
-	want := []string{
-		"token=; Path=/; HttpOnly; Max-Age=0",
-		"runtime_session=; Path=/; HttpOnly; Max-Age=0",
-		"theme=light; Path=/; Max-Age=300",
+	got := writer.Result().Cookies()
+	want := []http.Cookie{
+		{Name: "token", Path: "/", HttpOnly: true, MaxAge: -1},
+		{Name: "runtime_session", Path: "/", HttpOnly: true, MaxAge: -1},
+		{Name: "theme", Value: "light", Path: "/", MaxAge: 300},
 	}
 	if len(got) != len(want) {
 		t.Fatalf("expected %d Set-Cookie headers, got %d: %v", len(want), len(got), got)
 	}
 	for i := range want {
-		if got[i] != want[i] {
-			t.Fatalf("expected Set-Cookie[%d] = %q, got %q", i, want[i], got[i])
+		if got[i].Name != want[i].Name || got[i].Value != want[i].Value || got[i].Path != want[i].Path || got[i].HttpOnly != want[i].HttpOnly || got[i].MaxAge != want[i].MaxAge {
+			t.Fatalf("expected Set-Cookie[%d] = %+v, got %+v", i, want[i], got[i])
 		}
 	}
 }

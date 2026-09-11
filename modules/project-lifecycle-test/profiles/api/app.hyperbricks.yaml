@@ -107,6 +107,7 @@ advanced_login_action:
 advanced_logout_action:
   - type: api_fragment_render
   - route: actions/demo-logout
+  - forwardtoken: token
   - endpoint:
       format: '%s/auth/demo-logout'
       args:
@@ -167,6 +168,7 @@ advanced_settings_page:
           page_title: Owner settings
           content:
             - type: api_render
+            - forwardtoken: token
             - endpoint:
                 format: '%s/api/settings'
                 args:

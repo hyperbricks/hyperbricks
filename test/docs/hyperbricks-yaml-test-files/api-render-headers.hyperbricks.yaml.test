@@ -6,7 +6,7 @@ api_render:
       Accept: application/json
   - method: GET
 ==== explainer ====
-Optional HTTP headers for API requests
+Explicit upstream headers. Authorization, JWT, Basic Auth and forwardtoken are mutually exclusive authentication sources
 ==== expected json ====
 {
   "AllowedQueryKeys": null,
