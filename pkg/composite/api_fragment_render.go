@@ -7,14 +7,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
-	"regexp"
-	"strconv"
 	"strings"
-	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/shared/apiutil"
@@ -33,27 +28,29 @@ type ApiFragmentRenderConfig struct {
 	NoCache            bool               `mapstructure:"nocache" exclude:"true"` // description:"Explicitly disable cache" example:"{!{api-fragment-render-nocache.hyperbricks.yaml}}"`
 	Index              int                `mapstructure:"index" description:"Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks.yaml}}"`
 	Guard              *RouteGuardConfig  `mapstructure:"guard" json:",omitempty" description:"Optional pre-render route guard. When omitted or disabled, current API_FRAGMENT_RENDER behavior remains unchanged"`
+	rawSetCookies      []interface{}
 }
 
 type APIConfig struct {
-	Endpoint   string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-fragment-endpoint.hyperbricks.yaml}}"`
-	Method     string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-fragment-method.hyperbricks.yaml}}"`
-	Headers    map[string]string      `mapstructure:"headers" description:"Optional HTTP headers for API requests" example:"{!{api-render-fragment-headers.hyperbricks.yaml}}"`
-	Body       string                 `mapstructure:"body" description:"Raw request body. Use a scalar string value; nested objects are not parsed for this field." example:"{!{api-render-fragment-body.hyperbricks.yaml}}"`
-	Template   string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-fragment-template.hyperbricks.yaml}}"`
-	Inline     string                 `mapstructure:"inline" description:"Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines." example:"{!{api-render-fragment-inline.hyperbricks.yaml}}"`
-	Values     map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-fragment-values.hyperbricks.yaml}}"`
-	Username   string                 `mapstructure:"username" description:"Username for basic auth" example:"{!{api-render-fragment-username.hyperbricks.yaml}}"`
-	Password   string                 `mapstructure:"password" description:"Password for basic auth" example:"{!{api-render-fragment-password.hyperbricks.yaml}}"`
-	Status     int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
-	SetCookie  string                 `mapstructure:"setcookie" description:"Single Set-Cookie response template shorthand. Applied on any 2xx upstream response." example:"{!{api-render-fragment-setcookie.hyperbricks.yaml}}"`
-	SetCookies []string               `mapstructure:"setcookies" json:",omitempty" description:"Optional list of Set-Cookie response templates. Each entry becomes its own Set-Cookie header on any 2xx upstream response." example:"{!{api-render-fragment-setcookies.hyperbricks.yaml}}"`
+	Endpoint     string                 `mapstructure:"endpoint" validate:"required" description:"The API endpoint" example:"{!{api-render-fragment-endpoint.hyperbricks.yaml}}"`
+	ForwardToken string                 `mapstructure:"forwardtoken" json:",omitempty" description:"Exact incoming cookie name to forward as Bearer. Omitted or empty disables forwarding. String only; mutually exclusive with other authentication sources" example:"{!{api-render-fragment-forwardtoken.hyperbricks.yaml}}"`
+	Method       string                 `mapstructure:"method" validate:"required" description:"HTTP method to use for API calls, GET POST PUT DELETE etc... " example:"{!{api-render-fragment-method.hyperbricks.yaml}}"`
+	Headers      map[string]string      `mapstructure:"headers" description:"Explicit upstream headers. Authorization, JWT, Basic Auth and forwardtoken are mutually exclusive authentication sources" example:"{!{api-render-fragment-headers.hyperbricks.yaml}}"`
+	Body         string                 `mapstructure:"body" description:"Raw request body. Use a scalar string value; nested objects are not parsed for this field." example:"{!{api-render-fragment-body.hyperbricks.yaml}}"`
+	Template     string                 `mapstructure:"template" description:"Loads contents of a template file in the modules template directory" example:"{!{api-render-fragment-template.hyperbricks.yaml}}"`
+	Inline       string                 `mapstructure:"inline" description:"Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines." example:"{!{api-render-fragment-inline.hyperbricks.yaml}}"`
+	Values       map[string]interface{} `mapstructure:"values" description:"Key-value pairs for template rendering" example:"{!{api-render-fragment-values.hyperbricks.yaml}}"`
+	Username     string                 `mapstructure:"username" description:"Basic Auth username; both username and password are required" example:"{!{api-render-fragment-username.hyperbricks.yaml}}"`
+	Password     string                 `mapstructure:"password" description:"Basic Auth password; both username and password are required" example:"{!{api-render-fragment-password.hyperbricks.yaml}}"`
+	Status       int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
+	SetCookie    string                 `mapstructure:"setcookie" description:"Legacy Set-Cookie shorthand. Only the value may be templated; validated and emitted atomically after successful upstream and fragment rendering." example:"{!{api-render-fragment-setcookie.hyperbricks.yaml}}"`
+	SetCookies   []interface{}          `mapstructure:"setcookies" json:",omitempty" description:"List of structured cookie configurations or legacy strings. Cookie values are validated separately; all headers are emitted together only after successful rendering." example:"{!{api-render-fragment-setcookies.hyperbricks.yaml}}"`
 	// PassCookie       string                 `mapstructure:"passcookie" description:"Pass a cookie in eindpoint request" example:"{!{api-render-setcookie.hyperbricks.yaml}}"`
-	AllowedQueryKeys []string          `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-fragment-querykeys.hyperbricks.yaml}}"`
-	QueryParams      map[string]string `mapstructure:"queryparams" description:"Set proxy query keys in the configuration" example:"{!{api-render-fragment-queryparams.hyperbricks.yaml}}"`
-	JwtSecret        string            `mapstructure:"jwtsecret" description:"When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request" example:"{!{api-render-fragment-jwt-secret.hyperbricks.yaml}}"`
+	AllowedQueryKeys []string          `mapstructure:"querykeys" description:"Incoming URL query keys to append to the upstream URL. Omitted: id, name, order; empty list: none. Does not filter body placeholders." example:"{!{api-render-fragment-querykeys.hyperbricks.yaml}}"`
+	QueryParams      map[string]string `mapstructure:"queryparams" description:"Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders." example:"{!{api-render-fragment-queryparams.hyperbricks.yaml}}"`
+	JwtSecret        string            `mapstructure:"jwtsecret" description:"Signs jwtclaims as the sole upstream authentication source; cannot be combined with Basic Auth, Authorization or forwardtoken" example:"{!{api-render-fragment-jwt-secret.hyperbricks.yaml}}"`
 	JwtClaims        map[string]string `mapstructure:"jwtclaims" description:"JWT claims to include when signing the bearer token" example:"{!{api-render-fragment-jwt-claims.hyperbricks.yaml}}"`
-	Debug            bool              `mapstructure:"debug" description:"Debug the response data" example:"{!{api-render-fragment-debug.hyperbricks.yaml}}"`
+	Debug            bool              `mapstructure:"debug" description:"Log request and response metadata only; never header values, URL paths or queries, or payloads" example:"{!{api-render-fragment-debug.hyperbricks.yaml}}"`
 	DebugPanel       bool              `mapstructure:"debugpanel" description:"Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml" example:"{!{api-render-fragment-debug.hyperbricks.yaml}}"`
 }
 
@@ -101,6 +98,24 @@ func (conf *ApiFragmentRenderConfig) Validate() []error {
 			Rejected: false,
 		})
 	}
+	endpoint, err := url.Parse(conf.Endpoint)
+	if err != nil {
+		err = fmt.Errorf("invalid API endpoint URL")
+	} else {
+		err = apiutil.ValidateAuthSettings(endpoint, shared.GetHyperBricksConfiguration().Mode, conf.authSettings())
+	}
+	if err != nil {
+		errors = append(errors, shared.ComponentError{
+			Type: ApiFragmentRenderConfigGetName(), Err: err.Error(), Rejected: true,
+			Key: conf.Composite.Meta.HyperBricksKey, Path: conf.Composite.Meta.HyperBricksPath,
+			File: conf.Composite.Meta.HyperBricksFile,
+		})
+	}
+	for key := range conf.Values {
+		if key == "Data" || key == "Status" {
+			errors = append(errors, shared.ComponentError{Type: ApiFragmentRenderConfigGetName(), Err: "API values cannot override reserved Data or Status", Rejected: true})
+		}
+	}
 	return errors
 }
 
@@ -120,11 +135,13 @@ func (r *ApiFragmentRenderer) Types() []string {
 
 // Render implements the RenderComponent interface.
 func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context) (string, []error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 
 	//return ApiFragmentRenderConfigGetName(), nil
 	var errors []error
 	var builder strings.Builder
-	hbConfig := shared.GetHyperBricksConfiguration()
 
 	config, ok := instance.(ApiFragmentRenderConfig)
 	if !ok {
@@ -149,27 +166,22 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 	}
 
 	// Call function to process the request body
-	status_override := false
-	body, _error := processRequest(ctx, config)
-	if _error == nil {
-		config.Body = body
-	} else {
+	body, requestErr := processRequest(ctx, config)
+	if requestErr != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
 			Key:      config.Composite.Meta.HyperBricksKey,
 			Path:     config.Composite.Meta.HyperBricksPath,
 			File:     config.Composite.Meta.HyperBricksFile,
 			Type:     ApiFragmentRenderConfigGetName(),
-			Err:      _error.Error(),
+			Err:      requestErr.Error(),
 			Rejected: false,
 		})
-		status_override = true
+		return "[request body error]", errors
 	}
+	config.Body = body
 
 	responseData, status, err := fetchDataFromAPI(config, ctx)
-	if status_override {
-		status = 400
-	}
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
@@ -180,24 +192,6 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 			Err:      fmt.Errorf("failed to fetch data from API: %w", err).Error(),
 			Rejected: false,
 		})
-	}
-
-	if config.Debug && hbConfig.Mode != shared.LIVE_MODE {
-		jsonBytes, err := json.MarshalIndent(responseData, "", "  ")
-		if err != nil {
-			fmt.Println("Error marshaling struct to JSON:", err)
-
-		}
-		errors = append(errors, shared.ComponentError{
-			Hash:     shared.GenerateHash(),
-			Key:      config.Composite.Meta.HyperBricksKey,
-			Path:     config.Composite.Meta.HyperBricksPath,
-			File:     config.Composite.Meta.HyperBricksFile,
-			Type:     ApiFragmentRenderConfigGetName(),
-			Err:      "Debug in <API_RENDER> is enabled. Please disable in production",
-			Rejected: false,
-		})
-		builder.WriteString(fmt.Sprintf("<!-- API_RENDER.debug = true -->\n<!--  <![CDATA[ \n%s\n ]]> -->", string(jsonBytes)))
 	}
 
 	var templateContent string
@@ -239,25 +233,34 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 	if config.Enclose != "" {
 		apiContent = shared.EncloseContent(config.Enclose, apiContent)
 	}
-	// if config.JwtSecret == "" {
-	// 	var jwtToken string = ""
-	// 	if ctx != nil {
-	// 		jwtToken, _ = ctx.Value(shared.JwtKey).(string)
-	// 		//builder.WriteString(fmt.Sprintf("<!-- jwtToken:%s -->", jwtToken))
-	// 	}
-	// }
-
-	writer := ctx.Value(shared.ResponseWriter).(http.ResponseWriter)
-	if writer != nil && status >= http.StatusOK && status < http.StatusMultipleChoices {
-		for _, cookieTemplate := range collectResponseCookieTemplates(config) {
-			cookie, _errors := applyApiFragmentTemplate(cookieTemplate, responseData, config)
-			if _errors != nil {
-				errors = append(errors, _errors...)
-				continue
+	// Cookies are staged only after the body and upstream processing succeed.
+	// Nothing is added to the response if any configured cookie fails.
+	if len(errors) == 0 && status >= http.StatusOK && status < http.StatusMultipleChoices {
+		incoming, _ := ctx.Value(shared.Request).(*http.Request)
+		cookies, cookieErr := RenderAPIResponseCookies(config.SetCookie, config.responseCookieEntries(), responseData, status, config.Values, incoming)
+		if cookieErr != nil {
+			errors = append(errors, shared.ComponentError{Type: ApiFragmentRenderConfigGetName(), Err: cookieErr.Error(), Rejected: true})
+		} else if len(cookies) > 0 {
+			if capture, _ := ctx.Value(shared.APIResponseCookieCaptureKey).(*shared.APIResponseCookieCapture); capture != nil {
+				if err := capture.Store(cookies); err != nil {
+					errors = append(errors, shared.ComponentError{Type: ApiFragmentRenderConfigGetName(), Err: err.Error(), Rejected: true})
+				}
+			} else {
+				// Standalone component callers historically provide only a writer.
+				// The helper has already validated this component's complete group,
+				// so that compatibility path retains component-level atomicity.
+				writer, _ := ctx.Value(shared.ResponseWriter).(http.ResponseWriter)
+				if writer == nil {
+					errors = append(errors, shared.ComponentError{Type: ApiFragmentRenderConfigGetName(), Err: "missing response writer or API cookie capture", Rejected: true})
+				} else {
+					for _, cookie := range cookies {
+						writer.Header().Add("Set-Cookie", cookie)
+					}
+				}
 			}
-			writer.Header().Add("Set-Cookie", cookie)
 		}
 	}
+
 	hbconfig := shared.GetHyperBricksConfiguration()
 	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE {
 		if config.Debug && config.DebugPanel {
@@ -265,36 +268,9 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 		}
 	}
 
-	// 🛠 Debugging
-	if config.Debug {
-		// Convert map to pretty JSON
-		prettyJSON, err := json.MarshalIndent(writer, "", "  ")
-		if err != nil {
-			fmt.Println("Error formatting JSON:", err)
-
-		}
-
-		// Print formatted JSON
-		fmt.Printf("HyperBricks Response:\n%s\n", string(prettyJSON))
-	}
-
 	builder.WriteString(apiContent)
 
 	return builder.String(), errors
-}
-
-func collectResponseCookieTemplates(config ApiFragmentRenderConfig) []string {
-	templates := make([]string, 0, 1+len(config.SetCookies))
-	if strings.TrimSpace(config.SetCookie) != "" {
-		templates = append(templates, config.SetCookie)
-	}
-	for _, cookie := range config.SetCookies {
-		if strings.TrimSpace(cookie) == "" {
-			continue
-		}
-		templates = append(templates, cookie)
-	}
-	return templates
 }
 
 func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string, error) {
@@ -333,7 +309,7 @@ func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string
 		// Read entire body
 		bodyBytes, err := io.ReadAll(body)
 		if err != nil {
-			return "Failed to read request body", fmt.Errorf("failed to read request body: %w", err)
+			return "", fmt.Errorf("failed to read request body")
 		}
 
 		if len(bodyBytes) > 0 {
@@ -354,162 +330,63 @@ func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string
 			}
 		}
 
-	} else {
-		if config.Debug {
-			fmt.Printf("No body provided with post...: %s\n", config.Body)
-		}
 	}
 
-	config.Body = replaceAPIBodyPlaceholders(config.Body, mergedData)
-
-	if config.Debug {
-		fmt.Printf("Updated body map string: %s\n", config.Body)
-	}
-	return config.Body, nil
+	return apiutil.MapRequestBody(config.Body, mergedData)
 }
 
-func replaceAPIBodyPlaceholders(templateBody string, mergedData map[string]interface{}) string {
-	re := regexp.MustCompile(`\$([A-Za-z0-9_]+)\b`)
-	return re.ReplaceAllStringFunc(templateBody, func(match string) string {
-		key := strings.TrimPrefix(match, "$")
-		value, ok := mergedData[key]
-		if !ok {
-			return match
-		}
-
-		if s, ok := value.(string); ok {
-			escaped, _ := json.Marshal(s)
-			return strings.Trim(string(escaped), `"`)
-		}
-
-		return fmt.Sprintf("%v", value)
-	})
-}
-
-// Updated fetchDataFromAPI function using a shared HTTP client helper
+// fetchDataFromAPI applies the API component's explicit credential policy.
 func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (interface{}, int, error) {
-	client := apiutil.NewHTTPClient()
-
-	// Parse the endpoint URL
 	endpoint, err := url.Parse(config.Endpoint)
 	if err != nil {
-		return nil, 400, fmt.Errorf("invalid endpoint URL: %w", err)
+		return nil, 400, fmt.Errorf("invalid API endpoint URL")
 	}
-
-	// Specify the allowed query keys
+	if err := apiutil.ValidateAuthSettings(endpoint, shared.GetHyperBricksConfiguration().Mode, config.authSettings()); err != nil {
+		return nil, 400, err
+	}
+	if ctx == nil {
+		return nil, 400, fmt.Errorf("missing API request context")
+	}
+	incoming, ok := ctx.Value(shared.Request).(*http.Request)
+	if !ok || incoming == nil {
+		return nil, 400, fmt.Errorf("missing API request context")
+	}
 	allowed := apiutil.DefaultQueryKeys
 	if config.AllowedQueryKeys != nil {
 		allowed = config.AllowedQueryKeys
 	}
-
-	// Get a filtered copy of the query parameters
-	clientReq, ok := ctx.Value(shared.Request).(*http.Request)
-	if !ok {
-		return nil, 400, fmt.Errorf("failed to extract request context")
-	}
-
-	filtered := FilterAllowedQueryParams(clientReq, allowed)
-
 	params := endpoint.Query()
-	for key, values := range filtered {
+	for key, values := range FilterAllowedQueryParams(incoming, allowed) {
 		for _, value := range values {
 			params.Add(key, value)
 		}
 	}
-	if config.QueryParams != nil {
-		for key, value := range config.QueryParams {
-			params.Add(key, value)
-		}
+	for key, value := range config.QueryParams {
+		params.Add(key, value)
 	}
 	endpoint.RawQuery = params.Encode()
-
-	// Create request
-	req, err := http.NewRequest(config.Method, endpoint.String(), strings.NewReader(config.Body))
+	req, err := http.NewRequestWithContext(ctx, config.Method, endpoint.String(), strings.NewReader(config.Body))
 	if err != nil {
-		return nil, 400, fmt.Errorf("failed to create request: %w", err)
+		return nil, 400, fmt.Errorf("invalid upstream request")
 	}
-
-	// Set headers
-	for key, value := range config.Headers {
-		req.Header.Set(key, value)
+	if err := apiutil.ApplyAuth(req, incoming, config.authSettings()); err != nil {
+		return nil, 400, err
 	}
-
-	// Pass the client's "token" cookie to the outgoing request if it exists
-	if tokenCookie, err := clientReq.Cookie("token"); err == nil {
-		req.Header.Set("Authorization", "Bearer "+tokenCookie.Value)
+	if config.Debug {
+		fmt.Printf("API request: %+v\n", apiutil.DescribeRequest(req))
 	}
-
-	// Handle JWT if secret is provided
-	if config.JwtSecret != "" {
-		claims := jwt.MapClaims{}
-		for key, value := range config.JwtClaims {
-			claims[key] = value
-		}
-		if _, exists := claims["sub"]; !exists {
-			claims["sub"] = "default_user"
-		}
-		if expStr, exists := config.JwtClaims["exp"]; exists {
-			expInt, err := strconv.ParseInt(expStr, 10, 64)
-			if err == nil {
-				claims["exp"] = time.Now().Unix() + expInt
-			} else {
-				claims["exp"] = time.Now().Add(time.Hour).Unix()
-			}
-		} else {
-			claims["exp"] = time.Now().Add(time.Hour).Unix()
-		}
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		tokenString, err := token.SignedString([]byte(config.JwtSecret))
-		if err != nil {
-			return nil, 401, fmt.Errorf("failed to sign JWT token: %w", err)
-		}
-		req.Header.Set("Authorization", "Bearer "+tokenString)
-	} else if config.Username != "" && config.Password != "" {
-		req.SetBasicAuth(config.Username, config.Password)
-	}
-
-	// Execute the request
-	resp, err := client.Do(req)
+	resp, err := apiutil.NewAPIHTTPClient().Do(req)
 	if err != nil {
-		return nil, 500, fmt.Errorf("error making HTTP request: %w", err)
+		return nil, 502, apiutil.SafeRequestError("upstream request", req, err)
 	}
 	defer resp.Body.Close()
-
-	// 🛠 Debugging: Print the full request before sending it
 	if config.Debug {
-		dump, err := httputil.DumpRequestOut(req, false)
-		if err == nil {
-			fmt.Printf("HTTP Request:\n%s\n", string(dump))
-		} else {
-			fmt.Printf("Failed to dump request: %v\n", err)
-		}
+		fmt.Printf("API response: %+v\n", apiutil.DescribeResponse(resp))
 	}
-
-	// Handle empty response body
-	if resp.Body == nil || resp.ContentLength == 0 {
-		return nil, resp.StatusCode, nil
+	result, err := apiutil.DecodeAPIResponse(resp)
+	if err != nil {
+		return nil, resp.StatusCode, err
 	}
-
-	// Decode JSON response
-	var result interface{}
-	dec := json.NewDecoder(resp.Body)
-	if err := dec.Decode(&result); err != nil {
-		result, resp.StatusCode, err = apiutil.HandleAPIResponse(resp)
-		if err != nil {
-			//return nil, resp.StatusCode, fmt.Errorf("failed to decode JSON response: %w", err)
-		}
-	}
-
-	// 🛠 Debugging: Print the full response after receiving it
-	if config.Debug {
-		resdump, err := httputil.DumpResponse(resp, false)
-		if err == nil {
-			fmt.Printf("HTTP Response:\n%s\n", string(resdump))
-		} else {
-			fmt.Printf("Failed to dump Response: %v\n", err)
-		}
-	}
-
 	return result, resp.StatusCode, nil
 }
 
@@ -523,7 +400,9 @@ func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFr
 
 	// Merge config.Values into the root
 	for k, v := range config.Values {
-		context[k] = v
+		if k != "Data" && k != "Status" {
+			context[k] = v
+		}
 	}
 
 	tmpl, err := shared.GenericTemplate().Parse(templateStr)
@@ -534,7 +413,7 @@ func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFr
 			Path:     config.Composite.Meta.HyperBricksPath,
 			File:     config.Composite.Meta.HyperBricksFile,
 			Type:     ApiFragmentRenderConfigGetName(),
-			Err:      fmt.Sprintf("error parsing template: %v", err),
+			Err:      "error parsing API template",
 			Rejected: false,
 		})
 		return "[error parsing template]", errors
@@ -549,7 +428,7 @@ func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFr
 			Path:     config.Composite.Meta.HyperBricksPath,
 			File:     config.Composite.Meta.HyperBricksFile,
 			Type:     ApiFragmentRenderConfigGetName(),
-			Err:      fmt.Sprintf("error executing template: %v", err),
+			Err:      "error executing API template",
 			Rejected: false,
 		})
 		return "[error executing template]", errors

@@ -7,7 +7,7 @@ api_fragment:
   - route: auth-logout
   - setcookie: token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0
 ==== explainer ====
-Single Set-Cookie response template shorthand
+Legacy Set-Cookie shorthand. Only the value may be templated; validated and emitted atomically after successful upstream and fragment rendering.
 ==== expected json ====
 {
   "AllowedQueryKeys": null,

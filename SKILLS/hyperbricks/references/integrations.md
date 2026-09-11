@@ -43,7 +43,16 @@ function main(input) {
 
 With `?quantity=3`, this renders `3 items cost €59.85`. This is a teaching calculation; production financial rules belong to the application's domain model. Verify a valid value, a rejected value, and repeated query keys.
 
-Each execution gets a fresh JavaScript runtime and copied input; the compiled script and parsed template are reused. Globals do not persist between renders. Configured `values` are plain data, not rendered child components. Return a plain JSON-compatible object from synchronous `main(input)`. Use exactly one of `inline` and `template`. Omitted Goja `querykeys` exposes no query input, unlike the default template/API allowlist. Routes containing Goja disable response caching. The configured timeout defaults to 100ms and must be positive, up to 5s.
+Each execution gets a fresh JavaScript runtime and copied input; the compiled script and parsed template are reused. Globals do not persist between renders. Configured `values` are plain data, not rendered child components. Return a plain JSON-compatible object from synchronous `main(input)`. Use exactly one of `inline` and `template`. Omitted Goja `querykeys` exposes no query input, unlike the default template/API allowlist. The configured timeout defaults to 100ms and must be positive, up to 5s.
+
+Routes containing Goja automatically bypass HyperBricks' internal rendered-output
+cache (`nocache: true`). Browser and proxy caching is separate: set
+`response.headers.Cache-Control: no-store` on the owning page or fragment to
+prevent storage of the HTTP response. Goja's automatic top-level `no-store`
+header reaches the browser for `hypermedia`, but not for `fragment`;
+explicit `response.headers` takes precedence. The compiled script and parsed
+template remain reusable. See "Rendered-output caching and HTTP caching" in
+`docs/GOJA_RENDER.md` for the distinction.
 
 ## Read from an API
 
@@ -78,7 +87,60 @@ project_status:
 
 Set `myconf.api.status_endpoint` in the package to the actual reachable service URL. This recipe expects JSON such as `{"message":"Ready"}` on success; it is not a supplied backend. The integrated dashboard provides a separate local API lesson with a documented service and explicit demo-state limits.
 
-`.Data` contains the parsed response; `.Status` is the upstream HTTP status; configured `values` are available at the template root. Explicit `querykeys` limits incoming URL query forwarding; `queryparams` supplies static outgoing query values. Templates and APIs default to `id`, `name`, `order` when query keys are omitted. API form and JSON body input have their own mapping rules, so a query allowlist is not validation of a submitted form.
+`.Data` contains the parsed response; `.Status` is the upstream HTTP status;
+configured `values` are available at the template root. API `querykeys` limits
+incoming URL query forwarding: omission uses `id`, `name`, `order`, and `[]`
+forwards none. Existing endpoint query values, allowed browser values, and static
+`queryparams` are appended in that order; repeated keys are not overwritten.
+
+Configured `body` placeholders have a separate mapping. On the HTTP runtime
+path, parsed input includes all browser query keys and URL-encoded form fields,
+even with `querykeys: []`. JSON-object fields supply `$key`; collisions with
+parsed input use `$body_key`. Static `queryparams` do not supply placeholders.
+Both API components substitute available input even when the browser body is
+empty: `GET /details?id=7` with `body: '{"id":"$id"}'` sends `{"id":"7"}`.
+The configured upstream `method` is unchanged. Older `api_render` versions
+skipped this substitution; review configurations that relied on that behavior.
+In a JSON body, a missing whole-value placeholder omits its object property:
+`body: '{"id":"$id"}'` sends `{}` when `id` is absent. Explicit empty strings
+and JSON null remain supplied values. Quoted placeholders keep non-null values
+as strings; bare placeholders such as `{"items":$items}` serialize typed JSON.
+URL/form input remains strings or lists of strings. Configured keys are literal,
+and supplied `$key` text is not mapped a second time. A missing array element,
+top-level placeholder, or value inside a larger string rejects before the API
+call. Non-JSON raw body formats retain textual substitution. Validate required
+fields at the API operation owner.
+Read Request Mapping in `docs/API_RENDER.md` for the complete behavior before
+constructing upstream bodies.
+
+Both API components require explicit credential selection. Omitted or empty
+`forwardtoken` disables browser-cookie forwarding. Set `forwardtoken: account_session`
+to send only that named incoming cookie as Bearer. Missing/empty cookies produce
+no derived Authorization; duplicate matching cookies reject before the API call.
+The field accepts strings only and is validated by the API component before weak
+decoding. Do not use `forwardtoken: true` or `false`.
+
+Choose at most one of `forwardtoken`, explicit `headers.Authorization`, complete
+Basic `username`/`password`, or `jwtsecret` with optional `jwtclaims`. Conflicts and
+incomplete Basic configurations fail; no implicit precedence remains. The browser
+Authorization header is not copied. Existing intended `token` forwarding must be
+migrated to `forwardtoken: token` on the specific recipients.
+
+Use HTTPS for credentials, non-empty custom headers and request bodies. Only
+literal loopback HTTP endpoints in development/debug mode get a local exception.
+API redirects stay within the exact scheme/host/effective-port origin and do not
+use a cookie jar. API diagnostics omit header values, URL paths/queries and bodies.
+
+For API fragment response cookies, prefer structured `setcookies` entries with
+`name`, `value: '{{.Data.token}}'`, `path`, `http_only`, `secure`, and `same_site`.
+The JSON field supplies the value; `name` chooses the browser cookie. On a later
+request `forwardtoken` selects that cookie name. Cookies are validated and staged
+as a group after successful upstream processing and fragment rendering. Missing,
+empty or invalid dynamic tokens produce errors, never implicit logout. Explicit
+`max_age: 0` deletes a literal empty cookie with the same name and scope. Legacy
+raw cookie strings allow templating only within the value. See `docs/API_RENDER.md`
+and `modules/api-security-test/README.md` in the matching source revision for the
+complete contract and executable proof.
 
 ## Forms and refreshes
 

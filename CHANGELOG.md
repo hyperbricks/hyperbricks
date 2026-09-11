@@ -1,5 +1,77 @@
 # Changelog
 
+## 2026-09-12 updates
+
+### Beta release preparation
+
+- Document the beta release protocol in `AGENTS.md`, including version
+  selection, docs generation, release verification, confirmation before
+  publishing, commit, tag, and push.
+- Prepare the next beta patch release as `v1.2.4-beta`.
+
+### Deploy authentication
+
+- Separate shared-secret and keyed deploy authentication so both modes have
+  explicit configuration and test coverage.
+- Generate compatible shared-secret defaults and document keyed secret
+  resolution, canonical signing, and client/server authentication behavior.
+
+### Static and runtime documentation
+
+- Clarify that `hyperbricks static --serve` renders a fresh static snapshot
+  before serving it; serving already-rendered files is a separate static-host
+  concern.
+- Expand CLI and introduction docs for request flow, static asset serving, and
+  render-vs-serve boundaries.
+- Add static command coverage for the documented render-then-serve behavior.
+
+### Plugin CLI documentation
+
+- Remove the unsupported plugin update workflow from docs and skill guidance.
+- Keep install/build/remove as the documented plugin lifecycle commands.
+
+### API credential and cookie boundaries
+
+- Disable implicit browser-token forwarding by default and require explicit
+  credential carrier configuration for API requests.
+- Reject ambiguous authentication, invalid security field types, and failed
+  request preparation before contacting an upstream API.
+- Restrict credential transport and redirects, remove API cookie jars,
+  propagate request cancellation, and redact sensitive diagnostics.
+- Validate API response cookies and stage them until upstream processing and
+  the final render response succeed.
+- Add the runnable `api-security-test` module, migration guidance, schema and
+  reference updates, race tests, and server-level coverage.
+
+### API request mapping
+
+- Preserve JSON placeholder escaping when substituted values contain quotes.
+- Document query forwarding separately from body placeholders, including append
+  order, form/JSON collisions, missing fields, and bodyless requests.
+- Use the same JSON body mapper for `api_render` and `api_fragment_render`.
+- Omit object properties whose complete placeholder has no input, preserve
+  explicit empty strings and `null`, and encode bare placeholders as JSON
+  values.
+- Apply URL/form input even when the browser request has no body, while
+  preserving upstream query forwarding, literal property names, and raw
+  non-JSON body behavior.
+
+### Goja render cache policy
+
+- Document automatic internal output-cache bypass separately from browser and
+  proxy `Cache-Control`.
+- Clarify page and fragment header defaults and show explicit
+  `response.headers` configuration without changing runtime behavior.
+- Add live HTTP coverage for repeated renders, stale-cache bypass, prepared
+  resource reuse, and explicit HTTP cache-policy overrides.
+
+### Verification
+
+- Release candidate verification passed with `bash scripts/build_docs.sh` and
+  `./tests.sh --with-docs`, including Go package tests, Docker-backed API
+  render tests, template tests, marker tests, documentation regeneration, and
+  header/cookie/cache checks.
+
 ## 2026-09-05 updates
 
 ### Goja render component
@@ -251,3 +323,82 @@ rendered pages.
   across 1,211,692 validated responses with no status or content failures. These
   measurements are retained as local benchmark evidence rather than a portable
   cross-environment performance guarantee.
+
+## 2026-09-11 updates
+
+### Goja cache documentation
+
+- Distinguish automatic internal rendered-output cache bypass from browser and
+  proxy HTTP caching. Show explicit `response.headers.Cache-Control: no-store`
+  for pages and fragments, and explain the existing route-specific defaults.
+- Clarify that compiled scripts and parsed templates are reused while Goja
+  execution state and results are not. Synchronize the bundled skill guidance.
+- Add live HTTP regression coverage for page/fragment cache policies and internal
+  cache bypass. Existing runtime behavior and configuration names are unchanged.
+
+### API query and body mapping
+
+- Clarify that `querykeys` filters browser parameters appended to the upstream
+  URL, while configured `$key` body placeholders use separate parsed input.
+  Document append-only query collisions, static `queryparams`, form/JSON field
+  precedence, and missing fields.
+- Fix `api_render` skipping configured body substitutions when the incoming
+  browser body is empty. Available URL/form input now fills placeholders as it
+  does in `api_fragment_render`. Document the behavior change and verify
+  bodyless GET and POST requests.
+- Share JSON body mapping between both API components. Omit object properties
+  with missing whole-value placeholders while preserving explicit empty strings
+  and null. Serialize bare placeholders as JSON values; keep supplied data from
+  being interpreted as another template. Reject ambiguous missing array/string
+  values and malformed JSON templates before calling upstream. Document the
+  migration and verify omission, escaping and request failure through HTTP.
+- Correct JSON string placeholder escaping in both API components so values
+  ending in a quote retain their original value and produce valid JSON string
+  content. Repeated and structured values retain their existing display format.
+- Add HTTP request/output regression coverage for both components and synchronize
+  the component field descriptions, generated reference/schema, and skill guide.
+
+### Explicit API credentials and validated response cookies
+
+- Add string `forwardtoken` to `api_render` and `api_fragment_render`. Omission or
+  an empty string disables browser-token forwarding. A configured value selects
+  one exact incoming cookie; duplicate names and malformed values fail before
+  the upstream request. Browser Authorization is never an implicit source.
+- Replace authentication assignment-order precedence with one explicit source:
+  named cookie, configured Authorization, signed JWT, or complete Basic Auth.
+  Reject conflicting sources, incomplete credentials, and endpoint userinfo.
+- Require HTTPS for credential sources, potentially sensitive headers, and
+  request bodies, with literal loopback HTTP allowed in development/debug mode.
+  Restrict all API redirects to the initial origin, remove the API cookie jar,
+  and propagate request cancellation.
+- Replace API request/response dumps with metadata-only diagnostics and sanitize
+  transport errors so payloads, credential values, and sensitive URL details do
+  not enter API debug output.
+- Stop both API renderers before the upstream call when request-body preparation
+  fails, and keep the underlying read error out of rendered diagnostics.
+- Add structured `setcookies` entries and a constrained legacy-string path.
+  Validate names, attributes, dynamic values, domains, and cookie prefixes; keep
+  token bytes separate from cookie syntax and HTML escaping. Reject missing,
+  empty, null, or non-string dynamic values and reserved Data/Status overrides.
+- Emit API fragment cookies only after successful upstream processing, fragment
+  rendering, and validation of the entire cookie group. Preserve explicit logout
+  after bodyless 204 responses and reject malformed upstream JSON.
+  Stage cookies until the HTTP response commit so later render/source errors or
+  handled plugin responses cannot inherit them accidentally.
+- Preserve raw types only for API security fields and validate them in the
+  components before weak decoding. Keep other YAML scalar behavior unchanged.
+- Add the runnable `api-security-test` module, mock upstream, complete research
+  article, and end-to-end regression tests. Migrate authenticated lifecycle
+  fixtures, regenerate the reference/schema, and update API documentation and
+  skills with the new contract and migration requirements.
+
+**Migration:** add `forwardtoken: token` only to API components approved to
+receive that existing browser carrier. Public APIs should leave it omitted.
+Remove competing auth settings, use HTTPS for deployed credential-bearing
+endpoints, and migrate arbitrary cookie-header templates to structured entries.
+
+Verification: `./tests.sh --with-docs` passed after the final changes, including
+Docker-backed API fixtures and generated documentation. Targeted API HTTP tests
+and the changed shared/component/composite/parser/render packages also passed
+with `-race`. The project lifecycle fixture passed its API, guard, runtime-archive,
+and static-export profiles without plugins.

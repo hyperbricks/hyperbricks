@@ -7,7 +7,7 @@ api_fragment:
   - method: GET
   - route: api-fragment
 ==== explainer ====
-Debug the response data
+Log request and response metadata only; never header values, URL paths or queries, or payloads
 ==== expected json ====
 {
   "AllowedQueryKeys": null,

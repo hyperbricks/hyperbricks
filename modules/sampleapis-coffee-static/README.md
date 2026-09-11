@@ -25,13 +25,21 @@ Expected output:
 - `modules/sampleapis-coffee-static/rendered/index.html`
 - `modules/sampleapis-coffee-static/rendered/static/coffee.css`
 
-## Serve The Static Result
+## Render And Then Serve The Static Result
 
 ```bash
 go run ./cmd/hyperbricks static -m sampleapis-coffee-static --serve
 ```
 
-This serves files from `modules/sampleapis-coffee-static/rendered`. It does not fetch the API again.
+`--serve` rebuilds the snapshot, which calls the coffee API during rendering,
+and then serves `modules/sampleapis-coffee-static/rendered`.
+
+To serve an existing snapshot without fetching the API again, use a standalone
+file server instead:
+
+```bash
+python3 -m http.server 8080 --directory modules/sampleapis-coffee-static/rendered
+```
 
 ## What To Copy Into Another Module
 

@@ -4,8 +4,9 @@ api_render:
   - endpoint: https://example.com/api
   - method: GET
   - username: user1
+  - password: example-password
 ==== explainer ====
-Username for basic auth
+Basic Auth username; both username and password are required
 ==== expected json ====
 {
   "AllowedQueryKeys": null,
@@ -26,7 +27,7 @@ Username for basic auth
   "JwtSecret": "",
   "MetaDocDescription": "",
   "Method": "GET",
-  "Password": "",
+  "Password": "example-password",
   "QueryParams": null,
   "Status": 0,
   "Template": "",

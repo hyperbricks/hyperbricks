@@ -36,12 +36,20 @@ func newValueResolverContext(doc *Document, opts Options) *valueResolverContext 
 }
 
 func materializeNodeToMap(node *Node, ctx *valueResolverContext, path string) map[string]interface{} {
-	out := make(map[string]interface{}, len(node.Props)+len(node.Children)+2)
-	if typ := formatType(node.Type); typ != "" {
+	resolvedType := formatType(node.Type)
+	useNativeAPIProps := isAPIComponentType(resolvedType)
+	out := make(map[string]interface{}, len(node.Props)+len(node.nativeAPIProps)+len(node.Children)+2)
+	if typ := resolvedType; typ != "" {
 		out["@type"] = typ
 	}
 	for key, value := range node.Props {
 		propPath := joinPath(path, key)
+		if useNativeAPIProps {
+			if native, exists := node.nativeAPIProps[key]; exists {
+				out[key] = materializeValueWithResolver(native, ctx, propPath)
+				continue
+			}
+		}
 		if key == "template" {
 			if resolved, ok := resolveTemplateField(value, ctx, propPath); ok {
 				out[key] = resolved
@@ -50,11 +58,24 @@ func materializeNodeToMap(node *Node, ctx *valueResolverContext, path string) ma
 		}
 		out[key] = materializeValueWithResolver(value, ctx, propPath)
 	}
+	if useNativeAPIProps {
+		for key, value := range node.nativeAPIProps {
+			if _, exists := node.Props[key]; exists {
+				continue
+			}
+			out[key] = materializeValueWithResolver(value, ctx, joinPath(path, key))
+		}
+	}
 	if len(node.Children) > 0 {
 		order := make([]string, 0, len(node.Children))
 		for _, child := range node.Children {
 			if strings.TrimSpace(child.Name) == "" {
 				continue
+			}
+			if useNativeAPIProps {
+				if _, exists := node.nativeAPIProps[child.Name]; exists {
+					continue
+				}
 			}
 			childPath := joinPath(path, child.Name)
 			order = append(order, child.Name)

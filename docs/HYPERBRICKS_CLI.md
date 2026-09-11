@@ -70,6 +70,8 @@ Start a module by its name below `./modules`:
 hyperbricks start -m demo
 ```
 
+See [Runtime request flow](INTRODUCTION.md#runtime-request-flow) for the request path through a running server.
+
 For direct startup, `--module` also accepts relative and absolute directory paths:
 
 ```bash
@@ -187,21 +189,124 @@ Render static output:
 hyperbricks static -m demo
 ```
 
-Static rendering starts an internal localhost runtime, requests the configured routes over HTTP, and writes the responses into the module render directory. This means nested `api_render` blocks use the same request path as normal runtime rendering.
+`hyperbricks static` renders a new snapshot through a temporary localhost
+runtime and writes it to the module's render directory. If a rendered target
+contains `api_render`, the API is called during rendering.
 
-Serve rendered static files:
+Render and then serve the static output:
 
 ```bash
 hyperbricks static -m demo --serve
 ```
 
-`--serve` only serves files that already exist in the render directory. It does not call APIs, render routes, or run the runtime gateway.
+With `--serve`, HyperBricks performs that render first and then serves the new
+snapshot. It does not skip the rendering phase. To serve existing files without
+rebuilding them, use a standalone static file server as described under
+[Serving the export](#serving-the-export).
+
+### Rendering runtime and static file server
+
+`static --serve` uses two consecutive HTTP servers for different jobs. The
+first is a temporary HyperBricks runtime used only to create the snapshot. The
+second uses a separate file-only handler to expose the completed render
+directory. Hover over or focus a step for details.
+
+```mermaid
+---
+config:
+  flowchart:
+    htmlLabels: true
+  themeCSS: |
+    .label foreignObject { overflow: visible; }
+    .hb-tip { display: inline-block; position: relative; }
+    .hb-tip::after {
+      background: #ffffff !important;
+      border: 1px solid #111111;
+      border-radius: 6px;
+      bottom: calc(100% + 8px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+      box-sizing: border-box;
+      color: #000000 !important;
+      content: attr(aria-description);
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      left: 50%;
+      line-height: 1.4;
+      max-width: calc(100vw - 32px);
+      opacity: 0;
+      overflow-wrap: anywhere;
+      padding: 8px 10px;
+      pointer-events: none;
+      position: absolute;
+      text-align: left;
+      transform: translateX(-50%);
+      visibility: hidden;
+      white-space: normal;
+      width: 240px;
+      z-index: 1000;
+    }
+    .hb-tip--below::after { bottom: auto; top: calc(100% + 8px); }
+    .node:hover .hb-tip::after,
+    .hb-tip:focus::after { opacity: 1; visibility: visible; }
+---
+flowchart TB
+    CLI("<span class='hb-tip hb-tip--below' tabindex='0' aria-description='Run hyperbricks static -m demo --serve. The command completes a new snapshot before it starts the static file server.'>static --serve</span>")
+
+    subgraph SNAPSHOT["1 · Render snapshot"]
+        direction TB
+        RUNTIME("<span class='hb-tip' tabindex='0' aria-description='A temporary HyperBricks runtime discovers and renders the snapshot targets. Components, templates, guards, plugins, and configured API calls run during this phase.'>Render Runtime</span>")
+        OUTPUT[("<span class='hb-tip' tabindex='0' aria-description='Write the rendered HTML and copied module assets to the completed render directory.'>Static Output</span>")]
+
+        RUNTIME -->|"render"| OUTPUT
+    end
+
+    subgraph SERVING["2 · Serve snapshot"]
+        direction TB
+        FILESERVER("<span class='hb-tip' tabindex='0' aria-description='After rendering finishes, --serve starts a separate file-only server over the completed render directory. It does not run HyperBricks routes or components.'>File Server</span>")
+        BROWSER(["<span class='hb-tip' tabindex='0' aria-description='Receive HTML and assets already stored in the completed render directory.'>Browser</span>"])
+
+        FILESERVER -->|"files"| BROWSER
+    end
+
+    CLI --> RUNTIME
+    OUTPUT -->|"--serve"| FILESERVER
+
+    classDef node fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:2.5px;
+    classDef emphasis fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
+    classDef output fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
+
+    class CLI,BROWSER node;
+    class RUNTIME,FILESERVER emphasis;
+    class OUTPUT output;
+
+    linkStyle default stroke:#ffffff,stroke-width:1.5px;
+    style SNAPSHOT fill:transparent,stroke:#ffffff00,color:#ffffff,stroke-width:1px;
+    style SERVING fill:transparent,stroke:#ffffff00,color:#ffffff,stroke-width:1px;
+```
+
+Entries under `hyperbricks.static.routes` and `variants` add or customize
+snapshot targets; they are not an allowlist. Automatic discovery includes every
+loaded route-owning `hypermedia`, `fragment`, and `api_fragment_render`
+component. A route can therefore be rendered even when it is not listed under
+`hyperbricks.static`.
+
+The snapshot client requests targets with HTTP GET. Components can still call
+upstream APIs, and runtime-gateway routing can handle matching snapshot
+requests. Use a separate export package or source directory when actions,
+guards, or other request-time routes should not run during export.
+
+After rendering, the static server serves stored files only. HTMX can load an
+exported file, but forms, authorization, per-user output, plugins, and fresh
+server-side API reads require a running HyperBricks application.
 
 Overwrite existing output:
 
 ```bash
 hyperbricks static -m demo --force
 ```
+
+`--force` deletes the existing render directory before rebuilding it.
 
 Export rendered output as a zip:
 
@@ -219,7 +324,9 @@ hyperbricks static -m demo --zip --exclude cache,tmp
 
 Configure export requests under `hyperbricks.static` in `package.hyperbricks.yaml`. This is separate from `hyperbricks.directories.static`, which identifies the assets served at `/static/`. The render directory receives the generated HTML and a copy of those assets.
 
-The following complete package example assumes the module contains an `index` route and a `products` route. Keep any other application settings, plugins, and directory overrides that your module needs:
+The following complete package example assumes the module contains `index` and
+`products` routes. Keep any other application settings, plugins, and directory
+overrides that your module needs:
 
 ```yaml
 hyperbricks:
@@ -240,6 +347,8 @@ hyperbricks:
       path: {base: module, path: rendered}
   static:
     routes:
+      - path: /index
+        output: index.html
       - path: /products
         output: products.html
         host: catalog.example.test
@@ -401,10 +510,6 @@ hyperbricks plugin remove example@1.0.0
 ```
 
 Use `--module <module>` with `plugin build` or `plugin remove` for custom module plugins.
-
-`plugin update` is reserved for a future atomic update workflow. It currently
-returns a nonzero `not implemented` error and does not modify installed plugins.
-Install the required version explicitly with `plugin install <name>@<version>`.
 
 See [Plugins](PLUGINS.md) for naming, manifests, and YAML usage.
 

@@ -5,8 +5,9 @@ api_fragment:
   - method: GET
   - route: api-fragment
   - username: user1
+  - password: example-password
 ==== explainer ====
-Username for basic auth
+Basic Auth username; both username and password are required
 ==== expected json ====
 {
   "AllowedQueryKeys": null,
@@ -29,7 +30,7 @@ Username for basic auth
   "MetaDocDescription": "",
   "Method": "GET",
   "NoCache": false,
-  "Password": "",
+  "Password": "example-password",
   "QueryParams": null,
   "Response": {
     "Headers": null,

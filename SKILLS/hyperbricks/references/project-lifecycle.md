@@ -96,7 +96,7 @@ Use `hyperbricks start --help` for the chosen runtime's port, debug, and product
 | A change remains stale | Selected binary/module; configured watch directories; page cache versus esbuild cache |
 | A plugin cannot load | Exact artifact name, project working directory, enabled list, matching runtime/toolchain |
 
-Use the server's startup and request diagnostics. `hyperbricks static --serve` serves previously generated files, so it will not prove a dynamic source change.
+Use the server's startup and request diagnostics.
 
 ## Choose the delivery format
 
@@ -112,7 +112,10 @@ hyperbricks static -m demo
 hyperbricks static -m demo --serve
 ```
 
-The static command starts a local runtime and requests discovered routes. Nested API reads therefore need a reachable upstream while building. Entries under `hyperbricks.static.routes` and `variants` add targets; they do not restrict discovery to that list. For example, this adds a snapshot target:
+`hyperbricks static` renders a new snapshot. With `--serve`, HyperBricks serves
+that snapshot after rendering completes. Entries under
+`hyperbricks.static.routes` and `variants` add targets; they do not restrict
+automatic route discovery. Configure multiple routes as separate list items:
 
 ```yaml
 hyperbricks:
@@ -120,11 +123,37 @@ hyperbricks:
     routes:
       - path: /about
         output: about.html
+      - path: /contact
+        output: contact.html
+      - path: /products
+        output: products/index.html
 ```
 
-For a public subset of a dynamic application, stage a separate module configuration whose source directory loads only public, static-ready pages. Check discovered routes and output names for collisions before publishing.
+Each item is one snapshot request and output file. Give separate requests
+separate output paths.
 
-Use `hyperbricks static --help` for export paths, zip, and overwrite flags. A static snapshot does not retain server actions. A static page should use static navigation and avoid controls that still require fragment routes.
+### Static export boundaries
+
+- Automatic discovery includes loaded route-owning `hypermedia`, `fragment`,
+  and `api_fragment_render` components, including routes not listed under
+  `hyperbricks.static`.
+- The snapshot client requests each target with HTTP GET. An `api_render` calls
+  its endpoint while its target renders. An `api_fragment_render` target can
+  call its upstream with its configured method, including POST.
+- Runtime-gateway routing can handle matching targets during snapshot rendering.
+  The later file server does not use the runtime gateway.
+- The file server serves stored files only. A POST cannot execute
+  `api_fragment_render`, and HTMX works only for URLs that map to exported
+  files. Request data cannot cause a rerender; forms, authorization, per-user
+  output, plugins, and fresh API reads require a running HyperBricks application.
+- Use a separate export package or source directory when an application also
+  contains actions, guards, or other routes that should not run during export.
+- `--force` deletes the render directory before rebuilding it. Declining
+  deletion without `--force` still renders targets, overwrites matching files,
+  and copies static assets. Use a standalone static file server to inspect
+  existing output without rebuilding it.
+
+Use `hyperbricks static --help` for export paths, zip, and overwrite flags.
 
 Build and run a runtime archive locally:
 

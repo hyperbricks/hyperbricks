@@ -9,7 +9,7 @@ api_fragment:
       - token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0
       - runtime_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0
 ==== explainer ====
-Multiple Set-Cookie response templates
+List of structured cookie configurations or legacy strings. Cookie values are validated separately; all headers are emitted together only after successful rendering.
 ==== expected json ====
 {
   "AllowedQueryKeys": null,

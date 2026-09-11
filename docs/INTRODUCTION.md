@@ -64,6 +64,98 @@ This example assumes HTMX is loaded on the page and requests this route. `HX-Ret
 
 HyperBricks renders the fragment and sends the configured headers. HTMX interprets those headers in the browser. The `fragment` component itself does not depend on HTMX, and HyperBricks does not add HTMX headers automatically. See [HTTP responses](HTTP_RESPONSES.md) for the shared status and header contract.
 
+## Runtime Request Flow
+
+For an application route, HyperBricks resolves a browser or HTMX request to a route owner. Development mode renders the route fresh. Live mode can return an eligible cached response; all other requests continue through the optional route guard and renderer. Hover over or focus a step for details.
+
+```mermaid
+---
+config:
+  flowchart:
+    htmlLabels: true
+  themeCSS: |
+    .label foreignObject { overflow: visible; }
+    .hb-tip { display: inline-block; position: relative; }
+    .hb-tip::after {
+      background: #ffffff !important;
+      border: 1px solid #111111;
+      border-radius: 6px;
+      bottom: calc(100% + 8px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+      box-sizing: border-box;
+      color: #000000 !important;
+      content: attr(aria-description);
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      left: 50%;
+      line-height: 1.4;
+      max-width: calc(100vw - 32px);
+      opacity: 0;
+      overflow-wrap: anywhere;
+      padding: 8px 10px;
+      pointer-events: none;
+      position: absolute;
+      text-align: left;
+      transform: translateX(-50%);
+      visibility: hidden;
+      white-space: normal;
+      width: 240px;
+      z-index: 1000;
+    }
+    .hb-tip--below::after { bottom: auto; top: calc(100% + 8px); }
+    .node:hover .hb-tip::after,
+    .hb-tip:focus::after { opacity: 1; visibility: visible; }
+---
+flowchart TB
+    BROWSER(["<span class='hb-tip hb-tip--below' tabindex='0' aria-description='A browser, HTMX, or another HTTP client requests an application route.'>Client Request</span>"])
+
+    subgraph RUNTIME["HyperBricks Runtime"]
+        direction TB
+        ROUTE("<span class='hb-tip hb-tip--below' tabindex='0' aria-description='Resolve the request to a route-owning hypermedia, fragment, or api_fragment_render component.'>Resolve Route</span>")
+        POLICY("<span class='hb-tip' tabindex='0' aria-description='Development mode renders fresh. Live mode decides whether the request can reuse cached output.'>Check Cache</span>")
+        CACHE("<span class='hb-tip' tabindex='0' aria-description='Return a stored live response without rendering components or running integrations.'>Reuse Cache</span>")
+        GUARD("<span class='hb-tip' tabindex='0' aria-description='Evaluate a configured route guard before rendering child components. A denial returns immediately.'>Check Guard</span>")
+
+        RENDER("<span class='hb-tip' tabindex='0' aria-description='Build the renderer request context, then traverse the configured component graph recursively.'>Render Graph</span>")
+        WORK("<span class='hb-tip' tabindex='0' aria-description='Where configured, render nested template values, run trusted Goja logic, call APIs, or invoke native and WASM plugins.'>Component Work</span>")
+        RESULT("<span class='hb-tip' tabindex='0' aria-description='After rendering, use the composed output or a captured native plugin HandledResponse.'>Select Output</span>")
+
+        STORE("<span class='hb-tip' tabindex='0' aria-description='Store eligible live output with its ETag, render time, and expiry metadata.'>Store Output</span>")
+        WRITE("<span class='hb-tip' tabindex='0' aria-description='Write status, content type, headers, cookies, and a buffered body, or flush headers before a native plugin stream.'>Write Response</span>")
+
+        ROUTE --> POLICY
+        POLICY -->|"hit"| CACHE --> WRITE
+        POLICY -->|"render"| GUARD
+        GUARD -->|"denied"| WRITE
+        GUARD -->|"allowed"| RENDER
+
+        RENDER --> WORK --> RESULT
+        RESULT -->|"cacheable"| STORE --> WRITE
+        RESULT -->|"uncached"| WRITE
+    end
+
+    DELIVERED(["<span class='hb-tip' tabindex='0' aria-description='Load a document, swap a fragment, process another body type, or consume flushed chunks.'>Handle Response</span>"])
+
+    BROWSER -->|"HTTP"| ROUTE
+    WRITE --> DELIVERED
+
+    classDef node fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:2.5px;
+    classDef emphasis fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
+    classDef output fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
+    classDef boundary fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-dasharray:4 3;
+
+    class ROUTE,POLICY,GUARD node;
+    class RENDER,WORK,RESULT emphasis;
+    class CACHE,STORE output;
+    class BROWSER,WRITE,DELIVERED boundary;
+
+    linkStyle default stroke:#ffffff,stroke-width:1.5px;
+    style RUNTIME fill:transparent,stroke:#ffffff00,color:#ffffff,stroke-width:1px;
+```
+
+Templates, API calls, scripts, and plugins run where their components occur in the recursive graph; the work box does not define a fixed global order. Nested template values and plugin components can re-enter the same graph. An eligible live-cache hit skips that graph. A native plugin may capture a `HandledResponse`, which the runtime selects after the render call; a `Stream` callback starts only after the response headers are written. See [Routing](ROUTING.md), [Live Mode HTTP Settings](LIVE_MODE_HTTP.md), [Route Guard](ROUTE_GUARD.md), [API Render](API_RENDER.md), and [Plugins](PLUGINS.md) for the detailed rules.
+
 ## Components
 
 Components are the building blocks of a route.

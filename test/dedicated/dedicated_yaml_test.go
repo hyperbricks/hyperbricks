@@ -106,12 +106,20 @@ func Test_All_Dedicated_YAML_Tests(t *testing.T) {
 				}
 			}
 
-			output, renderErrors := rm.Render(typeName, scopeData, createDedicatedMockContext())
+			ctx := createDedicatedMockContext()
+			output, renderErrors := rm.Render(typeName, scopeData, ctx)
 			if len(renderErrors) > 0 {
 				t.Fatalf("render %s returned errors: %v", testCase.Scope, renderErrors)
 			}
 			if testCase.HasExpectedOutput && stripAllWhitespace(output) != stripAllWhitespace(testCase.ExpectedOutput) {
 				t.Fatalf("rendered output mismatch\n--- got ---\n%s\n--- want ---\n%s", output, testCase.ExpectedOutput)
+			}
+			if filepath.Base(path) == "api-fragment-render-header-status.hyperbricks.yaml.test" {
+				response := ctx.Value(shared.ResponseWriter).(*httptest.ResponseRecorder)
+				cookies := response.Result().Cookies()
+				if len(cookies) != 1 || cookies[0].Name != "token" || cookies[0].Value != "fixture-session-value" || !cookies[0].HttpOnly || cookies[0].SameSite != http.SameSiteLaxMode || cookies[0].Path != "/" {
+					t.Fatalf("expected validated API cookie, got %v", response.Header().Values("Set-Cookie"))
+				}
 			}
 		})
 		return nil
@@ -140,6 +148,9 @@ func newDedicatedYAMLRenderManager(t *testing.T) *render.RenderManager {
 
 	shared.Init_configuration()
 	conf := shared.GetHyperBricksConfiguration()
+	previousMode := conf.Mode
+	conf.Mode = shared.DEVELOPMENT_MODE
+	t.Cleanup(func() { conf.Mode = previousMode })
 	testOutputRoot := t.TempDir()
 	conf.Directories["static"] = filepath.Join(testOutputRoot, "static")
 	conf.Directories["render"] = filepath.Join(testOutputRoot, "rendered")
@@ -503,7 +514,7 @@ func dedicatedValidateToken(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(`{"message":"Token is valid"}`))
+	_, _ = w.Write([]byte(`{"message":"Token is valid","accessToken":"fixture-session-value"}`))
 }
 
 func dedicatedValidateBody(w http.ResponseWriter, r *http.Request) {

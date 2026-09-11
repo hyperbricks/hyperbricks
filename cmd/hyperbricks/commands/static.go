@@ -29,7 +29,7 @@ func NewMakeStaticCommand() *cobra.Command {
 	}
 
 	// Add flags
-	cmd.Flags().BoolVar(&ServeStatic, "serve", false, "Serve rendered static files")
+	cmd.Flags().BoolVar(&ServeStatic, "serve", false, "Serve static output after rendering completes")
 	cmd.Flags().BoolVar(&ForceStatic, "force", false, "Overwrite rendered output without confirmation")
 	cmd.Flags().BoolVar(&ExportZip, "zip", false, "Export rendered output as a zip file")
 	cmd.Flags().StringVar(&ExportOutDir, "out", "", "Output directory for zip export (default ./exports/<module>)")

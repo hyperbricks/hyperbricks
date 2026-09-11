@@ -38,6 +38,7 @@ listed as a direct dependency for every row.
 
 | Module | Category | Required by | Description |
 | --- | --- | --- | --- |
+| [`api-security-test`](api-security-test/) | Test fixture | **Tests** — [`server_api_security_module_test.go`](../cmd/hyperbricks/server_api_security_module_test.go) | Explicit upstream credential selection, composed private/public APIs, redirect boundaries, and validated browser-cookie issuance, with a controlled mock API and the security research article. |
 | [`esbuild-demo`](esbuild-demo/) | Feature demo | — | Native esbuild example with TypeScript and CSS imports, copied assets, source maps, fingerprinted output, caching, and development watching. |
 | [`goja-render-demo`](goja-render-demo/) | Feature demo | **Tests** — [`goja_yaml_test.go`](../cmd/hyperbricks/goja_yaml_test.go) | Server-side calculations with `goja_render`, including query validation, resource scripts, request isolation, and development reload behavior. |
 | [`headers-test`](headers-test/) | Test fixture | **Tests** — [`test_headers_module.sh`](../scripts/test_headers_module.sh) | Development-mode half of the header regression fixture, covering configured response headers, cookies, routes, and generated output. |

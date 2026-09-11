@@ -109,7 +109,7 @@
           "go_name": "Debug",
           "go_type": "bool",
           "kind": "bool",
-          "description": "Debug the response data",
+          "description": "Log request and response metadata only; never header values, URL paths or queries, or payloads",
           "example": "{!{api-render-fragment-debug.hyperbricks.yaml}}",
           "authoring": {
             "label": "Debug",
@@ -173,6 +173,23 @@
             "group": "api",
             "publish": {
               "omit_empty": true
+            }
+          }
+        },
+        {
+          "path": "forwardtoken",
+          "key": "forwardtoken",
+          "go_name": "ForwardToken",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Exact incoming cookie name to forward as Bearer. Omitted or empty disables forwarding. String only; mutually exclusive with other authentication sources",
+          "example": "{!{api-render-fragment-forwardtoken.hyperbricks.yaml}}",
+          "authoring": {
+            "label": "Forwardtoken",
+            "control": "text",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
             }
           }
         },
@@ -456,7 +473,7 @@
           "go_name": "Headers",
           "go_type": "map[string]string",
           "kind": "map",
-          "description": "Optional HTTP headers for API requests",
+          "description": "Explicit upstream headers. Authorization, JWT, Basic Auth and forwardtoken are mutually exclusive authentication sources",
           "example": "{!{api-render-fragment-headers.hyperbricks.yaml}}",
           "authoring": {
             "label": "Headers",
@@ -530,7 +547,7 @@
           "go_name": "JwtSecret",
           "go_type": "string",
           "kind": "string",
-          "description": "When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request",
+          "description": "Signs jwtclaims as the sole upstream authentication source; cannot be combined with Basic Auth, Authorization or forwardtoken",
           "example": "{!{api-render-fragment-jwt-secret.hyperbricks.yaml}}",
           "authoring": {
             "label": "JWT secret",
@@ -567,7 +584,7 @@
           "go_name": "Password",
           "go_type": "string",
           "kind": "string",
-          "description": "Password for basic auth",
+          "description": "Basic Auth password; both username and password are required",
           "example": "{!{api-render-fragment-password.hyperbricks.yaml}}",
           "authoring": {
             "label": "Password",
@@ -585,7 +602,7 @@
           "go_name": "AllowedQueryKeys",
           "go_type": "[]string",
           "kind": "list",
-          "description": "Set allowed proxy query keys",
+          "description": "Incoming URL query keys to append to the upstream URL. Omitted: id, name, order; empty list: none. Does not filter body placeholders.",
           "example": "{!{api-render-fragment-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
@@ -603,7 +620,7 @@
           "go_name": "QueryParams",
           "go_type": "map[string]string",
           "kind": "map",
-          "description": "Set proxy query keys in the configuration",
+          "description": "Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders.",
           "example": "{!{api-render-fragment-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",
@@ -691,7 +708,7 @@
           "go_name": "SetCookie",
           "go_type": "string",
           "kind": "string",
-          "description": "Single Set-Cookie response template shorthand. Applied on any 2xx upstream response.",
+          "description": "Legacy Set-Cookie shorthand. Only the value may be templated; validated and emitted atomically after successful upstream and fragment rendering.",
           "example": "{!{api-render-fragment-setcookie.hyperbricks.yaml}}",
           "authoring": {
             "label": "Setcookie",
@@ -707,9 +724,9 @@
           "path": "setcookies",
           "key": "setcookies",
           "go_name": "SetCookies",
-          "go_type": "[]string",
+          "go_type": "[]interface {}",
           "kind": "list",
-          "description": "Optional list of Set-Cookie response templates. Each entry becomes its own Set-Cookie header on any 2xx upstream response.",
+          "description": "List of structured cookie configurations or legacy strings. Cookie values are validated separately; all headers are emitted together only after successful rendering.",
           "example": "{!{api-render-fragment-setcookies.hyperbricks.yaml}}",
           "authoring": {
             "label": "Setcookies",
@@ -762,7 +779,7 @@
           "go_name": "Username",
           "go_type": "string",
           "kind": "string",
-          "description": "Username for basic auth",
+          "description": "Basic Auth username; both username and password are required",
           "example": "{!{api-render-fragment-username.hyperbricks.yaml}}",
           "authoring": {
             "label": "Username",
@@ -875,7 +892,7 @@
           "go_name": "Debug",
           "go_type": "bool",
           "kind": "bool",
-          "description": "Debug the response data",
+          "description": "Log request and response metadata only; never header values, URL paths or queries, or payloads",
           "example": "{!{api-render-debug.hyperbricks.yaml}}",
           "authoring": {
             "label": "Debug",
@@ -941,12 +958,29 @@
           }
         },
         {
+          "path": "forwardtoken",
+          "key": "forwardtoken",
+          "go_name": "ForwardToken",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Exact incoming cookie name to forward as Bearer. Omitted or empty disables forwarding. String only; mutually exclusive with other authentication sources",
+          "example": "{!{api-render-forwardtoken.hyperbricks.yaml}}",
+          "authoring": {
+            "label": "Forwardtoken",
+            "control": "text",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
           "path": "headers",
           "key": "headers",
           "go_name": "Headers",
           "go_type": "map[string]string",
           "kind": "map",
-          "description": "Optional HTTP headers for API requests",
+          "description": "Explicit upstream headers. Authorization, JWT, Basic Auth and forwardtoken are mutually exclusive authentication sources",
           "example": "{!{api-render-headers.hyperbricks.yaml}}",
           "authoring": {
             "label": "Headers",
@@ -1002,7 +1036,7 @@
           "go_name": "JwtSecret",
           "go_type": "string",
           "kind": "string",
-          "description": "When not empty it uses jwtsecret for Bearer Token Authentication. When empty it switches if configured to basic auth via http.Request",
+          "description": "Signs jwtclaims as the sole upstream authentication source; cannot be combined with Basic Auth, Authorization or forwardtoken",
           "example": "{!{api-render-jwt-secret.hyperbricks.yaml}}",
           "authoring": {
             "label": "JWT secret",
@@ -1039,7 +1073,7 @@
           "go_name": "Password",
           "go_type": "string",
           "kind": "string",
-          "description": "Password for basic auth",
+          "description": "Basic Auth password; both username and password are required",
           "example": "{!{api-render-password.hyperbricks.yaml}}",
           "authoring": {
             "label": "Password",
@@ -1057,7 +1091,7 @@
           "go_name": "AllowedQueryKeys",
           "go_type": "[]string",
           "kind": "list",
-          "description": "Set allowed proxy query keys",
+          "description": "Incoming URL query keys to append to the upstream URL. Omitted: id, name, order; empty list: none. Does not filter body placeholders.",
           "example": "{!{api-render-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
@@ -1075,7 +1109,7 @@
           "go_name": "QueryParams",
           "go_type": "map[string]string",
           "kind": "map",
-          "description": "Set proxy query keys in the configuration",
+          "description": "Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders.",
           "example": "{!{api-render-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",
@@ -1111,7 +1145,7 @@
           "go_name": "Username",
           "go_type": "string",
           "kind": "string",
-          "description": "Username for basic auth",
+          "description": "Basic Auth username; both username and password are required",
           "example": "{!{api-render-username.hyperbricks.yaml}}",
           "authoring": {
             "label": "Username",

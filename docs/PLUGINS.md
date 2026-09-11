@@ -296,7 +296,7 @@ Install the highest published version of a global plugin by omitting the version
 hyperbricks plugin install example
 ```
 
-Check its compatibility before adopting it: this selects the highest published semantic version, not necessarily the latest compatible version. `plugin update` is reserved but not implemented; it exits with a nonzero error and makes no changes. Use `install <name>@<version>` and update the module's configured plugin names when the version changes.
+Check its compatibility before adopting it: this selects the highest published semantic version, not necessarily the latest compatible version. To change versions, use `install <name>@<version>` and update the module's configured plugin names.
 
 ## Local Runtime Development
 
