@@ -269,7 +269,17 @@ rendered pages.
 - Clarify that `querykeys` filters browser parameters appended to the upstream
   URL, while configured `$key` body placeholders use separate parsed input.
   Document append-only query collisions, static `queryparams`, form/JSON field
-  precedence, missing fields, and the current bodyless-request difference.
+  precedence, and missing fields.
+- Fix `api_render` skipping configured body substitutions when the incoming
+  browser body is empty. Available URL/form input now fills placeholders as it
+  does in `api_fragment_render`. Document the behavior change and verify
+  bodyless GET and POST requests.
+- Share JSON body mapping between both API components. Omit object properties
+  with missing whole-value placeholders while preserving explicit empty strings
+  and null. Serialize bare placeholders as JSON values; keep supplied data from
+  being interpreted as another template. Reject ambiguous missing array/string
+  values and malformed JSON templates before calling upstream. Document the
+  migration and verify omission, escaping and request failure through HTTP.
 - Correct JSON string placeholder escaping in both API components so values
   ending in a quote retain their original value and produce valid JSON string
   content. Repeated and structured values retain their existing display format.

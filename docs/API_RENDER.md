@@ -214,27 +214,63 @@ body. `querykeys: []` does not block those substitutions. For example, a submitt
 to the upstream URL. Validate the submitted values in the API that performs the
 operation.
 
-The current components differ when the browser request has no body:
+Both API components apply the available parsed input even when the browser
+request has no body. For example, a browser `GET /details?id=7` with this upstream
+configuration:
 
-| Component | Bodyless browser request |
-| --- | --- |
-| `api_render` | Sends its configured upstream `body` unchanged, including literal `$key` placeholders. |
-| `api_fragment_render` | Applies placeholders using the available parsed query data. |
+```yaml
+- method: POST
+- body: '{"id":"$id"}'
+```
 
-This concerns the incoming browser body, not the configured upstream method or
-body. A browser GET can invoke an upstream POST with a configured `body`.
+sends `{"id":"7"}` to the API using the configured `POST` method. The incoming
+browser method does not change the configured upstream method.
+
+Migration: `api_render` previously skipped substitution when the browser body
+was empty. Review configurations that relied on sending literal `$key` text
+despite a matching incoming query value.
 
 Placeholder names use letters, digits, and underscores, such as `$id` or
 `$body_name`. They do not support nested-property or array-index expressions.
-Missing placeholders remain literal text; an empty string value inserts empty
-text. Request bodies are attempted as JSON objects regardless of Content-Type;
-invalid JSON and non-object JSON contribute no placeholder fields. This mapping
-step is not JSON request validation.
+Incoming request bodies are attempted as JSON objects regardless of Content-Type;
+invalid JSON and non-object JSON contribute no placeholder fields. This input
+collection step is not JSON request validation.
 
-Use simple, single-value fields in the JSON string positions shown below. The
-current mapper is textual substitution, not a JSON serializer: repeated values,
-arrays, objects, and null use Go's display formatting rather than JSON encoding.
-It does not automatically produce a URL-encoded or multipart upstream form.
+For a configured JSON body, a missing whole-value placeholder removes its object
+property. With `body: '{"id":"$id"}'`:
+
+| Available input | Upstream body |
+| --- | --- |
+| No `id` | `{}` |
+| `id` is the string `7` | `{"id":"7"}` |
+| `id` is an empty string | `{"id":""}` |
+| `id` is explicitly JSON null | `{"id":null}` |
+
+Omission means the caller supplied no value. An explicit null remains a value;
+the upstream API decides whether it means clearing a field. Required-field
+validation still belongs to that API. Omission also works inside nested objects,
+preserving the containing objects and array positions.
+
+Quoted placeholders retain string formatting for supplied non-null values.
+Use a bare placeholder for a JSON value: `body: '{"count":$count,"items":$items}'`
+preserves numbers, booleans, arrays, objects and null from the input. URL/form
+values remain strings or lists of strings; they are not inferred as numbers.
+Values are JSON-escaped and supplied data containing `$key` is not substituted
+again. Configured property names remain literal.
+
+A missing placeholder inside a larger string (`"item-$id"`), an array element,
+or the entire body cannot omit an object property. Those cases return a
+preparation error without calling the upstream API. A null inside a larger
+string is rejected for the same reason. Malformed JSON templates containing
+placeholders are also rejected. JSON objects, arrays, quoted scalar templates,
+and whole bare placeholders use this structural mapping; other raw body formats
+retain their existing textual substitution. This does not generate URL-encoded
+or multipart forms.
+
+Migration: JSON properties no longer send literal unresolved `$key` values.
+Bare placeholders now serialize their supplied values as JSON rather than Go
+display text. Use a quoted placeholder for a string and a bare placeholder for
+typed JSON. Mapped JSON may have normalized whitespace and string escaping.
 
 The following HTMX example forwards login data to an API and configures an `HX-Trigger` response header. The `login-updated` event signals that a response was rendered, not that authentication succeeded; inspect the upstream result before treating the login as successful.
 

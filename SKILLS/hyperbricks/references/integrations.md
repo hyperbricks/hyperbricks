@@ -97,8 +97,19 @@ Configured `body` placeholders have a separate mapping. On the HTTP runtime
 path, parsed input includes all browser query keys and URL-encoded form fields,
 even with `querykeys: []`. JSON-object fields supply `$key`; collisions with
 parsed input use `$body_key`. Static `queryparams` do not supply placeholders.
-Use single-value fields and validate at the API operation owner. Missing fields
-remain literal `$key` text; repeated/structured values are not serialized as JSON.
+Both API components substitute available input even when the browser body is
+empty: `GET /details?id=7` with `body: '{"id":"$id"}'` sends `{"id":"7"}`.
+The configured upstream `method` is unchanged. Older `api_render` versions
+skipped this substitution; review configurations that relied on that behavior.
+In a JSON body, a missing whole-value placeholder omits its object property:
+`body: '{"id":"$id"}'` sends `{}` when `id` is absent. Explicit empty strings
+and JSON null remain supplied values. Quoted placeholders keep non-null values
+as strings; bare placeholders such as `{"items":$items}` serialize typed JSON.
+URL/form input remains strings or lists of strings. Configured keys are literal,
+and supplied `$key` text is not mapped a second time. A missing array element,
+top-level placeholder, or value inside a larger string rejects before the API
+call. Non-JSON raw body formats retain textual substitution. Validate required
+fields at the API operation owner.
 Read Request Mapping in `docs/API_RENDER.md` for the complete behavior before
 constructing upstream bodies.
 

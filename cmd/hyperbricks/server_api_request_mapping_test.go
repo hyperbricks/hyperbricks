@@ -5,7 +5,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/hyperbricks/hyperbricks/pkg/component"
@@ -63,7 +65,7 @@ func TestServeContentAPIRequestMapping(t *testing.T) {
 			queryParams:   map[string]string{"id": "configured", "fixed": "configured"},
 			bodyTemplate:  `{"id":"$id","origin":"$origin","fixed":"$fixed"}`,
 			wantQuery:     "fixed=configured&id=endpoint-first&id=endpoint-second&id=browser-first&id=browser-second&id=configured&origin=endpoint",
-			wantBody:      `{"id":"[browser-first browser-second]","origin":"$origin","fixed":"$fixed"}`,
+			wantBody:      `{"id":"[browser-first browser-second]"}`,
 		},
 		{
 			name:          "empty querykeys retains endpoint and configured values",
@@ -91,7 +93,7 @@ func TestServeContentAPIRequestMapping(t *testing.T) {
 			contentType:  "application/x-www-form-urlencoded",
 			bodyTemplate: `{"id":"$id","name":"$name","only_form":"$only_form","body_id":"$body_id"}`,
 			wantQuery:    "id=query-first&id=query-second&name=Query",
-			wantBody:     `{"id":"[form-first form-second query-first query-second]","name":"[Form Query]","only_form":"present","body_id":"$body_id"}`,
+			wantBody:     `{"id":"[form-first form-second query-first query-second]","name":"[Form Query]","only_form":"present"}`,
 		},
 		{
 			name:         "JSON collisions use body prefix and keep noncolliding values",
@@ -102,12 +104,66 @@ func TestServeContentAPIRequestMapping(t *testing.T) {
 			wantBody:     `{"id":"query","body_id":"json","tag":"[blue yellow]","body_tag":"json-tag","count":42,"enabled":true}`,
 		},
 		{
-			name:         "missing placeholders remain literal",
+			name:         "missing placeholders omit only their object properties",
 			browserQuery: "id=7",
 			browserBody:  `{}`,
 			bodyTemplate: `{"id":"$id","missing":"$missing","missing_body":"$body_missing"}`,
 			wantQuery:    "id=7",
-			wantBody:     `{"id":"7","missing":"$missing","missing_body":"$body_missing"}`,
+			wantBody:     `{"id":"7"}`,
+		},
+		{
+			name:         "first missing property is omitted",
+			browserBody:  `{"keep":"present"}`,
+			bodyTemplate: `{"first":"$missing","keep":"$keep"}`,
+			wantBody:     `{"keep":"present"}`,
+		},
+		{
+			name:         "middle missing property is omitted",
+			browserBody:  `{"keep":"present"}`,
+			bodyTemplate: `{"first":"$keep","middle":"$missing","last":"$keep"}`,
+			wantBody:     `{"first":"present","last":"present"}`,
+		},
+		{
+			name:         "last missing property is omitted",
+			browserBody:  `{"keep":"present"}`,
+			bodyTemplate: `{"keep":"$keep","last":"$missing"}`,
+			wantBody:     `{"keep":"present"}`,
+		},
+		{
+			name:         "all missing properties leave an empty object",
+			browserBody:  `{}`,
+			bodyTemplate: `{"first":"$missing","last":$also_missing}`,
+			wantBody:     `{}`,
+		},
+		{
+			name:         "nested missing properties are omitted without removing their parent",
+			browserBody:  `{"keep":"present"}`,
+			bodyTemplate: `{"outer":{"first":"$missing","keep":"$keep","last":$missing},"empty":{"absent":"$missing"},"keep":"$keep"}`,
+			wantBody:     `{"outer":{"keep":"present"},"empty":{},"keep":"present"}`,
+		},
+		{
+			name:         "explicit empty null false and zero are preserved",
+			browserBody:  `{"empty":"","null":null,"false":false,"zero":0}`,
+			bodyTemplate: `{"empty":"$empty","null":"$null","bare_null":$null,"false":$false,"zero":$zero,"absent":"$missing"}`,
+			wantBody:     `{"empty":"","null":null,"bare_null":null,"false":false,"zero":0}`,
+		},
+		{
+			name:         "supplied placeholder-looking data is not recursively mapped",
+			browserBody:  `{"literal":"$missing"}`,
+			bodyTemplate: `{"quoted":"$literal","bare":$literal,"absent":"$missing"}`,
+			wantBody:     `{"quoted":"$missing","bare":"$missing"}`,
+		},
+		{
+			name:         "missing bare property value is omitted",
+			browserBody:  `{"keep":"present"}`,
+			bodyTemplate: `{"absent":$missing,"keep":$keep}`,
+			wantBody:     `{"keep":"present"}`,
+		},
+		{
+			name:         "array of objects preserves array positions while omitting missing properties",
+			browserBody:  `{"keep":"present"}`,
+			bodyTemplate: `[{"absent":"$missing"},{"keep":"$keep","absent":$missing}]`,
+			wantBody:     `[{},{"keep":"present"}]`,
 		},
 		{
 			name:         "JSON string substitutions preserve special characters without injecting fields",
@@ -130,7 +186,7 @@ func TestServeContentAPIRequestMapping(t *testing.T) {
 			browserBody:  invalidBody.body,
 			bodyTemplate: `{"id":"$id","only_json":"$only_json"}`,
 			wantQuery:    "id=query",
-			wantBody:     `{"id":"query","only_json":"$only_json"}`,
+			wantBody:     `{"id":"query"}`,
 		})
 	}
 
@@ -144,14 +200,16 @@ func TestServeContentAPIRequestMapping(t *testing.T) {
 				t.Run(test.name, func(t *testing.T) {
 					setupDevelopmentModeServeContentTest(t, false)
 					type capturedRequest struct {
-						query string
-						body  string
-						err   error
+						method      string
+						contentType string
+						query       string
+						body        string
+						err         error
 					}
 					received := make(chan capturedRequest, 1)
 					upstream := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 						body, err := io.ReadAll(request.Body)
-						received <- capturedRequest{query: request.URL.RawQuery, body: string(body), err: err}
+						received <- capturedRequest{method: request.Method, contentType: request.Header.Get("Content-Type"), query: request.URL.RawQuery, body: string(body), err: err}
 						writer.Header().Set("Content-Type", "application/json")
 						_, _ = io.WriteString(writer, `{"ok":true}`)
 					}))
@@ -204,16 +262,13 @@ func TestServeContentAPIRequestMapping(t *testing.T) {
 						if got.err != nil {
 							t.Fatalf("reading upstream body: %v", got.err)
 						}
-						var decoded map[string]interface{}
-						if err := json.Unmarshal([]byte(got.body), &decoded); err != nil {
-							t.Fatalf("outgoing JSON body is invalid: %v; body=%q", err, got.body)
+						if got.method != http.MethodPost || got.contentType != "application/json" {
+							t.Errorf("upstream method=%s content-type=%q, want configured POST with JSON", got.method, got.contentType)
 						}
 						if got.query != test.wantQuery {
 							t.Errorf("upstream query=%q, want %q", got.query, test.wantQuery)
 						}
-						if got.body != test.wantBody {
-							t.Errorf("upstream body=%q, want %q", got.body, test.wantBody)
-						}
+						assertAPIRequestBodyJSON(t, got.body, test.wantBody)
 					default:
 						t.Fatal("upstream did not receive the request")
 					}
@@ -223,74 +278,160 @@ func TestServeContentAPIRequestMapping(t *testing.T) {
 	}
 }
 
-// This baseline records the current difference between the two components.
-// API_RENDER returns its configured body before substitution when the browser
-// body is empty; API_FRAGMENT_RENDER still substitutes ParseForm query values.
-func TestServeContentAPIBodylessRequestMappingCurrentBehavior(t *testing.T) {
+// A bodyless browser request can still supply URL values for the separately
+// configured upstream body, even when querykeys disables URL forwarding.
+func TestServeContentAPIBodylessRequestMapping(t *testing.T) {
 	const bodyTemplate = `{"id":"$id","private":"$private","missing":"$missing"}`
-	for _, test := range []struct {
+	for _, renderer := range []struct {
 		name        string
 		apiFragment bool
-		wantBody    string
 	}{
-		{name: "nested api_render keeps placeholders", wantBody: bodyTemplate},
-		{
-			name:        "api_fragment_render substitutes browser query",
-			apiFragment: true,
-			wantBody:    `{"id":"7","private":"from-query","missing":"$missing"}`,
-		},
+		{name: "nested api_render"},
+		{name: "api_fragment_render", apiFragment: true},
 	} {
-		t.Run(test.name, func(t *testing.T) {
-			setupDevelopmentModeServeContentTest(t, false)
-			received := make(chan string, 1)
-			upstream := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-				body, err := io.ReadAll(request.Body)
-				if err != nil {
-					t.Errorf("reading upstream body: %v", err)
-				}
-				if request.URL.RawQuery != "" {
-					t.Errorf("upstream query=%q, want none with querykeys: []", request.URL.RawQuery)
-				}
-				received <- string(body)
-				writer.Header().Set("Content-Type", "application/json")
-				_, _ = io.WriteString(writer, `{"ok":true}`)
-			}))
-			t.Cleanup(upstream.Close)
-			const route = "api-bodyless-mapping"
-			apiConfig := map[string]interface{}{
-				"@type":     component.APIConfigGetName(),
-				"endpoint":  upstream.URL,
-				"method":    http.MethodPost,
-				"body":      bodyTemplate,
-				"headers":   map[string]string{"Content-Type": "application/json"},
-				"querykeys": []string{},
-				"inline":    `{{.Data.ok}}`,
-			}
-			if test.apiFragment {
-				apiConfig["@type"] = composite.ApiFragmentRenderConfigGetName()
-				apiConfig["route"] = route
-				setTestRouteConfig(route, apiConfig)
-			} else {
-				setTestRouteConfig(route, map[string]interface{}{
-					"@type": composite.FragmentConfigGetName(),
-					"route": route,
-					"10":    apiConfig,
+		for _, browserMethod := range []string{http.MethodGet, http.MethodPost} {
+			for _, test := range []struct {
+				name, query, template, wantBody string
+			}{
+				{"URL values", "id=7&private=from-query", bodyTemplate, `{"id":"7","private":"from-query"}`},
+				{"empty values", "id=&private=", bodyTemplate, `{"id":"","private":""}`},
+				{"missing values", "", bodyTemplate, `{}`},
+				{"escaped values", "id=quoted%22&private=path%5Cend", bodyTemplate, `{"id":"quoted\"","private":"path\\end"}`},
+				{"literal body", "id=7", `{"id":"fixed"}`, `{"id":"fixed"}`},
+			} {
+				t.Run(renderer.name+"/"+browserMethod+"/"+test.name, func(t *testing.T) {
+					setupDevelopmentModeServeContentTest(t, false)
+					received := make(chan string, 1)
+					upstream := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+						body, err := io.ReadAll(request.Body)
+						if err != nil {
+							t.Errorf("reading upstream body: %v", err)
+						}
+						if request.URL.RawQuery != "" {
+							t.Errorf("upstream query=%q, want none with querykeys: []", request.URL.RawQuery)
+						}
+						if request.Method != http.MethodPost || request.Header.Get("Content-Type") != "application/json" {
+							t.Errorf("upstream method=%s content-type=%q, want configured POST with JSON", request.Method, request.Header.Get("Content-Type"))
+						}
+						received <- string(body)
+						writer.Header().Set("Content-Type", "application/json")
+						_, _ = io.WriteString(writer, `{"ok":true}`)
+					}))
+					t.Cleanup(upstream.Close)
+					const route = "api-bodyless-mapping"
+					apiConfig := map[string]interface{}{
+						"@type":     component.APIConfigGetName(),
+						"endpoint":  upstream.URL,
+						"method":    http.MethodPost,
+						"body":      test.template,
+						"headers":   map[string]string{"Content-Type": "application/json"},
+						"querykeys": []string{},
+						"inline":    `{{.Data.ok}}`,
+					}
+					if renderer.apiFragment {
+						apiConfig["@type"] = composite.ApiFragmentRenderConfigGetName()
+						apiConfig["route"] = route
+						setTestRouteConfig(route, apiConfig)
+					} else {
+						setTestRouteConfig(route, map[string]interface{}{
+							"@type": composite.FragmentConfigGetName(),
+							"route": route,
+							"10":    apiConfig,
+						})
+					}
+					var browserBody io.Reader
+					if browserMethod == http.MethodPost {
+						browserBody = strings.NewReader("")
+					}
+					request := httptest.NewRequest(browserMethod, "/"+route+"?"+test.query, browserBody)
+					request.Header.Set("Content-Type", "application/json")
+					response := httptest.NewRecorder()
+					ServeContent(response, request)
+					if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), "true") {
+						t.Fatalf("response status=%d body=%q, want rendered successful upstream response", response.Code, response.Body.String())
+					}
+					select {
+					case got := <-received:
+						assertAPIRequestBodyJSON(t, got, test.wantBody)
+					default:
+						t.Fatal("upstream did not receive the request")
+					}
 				})
 			}
-			request := httptest.NewRequest(http.MethodGet, "/"+route+"?id=7&private=from-query", nil)
-			response := httptest.NewRecorder()
-			ServeContent(response, request)
-			if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), "true") {
-				t.Fatalf("response status=%d body=%q, want rendered successful upstream response", response.Code, response.Body.String())
-			}
-			select {
-			case got := <-received:
-				if got != test.wantBody {
-					t.Errorf("upstream body=%q, want %q", got, test.wantBody)
+		}
+	}
+}
+
+func TestServeContentAPIInvalidBodyMappingDoesNotCallUpstream(t *testing.T) {
+	for _, apiFragment := range []bool{false, true} {
+		componentName := "nested api_render"
+		if apiFragment {
+			componentName = "api_fragment_render"
+		}
+		for _, test := range []struct{ name, template string }{
+			{"malformed configured JSON", `{"name":"$name",}`},
+			{"placeholder embedded in bare JSON literal", `{"number":1$name}`},
+			{"missing array element", `["$name","$missing"]`},
+			{"missing bare array element", `[$missing,"$name"]`},
+			{"missing nested array element", `{"items":["$missing"]}`},
+			{"missing value in interpolated string", `{"message":"Hello $missing"}`},
+			{"missing top-level string placeholder", `"$missing"`},
+			{"missing top-level bare placeholder", `$missing`},
+		} {
+			t.Run(componentName+"/"+test.name, func(t *testing.T) {
+				setupDevelopmentModeServeContentTest(t, false)
+				var calls atomic.Int32
+				upstream := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+					calls.Add(1)
+					writer.Header().Set("Content-Type", "application/json")
+					_, _ = io.WriteString(writer, `{"ok":true}`)
+				}))
+				t.Cleanup(upstream.Close)
+				const route = "api-invalid-body-mapping"
+				apiConfig := map[string]interface{}{
+					"@type":    component.APIConfigGetName(),
+					"endpoint": upstream.URL,
+					"method":   http.MethodPost,
+					"headers":  map[string]string{"Content-Type": "application/json"},
+					"body":     test.template,
+					"inline":   `upstream-success:{{.Data.ok}}`,
 				}
-			default:
-				t.Fatal("upstream did not receive the request")
-			}
-		})
+				if apiFragment {
+					apiConfig["@type"] = composite.ApiFragmentRenderConfigGetName()
+					apiConfig["route"] = route
+					setTestRouteConfig(route, apiConfig)
+				} else {
+					setTestRouteConfig(route, map[string]interface{}{
+						"@type": composite.FragmentConfigGetName(),
+						"route": route,
+						"10":    apiConfig,
+					})
+				}
+				request := httptest.NewRequest(http.MethodPost, "/"+route, strings.NewReader(`{"name":"present"}`))
+				request.Header.Set("Content-Type", "application/json")
+				response := httptest.NewRecorder()
+				ServeContent(response, request)
+				if count := calls.Load(); count != 0 {
+					t.Errorf("upstream received %d request(s) after invalid body mapping", count)
+				}
+				if strings.Contains(response.Body.String(), "upstream-success:true") {
+					t.Errorf("invalid mapping rendered upstream success: %q", response.Body.String())
+				}
+			})
+		}
+	}
+}
+
+func assertAPIRequestBodyJSON(t *testing.T, got, want string) {
+	t.Helper()
+	var gotValue, wantValue interface{}
+	if err := json.Unmarshal([]byte(got), &gotValue); err != nil {
+		t.Fatalf("outgoing JSON body is invalid: %v; body=%q", err, got)
+	}
+	if err := json.Unmarshal([]byte(want), &wantValue); err != nil {
+		t.Fatalf("invalid expected JSON body: %v; body=%q", err, want)
+	}
+	if !reflect.DeepEqual(gotValue, wantValue) {
+		t.Errorf("upstream JSON body=%s, want %s", got, want)
 	}
 }

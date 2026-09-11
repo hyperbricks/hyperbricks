@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
@@ -333,27 +332,7 @@ func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string
 
 	}
 
-	config.Body = replaceAPIBodyPlaceholders(config.Body, mergedData)
-
-	return config.Body, nil
-}
-
-func replaceAPIBodyPlaceholders(templateBody string, mergedData map[string]interface{}) string {
-	re := regexp.MustCompile(`\$([A-Za-z0-9_]+)\b`)
-	return re.ReplaceAllStringFunc(templateBody, func(match string) string {
-		key := strings.TrimPrefix(match, "$")
-		value, ok := mergedData[key]
-		if !ok {
-			return match
-		}
-
-		if s, ok := value.(string); ok {
-			escaped, _ := json.Marshal(s)
-			return string(escaped[1 : len(escaped)-1])
-		}
-
-		return fmt.Sprintf("%v", value)
-	})
+	return apiutil.MapRequestBody(config.Body, mergedData)
 }
 
 // fetchDataFromAPI applies the API component's explicit credential policy.
