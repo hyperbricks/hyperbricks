@@ -254,6 +254,16 @@ rendered pages.
 
 ## 2026-09-11 updates
 
+### Goja cache documentation
+
+- Distinguish automatic internal rendered-output cache bypass from browser and
+  proxy HTTP caching. Show explicit `response.headers.Cache-Control: no-store`
+  for pages and fragments, and explain the existing route-specific defaults.
+- Clarify that compiled scripts and parsed templates are reused while Goja
+  execution state and results are not. Synchronize the bundled skill guidance.
+- Add live HTTP regression coverage for page/fragment cache policies and internal
+  cache bypass. Existing runtime behavior and configuration names are unchanged.
+
 ### API query and body mapping
 
 - Clarify that `querykeys` filters browser parameters appended to the upstream

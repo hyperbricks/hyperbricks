@@ -43,7 +43,16 @@ function main(input) {
 
 With `?quantity=3`, this renders `3 items cost €59.85`. This is a teaching calculation; production financial rules belong to the application's domain model. Verify a valid value, a rejected value, and repeated query keys.
 
-Each execution gets a fresh JavaScript runtime and copied input; the compiled script and parsed template are reused. Globals do not persist between renders. Configured `values` are plain data, not rendered child components. Return a plain JSON-compatible object from synchronous `main(input)`. Use exactly one of `inline` and `template`. Omitted Goja `querykeys` exposes no query input, unlike the default template/API allowlist. Routes containing Goja disable response caching. The configured timeout defaults to 100ms and must be positive, up to 5s.
+Each execution gets a fresh JavaScript runtime and copied input; the compiled script and parsed template are reused. Globals do not persist between renders. Configured `values` are plain data, not rendered child components. Return a plain JSON-compatible object from synchronous `main(input)`. Use exactly one of `inline` and `template`. Omitted Goja `querykeys` exposes no query input, unlike the default template/API allowlist. The configured timeout defaults to 100ms and must be positive, up to 5s.
+
+Routes containing Goja automatically bypass HyperBricks' internal rendered-output
+cache (`nocache: true`). Browser and proxy caching is separate: set
+`response.headers.Cache-Control: no-store` on the owning page or fragment to
+prevent storage of the HTTP response. Goja's automatic top-level `no-store`
+header reaches the browser for `hypermedia`, but not for `fragment`;
+explicit `response.headers` takes precedence. The compiled script and parsed
+template remain reusable. See "Rendered-output caching and HTTP caching" in
+`docs/GOJA_RENDER.md` for the distinction.
 
 ## Read from an API
 

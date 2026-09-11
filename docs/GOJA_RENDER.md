@@ -147,9 +147,39 @@ The template reads these values as `.Data.title`, `.Data.total`, and `.Data.avai
 
 Each time a `goja_render` component renders, HyperBricks creates a fresh [Goja](https://github.com/dop251/goja) JavaScript runtime for that execution. The script and template are prepared when the module loads, but the [JavaScript runtime itself is new](../pkg/gojaruntime/program.go) for every render. Globals, modified prototypes, and other JavaScript state disappear when the render finishes. Two clients making requests at the same time therefore do not share JavaScript variables or objects.
 
-Before calling `main(input)`, the [component prepares the input](../pkg/component/goja_render.go) by converting the configured `values` and that request's allowed query parameters to JSON. This gives the script its own data instead of references to shared Go objects. The returned value crosses the same boundary as plain JSON-compatible data, and the temporary runtime is then discarded. HyperBricks also [marks routes containing `goja_render` as `no-store`](../cmd/hyperbricks/initialize_goja.go), so a completed response is not cached and served to another client.
+Before calling `main(input)`, the [component prepares the input](../pkg/component/goja_render.go) by converting the configured `values` and that request's allowed query parameters to JSON. This gives the script its own data instead of references to shared Go objects. The returned value crosses the same boundary as plain JSON-compatible data, and the temporary runtime is then discarded.
 
 Scripts are loaded and checked when the module loads. Changes take effect after the normal development reload or a restart. Keep request-specific work inside `main(input)`. For information that must survive a request, such as a session, cart, or counter, use persistent storage through a Go component or plugin.
+
+### Rendered-output caching and HTTP caching
+
+Routes containing `goja_render` automatically bypass HyperBricks' internal
+rendered-output cache. During module loading, [Goja preparation](../cmd/hyperbricks/initialize_goja.go)
+sets the owning route's `nocache` to `true`, even if the configuration specified
+`false`. Each request reaching that route renders again. The compiled script
+and parsed template are still reused; execution state and results are not.
+
+Browser and proxy caching is controlled separately by HTTP response headers.
+To prevent them from storing the response, add this to the owning `hypermedia`
+or `fragment` route:
+
+```yaml
+- response:
+    headers:
+      Cache-Control: no-store
+```
+
+The existing automatic header behavior differs by route type:
+
+| Route owner | HTTP `Cache-Control` without an explicit `response.headers` policy |
+| --- | --- |
+| `hypermedia` | Goja preparation adds top-level `headers.Cache-Control: no-store`, which the HTTP server emits. |
+| `fragment` | The HTTP server does not emit top-level `headers` for fragments, so Goja does not automatically supply this response header. Use `response.headers`. |
+
+Explicit `response.headers.Cache-Control` takes precedence for both route types.
+For example, an explicit HTTP caching policy can allow browser caching while
+HyperBricks still renders every request it receives. Set `no-store` explicitly
+when the response should not be stored by browsers or proxies.
 
 ## Errors and beta limits
 
@@ -160,7 +190,7 @@ The current beta has these boundaries:
 - Scripts are synchronous. Promises and asynchronous JavaScript are not supported.
 - The default timeout is `100ms`, configurable up to `5s`.
 - Script source, input data, and serialized result data are each limited to 1 MiB.
-- Routes containing `goja_render` use `Cache-Control: no-store`; page and script result caching cannot currently be enabled for those routes.
+- Routes containing `goja_render` bypass HyperBricks' internal rendered-output cache. Configure browser and proxy caching separately through the route's `response.headers`.
 - Filesystem, network, process, environment, and Node.js APIs are not provided.
 - The timeout and fresh runtime improve request isolation, but they do not make Goja a security or memory sandbox. Only run project scripts you trust.
 
