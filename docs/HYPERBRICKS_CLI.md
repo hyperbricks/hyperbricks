@@ -511,10 +511,6 @@ hyperbricks plugin remove example@1.0.0
 
 Use `--module <module>` with `plugin build` or `plugin remove` for custom module plugins.
 
-`plugin update` is reserved for a future atomic update workflow. It currently
-returns a nonzero `not implemented` error and does not modify installed plugins.
-Install the required version explicitly with `plugin install <name>@<version>`.
-
 See [Plugins](PLUGINS.md) for naming, manifests, and YAML usage.
 
 ## Non-Interactive Mode

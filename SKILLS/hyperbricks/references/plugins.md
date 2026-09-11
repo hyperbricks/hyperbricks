@@ -52,7 +52,7 @@ hyperbricks plugin build example@1.0.0
 hyperbricks plugin build widget@1.0.0 --module demo
 ```
 
-`install` gets/builds a global plugin; `build` compiles existing source. `update <name>` selects a compatible global update. `remove <name>@<version>` removes an artifact; use `--module demo` for custom plugins. Only perform those mutations when they belong to the user's task.
+`install` gets/builds a global plugin; `build` compiles existing source. To change versions, run `hyperbricks plugin install <name>@<version>`, then update the module's configured plugin names to the exact installed artifact name. `remove <name>@<version>` removes an artifact; use `--module demo` for custom plugins. Only perform those mutations when they belong to the user's task.
 
 A native plugin must match the running HyperBricks build and compatible Go build dependencies/toolchain. Rebuild after runtime API changes or compatibility errors. WASM uses a different ABI; it is not unrestricted native Go running in another file format. Consult the manual for its host capability and resource limits. If both `.so` and `.wasm` exist for the same configured name, startup rejects the ambiguity.
 

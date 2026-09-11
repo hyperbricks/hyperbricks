@@ -116,7 +116,7 @@ hyperbricks plugin install markdown
 hyperbricks plugin install tailwindcss
 ```
 
-Omitting the version selects the highest semantic version in the registry, not necessarily the latest compatible version. Check the compatibility information before adopting it. The CLI does not treat `@latest` as an alias. `plugin update` is reserved but not implemented; it exits nonzero and makes no changes. Install the required version explicitly with `plugin install <name>@<version>`.
+Omitting the version selects the highest semantic version in the registry, not necessarily the latest compatible version. Check the compatibility information before adopting it. The CLI does not treat `@latest` as an alias. Install the required version explicitly with `plugin install <name>@<version>`.
 
 If an installed version differs from this module's pinned versions, update both the `hyperbricks.plugins.enabled` entries in `package.hyperbricks.yaml` and the corresponding `plugin:` references in the module YAML. Use the exact **Config name** printed by the installer. Installation does not update those references automatically. Native `esbuild` is configured as an ordinary component in `hyperbricks/partials/esbuild.hyperbricks.yaml`, outside the plugin list.
 
