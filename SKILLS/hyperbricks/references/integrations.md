@@ -78,7 +78,20 @@ project_status:
 
 Set `myconf.api.status_endpoint` in the package to the actual reachable service URL. This recipe expects JSON such as `{"message":"Ready"}` on success; it is not a supplied backend. The integrated dashboard provides a separate local API lesson with a documented service and explicit demo-state limits.
 
-`.Data` contains the parsed response; `.Status` is the upstream HTTP status; configured `values` are available at the template root. Explicit `querykeys` limits incoming URL query forwarding; `queryparams` supplies static outgoing query values. Templates and APIs default to `id`, `name`, `order` when query keys are omitted. API form and JSON body input have their own mapping rules, so a query allowlist is not validation of a submitted form.
+`.Data` contains the parsed response; `.Status` is the upstream HTTP status;
+configured `values` are available at the template root. API `querykeys` limits
+incoming URL query forwarding: omission uses `id`, `name`, `order`, and `[]`
+forwards none. Existing endpoint query values, allowed browser values, and static
+`queryparams` are appended in that order; repeated keys are not overwritten.
+
+Configured `body` placeholders have a separate mapping. On the HTTP runtime
+path, parsed input includes all browser query keys and URL-encoded form fields,
+even with `querykeys: []`. JSON-object fields supply `$key`; collisions with
+parsed input use `$body_key`. Static `queryparams` do not supply placeholders.
+Use single-value fields and validate at the API operation owner. Missing fields
+remain literal `$key` text; repeated/structured values are not serialized as JSON.
+Read Request Mapping in `docs/API_RENDER.md` for the complete behavior before
+constructing upstream bodies.
 
 Both API components require explicit credential selection. Omitted or empty
 `forwardtoken` disables browser-cookie forwarding. Set `forwardtoken: account_session`

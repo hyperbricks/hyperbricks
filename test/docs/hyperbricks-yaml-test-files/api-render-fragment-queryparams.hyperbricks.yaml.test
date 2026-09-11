@@ -7,7 +7,7 @@ api_fragment:
       foo: bar
   - route: api-fragment
 ==== explainer ====
-Set proxy query keys in the configuration
+Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders.
 ==== expected json ====
 {
   "AllowedQueryKeys": null,

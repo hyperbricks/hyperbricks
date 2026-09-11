@@ -167,8 +167,8 @@ Both API components support the same core API request fields. `api_render` uses 
 | `headers` | Extra upstream request headers; `headers.Authorization` selects explicit service authentication |
 | `forwardtoken` | Exact incoming cookie name to use as Bearer; omitted or empty disables forwarding |
 | `body` | Raw upstream request body with `$key` placeholders |
-| `querykeys` | Allow-list of incoming query keys to forward |
-| `queryparams` | Static query parameters to append |
+| `querykeys` | Incoming URL query keys to forward to the upstream URL; does not filter body placeholders |
+| `queryparams` | Static upstream query parameters to append, including when a key already exists |
 | `username` / `password` | Basic authentication when both values are non-empty |
 | `jwtsecret` / `jwtclaims` | Generate a bearer token as the sole upstream authentication source |
 | `template` | Template file resolver or template name |
@@ -177,16 +177,64 @@ Both API components support the same core API request fields. `api_render` uses 
 | `debug` | Log request/response metadata without header values, URL paths/queries, or payloads |
 | `debugpanel` | Enable the frontend error panel when configured globally |
 
-Incoming data is merged before placeholders are applied:
+### Upstream URL query
+
+`querykeys` controls automatic forwarding from the browser URL to the upstream
+URL. Names are case-sensitive. Omitted `querykeys` uses `id`, `name`, and `order`;
+`querykeys: []` forwards none. Repeated values of an allowed key are preserved.
+
+The upstream URL combines these sources in order:
+
+1. Query parameters already present in `endpoint`.
+2. Browser query parameters allowed by `querykeys`.
+3. Configured `queryparams`.
+
+Values are appended, not overwritten. For example, an endpoint containing
+`?id=service`, a browser request containing `?id=browser`, and
+`queryparams: {id: configured}` produce three values:
+`id=service&id=browser&id=configured`. The receiving API decides how to handle
+repeated keys; avoid collisions when it expects one value.
+
+`queryparams` does not supply values for `$key` body placeholders.
+
+### Configured body placeholders
+
+`body` is a configured string, separate from the outgoing URL query. On the
+normal HTTP runtime path, placeholder values come from the following input:
 
 | Source | Behavior |
 | --- | --- |
-| Query params | Only keys listed in `querykeys` are forwarded. If `querykeys` is omitted, HyperBricks uses the default allow-list `id`, `name`, and `order`. An explicit empty list forwards none. |
-| Form data | Single-value fields become strings. Multi-value fields remain lists. |
-| JSON body | Object keys merge into the request data. If a JSON key collides with an existing key, the JSON value is also available as `body_<key>`. |
-| `queryparams` | Static values are appended to the outgoing upstream query. |
+| Browser URL query | All query keys are present in the parsed request data, including keys excluded from upstream URL forwarding by `querykeys`. |
+| URL-encoded form body | Single-value fields become strings. Repeated values remain lists. If a form field also occurs in the URL query, the list contains form values first, followed by query values. |
+| JSON object body | A key absent from the parsed request data is available as `$key`. On collision, the existing value remains `$key` and the JSON value uses `$body_key`. Avoid input names starting with `body_`, which can collide with these aliases. |
 
-`body` placeholders use `$key` names resolved from that merged request data. Prefer simple placeholder names such as `$id`, `$name`, or `$email`; they are matched as word-like tokens.
+The configured `$key` placeholders select which values are inserted into the
+body. `querykeys: []` does not block those substitutions. For example, a submitted
+`email` field can supply `$email` while no browser query parameters are forwarded
+to the upstream URL. Validate the submitted values in the API that performs the
+operation.
+
+The current components differ when the browser request has no body:
+
+| Component | Bodyless browser request |
+| --- | --- |
+| `api_render` | Sends its configured upstream `body` unchanged, including literal `$key` placeholders. |
+| `api_fragment_render` | Applies placeholders using the available parsed query data. |
+
+This concerns the incoming browser body, not the configured upstream method or
+body. A browser GET can invoke an upstream POST with a configured `body`.
+
+Placeholder names use letters, digits, and underscores, such as `$id` or
+`$body_name`. They do not support nested-property or array-index expressions.
+Missing placeholders remain literal text; an empty string value inserts empty
+text. Request bodies are attempted as JSON objects regardless of Content-Type;
+invalid JSON and non-object JSON contribute no placeholder fields. This mapping
+step is not JSON request validation.
+
+Use simple, single-value fields in the JSON string positions shown below. The
+current mapper is textual substitution, not a JSON serializer: repeated values,
+arrays, objects, and null use Go's display formatting rather than JSON encoding.
+It does not automatically produce a URL-encoded or multipart upstream form.
 
 The following HTMX example forwards login data to an API and configures an `HX-Trigger` response header. The `login-updated` event signals that a response was rendered, not that authentication succeeded; inspect the upstream result before treating the login as successful.
 

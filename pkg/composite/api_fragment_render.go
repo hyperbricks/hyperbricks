@@ -47,8 +47,8 @@ type APIConfig struct {
 	SetCookie    string                 `mapstructure:"setcookie" description:"Legacy Set-Cookie shorthand. Only the value may be templated; validated and emitted atomically after successful upstream and fragment rendering." example:"{!{api-render-fragment-setcookie.hyperbricks.yaml}}"`
 	SetCookies   []interface{}          `mapstructure:"setcookies" json:",omitempty" description:"List of structured cookie configurations or legacy strings. Cookie values are validated separately; all headers are emitted together only after successful rendering." example:"{!{api-render-fragment-setcookies.hyperbricks.yaml}}"`
 	// PassCookie       string                 `mapstructure:"passcookie" description:"Pass a cookie in eindpoint request" example:"{!{api-render-setcookie.hyperbricks.yaml}}"`
-	AllowedQueryKeys []string          `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-fragment-querykeys.hyperbricks.yaml}}"`
-	QueryParams      map[string]string `mapstructure:"queryparams" description:"Set proxy query keys in the configuration" example:"{!{api-render-fragment-queryparams.hyperbricks.yaml}}"`
+	AllowedQueryKeys []string          `mapstructure:"querykeys" description:"Incoming URL query keys to append to the upstream URL. Omitted: id, name, order; empty list: none. Does not filter body placeholders." example:"{!{api-render-fragment-querykeys.hyperbricks.yaml}}"`
+	QueryParams      map[string]string `mapstructure:"queryparams" description:"Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders." example:"{!{api-render-fragment-queryparams.hyperbricks.yaml}}"`
 	JwtSecret        string            `mapstructure:"jwtsecret" description:"Signs jwtclaims as the sole upstream authentication source; cannot be combined with Basic Auth, Authorization or forwardtoken" example:"{!{api-render-fragment-jwt-secret.hyperbricks.yaml}}"`
 	JwtClaims        map[string]string `mapstructure:"jwtclaims" description:"JWT claims to include when signing the bearer token" example:"{!{api-render-fragment-jwt-claims.hyperbricks.yaml}}"`
 	Debug            bool              `mapstructure:"debug" description:"Log request and response metadata only; never header values, URL paths or queries, or payloads" example:"{!{api-render-fragment-debug.hyperbricks.yaml}}"`
@@ -349,7 +349,7 @@ func replaceAPIBodyPlaceholders(templateBody string, mergedData map[string]inter
 
 		if s, ok := value.(string); ok {
 			escaped, _ := json.Marshal(s)
-			return strings.Trim(string(escaped), `"`)
+			return string(escaped[1 : len(escaped)-1])
 		}
 
 		return fmt.Sprintf("%v", value)

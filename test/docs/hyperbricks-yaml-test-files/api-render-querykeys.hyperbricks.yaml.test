@@ -7,7 +7,7 @@ api_render:
       - foo
       - bar
 ==== explainer ====
-Set allowed proxy query keys
+Incoming URL query keys to append to the upstream URL. Omitted: id, name, order; empty list: none. Does not filter body placeholders.
 ==== expected json ====
 {
   "AllowedQueryKeys": [

@@ -37,8 +37,8 @@ type ApiRenderConfig struct {
 	Username         string                 `mapstructure:"username" description:"Basic Auth username; both username and password are required" example:"{!{api-render-username.hyperbricks.yaml}}"`
 	Password         string                 `mapstructure:"password" description:"Basic Auth password; both username and password are required" example:"{!{api-render-password.hyperbricks.yaml}}"`
 	Status           int                    `mapstructure:"status" exclude:"true"` // This adds {{.Status}} to the root level of the template data
-	AllowedQueryKeys []string               `mapstructure:"querykeys" description:"Set allowed proxy query keys" example:"{!{api-render-querykeys.hyperbricks.yaml}}"`
-	QueryParams      map[string]string      `mapstructure:"queryparams" description:"Set proxy query keys in the configuration" example:"{!{api-render-queryparams.hyperbricks.yaml}}"`
+	AllowedQueryKeys []string               `mapstructure:"querykeys" description:"Incoming URL query keys to append to the upstream URL. Omitted: id, name, order; empty list: none. Does not filter body placeholders." example:"{!{api-render-querykeys.hyperbricks.yaml}}"`
+	QueryParams      map[string]string      `mapstructure:"queryparams" description:"Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders." example:"{!{api-render-queryparams.hyperbricks.yaml}}"`
 	JwtSecret        string                 `mapstructure:"jwtsecret" description:"Signs jwtclaims as the sole upstream authentication source; cannot be combined with Basic Auth, Authorization or forwardtoken" example:"{!{api-render-jwt-secret.hyperbricks.yaml}}"`
 	JwtClaims        map[string]string      `mapstructure:"jwtclaims" description:"JWT claims to include when signing the bearer token" example:"{!{api-render-jwt-claims.hyperbricks.yaml}}"`
 	Debug            bool                   `mapstructure:"debug" description:"Log request and response metadata only; never header values, URL paths or queries, or payloads" example:"{!{api-render-debug.hyperbricks.yaml}}"`
@@ -279,7 +279,7 @@ func replaceAPIBodyPlaceholders(templateBody string, mergedData map[string]inter
 
 		if s, ok := value.(string); ok {
 			escaped, _ := json.Marshal(s)
-			return strings.Trim(string(escaped), `"`)
+			return string(escaped[1 : len(escaped)-1])
 		}
 
 		return fmt.Sprintf("%v", value)

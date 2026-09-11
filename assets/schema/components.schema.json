@@ -602,7 +602,7 @@
           "go_name": "AllowedQueryKeys",
           "go_type": "[]string",
           "kind": "list",
-          "description": "Set allowed proxy query keys",
+          "description": "Incoming URL query keys to append to the upstream URL. Omitted: id, name, order; empty list: none. Does not filter body placeholders.",
           "example": "{!{api-render-fragment-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
@@ -620,7 +620,7 @@
           "go_name": "QueryParams",
           "go_type": "map[string]string",
           "kind": "map",
-          "description": "Set proxy query keys in the configuration",
+          "description": "Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders.",
           "example": "{!{api-render-fragment-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",
@@ -1091,7 +1091,7 @@
           "go_name": "AllowedQueryKeys",
           "go_type": "[]string",
           "kind": "list",
-          "description": "Set allowed proxy query keys",
+          "description": "Incoming URL query keys to append to the upstream URL. Omitted: id, name, order; empty list: none. Does not filter body placeholders.",
           "example": "{!{api-render-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
@@ -1109,7 +1109,7 @@
           "go_name": "QueryParams",
           "go_type": "map[string]string",
           "kind": "map",
-          "description": "Set proxy query keys in the configuration",
+          "description": "Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders.",
           "example": "{!{api-render-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",

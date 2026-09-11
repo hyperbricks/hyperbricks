@@ -1,7 +1,7 @@
 **Licence:** MIT
 **Version:** v1.2.3-beta
 
-**Build time:** 2026-09-11 18:44 UTC
+**Build time:** 2026-09-11 18:59 UTC
 
 
 # HyperBricks Component Reference
@@ -217,8 +217,8 @@ Route-owning API fragment that always bypasses rendered-output caching and makes
 | `jwtsecret` | `string` | no | Signs jwtclaims as the sole upstream authentication source; cannot be combined with Basic Auth, Authorization or forwardtoken |
 | `method` | `string` | yes | HTTP method to use for API calls, GET POST PUT DELETE etc... |
 | `password` | `string` | no | Basic Auth password; both username and password are required |
-| `querykeys` | `list` | no | Set allowed proxy query keys |
-| `queryparams` | `map` | no | Set proxy query keys in the configuration |
+| `querykeys` | `list` | no | Incoming URL query keys to append to the upstream URL. Omitted: id, name, order; empty list: none. Does not filter body placeholders. |
+| `queryparams` | `map` | no | Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders. |
 | `response.headers` | `map` | no | HTTP response headers sent to the browser |
 | `response.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
 | `route` | `string` | no | The route (URL-friendly identifier) for the fragment |
@@ -581,8 +581,8 @@ Nested API fetcher with no upstream-response cache or nocache field. It makes a 
 | `jwtsecret` | `string` | no | Signs jwtclaims as the sole upstream authentication source; cannot be combined with Basic Auth, Authorization or forwardtoken |
 | `method` | `string` | yes | HTTP method to use for API calls, GET POST PUT DELETE etc... |
 | `password` | `string` | no | Basic Auth password; both username and password are required |
-| `querykeys` | `list` | no | Set allowed proxy query keys |
-| `queryparams` | `map` | no | Set proxy query keys in the configuration |
+| `querykeys` | `list` | no | Incoming URL query keys to append to the upstream URL. Omitted: id, name, order; empty list: none. Does not filter body placeholders. |
+| `queryparams` | `map` | no | Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders. |
 | `template` | `string` | no | Loads contents of a template file in the modules template directory |
 | `username` | `string` | no | Basic Auth username; both username and password are required |
 | `values` | `map` | no | Key-value pairs for template rendering |

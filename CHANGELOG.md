@@ -254,6 +254,18 @@ rendered pages.
 
 ## 2026-09-11 updates
 
+### API query and body mapping
+
+- Clarify that `querykeys` filters browser parameters appended to the upstream
+  URL, while configured `$key` body placeholders use separate parsed input.
+  Document append-only query collisions, static `queryparams`, form/JSON field
+  precedence, missing fields, and the current bodyless-request difference.
+- Correct JSON string placeholder escaping in both API components so values
+  ending in a quote retain their original value and produce valid JSON string
+  content. Repeated and structured values retain their existing display format.
+- Add HTTP request/output regression coverage for both components and synchronize
+  the component field descriptions, generated reference/schema, and skill guide.
+
 ### Explicit API credentials and validated response cookies
 
 - Add string `forwardtoken` to `api_render` and `api_fragment_render`. Omission or
