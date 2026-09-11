@@ -196,10 +196,49 @@ deploy:
     targets:
       staging:
         api: https://deploy.example.com
-        key_id: staging
 ```
 
 The deploy config uses the same generic YAML resolver model as other HyperBricks YAML config files. `hmac_secret.env` reads the value from the environment at load time.
+
+This example uses a shared secret. Because the target has no `key_id`, the
+client does not send `X-HB-Key-ID` and the remote daemon authenticates the
+request with the shared `HB_DEPLOY_SECRET`. Set the same value on the machine
+that pushes the build and the machine that runs the remote daemon:
+
+```bash
+export HB_DEPLOY_SECRET="change-me"
+```
+
+For a module/key-scoped secret, configure a key ID and the remote daemon's
+environment-variable prefix instead:
+
+```yaml
+deploy:
+  remote:
+    auth:
+      env_prefix: HB_DEPLOY_SECRET_
+
+  client:
+    target: staging
+    targets:
+      staging:
+        api: https://deploy.example.com
+        key_id: staging
+```
+
+When pushing module `demo` to that target, set the scoped secret on both
+machines:
+
+```bash
+export HB_DEPLOY_SECRET_DEMO_STAGING="change-me"
+```
+
+HyperBricks trims and uppercases each module/key segment. Each run of
+characters outside ASCII `A-Z` and `0-9` becomes one underscore, and leading
+or trailing underscores are removed. Composer displays the exact variable name
+for its deploy target. Keep the default `HB_DEPLOY_SECRET_` prefix for CLI push
+clients; `deploy.remote.auth.env_prefix` controls the server lookup, while the
+client's scoped lookup currently uses that default prefix.
 
 ## Push Flow
 
@@ -228,29 +267,20 @@ If upload succeeds but activation fails, the local build stays intact and the er
 
 Remote Deploy API requests are signed with HMAC-SHA256.
 
-The canonical string is:
-
-```text
-METHOD
-PATH
-SHA256(body)
-timestamp
-nonce
-```
-
-Headers:
+Every signed request sends:
 
 - `X-HB-Timestamp`
 - `X-HB-Nonce`
 - `X-HB-Signature`
 
-Composer-style keyed deploys also send:
+Archive uploads send these additional headers in both shared and keyed modes:
 
-- `X-HB-Key-ID`
 - `X-HB-Build-ID`
 - `X-HB-SHA256`
 
-For keyed deploys, the canonical string appends the key id and build id:
+Keyed uploads additionally send `X-HB-Key-ID`.
+
+The canonical string always starts with:
 
 ```text
 METHOD
@@ -258,17 +288,33 @@ PATH
 SHA256(body)
 timestamp
 nonce
+```
+
+When either a key ID or build ID is present, the canonical string appends both
+slots:
+
+```text
 key_id
 build_id
 ```
 
-The server checks timestamp drift, nonce reuse, and signature validity.
+For a shared archive upload, `key_id` is an empty line and `build_id` is
+populated. Requests without either value use only the five base fields.
 
-Set the same secret on local and remote:
+The server checks timestamp drift, nonce reuse, and signature validity. It
+selects the verification secret from the request mode:
 
-```bash
-export HB_DEPLOY_SECRET="change-me"
-```
+- Without `X-HB-Key-ID`, it uses the shared secret configured through
+  `deploy.hmac_secret` or `HB_DEPLOY_SECRET`.
+- With `X-HB-Key-ID`, it requires
+  `HB_DEPLOY_SECRET_<NORMALIZED_MODULE>_<NORMALIZED_KEY_ID>` using
+  `deploy.remote.auth.env_prefix`. The shared secret does not authenticate a
+  keyed request.
+
+The pushing client also prefers the scoped environment variable whenever its
+target has `key_id`. Ensure that variable is present locally; otherwise the
+client can fall back to its shared secret while still sending a key ID, and the
+remote daemon will reject the signature.
 
 ## Environment Overrides
 
@@ -278,7 +324,7 @@ Deploy services support these environment variables:
 | --- | --- |
 | `HB_DEPLOY_CONFIG` | Alternate deploy config path |
 | `HB_DEPLOY_SECRET` | Shared HMAC secret |
-| `HB_DEPLOY_SECRET_<MODULE>_<KEY_ID>` | Module/key scoped deploy secret for HTTP HRA uploads |
+| `HB_DEPLOY_SECRET_<NORMALIZED_MODULE>_<NORMALIZED_KEY_ID>` | Module/key scoped deploy secret for HTTP HRA uploads |
 | `HB_DEPLOY_BIND` | Override remote API bind address |
 | `HB_DEPLOY_PORT` | Override remote API port |
 | `HB_DEPLOY_ROOT` | Override remote deploy root |
@@ -290,7 +336,7 @@ Module processes also receive runtime environment values such as module name, bu
 
 ## Security
 
-- Keep `HB_DEPLOY_SECRET` out of the repository.
+- Keep shared and module/key-scoped deploy secrets out of the repository.
 - Keep the local dashboard on `127.0.0.1`.
 - Bind the remote API to localhost or a private network unless it is behind trusted HTTPS infrastructure.
 - Use HTTPS, VPN, firewall rules, or a reverse proxy for remote access.

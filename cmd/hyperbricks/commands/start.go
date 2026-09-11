@@ -248,9 +248,10 @@ func deployInitTemplate(mode string) string {
 	if mode == "remote" {
 		return `# Deploy config (remote runtime API)
 deploy:
-  # Optional admin/dashboard HMAC secret. Composer deploys can use per-module env secrets below.
+  # Shared HMAC secret for requests that do not send X-HB-Key-ID.
+  # Composer deploys can use per-module env secrets below.
   hmac_secret:
-    env: HB_DEPLOY_ADMIN_SECRET
+    env: HB_DEPLOY_SECRET
 
   remote:
     # Enable deploy API daemon.
@@ -301,9 +302,10 @@ deploy:
     targets:
       prod:
         api: https://deploy.example.com
-        # Optional. If set, the client signs with X-HB-Key-ID and reads:
+        # Optional keyed mode. Uncomment only after setting this scoped secret
+        # on both the client and remote daemon:
         # HB_DEPLOY_SECRET_<NORMALIZED_MODULE>_<NORMALIZED_KEY_ID>
-        key_id: prod
+        # key_id: prod
 `
 }
 

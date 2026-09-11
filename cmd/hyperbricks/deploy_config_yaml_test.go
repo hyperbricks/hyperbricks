@@ -76,6 +76,36 @@ func TestDeployKeyedEnvSecretForRequest(t *testing.T) {
 	}
 }
 
+func TestDeploySharedSecretForRequest(t *testing.T) {
+	api := deployAPI{secret: "shared-secret", authEnvPrefix: "HB_DEPLOY_SECRET_"}
+	req, err := http.NewRequest(http.MethodPost, "/deploy/v1/modules/demo/releases", nil)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+
+	secret, err := api.secretForRequest(req)
+	if err != nil {
+		t.Fatalf("secretForRequest() error = %v", err)
+	}
+	if secret != "shared-secret" {
+		t.Fatalf("secret = %q, want %q", secret, "shared-secret")
+	}
+}
+
+func TestDeployKeyedRequestDoesNotUseSharedSecret(t *testing.T) {
+	t.Setenv("HB_DEPLOY_SECRET_DEMO_STAGING", "")
+	api := deployAPI{secret: "shared-secret", authEnvPrefix: "HB_DEPLOY_SECRET_"}
+	req, err := http.NewRequest(http.MethodPost, "/deploy/v1/modules/demo/releases", nil)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+	req.Header.Set("X-HB-Key-ID", "staging")
+
+	if _, err := api.secretForRequest(req); err == nil {
+		t.Fatal("keyed request unexpectedly fell back to the shared secret")
+	}
+}
+
 func TestVerifyRequestUsesKeyedEnvSecret(t *testing.T) {
 	t.Setenv("HB_DEPLOY_SECRET_OWNER_EXAMPLE_TEST_TEST_PROD", "deploy-secret")
 	api := deployAPI{
@@ -116,6 +146,45 @@ func TestVerifyRequestUsesKeyedEnvSecret(t *testing.T) {
 		t.Fatalf("verifyRequest() error = %v", err)
 	}
 }
+
+func TestVerifyRequestUsesSharedSecretForArchiveUpload(t *testing.T) {
+	api := deployAPI{
+		secret:     "shared-secret",
+		nonceStore: newDeployNonceStore(),
+	}
+	body := []byte("hra archive bytes")
+	req, err := http.NewRequest(http.MethodPost, "/deploy/v1/modules/demo/releases", nil)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+	timestamp := time.Now().UTC().Unix()
+	nonce := "shared-nonce-for-test"
+	buildID := "build-123"
+	hash := sha256.Sum256(body)
+	bodyHash := hex.EncodeToString(hash[:])
+	canonical := strings.Join([]string{
+		http.MethodPost,
+		"/deploy/v1/modules/demo/releases",
+		bodyHash,
+		strconv.FormatInt(timestamp, 10),
+		nonce,
+		"",
+		buildID,
+	}, "\n")
+	mac := hmac.New(sha256.New, []byte("shared-secret"))
+	_, _ = mac.Write([]byte(canonical))
+
+	req.Header.Set("X-HB-Build-ID", buildID)
+	req.Header.Set("X-HB-SHA256", bodyHash)
+	req.Header.Set("X-HB-Timestamp", strconv.FormatInt(timestamp, 10))
+	req.Header.Set("X-HB-Nonce", nonce)
+	req.Header.Set("X-HB-Signature", hex.EncodeToString(mac.Sum(nil)))
+
+	if err := api.verifyRequest(req, body); err != nil {
+		t.Fatalf("verifyRequest() error = %v", err)
+	}
+}
+
 func TestLoadDeployLocalConfigReadsYAMLSpec(t *testing.T) {
 	t.Setenv("HB_DEPLOY_SECRET", "test-secret")
 	path := filepath.Join(t.TempDir(), "deploy.hyperbricks.yaml")
