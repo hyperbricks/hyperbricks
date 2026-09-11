@@ -1,5 +1,77 @@
 # Changelog
 
+## 2026-09-12 updates
+
+### Beta release preparation
+
+- Document the beta release protocol in `AGENTS.md`, including version
+  selection, docs generation, release verification, confirmation before
+  publishing, commit, tag, and push.
+- Prepare the next beta patch release as `v1.2.4-beta`.
+
+### Deploy authentication
+
+- Separate shared-secret and keyed deploy authentication so both modes have
+  explicit configuration and test coverage.
+- Generate compatible shared-secret defaults and document keyed secret
+  resolution, canonical signing, and client/server authentication behavior.
+
+### Static and runtime documentation
+
+- Clarify that `hyperbricks static --serve` renders a fresh static snapshot
+  before serving it; serving already-rendered files is a separate static-host
+  concern.
+- Expand CLI and introduction docs for request flow, static asset serving, and
+  render-vs-serve boundaries.
+- Add static command coverage for the documented render-then-serve behavior.
+
+### Plugin CLI documentation
+
+- Remove the unsupported plugin update workflow from docs and skill guidance.
+- Keep install/build/remove as the documented plugin lifecycle commands.
+
+### API credential and cookie boundaries
+
+- Disable implicit browser-token forwarding by default and require explicit
+  credential carrier configuration for API requests.
+- Reject ambiguous authentication, invalid security field types, and failed
+  request preparation before contacting an upstream API.
+- Restrict credential transport and redirects, remove API cookie jars,
+  propagate request cancellation, and redact sensitive diagnostics.
+- Validate API response cookies and stage them until upstream processing and
+  the final render response succeed.
+- Add the runnable `api-security-test` module, migration guidance, schema and
+  reference updates, race tests, and server-level coverage.
+
+### API request mapping
+
+- Preserve JSON placeholder escaping when substituted values contain quotes.
+- Document query forwarding separately from body placeholders, including append
+  order, form/JSON collisions, missing fields, and bodyless requests.
+- Use the same JSON body mapper for `api_render` and `api_fragment_render`.
+- Omit object properties whose complete placeholder has no input, preserve
+  explicit empty strings and `null`, and encode bare placeholders as JSON
+  values.
+- Apply URL/form input even when the browser request has no body, while
+  preserving upstream query forwarding, literal property names, and raw
+  non-JSON body behavior.
+
+### Goja render cache policy
+
+- Document automatic internal output-cache bypass separately from browser and
+  proxy `Cache-Control`.
+- Clarify page and fragment header defaults and show explicit
+  `response.headers` configuration without changing runtime behavior.
+- Add live HTTP coverage for repeated renders, stale-cache bypass, prepared
+  resource reuse, and explicit HTTP cache-policy overrides.
+
+### Verification
+
+- Release candidate verification passed with `bash scripts/build_docs.sh` and
+  `./tests.sh --with-docs`, including Go package tests, Docker-backed API
+  render tests, template tests, marker tests, documentation regeneration, and
+  header/cookie/cache checks.
+
 ## 2026-09-05 updates
 
 ### Goja render component

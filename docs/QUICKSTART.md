@@ -8,10 +8,10 @@ Requires Go 1.26.1 or newer.
 
 **1. Install HyperBricks**
 
-Install `v1.2.3-beta`:
+Install `v1.2.4-beta`:
 
 ```bash
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@v1.2.3-beta
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@v1.2.4-beta
 ```
 
 Make sure your Go binary directory (`GOBIN`, or `$(go env GOPATH)/bin` by default) is on your `PATH`.
