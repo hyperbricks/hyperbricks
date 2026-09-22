@@ -1,0 +1,32 @@
+/* Website diagrams use white-on-transparent styles; PDFs need print contrast. */
+svg#my-svg .node.node rect, svg#my-svg .node.node polygon,
+svg#my-svg .node.node circle, svg#my-svg .node.node ellipse,
+svg#my-svg .node.node path {
+  fill: #f0f5f8 !important;
+  stroke: #087f8c !important;
+}
+svg#my-svg .cluster.cluster rect {
+  fill: #ffffff !important;
+  stroke: #cedae1 !important;
+}
+svg#my-svg text,
+svg#my-svg .node.node foreignObject *, svg#my-svg .cluster.cluster foreignObject *,
+svg#my-svg .edgeLabel.edgeLabel *, svg#my-svg .nodeLabel.nodeLabel {
+  fill: #123044 !important;
+  color: #123044 !important;
+  font-family: Arial, sans-serif !important;
+}
+.edgePath path, .flowchart-link {
+  stroke: #087f8c !important;
+}
+marker path {
+  fill: #087f8c !important;
+  stroke: #087f8c !important;
+}
+.edgeLabel, .edgeLabel rect, .labelBkg {
+  background: #ffffff !important;
+  fill: #ffffff !important;
+}
+.hb-tip::after {
+  display: none !important;
+}
