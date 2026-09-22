@@ -43,11 +43,14 @@ func TestBuiltinSpacesMountDefaultsAndSafety(t *testing.T) {
 		}
 		return w
 	}
-	for _, path := range []string{"", "/web/app.js", "/web/recovery.mjs", "/web/http.mjs", "/web/navigation.mjs", "/web/contextual.js", "/web/contextual.css", "/web/document.css", "/web/style.css", "/web/hyperbricks.css", "/web/theme.js", "/web/brandmark.svg", "/web/favicon.svg", "/web/lucide.js", "/web/licenses.txt"} {
+	for _, path := range []string{"", "/web/app.js", "/web/recovery.mjs", "/web/http.mjs", "/web/navigation.mjs", "/web/contextual.js", "/web/contextual.css", "/web/document.css", "/web/style.css", "/web/hyperbricks.css", "/web/theme.js", "/web/brandmark.svg", "/web/favicon.svg", "/web/lucide.js"} {
 		w := request("GET", shared.DefaultSpacesRoute+path, "")
 		if w.Code != 200 || w.Body.Len() == 0 || w.Header().Get("Cache-Control") != "no-store" {
 			t.Fatalf("asset %s: %d %s", path, w.Code, w.Body.String())
 		}
+	}
+	if w := request("GET", shared.DefaultSpacesRoute+"/web/licenses.txt", ""); w.Code != http.StatusNotFound {
+		t.Fatalf("removed licenses endpoint: %d %s", w.Code, w.Body.String())
 	}
 	for _, dashboard := range []bool{true, false} {
 		cfg.Development.Dashboard = dashboard

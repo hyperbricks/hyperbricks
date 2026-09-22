@@ -21,7 +21,7 @@ import (
 	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
 )
 
-//go:embed web/* THIRD_PARTY_NOTICES.md
+//go:embed web/*
 var webFiles embed.FS
 
 type editorOptions = shared.SpacesConfig
@@ -187,14 +187,11 @@ func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-		if file != "web/index.html" && file != "web/app.js" && file != "web/recovery.mjs" && file != "web/http.mjs" && file != "web/navigation.mjs" && file != "web/contextual.js" && file != "web/contextual.css" && file != "web/document.css" && file != "web/style.css" && file != "web/lucide.js" && file != "web/licenses.txt" {
+		if file != "web/index.html" && file != "web/app.js" && file != "web/recovery.mjs" && file != "web/http.mjs" && file != "web/navigation.mjs" && file != "web/contextual.js" && file != "web/contextual.css" && file != "web/document.css" && file != "web/style.css" && file != "web/lucide.js" {
 			http.NotFound(w, r)
 			return
 		}
 		asset := file
-		if file == "web/licenses.txt" {
-			asset = "THIRD_PARTY_NOTICES.md"
-		}
 		b, err := webFiles.ReadFile(asset)
 		if err != nil {
 			http.NotFound(w, r)
