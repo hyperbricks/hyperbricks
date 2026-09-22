@@ -1,6 +1,5 @@
 # Ignore specific directories in the root folder
 
-/plugins/
 /bin/
 tmp/
 **/archive
@@ -18,7 +17,6 @@ tmp/
 
 TO_DO.md
 CHANGES.md
-
 
 docker/ssh/authorized_keys
 *.pdf
