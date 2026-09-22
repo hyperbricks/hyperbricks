@@ -8,7 +8,7 @@ From the repository root, run:
 
 The script creates `.venv-handbooks/`, installs the Python packages pinned in
 `handbook-requirements.txt` and Mermaid CLI, then builds the documentation and
-skills handbooks as Markdown and PDF in `docs/handbooks/`. The environment is
+skills handbooks as Markdown, PDF, and EPUB in `docs/handbooks/`. The environment is
 ignored by Git; it is not part of the repository or a release commit.
 
 You need Python 3 with `venv` and `pip`, Node.js with `npm`, and network access
@@ -29,11 +29,29 @@ Mermaid dependencies:
 ./scripts/handbook-generation/build_markdown_handbooks.py
 ```
 
-Both builders read a committed Git revision (default `HEAD`), not uncommitted
+The EPUB uses the PDF's Arial/sans-serif typography, navy/teal heading palette,
+code panels, and rendered Mermaid diagrams, with relative sizes and wrapping
+for e-readers. It includes chapter navigation, internal links, and a dark theme.
+Reader font/theme overrides may change its appearance. No system fonts are
+embedded or required for EPUB generation.
+
+Build only EPUBs from a committed snapshot (also accepts `--output-dir`):
+
+```sh
+./scripts/handbook-generation/build_handbooks.sh --format epub
+```
+
+To rebuild EPUBs from existing generated Markdown, without rebuilding PDF:
+
+```sh
+.venv-handbooks/bin/python scripts/handbook-generation/build_epub_handbooks.py
+```
+
+The snapshot builders read a committed Git revision (default `HEAD`), not uncommitted
 working-tree or staged content. Pass `--ref <revision>` to select another
-commit. Run the PDF regression tests after the environment has been created:
+commit. Run the PDF and EPUB regression tests after the environment has been created:
 
 ```sh
 .venv-handbooks/bin/python -m unittest discover \
-  -s scripts/handbook-generation -p 'test_build_handbooks.py'
+  -s scripts/handbook-generation -p 'test_build*handbooks.py'
 ```

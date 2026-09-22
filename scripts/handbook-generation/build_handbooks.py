@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build Markdown and styled PDF handbooks from the same committed snapshot."""
+"""Build Markdown, styled PDF, and reflowable EPUB handbooks from one snapshot."""
 
 from __future__ import annotations
 
@@ -20,8 +20,8 @@ import build_markdown_handbooks as assembly
 def arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ref", default="HEAD", help="Committed Git revision (default: HEAD)")
-    parser.add_argument("--format", choices=("all", "markdown", "pdf"), default="all")
-    parser.add_argument("--output-dir", default="docs/handbooks", help="Destination for both formats (default: docs/handbooks)")
+    parser.add_argument("--format", choices=("all", "markdown", "pdf", "epub"), default="all")
+    parser.add_argument("--output-dir", default="docs/handbooks", help="Destination for generated books (default: docs/handbooks)")
     parser.add_argument("--font-dir", default="/System/Library/Fonts/Supplemental")
     parser.add_argument("--code-font", default="/System/Library/Fonts/Menlo.ttc")
     parser.add_argument("--mermaid-cli", default=os.environ.get("HB_MERMAID_CLI", str(Path(__file__).resolve().parents[2] / ".venv-handbooks/mermaid/node_modules/.bin/mmdc")))
@@ -418,6 +418,12 @@ def main():
                 print(f"Wrote {path} ({len(handbook.sources)} sources)")
             if args.format in {"all", "pdf"}:
                 render_pdf(handbook, commit, snapshot_date, output / Path(handbook.filename).with_suffix(".pdf"), Path(args.font_dir), Path(args.code_font), args.mermaid_cli)
+            if args.format in {"all", "epub"}:
+                from build_epub_handbooks import epub_for
+                path = output / Path(handbook.filename).with_suffix(".epub")
+                epub_for(Path(handbook.filename), path, args.mermaid_cli,
+                         markdown=assembly.render_handbook(handbook, commit, snapshot_date))
+                print(f"Wrote {path}")
         print(f"Source snapshot: {commit}")
         return 0
     except (assembly.BuildError, OSError, ValueError, ImportError) as error:
