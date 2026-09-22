@@ -1,0 +1,6 @@
+interface:
+  display_name: "HyperBricks"
+  short_description: "Build HyperBricks apps with Spaces and Markdown"
+  icon_small: "./assets/Hyperbricks_logo.svg"
+  icon_large: "./assets/Hyperbricks_logo.jpg"
+  default_prompt: "Use $hyperbricks to develop this project using its recommended patterns, including source-owned Spaces editing and native Markdown when needed."
