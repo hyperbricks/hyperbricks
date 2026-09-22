@@ -43,8 +43,22 @@ That gives a useful split:
 - readers still get styled HTML pages
 - the docs shell can add navigation, layout, and HTMX behavior around the rendered content
 
+## Native Markdown alternative
+
+This module keeps `MarkdownPlugin@2.0.0` to demonstrate plugin rendering. For ordinary Markdown content, the current runtime also has a native `markdown` component that requires no plugin installation:
+
+```yaml
+my_doc:
+  - type: markdown
+  - file: guides/introduction.md
+```
+
+Put the document at `resources/guides/introduction.md`: a native Markdown `file` is relative to the module's **resources directory**. The plugin example above instead reads the existing article relative to the **module directory** through a file resolver.
+
+Place the native component inside a page or fragment to give it a URL. It skips raw HTML and sanitizes the generated HTML. See `docs/MARKDOWN.md` in the repository root for its file and editing options.
+
 ## Notes
 
-- the plugin converts Markdown to HTML
+- the plugin converts Markdown to HTML without the native component's sanitization; use trusted project content
 - the shell around it is still owned by normal HyperBricks templates
 - for this module, the CSS class `pattern-docs-markdown` adds the base documentation styling

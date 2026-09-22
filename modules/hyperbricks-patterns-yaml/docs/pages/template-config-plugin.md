@@ -1,52 +1,16 @@
 # Template Config Plugin
 
-## Summary
+Use a `plugin` component to prepare values, then return a `<TEMPLATE>` configuration for HyperBricks to render. The plugin owns the transformation; the template owns the HTML.
 
-Use a `<PLUGIN>` brick as a transformer that accepts structured config, computes template-ready values, and returns a pipeline-native `<TREE>` containing a `<TEMPLATE>` brick.
+## Files
 
-This keeps transformation logic in the plugin and presentation markup in the template.
+- Plugin: `plugins/template-config-demo/2.0.0/template_config_demo_plugin.go`
+- Template: `templates/demo.html`
+- Panel configuration: `hyperbricks/20-htmx-canonical-fragment-demo.hyperbricks.yaml`
 
-## Recommended Name
+The panel appears at `/status-demo/plugin` and `/fragments/status-demo-plugin`.
 
-`Template Config Plugin`
-
-Reason:
-
-- `plugin renders html` is too broad
-- this pattern is specifically about config-driven transformation plus template handoff
-- the plugin does not need to own the final markup
-
-## Problem
-
-Sometimes a page needs logic that a plain `<TEMPLATE>` brick should not own.
-
-Examples:
-
-- normalize or preprocess content
-- transform Markdown into HTML
-- compute a values map for a template
-- apply server-side shaping before presentation
-
-Without a pattern, that logic tends to drift into inline HTML, duplicated template data shaping, or plugins that hardcode the full markup in Go.
-
-## Pattern Rule
-
-Prefer this shape:
-
-- plugin receives config under `data`
-- plugin computes values
-- plugin returns a `<TREE>` with a `<TEMPLATE>` node
-- template owns the final markup
-
-Treat direct raw HTML return as a fallback or demo path, not as the preferred pattern.
-
-## Contract
-
-### Input
-
-The plugin accepts a standard `<PLUGIN>` brick plus a structured `data` object.
-
-Current example shape:
+## Input
 
 ```yaml
 template_config_demo:
@@ -55,57 +19,33 @@ template_config_demo:
   - data:
       template:
         file: demo.html
-      content: "# Hello\n\nThis is **cute rendered markdown**."
+      content: |
+        # Hello
+
+        This is **rendered Markdown**.
       class: template_config_demo-content
 ```
 
-### Plugin responsibility
+HyperBricks resolves `data.template.file` to a template key before the plugin receives it. The plugin requires that key, normalizes `data.content`, converts Markdown to HTML, and prepares `class` and `html` values.
 
-The plugin should:
+## Output
 
-- decode the `data` object
-- validate or normalize its inputs
-- perform transformation logic
-- build a `values` map for the template
-- return pipeline-native config instead of final string HTML when template rendering is desired
-
-### Output
-
-Preferred output shape:
+The current plugin returns a template configuration directly:
 
 ```json
 {
-  "@type": "<TREE>",
-  "10": {
-    "@type": "<TEMPLATE>",
-    "template": "demo.html",
-    "values": {
-      "class": "template_config_demo-content",
-      "html": "<p>...</p>"
-    }
+  "@type": "<TEMPLATE>",
+  "template": "demo.html",
+  "values": {
+    "class": "template_config_demo-content",
+    "html": "<h1>Hello</h1><p>This is <strong>rendered Markdown</strong>.</p>"
   }
 }
 ```
 
-The exact value stored in `template` is the resolved template key provided by HyperBricks.
+`template` contains the resolved template key; `demo.html` illustrates that value. This JSON is runtime configuration returned by Go code. In YAML source, declare components with `type: template`.
 
-## Current Example
-
-Files:
-
-- Plugin: `plugins/template-config-demo/2.0.0/template_config_demo_plugin.go`
-- Template: `templates/demo.html`
-- HyperBricks example: `hyperbricks/10-template-config-plugin.hyperbricks.yaml`
-
-What the current example does:
-
-1. Reads Markdown-like content from `data.content`
-2. Normalizes the string input
-3. Converts Markdown to HTML
-4. Builds a values map with `class` and `html`
-5. Returns a synthetic `<TREE>` containing a `<TEMPLATE>` brick
-
-Template:
+The template supplies the markup:
 
 ```html
 <section class="{{ .class }}">
@@ -115,46 +55,12 @@ Template:
 </section>
 ```
 
-## Use When
+The demo uses `safe` to insert the generated HTML. Its Markdown conversion does not sanitize the result, so keep this input trusted. The native `markdown` component provides sanitized Markdown rendering without a plugin; see `docs/MARKDOWN.md` in the repository root.
 
-Use this pattern when:
+## When to use it
 
-- the plugin needs server-side transformation before presentation
-- the output still fits naturally into template rendering
-- you want to keep HTML structure in template files
-- multiple plugin instances can share the same template contract
+Use this handoff when a plugin needs to validate, normalize, or calculate values before a template renders them. Several plugin instances can share the same template.
 
-## Avoid When
+If configured values are enough, use `template` directly. If you only need Markdown rendering, use the native `markdown` component. A `<TREE>` wrapper is optional for composing several returned components; this plugin does not use one.
 
-Avoid this pattern when:
-
-- a plain `<TEMPLATE>` brick with `values` is already enough
-- the plugin really must emit final HTML directly
-- the output is not presentational and should remain data-oriented
-- the logic belongs in a dedicated HyperBricks type instead of a custom plugin
-
-## Design Guidance
-
-Keep these boundaries strict:
-
-- plugin owns transformation
-- template owns markup
-- HyperBricks owns final rendering
-
-That separation is the main value of the pattern.
-
-## Suggested Naming Rule For Future Patterns
-
-Prefer names that describe the ownership model, not just the implementation detail.
-
-Good:
-
-- `Template Config Plugin`
-- `Plugin To Template Handoff`
-- `Markdown To Template Plugin`
-
-Weak:
-
-- `plugin renders html`
-- `template plugin`
-- `html plugin demo`
+See `docs/PLUGINS.md` in the repository root for building and enabling plugins.

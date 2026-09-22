@@ -69,7 +69,7 @@ app_section_rail_demo:
   - title: Section Rail Demo
   - content:
       - values:
-          page_title: Config-Driven Section Rail
+          page_title: Build sidebar navigation with section links
           page_intro: "A data map drives the whole rail. The template derives the HTMX fragment route, the swap target, and the subsection anchor links from the same config object."
           current_route: /section-rail-demo
           items:
@@ -87,7 +87,7 @@ app_rail_builder:
   - title: Builder
   - content:
       - values:
-          page_title: Config-Driven Section Rail
+          page_title: Build sidebar navigation with section links
           page_intro: "The Builder entry shows the simple variant: one config row, one fragment route, one target region."
           current_route: /rail-builder
           items:
@@ -101,7 +101,7 @@ app_rail_assets:
   - title: Assets
   - content:
       - values:
-          page_title: Config-Driven Section Rail
+          page_title: Build sidebar navigation with section links
           page_intro: The Assets entry shows how one rail item can carry subsection anchors that point into the swapped fragment content.
           current_route: /rail-assets
           items:
@@ -115,7 +115,7 @@ app_rail_status:
   - title: Status
   - content:
       - values:
-          page_title: Config-Driven Section Rail
+          page_title: Build sidebar navigation with section links
           page_intro: "The Status entry uses the same config shape but with a denser subsection list, which makes the rail act as a mini outline for the target panel."
           current_route: /rail-status
           items:

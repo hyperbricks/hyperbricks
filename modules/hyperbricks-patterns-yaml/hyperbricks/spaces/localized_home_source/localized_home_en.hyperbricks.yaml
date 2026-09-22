@@ -1,0 +1,16 @@
+# Generated HyperBricks Space: Localized home (English)
+localized_home_en:
+  - inherit: localized_home_source
+  - route: localized-spaces
+  - title: Localized home (English)
+  - htmltag: '<html lang="en">'
+  - head:
+      - meta:
+          description: A working English and German Spaces pattern with shared page structure.
+  - content:
+      - type: template
+      - values:
+          heading: One layout, two languages.
+          intro: A small documentation site can use one page source per content type while each language gets its own route and editable copy.
+          section_copy: Templates, navigation structure, and editing rules live in source YAML. Each Space owns its URL and translated copy.
+          section_heading: What stays shared?

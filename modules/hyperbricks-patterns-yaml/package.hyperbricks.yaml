@@ -25,6 +25,10 @@ hyperbricks:
     watch: true
     reload: true
     dashboard: false
+    frontend_editing:
+      spaces:
+        route: /__hyperbricks/spaces
+        write: true
 
   live:
     cache: 30s

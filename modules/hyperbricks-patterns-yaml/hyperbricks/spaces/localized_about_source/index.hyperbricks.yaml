@@ -1,0 +1,3 @@
+imports:
+  - "localized_about_en.hyperbricks.yaml"
+  - "localized_about_de.hyperbricks.yaml"

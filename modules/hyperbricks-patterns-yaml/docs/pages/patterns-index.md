@@ -13,12 +13,13 @@ If you are new to the module, this order has the gentlest learning curve:
 
 1. [HTMX canonical page + fragment demo](/status-demo)
 2. [MENU + HTMX demo](/menu-demo)
-3. [Config-driven section rail](/section-rail-demo)
+3. [Build sidebar navigation with section links](/section-rail-demo)
 4. [API fragment write demo](/api-fragment-write-demo)
 5. [Single plugin, many actions](/single-plugin-actions-demo)
 6. [Plugin vs API route split](/plugin-vs-api-route-split)
 7. [Guarded page demo](/guarded-demo)
 8. [Unpoly fragment demo](/unpoly-demo)
+9. [Localized pages with Spaces](/localized-spaces)
 
 ## Pattern index
 
@@ -32,9 +33,9 @@ For plugin-to-template composition, start with the [Template Config Plugin guide
 ### 2. MENU + HTMX demo
 
 - Live demo: [open](/menu-demo)
-- Notes: keep real page links in the menu, then layer HTMX on top for faster in-page transitions.
+- Notes: keep normal page links in the menu and use HTMX to replace the content panel and sidebar without reloading the document.
 
-### 3. Config-driven section rail
+### 3. Build sidebar navigation with section links
 
 - Live demo: [open](/section-rail-demo)
 - Notes: define rail behavior in data, then let the template derive links, targets, and subsection anchors.
@@ -64,6 +65,12 @@ For plugin-to-template composition, start with the [Template Config Plugin guide
 - Live demo: [open](/unpoly-demo)
 - Notes: reuse one panel in a full page and a fragment, then let Unpoly replace the panel using an explicit browser dependency and ordinary HTTP responses.
 
+### 9. Localized pages with Spaces
+
+- Live demo: [English](/localized-spaces) and [German](/localized-spaces/de)
+- Guide: [source, instance, and route ownership](/docs/localized-spaces)
+- Notes: two route-less sources share one template; four Spaces own their translated pages.
+
 ## Quick glossary
 
 ### Canonical page route
@@ -78,6 +85,6 @@ A route meant for partial page updates, often used by HTMX.
 
 A Go-based renderer or handler that can validate input, branch, compute values, and hand the result back into the HyperBricks pipeline.
 
-### `API_FRAGMENT_RENDER`
+### `api_fragment_render`
 
-A route shape that is useful when the page mostly forwards data to another service and renders the returned response.
+A component that owns a URL, calls a configured API endpoint, and renders the response as HTML. Use it for forms and other requests that need API-backed feedback.

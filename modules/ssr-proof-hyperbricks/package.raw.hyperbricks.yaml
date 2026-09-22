@@ -11,6 +11,7 @@ hyperbricks:
     cache: 30s
 
   server:
+    gomaxprocs: 4
     port: 8093
     beautify: false
     self_closing_tags: false

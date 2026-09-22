@@ -8,7 +8,11 @@ hyperbricks:
     watch_dirs: [hyperbricks, templates, resources]
     reload: false
     frontend_errors: false
-    dashboard: false
+    dashboard: true
+    frontend_editing:
+      enabled: true
+      spaces:
+        write: true
   server:
     port: 8125
     beautify: false

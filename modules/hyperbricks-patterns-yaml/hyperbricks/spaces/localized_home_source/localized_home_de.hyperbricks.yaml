@@ -1,0 +1,28 @@
+# Generated HyperBricks Space: Lokalisierte Startseite (Deutsch)
+localized_home_de:
+  - inherit: localized_home_source
+  - route: localized-spaces/de
+  - title: Lokalisierte Startseite (Deutsch)
+  - htmltag: '<html lang="de">'
+  - head:
+      - meta:
+          description: Ein funktionierendes Spaces-Muster mit englischen und deutschen Seiten.
+  - content:
+      - type: template
+      - values:
+          nav_label: Hauptnavigation
+          back_label: Musterübersicht
+          home_url: /localized-spaces/de
+          home_label: Start
+          about_url: /localized-spaces/de/ueber
+          about_label: Über
+          alternate_url: /localized-spaces
+          alternate_language: en
+          alternate_label: English
+          kicker: Spaces / Übersetzung
+          heading: Eine Vorlage, zwei Sprachen.
+          intro: Eine kleine Dokumentationsseite kann für jeden Seitentyp eine Quelle nutzen. Jede Sprache bekommt eine eigene Route und bearbeitbare Texte.
+          section_copy: Vorlagen, Navigationsstruktur und Bearbeitungsregeln stehen in der Quelle. Jeder Space besitzt seine URL und übersetzte Inhalte.
+          section_heading: Was bleibt gemeinsam?
+          guide_label: Musterbeschreibung lesen
+          editor_label: Spaces verwalten

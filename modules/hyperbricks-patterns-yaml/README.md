@@ -1,26 +1,58 @@
 # hyperbricks-patterns-yaml
 
-This module is a pattern library for HyperBricks.
+This module contains HyperBricks patterns. Its job is to give agents and developers small, working examples of common HyperBricks composition patterns so they can copy an existing shape instead of inventing a new one.
 
-Its job is to give agents and developers small, working examples of common HyperBricks composition patterns so they can copy an existing shape instead of inventing a new one.
+## Frontend behavior with HTMX
 
-## Browser Runtime
+HyperBricks renders the HTML on the server. Most examples in this module use
+**HTMX 4.0.0** in the browser to request that HTML and update part of the page
+without a full reload. The Unpoly example uses its own frontend integration.
 
-The shared browser entry imports the repository's pinned `htmx.org` 4.0.0 package. Request elements declare their own targets and `hx-swap="innerHTML"` so updates preserve the surrounding panel. These templates require no implicit attribute inheritance or compatibility extension.
+### Install the browser dependencies
 
-Install the repository's pinned browser dependencies once before starting this module from a clean checkout:
+From the HyperBricks repository root, install the versions recorded in the
+repository’s `package-lock.json`:
 
 ```sh
 npm ci
+export PATH="$PWD/node_modules/.bin:$PATH"
 ```
 
-HyperBricks then rebuilds the ignored browser bundle from `resources/js/` when the module starts.
+The module’s Tailwind plugin runs the `tailwindcss` CLI. `npm ci` installs it
+locally; the `PATH` setting above makes it available when starting HyperBricks
+from this terminal. Repeat that setting in a new terminal, or use a compatible
+standalone `tailwindcss` executable already on your `PATH`.
 
-The browser helpers use HTMX 4's colon-separated events. Request diagnostics read `event.detail.ctx.request.action`; section scrolling reads the settled swap task's target. Listeners are attached to `document`, including history updates, so they also work when Back or Forward restores page content.
+The entry file, `resources/js/main.js`, imports HTMX and the module’s browser
+helpers. HyperBricks uses the configured `esbuild` component to bundle these files
+into `static/js/bundle.min.main.js`. Edit the source files in `resources/js/`;
+the generated bundle is ignored by Git and can be rebuilt.
 
-After rebuilding browser assets, check `/status-demo` navigation and diagnostics, `/menu-demo` and `/docs` content/sidebar updates, section-rail anchors, and the login and write forms. The menu and docs templates use `hx-select-oob` to update their sibling sidebar after the content swap. The docs links also replace the article header. API refresh probes listen for the configured `HX-Trigger` events. GET buttons that restart the workflow do not need the enclosing form's values.
+### How page updates work
 
-The module follows HTMX 4's response handling: error responses can render in the declared feedback target, while `HX-Redirect` handles navigation when configured. See the official [HTMX 4 upgrade guide](https://raw.githubusercontent.com/bigskysoftware/htmx/v4.0.0/dist/skills/htmx-upgrade-from-htmx2.md) for the changed browser contract. The Unpoly demo keeps its own browser runtime.
+Request elements in the templates define which URL to request, which panel to
+update, and how to insert the returned HTML. For example, `hx-target` selects the
+panel and `hx-swap="innerHTML"` replaces its contents while keeping the panel itself.
+Each element declares the attributes it needs rather than relying on a parent
+element to supply them.
+
+The menu and documentation examples also update the sidebar with `hx-select-oob`.
+Documentation links update the article header as well. Login and API forms display
+feedback in their configured targets; `HX-Redirect` tells HTMX when to navigate to
+another page, and configured `HX-Trigger` events can request a panel refresh.
+
+The helpers in `resources/js/patterns-ui.js` handle request diagnostics, navigation
+status, and section scrolling. They listen for HTMX 4 events such as
+`htmx:after:swap` on `document`, so they continue to work after content is replaced
+or restored with Back and Forward.
+
+### Check after changing the frontend
+
+- On `/status-demo`, check navigation, request diagnostics, and Back and Forward.
+- On `/menu-demo` and `/docs`, check that content and sidebars update together,
+  documentation headers change, and section links scroll to the intended heading.
+- In the login and API write examples, check feedback, redirects, and panel refreshes.
+  Workflow restart buttons should work without submitting the enclosing form’s values.
 
 ## What This Module Contains
 
@@ -30,6 +62,7 @@ The module follows HTMX 4's response handling: error responses can render in the
 - `docs/pages/` Markdown articles rendered by the demo at `/docs`.
 - `docs/SOURCE_GUIDE.md` Developer-facing map of examples and source files.
 - `resources/` Shared CSS and JS used by the demo module.
+- `hyperbricks/spaces/` Managed English and German instances for the localization pattern.
 
 ## How Agents Should Use This
 
@@ -43,6 +76,7 @@ Use this module when you need a concrete example for:
 - config-driven section rails
 - guarded pages and login/forbidden flows
 - `API_FRAGMENT_RENDER` write actions
+- source-owned Spaces for localized pages
 - one plugin handling multiple route actions
 - deciding between `<PLUGIN>` and `API_FRAGMENT_RENDER`
 - plugin-to-template handoff with `<TEMPLATE>`
@@ -55,77 +89,27 @@ The rule is simple:
 
 ## Install Or Build The Plugins
 
-`HYPERBRICKS_LOCAL_PATH` is a development-only override for a local HyperBricks checkout. Normal plugin builds for an installed published release leave it unset. See [plugin build modes](../../docs/PLUGINS.md#local-runtime-development).
+Choose the workflow that matches the HyperBricks runtime you use to run this module. Run these commands from the project root. Native Go plugins must match their host's source, Go toolchain, platform, and shared dependencies.
 
-Repository maintainers can use the centralized [plugin build and smoke scripts](../../scripts/plugins/README.md). This focused command rebuilds the shared and module-local plugins against the current checkout:
+### 1. Install Remote Plugins For An Installed HyperBricks Release
 
-```sh
-scripts/plugins/build_hyperbricks_plugins.sh --module hyperbricks-patterns-yaml
-```
-
-Run the commands below from the project root with a compatible installed published `hyperbricks` release. A release installation does **not** require `HYPERBRICKS_LOCAL_PATH`; leave it unset. If you exported it in an earlier session, run `unset HYPERBRICKS_LOCAL_PATH` first.
-
-For local-source development, install the CLI from this checkout and set the override so plugins use the same source:
+Use this workflow when running a compatible published HyperBricks release installed on your machine. Leave `HYPERBRICKS_LOCAL_PATH` unset so plugin builds use that release's HyperBricks dependency:
 
 ```sh
-go install ./cmd/hyperbricks
-export HYPERBRICKS_LOCAL_PATH="$PWD"
+unset HYPERBRICKS_LOCAL_PATH
+hyperbricks plugin list
+hyperbricks plugin install markdown@2.0.0
+hyperbricks plugin install tailwindcss@2.0.0
 ```
 
-Ensure Go's installation directory is on `PATH`. Installing with `go install ./cmd/hyperbricks` still produces a local-source build. Native plugins and their host must use matching source, toolchains, and shared dependencies.
-
-Alternatively, run the local CLI directly:
-
-```sh
-HYPERBRICKS_LOCAL_PATH="$PWD" go run ./cmd/hyperbricks plugin build template-config-demo@2.0.0 --module hyperbricks-patterns-yaml
-go run ./cmd/hyperbricks start -m hyperbricks-patterns-yaml --port 8080
-```
-
-The override selects the **HyperBricks source checkout**, not the plugin source directory. Building a plugin from its source files for an installed published release does not itself require this override.
-
-### Option 1: Build Global Plugins From Source
-
-The package enables the Markdown and Tailwind CSS plugins. Their source directories belong under the project's `plugins/` directory. `HYPERBRICKS_LOCAL_PATH` does not change where plugin sources are found. The shared JavaScript bundle uses HyperBricks' native `esbuild` component and needs no Esbuild plugin.
-
-Rebuild global plugins whose source is already present:
+`plugin install` downloads source from the plugin registry's repository and compiles it locally for the installed runtime. It requires Git, Go, and network access. These versions match the module configuration. Use `plugin build` for later rebuilds of downloaded source, including after local edits:
 
 ```sh
 hyperbricks plugin build markdown@2.0.0
 hyperbricks plugin build tailwindcss@2.0.0
 ```
 
-If a source directory is missing, run the matching `install` command instead. This downloads and builds the source for the selected runtime:
-
-```sh
-# Run only for plugins whose source is missing from plugins/.
-hyperbricks plugin install markdown@2.0.0
-hyperbricks plugin install tailwindcss@2.0.0
-```
-
-Use `build` for subsequent rebuilds, including after editing plugin source.
-
-### Option 2: Install Published Global Plugins
-
-`plugin install` downloads source from the plugin registry's repository and compiles it locally; it does not download a prebuilt native binary. It requires Git, Go, and network access. Use the same runtime as the server; set `HYPERBRICKS_LOCAL_PATH` only when targeting a local HyperBricks checkout.
-
-For this module's configured versions, use the pinned `install` commands in Option 1. To select the highest published version instead, omit `@<version>`:
-
-```sh
-hyperbricks plugin list
-hyperbricks plugin install markdown
-hyperbricks plugin install tailwindcss
-```
-
-Omitting the version selects the highest semantic version in the registry, not necessarily the latest compatible version. Check the compatibility information before adopting it. The CLI does not treat `@latest` as an alias. Install the required version explicitly with `plugin install <name>@<version>`.
-
-If an installed version differs from this module's pinned versions, update both the `hyperbricks.plugins.enabled` entries in `package.hyperbricks.yaml` and the corresponding `plugin:` references in the module YAML. Use the exact **Config name** printed by the installer. Installation does not update those references automatically. Native `esbuild` is configured as an ordinary component in `hyperbricks/partials/esbuild.hyperbricks.yaml`, outside the plugin list.
-
-Installing again copies the published source into `plugins/<name>/<version>/`. Use `build` when you want to preserve and compile local source edits.
-
-### Build The Included Module Plugins
-
-
-The four demo plugins are module-local sources, not global registry installs. Their sources are included under this module's `plugins/` directory. Both global-plugin options above still require this step. Build them from the project root with `--module`:
+This module also includes four custom plugins under `modules/hyperbricks-patterns-yaml/plugins/`. They are local sources rather than registry installs. Build them for the same installed release:
 
 ```sh
 hyperbricks plugin build template-config-demo@2.0.0 --module hyperbricks-patterns-yaml
@@ -134,19 +118,41 @@ hyperbricks plugin build workflow-actions-demo@1.0.0 --module hyperbricks-patter
 hyperbricks plugin build route-split-demo@1.0.0 --module hyperbricks-patterns-yaml
 ```
 
-Both global and module builds write their compiled plugins to `bin/plugins/`. Module plugin names include `__hyperbricks-patterns-yaml`; the matching names are already enabled in `package.hyperbricks.yaml`. Check that each build reports `Build successful`.
-
-### Start Or Restart
-
-Stop any running instance, then start the module again to load the rebuilt plugins:
+Both shared and module plugin builds write compiled plugins to `bin/plugins/`. Module plugin names include `__hyperbricks-patterns-yaml`; the matching names are already enabled in `package.hyperbricks.yaml`. Check that each build reports `Build successful`, then start the module with the installed runtime:
 
 ```sh
 hyperbricks start -m hyperbricks-patterns-yaml --port 8080
 ```
 
-After changing the HyperBricks checkout, rerun `go install ./cmd/hyperbricks` if using the installed command, rebuild these plugins, and restart the server. Reloading a page does not replace a native plugin that is already loaded.
+Stop and restart the server after rebuilding plugins. Reloading a page does not replace a native plugin that is already loaded.
 
-The API write and route-split examples call mock endpoints on this same server. Their default base URL is `http://127.0.0.1:8080`. When using a different port, set the matching address before starting:
+If you choose other published plugin versions, update both `hyperbricks.plugins.enabled` in `package.hyperbricks.yaml` and the corresponding `plugin:` references in the module YAML. Use the exact **Config name** printed by the installer. Installation does not update those references automatically. See the [plugin CLI documentation](../../docs/PLUGINS.md#cli) for version selection.
+
+### 2. Build From The Local Repository During Development
+
+Use this workflow when developing in a HyperBricks source checkout. The shared plugins and the four module plugins are already included in the repository. Build them against that checkout:
+
+```sh
+scripts/plugins/build_hyperbricks_plugins.sh --module hyperbricks-patterns-yaml
+```
+
+The script uses the local CLI through `go run ./cmd/hyperbricks` and sets `HYPERBRICKS_LOCAL_PATH` to this checkout. It builds both the shared Markdown and Tailwind CSS plugins and this module's custom plugins. See the [plugin build and smoke scripts](../../scripts/plugins/README.md) for the available options.
+
+Start the module with the same local runtime:
+
+```sh
+go run ./cmd/hyperbricks start -m hyperbricks-patterns-yaml --port 8080
+```
+
+To rebuild one plugin while developing, use the local CLI directly:
+
+```sh
+HYPERBRICKS_LOCAL_PATH="$PWD" go run ./cmd/hyperbricks plugin build template-config-demo@2.0.0 --module hyperbricks-patterns-yaml
+```
+
+`HYPERBRICKS_LOCAL_PATH` points to the **HyperBricks checkout**, not the plugin directory. After changing runtime or plugin source, rebuild the plugins and restart the server. See [Local runtime development](../../docs/PLUGINS.md#local-runtime-development) for using a locally installed CLI instead of `go run`.
+
+The API write and route-split examples call mock endpoints on this same server. Their default base URL is `http://127.0.0.1:8080`. For a different port, set `PATTERNS_API_BASE_URL` to the matching address when starting your chosen runtime. For example, with an installed release:
 
 ```sh
 PATTERNS_API_BASE_URL=http://127.0.0.1:8129 hyperbricks start -m hyperbricks-patterns-yaml --port 8129
@@ -166,12 +172,13 @@ Read these files first:
 - `docs/pages/template-config-plugin.md` Use when a plugin should compute values and hand rendering to a template.
 - `docs/pages/htmx-canonical-fragment-demo.md` Use when full page routes and fragment routes must stay separate.
 - `docs/pages/menu-htmx-demo.md` Use when a real page menu should be progressively enhanced with HTMX.
-- `docs/pages/config-driven-section-rail.md` Use when section navigation should be described in config and rendered by a shared shell.
+- `docs/pages/sidebar-section-navigation.md` Use when section navigation should be described in config and rendered by a shared shell.
 - `docs/pages/api-fragment-write-demo.md` Use when a POST-style action should call a backend and render feedback.
 - `docs/pages/single-plugin-many-actions.md` Use when several explicit routes belong to one workflow plugin.
 - `docs/pages/plugin-vs-api-route-split.md` Use when choosing between a thin backend-forwarding route and a richer plugin-owned flow.
 - `docs/pages/guarded-page-demo.md` Use when public login, protected pages, and forbidden redirects must work together.
 - `docs/pages/unpoly-fragment-demo.md` Use when a browser client should replace a fragment through ordinary HTML routes and explicit HTTP response configuration.
+- `docs/pages/localized-spaces.md` Use when page sources need English and German Space instances with shared templates.
 
 ## Live Demo Routes
 
@@ -187,6 +194,7 @@ These are the current demo entry points:
 - `/plugin-vs-api-route-split`
 - `/guarded-demo`
 - `/unpoly-demo`
+- `/localized-spaces` and `/localized-spaces/de`
 
 ## When Adding A New Pattern
 
@@ -205,4 +213,4 @@ Keep the pattern small. It should teach one decision clearly.
 ## Project patterns guides
 
 - [Module source guide](docs/SOURCE_GUIDE.md): find this module’s examples and source files by topic.
-- [Recommended project patterns](../../docs/PROJECT_PATTERNS.md): choose and combine project structure, composition, server logic, and delivery patterns.
+- [How-to guides](../../docs/HOWTOS.md): short explanations and examples for module setup, templates, routes, server logic, and static export.

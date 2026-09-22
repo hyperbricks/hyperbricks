@@ -1,6 +1,6 @@
 # After Hours — Swup navigation demo
 
-A text-only guide to four fictional evening venues. HyperBricks renders six complete pages; Swup 4.10.0 animates navigation between them.
+A text-only guide to four fictional evening venues. HyperBricks renders six English guide pages plus German and Dutch café Spaces; Swup 4.10.0 animates navigation between them.
 
 ## Run
 
@@ -16,7 +16,7 @@ Open http://localhost:8125/. The library is vendored locally and native esbuild 
 
 ## Export a static ZIP
 
-From the repository root, render all six pages and package their assets:
+From the repository root, render all eight pages and package their assets:
 
 ```sh
 hyperbricks static -m navigation-demo-swup --force --zip --out exports/navigation-demo-swup
@@ -24,7 +24,7 @@ hyperbricks static -m navigation-demo-swup --force --zip --out exports/navigatio
 
 `--force` replaces the generated files in `modules/navigation-demo-swup/rendered/`. The command prints the path to a timestamped ZIP in `exports/navigation-demo-swup/`.
 
-Extract the ZIP into an empty folder. It contains `index.html`, five other HTML pages, and `static/` assets. HyperBricks is no longer needed to run this export. The Google font needs an internet connection; the bundled CSS, JavaScript and Swup work locally.
+Extract the ZIP into an empty folder. It contains `index.html`, seven other HTML pages, and `static/` assets. HyperBricks is no longer needed to run this export. The Google font needs an internet connection; the bundled CSS, JavaScript and Swup work locally.
 
 ## Serve the static export
 
@@ -73,7 +73,7 @@ PYTHON
 
 This uses Python's built-in [http.server](https://docs.python.org/3/library/http.server.html) for local previews.
 
-After starting either server, visit `/last-bite` directly, reload it, then follow the menu and use Back/Forward. All six routes should load their own content and retain the animated transitions when reduced motion is off.
+After starting either server, visit `/last-bite` directly, reload it, then follow the menu and use Back/Forward. All eight routes should load their own content and retain the animated transitions when reduced motion is off.
 
 ## Pages
 
@@ -84,6 +84,20 @@ After starting either server, visit `/last-bite` directly, reload it, then follo
 - `/last-bite`
 - `/how-it-works` — developer walkthrough of rendering, menus, transitions, and source files
 
+## Café translations with Spaces
+
+Night Owl Café is also an editable Spaces example:
+
+- `/night-owl-cafe` — English source page.
+- `/night-owl-cafe/de` — German Space inheriting `night_owl_cafe_page`.
+- `/night-owl-cafe/nl` — Dutch Space inheriting `night_owl_cafe_page`.
+
+The café page links all three languages. The neighbourhood guide remains English. The German and Dutch instances share the English source's template, styles, JavaScript, and editing rules; they override translated text, document language, title, and description metadata. They use a separate section to keep the main guide menu at four venues.
+
+Open [Manage Spaces](http://localhost:8125/__hyperbricks/spaces) to edit either translation. The How it works page links to each Space’s editing form and its contextual `?edit=true` page. Editor links and contextual edit mode use full-page navigation so the editor loads and exits cleanly. The development dashboard is at `/dashboard`. Local development writes are enabled in the package configuration. Save, then refresh the public page; the existing watcher reloads the source. The editor is not included in static exports.
+
+Editable fields live on the café source in `hyperbricks/app.hyperbricks.yaml`, under `body.values.content.editable`. The instances and their managed import index live in `hyperbricks/spaces/night_owl_cafe_page/`. See the [Spaces walkthrough](../../docs/SPACES.md#run-the-night-owl-cafe-example) for the runnable example and creation commands.
+
 ## How it is built
 
 Each page declares `section: guide_navigation` and an `index`. The `menu` component in `hyperbricks/partials/navigation.hyperbricks.yaml` generates the navigation using `sort: index`, including `aria-current="page"` for the active route. There is no JavaScript menu registry.
@@ -92,9 +106,9 @@ The developer page uses a separate `developer_navigation` section at the top-rig
 
 Swup replaces `#swup`, `#guide-navigation`, and `#developer-navigation` from the complete server response. The header shell and footer stay in place. Shared templates and esbuild assets follow the existing module pattern. Venue content is supplied through template values in `hyperbricks/app.hyperbricks.yaml`.
 
-CSS supplies a short fade and an 8px entrance with a small stagger on the directory rows. The OS reduced-motion preference disables animated visits, including when the preference changes while the page is open. A page-view hook focuses the new main region without scrolling and announces the page title. Swup handles document titles and browser history; default nonanimated history visits retain native scroll restoration. Cache is disabled so development edits appear on the next visit.
+CSS supplies a short fade and an 8px entrance with a small stagger on the directory rows. The OS reduced-motion preference disables animated visits, including when the preference changes while the page is open. A page-view hook focuses the new main region without scrolling and announces the page title. Swup handles document titles and browser history; the page-view hook updates the document language from the new main region; default nonanimated history visits retain native scroll restoration. Cache is disabled so development edits appear on the next visit.
 
-Every link works without JavaScript. Direct URLs and reloads return full HTML. External footer links use ordinary browser navigation. There are no forms, storage, API actions, image assets, or frontend-rendered pages.
+Every link works without JavaScript. Direct URLs and reloads return full HTML. External footer links use ordinary browser navigation. The public guide has no forms, storage, API actions, image assets, or frontend-rendered pages. The built-in development editor persists Space edits to YAML.
 
 ## Verify
 

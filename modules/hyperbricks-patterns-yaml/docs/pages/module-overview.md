@@ -21,9 +21,10 @@ These links open the rendered documentation in the running module:
 - [Guarded page](/docs/guarded-page-demo)
 - [API fragment write](/docs/api-fragment-write-demo)
 - [MENU + HTMX](/docs/menu-htmx-demo)
-- [Section rail](/docs/config-driven-section-rail)
+- [Build sidebar navigation with section links](/docs/sidebar-section-navigation)
 - [Single plugin, many actions](/docs/single-plugin-many-actions)
 - [Plugin vs API route split](/docs/plugin-vs-api-route-split)
 - [Unpoly fragment](/docs/unpoly-fragment-demo)
+- [Localized pages with Spaces](/docs/localized-spaces)
 
 The rendered articles are stored in `docs/pages/`. This overview uses `module-overview.md`; the documentation home uses `patterns-index.md`. The other guides use their route names with a `.md` extension. The module's top-level `README.md` contains build and startup instructions. These examples use HTMX 4.0.0; the Unpoly example loads its own pinned browser dependency.

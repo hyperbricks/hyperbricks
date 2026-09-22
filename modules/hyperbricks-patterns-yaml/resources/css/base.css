@@ -621,6 +621,10 @@
     @apply bg-stone-100 font-bold text-stone-900;
   }
 
+  [data-spaces-editor-link][hidden] {
+    display: none !important;
+  }
+
   .pattern-docs-panel {
     min-width: 0;
     padding: clamp(1.25rem, 3vw, 2.75rem);

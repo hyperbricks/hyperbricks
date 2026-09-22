@@ -1,0 +1,143 @@
+imports:
+  - partials/init-components.hyperbricks.yaml
+  - partials/assets.hyperbricks.yaml
+  - partials/site.hyperbricks.yaml
+vars:
+  links:
+    status_fragment: /hello-status
+overview_page:
+  - inherit: scaffold_page
+  - route: index
+  - title: Overview
+  - section: scaffold_navigation
+  - index: 10
+  - content:
+      - values:
+          body:
+            - type: template
+            - template:
+                file: overview.html
+templates_page:
+  - inherit: scaffold_page
+  - route: templates
+  - title: Templates
+  - section: scaffold_navigation
+  - index: 20
+  - content:
+      - values:
+          body:
+            - inherit: templates_content
+fragments_page:
+  - inherit: scaffold_page
+  - route: fragments
+  - title: Fragments
+  - section: scaffold_navigation
+  - index: 30
+  - content:
+      - values:
+          body:
+            - inherit: fragments_content
+templates_content:
+  - type: tree
+  - intro:
+      - type: html
+      - value: '<header class="page-intro"><p>Templates and values</p><h1>Templates</h1><p class="lede">Render HTML from inline templates, resource files and nested components.</p></header>'
+  - inline_template:
+      - type: template
+      - inline: |
+          <section class="hello-inline">
+            <p class="eyebrow">02 / Template values</p>
+            <h2>{{.heading}}</h2>
+            <p>{{.body}}</p>
+            <p>{{.resource_copy}}</p>
+            <p>{{.environment}}</p>
+          </section>
+      - values:
+          heading: Inline template
+          body: This block lives directly in hello-world.hyperbricks.yaml.
+          resource_copy:
+            file:
+              base: resources
+              path: init-copy.txt
+          environment:
+            env:
+              name: HYPERBRICKS_INIT_FIXTURE
+              default: Environment resolver fallback is active.
+  - nested_tree:
+      - type: tree
+      - enclose: <section class="hello-grid">|</section>
+      - article:
+          - type: tree
+          - enclose: <article class="hello-panel">|</article>
+          - heading:
+              - type: html
+              - value: <p class="eyebrow">03 / Composition</p><h2>Nested components</h2>
+          - copy:
+              - type: text
+              - value: Nested components render in their declared order. This heading and paragraph are composed inside a tree.
+fragments_content:
+  - type: tree
+  - intro:
+      - type: html
+      - value: '<header class="page-intro"><p>HTMX requests</p><h1>Fragments</h1><p class="lede">Request HTML from a fragment route and replace one element without reloading the page.</p></header>'
+  - template_file:
+      - inherit: init_card
+      - values:
+          heading: Template file
+          body: A reusable card rendered from an HTML template. Load a server response into the panel beside it.
+          cta:
+            - type: html
+            - value:
+                format: <a class="button" href="%s" hx-get="%s" hx-target="#hello-status" hx-swap="outerHTML" hx-disabled-elt="this">%s <span aria-hidden="true">→</span></a>
+                args:
+                  - var: links.status_fragment
+                  - var: links.status_fragment
+                  - config: myconf.demo.cta_label
+  - status_placeholder:
+      - type: html
+      - value: |
+          <aside id="hello-status" class="status-panel" aria-live="polite" aria-atomic="true">
+            <p class="eyebrow">Fragment response</p>
+            <h2>Ready to load</h2>
+            <p>Select <strong>Load status fragment</strong> to replace this panel with HTML from HyperBricks.</p>
+            <span class="status-badge">Waiting for a request</span>
+          </aside>
+status_fragment:
+  - type: fragment
+  - route: hello-status
+  - status:
+      - type: template
+      - template:
+          file: hello-status.html
+      - values:
+          title: Fragment loaded
+          body:
+            format: "%s rendered this HTML on the server. Only this panel was replaced; the rest of the page stayed in place."
+            args:
+              - config: myconf.demo.title
+new_hypermedia_test:
+  - type: hypermedia
+  - route: my-route
+  - title: Hello Test
+  - htmltag: <html lang="en">
+  - head:
+      - type: head
+      - title: Hello Test
+      - meta:
+          description: A short page description.
+          viewport: width=device-width, initial-scale=1
+  - content:
+      - type: template
+      - inline: |
+          <main>
+            <h1>{{.title}}</h1>
+            {{.body}}
+          </main>
+      - values:
+          title: Hello Test
+          body:
+            - type: markdown
+            - content: |
+                ## Welcome
+
+                Add your page content here.

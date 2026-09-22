@@ -10,7 +10,7 @@ This pattern shows a common builder flow in plain terms:
 - a template turns that data into visible feedback
 - the route can also tell other parts of the page to refresh
 
-The advanced HyperBricks term for that route shape is `<API_FRAGMENT_RENDER>`, but the important idea is simpler: this is a good pattern when the route mostly forwards data and renders the backend answer.
+The `api_fragment_render` component owns the action URL, calls the configured API, and renders its response through a template.
 
 ## Files
 
@@ -67,3 +67,5 @@ PATTERNS_API_BASE_URL=http://127.0.0.1:8129 hyperbricks start -m hyperbricks-pat
 Both mock outcomes return HTTP 200 with different JSON shapes. They do not save data. The result templates check the response shape before reading its fields and show feedback for an unavailable or unexpected upstream response.
 
 The configured `HX-Trigger` refresh event is sent for both success and conflict actions. The probe demonstrates event delivery, not confirmation that a save succeeded. A real integration should decide whether to refresh from the actual upstream outcome; `.Status` is the upstream status and can differ from the status returned to the browser.
+
+`api_fragment_render` bypasses the internal rendered-output cache and calls the upstream API on each request. `response.headers` configures the browser response; top-level `headers` configures the upstream request. See `docs/API_RENDER.md` and `docs/HTTP_RESPONSES.md` in the repository root.
