@@ -1,6 +1,6 @@
 {
   "name": "hyperbricks",
-  "version": "0.1.0+codex.20260921091239",
+  "version": "0.1.1+codex.20260922",
   "description": "Build, author, troubleshoot, and package HyperBricks applications with bundled workflow and developer handbooks.",
   "author": {
     "name": "Robbert Streng"
