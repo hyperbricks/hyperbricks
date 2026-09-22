@@ -182,6 +182,25 @@ Read these files first:
 
 ## Live Demo Routes
 
+The visual smoke suite captures the documented sections so changes to the
+patterns remain reviewable:
+
+<p>
+  <img src="docs/screenshots/docs.png" alt="Patterns index" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-readme.png" alt="README pattern" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-markdown-plugin.png" alt="Markdown plugin" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-template-config-plugin.png" alt="Template config plugin" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-htmx-canonical-fragment-demo.png" alt="Canonical HTMX fragment" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-guarded-page-demo.png" alt="Guarded page" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-api-fragment-write-demo.png" alt="API fragment write" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-menu-htmx-demo.png" alt="Menu HTMX" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-sidebar-section-navigation.png" alt="Sidebar section navigation" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-single-plugin-many-actions.png" alt="Single plugin actions" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-plugin-vs-api-route-split.png" alt="Plugin versus API route split" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-unpoly-fragment-demo.png" alt="Unpoly fragment" style="height:200px;width:auto">
+  <img src="docs/screenshots/docs-localized-spaces.png" alt="Localized Spaces" style="height:200px;width:auto">
+</p>
+
 These are the current demo entry points:
 
 - `/index`

@@ -14,6 +14,9 @@ step. Follow the module's own README when it has one.
 Repository maintainers can use the centralized [plugin build and smoke
 scripts](../scripts/plugins/README.md) to rebuild the source-matched plugin set
 against the current checkout.
+
+
+
 ## Module index
 
 
@@ -36,6 +39,19 @@ Follow each module’s README for plugin builds, external services, and startup 
 | [`todo-demo-unpoly`](todo-demo-unpoly/) | Frontend integration | The same Little List application adapted to Unpoly. |
 | [`unpoly-guard-demo`](unpoly-guard-demo/) | Frontend integration | Protected full-page and fragment routes with an application-owned authentication plugin and Unpoly-enhanced navigation. |
 | [`hyperbricks-patterns-yaml`](hyperbricks-patterns-yaml/) | Pattern reference | Runnable patterns for page and fragment composition, menus, section rails, guards, API actions, plugins, HTMX, Unpoly, and rendered Markdown documentation. |
+
+## Screenshots
+
+<p>
+  <a href="esbuild-demo/docs/screenshots/home.png"><img src="esbuild-demo/docs/screenshots/home.png" alt="esbuild demo" style="height:200px;width:auto"></a>
+  <a href="navigation-demo-swup/docs/screenshots/home.png"><img src="navigation-demo-swup/docs/screenshots/home.png" alt="Swup navigation demo" style="height:200px;width:auto"></a>
+  <a href="todo-demo-htmx/docs/screenshots/home.png"><img src="todo-demo-htmx/docs/screenshots/home.png" alt="HTMX todo demo" style="height:200px;width:auto"></a>
+  <a href="todo-demo-swup/docs/screenshots/home.png"><img src="todo-demo-swup/docs/screenshots/home.png" alt="Swup todo demo" style="height:200px;width:auto"></a>
+  <a href="todo-demo-turbo/docs/screenshots/home.png"><img src="todo-demo-turbo/docs/screenshots/home.png" alt="Turbo todo demo" style="height:200px;width:auto"></a>
+  <a href="todo-demo-unpoly/docs/screenshots/home.png"><img src="todo-demo-unpoly/docs/screenshots/home.png" alt="Unpoly todo demo" style="height:200px;width:auto"></a>
+  <a href="unpoly-guard-demo/docs/screenshots/home.png"><img src="unpoly-guard-demo/docs/screenshots/home.png" alt="Unpoly guard demo" style="height:200px;width:auto"></a>
+  <a href="hyperbricks-patterns-yaml/docs/screenshots/docs.png"><img src="hyperbricks-patterns-yaml/docs/screenshots/docs.png" alt="HyperBricks patterns documentation" style="height:200px;width:auto"></a>
+</p>
 
 
 ### Fixture modules 

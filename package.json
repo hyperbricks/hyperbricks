@@ -15,5 +15,8 @@
     "@playwright/test": "^1.59.1",
     "daisyui": "^5.5.19",
     "tailwindcss": "^4.2.4"
+  },
+  "scripts": {
+    "test:module-screenshots": "node scripts/test_module_screenshots.mjs"
   }
 }
