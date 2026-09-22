@@ -58,6 +58,13 @@ cd "${REPO_ROOT}"
 
 echo "Running all tests..."
 
+if [[ "${WITH_DOCS}" == "true" ]]; then
+  echo "Regenerating documentation before tests..."
+  bash "${SCRIPT_DIR}/build_docs.sh"
+else
+  echo "Skipping documentation generation. Pass --with-docs to regenerate docs before tests."
+fi
+
 if [[ "${WITH_PLUGINS}" == "true" ]]; then
   echo "Installing root npm dependencies for plugin-backed assets..."
   npm i
@@ -85,13 +92,6 @@ bash "${SCRIPT_DIR}/run_template_tests.sh"
 
 echo "Running marker tests..."
 bash "${SCRIPT_DIR}/run_marker_tests.sh"
-
-if [[ "${WITH_DOCS}" == "true" ]]; then
-  echo "Regenerating documentation..."
-  bash "${SCRIPT_DIR}/build_docs.sh"
-else
-  echo "Skipping documentation generation. Pass --with-docs to regenerate docs."
-fi
 
 echo "Running header module tests..."
 bash "${SCRIPT_DIR}/test_headers_module.sh"
