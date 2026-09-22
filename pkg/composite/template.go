@@ -22,10 +22,11 @@ import (
 // TemplateOptions is the reusable template field set used by <TEMPLATE> and
 // template-bearing composites.
 type TemplateOptions struct {
+	Source           *shared.SourceContext  `mapstructure:"@source" json:"-" exclude:"true"`
 	Template         string                 `mapstructure:"template" json:"template,omitempty" description:"Loads contents of a template file in the modules template directory" example:"{!{template-template.hyperbricks.yaml}}"`
 	Inline           string                 `mapstructure:"inline" json:"inline,omitempty" description:"Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines." example:"{!{template-inline.hyperbricks.yaml}}"`
-	AllowedQueryKeys []string               `mapstructure:"querykeys" json:"querykeys,omitempty" description:"Set allowed proxy query keys" example:"{!{template-querykeys.hyperbricks.yaml}}"`
-	QueryParams      map[string]string      `mapstructure:"queryparams" json:"queryparams,omitempty" description:"Set proxy query keys in the configuration" example:"{!{template-queryparams.hyperbricks.yaml}}"`
+	AllowedQueryKeys []string               `mapstructure:"querykeys" json:"querykeys,omitempty" description:"Incoming URL query keys exposed as .Params. Omitted: id, name, order; empty list: none." example:"{!{template-querykeys.hyperbricks.yaml}}"`
+	QueryParams      map[string]string      `mapstructure:"queryparams" json:"queryparams,omitempty" description:"Reserved; currently does not populate template .Params." example:"{!{template-queryparams.hyperbricks.yaml}}"`
 	Values           map[string]interface{} `mapstructure:"values" json:"values,omitempty" description:"Key-value pairs for template rendering" example:"{!{template-values.hyperbricks.yaml}}"`
 	Enclose          string                 `mapstructure:"enclose" json:"enclose,omitempty" description:"Enclosing property for the template rendered output" example:"{!{template-enclose.hyperbricks.yaml}}"`
 }
@@ -38,6 +39,7 @@ func (opts *TemplateOptions) ToRenderMap() map[string]interface{} {
 	}
 
 	out := make(map[string]interface{})
+	opts.Source.Apply(out)
 	if opts.Template != "" {
 		out["template"] = opts.Template
 	}
@@ -66,7 +68,8 @@ func (opts *TemplateOptions) ToRenderMap() map[string]interface{} {
 // TemplateConfig represents the configuration for a TEMPLATE type.
 type TemplateConfig struct {
 	shared.Composite   `mapstructure:",squash"`
-	MetaDocDescription string `mapstructure:"@doc" description:"Template-backed component that binds scalar values and value-mounted bricks into generated HTML." example:"{!{template-@doc.hyperbricks.yaml}}"`
+	MetaDocDescription string      `mapstructure:"@doc" description:"Template-backed component that binds scalar values and value-mounted bricks into generated HTML." example:"{!{template-@doc.hyperbricks.yaml}}"`
+	Editable           interface{} `mapstructure:"editable" json:"-" description:"Source-owned Spaces editing metadata for this template's values. Not rendered as content."`
 	TemplateOptions    `mapstructure:",squash"`
 }
 
@@ -160,14 +163,11 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 			// Attempt to load the file from disk and cache it.
 			fileContent, err := GetTemplateFileContent(config.Template)
 			if err != nil {
-				errors = append(errors, shared.ComponentError{
-					Hash: shared.GenerateHash(),
-					File: config.Composite.Meta.HyperBricksFile,
-					Path: config.Composite.Meta.HyperBricksPath,
-					Key:  config.Composite.Meta.HyperBricksKey,
-					Type: "<TEMPLATE>",
-					Err:  fmt.Errorf("failed to load template file '%s'|%v", config.Template, err).Error(),
-				})
+				diagnostic := shared.ResourceDiagnostic(fmt.Errorf("failed to load template file '%s': %w", config.Template, err), config.Composite.Meta, "load", "template")
+				if diagnostic.Resource == "" {
+					diagnostic.Resource = config.Template
+				}
+				errors = append(errors, diagnostic)
 			} else {
 				templateContent = fileContent
 			}
@@ -259,9 +259,9 @@ func applyTemplate(templateStr string, data map[string]interface{}, config Templ
 	var errors []error
 
 	// Parse the template string
-	tmpl, err := shared.ParsedGenericTemplate(templateStr)
+	tmpl, err := shared.ParsedNamedTemplate(config.Composite.Meta.TemplateName(config.Template), templateStr)
 	if err != nil {
-		errors = append(errors, fmt.Errorf("error parsing template: %v", err))
+		errors = append(errors, shared.ResourceDiagnostic(fmt.Errorf("error parsing template: %w", err), config.Composite.Meta, "prepare", "template"))
 		return "", errors
 	}
 
@@ -269,7 +269,7 @@ func applyTemplate(templateStr string, data map[string]interface{}, config Templ
 	var output bytes.Buffer
 	err = tmpl.Execute(&output, data)
 	if err != nil {
-		errors = append(errors, fmt.Errorf("error executing template: %v", err))
+		errors = append(errors, shared.ResourceDiagnostic(fmt.Errorf("error executing template: %w", err), config.Composite.Meta, "render", "template"))
 		return "", errors
 	}
 

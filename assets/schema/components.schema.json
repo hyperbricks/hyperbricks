@@ -439,7 +439,7 @@
           "go_name": "Authenticated",
           "go_type": "bool",
           "kind": "bool",
-          "description": "Require an authenticated request before rendering",
+          "description": "Require a resolved token before rendering; presence alone does not validate its signature, expiry, or session.",
           "authoring": {
             "label": "Authenticated",
             "control": "checkbox",
@@ -1697,7 +1697,7 @@
           "go_name": "Cache",
           "go_type": "string",
           "kind": "string",
-          "description": "Cache expire string",
+          "description": "Legacy field; does not override the process-wide hyperbricks.live.cache duration.",
           "example": "{!{fragment-cache.hyperbricks.yaml}}",
           "authoring": {
             "label": "Cache",
@@ -1992,7 +1992,7 @@
           "go_name": "Authenticated",
           "go_type": "bool",
           "kind": "bool",
-          "description": "Require an authenticated request before rendering",
+          "description": "Require a resolved token before rendering; presence alone does not validate its signature, expiry, or session.",
           "authoring": {
             "label": "Authenticated",
             "control": "checkbox",
@@ -2193,7 +2193,7 @@
           "go_type": "[]string",
           "kind": "list",
           "json_name": "querykeys",
-          "description": "Set allowed proxy query keys",
+          "description": "Incoming URL query keys exposed as .Params. Omitted: id, name, order; empty list: none.",
           "example": "{!{template-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
@@ -2212,7 +2212,7 @@
           "go_type": "map[string]string",
           "kind": "map",
           "json_name": "queryparams",
-          "description": "Set proxy query keys in the configuration",
+          "description": "Reserved; currently does not populate template .Params.",
           "example": "{!{template-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",
@@ -2550,9 +2550,9 @@
           "path": "meta",
           "key": "meta",
           "go_name": "MetaData",
-          "go_type": "map[string]string",
+          "go_type": "map[string]interface {}",
           "kind": "map",
-          "description": "Metadata for the head section",
+          "description": "Metadata for the head section; null suppresses inherited entries",
           "example": "{!{head-meta.hyperbricks.yaml}}",
           "authoring": {
             "label": "Meta",
@@ -2835,7 +2835,7 @@
           "go_name": "Cache",
           "go_type": "string",
           "kind": "string",
-          "description": "Cache expire string",
+          "description": "Legacy field; does not override the process-wide hyperbricks.live.cache duration.",
           "example": "{!{hypermedia-cache.hyperbricks.yaml}}",
           "authoring": {
             "label": "Cache",
@@ -3184,7 +3184,7 @@
           "go_name": "Authenticated",
           "go_type": "bool",
           "kind": "bool",
-          "description": "Require an authenticated request before rendering",
+          "description": "Require a resolved token before rendering; presence alone does not validate its signature, expiry, or session.",
           "authoring": {
             "label": "Authenticated",
             "control": "checkbox",
@@ -3441,7 +3441,7 @@
           "go_type": "[]string",
           "kind": "list",
           "json_name": "querykeys",
-          "description": "Set allowed proxy query keys",
+          "description": "Incoming URL query keys exposed as .Params. Omitted: id, name, order; empty list: none.",
           "example": "{!{template-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
@@ -3460,7 +3460,7 @@
           "go_type": "map[string]string",
           "kind": "map",
           "json_name": "queryparams",
-          "description": "Set proxy query keys in the configuration",
+          "description": "Reserved; currently does not populate template .Params.",
           "example": "{!{template-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",
@@ -4258,6 +4258,154 @@
       ]
     },
     {
+      "name": "Markdown",
+      "token": "<MARKDOWN>",
+      "category": "component",
+      "child_model": "none",
+      "config_struct": "github.com/hyperbricks/hyperbricks/pkg/component.MarkdownConfig",
+      "description": "Sanitized Markdown from declared text or bounded resources-relative files; no plugin or request-driven file selection.",
+      "authoring": {
+        "groups": [
+          {
+            "key": "content",
+            "label": "Content",
+            "fields": [
+              "content",
+              "file",
+              "max_bytes",
+              "class",
+              "enclose",
+              "editable"
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "path": "attributes",
+          "key": "attributes",
+          "go_name": "ExtraAttributes",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Extra attributes like id, data-role, data-action",
+          "authoring": {
+            "label": "Attributes",
+            "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "class",
+          "key": "class",
+          "go_name": "Class",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Optional escaped CSS class for a wrapping div. Empty emits only Markdown HTML.",
+          "authoring": {
+            "label": "Class",
+            "control": "text",
+            "group": "content",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "content",
+          "key": "content",
+          "go_name": "Content",
+          "go_type": "*string",
+          "kind": "string",
+          "description": "Inline Markdown text, including an explicitly empty string. Mutually exclusive with file. The file resolver can also supply content at load time.",
+          "authoring": {
+            "label": "Content",
+            "control": "text",
+            "group": "content",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true,
+              "scalar_style": "literal",
+              "scalar_language": "markdown"
+            }
+          }
+        },
+        {
+          "path": "editable",
+          "key": "editable",
+          "go_name": "Editable",
+          "go_type": "interface {}",
+          "kind": "interface",
+          "description": "Source-owned Spaces metadata for this component's content or file field. Not rendered.",
+          "authoring": {
+            "label": "Editable",
+            "control": "text",
+            "group": "content",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "enclose",
+          "key": "enclose",
+          "go_name": "Enclose",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Wrap rendered output using prefix|suffix syntax",
+          "authoring": {
+            "label": "Enclose",
+            "control": "textarea",
+            "group": "content",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true,
+              "scalar_style": "literal",
+              "scalar_language": "html"
+            }
+          }
+        },
+        {
+          "path": "file",
+          "key": "file",
+          "go_name": "File",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Clean resources-relative .md or .markdown reference, read at render time. No absolute paths, remote URLs, or query parameter selection.",
+          "authoring": {
+            "label": "File",
+            "control": "asset",
+            "group": "content",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "max_bytes",
+          "key": "max_bytes",
+          "go_name": "MaxBytes",
+          "go_type": "int64",
+          "kind": "int",
+          "description": "Maximum input bytes. Default 1048576 (1 MiB); must be between 1 and 20971520 when specified.",
+          "authoring": {
+            "label": "Max Bytes",
+            "control": "number",
+            "group": "content",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Menu",
       "token": "<MENU>",
       "category": "menu",
@@ -4667,6 +4815,22 @@
       },
       "fields": [
         {
+          "path": "editable",
+          "key": "editable",
+          "go_name": "Editable",
+          "go_type": "interface {}",
+          "kind": "interface",
+          "description": "Source-owned Spaces editing metadata for this template's values. Not rendered as content.",
+          "authoring": {
+            "label": "Editable",
+            "control": "text",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
           "path": "enclose",
           "key": "enclose",
           "go_name": "Enclose",
@@ -4715,7 +4879,7 @@
           "go_type": "[]string",
           "kind": "list",
           "json_name": "querykeys",
-          "description": "Set allowed proxy query keys",
+          "description": "Incoming URL query keys exposed as .Params. Omitted: id, name, order; empty list: none.",
           "example": "{!{template-querykeys.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query keys",
@@ -4734,7 +4898,7 @@
           "go_type": "map[string]string",
           "kind": "map",
           "json_name": "queryparams",
-          "description": "Set proxy query keys in the configuration",
+          "description": "Reserved; currently does not populate template .Params.",
           "example": "{!{template-queryparams.hyperbricks.yaml}}",
           "authoring": {
             "label": "Query params",
@@ -4849,7 +5013,7 @@
           "go_name": "Value",
           "go_type": "string",
           "kind": "string",
-          "description": "The paragraph content",
+          "description": "Required text emitted unchanged, without HTML escaping. Use trusted configuration content.",
           "example": "{!{text-value.hyperbricks.yaml}}",
           "validate": "required",
           "required": true,
@@ -4872,7 +5036,7 @@
       "category": "composite",
       "child_model": "tree",
       "config_struct": "github.com/hyperbricks/hyperbricks/pkg/composite.TreeConfig",
-      "description": "Ordered container that renders nested child items in key order.",
+      "description": "Ordered container that places child output in YAML sequence order; runtime maps without order metadata use alphanumeric key order.",
       "authoring": {
         "groups": [
           {

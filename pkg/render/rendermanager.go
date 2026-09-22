@@ -35,7 +35,14 @@ func NewRenderManager() *RenderManager {
 }
 
 // Render renders content based on its type using registered components or plugins.
-func (rm *RenderManager) Render(rendererType string, data map[string]interface{}, ctx context.Context) (string, []error) {
+func (rm *RenderManager) Render(rendererType string, data map[string]interface{}, ctx context.Context) (output string, diagnostics []error) {
+	defer func() {
+		if len(diagnostics) > 0 {
+			meta := shared.MetaFromConfig(data)
+			meta.ConfigType = rendererType
+			diagnostics = shared.EnrichDiagnostics(diagnostics, meta, "render")
+		}
+	}()
 	var errors []error
 	// Create a TypeRequest for the TypeFactory
 	request := typefactory.TypeRequest{
@@ -54,6 +61,7 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 			Key:      renderMetadataValue(data, "hyperbrickskey"),
 			Type:     rendererType,
 			Err:      fmt.Sprintf("cannot create component instance for %s: %v", rendererType, err),
+			Cause:    err,
 			Rejected: true,
 		})
 		// When type is not registerd show tag with error...
@@ -66,6 +74,7 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
 			Err:      s,
+			Level:    "WARNING",
 			Rejected: false,
 		})
 	}

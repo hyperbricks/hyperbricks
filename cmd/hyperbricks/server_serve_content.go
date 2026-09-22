@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -109,15 +108,15 @@ func httpConfigData(raw interface{}) (interface{}, error) {
 }
 
 func resolveRouteGuard(config map[string]interface{}) (composite.RouteGuardConfig, bool, error) {
-	var guard composite.RouteGuardConfig
 	configType, _ := config["@type"].(string)
 	if !routeSupportsGuard(configType) {
-		return guard, false, nil
+		return composite.RouteGuardConfig{}, false, nil
 	}
 	raw, ok := config["guard"]
 	if !ok || raw == nil {
-		return guard, false, nil
+		return composite.RouteGuardConfig{}, false, nil
 	}
+	var guard composite.RouteGuardConfig
 	if err := decodeHTTPConfig(raw, &guard); err != nil {
 		return guard, true, fmt.Errorf("invalid guard configuration: %w", err)
 	}
@@ -163,7 +162,7 @@ func configurationErrorResponse(err error) RenderContent {
 	logging.GetLogger().Errorw("Invalid route HTTP configuration", "error", err)
 	return RenderContent{Content: "invalid route HTTP configuration", NoCache: true,
 		Status: http.StatusInternalServerError, ContentType: "text/plain; charset=utf-8",
-		Headers: map[string]string{"Cache-Control": "no-store"}}
+		Headers: map[string]string{"Cache-Control": "no-store"}, Diagnostics: []error{shared.Diagnostic(err, shared.Meta{}, "serve")}}
 }
 
 func requestHeadersMatch(r *http.Request, expected map[string]string) bool {
@@ -438,6 +437,7 @@ func evaluateRouteGuard(config map[string]interface{}, r *http.Request) (*Render
 	if err != nil {
 		response := RenderContent{
 			Content:     "guard authorization failed",
+			Diagnostics: []error{shared.Diagnostic(fmt.Errorf("guard authorization service could not be reached"), shared.MetaFromConfig(config), "serve")},
 			NoCache:     true,
 			ContentType: "text/plain; charset=utf-8",
 			Status:      http.StatusBadGateway,
@@ -460,6 +460,7 @@ func evaluateRouteGuard(config map[string]interface{}, r *http.Request) (*Render
 	default:
 		response := RenderContent{
 			Content:     "guard authorization rejected the request",
+			Diagnostics: []error{shared.Diagnostic(fmt.Errorf("guard authorization service returned HTTP %d", status), shared.MetaFromConfig(config), "serve")},
 			NoCache:     true,
 			ContentType: "text/plain; charset=utf-8",
 			Status:      http.StatusBadGateway,
@@ -964,22 +965,50 @@ type RenderContent struct {
 	RequestID   string
 	ErrorCount  int
 	Handled     *shared.HandledResponse
+	Diagnostics []error
+	outcome     *diagnosticOutcome
 }
 
-func renderContent(w http.ResponseWriter, route string, r *http.Request, requestID string) RenderContent {
+func renderContent(w http.ResponseWriter, route string, r *http.Request, requestID string) (result RenderContent) {
 	hbConfig := getHyperBricksConfiguration()
 	nocache := false
 	status := http.StatusOK
 
-	_config, routePlan, found := getConfigAndPlan(route)
+	_config, routePlan, sourceErrors, generation, found := getRenderSnapshot(route)
+	outcome := newDiagnosticOutcome(r, requestID, route, generation, _config)
+	var renderErrors []error
+	defer func() {
+		result.Diagnostics = append(result.Diagnostics, renderErrors...)
+		if len(result.Diagnostics) > 0 {
+			result.Diagnostics = shared.EnrichDiagnostics(result.Diagnostics, shared.MetaFromConfig(_config), "render")
+		}
+		result.ErrorCount = len(collectRenderDiagnostics(result.Diagnostics))
+		logRenderDiagnostics(r, requestID, route, result.Diagnostics)
+		result.RequestID = requestID
+		if shared.HasDiagnosticFailure(result.Diagnostics) || result.Status >= 500 {
+			result.NoCache = true
+			if result.Headers == nil {
+				result.Headers = make(map[string]string)
+			}
+			result.Headers["Cache-Control"] = "no-store"
+			delete(result.Headers, "ETag")
+		}
+		if outcome != nil {
+			outcome.errors = result.Diagnostics
+			outcome.checked = outcome.checked || len(result.Diagnostics) > 0
+			result.outcome = outcome
+			if deferred, _ := r.Context().Value(deferredDiagnosticsKey{}).(bool); !deferred {
+				commitRenderDiagnostics(r, outcome)
+			}
+		}
+	}()
 	headers := map[string]string(nil)
 	cookies := []string(nil)
 
 	if !found {
-		sourceErrors := getConfigSourceErrors()
 		if len(sourceErrors) > 0 && hbConfig.Mode != shared.LIVE_MODE {
-			logging.GetLogger().Info("Config not found for route; returning source load diagnostics", "route", route, "error_count", len(sourceErrors))
-			recordRenderDiagnostics(r, requestID, route, sourceErrors)
+			logging.GetLogger().Debugw("Route source failed to load", "route", route, "error_count", len(sourceErrors))
+			renderErrors = sourceErrors
 			return RenderContent{
 				Content:     missingRouteSourceErrorContent(route, sourceErrors),
 				NoCache:     true,
@@ -989,11 +1018,15 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 				ErrorCount:  len(sourceErrors),
 			}
 		}
-		__config, fallbackPlan, _found := getConfigAndPlan("404")
+		__config, fallbackPlan, fallbackErrors, fallbackGeneration, _found := getRenderSnapshot("404")
 		if _found {
-			logging.GetLogger().Info("Redirecting to 404", " from ", route)
+			logging.GetLogger().Debugw("Using not-found route", "route", route)
 			_config = __config
 			routePlan = fallbackPlan
+			sourceErrors = fallbackErrors
+			if outcome != nil {
+				outcome.generation, outcome.config = fallbackGeneration, __config
+			}
 			status = http.StatusNotFound
 		} else {
 			if route == "favicon.ico" {
@@ -1005,7 +1038,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 					RequestID:   requestID,
 				}
 			}
-			logging.GetLogger().Info("Config not found for route: ", route)
+			logging.GetLogger().Debugw("Route not found", "route", route)
 			return RenderContent{
 				Content:     fmt.Sprintf("Expected Hyperbricks '%s' was not found.", route),
 				NoCache:     false,
@@ -1067,6 +1100,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	if needsAPIRequestContext {
 		requestBodyBytes, err := cloneRequestBody(r)
 		if err != nil {
+			renderErrors = []error{shared.Diagnostic(errRequestBodyRead, shared.MetaFromConfig(_config), "serve")}
 			return apiRequestPreparationError(requestID)
 		} else if requestBodyBytes != nil {
 			requestBodyReader = io.NopCloser(bytes.NewReader(requestBodyBytes))
@@ -1074,6 +1108,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 
 		// Parse form data before using r.Form.
 		if err := r.ParseForm(); err != nil {
+			renderErrors = []error{shared.Diagnostic(fmt.Errorf("failed to parse request form"), shared.MetaFromConfig(_config), "serve")}
 			return apiRequestPreparationError(requestID)
 		}
 	}
@@ -1094,25 +1129,39 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	// ============ END OF API CONTEXT AND TOKEN CAPTURE ============
 
 	var renderOutput string
-	var renderErrors []error
+	if outcome != nil {
+		outcome.checked = true
+	}
 	if routePlan != nil {
 		renderOutput, renderErrors = routePlan.Render(ctx)
 	} else {
 		renderOutput, renderErrors = rm.Render(configCopy["@type"].(string), configCopy, ctx)
 	}
-	renderErrors = append(renderErrors, getRouteSourceErrors(route)...)
+	renderErrors = append(renderErrors, sourceErrors...)
 	handledResponse, captureErr := handledCapture.Result()
 	apiResponseCookies := apiResponseCookieCapture.Result()
 	if captureErr != nil {
 		renderErrors = append(renderErrors, captureErr)
 	}
 
-	if resolveBeautify(configCopy, hbConfig.Server.Beautify) {
-		renderOutput = gohtml.Format(renderOutput)
+	// Contextual editing is a native development response enhancement. It never
+	// decorates static exports, denied/error responses, streams or non-HTML output.
+	if !commands.RenderStatic && handledResponse == nil && captureErr == nil && len(renderErrors) == 0 &&
+		status == http.StatusOK && configCopy["@type"] == composite.HyperMediaConfigGetName() &&
+		(contentType == "" || strings.EqualFold(strings.TrimSpace(strings.SplitN(contentType, ";", 2)[0]), "text/html")) {
+		decorated, active, editErr := spacesEditor.ContextualPage(r, route, renderOutput)
+		if active {
+			renderOutput = decorated
+			nocache = true
+			headers["Cache-Control"] = "no-store"
+		}
+		if editErr != nil {
+			renderErrors = append(renderErrors, fmt.Errorf("Spaces contextual editing: %w", editErr))
+		}
 	}
 
-	if hbConfig.Mode != shared.LIVE_MODE {
-		recordRenderDiagnostics(r, requestID, route, renderErrors)
+	if resolveBeautify(configCopy, hbConfig.Server.Beautify) {
+		renderOutput = gohtml.Format(renderOutput)
 	}
 
 	if captureErr != nil {
@@ -1318,14 +1367,14 @@ func FrontEndErrorRender(renderErrors []error) string {
 		"safe": func(s string) template.HTML { return template.HTML(s) },
 	}).Parse(errorTemplate)
 	if err != nil {
-		log.Println("Error parsing template:", err)
+		logging.GetLogger().Errorw("Error parsing diagnostic template", "error", err)
 		return ""
 	}
 
 	// Render the template to a string
 	var output bytes.Buffer
 	if err := tmpl.Execute(&output, data); err != nil {
-		log.Println("Error rendering template:", err)
+		logging.GetLogger().Errorw("Error rendering diagnostic template", "error", err)
 		return ""
 	}
 
@@ -1394,40 +1443,21 @@ func renderDiagnosticsURL(r *http.Request, requestID string) string {
 }
 
 func recordRenderDiagnostics(r *http.Request, requestID string, route string, renderErrors []error) {
-	if len(renderErrors) == 0 {
+	logRenderDiagnostics(r, requestID, route, renderErrors)
+	renderDiagnosticsMutex.RLock()
+	generation := diagnosticsGeneration
+	renderDiagnosticsMutex.RUnlock()
+	outcome := newDiagnosticOutcome(r, requestID, route, generation, nil)
+	if outcome == nil {
 		return
 	}
-
-	diagnostics := RenderDiagnostics{
-		RequestID: requestID,
-		Route:     route,
-		CreatedAt: time.Now().UTC(),
-		Errors:    collectRenderDiagnostics(renderErrors),
-	}
-
-	renderDiagnosticsMutex.Lock()
-	renderDiagnostics[requestID] = diagnostics
-	renderDiagnosticsOrder = append(renderDiagnosticsOrder, requestID)
-	for len(renderDiagnosticsOrder) > maxRenderDiagnostics {
-		oldest := renderDiagnosticsOrder[0]
-		renderDiagnosticsOrder = renderDiagnosticsOrder[1:]
-		delete(renderDiagnostics, oldest)
-	}
-	renderDiagnosticsMutex.Unlock()
-
-	if shouldLogRenderDiagnosticsAsError(renderErrors) {
-		message := "Render diagnostics recorded"
-		if diagnosticsURL := renderDiagnosticsURL(r, requestID); diagnosticsURL != "" {
-			// The dashboard log buffer keeps the message, but not structured fields.
-			message += ": " + diagnosticsURL
-		}
-		logging.GetLogger().Errorw(message, "request_id", requestID, "route", route, "error_count", len(diagnostics.Errors))
-	}
+	outcome.checked, outcome.errors = true, renderErrors
+	commitRenderDiagnostics(r, outcome)
 }
 
 func shouldLogRenderDiagnosticsAsError(renderErrors []error) bool {
 	for _, err := range renderErrors {
-		componentError, ok := err.(shared.ComponentError)
+		componentError, ok := shared.AsComponentError(err)
 		if ok && strings.EqualFold(componentError.Level, "WARNING") && !componentError.Rejected {
 			continue
 		}
@@ -1438,26 +1468,29 @@ func shouldLogRenderDiagnosticsAsError(renderErrors []error) bool {
 
 func collectRenderDiagnostics(renderErrors []error) []ComponentErrorTemplate {
 	diagnostics := make([]ComponentErrorTemplate, 0, len(renderErrors))
+	seen := make(map[string]bool)
 	for _, err := range renderErrors {
-		if componentError, ok := err.(shared.ComponentError); ok {
-			diagnostics = append(diagnostics, ComponentErrorTemplate{
-				Hash: componentError.Hash,
-				File: componentError.File,
-				Type: componentError.Type,
-				Path: componentError.Path,
-				Key:  componentError.Key,
-				Err:  componentError.Err,
-			})
+		if err == nil {
 			continue
 		}
-
-		diagnostics = append(diagnostics, ComponentErrorTemplate{
-			File: "Unknown",
-			Type: "Unknown",
-			Path: "Unknown",
-			Key:  "Unknown",
-			Err:  fmt.Sprintf("%v", err),
-		})
+		componentError := shared.Diagnostic(err, shared.Meta{}, "render")
+		diagnostic := ComponentErrorTemplate{
+			File:     componentError.File,
+			Type:     componentError.Type,
+			Path:     componentError.Path,
+			Key:      componentError.Key,
+			Err:      componentError.Err,
+			Level:    componentError.Level,
+			Rejected: componentError.Rejected,
+			Line:     componentError.Line, Column: componentError.Column,
+			Resource: componentError.Resource, ResourceLine: componentError.ResourceLine, ResourceColumn: componentError.ResourceColumn,
+			Phase: componentError.Phase,
+		}
+		diagnostic.Hash = diagnosticHash(diagnostic)
+		if !seen[diagnostic.Hash] {
+			seen[diagnostic.Hash] = true
+			diagnostics = append(diagnostics, diagnostic)
+		}
 	}
 	return diagnostics
 }
@@ -1465,6 +1498,9 @@ func collectRenderDiagnostics(renderErrors []error) []ComponentErrorTemplate {
 func ServeContent(w http.ResponseWriter, r *http.Request) {
 	hbConfig := getHyperBricksConfiguration()
 	requestID := nextRenderRequestID()
+	if hbConfig.Mode != shared.LIVE_MODE {
+		r = r.WithContext(context.WithValue(r.Context(), deferredDiagnosticsKey{}, true))
+	}
 
 	route := strings.Trim(r.URL.Path, "/")
 	if resolvedRoute, ok := resolveRoute(route, hbConfig.Server.Routing); ok {
@@ -1500,14 +1536,15 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 	} else {
 		renderContent := handleDeveloperMode(w, route, r, requestID)
 		if renderContent.Handled != nil && renderContent.Handled.Stream != nil {
-			if err := writeStreamResponse(w, r, renderContent); err != nil {
+			err := writeStreamResponse(w, r, renderContent)
+			if err != nil {
 				logStreamResponseError(r.Context(), route, requestID, err)
 			}
+			finishServedDiagnostics(r, renderContent.outcome, err)
 			return
 		}
-		if !writeRenderResponse(w, route, requestID, renderContent.Content, "", renderContent.Handled, renderContent.Headers, renderContent.Cookies, renderContent.ContentType, renderContent.Status, renderContent.ErrorCount) {
-			return
-		}
+		err := writeRenderResponseError(w, route, requestID, renderContent.Content, "", renderContent.Handled, renderContent.Headers, renderContent.Cookies, renderContent.ContentType, renderContent.Status, renderContent.ErrorCount)
+		finishServedDiagnostics(r, renderContent.outcome, err)
 	}
 }
 
@@ -1555,6 +1592,10 @@ func comparableETag(value string) string {
 }
 
 func writeRenderResponse(w http.ResponseWriter, route string, requestID string, content string, contentLength string, handled *shared.HandledResponse, headers map[string]string, cookies []string, contentType string, status int, errorCount int) bool {
+	return writeRenderResponseError(w, route, requestID, content, contentLength, handled, headers, cookies, contentType, status, errorCount) == nil
+}
+
+func writeRenderResponseError(w http.ResponseWriter, route string, requestID string, content string, contentLength string, handled *shared.HandledResponse, headers map[string]string, cookies []string, contentType string, status int, errorCount int) error {
 	applyResponseHeaders(headers, w)
 	applyResponseCookies(cookies, w)
 	if contentType != "" {
@@ -1571,7 +1612,7 @@ func writeRenderResponse(w http.ResponseWriter, route string, requestID string, 
 	if !responseAllowsBody(status) {
 		w.Header().Del("Content-Length")
 		w.WriteHeader(status)
-		return true
+		return nil
 	}
 
 	if handled != nil {
@@ -1582,14 +1623,14 @@ func writeRenderResponse(w http.ResponseWriter, route string, requestID string, 
 		w.WriteHeader(status)
 		if len(body) == 0 {
 			logging.GetLogger().Debugw("Served request", "route", route)
-			return true
+			return nil
 		}
 		if _, err := w.Write(body); err != nil {
-			logging.GetLogger().Errorw("Error writing response", "route", route, "error", err)
-			return false
+			logging.GetLogger().Named("serve").Errorw("Response write failed", "route", route, "request_id", requestID, "error", err)
+			return err
 		}
 		logging.GetLogger().Debugw("Served request", "route", route)
-		return true
+		return nil
 	}
 
 	if responseAllowsBody(status) {
@@ -1601,14 +1642,14 @@ func writeRenderResponse(w http.ResponseWriter, route string, requestID string, 
 	w.WriteHeader(status)
 	if content == "" {
 		logging.GetLogger().Debugw("Served request", "route", route)
-		return true
+		return nil
 	}
 	if _, err := io.WriteString(w, content); err != nil {
-		logging.GetLogger().Errorw("Error writing response", "route", route, "error", err)
-		return false
+		logging.GetLogger().Named("serve").Errorw("Response write failed", "route", route, "request_id", requestID, "error", err)
+		return err
 	}
 	logging.GetLogger().Debugw("Served request", "route", route)
-	return true
+	return nil
 }
 
 func responseAllowsBody(status int) bool {
@@ -1617,7 +1658,7 @@ func responseAllowsBody(status int) bool {
 
 // RENDER WITHOUT CACHE
 func handleDeveloperMode(w http.ResponseWriter, route string, r *http.Request, requestID string) RenderContent {
-	logging.GetLogger().Debugw("Developer mode active. Rendering fresh content:", route)
+	logging.GetLogger().Debugw("Rendering fresh content", "route", route)
 	return renderContent(w, route, r, requestID)
 }
 
@@ -1661,7 +1702,7 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request, reques
 	}
 
 	if found {
-		logging.GetLogger().Infof("Cache expired for route %s. Re-rendering content.", route)
+		logging.GetLogger().Debugw("Route cache expired", "route", route)
 	} else {
 		logging.GetLogger().Debugf("Cache missing for route %s. Rendering content.", route)
 	}

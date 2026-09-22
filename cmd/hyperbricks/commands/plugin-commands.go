@@ -17,6 +17,7 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/hyperbricks/hyperbricks/assets"
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/spf13/cobra"
 )
 
@@ -93,13 +94,13 @@ func PluginListCommand() *cobra.Command {
 			Exit = true
 			hbVer, err := semver.NewVersion(getHyperbricksSemver())
 			if err != nil {
-				fmt.Println("Error: could not parse Hyperbricks version:", err)
+				failf("could not parse HyperBricks version: %v", err)
 				return
 			}
 
 			plugins, err := fetchPluginIndex()
 			if err != nil {
-				fmt.Println("Error fetching plugin index:", err)
+				failf("fetch plugin index: %v", err)
 				return
 			}
 
@@ -149,23 +150,23 @@ func PluginListCommand() *cobra.Command {
 					if _, err := os.Stat(artifactPath); err == nil {
 						installedArtifact = artifactName
 						if pluginRuntime(*compatible) == "wasm" {
-							installed = "\033[1;32myes\033[0m"
+							installed = "yes"
 							installedRaw = "yes"
 						} else {
 							ver, err := extractHyperbricksVersionFromBinary(artifactPath)
 							if err != nil {
-								installed = "\033[1;33myes (might be incompatible)\033[0m"
+								installed = "yes (might be incompatible)"
 								installedRaw = "yes-maybe"
 							} else {
 								parsed, err := semver.NewVersion(ver)
 								if err != nil {
-									installed = "\033[1;33myes (might be incompatible)\033[0m"
+									installed = "yes (might be incompatible)"
 									installedRaw = "yes-maybe"
 								} else if parsed.Equal(hbVer) {
-									installed = "\033[1;32myes\033[0m"
+									installed = "yes"
 									installedRaw = "yes"
 								} else {
-									installed = "\033[1;31myes (incompatible)\033[0m"
+									installed = "yes (incompatible)"
 									installedRaw = "no"
 								}
 							}
@@ -226,22 +227,22 @@ func PluginListCommand() *cobra.Command {
 
 			if len(installedBinaries) > 0 {
 				fmt.Println("")
-				fmt.Println("\033[1;33mTo enable plugins, they must be compiled for the currently installed version of Hyperbricks.\033[0m")
-				fmt.Println("\033[0;36mThis can be done automatically using:\033[0m")
-				fmt.Println("\033[1;32m hyperbricks plugin install <name>@<plugin_version>\033[0m")
+				fmt.Println("To enable plugins, they must be compiled for the currently installed version of Hyperbricks.")
+				fmt.Println("This can be done automatically using:")
+				fmt.Println(" hyperbricks plugin install <name>@<plugin_version>")
 				fmt.Println("")
-				fmt.Println("\033[0;36m# To preload the plugin, add the artifact name (without .so or .wasm) to your package.hyperbricks.yaml\033[0m")
-				fmt.Println("\033[0;36m# under the `plugins.enabled` array:\033[0m")
-				fmt.Println("\033[0;36m# Plugin binaries are named as <name>@<plugin_version> for clarity.\033[0m")
+				fmt.Println("# To preload the plugin, add the artifact name (without .so or .wasm) to your package.hyperbricks.yaml")
+				fmt.Println("# under the `plugins.enabled` array:")
+				fmt.Println("# Plugin binaries are named as <name>@<plugin_version> for clarity.")
 
-				fmt.Print("\033[1;34mhyperbricks:\n  plugins:\n    enabled:\n")
+				fmt.Print("hyperbricks:\n  plugins:\n    enabled:\n")
 				for _, bin := range installedBinaries {
 					binName := pluginConfigNameFromArtifact(bin)
-					fmt.Printf("\033[1;34m      - \033[1;32m%s\033[0m\n", binName)
+					fmt.Printf("      - %s\n", binName)
 				}
 				fmt.Println("")
 			} else {
-				fmt.Println("\033[1;33m\n# No compatible plugins currently installed. Use \033[1;32m`plugin build`\033[1;33m or \033[1;32m`plugin install`\033[1;33m to add them!\033[0m")
+				fmt.Println("\n# No compatible plugins currently installed. Use `plugin build` or `plugin install` to add them!")
 			}
 		},
 	}
@@ -267,7 +268,7 @@ func PluginInstallCommand() *cobra.Command {
 
 			plugins, err := fetchPluginIndex()
 			if err != nil {
-				fmt.Println("Error fetching plugin index:", err)
+				failf("fetch plugin index: %v", err)
 				return
 			}
 
@@ -282,7 +283,7 @@ func PluginInstallCommand() *cobra.Command {
 				}
 			}
 			if fullName == "" {
-				fmt.Printf("Plugin %q not found.\n", pluginName)
+				failf("plugin %q not found", pluginName)
 				return
 			}
 
@@ -313,24 +314,24 @@ func PluginInstallCommand() *cobra.Command {
 
 			meta, ok := available[ver]
 			if !ok {
-				fmt.Printf("Version %s for plugin %q not found.\n", ver, fullName)
+				failf("version %s for plugin %q not found", ver, fullName)
 				return
 			}
 
-			fmt.Printf("Installing %s v%s - %s\n", pluginName, ver, meta.Description)
-			fmt.Println("Compatible with Hyperbricks versions:", strings.Join(meta.CompatibleHyperbricks, ", "))
+			logging.GetLogger().Named("plugin").Infow("Installing", "plugin", pluginName, "version", ver)
+			logging.GetLogger().Named("plugin").Debugw("Compatible HyperBricks versions", "versions", meta.CompatibleHyperbricks)
 
 			pluginShort := pluginShortName(fullName)
 			if err := sparseClonePlugin(pluginShort, ver); err != nil {
-				fmt.Printf("Sparse clone failed: %v\n", err)
+				failf("Sparse clone failed: %v\n", err)
 				return
 			}
 
 			// Build the plugin after cloning
-			fmt.Println("Building plugin...")
+			logging.GetLogger().Named("plugin").Info("Building")
 			source := meta.Source
 			if strings.TrimSpace(source) == "" {
-				fmt.Println("Warning: 'source' field is missing in manifest.json")
+				failf("plugin manifest requires a source field")
 				return
 			}
 			configName, outputName := pluginOutputNames(meta, source, "", ver)
@@ -343,20 +344,18 @@ func PluginInstallCommand() *cobra.Command {
 				ExpectedModulePath: expectedModulePathForBuild("", pluginShort),
 				Runtime:            pluginRuntime(meta),
 			}); err != nil {
-				fmt.Printf("Build failed: %v\n", err)
+				failf("Build failed: %v\n", err)
 				return
 			}
 
-			fmt.Println("Installing plugin...")
 			fmt.Printf("Plugin \"%s\" (%s) installed successfully.\n", pluginName, ver)
 			fmt.Printf("Config name: %s\n", configName)
 		},
 	}
 
-	cmd.Flags().StringVarP(
+	cmd.Flags().StringVar(
 		&RequestedHyperbricksVersion,
 		"hyperbricks-version",
-		"v",
 		"",
 		"Specify the Hyperbricks version to build against",
 	)
@@ -382,7 +381,7 @@ func PluginBuildCommand() *cobra.Command {
 			pluginArg := args[0]
 			parts := strings.Split(pluginArg, "@")
 			if len(parts) != 2 {
-				fmt.Println("Usage: build <name>@<version>")
+				failf("use hyperbricks plugin build <name>@<version>")
 				return
 			}
 			name, version := parts[0], parts[1]
@@ -391,18 +390,18 @@ func PluginBuildCommand() *cobra.Command {
 			manifestPath := pluginManifestPathFor(module, name, version)
 			manifestData, err := os.ReadFile(manifestPath)
 			if err != nil {
-				fmt.Printf("Warning: manifest.json not found at '%s'\n", manifestPath)
+				failf("read plugin manifest %q: %v", manifestPath, err)
 				return
 			}
 
 			var meta PluginMeta
 			if err := json.Unmarshal(manifestData, &meta); err != nil {
-				fmt.Printf("Warning: could not parse manifest.json: %v\n", err)
+				failf("parse plugin manifest %q: %v", manifestPath, err)
 				return
 			}
 
 			if meta.Source == "" {
-				fmt.Println("Warning: 'source' field is missing in manifest.json")
+				failf("plugin manifest requires a source field")
 				return
 			}
 
@@ -410,7 +409,7 @@ func PluginBuildCommand() *cobra.Command {
 			configName, outputName := pluginOutputNames(meta, source, module, version)
 			sourceDir := pluginSourceDirFor(module, name, version)
 
-			fmt.Println("Building:", name, "Version:", version)
+			logging.GetLogger().Named("plugin").Infow("Building", "plugin", name, "version", version)
 			if err := buildPlugin(pluginBuildSpec{
 				SourceDir:          sourceDir,
 				SourceFile:         source,
@@ -419,7 +418,7 @@ func PluginBuildCommand() *cobra.Command {
 				ExpectedModulePath: expectedModulePathForBuild(module, name),
 				Runtime:            pluginRuntime(meta),
 			}); err != nil {
-				fmt.Printf("Build failed: %v\n", err)
+				failf("Build failed: %v\n", err)
 				return
 			}
 			fmt.Printf("Config name: %s\n", configName)
@@ -486,7 +485,7 @@ func extractMainModulePathFromBinary(soPath string) (string, error) {
 func buildPlugin(spec pluginBuildSpec) error {
 	writer := spec.LogWriter
 	if writer == nil {
-		writer = os.Stdout
+		writer = os.Stderr
 	}
 	fmt.Fprintf(writer, "Building plugin: %s\n", spec.DisplayName)
 	switch pluginRuntimeFromString(spec.Runtime) {
@@ -695,7 +694,7 @@ func PluginRemoveCommand() *cobra.Command {
 			arg := args[0]
 			parts := strings.Split(arg, "@")
 			if len(parts) != 2 {
-				fmt.Println("Usage: remove <name>@<version>")
+				failf("use hyperbricks plugin remove <name>@<version>")
 				return
 			}
 			pluginShort := parts[0]
@@ -720,7 +719,7 @@ func PluginRemoveCommand() *cobra.Command {
 				return
 			}
 			if err := os.Remove(soPath); err != nil {
-				fmt.Printf("Failed to remove plugin \"%s\": %v\n", outputName, err)
+				failf("remove plugin %q: %v", outputName, err)
 				return
 			}
 			fmt.Printf("Plugin \"%s\" (%s) removed.\n", configName, version)
@@ -760,7 +759,7 @@ func sparseClonePlugin(pluginName, version string) error {
 
 	// Clone the repo
 	cloneCmd := exec.Command("git", "clone", "--filter=blob:none", "--no-checkout", pluginRepoURL, tmpDir)
-	cloneCmd.Stdout = os.Stdout
+	cloneCmd.Stdout = os.Stderr
 	cloneCmd.Stderr = os.Stderr
 	if err := cloneCmd.Run(); err != nil {
 		return fmt.Errorf("git clone failed: %v", err)

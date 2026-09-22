@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -14,6 +13,10 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
+
+	if handleErrorsView(w, r) {
+		return
+	}
 
 	if handleRenderDiagnosticsEndpoint(w, r) {
 		return
@@ -30,7 +33,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	requestCounterMutex.Unlock()
 
 	if counter%100 == 0 {
-		fmt.Println("Requests processed", counter)
+		logging.GetLogger().Debugw("Requests processed", "count", counter)
 	}
 
 	logging.GetLogger().Debugw("Request processed", "duration", elapsed)
@@ -44,12 +47,16 @@ func handleRenderDiagnosticsEndpoint(w http.ResponseWriter, r *http.Request) boo
 		http.NotFound(w, r)
 		return true
 	}
+	if r.URL.Query().Get("view") == "current" {
+		writeDiagnosticsJSON(w, http.StatusOK, collectCurrentRenderDiagnostics())
+		return true
+	}
 
 	if requestID := strings.TrimSpace(r.URL.Query().Get("request_id")); requestID != "" {
 		renderDiagnosticsMutex.RLock()
 		diagnostics, ok := renderDiagnostics[requestID]
 		renderDiagnosticsMutex.RUnlock()
-		if !ok {
+		if !ok || len(diagnostics.Errors) == 0 {
 			http.NotFound(w, r)
 			return true
 		}
@@ -84,7 +91,7 @@ func collectRecentRenderDiagnostics(limit int) []RenderDiagnostics {
 	for index := len(renderDiagnosticsOrder) - 1; index >= 0 && len(results) < limit; index-- {
 		requestID := renderDiagnosticsOrder[index]
 		diagnostics, ok := renderDiagnostics[requestID]
-		if !ok {
+		if !ok || len(diagnostics.Errors) == 0 {
 			continue
 		}
 		results = append(results, diagnostics)

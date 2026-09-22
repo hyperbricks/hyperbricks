@@ -4,15 +4,6 @@ import (
 	_ "embed"
 )
 
-//go:embed logo.png
-var Logo []byte
-
-//go:embed hyperbricks_logo_h_black_on_transparent.png
-var Logo_Black []byte
-
-//go:embed hyperbricks_logo_h_blue_on_transparent.png
-var Logo_Blue []byte
-
 //go:embed version.md
 var VersionMD string
 
@@ -24,3 +15,15 @@ var DashboardCSS string
 
 //go:embed deploy_dashboard.html
 var DeployDashboard string
+
+//go:embed errors.html
+var ErrorsPage string
+
+//go:embed errors.css
+var ErrorsCSS []byte
+
+//go:embed errors.js
+var ErrorsScript []byte
+
+//go:embed errors-model.mjs
+var ErrorsModel []byte

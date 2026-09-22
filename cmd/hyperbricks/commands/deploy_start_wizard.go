@@ -11,7 +11,7 @@ import (
 func RunDeployStartWizard() {
 	selected, ok, err := RunModulePicker("Select a deploy module")
 	if err != nil {
-		fmt.Printf("Error selecting module: %v\n", err)
+		failf("Error selecting module: %v\n", err)
 		Exit = true
 		return
 	}
@@ -24,7 +24,7 @@ func RunDeployStartWizard() {
 	reader := bufio.NewReader(os.Stdin)
 	deployDir, err := promptInput(reader, "Deploy directory (default deploy): ")
 	if err != nil {
-		fmt.Printf("Error reading deploy directory: %v\n", err)
+		failf("Error reading deploy directory: %v\n", err)
 		Exit = true
 		return
 	}
@@ -37,12 +37,12 @@ func RunDeployStartWizard() {
 	indexPath := filepath.Join(deployDir, StartModule, versionIndexFile)
 	index, err := loadBuildIndex(indexPath)
 	if err != nil {
-		fmt.Printf("Error reading build index: %v\n", err)
+		failf("Error reading build index: %v\n", err)
 		Exit = true
 		return
 	}
 	if len(index.Versions) == 0 {
-		fmt.Printf("No builds found in %s\n", indexPath)
+		failf("no builds found in %s; create an archive with hyperbricks build first", indexPath)
 		Exit = true
 		return
 	}
@@ -50,7 +50,7 @@ func RunDeployStartWizard() {
 	if index.Current != "" {
 		useCurrent, err := promptYesNoDefault(reader, fmt.Sprintf("Use current build (%s)? (Y/n): ", index.Current), true)
 		if err != nil {
-			fmt.Printf("Error reading input: %v\n", err)
+			failf("Error reading input: %v\n", err)
 			Exit = true
 			return
 		}
@@ -63,7 +63,7 @@ func RunDeployStartWizard() {
 	rows := buildIndexRowsWithCurrentFirst(index)
 	selectedID, ok, err := RunBuildIDPicker("Select build to start", rows, index.Current)
 	if err != nil {
-		fmt.Printf("Error selecting build ID: %v\n", err)
+		failf("Error selecting build ID: %v\n", err)
 		Exit = true
 		return
 	}

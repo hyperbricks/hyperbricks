@@ -3,11 +3,14 @@ package component
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/dop251/goja"
 
 	"github.com/hyperbricks/hyperbricks/pkg/gojaruntime"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
@@ -37,12 +40,13 @@ func (r *GojaRenderer) Types() []string { return []string{GojaRenderConfigGetNam
 
 // PreparedGojaRender owns immutable load-time resources, not execution state.
 type PreparedGojaRender struct {
-	component shared.Component
-	program   *gojaruntime.Program
-	template  *template.Template
-	values    json.RawMessage
-	queryKeys []string
-	err       error
+	component  shared.Component
+	program    *gojaruntime.Program
+	template   *template.Template
+	values     json.RawMessage
+	queryKeys  []string
+	err        error
+	errorField string
 }
 
 func PrepareGojaRender(config GojaRenderConfig, provider func(string) (string, bool)) *PreparedGojaRender {
@@ -75,7 +79,8 @@ func (p *PreparedGojaRender) prepare(config GojaRenderConfig, provider func(stri
 		}
 	}
 	var err error
-	p.template, err = shared.ParsedGenericTemplate(content)
+	p.errorField = "template"
+	p.template, err = shared.ParsedNamedTemplate(config.Meta.TemplateName(config.Template), content)
 	if err != nil {
 		return fmt.Errorf("parse template: %w", err)
 	}
@@ -90,6 +95,10 @@ func (p *PreparedGojaRender) prepare(config GojaRenderConfig, provider func(stri
 		return fmt.Errorf("values exceed %d bytes", gojaruntime.MaxDataBytes)
 	}
 	name := config.Meta.HyperBricksFile + "#" + config.Meta.HyperBricksPath
+	if resource := config.Meta.Resource("script"); resource != "" {
+		name = resource
+	}
+	p.errorField = "script"
 	p.program, err = gojaruntime.Compile(name, config.Script, timeout)
 	return err
 }
@@ -134,7 +143,7 @@ func (p *PreparedGojaRender) Render(ctx context.Context, params map[string]inter
 		if p == nil {
 			return "", []error{err}
 		}
-		return "", []error{gojaComponentError(p.component, err)}
+		return "", []error{gojaDiagnostic(p.component, err, "prepare", p.errorField)}
 	}
 	query := make(map[string]interface{}, len(p.queryKeys))
 	for _, key := range p.queryKeys {
@@ -155,15 +164,32 @@ func (p *PreparedGojaRender) Render(ctx context.Context, params map[string]inter
 	}
 	var output strings.Builder
 	if err := p.template.Execute(&output, map[string]interface{}{"Data": data}); err != nil {
-		return "", []error{gojaComponentError(p.component, fmt.Errorf("execute template: %w", err))}
+		return "", []error{gojaDiagnostic(p.component, fmt.Errorf("execute template: %w", err), "render", "template")}
 	}
 	return shared.EncloseContent(p.component.Enclose, output.String()), nil
 }
 
 func gojaComponentError(config shared.Component, err error) error {
-	return shared.ComponentError{
-		Hash: shared.GenerateHash(), Type: GojaRenderConfigGetName(), Rejected: true,
-		File: config.Meta.HyperBricksFile, Path: config.Meta.HyperBricksPath,
-		Key: config.Meta.HyperBricksKey, Err: err.Error(),
+	return gojaDiagnostic(config, err, "render", "script")
+}
+
+func gojaDiagnostic(config shared.Component, err error, phase, field string) error {
+	diagnostic := shared.ResourceDiagnostic(err, config.Meta, phase, field)
+	diagnostic.Hash, diagnostic.Type, diagnostic.Rejected = shared.GenerateHash(), GojaRenderConfigGetName(), true
+	var exception *goja.Exception
+	if errors.As(err, &exception) {
+		for _, frame := range exception.Stack() {
+			position := frame.Position()
+			if position.Line > 0 && (diagnostic.Resource == "" || position.Filename == diagnostic.Resource) {
+				diagnostic.ResourceLine, diagnostic.ResourceColumn = position.Line, position.Column
+				break
+			}
+		}
 	}
+	var syntax *goja.CompilerSyntaxError
+	if errors.As(err, &syntax) && syntax.File != nil {
+		position := syntax.File.Position(syntax.Offset)
+		diagnostic.ResourceLine, diagnostic.ResourceColumn = position.Line, position.Column
+	}
+	return diagnostic
 }

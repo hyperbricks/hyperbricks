@@ -24,6 +24,6 @@ func VersionCommand() *cobra.Command {
 	}
 
 	// Add flags
-	cmd.Flags().StringVarP(&version, "version", "v", "Show version", "Show version")
+	cmd.Flags().StringVar(&version, "version", "Show version", "Show version")
 	return cmd
 }

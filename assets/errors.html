@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Errors | HyperBricks</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/hyperbricks-theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/hyperbricks-ui.css">
+  <link rel="stylesheet" href="/__hyperbricks/errors/web/errors.css">
+  <script src="/assets/hyperbricks-icons.js" defer></script>
+  <script src="/__hyperbricks/errors/web/errors.js" type="module"></script>
+</head>
+<body>
+  <a class="hb-skip btn btn-primary" href="#main">Skip to content</a>
+  <header class="hb-header">
+    <a class="hb-brand" href="/dashboard" aria-label="HyperBricks dashboard"><img src="/assets/brandmark.svg" width="20" height="28" alt=""><span>HyperBricks</span></a>
+    <nav class="hb-nav" aria-label="Product"><a href="/dashboard"><i data-lucide="layout-dashboard"></i>Dashboard</a>{{if .SpacesRoute}}<a href="{{.SpacesRoute}}"><i data-lucide="panels-top-left"></i>Spaces</a>{{end}}<a href="/__hyperbricks/errors" aria-current="page"><i data-lucide="circle-alert"></i>Errors</a></nav>
+    <div class="hb-header-actions"><span class="hb-header-context hb-muted">{{.Mode}}</span><button class="btn btn-sm btn-square btn-ghost" data-theme-toggle type="button" title="Switch theme" aria-label="Switch theme"><i data-lucide="sun-moon"></i></button></div>
+  </header>
+  <main id="main" class="hb-page errors-page">
+    <div class="hb-page-heading"><div><p class="hb-eyebrow">{{.Module}}</p><h1>Errors</h1></div><a class="btn btn-sm btn-ghost" href="/__hyperbricks/render-diagnostics?view=current" target="_blank" rel="noopener"><i data-lucide="braces"></i>Diagnostic JSON</a></div>
+    <div class="errors-toolbar">
+      <label class="input input-sm errors-search"><i data-lucide="search"></i><input id="search" type="search" placeholder="Search diagnostics" aria-label="Search diagnostics"></label>
+      <select id="severity" class="select select-sm" aria-label="Diagnostic severity"><option value="all">All diagnostics</option><option value="error">Errors</option><option value="warning">Warnings</option><option value="info">Information</option></select>
+      <button id="refresh" class="btn btn-sm btn-square btn-ghost" type="button" title="Refresh diagnostics" aria-label="Refresh diagnostics"><i data-lucide="refresh-cw"></i></button>
+    </div>
+    <div class="errors-summary"><span id="summary" role="status">Loading diagnostics...</span><span id="updated" class="hb-muted"></span></div>
+    <p id="coverage" class="errors-coverage hb-muted">Waiting for current render status.</p>
+    <details id="uncheckedPanel" class="errors-unchecked" hidden><summary>Not checked since reload <span id="uncheckedCount" class="badge badge-sm"></span></summary><ul id="uncheckedRoutes"></ul></details>
+    <div id="limitedCoverage" class="alert alert-warning errors-notice" role="status" hidden>Some older request contexts are no longer tracked. The current list is not a complete health check.</div>
+    <div id="loadError" class="alert alert-error errors-notice" role="alert" hidden></div>
+    <div class="errors-workspace">
+      <section class="errors-requests hb-surface" aria-labelledby="requests-title">
+        <div class="hb-section-heading"><h2 id="requests-title">Current diagnostics</h2><span id="requestCount" class="badge badge-sm">0</span></div>
+        <div id="requests" class="errors-request-list" aria-busy="true"></div>
+        <div id="listEmpty" class="errors-empty" hidden><i data-lucide="circle-check"></i><h3 id="emptyTitle">No current diagnostics</h3><p id="emptyBody" class="hb-muted"></p><button id="clearFilters" class="btn btn-sm btn-ghost" type="button" hidden>Clear filters</button></div>
+      </section>
+      <section id="detail" class="errors-detail hb-surface" aria-labelledby="detail-title">
+        <div id="selectionEmpty" class="errors-empty"><i data-lucide="file-search"></i><h2 id="detail-title">Diagnostic details</h2><p id="selectionMessage" class="hb-muted">Waiting for diagnostics.</p></div>
+        <div id="selection" hidden>
+          <div class="hb-section-heading errors-detail-heading"><div><p class="hb-eyebrow">Diagnostic details</p><h2 id="recordRoute"></h2></div><span id="recordSeverity" class="badge badge-sm"></span></div>
+          <dl class="errors-metadata"><div><dt>Latest request</dt><dd><code id="requestID"></code></dd></div><div><dt>Last checked</dt><dd><time id="recordTime"></time></dd></div></dl>
+          <div class="errors-record-actions"><a id="rawLink" class="btn btn-sm btn-ghost" target="_blank" rel="noopener"><i data-lucide="braces"></i>Raw JSON</a><button id="copy" class="btn btn-sm btn-square btn-ghost" type="button" title="Copy diagnostic JSON" aria-label="Copy diagnostic JSON"><i data-lucide="copy"></i></button><span id="copyStatus" class="hb-muted" role="status"></span></div>
+          <ol id="issues" class="errors-issues"></ol>
+          <details class="errors-json"><summary>Diagnostic JSON</summary><pre id="rawJSON" tabindex="0" aria-label="Diagnostic JSON"></pre></details>
+        </div>
+      </section>
+    </div>
+    <noscript><p class="alert alert-warning">JavaScript is required for this view. <a class="link" href="/__hyperbricks/render-diagnostics">Open diagnostic JSON</a>.</p></noscript>
+  </main>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="spaces-base" content="__SPACES_BASE__">
+  <title>Spaces | HyperBricks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="__SPACES_BASE__/web/favicon.svg" type="image/svg+xml">
+  <script src="__SPACES_BASE__/web/theme.js"></script>
+  <link rel="stylesheet" href="__SPACES_BASE__/web/hyperbricks.css">
+  <link rel="stylesheet" href="__SPACES_BASE__/web/style.css">
+  <script src="__SPACES_BASE__/web/lucide.js" defer></script>
+  <script src="__SPACES_BASE__/web/app.js" type="module"></script>
+</head>
+<body>
+  <a class="hb-skip btn btn-primary" href="#main">Skip to content</a>
+  <header class="hb-header">
+    <a class="hb-brand" href="__SPACES_BASE__" aria-label="HyperBricks Spaces"><img src="__SPACES_BASE__/web/brandmark.svg" width="20" height="28" alt=""><span>HyperBricks</span></a>
+    <nav class="hb-nav" aria-label="Product">__DASHBOARD_NAV__<a href="__SPACES_BASE__" aria-current="page"><i data-lucide="panels-top-left"></i>Spaces</a>__ERRORS_NAV__</nav>
+    <div class="hb-header-actions"><span id="access" class="hb-header-context hb-muted"></span><button id="spaces-theme-toggle" class="btn btn-sm btn-square btn-ghost" data-theme-toggle type="button" title="Switch theme" aria-label="Switch theme"><i data-lucide="sun-moon"></i></button><button id="reload" class="btn btn-sm btn-square btn-ghost" title="Reload source files" aria-label="Reload source files"><i data-lucide="refresh-cw"></i></button></div>
+  </header>
+  <div class="spaces-toolbar"><button id="drawer-open" class="btn btn-sm btn-ghost" title="Open Spaces" aria-label="Open Spaces" aria-controls="spaces-drawer" aria-expanded="false"><i data-lucide="panel-left"></i>Spaces</button></div>
+  <div id="notice" role="status" aria-live="polite"></div>
+  <div class="workspace">
+    <div id="sidebar-slot"><aside>
+      <div class="list-heading"><h1 id="spaces-title">Spaces</h1><div class="list-actions"><button class="btn btn-sm btn-primary btn-square" id="new" title="Create Space" aria-label="Create Space"><i data-lucide="plus"></i></button><button class="btn btn-sm btn-ghost btn-square" id="drawer-close" title="Close Spaces" aria-label="Close Spaces"><i data-lucide="x"></i></button></div></div>
+      <div class="tabs tabs-border" role="tablist" aria-label="Space status"><button class="tab" role="tab" id="active-tab" aria-selected="true">Active <span id="active-count">0</span></button><button class="tab" role="tab" id="trash-tab" aria-selected="false">Trash <span id="trash-count">0</span></button></div>
+      <label class="input input-sm search"><i data-lucide="search"></i><input id="search" type="search" placeholder="Search Spaces" aria-label="Search Spaces"></label>
+      <nav id="list" aria-label="Spaces"></nav>
+    </aside></div>
+    <main id="main"><div class="empty"><i data-lucide="layers"></i><h2>Loading Spaces</h2></div></main>
+  </div>
+  <dialog class="modal" id="spaces-drawer" aria-labelledby="spaces-title"><div class="modal-box" id="drawer-body"></div></dialog>
+  <dialog class="modal" id="image-dialog" aria-labelledby="image-title"><div class="modal-box"><div class="hb-dialog-heading"><h2 id="image-title">Image Preview</h2><button class="close btn btn-sm btn-ghost btn-square" title="Close image preview" aria-label="Close image preview"><i data-lucide="x"></i></button></div><div class="image-toolbar"><span id="image-details"></span><div class="join" role="group" aria-label="Image zoom"><button class="btn btn-sm btn-ghost btn-square join-item" type="button" id="image-fit" aria-pressed="true" title="Fit image" aria-label="Fit image"><i data-lucide="shrink"></i></button><button class="btn btn-sm btn-ghost btn-square join-item" type="button" id="image-original" aria-pressed="false" title="Original size" aria-label="Original size"><i data-lucide="expand"></i></button></div></div><div id="image-stage"></div><p id="image-error" class="form-error hb-form-error" role="alert"></p></div></dialog>
+  <dialog class="modal" id="document-dialog" aria-labelledby="document-title"><div class="modal-box"><div class="hb-dialog-heading"><h2 id="document-title">Markdown Document</h2><button class="btn btn-sm btn-ghost btn-square" id="document-close" title="Close document" aria-label="Close document"><i data-lucide="x"></i></button></div><div id="document-info"></div><details class="relations"><summary>Known references <span id="document-use-count"></span></summary><ul id="document-usages"></ul></details><div class="tabs tabs-border" role="tablist" aria-label="Document view"><button class="tab" type="button" id="document-write" role="tab" aria-selected="true">Write</button><button class="tab" type="button" id="document-preview" role="tab" aria-selected="false">Preview</button></div><textarea class="textarea" id="document-content" aria-label="Markdown content" spellcheck="true"></textarea><iframe id="document-rendered" title="Markdown preview" sandbox="" hidden></iframe><div id="document-conflict" hidden></div><p id="document-error" class="form-error hb-form-error" role="alert"></p><footer><span id="document-state" role="status"></span><button class="btn btn-sm btn-ghost" type="button" id="document-copy"><i data-lucide="copy"></i>Make a Copy</button><button class="btn btn-sm btn-primary" type="button" id="document-save"><i data-lucide="save"></i><span>Save Document</span></button></footer></div></dialog>
+  <dialog class="modal" id="conflict-dialog" aria-labelledby="conflict-title"><div class="modal-box"><form id="conflict-form"><div class="hb-dialog-heading"><h2 id="conflict-title">Review Source Changes</h2><button class="close btn btn-sm btn-ghost btn-square" type="button" title="Keep draft and close" aria-label="Keep draft and close"><i data-lucide="x"></i></button></div><p id="conflict-summary"></p><div id="conflict-rows"></div><p class="form-error hb-form-error" role="alert"></p><footer><button class="close btn btn-sm btn-ghost" type="button">Keep Draft</button><button class="btn btn-sm btn-primary" type="submit"><i data-lucide="git-merge"></i>Apply to Draft</button></footer></form></div></dialog>
+  <dialog class="modal" id="create-dialog"><div class="modal-box"><form id="create-form"><div class="hb-dialog-heading"><h2>Create Space</h2><button class="close btn btn-sm btn-ghost btn-square" type="button" title="Close" aria-label="Close"><i data-lucide="x"></i></button></div><label>Source<select class="select" name="source" required></select></label><label>Component name<input class="input" name="name" required pattern="[A-Za-z][A-Za-z0-9_\-]{0,79}" maxlength="80"></label><label>Title<input class="input" name="title" required maxlength="200"></label><label>Route<input class="input" name="route" required></label><p class="form-error hb-form-error" role="alert"></p><footer><button class="close btn btn-sm btn-ghost" type="button">Cancel</button><button class="btn btn-sm btn-primary" type="submit"><i data-lucide="plus"></i>Create Space</button></footer></form></div></dialog>
+  <dialog class="modal" id="asset-dialog"><div class="modal-box"><div class="hb-dialog-heading"><h2>Select Asset</h2><button class="close btn btn-sm btn-ghost btn-square" title="Close" aria-label="Close"><i data-lucide="x"></i></button></div><div id="asset-list"></div></div></dialog>
+  <dialog class="modal" id="meta-dialog"><div class="modal-box"><form id="meta-form"><div class="hb-dialog-heading"><h2>Add Metadata</h2><button class="close btn btn-sm btn-ghost btn-square" type="button" title="Close" aria-label="Close"><i data-lucide="x"></i></button></div><label>Preset<select class="select" id="preset"><option value="">Custom</option><optgroup label="Document"><option>description</option><option>author</option><option>robots</option><option>keywords</option><option>theme-color</option><option>viewport</option></optgroup><optgroup label="Open Graph"><option>og:title</option><option>og:description</option><option>og:image</option><option>og:image:alt</option><option>og:url</option><option>og:type</option><option>og:site_name</option><option>og:locale</option></optgroup></select></label><label>Key<input class="input" name="key" required pattern="[A-Za-z][A-Za-z0-9_.:\-]{0,127}"></label><label>Value<textarea class="textarea" name="value" rows="3"></textarea></label><p class="form-error hb-form-error" role="alert"></p><footer><button class="btn btn-sm btn-primary" type="submit"><i data-lucide="plus"></i>Add Metadata</button></footer></form></div></dialog>
+</body>
+</html>

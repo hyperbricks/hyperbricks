@@ -4,7 +4,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -112,6 +112,9 @@ func buildRuntimeHandler(limiter *rate.Limiter) http.Handler {
 		if handleRuntimeGateway(w, r) {
 			return
 		}
+		if handleFrontendEditor(w, r) {
+			return
+		}
 		switch {
 		case strings.HasPrefix(r.URL.Path, "/static/"):
 			// Serve files from the static directory
@@ -151,15 +154,8 @@ func FileHandler(dirs map[string]string) http.HandlerFunc {
 func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) error {
 
 	hbConfig := shared.GetHyperBricksConfiguration()
-	logger := logging.GetLogger()
-
-	orangeTrueColor := "\033[38;2;255;165;0m"
-	reset := "\033[0m"
-	msg := `
-============================================================================
-                    Beginning static rendering of routes
-============================================================================`
-	logger.Info(orangeTrueColor, msg, reset)
+	logger := logging.GetLogger().Named("static")
+	logger.Info("Rendering routes")
 
 	renderDir := ""
 	if tbrender, ok := hbConfig.Directories["render"]; ok {
@@ -177,9 +173,7 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) er
 
 	// Validate renderDir is inside ./modules
 	if err := validatePath(renderDir); err != nil {
-		logger.Errorw("Path validation failed", "path", renderDir, "error", err)
-		logger.Infoln("Exiting...")
-		return err
+		return fmt.Errorf("validate render directory %q: %w", renderDir, err)
 	}
 
 	shouldDelete := commands.ForceStatic
@@ -192,8 +186,7 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) er
 		logger.Infow("Deleting all files in ", "directory", renderDir)
 		err := os.RemoveAll(renderDir)
 		if err != nil {
-			logger.Errorw("Error removing destination directory", "directory", renderDir, "error", err)
-			return err
+			return fmt.Errorf("remove render directory %q: %w", renderDir, err)
 		}
 	}
 
@@ -201,20 +194,17 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) er
 
 	err := os.MkdirAll(renderDir, 0755)
 	if err != nil {
-		logger.Errorw("Error creating destination directory", "directory", renderDir, "error", err)
-		return err
+		return fmt.Errorf("create render directory %q: %w", renderDir, err)
 	}
 
 	err = snapshotStaticRoutes(tempConfigs, renderDir)
 	if err != nil {
-		logger.Errorw("Error creating static files", "error", err)
 		return err
 	}
 
 	err = copy.Copy(staticDir, filepath.Join(renderDir, "static"))
 	if err != nil {
-		logger.Errorw("Error copying directory", "source", staticDir, "destination", filepath.Join(renderDir, "static"), "error", err)
-		return err
+		return fmt.Errorf("copy static directory %q to %q: %w", staticDir, filepath.Join(renderDir, "static"), err)
 	} else {
 		logger.Infow("Copied static file directory successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
 	}
@@ -230,18 +220,13 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) er
 		}
 		exportPath, err := exportStaticZip(renderDir, commands.StartModule, commands.ExportOutDir, commands.ExportExclude)
 		if err != nil {
-			logger.Errorw("Error exporting static zip", "error", err)
-			return err
+			return fmt.Errorf("export static zip: %w", err)
 		} else {
 			logger.Infow("Created static export", "path", exportPath)
 		}
 	}
 
-	msgII := `
-============================================================================
-                    Finished static rendering of routes
-============================================================================`
-	logger.Info(orangeTrueColor, msgII, reset)
+	logger.Infow("Rendering complete", "directory", renderDir)
 	return nil
 
 }
@@ -305,38 +290,42 @@ func serveStatic() error {
 		fileServer.ServeHTTP(w, r)
 	})
 	server := &http.Server{Addr: addr, Handler: handler}
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+	defer server.Close()
 
 	// Run server in background goroutine
 	go func() {
-		log.Printf("Serving static files at http://%s\n", addr)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("HTTP server ListenAndServe: %v", err)
+		logging.GetLogger().Named("static").Infow("Listening", "url", "http://"+addr)
+		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
+			logging.GetLogger().Named("static").Fatalw("Server failed", "error", err)
 		}
 	}()
 
-	if os.Getenv("HB_NO_KEYBOARD") != "" {
-		log.Println("Non-interactive mode: keyboard input disabled.")
+	if os.Getenv("HB_NO_KEYBOARD") != "" || !logging.IsTerminal(os.Stdin) {
 		return waitForServerSignal(server)
 	}
 
 	// Open keyboard for input
 	if err := keyboard.Open(); err != nil {
-		log.Printf("Failed to open keyboard: %v", err)
+		logging.GetLogger().Warnw("Failed to open keyboard", "error", err)
 		return err
 	}
 	defer keyboard.Close()
 
-	fmt.Println("Press 'q', ESC or Ctrl+C to stop the server...")
+	logging.GetLogger().Info("Press q, Esc or Ctrl+C to stop")
 
 	// Wait for q, ESC, or Ctrl+C
 	for {
 		char, key, err := keyboard.GetKey()
 		if err != nil {
-			log.Printf("Error reading keyboard input: %v", err)
+			logging.GetLogger().Warnw("Keyboard input unavailable", "error", err)
 			break
 		}
 		if char == 'q' || key == keyboard.KeyEsc || key == keyboard.KeyCtrlC {
-			fmt.Println("Shutdown signal received, shutting down server...")
+			logging.GetLogger().Named("static").Info("Stopping")
 			break
 		}
 	}
@@ -346,28 +335,29 @@ func serveStatic() error {
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Printf("Server forced to shutdown: %v", err)
+		logging.GetLogger().Named("static").Errorw("Shutdown failed", "error", err)
 		return err
 	}
 
-	fmt.Println("Server stopped.")
+	logging.GetLogger().Named("static").Info("Stopped")
 	return nil
 }
 
 func waitForServerSignal(server *http.Server) error {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(stop)
 	<-stop
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Printf("Server forced to shutdown: %v", err)
+		logging.GetLogger().Named("static").Errorw("Shutdown failed", "error", err)
 		return err
 	}
 
-	fmt.Println("Server stopped.")
+	logging.GetLogger().Named("static").Info("Stopped")
 	return nil
 }
 

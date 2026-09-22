@@ -10,6 +10,7 @@ import (
 )
 
 type typedNode struct {
+	meta     shared.Meta
 	renderer shared.Renderer
 	instance interface{}
 	warnings []string
@@ -18,7 +19,7 @@ type typedNode struct {
 func (n *typedNode) Render(state *renderState) (string, []error) {
 	errors := warningErrors(n.warnings)
 	output, renderErrors := n.renderer.Render(n.instance, state.ctx)
-	return output, append(errors, renderErrors...)
+	return output, shared.EnrichDiagnostics(append(errors, renderErrors...), n.meta, "render")
 }
 
 type hyperMediaNode struct {
@@ -106,7 +107,7 @@ func (n *templateNode) Render(state *renderState) (string, []error) {
 
 	var output strings.Builder
 	if err := n.template.Execute(&output, data); err != nil {
-		errors = append(errors, fmt.Errorf("error executing template: %v", err))
+		errors = append(errors, shared.ResourceDiagnostic(fmt.Errorf("error executing template: %w", err), config.Composite.Meta, "render", "template"))
 		return shared.EncloseContent(config.Enclose, ""), errors
 	}
 	rendered := output.String()
@@ -154,6 +155,7 @@ func warningErrors(warnings []string) []error {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
 			Err:      warning,
+			Level:    "WARNING",
 			Rejected: false,
 		})
 	}

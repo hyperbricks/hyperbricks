@@ -21,9 +21,11 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/core"
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/mitchellh/mapstructure"
+	"go.uber.org/zap/zapcore"
 )
 
 type apiSecurityObservedRequest struct {
@@ -487,7 +489,14 @@ func TestAPISecurityModuleCredentialAndCookieBoundaries(t *testing.T) {
 
 	t.Run("real renderer debug output omits secrets", func(t *testing.T) {
 		primaryLog.reset()
-		output, err := captureAPISecurityStdout(func() error {
+		level := logging.GetLogger().Level()
+		logging.ChangeLevel(zapcore.DebugLevel)
+		logPath := filepath.Join(t.TempDir(), "api-debug.jsonl")
+		if err := logging.AddFileOutput(logPath); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { logging.ChangeLevel(level); _ = logging.Close() })
+		stdout, err := captureAPISecurityStdout(func() error {
 			for _, route := range []string{"/debug/nested", "/debug/fragment"} {
 				request, requestErr := http.NewRequest(http.MethodGet, application.URL+route, nil)
 				if requestErr != nil {
@@ -510,10 +519,26 @@ func TestAPISecurityModuleCredentialAndCookieBoundaries(t *testing.T) {
 		if err != nil {
 			t.Fatalf("capture renderer debug output: %v", err)
 		}
-		if strings.Count(output, "API request:") != 2 || strings.Count(output, "API response:") != 2 {
+		if stdout != "" {
+			t.Fatalf("debug output polluted stdout: %q", stdout)
+		}
+		if err := logging.Close(); err != nil {
+			t.Fatal(err)
+		}
+		data, err := os.ReadFile(logPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		output := string(data)
+		for _, line := range strings.Split(strings.TrimSpace(output), "\n") {
+			if !json.Valid([]byte(line)) {
+				t.Fatalf("invalid log event: %s", line)
+			}
+		}
+		if strings.Count(output, "Upstream request") != 2 || strings.Count(output, "Upstream response") != 2 {
 			t.Fatalf("debug output did not exercise both real renderers: %q", output)
 		}
-		for _, useful := range []string{"Method:GET", "Scheme:http", "Host:", "Authorization", "X-Api-Key", "StatusCode:200"} {
+		for _, useful := range []string{`"Method":"GET"`, `"Scheme":"http"`, `"Host":`, "Authorization", "X-Api-Key", `"StatusCode":200`} {
 			if !strings.Contains(output, useful) {
 				t.Fatalf("debug output is missing safe metadata %q: %q", useful, output)
 			}

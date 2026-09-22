@@ -134,8 +134,12 @@ func setupDevelopmentModeServeContentTest(t testing.TB, frontendErrors bool) {
 	renderDiagnosticsMutex.Lock()
 	oldRenderDiagnostics := renderDiagnostics
 	oldRenderDiagnosticsOrder := renderDiagnosticsOrder
+	oldDiagnosticGeneration, oldDiagnosticRoutes := diagnosticsGeneration, diagnosticsRoutes
+	oldDiagnosticFloor, oldDiagnosticEvicted := diagnosticsFloor, diagnosticsEvicted
 	renderDiagnostics = make(map[string]RenderDiagnostics)
 	renderDiagnosticsOrder = nil
+	diagnosticsGeneration, diagnosticsRoutes = routeGeneration, nil
+	diagnosticsFloor, diagnosticsEvicted = 0, 0
 	renderDiagnosticsMutex.Unlock()
 
 	configMutex.Lock()
@@ -167,6 +171,8 @@ func setupDevelopmentModeServeContentTest(t testing.TB, frontendErrors bool) {
 		renderDiagnosticsMutex.Lock()
 		renderDiagnostics = oldRenderDiagnostics
 		renderDiagnosticsOrder = oldRenderDiagnosticsOrder
+		diagnosticsGeneration, diagnosticsRoutes = oldDiagnosticGeneration, oldDiagnosticRoutes
+		diagnosticsFloor, diagnosticsEvicted = oldDiagnosticFloor, oldDiagnosticEvicted
 		renderDiagnosticsMutex.Unlock()
 	})
 }
@@ -1751,7 +1757,7 @@ func TestRenderDiagnosticsEndpointReturnsRecordedRequest(t *testing.T) {
 
 	diagnosticsWriter := httptest.NewRecorder()
 	diagnosticsURL := loggedRenderDiagnosticsURL(t, requestID)
-	if want := "http://localhost:8097/__hyperbricks/render-diagnostics?request_id=" + requestID; diagnosticsURL != want {
+	if want := "/__hyperbricks/render-diagnostics?request_id=" + requestID; diagnosticsURL != want {
 		t.Fatalf("logged diagnostics URL = %q, want %q", diagnosticsURL, want)
 	}
 	diagnosticsRequest := httptest.NewRequest(http.MethodGet, diagnosticsURL, nil)

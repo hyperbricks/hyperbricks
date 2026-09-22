@@ -63,7 +63,7 @@ func (c *compiler) compileNode(raw map[string]interface{}) (renderNode, error) {
 		return c.compileTemplate(raw)
 	case composite.TreeRendererConfigGetName():
 		return c.compileTree(raw)
-	case component.TextConfigGetName(), component.HTMLConfigGetName():
+	case component.TextConfigGetName(), component.HTMLConfigGetName(), component.MarkdownConfigGetName():
 		return c.compileTyped(typeName, raw)
 	case component.GojaRenderConfigGetName():
 		return c.compileGoja(raw)
@@ -96,6 +96,7 @@ func (c *compiler) compileHyperMedia(raw map[string]interface{}) (renderNode, er
 	templateRaw := config.Template.ToRenderMap()
 	templateRaw["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
 	templateRaw["hyperbrickspath"] = config.Composite.Meta.HyperBricksKey + ".template"
+	config.Template.Source.Apply(templateRaw)
 	if _, ok := templateRaw["values"].(map[string]interface{}); !ok {
 		templateRaw["values"] = make(map[string]interface{})
 	}
@@ -120,6 +121,7 @@ func (c *compiler) compileTemplate(raw map[string]interface{}) (renderNode, erro
 	if !ok {
 		return nil, fmt.Errorf("compiled template has type %T", response.Instance)
 	}
+	config.ConfigType = composite.TemplateConfigGetName()
 
 	values := make([]templateValue, 0, len(config.Values))
 	for _, key := range shared.SortedUniqueKeys(config.Values) {
@@ -157,7 +159,7 @@ func (c *compiler) compileTemplate(raw map[string]interface{}) (renderNode, erro
 	if err != nil {
 		return nil, err
 	}
-	parsed, err := shared.ParsedGenericTemplate(templateContent)
+	parsed, err := shared.ParsedNamedTemplate(config.Composite.Meta.TemplateName(config.Template), templateContent)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing template: %w", err)
 	}
@@ -266,9 +268,11 @@ func (c *compiler) compileTree(raw map[string]interface{}) (renderNode, error) {
 		}
 
 		localConfig := shared.CloneMapDeep(childRaw)
-		localConfig["hyperbrickskey"] = key
-		localConfig["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
-		localConfig["hyperbrickspath"] = composite.JoinTreePath(config.Composite.Meta.HyperBricksPath, key)
+		if localConfig["@source"] == nil {
+			localConfig["hyperbrickskey"] = key
+			localConfig["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
+			localConfig["hyperbrickspath"] = composite.JoinTreePath(config.Composite.Meta.HyperBricksPath, key)
+		}
 
 		child, compileErr := c.compileNode(localConfig)
 		if compileErr != nil {
@@ -294,6 +298,7 @@ func (c *compiler) compileTyped(typeName string, raw map[string]interface{}) (re
 		return nil, fmt.Errorf("renderer %s is not registered", typeName)
 	}
 	return &typedNode{
+		meta:     shared.MetaFromConfig(raw),
 		renderer: renderer,
 		instance: response.Instance,
 		warnings: append([]string(nil), response.Warnings...),

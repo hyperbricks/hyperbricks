@@ -1,409 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="generator" content="hyperbricks cms">
-    <title>Dashboard</title>
-    <script>
-      (function () {
-        try {
-          var stored = localStorage.getItem("hb-theme");
-          var prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-          var theme = stored || (prefersLight ? "light" : "dark");
-          document.documentElement.setAttribute("data-theme", theme);
-        } catch (e) {}
-      })();
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/dashboard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  </head>
-  <body>
-    <div class="shell">
-      <header id="top_section" class="hero">
-        <div class="hero-bar">
-          <div class="badge">Runtime</div>
-          <button id="themeToggle" class="icon-toggle theme-toggle" type="button" aria-pressed="true" aria-label="Toggle theme">
-            <svg class="theme-icon theme-icon-dark" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M20 14.5A8 8 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <svg class="theme-icon theme-icon-light hidden" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
-              <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
-        <div class="hero-brand">
-          <img class="hero-logo" src="/assets/logo_blue.png" alt="Hyperbricks logo" data-logo-dark="/assets/logo_blue.png" data-logo-light="/assets/logo_black.png" />
-          <div class="hero-text">
-            <h1>Hyperbricks Dashboard</h1>
-            <p>Live module status and system metrics.</p>
-          </div>
-        </div>
-      </header>
-
-      <div class="grid">
-        <section id="general" class="panel general">
-          <h2>Module</h2>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Context</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td data-label="Context">Module</td>
-                  <td data-label="Value">{{.Module}}</td>
-                </tr>
-                <tr>
-                  <td data-label="Context">Mode</td>
-                  <td data-label="Value">{{.Mode}}</td>
-                </tr>
-                <tr>
-                  <td data-label="Context">Gateway</td>
-                  <td data-label="Value">{{.Gateway}}</td>
-                </tr>
-                <tr>
-                  <td data-label="Context">Port</td>
-                  <td data-label="Value">{{.Port}}</td>
-                </tr>
-                <tr>
-                  <td data-label="Context">Location</td>
-                  <td data-label="Value">
-                    <a href="http://{{.Gateway}}:{{.Port}}" class="link"><i class="fas fa-external-link-alt"></i></a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section id="metrics" class="panel metrics">
-          <h2>Metrics</h2>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Metric</th>
-                  <th>Quantity</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td data-label="Metric">Uptime</td>
-                  <td data-label="Quantity">{{.UpTime}}</td>
-                </tr>
-                <tr>
-                  <td data-label="Metric">Total Requests</td>
-                  <td data-label="Quantity">{{.Counter}}</td>
-                </tr>
-                <tr>
-                  <td data-label="Metric">Default Cache Expire</td>
-                  <td data-label="Quantity">{{.CacheExpire}}</td>
-                </tr>
-                <tr>
-                  <td data-label="Metric">Memory</td>
-                  <td data-label="Quantity">{{.Mem}} MiB</td>
-                </tr>
-                <tr>
-                  <td data-label="Metric">CPU Usage</td>
-                  <td data-label="Quantity">{{.Cpu}}</td>
-                </tr>
-                <tr>
-                  <td data-label="Metric">Bandwidth</td>
-                  <td data-label="Quantity">{{.BandWidth}}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section id="routes" class="panel routes">
-          <h2>Routes</h2>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Location</th>
-                  <th>Route Type</th>
-                  <th>Link</th>
-                  <th>Config</th>
-                </tr>
-              </thead>
-              <tbody>
-                {{range $key, $value := .Configs}}
-                <tr>
-                  <td data-label="Location">/{{$value.route}}</td>
-                  <td data-label="Route Type">{{$value.type}}</td>
-                  <td data-label="Link">
-                    <a href="/{{$value.route}}" class="link"><i class="fas fa-external-link-alt"></i></a>
-                  </td>
-                  <td data-label="Config">
-                    <a href="/{{$value.route}}" class="link"><i class="fas fa-cog"></i></a>
-                  </td>
-                </tr>
-                {{end}}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section id="logs" class="panel logs">
-          <div class="panel-header">
-            <h2>Logs</h2>
-            <button id="toggleLogs" class="ghost" type="button">
-              <span id="logsPlusIcon">+</span>
-              <span id="logsMinusIcon" class="hidden">-</span>
-            </button>
-          </div>
-
-          <div id="logsContainer" class="hidden">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Level</th>
-                    <th>Message</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {{range .Logs}}
-                  <tr>
-                    <td data-label="Level">{{.Level}}</td>
-                    <td data-label="Message">{{ .Message | replace "\x1b[0m" "" | replace "\x1b[38;2;255;165;0m" "" }}</td>
-                  </tr>
-                  {{end}}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <section id="plugins" class="panel plugins">
-          <h2>Plugins</h2>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Context</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tr>
-                <td data-label="Context">Plugin Dir</td>
-                <td data-label="Value">{{.PluginDir}}</td>
-              </tr>
-              <thead>
-                <tr>
-                  <th>Plugin</th>
-                  <th>Key</th>
-                </tr>
-              </thead>
-              <tbody>
-                {{range $key, $value := .Plugins}}
-                <tr>
-                  <td data-label="Plugin">{{$key}}</td>
-                  <td data-label="Key">{{$value}}</td>
-                </tr>
-                {{end}}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-      <!-- <section id="timeline" class="p-2 pb-3 col-span-3 sm:col-span-1 md:col-span-1  bg-[#333] rounded-md opacity-25">
-        <h2 class="font-semibold text-[#05D000] text-sm mb-1 uppercase"></h2>
-        <div class="relative">
-          <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-[#05D000] text-sm uppercase">
-              Timeline
-            </h2>
-            <button id="toggleTimeline" class="text-[#05D000] text-lg">
-              <span id="plusIcon">
-                +
-              </span>
-              <span id="minusIcon" class="hidden">
-                -
-              </span>
-            </button>
-          </div>
-          <div id="timelineContainer" class="container hidden">
-            <div class="flex flex-col md:grid grid-cols-12 text-gray-50">
-              <div class="flex md:contents">
-                <div class="col-start-2 col-end-4 mr-6 md:mx-auto relative">
-                  <div class="h-full w-4 flex items-center justify-center">
-                    <div class="h-full w-1 bg-green-500 pointer-events-none rounded-t-full"></div>
-                  </div>
-                  <div class="w-5 h-5 absolute top-1/2 -mt-2.5 -ml-0.5 rounded-full bg-green-500 shadow flex items-center justify-center"></div>
-                </div>
-                <div class="bg-green-500 col-start-4 col-end-12 p-3 rounded-lg my-2 mr-auto shadow-md w-full">
-                  <h3 class="font-semibold text-base mb-1">
-                    HyperBricks Started
-                  </h3>
-                  <p class="leading-tight text-justify w-full">
-                    21 July 2021, 01:30 PM
-                  </p>
-                </div>
-              </div>
-              <div class="flex md:contents">
-                <div class="col-start-2 col-end-4 mr-6 md:mx-auto relative">
-                  <div class="h-full w-4 flex items-center justify-center">
-                    <div class="h-full w-1 bg-blue-500 pointer-events-none rounded-t-full"></div>
-                  </div>
-                  <div class="w-5 h-5 absolute top-1/2 -mt-2.5 -ml-0.5 rounded-full bg-blue-500 shadow flex items-center justify-center"></div>
-                </div>
-                <div class="bg-blue-500 col-start-4 col-end-12 p-3 rounded-lg my-2 mr-auto shadow-md w-full">
-                  <h3 class="font-semibold text-base mb-1">
-                    HyperBricks Stopped
-                  </h3>
-                  <p class="leading-tight text-justify w-full">
-                    21 July 2021, 01:345 PM
-                  </p>
-                </div>
-              </div>
-              <div class="flex md:contents">
-                <div class="col-start-2 col-end-4 mr-6 md:mx-auto relative">
-                  <div class="h-full w-4 flex items-center justify-center">
-                    <div class="h-full w-1 bg-red-500 pointer-events-none rounded-t-full"></div>
-                  </div>
-                  <div class="w-5 h-5 absolute top-1/2 -mt-2.5 -ml-0.5 rounded-full bg-red-500 shadow flex items-center justify-center"></div>
-                </div>
-                <div class="bg-red-500 col-start-4 col-end-12 p-3 rounded-lg my-2 mr-auto shadow-md w-full">
-                  <h3 class="font-semibold text-base mb-1">
-                    HyperBricks Error
-                  </h3>
-                  <p class="leading-tight text-justify w-full">
-                    21 July 2021, 02:00 PM
-                  </p>
-                </div>
-              </div>
-              <div class="flex md:contents">
-                <div class="col-start-2 col-end-4 mr-6 md:mx-auto relative">
-                  <div class="h-full w-4 flex items-center justify-center">
-                    <div class="h-full w-1 bg-green-500 pointer-events-none rounded-t-full"></div>
-                  </div>
-                  <div class="w-5 h-5 absolute top-1/2 -mt-2.5 -ml-0.5 rounded-full bg-green-500 shadow flex items-center justify-center"></div>
-                </div>
-                <div class="bg-green-500 col-start-4 col-end-12 p-3 rounded-lg my-2 mr-auto shadow-md w-full">
-                  <h3 class="font-semibold text-base mb-1">
-                    HyperBricks Started
-                  </h3>
-                  <p class="leading-tight text-justify w-full">
-                    21 July 2021, 02:30 PM
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <script>
-            document.getElementById('toggleTimeline').addEventListener('click', function () {
-            const timeline = document.getElementById('timelineContainer');
-            const plusIcon = document.getElementById('plusIcon');
-            const minusIcon = document.getElementById('minusIcon');
-
-            if (timeline.classList.contains('hidden')) {
-            timeline.classList.remove('hidden');
-            plusIcon.classList.add('hidden');
-            minusIcon.classList.remove('hidden');
-            } else {
-            timeline.classList.add('hidden');
-            plusIcon.classList.remove('hidden');
-            minusIcon.classList.add('hidden');
-            }
-            });
-          </script>
-        </div>
-      </section> -->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard | HyperBricks</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/assets/hyperbricks-theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/hyperbricks-ui.css">
+  <link rel="stylesheet" href="/assets/dashboard.css">
+  <script src="/assets/hyperbricks-icons.js" defer></script>
+</head>
+<body>
+  <a class="hb-skip btn btn-primary" href="#main">Skip to content</a>
+  <header class="hb-header">
+    <a class="hb-brand" href="/dashboard" aria-label="HyperBricks dashboard"><img src="/assets/brandmark.svg" width="20" height="28" alt=""><span>HyperBricks</span></a>
+    <nav class="hb-nav" aria-label="Product"><a href="/dashboard" aria-current="page"><i data-lucide="layout-dashboard"></i>Dashboard</a>{{if .SpacesRoute}}<a href="{{.SpacesRoute}}"><i data-lucide="panels-top-left"></i>Spaces</a>{{end}}{{if .ErrorsRoute}}<a href="{{.ErrorsRoute}}"><i data-lucide="circle-alert"></i>Errors</a>{{end}}</nav>
+    <div class="hb-header-actions"><span class="hb-header-context hb-muted">{{.Mode}}</span><button class="btn btn-sm btn-square btn-ghost" data-theme-toggle type="button" aria-label="Switch theme"><i data-lucide="sun-moon"></i></button></div>
+  </header>
+  <main id="main" class="hb-page">
+    <div class="hb-page-heading"><div><p class="hb-eyebrow">{{.Module}}</p><h1>Dashboard</h1></div><a class="btn btn-sm btn-ghost" href="/" target="_blank" rel="noopener"><i data-lucide="external-link"></i>Open site</a></div>
+    <section class="hb-metrics hb-surface" aria-label="System metrics">
+      <div><span class="hb-muted">Requests</span><strong>{{.Counter}}</strong><small>Since startup</small></div>
+      <div><span class="hb-muted">Memory</span><strong>{{.Mem}} <span>MiB</span></strong><small>System allocation</small></div>
+      <div><span class="hb-muted">CPU</span><strong>{{.Cpu}}</strong><small>System usage</small></div>
+      <div><span class="hb-muted">Uptime</span><strong>{{.UpTime}}</strong><small>Runtime</small></div>
+    </section>
+    <div class="hb-dashboard-grid">
+      <section class="hb-section hb-surface"><div class="hb-section-heading"><h2><i data-lucide="box"></i>Module</h2></div>
+        <dl class="hb-properties">
+          <div><dt>Module</dt><dd>{{.Module}}</dd></div><div><dt>Mode</dt><dd><span class="badge badge-sm">{{.Mode}}</span></dd></div>
+          <div><dt>Gateway</dt><dd>{{.Gateway}}</dd></div><div><dt>Port</dt><dd>{{.Port}}</dd></div>
+          <div><dt>Cache expiry</dt><dd>{{.CacheExpire}}</dd></div><div><dt>Bandwidth</dt><dd>{{if .BandWidth}}{{.BandWidth}}{{else}}Pending sample{{end}}</dd></div>
+        </dl>
+      </section>
+      <section class="hb-section hb-surface"><div class="hb-section-heading"><h2><i data-lucide="route"></i>Routes <span class="badge badge-sm">{{len .Configs}}</span></h2><input id="routeFilter" class="input input-sm hb-route-filter" type="search" aria-label="Filter routes" placeholder="Filter routes"></div>
+        <div class="hb-table-scroll"><table class="table hb-routes"><thead><tr><th>Route</th><th>Type</th><th><span class="sr-only">Open</span></th></tr></thead><tbody id="routeRows">
+          {{range $key, $value := .Configs}}{{$route := $value.route}}{{$type := index $value "@type"}}
+          <tr><td><code>/{{if ne $route "index"}}{{$route}}{{end}}</code></td><td><span class="badge badge-sm">{{$type}}</span></td><td><a class="btn btn-sm btn-square btn-ghost" href="/{{if ne $route "index"}}{{$route}}{{end}}" target="_blank" rel="noopener" aria-label="Open route /{{$route}}" title="Open route"><i data-lucide="external-link"></i></a></td></tr>
+          {{else}}<tr><td colspan="3" class="hb-muted">No routes registered.</td></tr>{{end}}
+        </tbody></table></div><p id="routeEmpty" class="hb-muted" hidden>No matching routes.</p>
+      </section>
     </div>
-
-    <script>
-      document.getElementById('toggleLogs').addEventListener('click', function () {
-        const logs = document.getElementById('logsContainer');
-        const plusIcon = document.getElementById('logsPlusIcon');
-        const minusIcon = document.getElementById('logsMinusIcon');
-
-        if (logs.classList.contains('hidden')) {
-          logs.classList.remove('hidden');
-          plusIcon.classList.add('hidden');
-          minusIcon.classList.remove('hidden');
-        } else {
-          logs.classList.add('hidden');
-          plusIcon.classList.remove('hidden');
-          minusIcon.classList.add('hidden');
-        }
+    <section class="hb-section hb-log-section hb-surface">
+      <div class="hb-section-heading"><h2><i data-lucide="scroll-text"></i>Logs</h2><div class="hb-actions">
+        <select id="logLevel" class="select select-sm" aria-label="Log level"><option value="all">All levels</option><option value="debug">Debug</option><option value="info">Info</option><option value="warn">Warning</option><option value="error">Error</option></select>
+        <div class="join" role="group" aria-label="Log view"><button class="btn btn-sm join-item" id="logTable" type="button" aria-pressed="true">Table</button><button class="btn btn-sm join-item" id="logTerminal" type="button" aria-pressed="false">Terminal</button></div>
+      </div></div>
+      <div id="logRows">{{range .Logs}}{{$level := .Level.String}}<div class="hb-log-row" data-level="{{$level}}"><time>{{.Time.Format "15:04:05"}}</time><span class="badge badge-sm {{if eq $level "info"}}badge-info{{else if eq $level "warn"}}badge-warning{{else if or (eq $level "error") (eq $level "fatal") (eq $level "panic") (eq $level "dpanic")}}badge-error{{end}}">{{$level}}</span><p>{{.Message}}</p></div>{{end}}</div>
+      <pre id="logOutput" class="hb-terminal" hidden></pre><p id="logEmpty" class="hb-muted" hidden>No log entries for this level.</p>
+    </section>
+    <section class="hb-section hb-surface"><div class="hb-section-heading"><h2><i data-lucide="puzzle"></i>Plugins <span class="badge badge-sm">{{len .Plugins}}</span></h2><code class="hb-muted">{{.PluginDir}}</code></div>
+      <div class="hb-table-scroll"><table class="table"><thead><tr><th>Plugin</th><th>Renderer</th></tr></thead><tbody>{{range $key, $value := .Plugins}}<tr><td>{{$key}}</td><td>{{$value}}</td></tr>{{else}}<tr><td colspan="2" class="hb-muted">No plugins loaded.</td></tr>{{end}}</tbody></table></div>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const $ = id => document.getElementById(id);
+      const rows = [...document.querySelectorAll('#logRows .hb-log-row')];
+      let terminal = false;
+      // Logs are text, never executable HTML. Remove terminal color sequences for both views.
+      rows.forEach(row => { const message = row.querySelector('p'); message.textContent = message.textContent.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, ''); });
+      function renderLogs() {
+        const level = $('logLevel').value;
+        const visible = rows.filter(row => {
+          row.hidden = level !== 'all' && row.dataset.level !== level && !(level === 'error' && ['dpanic', 'panic', 'fatal'].includes(row.dataset.level));
+          return !row.hidden;
+        });
+        $('logRows').hidden = terminal;
+        $('logOutput').hidden = !terminal || !visible.length;
+        $('logEmpty').hidden = visible.length > 0;
+        $('logOutput').textContent = visible.map(row => `${row.querySelector('time').textContent} ${row.dataset.level.toUpperCase().padEnd(5)} ${row.querySelector('p').textContent}`).join('\n');
+        $('logTable').setAttribute('aria-pressed', String(!terminal));
+        $('logTerminal').setAttribute('aria-pressed', String(terminal));
+      }
+      $('logLevel').addEventListener('change', renderLogs);
+      $('logTable').addEventListener('click', () => { terminal = false; renderLogs(); });
+      $('logTerminal').addEventListener('click', () => { terminal = true; renderLogs(); });
+      $('routeFilter').addEventListener('input', event => {
+        const rows = [...$('routeRows').rows];
+        rows.forEach(row => { row.hidden = !row.textContent.toLowerCase().includes(event.target.value.toLowerCase()); });
+        $('routeEmpty').hidden = rows.some(row => !row.hidden);
       });
-    </script>
-    <script>
-      (function () {
-        const storageKey = "hb-theme";
-        const themeToggle = document.getElementById("themeToggle");
-        const logos = document.querySelectorAll(".hero-logo[data-logo-light]");
-        const media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
-
-        function readStoredTheme() {
-          try {
-            return localStorage.getItem(storageKey);
-          } catch (e) {
-            return null;
-          }
-        }
-
-        function storeTheme(theme) {
-          try {
-            localStorage.setItem(storageKey, theme);
-          } catch (e) {}
-        }
-
-        function applyTheme(theme) {
-          document.documentElement.setAttribute("data-theme", theme);
-          if (themeToggle) {
-            const isDark = theme === "dark";
-            themeToggle.setAttribute("aria-pressed", isDark ? "true" : "false");
-            themeToggle.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
-            const darkIcon = themeToggle.querySelector(".theme-icon-dark");
-            const lightIcon = themeToggle.querySelector(".theme-icon-light");
-            if (darkIcon && lightIcon) {
-              darkIcon.classList.toggle("hidden", isDark);
-              lightIcon.classList.toggle("hidden", !isDark);
-            }
-          }
-          logos.forEach((logo) => {
-            const next = theme === "light" ? logo.dataset.logoLight : logo.dataset.logoDark;
-            if (next) {
-              logo.src = next;
-            }
-          });
-        }
-
-        const storedTheme = readStoredTheme();
-        const systemTheme = media && media.matches ? "light" : "dark";
-        const initialTheme = storedTheme || systemTheme;
-        applyTheme(initialTheme);
-
-        if (themeToggle) {
-          themeToggle.addEventListener("click", () => {
-            const current = document.documentElement.getAttribute("data-theme") || "dark";
-            const next = current === "dark" ? "light" : "dark";
-            storeTheme(next);
-            applyTheme(next);
-          });
-        }
-
-        if (media) {
-          media.addEventListener("change", (event) => {
-            if (readStoredTheme()) {
-              return;
-            }
-            applyTheme(event.matches ? "light" : "dark");
-          });
-        }
-      })();
-    </script>
-  </body>
+      renderLogs();
+    })();
+  </script>
+</body>
 </html>

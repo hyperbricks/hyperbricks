@@ -229,9 +229,11 @@ func startDeployAPIServer() error {
 	mux := http.NewServeMux()
 	mux.Handle("/deploy/", api.wrapAuth(api.handleDeploy))
 	mux.HandleFunc("/assets/dashboard.css", serveDashboardCSS)
-	mux.HandleFunc("/assets/logo.png", serveDashboardLogo)
-	mux.HandleFunc("/assets/logo_blue.png", serveDashboardLogoBlue)
-	mux.HandleFunc("/assets/logo_black.png", serveDashboardLogoBlack)
+	mux.HandleFunc("/assets/hyperbricks-ui.css", serveHyperbricksUIStylesheet)
+	mux.HandleFunc("/assets/hyperbricks-theme.js", serveHyperbricksThemeScript)
+	mux.HandleFunc("/assets/hyperbricks-icons.js", serveHyperbricksIconsScript)
+	mux.HandleFunc("/assets/brandmark.svg", serveBrandMark)
+	mux.HandleFunc("/assets/favicon.svg", serveFavicon)
 	mux.HandleFunc("/", serveDeployDashboard)
 
 	addr := fmt.Sprintf("%s:%d", bind, port)
@@ -240,8 +242,7 @@ func startDeployAPIServer() error {
 		Handler: mux,
 	}
 
-	fmt.Printf("Deploy API listening on http://%s\n", addr)
-	return server.ListenAndServe()
+	return serveDeployHTTP(server, "remote")
 }
 
 func serveDeployDashboard(w http.ResponseWriter, r *http.Request) {
@@ -270,42 +271,6 @@ func serveDashboardCSS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.WriteHeader(http.StatusOK)
 	_, _ = io.WriteString(w, assets.DashboardCSS)
-}
-
-func serveDashboardLogo(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.Header().Set("Content-Type", mime.TypeByExtension(".png"))
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(assets.Logo)
-}
-
-func serveDashboardLogoBlue(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.Header().Set("Content-Type", mime.TypeByExtension(".png"))
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(assets.Logo_Blue)
-}
-
-func serveDashboardLogoBlack(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.Header().Set("Content-Type", mime.TypeByExtension(".png"))
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(assets.Logo_Black)
 }
 
 func loadDeployConfig(path string) (shared.DeployConfig, error) {

@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -48,7 +47,7 @@ func NewDeployDaemonCommand() *cobra.Command {
 			if strings.TrimSpace(os.Getenv("HB_DEPLOY_CONFIG")) == "" {
 				if _, err := os.Stat(DeployConfigFileName); os.IsNotExist(err) {
 					if err := os.WriteFile(DeployConfigFileName, []byte(deployInitTemplate("remote")), 0644); err != nil {
-						fmt.Printf("Error creating deploy config: %v\n", err)
+						failf("Error creating deploy config: %v\n", err)
 						Exit = true
 						return
 					}
@@ -66,7 +65,7 @@ func NewDeployDaemonCommand() *cobra.Command {
 					Exit = true
 					return
 				} else if err != nil {
-					fmt.Printf("Error checking deploy config: %v\n", err)
+					failf("Error checking deploy config: %v\n", err)
 					Exit = true
 					return
 				}
@@ -89,7 +88,7 @@ func NewStartCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			if strings.TrimSpace(StartDeployInit) != "" {
 				if err := writeDeployInitConfig(StartDeployInit); err != nil {
-					fmt.Printf("Error creating deploy config: %v\n", err)
+					failf("Error creating deploy config: %v\n", err)
 					Exit = true
 					return
 				}
@@ -106,13 +105,9 @@ func NewStartCommand() *cobra.Command {
 			}
 
 			if StartDeployRemote && StartDeployLocal {
-				fmt.Println("Use only one of --deploy-remote or --deploy-local.")
+				failf("use only one of --deploy-remote or --deploy-local")
 				Exit = true
 				return
-			}
-
-			config := Config{
-				Port: Port,
 			}
 
 			if StartModule == "" && !cmd.Flags().Changed("module") {
@@ -125,7 +120,7 @@ func NewStartCommand() *cobra.Command {
 			}
 
 			if StartDeploy && strings.TrimSpace(StartConfigPath) != "" {
-				fmt.Println("Use --config only when starting a module directly, not with --deploy.")
+				failf("use --config only when starting a module directly, not with --deploy")
 				Exit = true
 				ExitCode = 1
 				return
@@ -137,7 +132,7 @@ func NewStartCommand() *cobra.Command {
 				}
 				runtimeDir, err := prepareDeployRuntime(StartModule, StartDeployDir, StartBuildID)
 				if err != nil {
-					fmt.Printf("Error preparing deploy runtime: %v\n", err)
+					failf("Error preparing deploy runtime: %v\n", err)
 					Exit = true
 					return
 				}
@@ -146,14 +141,14 @@ func NewStartCommand() *cobra.Command {
 			} else {
 				workingDirectory, err := os.Getwd()
 				if err != nil {
-					fmt.Printf("Error resolving the current working directory: %v\n", err)
+					failf("Error resolving the current working directory: %v\n", err)
 					Exit = true
 					ExitCode = 1
 					return
 				}
 				moduleRoot, err := resolveDirectStartModuleRoot(StartModule, workingDirectory)
 				if err != nil {
-					fmt.Printf("Invalid module selection %q: %v\n", StartModule, err)
+					failf("Invalid module selection %q: %v\n", StartModule, err)
 					Exit = true
 					ExitCode = 1
 					return
@@ -166,7 +161,7 @@ func NewStartCommand() *cobra.Command {
 			if strings.TrimSpace(StartConfigPath) != "" {
 				configPath, err := resolveModuleConfigPath(GetModuleRoot(), StartConfigPath)
 				if err != nil {
-					fmt.Printf("Invalid module config path: %v\n", err)
+					failf("Invalid module config path: %v\n", err)
 					Exit = true
 					ExitCode = 1
 					return
@@ -175,19 +170,14 @@ func NewStartCommand() *cobra.Command {
 			}
 
 			configPath := GetModuleConfigPath()
-			data, err := os.ReadFile(configPath)
+			_, err := os.ReadFile(configPath)
 			if err != nil {
-				fmt.Printf("Error reading module config %q: %v\n", configPath, err)
+				failf("Error reading module config %q: %v\n", configPath, err)
 				Exit = true
 				ExitCode = 1
 				return
 			}
-			if err := json.Unmarshal(data, &config); err != nil {
-				StartMode = true
-				return
-			}
-
-			fmt.Printf("Starting server with config: %s on port: %d\n", configPath, config.Port)
+			StartMode = true
 		},
 	}
 	cmd.Flags().StringVarP(&StartModule, "module", "m", "default", "module name or directory path")

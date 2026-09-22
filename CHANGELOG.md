@@ -1,5 +1,89 @@
 # Changelog
 
+## 2026-09-16 updates
+
+Development updates for `v1.2.5-beta`; not a published release announcement.
+
+### Project-aware authoring
+
+- Add `hyperbricks author` for project discovery and source-owned root, child,
+  and Space additions, emitting native ordered YAML. Retire `scaffold-cli` without
+  versioned names or compatibility aliases.
+- Add focused context and examples, compact discovery, unknown-target suggestions,
+  revision-bearing batches, compact apply summaries, and multi-owner inspection.
+- Check revisions, ownership, imports, routes, referenced files, and editing
+  contracts before writes; preserve unrelated definitions. Document source-versus-
+  runtime verification boundaries in [Authoring](docs/AUTHOR.md).
+
+### Fast scaffold and Space commands
+
+- Simplify `scaffold` to module, category, type, destination, name, optional page
+  route/title, and review, using an embedded native YAML library instead of field
+  questionnaires. Add non-interactive flags, dry-run, and JSON output.
+- Provide inline/file Template and Markdown variants and generic image, template,
+  document, JSON, CSS, and esbuild assets. Preserve existing assets and use
+  token-based default names with root collision handling.
+- Remember wizard selections, handle deleted modules, and fix accidental navigation
+  cancellation. Keep `space` available through prompts and flags for inherited
+  Hypermedia pages. Correct top-level destination examples in the
+  [CLI guide](docs/HYPERBRICKS_CLI.md#scaffold) and skill.
+- Clarify in the HyperBricks skill that agents use non-interactive `scaffold` for
+  matching built-in starters and `author` for changes that must adapt to existing
+  project structure.
+
+### Built-in Spaces editing
+
+- Embed [Spaces](docs/SPACES.md) as a development-only editor with explicit write
+  enablement, host/origin checks, and source-owned editable-field allowlists.
+- Add source catalogs, inherited pages, revision-checked editing, recoverable
+  Trash, asset upload/selection, metadata, and contextual editing from pages.
+- Add Markdown editing/previews, copy/shared-save workflows, document revisions,
+  and draft-preserving conflict review. Unify product/editor styling and expand
+  multilingual landing and Spaces examples.
+
+### Native Markdown and starter examples
+
+- Add native [Markdown](docs/MARKDOWN.md) with inline/file sources, bounded reads,
+  path validation, sanitized rendering, and explicit Spaces editing contracts.
+  Query parameters cannot select arbitrary documents.
+- Ship an embedded three-page `init` starter with a shared shell, navigation,
+  metadata, local HTMX, and native esbuild sources.
+- Publish commented [type examples](docs/HYPERBRICKS_TYPE_EXAMPLES.md) with variants
+  and field-reference links. Consolidate author, scaffold, Space, and Markdown
+  guidance in the HyperBricks skill, emphasizing focused, source-only workflows.
+
+### Runtime diagnostics, logging, and memory
+
+- Add a shared Errors view, bounded diagnostics, request correlation, current error
+  state, and source/component context; reduce collection and inspection overhead.
+- Separate command output from logging; improve console formatting, module-relative
+  paths, and redaction guidance. Reduce live-render allocations and record SSR
+  benchmarks without equating allocations, retained heap, and process RSS.
+- Clarify deployment authentication/connection controls and move internal development
+  notes out of the root manual into a dated local log.
+
+### Handbook automation
+
+- Add one setup/build command for Markdown and styled PDF documentation/skills
+  handbooks, with pinned dependencies and shared committed-snapshot provenance.
+- Recreate the existing typography and layout, linked contents, chapter bookmarks,
+  code panels, and tables. Publish both formats in `docs/handbooks/`, allow Git
+  tracking, and exclude generated handbooks from source discovery.
+- Render Mermaid diagrams in PDFs with print-safe colors; retain Mermaid source
+  in Markdown and fail explicitly on rendering errors.
+- Document setup, fonts, build options, and validation in
+  [Handbook builds](docs/handbooks/HANDBOOKS.md).
+
+### Regression coverage
+
+- Cover authoring revisions/ownership/contracts, scaffold wizard and starter
+  rendering, scaffold/Space dry-run and apply, Markdown, Spaces, diagnostics,
+  logging, and memory behavior.
+- Isolate dedicated echo/JWT tests on owned ephemeral servers, preventing accidental
+  reuse of an existing server's signing secret; retain PostgREST integration.
+- Add handbook pagination, link/outline, missing-font, and source-exclusion tests.
+  Browser and full release-candidate verification remain separate gates.
+
 ## 2026-09-12 updates
 
 ### Beta release preparation

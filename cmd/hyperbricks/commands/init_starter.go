@@ -52,13 +52,13 @@ func InitStarterListCommand() *cobra.Command {
 
 			hbVer, err := semver.NewVersion(getHyperbricksSemver())
 			if err != nil {
-				fmt.Println("Error: could not parse HyperBricks version:", err)
+				failf("Error: could not parse HyperBricks version:"+" %v", err)
 				return
 			}
 
 			starters, err := fetchStarterIndex()
 			if err != nil {
-				fmt.Println("Error fetching starter index:", err)
+				failf("Error fetching starter index:"+" %v", err)
 				return
 			}
 
@@ -155,7 +155,7 @@ func InitStarterGetCommand() *cobra.Command {
 
 			moduleName, starter, err := runInitStarterGet(args[0], initStarterModule)
 			if err != nil {
-				fmt.Printf("Error installing starter: %v\n", err)
+				failf("Error installing starter: %v\n", err)
 				return
 			}
 

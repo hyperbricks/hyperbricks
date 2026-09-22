@@ -1,0 +1,179 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/hyperbricks/hyperbricks/pkg/component"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/spaces"
+)
+
+type editorTestPlugin struct {
+	calls int
+	route string
+}
+
+func TestBuiltinSpacesMountDefaultsAndSafety(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	cfg := shared.GetHyperBricksConfiguration()
+	old := *cfg
+	runtime := shared.GetRuntimeOptions()
+	t.Cleanup(func() { *cfg = old; shared.SetRuntimeOptions(runtime) })
+	module := t.TempDir()
+	cfg.Mode = shared.DEVELOPMENT_MODE
+	cfg.Directories = nil
+	cfg.Plugins.Enabled = nil
+	cfg.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
+	shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: module})
+	request := func(method, path, body string) *httptest.ResponseRecorder {
+		t.Helper()
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(method, "http://localhost"+path, strings.NewReader(body))
+		r.Header.Set("Origin", "http://localhost")
+		r.Header.Set("X-Spaces-Request", "1")
+		r.Header.Set("Content-Type", "application/json")
+		if !handleFrontendEditor(w, r) {
+			t.Fatal("built-in Spaces was not mounted")
+		}
+		return w
+	}
+	for _, path := range []string{"", "/web/app.js", "/web/recovery.mjs", "/web/http.mjs", "/web/navigation.mjs", "/web/contextual.js", "/web/contextual.css", "/web/document.css", "/web/style.css", "/web/hyperbricks.css", "/web/theme.js", "/web/brandmark.svg", "/web/favicon.svg", "/web/lucide.js", "/web/licenses.txt"} {
+		w := request("GET", shared.DefaultSpacesRoute+path, "")
+		if w.Code != 200 || w.Body.Len() == 0 || w.Header().Get("Cache-Control") != "no-store" {
+			t.Fatalf("asset %s: %d %s", path, w.Code, w.Body.String())
+		}
+	}
+	for _, dashboard := range []bool{true, false} {
+		cfg.Development.Dashboard = dashboard
+		body := request("GET", shared.DefaultSpacesRoute, "").Body.String()
+		if strings.Contains(body, `href="/__hyperbricks/errors"`) != dashboard || strings.Contains(body, "__ERRORS_NAV__") {
+			t.Fatalf("Errors navigation does not follow Dashboard availability: %v", dashboard)
+		}
+		if dashboard && strings.Index(body, ">Errors</a>") < strings.Index(body, ">Spaces</a>") {
+			t.Error("Errors should follow Spaces in navigation")
+		}
+	}
+	w := request("GET", shared.DefaultSpacesRoute+"/api", "")
+	var snapshot spaces.Snapshot
+	if err := json.Unmarshal(w.Body.Bytes(), &snapshot); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != 200 || snapshot.Write || len(snapshot.Spaces) != 0 || len(snapshot.Sources) != 0 {
+		t.Fatalf("default snapshot: %d %+v", w.Code, snapshot)
+	}
+	for _, action := range []string{"create", "save", "trash", "restore"} {
+		if w := request("POST", shared.DefaultSpacesRoute+"/api", `{"action":"`+action+`"}`); w.Code != 403 {
+			t.Fatalf("read-only %s: %d", action, w.Code)
+		}
+	}
+	for _, path := range []string{"/api/upload", "/api/document"} {
+		if w := request("POST", shared.DefaultSpacesRoute+path, `{"action":"copy"}`); w.Code != 403 {
+			t.Fatalf("read-only %s: %d", path, w.Code)
+		}
+	}
+	files, err := os.ReadDir(module)
+	if err != nil || len(files) != 0 {
+		t.Fatalf("read-only requests created files: %v %v", files, err)
+	}
+	cfg.Development.FrontendEditing.Spaces.Write = true
+	if w := request("POST", shared.DefaultSpacesRoute+"/api", `{"action":"create"}`); w.Code != 409 {
+		t.Fatalf("write should reach revision validation: %d %s", w.Code, w.Body.String())
+	}
+	for _, mode := range []string{shared.LIVE_MODE, shared.DEBUG_MODE, shared.DEVELOPMENT_MODE} {
+		for _, disabled := range []bool{false, true} {
+			for _, production := range []bool{false, true} {
+				cfg.Mode = mode
+				cfg.Development.FrontendEditing.Enabled = !disabled
+				shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: module, Production: production})
+				if mode == shared.DEVELOPMENT_MODE && !disabled && !production {
+					continue
+				}
+				for _, path := range []string{"", "/web/app.js", "/web/navigation.mjs", "/web/contextual.js", "/web/contextual.css", "/api", "/api/assets", "/api/document", "/api/upload"} {
+					for _, method := range []string{"GET", "POST"} {
+						r := httptest.NewRequest(method, "http://localhost"+shared.DefaultSpacesRoute+path, nil)
+						if handleFrontendEditor(httptest.NewRecorder(), r) {
+							t.Fatalf("editor exposed in %s, disabled=%v production=%v", mode, disabled, production)
+						}
+						// The package also enforces the guard when called without the server mount.
+						var handler spaces.Handler
+						w := httptest.NewRecorder()
+						handler.ServeHTTP(w, r)
+						if w.Code != 404 {
+							t.Fatalf("package guard: %d", w.Code)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func (p *editorTestPlugin) Render(instance interface{}, ctx context.Context) (any, []error) {
+	p.calls++
+	cfg := instance.(component.PluginConfig)
+	p.route = cfg.Data["route"].(string)
+	if _, ok := ctx.Value(shared.Request).(*http.Request); !ok {
+		panic("missing request")
+	}
+	return shared.HandledResponse{Status: 201, ContentType: "application/json", Headers: map[string]string{"X-Editor": "yes"}, Body: []byte(`{"ok":true}`)}, nil
+}
+func TestFrontendEditorGenericMountDevelopmentAndEnablement(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	cfg := shared.GetHyperBricksConfiguration()
+	oldEditing, oldPlugins, oldRuntime := cfg.Development.FrontendEditing, cfg.Plugins, shared.GetRuntimeOptions()
+	t.Cleanup(func() {
+		cfg.Development.FrontendEditing = oldEditing
+		cfg.Plugins = oldPlugins
+		shared.SetRuntimeOptions(oldRuntime)
+	})
+	cfg.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
+	cfg.Development.FrontendEditing.Editors = map[string]shared.FrontendEditorConfig{"test": {Plugin: "Editor@1.0.0", Route: "/__hyperbricks/test", Data: map[string]interface{}{"route": "/cannot-override"}}}
+	cfg.Plugins.Enabled = []string{"Editor@1.0.0"}
+	shared.SetRuntimeOptions(shared.RuntimeOptions{})
+	p := &editorTestPlugin{}
+	rm.SetPlugin("Editor@1.0.0", p)
+	for _, tc := range []struct {
+		name, mode, path    string
+		enabled, production bool
+		handled             bool
+		status              int
+	}{
+		{"development", shared.DEVELOPMENT_MODE, "/__hyperbricks/test/api", true, false, true, 201},
+		{"prefix-boundary", shared.DEVELOPMENT_MODE, "/__hyperbricks/testing", true, false, false, 200},
+		{"debug", shared.DEBUG_MODE, "/__hyperbricks/test", true, false, false, 200},
+		{"live", shared.LIVE_MODE, "/__hyperbricks/test", true, false, false, 200},
+		{"production", shared.DEVELOPMENT_MODE, "/__hyperbricks/test", true, true, false, 200},
+		{"disabled", shared.DEVELOPMENT_MODE, "/__hyperbricks/test", false, false, false, 200},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg.Mode = tc.mode
+			cfg.Development.FrontendEditing.Enabled = tc.enabled
+			shared.SetRuntimeOptions(shared.RuntimeOptions{Production: tc.production})
+			w := httptest.NewRecorder()
+			handled := handleFrontendEditor(w, httptest.NewRequest("GET", tc.path, nil))
+			if handled != tc.handled || w.Code != tc.status {
+				t.Fatalf("handled %t status %d", handled, w.Code)
+			}
+			if handled && (w.Header().Get("Cache-Control") != "no-store" || w.Header().Get("X-Editor") != "yes") {
+				t.Fatal(w.Header())
+			}
+		})
+	}
+	if p.calls != 1 || p.route != "/__hyperbricks/test" {
+		t.Fatalf("calls %d route %s", p.calls, p.route)
+	}
+	cfg.Mode = shared.DEVELOPMENT_MODE
+	cfg.Development.FrontendEditing.Enabled = true
+	shared.SetRuntimeOptions(shared.RuntimeOptions{})
+	cfg.Plugins.Enabled = nil
+	w := httptest.NewRecorder()
+	if !handleFrontendEditor(w, httptest.NewRequest("POST", "/__hyperbricks/test/api", nil)) || w.Code != 503 {
+		t.Fatal("unlisted plugin was called")
+	}
+}

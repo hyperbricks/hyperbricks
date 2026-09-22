@@ -6,6 +6,7 @@ import (
 	"math"
 	"mime"
 	"net/http"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/ui"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/net"
 )
@@ -35,6 +37,8 @@ type SysData struct {
 	Logs          []logging.LogMessage
 	Plugins       map[string]shared.PluginRenderer
 	PluginDir     string
+	SpacesRoute   string
+	ErrorsRoute   string
 }
 
 var (
@@ -150,26 +154,17 @@ func statusServer() {
 	}
 
 	//plugins = GetPlugins(hbConfig)
-	http.HandleFunc("/assets/logo.png", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", mime.TypeByExtension(".png"))
-		w.Write(assets.Logo)
-	})
-
-	http.HandleFunc("/assets/logo_blue.png", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", mime.TypeByExtension(".png"))
-		w.Write(assets.Logo_Blue)
-	})
-
-	http.HandleFunc("/assets/logo_black.png", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", mime.TypeByExtension(".png"))
-		w.Write(assets.Logo_Black)
-	})
+	http.HandleFunc("/assets/brandmark.svg", serveBrandMark)
+	http.HandleFunc("/assets/favicon.svg", serveFavicon)
 
 	http.HandleFunc("/assets/dashboard.css", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", mime.TypeByExtension(".css"))
 		w.Header().Set("Cache-Control", "no-store")
 		w.Write([]byte(assets.DashboardCSS))
 	})
+	http.HandleFunc("/assets/hyperbricks-ui.css", serveHyperbricksUIStylesheet)
+	http.HandleFunc("/assets/hyperbricks-theme.js", serveHyperbricksThemeScript)
+	http.HandleFunc("/assets/hyperbricks-icons.js", serveHyperbricksIconsScript)
 
 	http.HandleFunc("/dashboard", func(w http.ResponseWriter, r *http.Request) {
 		var data SysData
@@ -183,7 +178,7 @@ func statusServer() {
 		data.Cpu = cachedCPUUsage
 
 		// Populate other data fields.
-		data.Module = stripAfterLastSlash(shared.Module)
+		data.Module = filepath.Base(shared.GetRuntimeOptions().ModuleRoot)
 		data.Gateway = stripPort(shared.Location)
 
 		// Assume 'configs' and 'configMutex' are defined elsewhere.
@@ -192,6 +187,12 @@ func statusServer() {
 		data.CurrentConfig = configs[r.URL.Path]
 		configMutex.RUnlock()
 		data.HbConfig = getHyperBricksConfiguration()
+		if errorsViewEnabled() {
+			data.ErrorsRoute = errorsViewPath
+		}
+		if data.HbConfig.Mode == shared.DEVELOPMENT_MODE && !shared.GetRuntimeOptions().Production && data.HbConfig.Development.FrontendEditing.Enabled && data.HbConfig.ValidateFrontendEditing() == nil {
+			data.SpacesRoute = data.HbConfig.Development.FrontendEditing.Spaces.Route
+		}
 		data.CacheExpire = data.HbConfig.Live.CacheTime.String()
 		data.Port = fmt.Sprintf("%d", data.HbConfig.Server.Port)
 		data.Mode = data.HbConfig.Mode
@@ -215,4 +216,64 @@ func statusServer() {
 	})
 	go updateCPUUsage()
 
+}
+
+func serveHyperbricksUIStylesheet(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "text/css; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	if r.Method != http.MethodHead {
+		_, _ = w.Write(ui.Stylesheet)
+	}
+}
+
+func serveHyperbricksThemeScript(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	if r.Method != http.MethodHead {
+		_, _ = w.Write(ui.ThemeScript)
+	}
+}
+
+func serveHyperbricksIconsScript(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	if r.Method != http.MethodHead {
+		_, _ = w.Write(ui.IconsScript)
+	}
+}
+
+func serveBrandMark(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "image/svg+xml")
+	w.Header().Set("Cache-Control", "no-store")
+	if r.Method != http.MethodHead {
+		_, _ = w.Write(ui.LogoMark)
+	}
+}
+
+func serveFavicon(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "image/svg+xml")
+	w.Header().Set("Cache-Control", "no-store")
+	if r.Method != http.MethodHead {
+		_, _ = w.Write(ui.Favicon)
+	}
 }

@@ -88,13 +88,13 @@ func NewBuildCommand() *cobra.Command {
 			}
 			result, err := runBuild()
 			if err != nil {
-				fmt.Printf("Error building archive: %v\n", err)
+				failf("Error building archive: %v\n", err)
 				Exit = true
 				return
 			}
 			if buildPush {
 				if err := runBuildPush(result); err != nil {
-					fmt.Printf("Error pushing build: %v\n", err)
+					failf("Error pushing build: %v\n", err)
 					Exit = true
 					return
 				}

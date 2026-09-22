@@ -169,9 +169,11 @@ func startDeployLocalServer() error {
 	mux.HandleFunc("/local/plugins", api.handlePluginRoutes)
 	mux.HandleFunc("/local/plugins/", api.handlePluginRoutes)
 	mux.HandleFunc("/assets/dashboard.css", serveDashboardCSS)
-	mux.HandleFunc("/assets/logo.png", serveDashboardLogo)
-	mux.HandleFunc("/assets/logo_blue.png", serveDashboardLogoBlue)
-	mux.HandleFunc("/assets/logo_black.png", serveDashboardLogoBlack)
+	mux.HandleFunc("/assets/hyperbricks-ui.css", serveHyperbricksUIStylesheet)
+	mux.HandleFunc("/assets/hyperbricks-theme.js", serveHyperbricksThemeScript)
+	mux.HandleFunc("/assets/hyperbricks-icons.js", serveHyperbricksIconsScript)
+	mux.HandleFunc("/assets/brandmark.svg", serveBrandMark)
+	mux.HandleFunc("/assets/favicon.svg", serveFavicon)
 	mux.HandleFunc("/", api.serveLocalDashboard)
 
 	addr := fmt.Sprintf("%s:%d", bind, port)
@@ -180,8 +182,7 @@ func startDeployLocalServer() error {
 		Handler: mux,
 	}
 
-	fmt.Printf("Deploy local listening on http://%s\n", addr)
-	return server.ListenAndServe()
+	return serveDeployHTTP(server, "local")
 }
 
 func deployLocalConfigPath() string {

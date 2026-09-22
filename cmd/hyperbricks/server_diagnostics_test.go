@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"strings"
 	"testing"
 
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
@@ -16,14 +15,13 @@ import (
 
 func loggedRenderDiagnosticsURL(t *testing.T, requestID string) string {
 	t.Helper()
-	const prefix = "Render diagnostics recorded: "
 	entries := logging.GetLogs()
 	for index := len(entries) - 1; index >= 0; index-- {
 		entry := entries[index]
-		if !strings.HasPrefix(entry.Message, prefix) {
+		if entry.Fields["request_id"] != requestID {
 			continue
 		}
-		link := strings.TrimPrefix(entry.Message, prefix)
+		link, _ := entry.Fields["diagnostics_url"].(string)
 		parsed, err := url.Parse(link)
 		if err == nil && parsed.Query().Get("request_id") == requestID {
 			return link

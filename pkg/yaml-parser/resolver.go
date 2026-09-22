@@ -15,6 +15,9 @@ type valueResolverContext struct {
 	resolvedVars  map[string]interface{}
 	resolvingVars map[string]bool
 	diagnostics   []Diagnostic
+	resources     map[string]string
+	sourceNode    *Node
+	sourcePath    string
 }
 
 func newValueResolverContext(doc *Document, opts Options) *valueResolverContext {
@@ -32,10 +35,14 @@ func newValueResolverContext(doc *Document, opts Options) *valueResolverContext 
 		vars:          vars,
 		resolvedVars:  make(map[string]interface{}),
 		resolvingVars: make(map[string]bool),
+		resources:     make(map[string]string),
 	}
 }
 
 func materializeNodeToMap(node *Node, ctx *valueResolverContext, path string) map[string]interface{} {
+	previousNode, previousPath := ctx.sourceNode, ctx.sourcePath
+	ctx.sourceNode, ctx.sourcePath = node, path
+	defer func() { ctx.sourceNode, ctx.sourcePath = previousNode, previousPath }()
 	resolvedType := formatType(node.Type)
 	useNativeAPIProps := isAPIComponentType(resolvedType)
 	out := make(map[string]interface{}, len(node.Props)+len(node.nativeAPIProps)+len(node.Children)+2)
@@ -44,6 +51,21 @@ func materializeNodeToMap(node *Node, ctx *valueResolverContext, path string) ma
 	}
 	for key, value := range node.Props {
 		propPath := joinPath(path, key)
+		if key == "editable" && (resolvedType == "<TEMPLATE>" || resolvedType == "<MARKDOWN>") {
+			if fields, ok := value.(map[string]interface{}); ok {
+				// Field names such as file/env are not resolver directives.
+				metadata := make(map[string]interface{}, len(fields))
+				for name, field := range fields {
+					metadata[name] = materializeValueWithResolver(field, ctx, joinPath(propPath, name))
+				}
+				out[key] = metadata
+				continue
+			}
+		}
+		if resolvedType == "<HEAD>" && key == "meta" && node.headMetaProps != nil {
+			out[key] = materializeValueWithResolver(node.headMetaProps, ctx, propPath)
+			continue
+		}
 		if useNativeAPIProps {
 			if native, exists := node.nativeAPIProps[key]; exists {
 				out[key] = materializeValueWithResolver(native, ctx, propPath)
@@ -85,6 +107,7 @@ func materializeNodeToMap(node *Node, ctx *valueResolverContext, path string) ma
 			out[orderKey] = order
 		}
 	}
+	ctx.attachSourceMetadata(node, out, path)
 	return out
 }
 
@@ -173,6 +196,7 @@ func resolveTemplateField(value interface{}, ctx *valueResolverContext, path str
 		return nil, false
 	}
 	templateName := strings.TrimSpace(ctx.resolveRelativePathSpec(rawFile, path))
+	ctx.resources[path] = filepath.Join(ctx.opts.TemplateDir, templateName)
 	if templateName == "" {
 		ctx.addDiagnostic("warning", "template_file_empty", path, "template.file resolved to an empty template name")
 		return "", true
@@ -285,6 +309,7 @@ func (ctx *valueResolverContext) resolveFormat(value map[string]interface{}, pat
 
 func (ctx *valueResolverContext) resolvePath(raw interface{}, path string) interface{} {
 	resolved, ok := ctx.resolvePathSpec(raw, path)
+	ctx.resources[path] = resolved
 	if !ok {
 		ctx.addDiagnostic("warning", "path_invalid", path, "path resolver must be a string or mapping")
 		return ""
@@ -294,6 +319,7 @@ func (ctx *valueResolverContext) resolvePath(raw interface{}, path string) inter
 
 func (ctx *valueResolverContext) resolveFile(raw interface{}, path string) interface{} {
 	filePath, ok := ctx.resolvePathSpec(raw, path)
+	ctx.resources[path] = filePath
 	if !ok || strings.TrimSpace(filePath) == "" {
 		ctx.addDiagnostic("warning", "file_invalid", path, "file resolver must resolve to a file path")
 		return ""
@@ -426,10 +452,17 @@ func lookupDotted(values map[string]interface{}, parts []string) (interface{}, b
 }
 
 func (ctx *valueResolverContext) addDiagnostic(level string, code string, path string, message string) {
-	ctx.diagnostics = append(ctx.diagnostics, Diagnostic{
+	diagnostic := Diagnostic{
 		Level:   level,
 		Code:    code,
 		Message: message,
 		Path:    path,
-	})
+	}
+	if node := ctx.sourceNode; node != nil {
+		diagnostic.Source, diagnostic.Line, diagnostic.Column = node.Source, node.Line, node.Column
+		if location, ok := node.positions[strings.TrimPrefix(path, ctx.sourcePath+".")]; ok {
+			diagnostic.Source, diagnostic.Line, diagnostic.Column = location.file, location.line, location.column
+		}
+	}
+	ctx.diagnostics = append(ctx.diagnostics, diagnostic)
 }

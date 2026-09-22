@@ -10,7 +10,7 @@ import (
 func RunStaticWizard() {
 	selected, ok, err := RunModulePicker("Select a module")
 	if err != nil {
-		fmt.Printf("Error selecting module: %v\n", err)
+		failf("Error selecting module: %v\n", err)
 		Exit = true
 		return
 	}
@@ -24,7 +24,7 @@ func RunStaticWizard() {
 
 	force, err := promptYesNo(reader, "Override existing rendered output? (y/N): ")
 	if err != nil {
-		fmt.Printf("Error reading input: %v\n", err)
+		failf("Error reading input: %v\n", err)
 		Exit = true
 		return
 	}
@@ -32,7 +32,7 @@ func RunStaticWizard() {
 
 	exportZip, err := promptYesNo(reader, "Export rendered output to zip? (y/N): ")
 	if err != nil {
-		fmt.Printf("Error reading input: %v\n", err)
+		failf("Error reading input: %v\n", err)
 		Exit = true
 		return
 	}
@@ -40,7 +40,7 @@ func RunStaticWizard() {
 	if exportZip {
 		outDir, err := promptInput(reader, fmt.Sprintf("Zip output directory (default ./exports/%s): ", StartModule))
 		if err != nil {
-			fmt.Printf("Error reading input: %v\n", err)
+			failf("Error reading input: %v\n", err)
 			Exit = true
 			return
 		}
@@ -49,7 +49,7 @@ func RunStaticWizard() {
 
 	serve, err := promptYesNo(reader, "Serve rendered files? (y/N): ")
 	if err != nil {
-		fmt.Printf("Error reading input: %v\n", err)
+		failf("Error reading input: %v\n", err)
 		Exit = true
 		return
 	}
@@ -57,7 +57,7 @@ func RunStaticWizard() {
 	if serve {
 		port, err := promptPort(reader, "Port (default 8080): ", 8080)
 		if err != nil {
-			fmt.Printf("Error reading input: %v\n", err)
+			failf("Error reading input: %v\n", err)
 			Exit = true
 			return
 		}

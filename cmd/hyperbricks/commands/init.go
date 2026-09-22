@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +24,7 @@ type initFile struct {
 }
 
 type initPlan struct {
+	moduleDir   string
 	directories []string
 	files       []initFile
 }
@@ -35,14 +37,14 @@ func ensureDir(dir string) error {
 		if !info.IsDir() {
 			return fmt.Errorf("path already exists and is not a directory: %s", dir)
 		}
-		fmt.Printf("Directory already exists: %s\n", dir)
+		logging.GetLogger().Named("init").Debugw("Directory exists", "directory", dir)
 		return nil
 	}
 	if os.IsNotExist(err) {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			return fmt.Errorf("failed to create directory %s: %w", dir, err)
 		}
-		fmt.Printf("Created directory: %s\n", dir)
+		logging.GetLogger().Named("init").Debugw("Directory created", "directory", dir)
 		return nil
 	}
 	return fmt.Errorf("failed to inspect directory %s: %w", dir, err)
@@ -53,7 +55,7 @@ func ensureDir(dir string) error {
 func createModuleDirectories(module string) {
 	for _, dir := range initModuleDirectories(module) {
 		if err := ensureDir(dir); err != nil {
-			fmt.Println(err)
+			ReportError(err)
 		}
 	}
 }
@@ -96,7 +98,7 @@ func validateInitModuleName(value string) (string, error) {
 
 func buildInitPlan(moduleName string) (initPlan, error) {
 	moduleDir := filepath.Join("modules", moduleName)
-	plan := initPlan{directories: initModuleDirectories(moduleName)}
+	plan := initPlan{moduleDir: moduleDir, directories: initModuleDirectories(moduleName)}
 	directorySeen := make(map[string]bool, len(plan.directories))
 	for _, dir := range plan.directories {
 		directorySeen[dir] = true
@@ -239,14 +241,10 @@ func applyInitPlan(plan initPlan) error {
 			return err
 		}
 		if !created {
-			fmt.Printf("Skipping existing file: %s\n", file.target)
+			logging.GetLogger().Named("init").Infow("Existing file preserved", "module", filepath.Base(plan.moduleDir), "file", logging.ModulePath(plan.moduleDir, file.target))
 			continue
 		}
-		if file.source == "assets/default-config.hyperbricks.yaml" {
-			fmt.Printf("Config file created successfully at %s\n", file.target)
-		} else {
-			fmt.Printf("Extracted file: %s -> %s\n", file.source, file.target)
-		}
+		logging.GetLogger().Named("init").Infow("File created", "module", filepath.Base(plan.moduleDir), "file", logging.ModulePath(plan.moduleDir, file.target))
 	}
 	return nil
 }
@@ -280,6 +278,8 @@ func NewInitCommand() *cobra.Command {
 				ExitCode = 1
 				return fmt.Errorf("initialize module: %w", err)
 			}
+			fmt.Fprintf(cmd.OutOrStdout(), "Module ready: modules/%s\n", module)
+			fmt.Fprintf(cmd.OutOrStdout(), "Start: hyperbricks start -m %s\n", module)
 			return nil
 		},
 	}

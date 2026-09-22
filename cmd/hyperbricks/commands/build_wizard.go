@@ -11,7 +11,7 @@ import (
 func RunBuildWizard() {
 	selected, ok, err := RunModulePicker("Select a module")
 	if err != nil {
-		fmt.Printf("Error selecting module: %v\n", err)
+		failf("Error selecting module: %v\n", err)
 		Exit = true
 		return
 	}
@@ -25,7 +25,7 @@ func RunBuildWizard() {
 
 	format, err := promptBuildFormat(reader)
 	if err != nil {
-		fmt.Printf("Error reading format: %v\n", err)
+		failf("Error reading format: %v\n", err)
 		Exit = true
 		return
 	}
@@ -34,7 +34,7 @@ func RunBuildWizard() {
 
 	outDir, err := promptInput(reader, "Output directory (default deploy): ")
 	if err != nil {
-		fmt.Printf("Error reading output directory: %v\n", err)
+		failf("Error reading output directory: %v\n", err)
 		Exit = true
 		return
 	}
@@ -46,7 +46,7 @@ func RunBuildWizard() {
 
 	force, err := promptYesNo(reader, "Force rebuild even if unchanged? (y/N): ")
 	if err != nil {
-		fmt.Printf("Error reading input: %v\n", err)
+		failf("Error reading input: %v\n", err)
 		Exit = true
 		return
 	}
@@ -54,14 +54,14 @@ func RunBuildWizard() {
 
 	replaceTarget, err := promptReplaceTarget(reader, buildOutDir, buildModule)
 	if err != nil {
-		fmt.Printf("Error reading replace target: %v\n", err)
+		failf("Error reading replace target: %v\n", err)
 		Exit = true
 		return
 	}
 	buildReplaceTarget = replaceTarget
 
 	if _, err := runBuild(); err != nil {
-		fmt.Printf("Error building archive: %v\n", err)
+		failf("Error building archive: %v\n", err)
 		Exit = true
 		return
 	}
@@ -80,7 +80,7 @@ func promptBuildFormat(reader *bufio.Reader) (string, error) {
 		if input == "zip" {
 			return "zip", nil
 		}
-		fmt.Println("Please enter 'hra' or 'zip'.")
+		fmt.Fprintln(os.Stderr, "Please enter 'hra' or 'zip'.")
 	}
 }
 
@@ -105,7 +105,7 @@ func promptReplaceTarget(reader *bufio.Reader, outDir string, module string) (st
 			return "", nil
 		case "c", "current":
 			if index.Current == "" {
-				fmt.Println("No current build set.")
+				fmt.Fprintln(os.Stderr, "No current build set.")
 				continue
 			}
 			return "current", nil
@@ -120,7 +120,7 @@ func promptReplaceTarget(reader *bufio.Reader, outDir string, module string) (st
 			}
 			return selected, nil
 		default:
-			fmt.Println("Please enter n, c, or p.")
+			fmt.Fprintln(os.Stderr, "Please enter n, c, or p.")
 		}
 	}
 }

@@ -3,57 +3,51 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hyperbricks Deploy Dashboard</title>
-    <script>
-      (function () {
-        try {
-          var stored = localStorage.getItem("hb-theme");
-          var prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-          var theme = stored || (prefersLight ? "light" : "dark");
-          document.documentElement.setAttribute("data-theme", theme);
-        } catch (e) {}
-      })();
-    </script>
+    <title>Deployment | HyperBricks</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <script src="/assets/hyperbricks-theme.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/hyperbricks-ui.css">
     <link rel="stylesheet" href="/assets/dashboard.css">
+    <script src="/assets/hyperbricks-icons.js" defer></script>
   </head>
   <body data-mode="remote">
-    <div class="shell">
-      <header class="hero">
-        <div class="hero-bar">
-          <div class="badge">Deploy | Remote</div>
-          <div class="hero-actions">
-            <button id="themeToggle" class="icon-toggle theme-toggle" type="button" aria-pressed="true" aria-label="Toggle theme">
-              <svg class="theme-icon theme-icon-dark" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M20 14.5A8 8 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              <svg class="theme-icon theme-icon-light hidden" viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </button>
-            <div class="menu">
-              <button id="menuToggle" class="ghost" type="button">Settings</button>
+      <a class="hb-skip btn btn-primary" href="#main">Skip to content</a>
+      <header class="hb-header">
+        <a class="hb-brand" href="/" aria-label="HyperBricks deployment"><img src="/assets/brandmark.svg" width="20" height="28" alt=""><span>HyperBricks</span></a>
+        <nav class="hb-nav" aria-label="Product"><a href="/" aria-current="page"><i data-lucide="cloud-upload"></i>Deployment</a></nav>
+          <div class="hb-header-actions">
+            <span id="deployMode" class="hb-muted hb-header-context">Remote host</span>
+            <button id="themeToggle" class="btn btn-sm btn-square btn-ghost" data-theme-toggle type="button" aria-label="Switch theme"><i data-lucide="sun-moon"></i></button>
+            <div class="hb-settings">
+              <button id="menuToggle" class="btn btn-sm btn-square btn-ghost" type="button" aria-label="Connection settings" title="Connection settings" aria-controls="menuPanel" aria-expanded="false"><i data-lucide="settings-2"></i></button>
               <div id="menuPanel" class="menu-panel hidden">
-                <div class="menu-section remote-only">
+                <div class="hb-connection-heading">
                   <div class="menu-title">Connection</div>
+                  <button id="closeConnection" class="btn btn-sm btn-square btn-ghost" type="button" aria-label="Close connection settings" title="Close connection settings"><i data-lucide="x"></i></button>
+                </div>
+                <div class="menu-section remote-only">
                   <div class="connect menu-connect">
                     <div class="connect-row">
-                      <div class="field">
+                      <div class="hb-field">
                         <label for="baseUrl">API Base</label>
-                        <input id="baseUrl" placeholder="http://127.0.0.1:9090" />
+                        <input class="input" id="baseUrl" placeholder="http://127.0.0.1:9090" />
                       </div>
-                      <div class="field">
+                      <div class="hb-field">
                         <label for="secret">HMAC Secret</label>
-                        <input id="secret" type="password" placeholder="Enter shared secret" />
+                        <div class="hb-secret-control">
+                          <input class="input" id="secret" type="password" placeholder="Shared secret" aria-describedby="secretStatus" />
+                          <button id="setSecret" class="btn btn-neutral" type="button" disabled>Set</button>
+                        </div>
+                        <span id="secretStatus" class="note" role="status">Not set.</span>
                       </div>
                     </div>
-                    <div class="actions-row">
-                      <button id="loadModules">Load Modules</button>
-                      <button id="refreshStatus" class="secondary" disabled>Refresh Status</button>
-                      <button id="clearSecret" class="ghost" type="button">Clear Secret</button>
+                    <div class="hb-actions hb-deploy-actions">
+                      <button class="btn btn-sm btn-primary " id="loadModules">Load Modules</button>
+                      <button class="btn btn-sm btn-primary " id="refreshStatus" disabled>Refresh Status</button>
+                      <button class="btn btn-sm btn-ghost " id="clearSecret" type="button">Clear Secret</button>
                     </div>
                     <div class="note-row">
                       <span class="note">Timestamp and nonce are generated per request.</span>
@@ -62,26 +56,25 @@
                   </div>
                 </div>
                 <div class="menu-section local-only">
-                  <div class="menu-title">Connection</div>
                   <div class="connect menu-connect">
                     <div class="connect-row">
-                      <div class="field">
+                      <div class="hb-field">
                         <label for="localApiBase">Local API</label>
-                        <input id="localApiBase" readonly />
+                        <input class="input" id="localApiBase" readonly />
                       </div>
-                      <div class="field">
+                      <div class="hb-field">
                         <label for="localTargetName">Target</label>
-                        <input id="localTargetName" readonly />
+                        <input class="input" id="localTargetName" readonly />
                       </div>
                     </div>
                     <div class="connect-row">
-                      <div class="field">
+                      <div class="hb-field">
                         <label for="localTargetApi">Remote API</label>
-                        <input id="localTargetApi" readonly />
+                        <input class="input" id="localTargetApi" readonly />
                       </div>
-                      <div class="field">
+                      <div class="hb-field">
                         <label for="localTargetRoot">Key ID</label>
-                        <input id="localTargetRoot" readonly />
+                        <input class="input" id="localTargetRoot" readonly />
                       </div>
                     </div>
                     <div class="note-row">
@@ -89,113 +82,119 @@
                     </div>
                   </div>
                 </div>
-                <div class="menu-divider"></div>
-                <button id="killAllProcesses" class="danger menu-action remote-only" type="button">Kill all hyperbricks (except API)</button>
+                <div id="connectionAdminDivider" class="menu-divider" hidden></div>
+                <button class="btn btn-sm btn-error menu-action remote-only" id="killAllProcesses" type="button" hidden>Kill all hyperbricks (except API)</button>
               </div>
             </div>
           </div>
-        </div>
-        <div class="hero-brand">
-          <img class="hero-logo" src="/assets/logo_blue.png" alt="Hyperbricks logo" data-logo-dark="/assets/logo_blue.png" data-logo-light="/assets/logo_black.png" />
-          <div class="hero-text">
-            <p>Client for deploy management.</p>
-          </div>
-        </div>
       </header>
-
-      <div class="view-toggle">
-        <button id="viewModules" class="toggle active" type="button">Modules</button>
-        <button id="viewPlugins" class="toggle ghost" type="button">Plugins</button>
+    <main id="main" class="hb-page">
+      <div class="hb-page-heading"><div><p id="deploySubtitle" class="hb-eyebrow">Remote host</p><h1>Deployment</h1></div></div>
+      <section id="connectionNotice" class="alert hb-connection-notice" role="status" aria-live="polite">
+        <i data-lucide="lock-keyhole" aria-hidden="true"></i>
+        <div>
+          <h2 id="connectionNoticeTitle">Connect to the deployment API</h2>
+          <p id="connectionNoticeText">No HMAC secret is set. In Connection settings, enter the value of HB_DEPLOY_SECRET used by the deploy daemon, then press Set. Enter the secret itself, not the environment variable name.</p>
+          <button id="openConnection" class="btn btn-sm btn-primary" type="button"><i data-lucide="settings-2"></i>Connection settings</button>
+        </div>
+      </section>
+      <div id="deploymentContent" hidden>
+      <div class="tabs tabs-border hb-deploy-tabs" role="tablist" aria-label="Deployment view">
+        <button id="viewModules" class="tab" role="tab" aria-selected="true" type="button">Modules</button>
+        <button id="viewPlugins" class="tab" role="tab" aria-selected="false" type="button">Plugins</button>
       </div>
+      <div id="deployFeedback" class="alert alert-error hb-deploy-feedback" role="alert" hidden><i data-lucide="circle-alert"></i><p id="deployFeedbackText"></p></div>
 
-      <div id="modulesView" class="grid">
-        <section class="panel status">
-          <h2>Server Status</h2>
-          <div class="status-grid">
-            <div class="status-card">
-              <span>API</span>
-              <strong id="apiStatus">offline</strong>
-            </div>
-            <div class="status-card">
-              <span>Last Check</span>
-              <strong id="apiTime">-</strong>
-            </div>
-            <div class="status-card">
-              <span>Hyperbricks</span>
-              <strong id="apiVersion">-</strong>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel modules">
+      <div id="modulesView" class="hb-deploy-grid">
+        <section class="hb-deploy-sidebar">
           <h2>Modules</h2>
-          <ul id="moduleList" class="module-list"></ul>
+          <ul id="moduleList" class="menu hb-module-list"></ul>
         </section>
 
-        <section class="panel builds">
-          <div class="panel-header">
-            <h2>Builds</h2>
-            <div class="actions-row">
-              <button id="buildModule" class="secondary local-only" type="button">Build</button>
-              <button id="syncRemote" class="ghost local-only" type="button">Sync Remote</button>
-              <button id="rollbackModule" class="danger remote-only" disabled>Rollback</button>
-              <span id="rollbackTarget" class="note remote-only">-</span>
+        <div class="hb-deploy-workspace hb-surface">
+          <section class="hb-deploy-status">
+            <h2>Server Status</h2>
+            <div class="hb-deploy-summary">
+              <div class="hb-deploy-stat">
+                <span>API</span>
+                <strong id="apiStatus">offline</strong>
+              </div>
+              <div class="hb-deploy-stat">
+                <span>Last Check</span>
+                <strong id="apiTime">-</strong>
+              </div>
+              <div class="hb-deploy-stat">
+                <span>Hyperbricks</span>
+                <strong id="apiVersion">-</strong>
+              </div>
             </div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Build</th>
-                  <th>Version</th>
-                  <th>Built</th>
-                  <th>Mode</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="buildRows">
-                <tr>
-                  <td colspan="6" class="note">Select a module to load builds.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+          </section>
 
-        <section class="panel log">
-          <h2>Activity</h2>
-          <pre id="activity">Ready.</pre>
-        </section>
+          <section class="hb-deploy-builds">
+            <div class="hb-section-heading">
+              <h2>Builds</h2>
+              <div class="hb-actions hb-deploy-actions">
+                <button class="btn btn-sm btn-primary local-only" id="buildModule" type="button">Build</button>
+                <button class="btn btn-sm btn-ghost local-only" id="syncRemote" type="button">Sync Remote</button>
+                <button class="btn btn-sm btn-error remote-only" id="rollbackModule" disabled>Rollback</button>
+                <span id="rollbackTarget" class="note remote-only">-</span>
+              </div>
+            </div>
+            <div class="hb-table-scroll">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Build</th>
+                    <th>Version</th>
+                    <th>Built</th>
+                    <th>Mode</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="buildRows">
+                  <tr>
+                    <td colspan="6" class="note">Select a module to load builds.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="hb-section hb-deploy-log">
+            <h2>Activity</h2>
+            <pre class="hb-terminal" id="activity">Ready.</pre>
+          </section>
+        </div>
       </div>
 
-      <div id="pluginsView" class="grid hidden">
-        <section class="panel status">
+      <div id="pluginsView" class="hb-deploy-grid hb-surface hidden">
+        <section class="hb-deploy-status">
           <h2>Server Status</h2>
-          <div class="status-grid">
-            <div class="status-card">
+          <div class="hb-deploy-summary">
+            <div class="hb-deploy-stat">
               <span>API</span>
               <strong id="apiStatusPlugins">offline</strong>
             </div>
-            <div class="status-card">
+            <div class="hb-deploy-stat">
               <span>Last Check</span>
               <strong id="apiTimePlugins">-</strong>
             </div>
-            <div class="status-card">
+            <div class="hb-deploy-stat">
               <span>Hyperbricks</span>
               <strong id="apiVersionPlugins">-</strong>
             </div>
           </div>
         </section>
-        <section class="panel plugins-global">
-          <div class="panel-header">
+        <section class="hb-section hb-deploy-global">
+          <div class="hb-section-heading">
             <h2>Global Plugins</h2>
-            <div class="actions-row">
-              <button id="refreshGlobalPlugins" class="secondary" type="button">Refresh</button>
+            <div class="hb-actions hb-deploy-actions">
+              <button class="btn btn-sm btn-primary " id="refreshGlobalPlugins" type="button">Refresh</button>
             </div>
           </div>
-          <div class="table-wrap">
-            <table>
+          <div class="hb-table-scroll">
+            <table class="table">
               <thead>
                 <tr>
                   <th>Plugin</th>
@@ -214,23 +213,23 @@
           </div>
         </section>
 
-        <section class="panel plugins-custom">
-          <div class="panel-header">
+        <section class="hb-section hb-deploy-custom">
+          <div class="hb-section-heading">
             <h2>Custom Plugins</h2>
-            <div class="actions-row">
-              <div class="field">
+            <div class="hb-actions hb-deploy-actions">
+              <div class="hb-field">
                 <label for="pluginModule">Module</label>
-                <select id="pluginModule"></select>
+                <select class="select" id="pluginModule"></select>
               </div>
               <div class="field remote-only">
                 <label for="pluginBuild">Build</label>
-                <select id="pluginBuild"></select>
+                <select class="select" id="pluginBuild"></select>
               </div>
-              <button id="loadCustomPlugins" class="secondary" type="button">Load</button>
+              <button class="btn btn-sm btn-primary " id="loadCustomPlugins" type="button">Load</button>
             </div>
           </div>
-          <div class="table-wrap">
-            <table>
+          <div class="hb-table-scroll">
+            <table class="table">
               <thead>
                 <tr>
                   <th>Plugin</th>
@@ -249,17 +248,20 @@
           </div>
         </section>
 
-        <section class="panel log">
+        <section class="hb-section hb-deploy-log">
           <h2>Activity</h2>
-          <pre id="pluginActivity">Ready.</pre>
+          <pre class="hb-terminal" id="pluginActivity">Ready.</pre>
         </section>
       </div>
-    </div>
+      </div>
+    </main>
 
     <script>
       const ui = {
         baseUrl: document.getElementById("baseUrl"),
         secret: document.getElementById("secret"),
+        setSecret: document.getElementById("setSecret"),
+        secretStatus: document.getElementById("secretStatus"),
         localApiBase: document.getElementById("localApiBase"),
         localTargetName: document.getElementById("localTargetName"),
         localTargetApi: document.getElementById("localTargetApi"),
@@ -284,6 +286,13 @@
         pluginActivity: document.getElementById("pluginActivity"),
         menuToggle: document.getElementById("menuToggle"),
         menuPanel: document.getElementById("menuPanel"),
+        closeConnection: document.getElementById("closeConnection"),
+        openConnection: document.getElementById("openConnection"),
+        connectionNotice: document.getElementById("connectionNotice"),
+        connectionNoticeTitle: document.getElementById("connectionNoticeTitle"),
+        connectionNoticeText: document.getElementById("connectionNoticeText"),
+        connectionAdminDivider: document.getElementById("connectionAdminDivider"),
+        deploymentContent: document.getElementById("deploymentContent"),
         killAll: document.getElementById("killAllProcesses"),
         modulesView: document.getElementById("modulesView"),
         pluginsView: document.getElementById("pluginsView"),
@@ -302,6 +311,9 @@
 
       const state = {
         mode: mode,
+        secret: "",
+        settingSecret: false,
+        authenticated: isLocalMode,
         modules: [],
         selectedModule: "",
         builds: [],
@@ -318,69 +330,25 @@
 
       const storageKeys = {
         secret: "hbDeploySecret",
+        baseUrl: "hbDeployBaseUrl",
         module: "hbDeployModule",
         view: "hbDeployView"
       };
 
       const icons = {
-        more: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="5" r="2" fill="currentColor"></circle>
-          <circle cx="12" cy="12" r="2" fill="currentColor"></circle>
-          <circle cx="12" cy="19" r="2" fill="currentColor"></circle>
-        </svg>`,
-        install: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-        </svg>`,
-        rebuild: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 12a8 8 0 0 1 14.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          <path d="M18 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>`,
-        compile: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
-        </svg>`,
-        remove: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 7h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          <path d="M9 7V5h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          <rect x="6" y="7" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
-          <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-        </svg>`,
-        start: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M7 5l12 7-12 7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
-        </svg>`,
-        restart: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 12a8 8 0 0 1 14.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          <path d="M18 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-          <path d="M20 12a8 8 0 0 1-14.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          <path d="M6 20v-5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>`,
-        stop: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="6" y="6" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
-        </svg>`,
-        link: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M10 13a5 5 0 0 1 0-7l2-2a5 5 0 0 1 7 7l-1 1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          <path d="M14 11a5 5 0 0 1 0 7l-2 2a5 5 0 0 1-7-7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-        </svg>`,
-        dashboard: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="3" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
-          <rect x="13" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
-          <rect x="3" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
-          <rect x="13" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
-        </svg>`,
-        details: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"></circle>
-          <path d="M12 10v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          <circle cx="12" cy="7" r="1" fill="currentColor"></circle>
-        </svg>`,
-        delete: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 7h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          <path d="M9 7V5h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          <rect x="6" y="7" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
-          <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-        </svg>`,
-        push: `<svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 19V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          <path d="M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>`
+        more: '<i data-lucide="ellipsis-vertical"></i>',
+        install: '<i data-lucide="plus"></i>',
+        rebuild: '<i data-lucide="rotate-cw"></i>',
+        compile: '<i data-lucide="zap"></i>',
+        remove: '<i data-lucide="trash-2"></i>',
+        start: '<i data-lucide="play"></i>',
+        restart: '<i data-lucide="refresh-cw"></i>',
+        stop: '<i data-lucide="square"></i>',
+        link: '<i data-lucide="external-link"></i>',
+        dashboard: '<i data-lucide="layout-dashboard"></i>',
+        details: '<i data-lucide="info"></i>',
+        delete: '<i data-lucide="trash-2"></i>',
+        push: '<i data-lucide="upload"></i>'
       };
 
       let rowMenuCounter = 0;
@@ -388,11 +356,12 @@
       let serverStatusTimer = null;
 
       function setActivity(message, isError) {
-        const color = isError ? "var(--danger)" : "var(--ink)";
+        const feedback = document.getElementById("deployFeedback");
+        feedback.hidden = !isError;
+        document.getElementById("deployFeedbackText").textContent = isError ? message : "";
         const targets = [ui.activity, ui.pluginActivity].filter(Boolean);
         targets.forEach((target) => {
           target.textContent = message;
-          target.style.color = color;
         });
       }
 
@@ -515,7 +484,93 @@
       }
 
       function getSecret() {
-        return ui.secret.value.trim();
+        return state.secret;
+      }
+
+      function setConnectionState(kind) {
+        state.authenticated = isLocalMode || kind === "ready";
+        ui.deploymentContent.hidden = !state.authenticated;
+        ui.connectionNotice.hidden = state.authenticated;
+        ui.loadModules.disabled = !state.authenticated;
+        ui.refreshStatus.disabled = !state.authenticated || !state.selectedModule;
+        ui.killAll.hidden = !state.authenticated || isLocalMode;
+        ui.killAll.disabled = !state.authenticated;
+        ui.connectionAdminDivider.hidden = ui.killAll.hidden;
+        const messages = {
+          missing: ["Connect to the deployment API", "No HMAC secret is set. In Connection settings, enter the value of HB_DEPLOY_SECRET used by the deploy daemon, then press Set. Enter the secret itself, not the environment variable name."],
+          checking: ["Checking connection", "Verifying the HMAC secret with the deployment API."],
+          invalid: ["Secret not accepted", "The deployment API rejected the HMAC secret. In Connection settings, use the same value as HB_DEPLOY_SECRET on the deploy daemon, then press Set. Enter the secret itself, not the environment variable name."],
+          storage: ["Connection could not be saved", "The API accepted the secret, but this browser could not save the connection. Check the site's browser storage permissions, then try Set again."],
+          unavailable: ["Deployment API unavailable", "Check that the deploy daemon is running and that API Base in Connection settings points to its address. Your saved secret has not been changed."]
+        };
+        if (messages[kind]) {
+          ui.connectionNoticeTitle.textContent = messages[kind][0];
+          ui.connectionNoticeText.textContent = messages[kind][1];
+        }
+        updateSecretState();
+      }
+
+      function updateSecretState() {
+        const draft = ui.secret.value.trim();
+        const changed = draft !== getSecret();
+        ui.setSecret.disabled = state.settingSecret || !draft || (!changed && state.authenticated);
+        ui.secret.disabled = state.settingSecret;
+        ui.baseUrl.disabled = state.settingSecret;
+        ui.clearSecret.disabled = state.settingSecret;
+        ui.secretStatus.textContent = changed
+          ? "Changes not set."
+          : (getSecret() ? (state.authenticated ? "Secret set." : "Secret not verified.") : "Not set.");
+      }
+
+      async function applySecret() {
+        const secret = ui.secret.value.trim();
+        if (state.settingSecret || !secret || (secret === getSecret() && state.authenticated)) {
+          return;
+        }
+        const baseUrl = getBaseUrl();
+        state.settingSecret = true;
+        if (!state.authenticated) {
+          setConnectionState("checking");
+        }
+        updateSecretState();
+        ui.secretStatus.textContent = "Checking connection...";
+        let message = "Secret set.";
+        try {
+          await apiRequest("GET", apiPath("/status"), undefined, secret);
+          try {
+            const previousBaseUrl = localStorage.getItem(storageKeys.baseUrl);
+            localStorage.setItem(storageKeys.baseUrl, baseUrl);
+            try {
+              localStorage.setItem(storageKeys.secret, secret);
+            } catch (err) {
+              if (previousBaseUrl === null) {
+                localStorage.removeItem(storageKeys.baseUrl);
+              } else {
+                localStorage.setItem(storageKeys.baseUrl, previousBaseUrl);
+              }
+              throw err;
+            }
+          } catch (err) {
+            const error = new Error("Could not save connection in this browser.");
+            error.code = "connection-storage";
+            throw error;
+          }
+          state.secret = secret;
+          state.authenticated = true;
+          ui.secret.value = secret;
+          setActivity(message);
+          window.location.reload();
+        } catch (err) {
+          message = err.message || String(err);
+          if (!state.authenticated) {
+            setConnectionState(err.code === "connection-storage" ? "storage" : (err.status === 401 ? "invalid" : "unavailable"));
+          }
+          handleError(err);
+        } finally {
+          state.settingSecret = false;
+          updateSecretState();
+          ui.secretStatus.textContent = message;
+        }
       }
 
       function getSavedModule() {
@@ -838,7 +893,7 @@
       function renderRowMenu(items) {
         const menuId = "rowMenu-" + (rowMenuCounter += 1);
         const menuItems = (items || []).map((item) => {
-          const classes = ["row-menu-item", item.className || ""].filter(Boolean).join(" ");
+          const classes = ["btn btn-sm btn-ghost row-menu-item", item.className || ""].filter(Boolean).join(" ");
           const attrs = item.attrs || "";
           const disabledAttr = item.disabled ? " disabled" : "";
           const icon = item.icon || "";
@@ -847,7 +902,7 @@
         }).join("");
         return `
           <div class="row-menu">
-            <button class="row-menu-toggle icon-toggle" data-menu="${menuId}" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Row actions">
+            <button class="btn btn-sm btn-square btn-ghost row-menu-toggle" data-menu="${menuId}" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Row actions">
               ${icons.more}
             </button>
             <div id="${menuId}" class="row-menu-panel hidden">
@@ -919,6 +974,7 @@
       }
 
       function wireRowMenus(container) {
+        window.lucide?.createIcons();
         if (!container) {
           return;
         }
@@ -997,11 +1053,11 @@
               <div class="log-header">
                 <span>Logs (tail)</span>
                 <div class="log-actions">
-                  <button class="ghost log-btn" data-log-action="load" data-build="${buildValue}" type="button">Load</button>
-                  <button class="ghost log-btn" data-log-action="refresh" data-build="${buildValue}" type="button">Refresh</button>
+                  <button class="btn btn-sm btn-ghost log-btn" data-log-action="load" data-build="${buildValue}" type="button">Load</button>
+                  <button class="btn btn-sm btn-ghost log-btn" data-log-action="refresh" data-build="${buildValue}" type="button">Refresh</button>
                 </div>
               </div>
-              <pre class="log-output" data-log-output="${buildValue}">Logs not loaded.</pre>
+              <pre class="hb-terminal log-output" data-log-output="${buildValue}">Logs not loaded.</pre>
               <span class="note log-note hidden">Log output truncated.</span>
             </div>
           `
@@ -1021,20 +1077,20 @@
           : linkMeta;
         return `
           <div class="details-shell">
-            <div class="status-grid details-grid">
-              <div class="status-card">
+            <div class="hb-deploy-summary details-grid">
+              <div class="hb-deploy-stat">
                 <span>State</span>
                 <strong>${stateText}</strong>
               </div>
-              <div class="status-card">
+              <div class="hb-deploy-stat">
                 <span>Module</span>
                 <strong>${moduleName}</strong>
               </div>
-              <div class="status-card">
+              <div class="hb-deploy-stat">
                 <span>Build</span>
                 <strong class="mono wrap"${buildTitle}>${buildShort}</strong>
               </div>
-              <div class="status-card">
+              <div class="hb-deploy-stat">
                 <span>Port</span>
                 <strong>${portText}</strong>
               </div>
@@ -1233,20 +1289,24 @@
         if (!isLocalMode) {
           return;
         }
-        const badge = document.querySelector(".badge");
+        const badge = document.getElementById("deployMode");
         if (badge) {
-          badge.textContent = "Deploy | Local";
+          badge.textContent = "Local workspace";
         }
        
-        const subtitle = document.querySelector(".hero-text p");
+        const subtitle = document.getElementById("deploySubtitle");
         if (subtitle) {
-          subtitle.textContent = "Local build manager.";
+          subtitle.textContent = "Local workspace";
         }
       }
 
-      function closeMenu() {
+      function closeMenu(restoreFocus = false) {
         if (ui.menuPanel) {
           ui.menuPanel.classList.add("hidden");
+          ui.menuToggle.setAttribute("aria-expanded", "false");
+          if (restoreFocus) {
+            ui.menuToggle.focus();
+          }
         }
       }
 
@@ -1258,6 +1318,7 @@
           event.stopPropagation();
         }
         ui.menuPanel.classList.toggle("hidden");
+        ui.menuToggle.setAttribute("aria-expanded", String(!ui.menuPanel.classList.contains("hidden")));
       }
 
       function moduleLinkFromPort(port) {
@@ -1275,7 +1336,7 @@
       }
 
 
-      async function apiRequest(method, path, bodyObj) {
+      async function apiRequest(method, path, bodyObj, secret = getSecret()) {
         const baseUrl = isLocalMode ? window.location.origin : getBaseUrl();
         const url = new URL(path, baseUrl);
         const body = bodyObj ? JSON.stringify(bodyObj) : "";
@@ -1283,7 +1344,6 @@
           "Accept": "application/json"
         };
         if (!isLocalMode) {
-          const secret = getSecret();
           if (!secret) {
             throw new Error("Missing HMAC secret.");
           }
@@ -1318,7 +1378,12 @@
         }
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          throw new Error(payload.error || response.statusText);
+          if (!isLocalMode && response.status === 401 && secret === getSecret() && baseUrl === getBaseUrl()) {
+            setConnectionState("invalid");
+          }
+          const error = new Error(payload.error || response.statusText);
+          error.status = response.status;
+          throw error;
         }
         return payload;
       }
@@ -1345,7 +1410,20 @@
         if (!isLocalMode && !getSecret()) {
           return;
         }
-        const data = await apiRequest("GET", apiPath("/status"));
+        const secret = getSecret();
+        const baseUrl = getBaseUrl();
+        let data;
+        try {
+          data = await apiRequest("GET", apiPath("/status"));
+        } catch (err) {
+          if (!isLocalMode && secret === getSecret() && baseUrl === getBaseUrl() && !state.authenticated) {
+            setConnectionState(err.status === 401 ? "invalid" : "unavailable");
+          }
+          throw err;
+        }
+        if (!isLocalMode && (secret !== getSecret() || baseUrl !== getBaseUrl())) {
+          return;
+        }
         if (ui.apiVersion) {
           ui.apiVersion.textContent = (data.version || "").trim() || "-";
         }
@@ -1354,6 +1432,13 @@
         }
         setLocalConnectionDetails(data);
         state.logsEnabled = data.logs_enabled !== false;
+        if (!isLocalMode && !state.authenticated) {
+          setConnectionState("ready");
+          await loadModules();
+          if (state.view === "plugins" && state.authenticated) {
+            await autoLoadPlugins();
+          }
+        }
       }
 
       function startServerStatusTick() {
@@ -1369,7 +1454,7 @@
         if (isLocalMode) {
           return true;
         }
-        return !!getSecret();
+        return state.authenticated && !!getSecret();
       }
 
       function canAutoLoadCustomPlugins() {
@@ -1435,14 +1520,12 @@
           ui.pluginsView.classList.toggle("hidden", showModules);
         }
         if (ui.viewModules) {
-          ui.viewModules.classList.toggle("active", showModules);
-          ui.viewModules.classList.toggle("ghost", !showModules);
+          ui.viewModules.setAttribute("aria-selected", String(showModules));
         }
         if (ui.viewPlugins) {
-          ui.viewPlugins.classList.toggle("active", !showModules);
-          ui.viewPlugins.classList.toggle("ghost", showModules);
+          ui.viewPlugins.setAttribute("aria-selected", String(!showModules));
         }
-        if (!showModules) {
+        if (!showModules && canAutoLoadPlugins()) {
           renderPluginModules();
           renderPluginBuilds();
           autoLoadPlugins().catch(handleError);
@@ -1753,7 +1836,7 @@
           const pluginName = entry.name || "-";
           const version = entry.version || "-";
           const statusText = formatPluginStatus(entry.status);
-          const statusClass = entry.status === "installed" ? "status-pill status-installed" : "status-pill";
+          const statusClass = entry.status === "installed" ? "badge badge-sm badge-success" : "badge badge-sm";
           const configName = entry.configName || "";
           const configText = configName || "-";
           const configTitle = configName ? ` title="${escapeAttr(configName)}"` : "";
@@ -1777,7 +1860,7 @@
               action: "remove",
               label: "Remove",
               icon: icons.remove,
-              className: "danger",
+              className: "btn-error",
               attrs: actionAttr,
               disabled: actionDisabled
             });
@@ -1798,7 +1881,7 @@
             <td data-label="Config">
               <div class="value-row">
                 <span class="mono wrap"${configTitle}>${escapeAttr(configText)}</span>
-                <button class="copy-btn" data-copy="${escapeAttr(configName)}"${copyDisabled} type="button">Copy</button>
+                <button class="btn btn-sm btn-square btn-ghost copy-btn" aria-label="Copy value" title="Copy value" data-copy="${escapeAttr(configName)}"${copyDisabled} type="button"><i data-lucide="copy"></i></button>
               </div>
             </td>
             <td data-label="Action">
@@ -1899,7 +1982,7 @@
           const pluginName = plugin.name || configName || "-";
           const version = plugin.version || "-";
           const statusText = formatPluginStatus(plugin.status);
-          const statusClass = plugin.status === "installed" ? "status-pill status-installed" : "status-pill";
+          const statusClass = plugin.status === "installed" ? "badge badge-sm badge-success" : "badge badge-sm";
           const sourcePath = plugin.source_path || "";
           const hasSource = !!String(sourcePath || "").trim();
           const hasConfig = !!String(configName || "").trim();
@@ -1928,7 +2011,7 @@
               action: "remove",
               label: "Remove",
               icon: icons.remove,
-              className: "danger",
+              className: "btn-error",
               attrs: actionAttr,
               disabled: false
             });
@@ -1942,7 +2025,7 @@
             <td data-label="Config">
               <div class="value-row">
                 <span class="mono wrap"${configTitle}>${escapeAttr(configName || "-")}</span>
-                <button class="copy-btn" data-copy="${escapeAttr(configName)}"${copyDisabled} type="button">Copy</button>
+                <button class="btn btn-sm btn-square btn-ghost copy-btn" aria-label="Copy value" title="Copy value" data-copy="${escapeAttr(configName)}"${copyDisabled} type="button"><i data-lucide="copy"></i></button>
               </div>
             </td>
             <td data-label="Action">
@@ -2132,11 +2215,15 @@
         ui.moduleList.innerHTML = "";
         state.modules.forEach((module) => {
           const item = document.createElement("li");
-          item.className = "module-item" + (module === state.selectedModule ? " active" : "");
+          item.className = "module-item";
           const count = typeof state.buildCounts[module] === "number" ? state.buildCounts[module] : null;
           const countLabel = count === null ? "—" : (String(count) + " builds");
-          item.innerHTML = "<span>" + module + "</span><span class=\"module-count\">" + countLabel + "</span>";
-          item.addEventListener("click", () => selectModule(module));
+          const button = document.createElement("button");
+          button.type = "button";
+          button.setAttribute("aria-current", String(module === state.selectedModule));
+          button.innerHTML = "<span>" + escapeAttr(module) + "</span><span class=\"module-count\">" + countLabel + "</span>";
+          button.addEventListener("click", () => selectModule(module));
+          item.appendChild(button);
           ui.moduleList.appendChild(item);
         });
         renderPluginModules();
@@ -2182,7 +2269,7 @@
               action: "stop",
               label: "Stop",
               icon: icons.stop,
-              className: "danger",
+              className: "btn-error",
               attrs: buildAttr,
               disabled: isDisabled
             });
@@ -2232,7 +2319,7 @@
               action: "delete",
               label: "Delete build",
               icon: icons.delete,
-              className: "danger",
+              className: "btn-error",
               attrs: buildAttr,
               disabled: isDisabled
             });
@@ -2242,23 +2329,23 @@
             <td data-label="Build">
               <div class="value-row">
                 <span class="mono wrap" title="${buildId}">${buildShort}</span>
-                <button class="copy-btn" data-copy="${buildId}" type="button">Copy</button>
+                <button class="btn btn-sm btn-square btn-ghost copy-btn" aria-label="Copy value" title="Copy value" data-copy="${buildId}" type="button"><i data-lucide="copy"></i></button>
               </div>
             </td>
             <td data-label="Version">${isDev ? (build.moduleversion || "dev") : (build.moduleversion || "-")}</td>
             <td data-label="Built" title="${builtTitle}">${builtAt}</td>
             <td data-label="Mode">
-              <select class="mode-select" data-action="mode" data-build="${buildId}"${modeDisabled}>
+              <select class="select select-sm mode-select" data-action="mode" data-build="${buildId}"${modeDisabled}>
                 <option value="default"${modeDefaultSelected}>Default</option>
                 <option value="production"${modeProductionSelected}>Production</option>
               </select>
             </td>
             <td data-label="Status">
-              <span class="status-pill ${isRunning ? "status-installed" : ""}">${isRunning ? "running" : "stopped"}</span>
+              <span class="badge badge-sm ${isRunning ? "badge-success" : ""}">${isRunning ? "running" : "stopped"}</span>
             </td>
             <td data-label="Action">
               <div class="row-actions">
-                <button class="icon-toggle" data-action="details" data-build="${escapeAttr(buildId)}"${detailsDisabled} type="button" aria-label="Details">
+                <button class="btn btn-sm btn-square btn-ghost" data-action="details" data-build="${escapeAttr(buildId)}"${detailsDisabled} type="button" aria-label="Details">
                   ${icons.details}
                 </button>
                 ${actionMenu}
@@ -2714,15 +2801,26 @@
         });
         ui.clearSecret.addEventListener("click", () => {
           localStorage.removeItem(storageKeys.secret);
+          state.secret = "";
           ui.secret.value = "";
+          setConnectionState("missing");
+          ui.secretStatus.textContent = "Secret cleared.";
+          setApiStatus("offline");
           if (ui.apiVersion) {
             ui.apiVersion.textContent = "-";
           }
+          if (ui.apiVersionPlugins) {
+            ui.apiVersionPlugins.textContent = "-";
+          }
           setActivity("Secret cleared.");
         });
-        ui.secret.addEventListener("input", () => {
-          localStorage.setItem(storageKeys.secret, ui.secret.value);
-          refreshServerStatus().catch(() => {});
+        ui.setSecret.addEventListener("click", applySecret);
+        ui.secret.addEventListener("input", updateSecretState);
+        ui.secret.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            applySecret();
+          }
         });
         ui.rollbackModule.addEventListener("click", () => rollbackModule().catch(handleError));
         if (ui.buildModule) {
@@ -2735,6 +2833,19 @@
         if (ui.menuToggle) {
           ui.menuToggle.addEventListener("click", toggleMenu);
         }
+        ui.closeConnection.addEventListener("click", () => closeMenu(true));
+        ui.openConnection.addEventListener("click", (event) => {
+          event.stopPropagation();
+          ui.menuPanel.classList.remove("hidden");
+          ui.menuToggle.setAttribute("aria-expanded", "true");
+          ui.secret.focus();
+        });
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && !ui.menuPanel.classList.contains("hidden")) {
+            event.preventDefault();
+            closeMenu(true);
+          }
+        });
         if (ui.menuPanel) {
           ui.menuPanel.addEventListener("click", (event) => event.stopPropagation());
         }
@@ -2774,16 +2885,23 @@
         if (window.location.origin && window.location.origin !== "null") {
           ui.baseUrl.value = window.location.origin;
         }
+        const savedBaseUrl = localStorage.getItem(storageKeys.baseUrl);
+        if (!isLocalMode && savedBaseUrl) {
+          ui.baseUrl.value = savedBaseUrl;
+        }
         const savedSecret = localStorage.getItem(storageKeys.secret);
         if (savedSecret) {
-          ui.secret.value = savedSecret;
+          state.secret = savedSecret.trim();
+          ui.secret.value = state.secret;
         }
+        updateSecretState();
         const savedView = localStorage.getItem(storageKeys.view);
         if (savedView === "plugins" || savedView === "modules") {
           state.view = savedView;
         }
         updateSignerMode();
         applyModeLabels();
+        setConnectionState(isLocalMode ? "ready" : (getSecret() ? "checking" : "missing"));
         setView(state.view);
         updateRollbackTarget();
         startServerStatusTick();
@@ -2791,79 +2909,12 @@
           loadModules().catch(handleError);
           refreshServerStatus().catch(handleError);
         } else if (savedSecret) {
-          loadModules().catch(handleError);
           refreshServerStatus().catch(handleError);
         }
       }
 
       wireEvents();
       initDefaults();
-    </script>
-    <script>
-      (function () {
-        const storageKey = "hb-theme";
-        const themeToggle = document.getElementById("themeToggle");
-        const logos = document.querySelectorAll(".hero-logo[data-logo-light]");
-        const media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
-
-        function readStoredTheme() {
-          try {
-            return localStorage.getItem(storageKey);
-          } catch (e) {
-            return null;
-          }
-        }
-
-        function storeTheme(theme) {
-          try {
-            localStorage.setItem(storageKey, theme);
-          } catch (e) {}
-        }
-
-        function applyTheme(theme) {
-          document.documentElement.setAttribute("data-theme", theme);
-          if (themeToggle) {
-            const isDark = theme === "dark";
-            themeToggle.setAttribute("aria-pressed", isDark ? "true" : "false");
-            themeToggle.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
-            const darkIcon = themeToggle.querySelector(".theme-icon-dark");
-            const lightIcon = themeToggle.querySelector(".theme-icon-light");
-            if (darkIcon && lightIcon) {
-              darkIcon.classList.toggle("hidden", isDark);
-              lightIcon.classList.toggle("hidden", !isDark);
-            }
-          }
-          logos.forEach((logo) => {
-            const next = theme === "light" ? logo.dataset.logoLight : logo.dataset.logoDark;
-            if (next) {
-              logo.src = next;
-            }
-          });
-        }
-
-        const storedTheme = readStoredTheme();
-        const systemTheme = media && media.matches ? "light" : "dark";
-        const initialTheme = storedTheme || systemTheme;
-        applyTheme(initialTheme);
-
-        if (themeToggle) {
-          themeToggle.addEventListener("click", () => {
-            const current = document.documentElement.getAttribute("data-theme") || "dark";
-            const next = current === "dark" ? "light" : "dark";
-            storeTheme(next);
-            applyTheme(next);
-          });
-        }
-
-        if (media) {
-          media.addEventListener("change", (event) => {
-            if (readStoredTheme()) {
-              return;
-            }
-            applyTheme(event.matches ? "light" : "dark");
-          });
-        }
-      })();
     </script>
   </body>
 </html>

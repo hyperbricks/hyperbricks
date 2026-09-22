@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -103,7 +104,7 @@ func runBuildPush(result buildResult) error {
 		return err
 	}
 
-	fmt.Printf("Uploading and activating %s on %s...\n", filepath.Base(archivePath), targetName)
+	logging.GetLogger().Named("deploy").Infow("Uploading and activating build", "archive", filepath.Base(archivePath), "target", targetName)
 	if err := uploadRemoteBuild(resolved, result.Module, result.BuildID, archivePath, secret); err != nil {
 		return err
 	}

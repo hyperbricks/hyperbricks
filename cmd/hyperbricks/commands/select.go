@@ -2,8 +2,6 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +13,7 @@ func NewSelectCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			selected, ok, err := RunModulePicker("Select a module")
 			if err != nil {
-				fmt.Printf("Error selecting module: %v\n", err)
+				failf("Error selecting module: %v\n", err)
 				return
 			}
 			if !ok {
@@ -25,7 +23,7 @@ func NewSelectCommand() *cobra.Command {
 			startCmd := NewStartCommand()
 			startCmd.Flags().Set("module", selected)
 			if err := startCmd.Execute(); err != nil {
-				fmt.Printf("Error executing start command: %v\n", err)
+				failf("Error executing start command: %v\n", err)
 			}
 		},
 	}

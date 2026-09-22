@@ -1,7 +1,6 @@
 package shared
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,17 +9,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
 
 	"github.com/mitchellh/mapstructure"
 
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-)
-
-var (
-	logger *zap.SugaredLogger
 )
 
 func defaultInitMode() bool {
@@ -44,26 +39,11 @@ func envTrue(name string) bool {
 
 // GetLogger returns the singleton SugaredLogger instance
 func GetLogger() *zap.SugaredLogger {
-	return logger
+	return logging.GetLogger().Named("config")
 }
 
 func Init_configuration() {
-	// Create a custom configuration for the logger
-	config := zap.NewProductionConfig()
-
-	// Set the logging level to ERROR
-	config.Level = zap.NewAtomicLevelAt(zapcore.WarnLevel)
-
-	// Build the logger
-	l, err := config.Build()
-	if err != nil {
-		panic(err)
-	}
-
-	defer l.Sync() // Ensure the logger is flushed on exit
-
-	// Use the configured logger
-	logger = l.Sugar()
+	logging.GetInstance()
 }
 
 // CacheTime manages cache duration.
@@ -106,17 +86,31 @@ const PackageConfigFileName = "package.hyperbricks.yaml"
 
 // Config structure with default values.
 type Config struct {
-	Mode        string            `mapstructure:"mode"`
-	Logger      LoggerConfig      `mapstructure:"logger"`
-	Server      ServerConfig      `mapstructure:"server"`
-	RateLimit   RateLimitConfig   `mapstructure:"rate_limit"`
-	Development DevelopmentConfig `mapstructure:"development"`
-	Debug       DebugConfig       `mapstructure:"debug"`
-	Live        LiveConfig        `mapstructure:"live"`
-	Deploy      DeployConfig      `mapstructure:"deploy"`
-	Directories map[string]string `mapstructure:"directories"`
-	Plugins     PluginsConfig     `mapstructure:"plugins"`
-	System      SystemConfig      `mapstructure:"system"`
+	Mode                 string            `mapstructure:"mode"`
+	Logger               LoggerConfig      `mapstructure:"logger"`
+	Server               ServerConfig      `mapstructure:"server"`
+	RateLimit            RateLimitConfig   `mapstructure:"rate_limit"`
+	Development          DevelopmentConfig `mapstructure:"development"`
+	Debug                DebugConfig       `mapstructure:"debug"`
+	Live                 LiveConfig        `mapstructure:"live"`
+	Deploy               DeployConfig      `mapstructure:"deploy"`
+	Directories          map[string]string `mapstructure:"directories"`
+	Plugins              PluginsConfig     `mapstructure:"plugins"`
+	System               SystemConfig      `mapstructure:"system"`
+	frontendEditingError error
+}
+
+// Frontend editors are development-only; Spaces is built in, other editors are plugins.
+type FrontendEditingConfig struct {
+	Enabled bool                            `mapstructure:"enabled"`
+	Spaces  SpacesConfig                    `mapstructure:"spaces"`
+	Editors map[string]FrontendEditorConfig `mapstructure:"editors"`
+}
+
+type FrontendEditorConfig struct {
+	Plugin string                 `mapstructure:"plugin"`
+	Route  string                 `mapstructure:"route"`
+	Data   map[string]interface{} `mapstructure:"data"`
 }
 type SystemConfig struct {
 	MetricsWatchInterval time.Duration `mapstructure:"metrics_watch_interval"`
@@ -136,17 +130,19 @@ type PluginsConfig struct {
 }
 
 type DevelopmentConfig struct {
-	Dashboard      bool     `mapstructure:"dashboard"`
-	FrontendErrors bool     `mapstructure:"frontend_errors"`
-	Watch          bool     `mapstructure:"watch"`
-	WatchDirs      []string `mapstructure:"watch_dirs"`
-	Reload         bool     `mapstructure:"reload"`
+	FrontendEditing FrontendEditingConfig `mapstructure:"frontend_editing"`
+	Dashboard       bool                  `mapstructure:"dashboard"`
+	FrontendErrors  bool                  `mapstructure:"frontend_errors"`
+	Watch           bool                  `mapstructure:"watch"`
+	WatchDirs       []string              `mapstructure:"watch_dirs"`
+	Reload          bool                  `mapstructure:"reload"`
 }
 
 // LoggerConfig with defaults.
 type LoggerConfig struct {
-	Level string `mapstructure:"level"`
-	Path  string `mapstructure:"path"`
+	Level  string `mapstructure:"level"`
+	Path   string `mapstructure:"path"`
+	Format string `mapstructure:"format"`
 }
 
 type RoutingConfig struct {
@@ -233,7 +229,6 @@ var (
 // GetHyperBricksConfiguration returns the singleton instance of the Config.
 func GetHyperBricksConfiguration() *Config {
 	once.Do(func() {
-		flag.Parse()
 		instance = loadHyperBricksConfiguration()
 	})
 	return instance
@@ -243,7 +238,7 @@ func GetHyperBricksConfiguration() *Config {
 func loadHyperBricksConfiguration() *Config {
 	dir, err := os.Getwd()
 	if err != nil {
-		GetLogger().Errorf("Failed to get working directory", "error", err)
+		GetLogger().Errorw("Failed to get working directory", "error", err)
 	}
 
 	configFilePath := Module
@@ -255,21 +250,17 @@ func loadHyperBricksConfiguration() *Config {
 	moduleDir := runtimeModuleRoot(runtimeOptions)
 	parsedConfig, err := LoadPackageConfigMap(configFilePath, moduleDir)
 	if err != nil {
-		GetLogger().Info("Failed to load config file", "path", configFilePath, "error", err)
+		GetLogger().Warnw("Failed to load package configuration; using defaults", "file", logging.ModulePath(moduleDir, configFilePath), "error", logging.ModuleText(moduleDir, err.Error()))
 		parsedConfig = map[string]interface{}{}
 	}
 	parser.HbConfig = parsedConfig
-	GetLogger().Infof("Parsed Configuration %v", parsedConfig)
 
 	// Initialize with default values
 	var config = Config{
 
 		Mode: LIVE_MODE, // Default mode
 
-		Logger: LoggerConfig{
-			Level: "info",                   // Default level
-			Path:  "./logs/hyperbricks.log", // Default path
-		},
+		Logger: LoggerConfig{},
 
 		Server: ServerConfig{
 			Port: 8080, // Default port
@@ -344,7 +335,7 @@ func loadHyperBricksConfiguration() *Config {
 	// Decode the parsed config into the struct
 	err = decodeConfig(parsedConfig["hyperbricks"], &config)
 	if err != nil {
-		GetLogger().Errorf("Failed to decode configuration", "error", err)
+		GetLogger().Errorw("Failed to decode configuration", "file", logging.ModulePath(moduleDir, configFilePath), "error", logging.ModuleText(moduleDir, err.Error()))
 	}
 	if runtimeOptions.PortOverride {
 		config.Server.Port = runtimeOptions.Port
@@ -372,14 +363,13 @@ func loadHyperBricksConfiguration() *Config {
 		GetLogger().Debug("Setting mode to development mode")
 	} else if config.Mode == DEBUG_MODE {
 		GetLogger().Debug("Setting mode to debug mode")
-		GetLogger().Debugf("Final Configuration", "config", config)
 	} else {
 		GetLogger().Debugf("Invalid mode set in package config %v", config.Mode)
 
 		GetLogger().Warn("Setting mode not recognised, setting to live (production) mode")
 		config.Mode = LIVE_MODE
 	}
-	fmt.Println("loaded " + Module)
+	GetLogger().Debugw("Package configuration loaded", "file", logging.ModulePath(moduleDir, Module), "mode", config.Mode)
 	return &config
 }
 
@@ -412,10 +402,20 @@ func packageConfigYAMLOptions(moduleDir string) yamlparser.Options {
 
 // decodeConfig decodes map to struct with defaults using mapstructure.
 func decodeConfig(input interface{}, output interface{}) error {
+	if config, ok := output.(*Config); ok {
+		editing, err := decodeFrontendEditing(input)
+		config.frontendEditingError = err
+		config.Development.FrontendEditing = editing
+		if err != nil {
+			return err
+		}
+		// Use the separately validated value even when decoding into a reused config.
+		defer func() { config.Development.FrontendEditing = editing }()
+	}
 	var fallback CacheTime
 	err := fallback.Parse("24h") // Fallback duration
 	if err != nil {
-		GetLogger().Errorf("Failed to set fallback CacheTime", "error", err)
+		GetLogger().Errorw("Failed to set fallback cache duration", "error", err)
 	}
 
 	decodeHook := mapstructure.ComposeDecodeHookFunc(
@@ -425,7 +425,7 @@ func decodeConfig(input interface{}, output interface{}) error {
 				var ct CacheTime
 				err := ct.Parse(value.(string))
 				if err != nil {
-					GetLogger().Errorf("Failed to parse CacheTime", "value", value, "error", err)
+					GetLogger().Errorw("Failed to parse cache duration", "value", value, "error", err)
 					return fallback, nil // Use fallback value on error
 				}
 				return ct, nil
@@ -437,7 +437,7 @@ func decodeConfig(input interface{}, output interface{}) error {
 			if srcType.Kind() == reflect.String && destType == reflect.TypeOf(time.Duration(0)) {
 				duration, err := time.ParseDuration(value.(string))
 				if err != nil {
-					GetLogger().Errorf("Failed to parse time.Duration", "value", value, "error", err)
+					GetLogger().Errorw("Failed to parse duration", "value", value, "error", err)
 					return time.Duration(0), nil // Default to zero if parsing fails
 				}
 				return duration, nil

@@ -1,7 +1,12 @@
 package logging
 
 import (
+	"errors"
+	"fmt"
+	"io"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -9,30 +14,30 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// LogMessage represents a single log entry
+// LogMessage keeps the existing dashboard contract and adds structured context.
 type LogMessage struct {
 	Level   zapcore.Level
 	Message string
 	Time    time.Time
+	Logger  string
+	Fields  map[string]interface{} `json:",omitempty"`
 }
 
-// ChannelCore is a custom zapcore.Core that writes logs to a channel
 type ChannelCore struct {
 	LevelEnabler zapcore.LevelEnabler
 	output       chan LogMessage
+	owner        *loggerSingleton
+	fields       []zapcore.Field
 }
 
-// Enabled checks if the log level is enabled
-func (c *ChannelCore) Enabled(level zapcore.Level) bool {
-	return c.LevelEnabler.Enabled(level)
-}
+func (c *ChannelCore) Enabled(level zapcore.Level) bool { return c.LevelEnabler.Enabled(level) }
 
-// With adds structured context to the Core
 func (c *ChannelCore) With(fields []zapcore.Field) zapcore.Core {
-	return c // No structured context is used here
+	clone := *c
+	clone.fields = append(append([]zapcore.Field(nil), c.fields...), fields...)
+	return &clone
 }
 
-// Check determines whether the supplied Entry should be logged
 func (c *ChannelCore) Check(entry zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
 	if c.Enabled(entry.Level) {
 		return ce.AddCore(entry, c)
@@ -40,93 +45,121 @@ func (c *ChannelCore) Check(entry zapcore.Entry, ce *zapcore.CheckedEntry) *zapc
 	return ce
 }
 
-// Write writes the log entry to the channel
-// func (c *ChannelCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
-// 	logMsg := LogMessage{
-// 		Level:   entry.Level,
-// 		Message: entry.Message,
-// 		Time:    entry.Time,
-// 	}
-// 	select {
-// 	case c.output <- logMsg:
-// 	default: // Channel full; drop log or handle as needed
-// 	}
-// 	return nil
-// }
-
-// Write writes the log entry to the rotating buffer
 func (c *ChannelCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
-
-	logMsg := LogMessage{
-		Level:   entry.Level,
-		Message: entry.Message,
-		Time:    entry.Time,
+	encoder := zapcore.NewMapObjectEncoder()
+	for _, field := range c.fields {
+		field.AddTo(encoder)
 	}
-
-	ls := GetInstance()
+	for _, field := range fields {
+		field.AddTo(encoder)
+	}
+	message := LogMessage{Level: entry.Level, Message: entry.Message, Time: entry.Time,
+		Logger: entry.LoggerName, Fields: encoder.Fields}
+	ls := c.owner
+	if ls == nil {
+		ls = GetInstance()
+	}
 	ls.mu.Lock()
 	if len(ls.logBuffer) >= 10 {
-		// Remove the oldest log (FIFO)
-		ls.logBuffer = ls.logBuffer[1:]
+		copy(ls.logBuffer, ls.logBuffer[1:])
+		ls.logBuffer = ls.logBuffer[:9]
 	}
-	ls.logBuffer = append(ls.logBuffer, logMsg)
+	ls.logBuffer = append(ls.logBuffer, message)
 	ls.mu.Unlock()
-
+	message.Fields = cloneFields(message.Fields)
 	select {
-	case c.output <- logMsg:
-	default: // Channel full, drop log
+	case c.output <- message:
+	default:
 	}
 	return nil
 }
 
-// Sync flushes buffered logs (no-op in this case)
-func (c *ChannelCore) Sync() error {
-	return nil
-}
+func (c *ChannelCore) Sync() error { return nil }
 
-// DynamicWriteSyncer manages multiple write syncers
+// DynamicWriteSyncer allows file outputs to be attached without replacing loggers.
 type DynamicWriteSyncer struct {
 	mu      sync.Mutex
 	writers []zapcore.WriteSyncer
+	files   map[string]*os.File
 }
 
-func (d *DynamicWriteSyncer) AddWriteSyncer(ws zapcore.WriteSyncer) {
+func (d *DynamicWriteSyncer) AddWriteSyncer(writer zapcore.WriteSyncer) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	d.writers = append(d.writers, ws)
+	d.writers = append(d.writers, writer)
 }
 
-func (d *DynamicWriteSyncer) Write(p []byte) (n int, err error) {
+func (d *DynamicWriteSyncer) Write(data []byte) (int, error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	for _, ws := range d.writers {
-		n, err = ws.Write(p)
-		if err != nil {
-			return
+	var errs []error
+	for _, writer := range d.writers {
+		n, err := writer.Write(data)
+		if err == nil && n != len(data) {
+			err = io.ErrShortWrite
 		}
+		errs = append(errs, err)
 	}
-	return len(p), nil
+	return len(data), errors.Join(errs...)
 }
 
 func (d *DynamicWriteSyncer) Sync() error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	for _, ws := range d.writers {
-		if err := ws.Sync(); err != nil {
-			return err
-		}
+	var errs []error
+	for _, writer := range d.writers {
+		errs = append(errs, writer.Sync())
 	}
+	return errors.Join(errs...)
+}
+
+func (d *DynamicWriteSyncer) addFile(name string) error {
+	name, err := filepath.Abs(name)
+	if err != nil {
+		return err
+	}
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.files[name] != nil {
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(name), 0755); err != nil {
+		return err
+	}
+	file, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	if d.files == nil {
+		d.files = make(map[string]*os.File)
+	}
+	d.files[name] = file
+	d.writers = append(d.writers, zapcore.AddSync(file))
 	return nil
 }
 
-// LoggerInstance holds the logger and log buffer
+func (d *DynamicWriteSyncer) close() error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	var errs []error
+	for _, file := range d.files {
+		errs = append(errs, file.Sync(), file.Close())
+	}
+	d.files = nil
+	d.writers = nil
+	return errors.Join(errs...)
+}
+
 type loggerSingleton struct {
 	logger        *zap.SugaredLogger
 	logsCh        chan LogMessage
 	atomicLevel   zap.AtomicLevel
 	dynamicSyncer *DynamicWriteSyncer
-	logBuffer     []LogMessage // Stores the last 10 logs
-	mu            sync.Mutex   // Protects logBuffer
+	logBuffer     []LogMessage
+	mu            sync.Mutex
+	configMu      sync.RWMutex
+	terminal      zapcore.WriteSyncer
+	color         bool
 }
 
 var (
@@ -134,100 +167,84 @@ var (
 	once     sync.Once
 )
 
-func (ls *loggerSingleton) GetLogCh() chan LogMessage {
-	return ls.logsCh
-}
-
-// GetLogger returns the singleton SugaredLogger instance
-func GetLogger() *zap.SugaredLogger {
-	return GetInstance().logger
-}
-
-// GetInstance initializes the singleton instance if it doesn't exist
 func GetInstance() *loggerSingleton {
-	once.Do(func() {
-		instance = &loggerSingleton{}
-
-		// Default initialization with INFO level
-		initLogger(instance, zapcore.InfoLevel, defaultEncoderConfig())
-	})
+	once.Do(func() { instance = newLogger(os.Stderr, ColorEnabled(os.Stderr)) })
 	return instance
 }
 
-// GetLogs returns the last 10 logs in FIFO order
+func newLogger(output io.Writer, color bool) *loggerSingleton {
+	ls := &loggerSingleton{logsCh: make(chan LogMessage, 100), atomicLevel: zap.NewAtomicLevelAt(zap.InfoLevel),
+		dynamicSyncer: &DynamicWriteSyncer{}, terminal: zapcore.Lock(zapcore.AddSync(output)), color: color}
+	_ = ls.configure("info", "console")
+	return ls
+}
+
+func GetLogger() *zap.SugaredLogger {
+	ls := GetInstance()
+	ls.configMu.RLock()
+	defer ls.configMu.RUnlock()
+	return ls.logger
+}
+
+// VerboseEnabled reports whether DEBUG events are currently visible.
+func VerboseEnabled() bool {
+	return GetLogger().Desugar().Core().Enabled(zapcore.DebugLevel)
+}
+
+func (ls *loggerSingleton) GetLogCh() chan LogMessage { return ls.logsCh }
+func GetLogsChannel() <-chan LogMessage               { return GetInstance().logsCh }
+
 func GetLogs() []LogMessage {
 	ls := GetInstance()
 	ls.mu.Lock()
 	defer ls.mu.Unlock()
-
-	// Return a copy to avoid race conditions
-	return append([]LogMessage{}, ls.logBuffer...)
+	result := append([]LogMessage{}, ls.logBuffer...)
+	for index := range result {
+		result[index].Fields = cloneFields(result[index].Fields)
+	}
+	return result
 }
 
-// initLogger initializes the logger with the given level and encoder config
-func initLogger(ls *loggerSingleton, level zapcore.Level, encoderConfig zapcore.EncoderConfig) {
-	logChannel := make(chan LogMessage, 100) // Buffer size of 100
-	ls.logsCh = logChannel
+// Configure is called before serving. Existing loggers share the dynamic level.
+func Configure(level, format string) error { return GetInstance().configure(level, format) }
 
-	// Create ChannelCore
-	channelCore := &ChannelCore{
-		LevelEnabler: level,
-		output:       logChannel,
-	}
-
-	// Create DynamicWriteSyncer
-	ls.dynamicSyncer = &DynamicWriteSyncer{}
-	multiCore := zapcore.NewTee(
-		channelCore, // Logs to the channel
-		zapcore.NewCore(zapcore.NewConsoleEncoder(encoderConfig), zapcore.AddSync(os.Stdout), level),
-	)
-
-	// Build the logger
-	logger := zap.New(multiCore, zap.AddCaller())
-	ls.logger = logger.Sugar()
-	ls.atomicLevel = zap.NewAtomicLevelAt(level)
-}
-
-// defaultEncoderConfig returns a simple encoder configuration
-func defaultEncoderConfig() zapcore.EncoderConfig {
-	// Custom time encoder for yymmdd-hh:mm format
-	customTimeEncoder := func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-		enc.AppendString(t.Format("02-01-2006 15:04")) // yymmdd-hh:mm format
-	}
-	return zapcore.EncoderConfig{
-		TimeKey:  "ts",
-		LevelKey: "level",
-		NameKey:  "logger",
-		//CallerKey:     "caller",
-		MessageKey:    "msg",
-		StacktraceKey: "",
-		EncodeTime:    customTimeEncoder,
-		EncodeLevel:   zapcore.CapitalLevelEncoder,
-		EncodeCaller:  zapcore.ShortCallerEncoder,
-	}
-}
-
-// AddFileOutput adds a file write syncer to the logger
-func AddFileOutput(logFilePath string) error {
-	ls := GetInstance()
-	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+func (ls *loggerSingleton) configure(level, format string) error {
+	parsed, err := zapcore.ParseLevel(strings.ToLower(level))
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid log level %q: use debug, info, warn, error, dpanic, panic or fatal", level)
 	}
-	fileSyncer := zapcore.AddSync(logFile)
-	ls.dynamicSyncer.AddWriteSyncer(fileSyncer)
-	ls.logger.Infow("Added file output", "file", logFilePath)
+	if format != "console" && format != "json" {
+		return fmt.Errorf("invalid log format %q: use console or json", format)
+	}
+	config := zap.NewProductionEncoderConfig()
+	config.TimeKey, config.MessageKey = "time", "message"
+	config.EncodeTime = zapcore.RFC3339NanoTimeEncoder
+	var terminal zapcore.Core = zapcore.NewCore(zapcore.NewJSONEncoder(config), ls.terminal, ls.atomicLevel)
+	if format == "console" {
+		terminal = &consoleCore{LevelEnabler: ls.atomicLevel, output: ls.terminal, color: ls.color}
+	}
+	fileConfig := zap.NewProductionEncoderConfig()
+	fileConfig.TimeKey, fileConfig.MessageKey = "time", "message"
+	fileConfig.EncodeTime = zapcore.RFC3339NanoTimeEncoder
+	channel := &ChannelCore{LevelEnabler: ls.atomicLevel, output: ls.logsCh, owner: ls}
+	core := zapcore.NewTee(channel, terminal,
+		zapcore.NewCore(zapcore.NewJSONEncoder(fileConfig), ls.dynamicSyncer, ls.atomicLevel))
+	logger := zap.New(&safeCore{Core: core}, zap.ErrorOutput(ls.terminal),
+		zap.WithFatalHook(fatalHook{files: ls.dynamicSyncer}))
+	ls.configMu.Lock()
+	ls.logger = logger.Sugar()
+	ls.atomicLevel.SetLevel(parsed)
+	ls.configMu.Unlock()
 	return nil
 }
 
-// ChangeLevel dynamically changes the logging level
-func ChangeLevel(newLevel zapcore.Level) {
-	ls := GetInstance()
-	ls.atomicLevel.SetLevel(newLevel)
-	ls.logger.Infow("Log level changed", "new_level", newLevel.String())
+type fatalHook struct{ files *DynamicWriteSyncer }
+
+func (hook fatalHook) OnWrite(*zapcore.CheckedEntry, []zapcore.Field) {
+	_ = hook.files.close()
+	os.Exit(1)
 }
 
-// GetLogsChannel returns the logs channel
-func GetLogsChannel() <-chan LogMessage {
-	return GetInstance().logsCh
-}
+func AddFileOutput(path string) error { return GetInstance().dynamicSyncer.addFile(path) }
+func ChangeLevel(level zapcore.Level) { GetInstance().atomicLevel.SetLevel(level) }
+func Close() error                    { return GetInstance().dynamicSyncer.close() }
