@@ -1,32 +1,23 @@
 ---
 name: hyperbricks
-description: Set up, develop, troubleshoot, and package HyperBricks projects using the CLI, YAML components, templates, and recommended page and fragment patterns.
+description: Set up, scaffold, extend, troubleshoot, and package HyperBricks projects using the project-aware author command, native YAML components, templates, and page/fragment patterns. Use for source-owned Spaces CMS editing and native Markdown content workflows too.
 metadata:
   short-description: Build and manage HyperBricks projects
 ---
 
 ## HyperBricks
 
-**HyperBricks** is a fullstack **Web App Build System and component runtime for hypermedia applications**. It enables you to build dynamic, modular web applications by describing your app’s state, structure, and behavior in declarative configuration files, called *hyperbricks*.
+HyperBricks is a native full-stack build system with an integrated rendering engine for hypermedia web applications. Configure and connect components in `*.hyperbricks.yaml` files. The engine renders them on the server as HTML pages and fragments using your templates.
 
-HyperBricks is designed to provide full control over both the front-end and back-end of an application — without the complexity of traditional fullstack frameworks or CMSs.
+- **Backend logic:** Call APIs, run trusted JavaScript with `goja_render`, or use native Go plugins.
+- **Frontend assets:** Bundle JavaScript, TypeScript, and CSS with the built-in `esbuild` component.
+- **Rendering:** Choose cached or dynamic output per page or fragment, or export static HTML and assets.
+- **Deployment:** Use the CLI to create and run modules, build archives, and manage deployments.
+- **Spaces:** Create pages from shared sources and declare which fields users can edit in the development browser editor.
 
-With HyperBricks, you can:
+Templates use Go `html/template` and Sprig functions. See [JavaScript and CSS](../../docs/ESBUILD.md) for asset bundling with the embedded [esbuild library](https://esbuild.github.io/).
 
-* **Design** your application’s structure and interactive behavior using readable, reusable configs
-* **Dynamically update** parts of your site without a full page reload with HTML fragments and custom HTTP response headers
-* **Maintain** full control over templates, routing, and rendering — with no boilerplate or JavaScript lock-in
-* **Manage** state and logic for your app in a modular, versionable, and scalable way
-
-HyperBricks uses `*.hyperbricks.yaml` configuration files to define pages and HTML fragments, supply template data, and connect server-side logic. Templates control the HTML markup using Go’s `html/template` and Sprig functions.
-
-**YAML is the source format; the runtime contract is component-based.** YAML source becomes ordered runtime configuration maps, which the runtime uses to configure and dispatch registered components such as `hypermedia`, `fragment`, and `template`.
-
-When implementing or diagnosing behavior, distinguish source parsing, runtime configuration, and component execution, and make changes in the layer that owns the behavior.
-
-HyperBricks’ native `esbuild` component bundles JavaScript, TypeScript, and CSS. See the repository manual at `docs/ESBUILD.md` for usage. It uses [esbuild](https://esbuild.github.io/), a third-party Go library for fast web asset bundling.
-
-For server-side logic, projects can call APIs, run trusted JavaScript with `goja_render`, or use Go plugins. The CLI creates and runs modules, exports static pages, and packages modules for deployment.
+YAML parsing, runtime configuration, and component execution are separate layers. The parser converts YAML into ordered configuration maps. The runtime reads those maps and calls registered components such as `hypermedia`, `fragment`, and `template`. When fixing behavior, change the layer that owns it.
 
 ## Source Of Truth
 
@@ -41,21 +32,28 @@ Resolve sources in this order:
 
 Paths beginning with `docs/`, `modules/`, `pkg/`, or `cmd/` below are relative to the HyperBricks repository root. They are not paths inside the installed skill:
 
-- `docs/INTRODUCTION.md` and `docs/QUICKSTART.md`: introduction and first module.
-- `docs/HYPERBRICKS_CLI.md`: commands, flags, module selection, and render diagnostics.
-- `docs/YAML_USAGE.md`: component syntax, imports, inheritance, resolvers, and templates.
-- `docs/REFERENCE.md`: component fields and supported values.
-- `docs/PROJECT_PATTERNS.md`: recommended project structure and feature-selection patterns.
-- `modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md`: standalone pattern demos and their source files.
-- `docs/ROUTING.md`: URL matching and route configuration.
-- `docs/ESBUILD.md`: browser asset bundling.
-- `docs/GOJA_RENDER.md`, `docs/API_RENDER.md`, and `docs/PLUGINS.md`: server-side logic.
-- `docs/ROUTE_GUARD.md`: authentication and authorization checks on routes.
-- `docs/DEPLOY.md`: archives, upload, activation, and runtime deployment.
-- `docs/DOCKER.md`: Docker deploy host, configuration, persistence, and plugin builds.
+- [Introduction](../../docs/INTRODUCTION.md) and [Quickstart](../../docs/QUICKSTART.md): introduction and first module.
+- [CLI reference](../../docs/HYPERBRICKS_CLI.md): commands, flags, module selection, and render diagnostics.
+- [Authoring](../../docs/AUTHOR.md): project context, schema-driven specs, preview/apply, and source-owned Space creation.
+- [YAML usage](../../docs/YAML_USAGE.md): component syntax, imports, inheritance, resolvers, and templates.
+- [Component reference](../../docs/REFERENCE.md): component fields and supported values.
+- [HyperBricks type examples](../../docs/HYPERBRICKS_TYPE_EXAMPLES.md): commented YAML examples for all native types, source variants, prerequisites, and per-type field reference links.
+- [How-to guides](../../docs/HOWTOS.md): practical introductions and examples for module setup, templates, routes, assets, plugins, and API components.
+- [Pattern source guide](../../modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md): standalone pattern demos and their source files.
+- [Localized Spaces pattern](../../modules/hyperbricks-patterns-yaml/docs/pages/localized-spaces.md): runnable English/German Spaces pattern with two page sources and four routes.
+- [Routing](../../docs/ROUTING.md): URL matching and route configuration.
+- [Esbuild](../../docs/ESBUILD.md): browser asset bundling.
+- [Spaces](../../docs/SPACES.md): source-owned frontend editing, CRUD, assets, metadata, and development configuration.
+- [Markdown](../../docs/MARKDOWN.md): the native component, file constraints, and editable fields.
+- [Goja render](../../docs/GOJA_RENDER.md), [API render](../../docs/API_RENDER.md), and [Plugins](../../docs/PLUGINS.md): server-side logic.
+- [Route guards](../../docs/ROUTE_GUARD.md): authentication and authorization checks on routes.
+- [Deployment](../../docs/DEPLOY.md): archives, upload, activation, and runtime deployment.
+- [Docker deployment](../../docs/DOCKER.md): Docker deploy host, configuration, persistence, and plugin builds.
 
 
-The files under this skill's `references/` directory are bundled guidance and remain available without a checkout. Use the public repository or a matching checkout for complete manuals, runnable modules, generated reference material, and component source.
+The bundled `references/` files work without a checkout. Use a matching checkout or public repository revision for full manuals, runnable modules, generated references, and component source.
+
+Repository links resolve relative to this checkout. If the skill is installed separately, find those files in the matching checkout or public revision using the rules above.
 
 ## Project Structure
 
@@ -103,6 +101,66 @@ For configuration or rendering problems, inspect the server log and its JSON dia
 
 See [Project lifecycle](references/project-lifecycle.md) for installation, starters, module selection, and additional CLI commands.
 
+Use the command that matches the requested level of authoring:
+
+- `hyperbricks scaffold` opens the interactive Bubble Tea wizard for a person at
+  a terminal. It selects a module, category, starter, top-level YAML file, root
+  name, and route/title where applicable, then reviews the library-generated YAML
+  and staged assets before writing.
+- `hyperbricks scaffold --non-interactive` runs that same starter workflow with
+  named flags and is the path for agents and scripts. Use it when a built-in
+  starter matches the requested root.
+  Preview with `--dry-run --json`, then apply the same named options without
+  `--dry-run`. It requires `--module`, `--type`, and `--file`; accepts `--source
+  inline|file` for `template` and `markdown`; accepts `--name`, `--route`, and
+  `--title`; and supports `--dry-run` and `--json`. It uses the same core YAML
+  template library and planning path as the wizard. Omitted names receive unique
+  starter-based defaults. Do not make a human construct JSON for this workflow.
+- `hyperbricks space` is the human-facing creator for an inheriting Space from an
+  existing Hypermedia source. Its wizard is interactive when no creation options
+  are supplied; `--source`, `--name`, `--title`, `--route`, `--dry-run`, `--json`,
+  or `--non-interactive` select its flag-driven path. Discover valid sources with
+  `hyperbricks space --list --json` before supplying `--source`.
+- `hyperbricks author` is the project-aware authoring API.
+  Use it when the change must modify or compose existing roots, or account for
+  ownership, inheritance, imports, nested files, children, editing contracts,
+  custom properties, batches, or other source-aware integration. Do not choose
+  `author` merely because the caller is an agent.
+
+For `scaffold` and `space`, preview and inspect configuration/source changes; do not
+promise runtime rendering or start a server/static export unless runtime work is
+requested. Preview does not execute components or prove rendered appearance or HTMX
+behavior. When runtime work is requested, use the initialized module and check the
+affected routes, assets, and diagnostics.
+
+Read [Scaffolding, Authoring, and Spaces](references/scaffolding.md) for the command
+decision guide and [CLI reference](../../docs/HYPERBRICKS_CLI.md) for complete flags.
+
+When using `author` and the owner is known, start with `context --target <shell> --json`. Otherwise, use `context --list --json` to find root names, types, routes, and source files. Select an actual target; do not guess the starter's shell name.
+
+Use the focused context's example, bindings, import scope, and navigation convention. Read manual sections, type examples, or the schema only when a question remains. Prepare one batch with the context revision, preview it, and apply the same spec. Pass specs through stdin or temporary files; do not store them in the module root.
+
+Apply reviewed specs with `--summary --json` to avoid printing the preview YAML again. Then run `author inspect --target <page> --json` with the selected module to check ownership, bindings, and editable fields. Repeat `--target` for several owners changed by the same operation.
+
+Inspect an unchanged owner only when the operation changed its editing rules, template bindings, route ownership, or import scope. A new page's reference to a shared shell, home page, menu, or sibling does not require extra inspections. Check diagnostics. Request full context again only when you need source text or broader discovery.
+
+For complete component examples, open the relevant section of [HyperBricks type examples](../../docs/HYPERBRICKS_TYPE_EXAMPLES.md). Use its commented YAML and source variants. Follow the component's field reference for further requirements and include that link in the answer.
+
+Include required bindings and assets, or state their prerequisites. The examples show selected fields. When scaffolding, adapt them if focused context has no suitable pattern or the component is unfamiliar. Preserve existing project owners and conventions.
+
+Use `add-root` for pages, fragments, reusable bricks, and Space sources;
+`add-child` for existing source-owned targets; and `create-space` to instantiate
+a discovered Hypermedia source. For a localized site, initialize the module,
+add route-less page sources, then create each language/page Space separately.
+See the [Localized Spaces pattern](../../modules/hyperbricks-patterns-yaml/docs/pages/localized-spaces.md)
+for the resulting source and route layout.
+
+Check `hyperbricks author --help` in the selected binary. If a matching
+development checkout has the command but its built binary does not, use
+`go run ./cmd/hyperbricks author` from that checkout. For scaffolding-only
+requests, verify the preview and applied source changes without starting a server
+or exporting static output unless requested.
+
 ## Package Configuration
 
 `package.hyperbricks.yaml` uses ordinary YAML mappings. Runtime settings belong under `hyperbricks`. For example, these settings enable development watching and set the server port:
@@ -145,7 +203,7 @@ Three component types can define routes:
 | `fragment` | Rendered child content without the document wrapper. |
 | `api_fragment_render` | Calls the configured API endpoint and renders its response through a template. |
 
-`route: index` serves `/`. A `template`, `html`, `tree`, or `api_render` component renders within a page or fragment; it does not create a URL by itself.
+`route: index` serves `/`. A `template`, `html`, `tree`, `markdown`, or `api_render` component renders within a page or fragment; it does not create a URL by itself.
 
 Use lowercase `type` names in YAML. HyperBricks generates runtime `@type` and `@order` metadata; do not write those fields in source files.
 
@@ -277,7 +335,41 @@ In a shared page layout containing that same `#content` element, use:
 
 With HTMX loaded, the link replaces the contents of `#content` and changes the browser URL to `/help`. Without JavaScript, `href` opens the complete page. Load HTMX once in the shared layout. Also include UTF-8 charset and viewport metadata in its head; the [page recipe](references/authoring.md#one-view-a-full-page-and-a-fragment) shows that configuration.
 
-For menu generation, page and fragment navigation, and configuration-driven sections, use `modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md`. Use `docs/PROJECT_PATTERNS.md` to select and combine the relevant patterns in an application. Resolve both repository-relative paths through the Source Of Truth rules above.
+For menu generation, page and fragment navigation, and configuration-driven sections, use [Pattern source guide](../../modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md). Use [How-to guides](../../docs/HOWTOS.md) for short explanations and examples of common application tasks. Resolve both repository-relative paths through the Source Of Truth rules above.
+
+## Spaces And Markdown
+
+For requests to make a page editable, add a CMS, manage Space instances, or upload
+and render Markdown, read [Spaces and Markdown](references/spaces-markdown.md).
+Use the built-in features when the selected runtime supports them; no plugin
+installation or compilation is required for this workflow. The published
+v1.2.4-beta binary does not include these features. Verify the actual
+runtime version and source revision before using them.
+
+A **Space source** is a named root or orphan that resolves to `hypermedia` through loaded imports. A **Space** inherits that source in YAML and supplies its own route, title, editable content, and head metadata.
+
+The source defines the editing rules. The frontend edits instances and their declared assets. Spaces does not add a component type, database, or separate application.
+
+For a multi-page language switch, use one source per page shape and one Space per
+language and page. Keep the template and `editable` declarations on the source;
+override localized navigation values, `htmltag`, title, and content on each
+instance. The [Localized Spaces pattern](../../modules/hyperbricks-patterns-yaml/docs/pages/localized-spaces.md)
+shows the full import and route layout.
+
+- On `template`, `editable.<key>` authorizes editing `values.<key>`.
+- On `markdown`, `editable.file` or `editable.content` authorizes that direct field.
+- Markdown renders exactly one declared `content` string or resources-relative
+  `file`. It never selects a file from query parameters. Pages/fragments own routes.
+- Configure the CMS under `hyperbricks.development.frontend_editing`. It is
+  development-only, localhost-only by default, and read-only until writes are
+  explicitly enabled. Native Markdown rendering also works in live/static output.
+- Source YAML, resource files, and loaded imports remain the source of truth.
+  Saving does not publish or refresh the browser; the existing watcher/cache
+  configuration owns runtime refresh. Trash comments a managed import, not the file.
+
+The reference includes a complete source/instance recipe, asset policies, metadata,
+verification steps, and links to the maintained manuals. Use it when adapting an
+existing module as well as when starting a new one.
 
 ## Native esbuild
 
@@ -356,19 +448,23 @@ For runtime archives, stage only the intended source files; the archive builder 
 
 ## Troubleshooting And Verification
 
-HyperBricks has built-in error reporting in the server log and a JSON render diagnostics endpoint. Use these when diagnosing broken output or assessing the runtime's error feedback; a missing value or incomplete page alone does not establish that diagnostics are absent.
+Use the server log and JSON render diagnostics endpoint to investigate broken output or check error reporting. A missing value or incomplete page does not show whether HyperBricks recorded diagnostics.
 
-In development or debug mode, look for `Render diagnostics recorded` in the log. An error-level entry includes a URL such as:
+In development or debug mode, look for `Render failed`, `Render warning`, or `Render notice` in the log. A `diagnostics_url` field can contain a path such as:
 
 ```text
-http://localhost:8080/__hyperbricks/render-diagnostics?request_id=hb-12
+/__hyperbricks/render-diagnostics?request_id=hb-12
 ```
 
-Open or fetch the actual logged URL, preserving its host, port, and request ID. The JSON identifies the request and route; its `errors` entries include `file`, `path` (component path), `key`, `type`, and `err` (message), where available. Use those details to locate the owning source, fix it, and request the affected route again to verify the result. An HTTP 200 response can still have component errors; check `X-Hyperbricks-Render-Error-Count` and use `X-Hyperbricks-Request-ID` to correlate a rendered response with its record.
+Open or fetch the logged path on the running server with the original request ID. The JSON identifies the request and route. Each `errors` entry can include `file`, `path` (component path), `key`, `type`, and `err` (message). When the development dashboard is enabled, use its **Errors** section or `/__hyperbricks/errors` to read these diagnostics in the developer interface.
 
-Without a request ID, `/__hyperbricks/render-diagnostics` returns the ten most recent records. Warning-only records may exist without the error-level log entry. The runtime retains the latest 200 records in memory; older links expire and restarting clears them.
+Use those details to find the source, fix it, and request the route again. HTTP 200 can still include component errors. Check `X-Hyperbricks-Render-Error-Count` and use `X-Hyperbricks-Request-ID` to find the matching diagnostic record.
 
-Configuration-load diagnostic links use `localhost` and the configured server port; open them after startup completes. The endpoint is disabled in live mode, and static exports omit the link because their temporary server stops. If a setup failure prevents the server from starting, use the terminal error; the endpoint is not available yet. Check the selected runtime version and mode before interpreting an unavailable endpoint as missing error reporting.
+Without a request ID, `/__hyperbricks/render-diagnostics` returns up to ten current records containing diagnostics. The store retains the latest outcome for each request context, including healthy outcomes, up to 200 contexts. A successful retry clears that context's earlier error. Repeated requests replace earlier request IDs; eviction, configuration reload, and restart can also expire links.
+
+Open configuration-load diagnostic links after startup. Use `/__hyperbricks/render-diagnostics?view=current` for all retained diagnostics and checked/unchecked route information. An empty error list does not prove every route or input was tested. The endpoint is disabled in live mode. Static exports omit the link because their temporary server stops.
+
+If setup prevents startup, read the terminal error; the endpoint is not available yet. Check the runtime version and mode before concluding that error reporting is missing.
 
 | Problem | Check |
 | --- | --- |
@@ -376,6 +472,9 @@ Configuration-load diagnostic links use `localhost` and the configured server po
 | A template value is empty | Its configured `values`, selected `querykeys`, and whether the template needs `.name`, `.Params.name`, or `.Data.name`. |
 | CSS or JavaScript is missing | The source entry, build errors, configured static directory, and generated asset URL. |
 | An edit is not visible | Loaded source file, watch directories, route cache, and whether the browser is viewing static output. |
+| Spaces is missing or read-only | Actual runtime/revision, development mode, nested `frontend_editing` configuration, host policy, and explicit `spaces.write`. |
+| A field is absent from Spaces | The inherited source's `editable`, component owner, field identity, and active import graph; see [Spaces and Markdown](references/spaces-markdown.md). |
+| Markdown shows a filename or fails to render | `file` versus `content`, configured resources root, extension/size, and source-aware render diagnostics. |
 | A plugin cannot load | Enabled plugin name, compiled filename, plugins directory, and runtime/toolchain compatibility. |
 
 After changing a route, request its URL and check the response and server diagnostics. For a fragment, confirm that the response contains no extra page wrapper. After changing navigation, test direct access, HTMX updates, reload, Back, and Forward. For forms, check a valid submission and a rejected one.
