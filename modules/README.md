@@ -43,14 +43,14 @@ Follow each module’s README for plugin builds, external services, and startup 
 ## Screenshots
 
 <p>
-  <a href="esbuild-demo/docs/screenshots/home.png"><img src="esbuild-demo/docs/screenshots/home.png" alt="esbuild demo" style="height:200px;width:auto"></a>
-  <a href="navigation-demo-swup/docs/screenshots/home.png"><img src="navigation-demo-swup/docs/screenshots/home.png" alt="Swup navigation demo" style="height:200px;width:auto"></a>
-  <a href="todo-demo-htmx/docs/screenshots/home.png"><img src="todo-demo-htmx/docs/screenshots/home.png" alt="HTMX todo demo" style="height:200px;width:auto"></a>
-  <a href="todo-demo-swup/docs/screenshots/home.png"><img src="todo-demo-swup/docs/screenshots/home.png" alt="Swup todo demo" style="height:200px;width:auto"></a>
-  <a href="todo-demo-turbo/docs/screenshots/home.png"><img src="todo-demo-turbo/docs/screenshots/home.png" alt="Turbo todo demo" style="height:200px;width:auto"></a>
-  <a href="todo-demo-unpoly/docs/screenshots/home.png"><img src="todo-demo-unpoly/docs/screenshots/home.png" alt="Unpoly todo demo" style="height:200px;width:auto"></a>
-  <a href="unpoly-guard-demo/docs/screenshots/home.png"><img src="unpoly-guard-demo/docs/screenshots/home.png" alt="Unpoly guard demo" style="height:200px;width:auto"></a>
-  <a href="hyperbricks-patterns-yaml/docs/screenshots/docs.png"><img src="hyperbricks-patterns-yaml/docs/screenshots/docs.png" alt="HyperBricks patterns documentation" style="height:200px;width:auto"></a>
+  <a href="esbuild-demo/docs/screenshots/home.png"><img src="esbuild-demo/docs/screenshots/home.png" alt="esbuild demo" style="height:300px;width:auto"></a>
+  <a href="navigation-demo-swup/docs/screenshots/home.png"><img src="navigation-demo-swup/docs/screenshots/home.png" alt="Swup navigation demo" style="height:300px;width:auto"></a>
+  <a href="todo-demo-htmx/docs/screenshots/home.png"><img src="todo-demo-htmx/docs/screenshots/home.png" alt="HTMX todo demo" style="height:300px;width:auto"></a>
+  <a href="todo-demo-swup/docs/screenshots/home.png"><img src="todo-demo-swup/docs/screenshots/home.png" alt="Swup todo demo" style="height:300px;width:auto"></a>
+  <a href="todo-demo-turbo/docs/screenshots/home.png"><img src="todo-demo-turbo/docs/screenshots/home.png" alt="Turbo todo demo" style="height:300px;width:auto"></a>
+  <a href="todo-demo-unpoly/docs/screenshots/home.png"><img src="todo-demo-unpoly/docs/screenshots/home.png" alt="Unpoly todo demo" style="height:300px;width:auto"></a>
+  <a href="unpoly-guard-demo/docs/screenshots/home.png"><img src="unpoly-guard-demo/docs/screenshots/home.png" alt="Unpoly guard demo" style="height:300px;width:auto"></a>
+  <a href="hyperbricks-patterns-yaml/docs/screenshots/docs.png"><img src="hyperbricks-patterns-yaml/docs/screenshots/docs.png" alt="HyperBricks patterns documentation" style="height:300px;width:auto"></a>
 </p>
 
 
