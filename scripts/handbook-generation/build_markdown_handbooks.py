@@ -94,6 +94,7 @@ class Handbook:
     description: str
     topics: str
     sources: tuple[SourceDocument, ...]
+    version: str = ""
 
 
 class BuildError(RuntimeError):
@@ -124,6 +125,13 @@ def repository_root() -> Path:
 
 def resolve_commit(repository: Path, ref: str) -> str:
     return run_git(repository, "rev-parse", "--verify", f"{ref}^{{commit}}").strip()
+
+
+def snapshot_version(repository: Path, commit: str) -> str:
+    version = run_git(repository, "show", f"{commit}:assets/version.md").strip()
+    if not version or len(version.splitlines()) != 1:
+        raise BuildError("assets/version.md must contain a single non-empty version line")
+    return version
 
 
 def committed_paths(repository: Path, commit: str, directory: str) -> tuple[str, ...]:
@@ -379,9 +387,9 @@ def render_handbook(handbook: Handbook, commit: str, commit_date: date) -> str:
         f"**{handbook.subtitle}**",
         "",
         handbook.description,
+        "Topics: ",
         "",
-        handbook.topics,
-        "",
+        *([f"- **HyperBricks version:** {handbook.version}"] if handbook.version else []),
         f"- **Included documents:** {len(handbook.sources)}",
         f"- **Source snapshot:** [Git commit `{short_commit}`]({source_url})",
         (
@@ -422,6 +430,7 @@ def render_handbook(handbook: Handbook, commit: str, commit_date: date) -> str:
 
 
 def build_handbooks(repository: Path, commit: str) -> tuple[Handbook, Handbook]:
+    version = snapshot_version(repository, commit)
     docs = collect_sources(
         repository,
         commit,
@@ -455,6 +464,7 @@ def build_handbooks(repository: Path, commit: str) -> tuple[Handbook, Handbook]:
             description="A complete collection of the guides and references in the docs directory.",
             topics="Declarative applications. Component runtime. Hypermedia.",
             sources=docs,
+            version=version,
         ),
         Handbook(
             filename="HyperBricks-Skills.md",
@@ -466,6 +476,7 @@ def build_handbooks(repository: Path, commit: str) -> tuple[Handbook, Handbook]:
             ),
             topics="Project lifecycle. Authoring. Integrations. Plugins.",
             sources=skills,
+            version=version,
         ),
     )
 

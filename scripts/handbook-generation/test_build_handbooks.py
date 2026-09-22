@@ -10,10 +10,26 @@ from unittest.mock import patch
 from pypdf import PdfReader
 
 import build_handbooks
-from build_markdown_handbooks import BuildError, Handbook, SourceDocument, documentation_paths, transform_source
+from build_markdown_handbooks import BuildError, Handbook, SourceDocument, documentation_paths, transform_source, snapshot_version, render_handbook
 
 
 class HandbookTests(unittest.TestCase):
+    def test_version_is_read_from_selected_snapshot(self):
+        with patch("build_markdown_handbooks.run_git", return_value="v1.2.4-beta\n") as git:
+            self.assertEqual(snapshot_version(Path("."), "old-commit"), "v1.2.4-beta")
+            git.assert_called_once_with(Path("."), "show", "old-commit:assets/version.md")
+
+    def test_invalid_snapshot_version_fails(self):
+        for value in ("\n", "v1.2.4-beta\nv1.2.5-beta"):
+            with patch("build_markdown_handbooks.run_git", return_value=value):
+                with self.assertRaises(BuildError):
+                    snapshot_version(Path("."), "old-commit")
+
+    def test_handbook_includes_version(self):
+        handbook = Handbook("test.md", "Test", "Handbook", "Description", "Topics", (), "v1.2.5-beta")
+        markdown = render_handbook(handbook, "a" * 40, date(2026, 9, 22))
+        self.assertIn("- **HyperBricks version:** v1.2.5-beta", markdown)
+
     def test_mermaid_print_colors_preserve_graph_and_stroke_width(self):
         source = "flowchart TB\n A --> B\n classDef node fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:2.5px;\n class A,B node;"
         result = build_handbooks.print_mermaid_source(source)

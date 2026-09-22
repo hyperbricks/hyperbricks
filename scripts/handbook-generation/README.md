@@ -10,6 +10,9 @@ The script creates `.venv-handbooks/`, installs the Python packages pinned in
 `handbook-requirements.txt` and Mermaid CLI, then builds the documentation and
 skills handbooks as Markdown, PDF, and EPUB in `docs/handbooks/`. The environment is
 ignored by Git; it is not part of the repository or a release commit.
+When Markdown is generated (`all` or `--format markdown`), the two Markdown
+handbooks are also synchronized to the HyperBricks skill and packaged Codex
+plugin references. PDF-only and EPUB-only builds leave those copies unchanged.
 
 You need Python 3 with `venv` and `pip`, Node.js with `npm`, and network access
 for the first build. PDF generation also needs fonts. The defaults use Arial

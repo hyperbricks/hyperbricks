@@ -50,4 +50,63 @@ if [[ ! -x "${MERMAID_DIR}/node_modules/.bin/mmdc" ]] || [[ "$(cat "${MERMAID_DI
 fi
 export HB_MERMAID_CLI="${MERMAID_DIR}/node_modules/.bin/mmdc"
 
-exec "${ENV_DIR}/bin/python" "${SCRIPT_DIR}/build_handbooks.py" "$@"
+FORMAT="all"
+OUTPUT_DIR="${ROOT}/docs/handbooks"
+BUILD_ARGUMENT_COUNT=$#
+BUILD_ARGUMENTS=("$@")
+while (($#)); do
+    case "$1" in
+        --format)
+            if (($# > 1)); then FORMAT="$2"; shift 2; else shift; fi
+            ;;
+        --format=*)
+            FORMAT="${1#--format=}"
+            shift
+            ;;
+        --output-dir)
+            if (($# > 1)); then OUTPUT_DIR="$2"; shift 2; else shift; fi
+            ;;
+        --output-dir=*)
+            OUTPUT_DIR="${1#--output-dir=}"
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+if [[ "${OUTPUT_DIR}" != /* ]]; then
+    OUTPUT_DIR="${ROOT}/${OUTPUT_DIR}"
+fi
+
+if ((BUILD_ARGUMENT_COUNT)); then
+    "${ENV_DIR}/bin/python" "${SCRIPT_DIR}/build_handbooks.py" "${BUILD_ARGUMENTS[@]}"
+else
+    "${ENV_DIR}/bin/python" "${SCRIPT_DIR}/build_handbooks.py"
+fi
+
+if [[ "${FORMAT}" == "all" || "${FORMAT}" == "markdown" ]]; then
+    HANDBOOKS=(
+        HyperBricks-Documentation.md
+        HyperBricks-Skills.md
+    )
+    DESTINATIONS=(
+        "${ROOT}/SKILLS/hyperbricks/references"
+        "${ROOT}/codex-plugin/hyperbricks/skills/hyperbricks/references"
+    )
+
+    for handbook in "${HANDBOOKS[@]}"; do
+        if [[ ! -f "${OUTPUT_DIR}/${handbook}" ]]; then
+            echo "Generated handbook is missing: ${OUTPUT_DIR}/${handbook}" >&2
+            exit 1
+        fi
+    done
+
+    for destination in "${DESTINATIONS[@]}"; do
+        for handbook in "${HANDBOOKS[@]}"; do
+            cp "${OUTPUT_DIR}/${handbook}" "${destination}/${handbook}"
+            echo "Synchronized ${destination#"${ROOT}/"}/${handbook}"
+        done
+    done
+fi

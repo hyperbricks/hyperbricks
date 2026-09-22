@@ -106,9 +106,17 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
         "body": ParagraphStyle("body", fontName="HB", fontSize=9.5, leading=14, textColor=text, spaceAfter=7, splitLongWords=True),
         "small": ParagraphStyle("small", fontName="HB", fontSize=8, leading=11, textColor=text, spaceAfter=7),
         "chapter": ParagraphStyle("chapter", fontName="HB-Bold", fontSize=25, leading=30, textColor=ink, spaceAfter=14, keepWithNext=True),
-        "h2": ParagraphStyle("h2", fontName="HB-Bold", fontSize=15, leading=19, textColor=ink, spaceBefore=10, spaceAfter=7, keepWithNext=True),
-        "h3": ParagraphStyle("h3", fontName="HB-Bold", fontSize=11.5, leading=15, textColor=teal, spaceBefore=8, spaceAfter=6, keepWithNext=True),
+        "h1": ParagraphStyle("h1", fontName="HB-Bold", fontSize=20, leading=25, textColor=ink, spaceBefore=13, spaceAfter=9, keepWithNext=True),
+        "h2": ParagraphStyle("h2", fontName="HB-Bold", fontSize=15, leading=19, textColor=ink, spaceBefore=11, spaceAfter=6, keepWithNext=True,
+                              backColor=colors.HexColor("#f0f5f8"), borderColor=border, borderWidth=.5, borderPadding=(5, 7, 5, 7)),
+        "h3": ParagraphStyle("h3", fontName="HB-Bold", fontSize=11.5, leading=15, textColor=teal, spaceBefore=9, spaceAfter=4, keepWithNext=True),
+        "h4": ParagraphStyle("h4", fontName="HB-Bold", fontSize=10, leading=13, textColor=text, spaceBefore=7, spaceAfter=3, keepWithNext=True),
+        "list": ParagraphStyle("list", fontName="HB", fontSize=9.5, leading=13, textColor=text, spaceAfter=3, splitLongWords=True),
+        "quote": ParagraphStyle("quote", fontName="HB-Italic", fontSize=9.2, leading=13, textColor=text, leftIndent=10, rightIndent=6,
+                                 spaceBefore=4, spaceAfter=7, backColor=colors.HexColor("#f0f5f8"), borderColor=teal,
+                                 borderWidth=.6, borderPadding=(5, 7, 5, 7)),
         "cell": ParagraphStyle("cell", fontName="HB", fontSize=8, leading=11, textColor=text, splitLongWords=True),
+        "cell_header": ParagraphStyle("cell_header", fontName="HB-Bold", fontSize=8, leading=11, textColor=ink, splitLongWords=True),
     }
     kind = "Skills" if "Skills" in handbook.title else "Documentation"
     running = "SKILLS HANDBOOK" if kind == "Skills" else "DEVELOPMENT HANDBOOK"
@@ -228,7 +236,27 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
                 self.canv.addOutlineEntry(flowable.getPlainText(), flowable.chapter_anchor, level=0)
                 self.notify("TOCEntry", (0, flowable.getPlainText(), self.page, flowable.chapter_anchor))
 
+    def draw_inline_code_background(canvas, kind, label):
+        if kind != "onDraw" or not label:
+            return
+        position = canvas._curr_tx_info
+        code_width = pdfmetrics.stringWidth(label, "HB-Code", 8)
+        horizontal_padding = 1.25
+        canvas.saveState()
+        canvas.setFillColor(colors.HexColor("#edf2f5"))
+        canvas.roundRect(
+            position["cur_x"] - horizontal_padding,
+            position["cur_y"] - 2,
+            code_width + horizontal_padding * 2,
+            11,
+            1.5,
+            fill=1,
+            stroke=0,
+        )
+        canvas.restoreState()
+
     def decorate(c, doc):
+        c.setNamedCB("drawInlineCodeBackground", draw_inline_code_background)
         if doc.page == 1:
             c.saveState()
             c.setFillColor(teal)
@@ -249,7 +277,8 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
             c.setFillColor(teal)
             c.setFont("HB-Bold", 9)
             stamp = f"{snapshot_date.day} {assembly.MONTH_NAMES[snapshot_date.month - 1]} {snapshot_date.year}"
-            c.drawString(56, height - 518, f"{len(handbook.sources)} documents • {stamp}")
+            version_label = f"{handbook.version} • " if handbook.version else ""
+            c.drawString(56, height - 518, f"{version_label}{len(handbook.sources)} documents • {stamp}")
             c.setFillColor(text)
             c.setFont("HB", 8)
             c.drawString(56, height - 540, f"Source snapshot: Git commit {commit[:7]}; all chapters use this committed revision.")
@@ -274,7 +303,11 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
             if token.type == "text":
                 parts.append(escape(token.content))
             elif token.type == "code_inline":
-                parts.append(f'<font name="HB-Code" size="8">{escape(token.content)}</font>')
+                label = escape(token.content, quote=True)
+                parts.append(
+                    f'<onDraw name="drawInlineCodeBackground" label="{label}"/>'
+                    f'<font name="HB-Code" size="8">{escape(token.content)}</font>'
+                )
             elif token.type in {"strong_open", "strong_close", "em_open", "em_close"}:
                 tag = "b" if token.type.startswith("strong") else "i"
                 parts.append(f"<{tag}>" if token.nesting == 1 else f"</{tag}>")
@@ -297,7 +330,7 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
 
     def blocks(markdown):
         tokens = parser.parse(markdown)
-        result, anchors, lists = [], [], []
+        result, anchors, lists, quote_depth = [], [], [], 0
         index = 0
         while index < len(tokens):
             token = tokens[index]
@@ -311,7 +344,7 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
                 level = int(token.tag[1:])
                 markup = "".join(f'<a name="{escape(a, quote=True)}"/>' for a in anchors)
                 anchors.clear()
-                result.append(Paragraph(markup + inline(tokens[index + 1].children), styles["h2" if level <= 3 else "h3"]))
+                result.append(Paragraph(markup + inline(tokens[index + 1].children), styles[f"h{min(level, 4)}"]))
                 index += 2
             elif token.type == "paragraph_open":
                 content = tokens[index + 1].content
@@ -321,11 +354,19 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
                     index += 3
                     continue
                 prefix = ""
+                paragraph_style = styles["quote"] if quote_depth else styles["body"]
                 if lists:
                     prefix = "• " if lists[-1] is None else f"{lists[-1]}. "
                     if lists[-1] is not None:
                         lists[-1] += 1
-                result.append(Paragraph(prefix + inline(tokens[index + 1].children), styles["body"]))
+                    depth = len(lists) - 1
+                    paragraph_style = ParagraphStyle(
+                        f"list-{depth}-{len(result)}",
+                        parent=styles["list"],
+                        leftIndent=14 + depth * 13,
+                        firstLineIndent=-10,
+                    )
+                result.append(Paragraph(prefix + inline(tokens[index + 1].children), paragraph_style))
                 index += 2
             elif token.type in {"fence", "code_block"}:
                 language = token.info.split()[0] if token.info else ""
@@ -344,15 +385,24 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
                 lists.append(None if token.type == "bullet_list_open" else int(token.attrGet("start") or 1))
             elif token.type in {"bullet_list_close", "ordered_list_close"}:
                 lists.pop()
+            elif token.type == "blockquote_open":
+                quote_depth += 1
+            elif token.type == "blockquote_close":
+                quote_depth = max(0, quote_depth - 1)
             elif token.type == "table_open":
-                rows, row = [], []
+                rows, row, header_row = [], [], False
                 index += 1
                 while tokens[index].type != "table_close":
                     entry = tokens[index]
                     if entry.type == "tr_open":
                         row = []
+                        header_row = False
+                    elif entry.type == "th_open":
+                        header_row = True
+                    elif entry.type == "th_close":
+                        header_row = False
                     elif entry.type == "inline":
-                        row.append(Paragraph(inline(entry.children), styles["cell"]))
+                        row.append(Paragraph(inline(entry.children), styles["cell_header" if header_row else "cell"]))
                     elif entry.type == "tr_close":
                         rows.append(row)
                     index += 1
@@ -366,6 +416,8 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
                     ("TOPPADDING", (0, 0), (-1, -1), 6),
                     ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
                 ]))
+                for row_index in range(2, len(rows), 2):
+                    table.setStyle(TableStyle([("BACKGROUND", (0, row_index), (-1, row_index), colors.HexColor("#f7f9fa"))]))
                 result.extend([table, Spacer(1, 10)])
             index += 1
         return result
