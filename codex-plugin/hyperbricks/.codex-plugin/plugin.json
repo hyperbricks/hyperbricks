@@ -1,22 +1,22 @@
 {
   "name": "hyperbricks",
-  "version": "0.1.1+codex.20260922",
-  "description": "Build, author, troubleshoot, and package HyperBricks applications with bundled workflow and developer handbooks.",
+  "version": "0.1.1+codex.20260923164609",
+  "description": "Develop and maintain full-stack applications with HyperBricks.",
   "author": {
     "name": "Robbert Streng"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "HyperBricks",
-    "shortDescription": "Build HyperBricks applications with native workflows.",
-    "longDescription": "A HyperBricks authoring skill with bundled developer and skills handbooks. Covers modules, YAML components, templates, HTMX fragments, Spaces and Markdown, server integrations, native Go plugins, and delivery workflows. Selects documentation to match the runtime and preserves source ownership.",
+    "shortDescription": "Develop and maintain HyperBricks applications.",
+    "longDescription": "Develop and maintain HyperBricks applications across their full lifecycle: configure components and routes, change existing projects, troubleshoot runtime behavior, and package applications for delivery.",
     "developerName": "Robbert Streng",
     "category": "Productivity",
     "capabilities": [],
     "defaultPrompt": [
-      "Create a HyperBricks module with a page and HTMX fragment.",
-      "Add editable Spaces and Markdown to my HyperBricks site.",
-      "Diagnose and fix a HyperBricks rendering problem."
+      "Use $hyperbricks to develop or change this HyperBricks project.",
+      "Use $hyperbricks to troubleshoot this HyperBricks project.",
+      "Use $hyperbricks to review or package this HyperBricks project."
     ],
     "logo": "./assets/hyperbricks_round_black_on_white.svg",
     "composerIcon": "./assets/hyperbricks_round_black_on_white.svg",
@@ -24,9 +24,9 @@
   },
   "keywords": [
     "hyperbricks",
-    "htmx",
-    "hypermedia",
-    "yaml",
-    "spaces"
+    "web-development",
+    "full-stack",
+    "rapid-development",
+    "deployment"
   ]
 }
