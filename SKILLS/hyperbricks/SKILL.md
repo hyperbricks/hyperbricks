@@ -1,6 +1,6 @@
 ---
 name: hyperbricks
-description: Set up, scaffold, extend, troubleshoot, and package HyperBricks projects using the project-aware author command, native YAML components, templates, and page/fragment patterns. Use for source-owned Spaces CMS editing and native Markdown content workflows too.
+description: Set up, scaffold, extend, troubleshoot, and package HyperBricks projects with native YAML components, templates, and page/fragment patterns. Use the author command to inspect and change existing projects; this skill also covers source-owned Spaces CMS editing and native Markdown content workflows.
 metadata:
   short-description: Build and manage HyperBricks projects
 ---
@@ -34,7 +34,8 @@ Paths beginning with `docs/`, `modules/`, `pkg/`, or `cmd/` below are relative t
 
 - [Introduction](../../docs/INTRODUCTION.md) and [Quickstart](../../docs/QUICKSTART.md): introduction and first module.
 - [CLI reference](../../docs/HYPERBRICKS_CLI.md): commands, flags, module selection, and render diagnostics.
-- [Authoring](../../docs/AUTHOR.md): project context, schema-driven specs, preview/apply, and source-owned Space creation.
+- [Changing Existing Projects](../../docs/AUTHOR.md): project context, schema-driven specs, preview/apply, and source-owned Space creation.
+- [Author command reference](../../docs/AUTHOR_REFERENCE.md): exact spec, output, validation, and write contracts.
 - [YAML usage](../../docs/YAML_USAGE.md): component syntax, imports, inheritance, resolvers, and templates.
 - [Component reference](../../docs/REFERENCE.md): component fields and supported values.
 - [HyperBricks type examples](../../docs/HYPERBRICKS_TYPE_EXAMPLES.md): commented YAML examples for all native types, source variants, prerequisites, and per-type field reference links.
@@ -121,7 +122,7 @@ Use the command that matches the requested level of authoring:
   are supplied; `--source`, `--name`, `--title`, `--route`, `--dry-run`, `--json`,
   or `--non-interactive` select its flag-driven path. Discover valid sources with
   `hyperbricks space --list --json` before supplying `--source`.
-- `hyperbricks author` is the project-aware authoring API.
+- `hyperbricks author` reads the existing project before planning a structured change.
   Use it when the change must modify or compose existing roots, or account for
   ownership, inheritance, imports, nested files, children, editing contracts,
   custom properties, batches, or other source-aware integration. Do not choose

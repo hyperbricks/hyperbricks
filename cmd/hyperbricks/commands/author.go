@@ -404,7 +404,7 @@ func prepareAuthorChildInPlan(module, config string, s authorSpec, child *yaml.N
 func NewAuthorCommand() *cobra.Command {
 	var module, config string
 	var jsonOutput bool
-	cmd := &cobra.Command{Use: "author", Short: "Discover and author project-aware HyperBricks configuration"}
+	cmd := &cobra.Command{Use: "author", Short: "Inspect and change existing HyperBricks projects"}
 	cmd.PersistentFlags().StringVarP(&module, "module", "m", "", "module name or directory")
 	cmd.PersistentFlags().StringVar(&config, "config", PackageConfigFileName, "package profile relative to module")
 	cmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "machine-readable output")

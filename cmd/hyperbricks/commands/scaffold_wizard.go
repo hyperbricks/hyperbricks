@@ -330,7 +330,7 @@ func (m *authoringWizard) View() string {
 func runAuthoringWizard(cmd *cobra.Command, m *authoringWizard) (interface{}, error) {
 	in, ok := cmd.InOrStdin().(*os.File)
 	if !ok || !term.IsTerminal(in.Fd()) || !logging.IsTerminal(cmd.ErrOrStderr()) {
-		return nil, fmt.Errorf("interactive wizard requires a terminal; use hyperbricks author for noninteractive project-aware changes")
+		return nil, fmt.Errorf("interactive wizard requires a terminal; use hyperbricks author for non-interactive changes to an existing project")
 	}
 	final, err := tea.NewProgram(m, tea.WithInput(in), tea.WithOutput(cmd.ErrOrStderr()), tea.WithAltScreen()).Run()
 	if err != nil {
