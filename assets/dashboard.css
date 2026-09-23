@@ -20,10 +20,10 @@
 .hb-deploy-actions { flex-wrap: wrap; }.hb-deploy-actions .hb-field { margin: 0; }.hb-deploy-actions .hb-field .select { width: 180px; }.hb-deploy-actions #rollbackTarget { flex-basis: 100%; text-align: right; }
 .hb-deploy-tabs { margin-bottom: 26px; }
 .hb-deploy-feedback { grid-template-columns: 20px minmax(0,1fr); margin-bottom: 24px; text-align: left; box-shadow: none; }.hb-deploy-feedback p { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 180px; overflow: auto; }
-.hb-deploy-grid { display: grid; grid-template-columns: 238px minmax(0,1fr); gap: 24px; grid-template-areas: "modules workspace"; }
+.hb-deploy-grid { display: grid; grid-template-columns: minmax(0,1fr); gap: 24px; grid-template-areas: "modules" "workspace"; }
 .hb-deploy-workspace { grid-area: workspace; min-width: 0; }
-.hb-deploy-sidebar { grid-area: modules; padding-right: 20px; border-right: 1px solid var(--color-base-300); min-width: 0; }.hb-deploy-sidebar h2 { font-size: 15px; margin-bottom: 18px; }
-.hb-module-list { padding: 0; width: 100%; gap: 6px; }.hb-module-list button { padding: 12px; display: flex; align-items: flex-start; flex-direction: column; gap: 4px; width: 100%; text-align: left; }.hb-module-list button[aria-current=true] { background: var(--color-base-300); color: var(--color-base-content); }.hb-module-list span { overflow-wrap: anywhere; min-width: 0; font-size: 12px; }.hb-module-list .module-count { font-size: 11px; color: color-mix(in oklab,var(--color-base-content) 60%,transparent); }
+.hb-module-picker { grid-area: modules; min-width: 0; }.hb-module-picker-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 12px; }.hb-module-picker-heading h2 { font-size: 15px; margin-bottom: 3px; }.hb-module-picker-controls { display: flex; align-items: center; gap: 8px; }.hb-module-search .input { width: 220px; }
+.hb-module-list { display: grid; grid-template-columns: repeat(auto-fill,minmax(168px,1fr)); gap: 8px; padding: 0; width: 100%; }.hb-module-list.is-expanded { max-height: 224px; overflow: auto; padding-right: 4px; }.hb-module-list .module-item { min-width: 0; }.hb-module-list button { min-height: 54px; padding: 9px 11px; display: flex; align-items: flex-start; justify-content: center; flex-direction: column; gap: 2px; width: 100%; text-align: left; border: 1px solid var(--color-base-300); border-radius: var(--radius-field); background: var(--color-base-100); }.hb-module-list button:hover { border-color: color-mix(in oklab,var(--color-base-content) 35%,var(--color-base-300)); }.hb-module-list button[aria-current=true] { border-color: var(--color-primary); box-shadow: inset 3px 0 0 var(--color-primary); background: color-mix(in oklab,var(--color-primary) 8%,var(--color-base-100)); color: var(--color-base-content); }.hb-module-list span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; min-width: 0; }.hb-module-list .module-name { font-size: 12px; font-weight: 600; }.hb-module-list .module-count { font-size: 10px; color: color-mix(in oklab,var(--color-base-content) 60%,transparent); }.hb-module-empty { grid-column: 1 / -1; padding: 16px 0; }
 .hb-deploy-status { grid-area: status; min-width: 0; }.hb-deploy-status>h2 { font-size: 15px; margin-bottom: 14px; }
 .hb-deploy-summary { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; padding: 0 0 28px; }.hb-deploy-stat { min-width: 0; }.hb-deploy-stat>span { font-size: 12px; color: color-mix(in oklab,var(--color-base-content) 65%,transparent); }.hb-deploy-stat>strong { display: block; margin-top: 6px; font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
 .hb-deploy-builds { min-width: 0; border-top: 1px solid var(--color-base-300); padding-top: 24px; }.hb-deploy-log { grid-area: log; padding-bottom: 0; margin-top: 24px; }.hb-deploy-log h2 { margin-bottom: 18px; }
@@ -37,11 +37,11 @@
 .log-panel { margin-top: 24px; }.log-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }.log-actions { display: flex; gap: 8px; }.log-note { display: block; margin-top: 8px; }
 .mode-local .remote-only, .mode-remote .local-only { display: none !important; }
 @media (max-width:1100px) {
-  .hb-dashboard-grid { grid-template-columns: minmax(230px,1fr) minmax(0,1.7fr); }.hb-deploy-grid { grid-template-columns: 200px minmax(0,1fr); }
+  .hb-dashboard-grid { grid-template-columns: minmax(230px,1fr) minmax(0,1.7fr); }
 }
 @media (max-width:850px) {
   .hb-dashboard-grid { grid-template-columns: 1fr; }
-  .hb-deploy-grid { grid-template-columns: minmax(0,1fr); grid-template-areas: "modules" "workspace"; }.hb-deploy-sidebar { border: 0; padding: 0; }.hb-module-list { display: flex; flex-direction: row; flex-wrap: wrap; }.hb-deploy-sidebar h2 { margin-bottom: 10px; }.hb-module-list li { max-width: 100%; }
+  .hb-module-picker-heading { align-items: stretch; flex-direction: column; }.hb-module-picker-controls { width: 100%; }.hb-module-search { flex: 1; }.hb-module-search .input { width: 100%; }.hb-module-list { grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); }
   .hb-deploy-builds>.hb-section-heading { flex-wrap: wrap; }.hb-deploy-actions { flex-shrink: 1; }
   .menu-panel { position: fixed; top: 60px; right: 16px; }.details-grid { grid-template-columns: 1fr 1fr; }
 }
@@ -61,4 +61,5 @@
   .hb-deploy-grid .table td[colspan] { grid-column: 1 / -1; text-align: left; }.hb-deploy-grid .table .badge { white-space: nowrap; font-size: 10px; }
   .hb-deploy-grid .table tr.details-row { display: block; }.build-details { padding: 12px 0; }.meta-row { grid-template-columns: 1fr; gap: 6px; }.hb-deploy-actions #rollbackTarget { text-align: left; }
   .connect-row { grid-template-columns: 1fr; gap: 0; }.menu-panel { padding: 20px; }.hb-deploy-actions .hb-field { width: 100%; }.hb-deploy-actions .hb-field .select { width: 100%; }
+  .hb-module-list { display: flex; flex-flow: row nowrap; align-items: stretch; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; }.hb-module-list.is-expanded { display: grid; grid-template-columns: minmax(0,1fr); max-height: 280px; overflow-y: auto; }.hb-module-list .module-item { flex: 0 0 170px; scroll-snap-align: start; }.hb-module-list.is-expanded .module-item { width: auto; }.hb-module-picker-controls { align-items: stretch; flex-direction: column; }.hb-module-picker-controls .btn { width: 100%; }
 }

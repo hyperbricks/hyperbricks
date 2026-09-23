@@ -106,8 +106,20 @@
       <div id="deployFeedback" class="alert alert-error hb-deploy-feedback" role="alert" hidden><i data-lucide="circle-alert"></i><p id="deployFeedbackText"></p></div>
 
       <div id="modulesView" class="hb-deploy-grid">
-        <section class="hb-deploy-sidebar">
-          <h2>Modules</h2>
+        <section class="hb-module-picker" aria-labelledby="modulesHeading">
+          <div class="hb-module-picker-heading">
+            <div>
+              <h2 id="modulesHeading">Modules</h2>
+              <span id="moduleSummary" class="note">Choose a module to manage its builds.</span>
+            </div>
+            <div class="hb-module-picker-controls">
+              <label class="hb-module-search">
+                <span class="sr-only">Search modules</span>
+                <input class="input input-sm" id="moduleSearch" type="search" placeholder="Search modules…" autocomplete="off" />
+              </label>
+              <button class="btn btn-sm btn-ghost" id="toggleAllModules" type="button" hidden>Show all</button>
+            </div>
+          </div>
           <ul id="moduleList" class="menu hb-module-list"></ul>
         </section>
 
@@ -267,6 +279,9 @@
         localTargetApi: document.getElementById("localTargetApi"),
         localTargetRoot: document.getElementById("localTargetRoot"),
         moduleList: document.getElementById("moduleList"),
+        moduleSearch: document.getElementById("moduleSearch"),
+        moduleSummary: document.getElementById("moduleSummary"),
+        toggleAllModules: document.getElementById("toggleAllModules"),
         buildRows: document.getElementById("buildRows"),
         apiStatus: document.getElementById("apiStatus"),
         apiTime: document.getElementById("apiTime"),
@@ -324,8 +339,11 @@
         view: "modules",
         pluginModule: "",
         pluginBuild: "",
-        buildCounts: {}
+        buildCounts: {},
+        moduleFilter: "",
+        showAllModules: false
       };
+      const modulePreviewLimit = 10;
       document.body.classList.add(isLocalMode ? "mode-local" : "mode-remote");
 
       const storageKeys = {
@@ -2211,21 +2229,56 @@
         }
       }
 
+      function moduleBuildLabel(count) {
+        if (typeof count !== "number") {
+          return "Select to view builds";
+        }
+        if (count === 0) {
+          return "No packaged builds";
+        }
+        return count === 1 ? "1 packaged build" : String(count) + " packaged builds";
+      }
+
       function renderModules() {
         ui.moduleList.innerHTML = "";
-        state.modules.forEach((module) => {
+        const query = state.moduleFilter.trim().toLowerCase();
+        const filtered = state.modules.filter((module) => module.toLowerCase().includes(query));
+        let visible = filtered;
+        if (!query && !state.showAllModules && filtered.length > modulePreviewLimit) {
+          visible = filtered.slice(0, modulePreviewLimit);
+          if (state.selectedModule && filtered.includes(state.selectedModule) && !visible.includes(state.selectedModule)) {
+            visible[visible.length - 1] = state.selectedModule;
+          }
+        }
+        visible.forEach((module) => {
           const item = document.createElement("li");
           item.className = "module-item";
           const count = typeof state.buildCounts[module] === "number" ? state.buildCounts[module] : null;
-          const countLabel = count === null ? "—" : (String(count) + " builds");
           const button = document.createElement("button");
           button.type = "button";
           button.setAttribute("aria-current", String(module === state.selectedModule));
-          button.innerHTML = "<span>" + escapeAttr(module) + "</span><span class=\"module-count\">" + countLabel + "</span>";
+          button.innerHTML = "<span class=\"module-name\">" + escapeAttr(module) + "</span><span class=\"module-count\">" + moduleBuildLabel(count) + "</span>";
           button.addEventListener("click", () => selectModule(module));
           item.appendChild(button);
           ui.moduleList.appendChild(item);
         });
+        if (!visible.length) {
+          const empty = document.createElement("li");
+          empty.className = "hb-module-empty note";
+          empty.textContent = query ? "No modules match “" + state.moduleFilter.trim() + "”." : "No modules found.";
+          ui.moduleList.appendChild(empty);
+        }
+        if (ui.moduleSummary) {
+          const visibleText = query ? String(filtered.length) + " matching" : String(state.modules.length);
+          ui.moduleSummary.textContent = visibleText + (filtered.length === 1 ? " module" : " modules");
+        }
+        if (ui.toggleAllModules) {
+          const canToggle = !query && state.modules.length > modulePreviewLimit;
+          ui.toggleAllModules.hidden = !canToggle;
+          ui.toggleAllModules.textContent = state.showAllModules ? "Show fewer" : "Show all " + state.modules.length;
+          ui.toggleAllModules.setAttribute("aria-expanded", String(state.showAllModules));
+        }
+        ui.moduleList.classList.toggle("is-expanded", state.showAllModules && !query);
         renderPluginModules();
       }
 
@@ -2424,6 +2477,11 @@
         state.pluginModule = "";
         state.pluginBuild = "";
         state.buildCounts = {};
+        state.moduleFilter = "";
+        state.showAllModules = false;
+        if (ui.moduleSearch) {
+          ui.moduleSearch.value = "";
+        }
         renderModules();
         renderPluginBuilds();
         setPluginRowsMessage(ui.customPluginRows, "Select a module to load custom plugins.");
@@ -2754,6 +2812,18 @@
         }
         if (ui.viewPlugins) {
           ui.viewPlugins.addEventListener("click", () => setView("plugins"));
+        }
+        if (ui.moduleSearch) {
+          ui.moduleSearch.addEventListener("input", () => {
+            state.moduleFilter = ui.moduleSearch.value;
+            renderModules();
+          });
+        }
+        if (ui.toggleAllModules) {
+          ui.toggleAllModules.addEventListener("click", () => {
+            state.showAllModules = !state.showAllModules;
+            renderModules();
+          });
         }
         if (ui.refreshGlobalPlugins) {
           ui.refreshGlobalPlugins.addEventListener("click", () => loadGlobalPlugins().catch(handleError));

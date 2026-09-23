@@ -331,3 +331,11 @@ test('local deployment remains available without an HMAC secret', async () => {
   await flush();
   assert.equal(ui.requests.at(-1).headers['X-HB-Signature'], undefined);
 });
+
+test('module cards use explicit compact build labels instead of dash placeholders', () => {
+  const ui = setup();
+  assert.equal(ui.run('moduleBuildLabel(null)'), 'Select to view builds');
+  assert.equal(ui.run('moduleBuildLabel(0)'), 'No packaged builds');
+  assert.equal(ui.run('moduleBuildLabel(1)'), '1 packaged build');
+  assert.equal(ui.run('moduleBuildLabel(12)'), '12 packaged builds');
+});
