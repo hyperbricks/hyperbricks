@@ -3,8 +3,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-ENV_DIR="${HANDBOOK_VENV:-${ROOT}/.venv-handbooks}"
-REQUIREMENTS="${SCRIPT_DIR}/handbook-requirements.txt"
+ENV_DIR="${COMPILATION_VENV:-${ROOT}/.venv-compilations}"
+REQUIREMENTS="${SCRIPT_DIR}/compilation-requirements.txt"
 MERMAID_VERSION="11.17.0"
 MERMAID_DIR="${ENV_DIR}/mermaid"
 
@@ -32,7 +32,7 @@ for line in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines():
 PY
 }
 
-if ! cmp -s "${REQUIREMENTS}" "${ENV_DIR}/handbook-requirements.txt" || ! dependencies_healthy; then
+if ! cmp -s "${REQUIREMENTS}" "${ENV_DIR}/compilation-requirements.txt" || ! dependencies_healthy; then
     if dependencies_healthy; then
         "${ENV_DIR}/bin/python" -m pip install -r "${REQUIREMENTS}"
     else
@@ -41,7 +41,7 @@ if ! cmp -s "${REQUIREMENTS}" "${ENV_DIR}/handbook-requirements.txt" || ! depend
         "${ENV_DIR}/bin/python" -m pip install --ignore-installed -r "${REQUIREMENTS}"
     fi
     dependencies_healthy
-    cp "${REQUIREMENTS}" "${ENV_DIR}/handbook-requirements.txt"
+    cp "${REQUIREMENTS}" "${ENV_DIR}/compilation-requirements.txt"
 fi
 
 if [[ ! -x "${MERMAID_DIR}/node_modules/.bin/mmdc" ]] || [[ "$(cat "${MERMAID_DIR}/version" 2>/dev/null || true)" != "${MERMAID_VERSION}" ]]; then
@@ -51,7 +51,7 @@ fi
 export HB_MERMAID_CLI="${MERMAID_DIR}/node_modules/.bin/mmdc"
 
 FORMAT="all"
-OUTPUT_DIR="${ROOT}/docs/handbooks"
+OUTPUT_DIR="${ROOT}/docs/compilations"
 BUILD_ARGUMENT_COUNT=$#
 BUILD_ARGUMENTS=("$@")
 while (($#)); do
@@ -81,13 +81,13 @@ if [[ "${OUTPUT_DIR}" != /* ]]; then
 fi
 
 if ((BUILD_ARGUMENT_COUNT)); then
-    "${ENV_DIR}/bin/python" "${SCRIPT_DIR}/build_handbooks.py" "${BUILD_ARGUMENTS[@]}"
+    "${ENV_DIR}/bin/python" "${SCRIPT_DIR}/build_compilations.py" "${BUILD_ARGUMENTS[@]}"
 else
-    "${ENV_DIR}/bin/python" "${SCRIPT_DIR}/build_handbooks.py"
+    "${ENV_DIR}/bin/python" "${SCRIPT_DIR}/build_compilations.py"
 fi
 
 if [[ "${FORMAT}" == "all" || "${FORMAT}" == "markdown" ]]; then
-    HANDBOOKS=(
+    COMPILATIONS=(
         HyperBricks-Documentation.md
         HyperBricks-Skills.md
     )
@@ -96,17 +96,17 @@ if [[ "${FORMAT}" == "all" || "${FORMAT}" == "markdown" ]]; then
         "${ROOT}/codex-plugin/hyperbricks/skills/hyperbricks/references"
     )
 
-    for handbook in "${HANDBOOKS[@]}"; do
-        if [[ ! -f "${OUTPUT_DIR}/${handbook}" ]]; then
-            echo "Generated handbook is missing: ${OUTPUT_DIR}/${handbook}" >&2
+    for compilation in "${COMPILATIONS[@]}"; do
+        if [[ ! -f "${OUTPUT_DIR}/${compilation}" ]]; then
+            echo "Generated compilation is missing: ${OUTPUT_DIR}/${compilation}" >&2
             exit 1
         fi
     done
 
     for destination in "${DESTINATIONS[@]}"; do
-        for handbook in "${HANDBOOKS[@]}"; do
-            cp "${OUTPUT_DIR}/${handbook}" "${destination}/${handbook}"
-            echo "Synchronized ${destination#"${ROOT}/"}/${handbook}"
+        for compilation in "${COMPILATIONS[@]}"; do
+            cp "${OUTPUT_DIR}/${compilation}" "${destination}/${compilation}"
+            echo "Synchronized ${destination#"${ROOT}/"}/${compilation}"
         done
     done
 fi

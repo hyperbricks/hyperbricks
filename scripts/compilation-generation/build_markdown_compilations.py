@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the consolidated HyperBricks documentation and skills handbooks.
+"""Build the HyperBricks documentation and skills compilations.
 
 The source is read from a committed Git snapshot rather than the working tree.
 This keeps the generated content and its reported revision in agreement.
@@ -10,17 +10,20 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from datetime import date
+import json
 from pathlib import Path, PurePosixPath
 import os
 import posixpath
 import re
+from string import Formatter
 import subprocess
 import sys
 import tempfile
-from typing import Iterable
+from typing import Iterable, Optional
 
 
 REPOSITORY_URL = "https://github.com/hyperbricks/hyperbricks"
+TEXTS_PATH = Path(__file__).resolve().with_name("compilation-texts.json")
 MONTH_NAMES = (
     "January",
     "February",
@@ -36,29 +39,51 @@ MONTH_NAMES = (
     "December",
 )
 
-DOCUMENTATION_ORDER = (
-    "INTRODUCTION",
-    "QUICKSTART",
-    "HOWTOS",
-    "HYPERBRICKS_CLI",
-    "YAML_USAGE",
-    "ROUTING",
-    "HTMX_FRAGMENTS_AND_CANONICAL_URLS",
-    "HTTP_RESPONSES",
-    "ROUTE_GUARD",
-    "API_RENDER",
-    "GOJA_RENDER",
-    "IMAGES",
-    "ESBUILD",
-    "PLUGINS",
-    "LIVE_MODE_HTTP",
-    "RUNTIME_GATEWAY",
-    "DEPLOY",
-    "DOCKER",
-    "TROUBLESHOOTING",
-    "MIGRATION",
-    "REFERENCE",
+DOCUMENTATION_SECTIONS = (
+    (
+        "Start",
+        (
+            ("Introduction", "docs/INTRODUCTION.md"),
+            ("Quickstart", "docs/QUICKSTART.md"),
+            ("How-to guides", "docs/HOWTOS.md"),
+            ("Troubleshooting", "docs/TROUBLESHOOTING.md"),
+        ),
+    ),
+    (
+        "Application model",
+        (
+            ("Routing", "docs/ROUTING.md"),
+            ("Component reference", "docs/REFERENCE.md"),
+            ("Markdown", "docs/MARKDOWN.md"),
+            ("Spaces CMS", "docs/SPACES.md"),
+            ("Authoring", "docs/AUTHOR.md"),
+        ),
+    ),
+    (
+        "Logic and assets",
+        (
+            ("API Render", "docs/API_RENDER.md"),
+            ("Server Scripts", "docs/GOJA_RENDER.md"),
+            ("Plugins", "docs/PLUGINS.md"),
+            ("JavaScript and CSS", "docs/ESBUILD.md"),
+        ),
+    ),
+    (
+        "Delivery",
+        (
+            ("Deploy Guide", "docs/DEPLOY.md"),
+            ("Docker Deploy", "docs/DOCKER.md"),
+            ("Migration Guide", "docs/MIGRATION.md"),
+        ),
+    ),
 )
+
+ADDITIONAL_DOCUMENTS_SECTION = "Additional documents"
+DOCUMENTATION_NAVIGATION = {
+    path: (section, label)
+    for section, entries in DOCUMENTATION_SECTIONS
+    for label, path in entries
+}
 
 SKILLS_ORDER = (
     "SKILLS/hyperbricks/SKILL.md",
@@ -67,6 +92,11 @@ SKILLS_ORDER = (
     "SKILLS/hyperbricks/references/integrations.md",
     "SKILLS/hyperbricks/references/plugins.md",
 )
+
+GENERATED_SKILL_COMPILATIONS = {
+    "SKILLS/hyperbricks/references/HyperBricks-Documentation.md",
+    "SKILLS/hyperbricks/references/HyperBricks-Skills.md",
+}
 
 LINK_RE = re.compile(
     r"(?P<image>!)?\[(?P<label>[^\]]*)\]"
@@ -84,10 +114,22 @@ class SourceDocument:
     title: str
     text: str
     anchor: str
+    section: str = ""
+    display_title: str = ""
 
 
 @dataclass(frozen=True)
-class Handbook:
+class CoverTexts:
+    label: str
+    brand: str
+    heading: str
+    detail: str
+    summary: str
+    source: str
+
+
+@dataclass(frozen=True)
+class Compilation:
     filename: str
     title: str
     subtitle: str
@@ -95,10 +137,121 @@ class Handbook:
     topics: str
     sources: tuple[SourceDocument, ...]
     version: str = ""
+    cover: Optional[CoverTexts] = None
+    kind: str = ""
+    topics_label: str = "Topics"
 
 
 class BuildError(RuntimeError):
     """Raised when the requested source snapshot cannot be assembled."""
+
+
+TEXT_FIELDS = ("title", "subtitle", "description", "topics_label", "topics")
+COVER_TEXT_FIELDS = ("label", "brand", "heading", "detail", "summary", "source")
+TEXT_PLACEHOLDERS = {
+    "version",
+    "subtitle",
+    "document_count",
+    "snapshot_date",
+    "short_commit",
+}
+CONTENT_PLACEHOLDERS = {"version", "document_count", "short_commit"}
+
+
+def template_fields(
+    template: str,
+    location: str,
+    allowed: set[str] = TEXT_PLACEHOLDERS,
+) -> set[str]:
+    try:
+        parsed = tuple(Formatter().parse(template))
+    except ValueError as error:
+        raise BuildError(f"invalid text template in {location}: {error}") from error
+    fields = {field for _, field, _, _ in parsed if field is not None}
+    formatted = [field for _, field, spec, conversion in parsed if field is not None and (spec or conversion)]
+    if formatted:
+        raise BuildError(f"formatting is not supported in {location}")
+    unsupported = fields - allowed
+    if unsupported:
+        raise BuildError(
+            f"unsupported placeholder in {location}: " + ", ".join(sorted(unsupported))
+        )
+    return fields
+
+
+def load_compilation_texts(path: Path = TEXTS_PATH) -> dict:
+    def unique_object(pairs):
+        value = {}
+        for key, item in pairs:
+            if key in value:
+                raise BuildError(f"duplicate key in {path}: {key}")
+            value[key] = item
+        return value
+
+    try:
+        value = json.loads(
+            path.read_text(encoding="utf-8"), object_pairs_hook=unique_object
+        )
+    except FileNotFoundError as error:
+        raise BuildError(f"compilation text file is missing: {path}") from error
+    except json.JSONDecodeError as error:
+        raise BuildError(
+            f"invalid JSON in {path} at line {error.lineno}, column {error.colno}: {error.msg}"
+        ) from error
+
+    if not isinstance(value, dict):
+        raise BuildError(f"{path} must contain a JSON object")
+    expected_sections = {"documentation", "skills"}
+    if set(value) != expected_sections:
+        raise BuildError(
+            f"{path} must contain exactly these sections: "
+            + ", ".join(sorted(expected_sections))
+        )
+
+    for section_name in ("documentation", "skills"):
+        section = value[section_name]
+        if not isinstance(section, dict):
+            raise BuildError(f"{section_name} in {path} must be a JSON object")
+        expected_fields = set(TEXT_FIELDS) | {"cover"}
+        if set(section) != expected_fields:
+            raise BuildError(
+                f"{section_name} in {path} must contain exactly: "
+                + ", ".join(sorted(expected_fields))
+            )
+        for field in TEXT_FIELDS:
+            text = section[field]
+            if not isinstance(text, str) or not text.strip():
+                raise BuildError(f"{section_name}.{field} in {path} must be a non-empty string")
+            template_fields(text, f"{section_name}.{field}", CONTENT_PLACEHOLDERS)
+        cover = section["cover"]
+        if not isinstance(cover, dict) or set(cover) != set(COVER_TEXT_FIELDS):
+            raise BuildError(
+                f"{section_name}.cover in {path} must contain exactly: "
+                + ", ".join(sorted(COVER_TEXT_FIELDS))
+            )
+        for field in COVER_TEXT_FIELDS:
+            text = cover[field]
+            if not isinstance(text, str) or not text.strip():
+                raise BuildError(
+                    f"{section_name}.cover.{field} in {path} must be a non-empty string"
+                )
+            template_fields(text, f"{section_name}.cover.{field}")
+    return value
+
+
+def format_text(template: str, values: dict, location: str) -> str:
+    fields = template_fields(template, location)
+    missing = fields - set(values)
+    if missing:
+        raise BuildError(
+            f"missing value for {location}: " + ", ".join(sorted(missing))
+        )
+    return template.format_map(values)
+
+
+def cover_texts(section: dict) -> CoverTexts:
+    cover = section["cover"]
+    return CoverTexts(**{field: cover[field] for field in COVER_TEXT_FIELDS})
 
 
 def run_git(repository: Path, *arguments: str) -> str:
@@ -156,12 +309,13 @@ def documentation_paths(repository: Path, commit: str) -> tuple[str, ...]:
         path
         for path in committed_paths(repository, commit, "docs")
         if PurePosixPath(path).suffix.lower() in {".md", ".markdown"}
-        and not path.startswith("docs/handbooks/")
+        and not path.startswith("docs/compilations/")
     }
     preferred = tuple(
         path
-        for name in DOCUMENTATION_ORDER
-        if (path := f"docs/{name}.md") in available
+        for _, entries in DOCUMENTATION_SECTIONS
+        for _, path in entries
+        if path in available
     )
     preferred_set = set(preferred)
     return preferred + tuple(sorted(available - preferred_set))
@@ -209,6 +363,8 @@ def collect_sources(
     commit: str,
     paths: Iterable[str],
     section_label: str,
+    navigation=None,
+    default_section: str = "",
 ) -> tuple[SourceDocument, ...]:
     sources = []
     for path in paths:
@@ -218,12 +374,18 @@ def collect_sources(
             if path == "SKILLS/hyperbricks/SKILL.md"
             else PurePosixPath(path).stem.replace("_", " ").replace("-", " ").title()
         )
+        section, display_title = (navigation or {}).get(
+            path,
+            (default_section, ""),
+        )
         sources.append(
             SourceDocument(
                 path=path,
                 title=heading_title(text, fallback),
                 text=text,
                 anchor=chapter_anchor(section_label, path),
+                section=section,
+                display_title=display_title,
             )
         )
     return tuple(sources)
@@ -375,22 +537,23 @@ def transform_source(
     return "\n".join(output).strip()
 
 
-def render_handbook(handbook: Handbook, commit: str, commit_date: date) -> str:
-    included = {source.path: source for source in handbook.sources}
+def render_compilation(compilation: Compilation, commit: str, commit_date: date) -> str:
+    included = {source.path: source for source in compilation.sources}
     short_commit = commit[:7]
     source_url = f"{REPOSITORY_URL}/tree/{commit}"
     lines = [
-        "<!-- Generated by scripts/handbook-generation/build_markdown_handbooks.py. Do not edit directly. -->",
+        "<!-- Generated by scripts/compilation-generation/build_markdown_compilations.py. Do not edit directly. -->",
         "",
-        f"# {handbook.title}",
+        f"# {compilation.title}",
         "",
-        f"**{handbook.subtitle}**",
+        f"**{compilation.subtitle}**",
         "",
-        handbook.description,
-        "Topics: ",
+        compilation.description,
         "",
-        *([f"- **HyperBricks version:** {handbook.version}"] if handbook.version else []),
-        f"- **Included documents:** {len(handbook.sources)}",
+        f"**{compilation.topics_label}:** {compilation.topics}",
+        "",
+        *([f"- **HyperBricks version:** {compilation.version}"] if compilation.version else []),
+        f"- **Included documents:** {len(compilation.sources)}",
         f"- **Source snapshot:** [Git commit `{short_commit}`]({source_url})",
         (
             f"- **Snapshot date:** {commit_date.day} "
@@ -401,10 +564,17 @@ def render_handbook(handbook: Handbook, commit: str, commit_date: date) -> str:
         "",
     ]
 
-    for index, source in enumerate(handbook.sources, start=1):
-        lines.append(f"{index}. [{source.title}](#{source.anchor}) — `{source.path}`")
+    current_section = None
+    for source in compilation.sources:
+        if source.section and source.section != current_section:
+            if current_section is not None:
+                lines.append("")
+            lines.extend((f"### {source.section}", ""))
+            current_section = source.section
+        label = source.display_title or source.title
+        lines.append(f"- [{label}](#{source.anchor}) — `{source.path}`")
 
-    for index, source in enumerate(handbook.sources, start=1):
+    for source in compilation.sources:
         source_url = f"{REPOSITORY_URL}/blob/{commit}/{source.path}"
         lines.extend(
             (
@@ -413,7 +583,7 @@ def render_handbook(handbook: Handbook, commit: str, commit_date: date) -> str:
                 "",
                 f'<a id="{source.anchor}"></a>',
                 "",
-                f"## {index:02d}. {source.title}",
+                f"## {source.title}",
                 "",
                 f"_Source: [`{source.path}`]({source_url})_",
                 "",
@@ -429,55 +599,81 @@ def render_handbook(handbook: Handbook, commit: str, commit_date: date) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def build_handbooks(repository: Path, commit: str) -> tuple[Handbook, Handbook]:
-    version = snapshot_version(repository, commit)
-    docs = collect_sources(
-        repository,
-        commit,
-        documentation_paths(repository, commit),
-        "documentation",
-    )
-    if not docs:
-        raise BuildError("no Markdown documentation files found under docs")
-
-    snapshot_paths = set(committed_paths(repository, commit, "SKILLS/hyperbricks"))
+def skill_source_paths(snapshot_paths: set[str]) -> tuple[str, ...]:
     missing_skills = [path for path in SKILLS_ORDER if path not in snapshot_paths]
     if missing_skills:
         raise BuildError(
             "required skills source files are missing from the snapshot: "
             + ", ".join(missing_skills)
         )
-    # Discover new references without requiring them in historical snapshots.
     extra_references = tuple(sorted(
         path for path in snapshot_paths
         if path.startswith("SKILLS/hyperbricks/references/")
         and PurePosixPath(path).suffix.lower() in {".md", ".markdown"}
         and path not in SKILLS_ORDER
+        and path not in GENERATED_SKILL_COMPILATIONS
     ))
-    skills = collect_sources(repository, commit, SKILLS_ORDER + extra_references, "skills")
+    return SKILLS_ORDER + extra_references
+
+
+def build_compilations(repository: Path, commit: str) -> tuple[Compilation, Compilation]:
+    version = snapshot_version(repository, commit)
+    texts = load_compilation_texts()
+    docs = collect_sources(
+        repository,
+        commit,
+        documentation_paths(repository, commit),
+        "documentation",
+        navigation=DOCUMENTATION_NAVIGATION,
+        default_section=ADDITIONAL_DOCUMENTS_SECTION,
+    )
+    if not docs:
+        raise BuildError("no Markdown documentation files found under docs")
+
+    snapshot_paths = set(committed_paths(repository, commit, "SKILLS/hyperbricks"))
+    skills = collect_sources(
+        repository,
+        commit,
+        skill_source_paths(snapshot_paths),
+        "skills",
+    )
+
+    def compilation_for(
+        section_name: str,
+        filename: str,
+        sources: tuple[SourceDocument, ...],
+    ) -> Compilation:
+        section = texts[section_name]
+        values = {
+            "version": version,
+            "document_count": len(sources),
+            "short_commit": commit[:7],
+        }
+        subtitle = format_text(
+            section["subtitle"], values, f"{section_name}.subtitle"
+        )
+        return Compilation(
+            filename=filename,
+            title=format_text(section["title"], values, f"{section_name}.title"),
+            subtitle=subtitle,
+            description=format_text(
+                section["description"], values, f"{section_name}.description"
+            ),
+            topics=format_text(section["topics"], values, f"{section_name}.topics"),
+            sources=sources,
+            version=version,
+            cover=cover_texts(section),
+            kind=section_name,
+            topics_label=format_text(
+                section["topics_label"], values, f"{section_name}.topics_label"
+            ),
+        )
 
     return (
-        Handbook(
-            filename="HyperBricks-Documentation.md",
-            title="HyperBricks Documentation",
-            subtitle="Developer handbook",
-            description="A complete collection of the guides and references in the docs directory.",
-            topics="Declarative applications. Component runtime. Hypermedia.",
-            sources=docs,
-            version=version,
+        compilation_for(
+            "documentation", "HyperBricks-Documentation.md", docs
         ),
-        Handbook(
-            filename="HyperBricks-Skills.md",
-            title="HyperBricks Skills Handbook",
-            subtitle="Practical workflows and references",
-            description=(
-                "The HyperBricks skill and its supporting guides, collected into one "
-                "practical handbook."
-            ),
-            topics="Project lifecycle. Authoring. Integrations. Plugins.",
-            sources=skills,
-            version=version,
-        ),
+        compilation_for("skills", "HyperBricks-Skills.md", skills),
     )
 
 
@@ -511,7 +707,7 @@ def display_path(path: Path, repository: Path) -> Path:
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Build consolidated Markdown handbooks from a committed HyperBricks "
+            "Build Markdown compilations from a committed HyperBricks "
             "repository snapshot."
         )
     )
@@ -522,7 +718,7 @@ def parse_arguments() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output-dir",
-        default="docs/handbooks",
+        default="docs/compilations",
         help="Output directory, relative to the repository root unless absolute.",
     )
     parser.add_argument(
@@ -550,24 +746,24 @@ def main() -> int:
         if not output_directory.is_absolute():
             output_directory = repository / output_directory
 
-        handbooks = build_handbooks(repository, commit)
+        compilations = build_compilations(repository, commit)
         stale: list[Path] = []
-        for handbook in handbooks:
-            output = output_directory / handbook.filename
-            content = render_handbook(handbook, commit, commit_date)
+        for compilation in compilations:
+            output = output_directory / compilation.filename
+            content = render_compilation(compilation, commit, commit_date)
             if arguments.check:
                 if not output.is_file() or output.read_text(encoding="utf-8") != content:
                     stale.append(output)
                 continue
             write_atomic(output, content)
-            print(f"Wrote {display_path(output, repository)} ({len(handbook.sources)} sources)")
+            print(f"Wrote {display_path(output, repository)} ({len(compilation.sources)} sources)")
 
         if stale:
             for path in stale:
                 print(f"Out of date: {display_path(path, repository)}", file=sys.stderr)
             return 1
         if arguments.check:
-            print(f"Markdown handbooks match {commit[:7]}")
+            print(f"Markdown compilations match {commit[:7]}")
         return 0
     except (BuildError, OSError, UnicodeError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build reflowable EPUB 3 handbooks using the PDF handbook's visual language."""
+"""Build reflowable EPUB 3 compilations using the PDF compilation's visual language."""
 from __future__ import annotations
 
 import argparse
@@ -16,8 +16,8 @@ from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 from markdown_it import MarkdownIt
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_OUTPUT = ROOT / "docs/handbooks"
-DEFAULT_MERMAID = ROOT / ".venv-handbooks/mermaid/node_modules/.bin/mmdc"
+DEFAULT_OUTPUT = ROOT / "docs/compilations"
+DEFAULT_MERMAID = ROOT / ".venv-compilations/mermaid/node_modules/.bin/mmdc"
 STYLES = """
 :root { color-scheme: light dark; }
 body { font-family: Arial, Helvetica, sans-serif; line-height: 1.5;
@@ -69,7 +69,7 @@ def document(title, body):
 
 
 def render_content(markdown, mermaid_cli):
-    from build_handbooks import render_mermaid
+    from build_compilations import render_mermaid
     from pygments import lex
     from pygments.lexers import get_lexer_by_name
     from pygments.token import Token
@@ -81,7 +81,7 @@ def render_content(markdown, mermaid_cli):
     def raw_html(tokens, index, options, env):
         raw = tokens[index].content
         # Generated anchors are markup, not examples. Other raw HTML is treated
-        # as a source example; never execute scripts/styles from handbook prose.
+        # as a source example; never execute scripts/styles from compilation prose.
         raw = re.sub(r"<!--.*?-->", "", raw, flags=re.S)
         if not raw.strip():
             return ""
@@ -122,13 +122,32 @@ def render_content(markdown, mermaid_cli):
 
     md.renderer.rules.update(html_block=raw_html, html_inline=raw_html, fence=fence)
     tokens = md.parse(markdown)
+    contents_labels = {
+        anchor: re.sub(r"`([^`]*)`", r"\1", label)
+        for label, anchor in re.findall(
+            r"(?m)^- \[([^]]+)\]\(#([^)]+)\) — `[^`]+`$",
+            markdown,
+        )
+    }
+    inside_contents = False
+    pending_anchor = ""
     for index, token in enumerate(tokens):
+        if token.type in {"html_block", "inline"}:
+            anchor_match = re.fullmatch(r'\s*<a\s+id="([\w.-]+)"\s*></a>\s*', token.content)
+            if anchor_match:
+                pending_anchor = anchor_match.group(1)
         if token.type == "heading_open":
             title = tokens[index + 1].content
+            navigation_title = contents_labels.get(pending_anchor, title)
+            pending_anchor = ""
             anchor = f"epub-heading-{len(headings) + 1}"
             token.attrSet("id", anchor)
-            headings.append((int(token.tag[1:]), title, anchor))
-            if token.tag == "h2" and re.match(r"\d+\. ", title):
+            level = int(token.tag[1:])
+            if level == 2:
+                inside_contents = title == "Contents"
+            navigation_level = 2 if inside_contents and level == 3 else level
+            headings.append((navigation_level, navigation_title, anchor))
+            if token.tag == "h2" and title != "Contents":
                 token.attrSet("class", "chapter")
     body = md.renderer.render(tokens, md.options, {})
     # Keep the visible contents compact; source paths remain in chapter credits.
@@ -136,10 +155,17 @@ def render_content(markdown, mermaid_cli):
     return body, assets, headings
 
 
-def epub_for(source, output, mermaid_cli=None, markdown=None):
+def epub_for(source, output, mermaid_cli=None, markdown=None, title=None):
     source, output = Path(source), Path(output)
-    title = "HyperBricks Skills Handbook" if "Skills" in source.name else "HyperBricks Documentation Handbook"
-    body, assets, headings = render_content(markdown if markdown is not None else source.read_text(encoding="utf-8"),
+    markdown_source = markdown if markdown is not None else source.read_text(encoding="utf-8")
+    if title is None:
+        heading = re.search(r"^#\s+(.+?)\s*$", markdown_source, flags=re.MULTILINE)
+        title = heading.group(1) if heading else (
+            "HyperBricks Skills Compilation"
+            if "Skills" in source.name
+            else "HyperBricks Documentation Compilation"
+        )
+    body, assets, headings = render_content(markdown_source,
                                            mermaid_cli or str(DEFAULT_MERMAID))
     content = document(title, body)
     nav_items = "".join(f'<li><a href="content.xhtml#{anchor}">{escape(label)}</a></li>'

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build Markdown, styled PDF, and reflowable EPUB handbooks from one snapshot."""
+"""Build Markdown, styled PDF, and reflowable EPUB compilations from one snapshot."""
 
 from __future__ import annotations
 
@@ -14,17 +14,17 @@ import sys
 import subprocess
 import tempfile
 
-import build_markdown_handbooks as assembly
+import build_markdown_compilations as assembly
 
 
 def arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ref", default="HEAD", help="Committed Git revision (default: HEAD)")
     parser.add_argument("--format", choices=("all", "markdown", "pdf", "epub"), default="all")
-    parser.add_argument("--output-dir", default="docs/handbooks", help="Destination for generated books (default: docs/handbooks)")
+    parser.add_argument("--output-dir", default="docs/compilations", help="Destination for generated compilations (default: docs/compilations)")
     parser.add_argument("--font-dir", default="/System/Library/Fonts/Supplemental")
     parser.add_argument("--code-font", default="/System/Library/Fonts/Menlo.ttc")
-    parser.add_argument("--mermaid-cli", default=os.environ.get("HB_MERMAID_CLI", str(Path(__file__).resolve().parents[2] / ".venv-handbooks/mermaid/node_modules/.bin/mmdc")))
+    parser.add_argument("--mermaid-cli", default=os.environ.get("HB_MERMAID_CLI", str(Path(__file__).resolve().parents[2] / ".venv-compilations/mermaid/node_modules/.bin/mmdc")))
     return parser.parse_args()
 
 
@@ -43,7 +43,7 @@ def print_mermaid_source(source):
 
 def render_mermaid(source, executable):
     if not executable or not Path(executable).is_file():
-        raise assembly.BuildError("Mermaid CLI is missing; run bash scripts/handbook-generation/build_handbooks.sh or supply --mermaid-cli")
+        raise assembly.BuildError("Mermaid CLI is missing; run bash scripts/compilation-generation/build_compilations.sh or supply --mermaid-cli")
     assets = Path(__file__).resolve().parent
     with tempfile.TemporaryDirectory(prefix="hb-mermaid-") as directory:
         input_path = Path(directory) / "diagram.mmd"
@@ -53,8 +53,8 @@ def render_mermaid(source, executable):
             result = subprocess.run(
                 [str(executable), "-i", str(input_path), "-o", str(output_path),
                  "-b", "white", "-w", "1600", "-s", "2",
-                 "-C", str(assets / "handbook-mermaid.css"),
-                 "-c", str(assets / "handbook-mermaid.json")],
+                 "-C", str(assets / "compilation-mermaid.css"),
+                 "-c", str(assets / "compilation-mermaid.json")],
                 capture_output=True, text=True, timeout=120, check=False,
             )
         except subprocess.TimeoutExpired as error:
@@ -64,7 +64,7 @@ def render_mermaid(source, executable):
         return output_path.read_bytes()
 
 
-def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font, mermaid_cli=None):
+def render_pdf(compilation, commit, snapshot_date, destination, font_dir, code_font, mermaid_cli=None):
     from markdown_it import MarkdownIt
     from pypdf import PdfReader
     from pygments import lex
@@ -118,8 +118,13 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
         "cell": ParagraphStyle("cell", fontName="HB", fontSize=8, leading=11, textColor=text, splitLongWords=True),
         "cell_header": ParagraphStyle("cell_header", fontName="HB-Bold", fontSize=8, leading=11, textColor=ink, splitLongWords=True),
     }
-    kind = "Skills" if "Skills" in handbook.title else "Documentation"
-    running = "SKILLS HANDBOOK" if kind == "Skills" else "DEVELOPMENT HANDBOOK"
+    compilation_kind = compilation.kind or (
+        "skills" if "Skills" in compilation.title else "documentation"
+    )
+    if compilation_kind not in {"documentation", "skills"}:
+        raise assembly.BuildError(f"Unsupported compilation kind: {compilation_kind}")
+    kind = "Skills" if compilation_kind == "skills" else "Documentation"
+    running = f"{kind.upper()} COMPILATION"
     code_palette = (
         (Token.Comment, colors.HexColor("#576579")),
         (Token.Keyword, colors.HexColor("#6639ba")),
@@ -230,11 +235,24 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
                 c.drawRightString(self.width - 14, 8, "Continues on next page")
 
     class Book(BaseDocTemplate):
+        def beforeDocument(self):
+            super().beforeDocument()
+            self._last_section = None
+
         def afterFlowable(self, flowable):
             if hasattr(flowable, "chapter_anchor"):
+                section = getattr(flowable, "document_section", "")
+                document_title = getattr(flowable, "contents_title", flowable.getPlainText())
+                if section and section != self._last_section:
+                    section_anchor = f"compilation-section-{assembly.slug(section)}"
+                    self.canv.bookmarkPage(section_anchor)
+                    self.canv.addOutlineEntry(section, section_anchor, level=0)
+                    self.notify("TOCEntry", (0, section, self.page, section_anchor))
+                    self._last_section = section
+                level = 1 if section else 0
                 self.canv.bookmarkPage(flowable.chapter_anchor)
-                self.canv.addOutlineEntry(flowable.getPlainText(), flowable.chapter_anchor, level=0)
-                self.notify("TOCEntry", (0, flowable.getPlainText(), self.page, flowable.chapter_anchor))
+                self.canv.addOutlineEntry(document_title, flowable.chapter_anchor, level=level)
+                self.notify("TOCEntry", (level, document_title, self.page, flowable.chapter_anchor))
 
     def draw_inline_code_background(canvas, kind, label):
         if kind != "onDraw" or not label:
@@ -258,30 +276,78 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
     def decorate(c, doc):
         c.setNamedCB("drawInlineCodeBackground", draw_inline_code_background)
         if doc.page == 1:
+            stamp = f"{snapshot_date.day} {assembly.MONTH_NAMES[snapshot_date.month - 1]} {snapshot_date.year}"
+            if compilation.cover:
+                cover_values = {
+                    "version": compilation.version,
+                    "subtitle": compilation.subtitle,
+                    "document_count": len(compilation.sources),
+                    "snapshot_date": stamp,
+                    "short_commit": commit[:7],
+                }
+
+                def cover_text(field):
+                    return assembly.format_text(
+                        getattr(compilation.cover, field),
+                        cover_values,
+                        f"cover.{field}",
+                    )
+
+                cover_label = cover_text("label")
+                cover_brand = cover_text("brand")
+                cover_heading = cover_text("heading")
+                cover_detail = cover_text("detail")
+                cover_summary = cover_text("summary")
+                cover_source = cover_text("source")
+            else:
+                cover_label = f"HYPERBRICKS / {kind.upper()}"
+                cover_brand = "HyperBricks"
+                cover_heading = f"{kind} compilation"
+                cover_detail = compilation.subtitle if kind == "Skills" else compilation.version
+                version_label = f"{compilation.version} • " if compilation.version else ""
+                cover_summary = f"{version_label}{len(compilation.sources)} documents • {stamp}"
+                cover_source = f"Source snapshot: Git commit {commit[:7]}; all chapters use this committed revision."
+            cover_lines = (
+                ("label", cover_label, "HB-Bold", 9),
+                ("brand", cover_brand, "HB-Bold", 42),
+                ("heading", cover_heading, "HB-Bold", 32),
+                ("detail", cover_detail, "HB-Bold", 21),
+                ("topics", f"{compilation.topics_label}: {compilation.topics}", "HB", 9.5),
+                ("summary", cover_summary, "HB-Bold", 9),
+                ("source", cover_source, "HB", 8),
+            )
+            for field, value, font, size in cover_lines:
+                if "\n" in value or "\r" in value:
+                    raise assembly.BuildError(f"PDF cover {field} must be a single line")
+                if pdfmetrics.stringWidth(value, font, size) > content_width:
+                    raise assembly.BuildError(f"PDF cover {field} is too wide for the page")
             c.saveState()
             c.setFillColor(teal)
             c.setFont("HB-Bold", 9)
-            c.drawString(56, height - 165, f"HYPERBRICKS / {kind.upper()}")
+            c.drawString(56, height - 165, cover_label)
             c.setFillColor(ink)
             c.setFont("HB-Bold", 42)
-            c.drawString(56, height - 220, "HyperBricks")
-            c.drawString(56, height - 268, "Skills handbook" if kind == "Skills" else "Documentation")
+            c.drawString(56, height - 220, cover_brand)
+            c.setFont("HB-Bold", 32)
+            c.drawString(56, height - 268, cover_heading)
             c.setFont("HB-Bold", 21)
-            c.drawString(56, height - 338, handbook.subtitle)
-            description = Paragraph(escape(handbook.description), styles["body"])
+            c.drawString(56, height - 338, cover_detail)
+            description = Paragraph(escape(compilation.description), styles["body"])
             _, desc_height = description.wrap(content_width, 100)
             description.drawOn(c, 56, height - 377 - desc_height)
             c.setFont("HB", 9.5)
             c.setFillColor(text)
-            c.drawString(56, height - 407 - desc_height, handbook.topics)
+            c.drawString(
+                56,
+                height - 407 - desc_height,
+                f"{compilation.topics_label}: {compilation.topics}",
+            )
             c.setFillColor(teal)
             c.setFont("HB-Bold", 9)
-            stamp = f"{snapshot_date.day} {assembly.MONTH_NAMES[snapshot_date.month - 1]} {snapshot_date.year}"
-            version_label = f"{handbook.version} • " if handbook.version else ""
-            c.drawString(56, height - 518, f"{version_label}{len(handbook.sources)} documents • {stamp}")
+            c.drawString(56, height - 518, cover_summary)
             c.setFillColor(text)
             c.setFont("HB", 8)
-            c.drawString(56, height - 540, f"Source snapshot: Git commit {commit[:7]}; all chapters use this committed revision.")
+            c.drawString(56, height - 540, cover_source)
             c.restoreState()
             return
         c.saveState()
@@ -422,16 +488,26 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
             index += 1
         return result
 
-    included = {source.path: source for source in handbook.sources}
+    included = {source.path: source for source in compilation.sources}
+    contents_intro = (
+        "Documents are grouped by subject. Select a title to jump to its source document."
+        if any(source.section for source in compilation.sources)
+        else "Each entry is a separate source document. Select a title to jump to it."
+    )
     story = [Spacer(1, 1), PageBreak(), Paragraph("Contents", styles["chapter"]),
-             Paragraph("Guides are arranged in a practical reading order. Select a title to jump to its chapter.", styles["body"])]
+             Paragraph(contents_intro, styles["body"])]
     toc = TableOfContents()
-    toc.levelStyles = [ParagraphStyle("toc", parent=styles["body"], spaceBefore=5, spaceAfter=5, alignment=TA_LEFT)]
+    toc.levelStyles = [
+        ParagraphStyle("toc-section", parent=styles["body"], fontName="HB-Bold", spaceBefore=8, spaceAfter=3, alignment=TA_LEFT),
+        ParagraphStyle("toc-document", parent=styles["body"], leftIndent=14, spaceBefore=3, spaceAfter=3, alignment=TA_LEFT),
+    ]
     story.append(toc)
-    for number, source in enumerate(handbook.sources, 1):
-        story.extend([PageBreak(), Paragraph(f"{number:02d} / {escape(source.path)}", ParagraphStyle("label", parent=styles["small"], fontName="HB-Bold", textColor=teal))])
+    for source in compilation.sources:
+        story.extend([PageBreak(), Paragraph(escape(source.path), ParagraphStyle("label", parent=styles["small"], fontName="HB-Bold", textColor=teal))])
         chapter = Paragraph(f'<a name="{source.anchor}"/>{escape(source.title)}', styles["chapter"])
         chapter.chapter_anchor = source.anchor
+        chapter.document_section = source.section
+        chapter.contents_title = source.display_title or source.title
         story.append(chapter)
         transformed = assembly.transform_source(source, included, commit, expose_front_matter=source.path.endswith("/SKILL.md"))
         story.extend(blocks(transformed))
@@ -439,9 +515,9 @@ def render_pdf(handbook, commit, snapshot_date, destination, font_dir, code_font
     descriptor, temporary = tempfile.mkstemp(suffix=".pdf", dir=destination.parent)
     os.close(descriptor)
     try:
-        book = Book(temporary, pagesize=A4, title=handbook.title, author="HyperBricks", subject=handbook.subtitle)
+        book = Book(temporary, pagesize=A4, title=compilation.title, author="HyperBricks", subject=compilation.subtitle)
         frame = Frame(56, 54, content_width, height - 110, leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
-        book.addPageTemplates(PageTemplate(id="handbook", frames=frame, onPage=decorate))
+        book.addPageTemplates(PageTemplate(id="compilation", frames=frame, onPage=decorate))
         book.multiBuild(story)
         reader = PdfReader(temporary)
         if len(reader.pages) < 3 or not reader.outline:
@@ -463,18 +539,19 @@ def main():
         output = Path(args.output_dir)
         if not output.is_absolute():
             output = repository / output
-        for handbook in assembly.build_handbooks(repository, commit):
+        for compilation in assembly.build_compilations(repository, commit):
             if args.format in {"all", "markdown"}:
-                path = output / handbook.filename
-                assembly.write_atomic(path, assembly.render_handbook(handbook, commit, snapshot_date))
-                print(f"Wrote {path} ({len(handbook.sources)} sources)")
+                path = output / compilation.filename
+                assembly.write_atomic(path, assembly.render_compilation(compilation, commit, snapshot_date))
+                print(f"Wrote {path} ({len(compilation.sources)} sources)")
             if args.format in {"all", "pdf"}:
-                render_pdf(handbook, commit, snapshot_date, output / Path(handbook.filename).with_suffix(".pdf"), Path(args.font_dir), Path(args.code_font), args.mermaid_cli)
+                render_pdf(compilation, commit, snapshot_date, output / Path(compilation.filename).with_suffix(".pdf"), Path(args.font_dir), Path(args.code_font), args.mermaid_cli)
             if args.format in {"all", "epub"}:
-                from build_epub_handbooks import epub_for
-                path = output / Path(handbook.filename).with_suffix(".epub")
-                epub_for(Path(handbook.filename), path, args.mermaid_cli,
-                         markdown=assembly.render_handbook(handbook, commit, snapshot_date))
+                from build_epub_compilations import epub_for
+                path = output / Path(compilation.filename).with_suffix(".epub")
+                epub_for(Path(compilation.filename), path, args.mermaid_cli,
+                         markdown=assembly.render_compilation(compilation, commit, snapshot_date),
+                         title=compilation.title)
                 print(f"Wrote {path}")
         print(f"Source snapshot: {commit}")
         return 0

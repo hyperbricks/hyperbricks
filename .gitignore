@@ -5,6 +5,7 @@ tmp/
 **/archive
 /archive/
 .cache/
+/.venv-compilations/
 # Ignore VSCode workspace settings directory globally
 **/.vscode/
 

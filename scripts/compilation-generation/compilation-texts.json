@@ -1,0 +1,32 @@
+{
+  "documentation": {
+    "title": "HyperBricks Documentation Compilation {version}",
+    "subtitle": "Collection of maintained source documents",
+    "description": "A collection of the separate guides and references in the docs directory.",
+    "topics_label": "Topics",
+    "topics": "Declarative configuration. Component runtime. Hypermedia.",
+    "cover": {
+      "label": "HYPERBRICKS / DOCUMENTATION",
+      "brand": "HyperBricks",
+      "heading": "Documentation compilation",
+      "detail": "{version}",
+      "summary": "{version} • {document_count} documents • {snapshot_date}",
+      "source": "Source snapshot: Git commit {short_commit}; all chapters use this committed revision."
+    }
+  },
+  "skills": {
+    "title": "HyperBricks Skills Compilation",
+    "subtitle": "Collection of Skill sources and references",
+    "description": "A collection of the separate HyperBricks skill sources and supporting references",
+    "topics_label": "Topics",
+    "topics": "Project lifecycle. Authoring. Integrations. Plugins.",
+    "cover": {
+      "label": "HYPERBRICKS / SKILLS",
+      "brand": "HyperBricks",
+      "heading": "Skills compilation",
+      "detail": "{subtitle}",
+      "summary": "{version} • {document_count} documents • {snapshot_date}",
+      "source": "Source snapshot: Git commit {short_commit}; all chapters use this committed revision."
+    }
+  }
+}
