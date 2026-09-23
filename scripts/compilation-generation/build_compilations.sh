@@ -52,6 +52,7 @@ export HB_MERMAID_CLI="${MERMAID_DIR}/node_modules/.bin/mmdc"
 
 FORMAT="all"
 OUTPUT_DIR="${ROOT}/docs/compilations"
+SOURCE_REF="HEAD"
 BUILD_ARGUMENT_COUNT=$#
 BUILD_ARGUMENTS=("$@")
 while (($#)); do
@@ -68,6 +69,13 @@ while (($#)); do
             ;;
         --output-dir=*)
             OUTPUT_DIR="${1#--output-dir=}"
+            shift
+            ;;
+        --ref)
+            if (($# > 1)); then SOURCE_REF="$2"; shift 2; else shift; fi
+            ;;
+        --ref=*)
+            SOURCE_REF="${1#--ref=}"
             shift
             ;;
         *)
@@ -89,7 +97,6 @@ fi
 if [[ "${FORMAT}" == "all" || "${FORMAT}" == "markdown" ]]; then
     COMPILATIONS=(
         HyperBricks-Documentation.md
-        HyperBricks-Skills.md
     )
     DESTINATIONS=(
         "${ROOT}/SKILLS/hyperbricks/references"
@@ -108,5 +115,8 @@ if [[ "${FORMAT}" == "all" || "${FORMAT}" == "markdown" ]]; then
             cp "${OUTPUT_DIR}/${compilation}" "${destination}/${compilation}"
             echo "Synchronized ${destination#"${ROOT}/"}/${compilation}"
         done
+        "${ENV_DIR}/bin/python" "${SCRIPT_DIR}/build_skill_documentation.py" \
+            --ref "${SOURCE_REF}" \
+            --output-dir "${destination}"
     done
 fi

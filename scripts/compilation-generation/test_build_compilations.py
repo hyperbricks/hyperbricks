@@ -16,6 +16,8 @@ from build_markdown_compilations import (
     CoverTexts,
     DOCUMENTATION_SECTIONS,
     GENERATED_SKILL_COMPILATIONS,
+    GENERATED_SKILL_DOCUMENTATION,
+    GENERATED_SKILL_DOCUMENTATION_PREFIX,
     SKILLS_ORDER,
     SourceDocument,
     build_compilations as assemble_compilations,
@@ -23,7 +25,9 @@ from build_markdown_compilations import (
     format_text,
     load_compilation_texts,
     render_compilation,
+    repository_link_ref,
     skill_source_paths,
+    source_heading_entries,
     snapshot_version,
     transform_source,
 )
@@ -74,9 +78,15 @@ class CompilationTests(unittest.TestCase):
         )
         self.assertEqual(documentation.kind, "documentation")
         self.assertEqual(skills.kind, "skills")
+        self.assertEqual(skills.repository_ref, "v1.2.5-beta")
         self.assertEqual(documentation.cover.heading, texts["documentation"]["cover"]["heading"])
         self.assertEqual(skills.cover.detail, texts["skills"]["cover"]["detail"])
         self.assertNotIn("Handbook", skills.title)
+
+    def test_repository_links_use_release_version(self):
+        self.assertEqual(repository_link_ref("v1.2.5-beta"), "v1.2.5-beta")
+        with self.assertRaisesRegex(BuildError, "GitHub-safe release tag"):
+            repository_link_ref("release/v1.2.5-beta")
 
     def test_text_file_rejects_unknown_placeholders(self):
         source = Path(__file__).with_name("compilation-texts.json").read_text(encoding="utf-8")
@@ -115,6 +125,68 @@ class CompilationTests(unittest.TestCase):
         self.assertNotRegex(markdown, r"(?m)^\d+\. \[")
         self.assertIn("## Goja Render", markdown)
         self.assertNotIn("## 02. Goja Render", markdown)
+
+    def test_skills_contents_use_skill_sections(self):
+        source = SourceDocument(
+            "SKILLS/hyperbricks/SKILL.md",
+            "HyperBricks",
+            "# HyperBricks\n\n## Working principles\n\nText.\n\n"
+            "### Detail\n\nMore.\n\n## Execute the task\n",
+            "hyperbricks",
+        )
+        compilation = Compilation(
+            "test.md",
+            "HyperBricks Skills Compilation",
+            "Skill sources",
+            "Description",
+            "Topics",
+            (source,),
+            kind="skills",
+        )
+        markdown = render_compilation(compilation, "a" * 40, date(2026, 9, 22))
+        self.assertIn("- [Working principles](#hyperbricks--working-principles)", markdown)
+        self.assertIn("- [Execute the task](#hyperbricks--execute-the-task)", markdown)
+        self.assertNotIn("- [HyperBricks](#hyperbricks)", markdown)
+        self.assertEqual(
+            source_heading_entries(source, 2),
+            (
+                ("Working principles", "hyperbricks--working-principles"),
+                ("Execute the task", "hyperbricks--execute-the-task"),
+            ),
+        )
+
+    def test_skills_pdf_contents_use_sections_without_instructions(self):
+        source = SourceDocument(
+            "SKILLS/hyperbricks/SKILL.md",
+            "HyperBricks",
+            "# HyperBricks\n\n## Working principles\n\nText.\n\n## Execute the task\n\nMore.\n",
+            "hyperbricks",
+        )
+        compilation = Compilation(
+            "test.md",
+            "HyperBricks Skills Compilation",
+            "Skill sources",
+            "Description",
+            "Topics",
+            (source,),
+            kind="skills",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / "test.pdf"
+            build_compilations.render_pdf(
+                compilation,
+                "a" * 40,
+                date(2026, 9, 22),
+                destination,
+                Path("/System/Library/Fonts/Supplemental"),
+                Path("/System/Library/Fonts/Menlo.ttc"),
+            )
+            reader = PdfReader(destination)
+            contents = reader.pages[1].extract_text()
+            self.assertIn("Working principles", contents)
+            self.assertIn("Execute the task", contents)
+            self.assertNotIn("Select a title", contents)
+            self.assertNotIn("Each entry is a separate source document", contents)
 
     def test_mermaid_print_colors_preserve_graph_and_stroke_width(self):
         source = "flowchart TB\n A --> B\n classDef node fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:2.5px;\n class A,B node;"
@@ -217,10 +289,18 @@ class CompilationTests(unittest.TestCase):
 
     def test_generated_compilations_are_not_skills_sources(self):
         extra = "SKILLS/hyperbricks/references/extra.md"
-        paths = set(SKILLS_ORDER) | GENERATED_SKILL_COMPILATIONS | {extra}
+        generated_document = f"{GENERATED_SKILL_DOCUMENTATION_PREFIX}INTRODUCTION.md"
+        paths = (
+            set(SKILLS_ORDER)
+            | GENERATED_SKILL_COMPILATIONS
+            | GENERATED_SKILL_DOCUMENTATION
+            | {generated_document, extra}
+        )
         selected = skill_source_paths(paths)
         self.assertIn(extra, selected)
         self.assertTrue(GENERATED_SKILL_COMPILATIONS.isdisjoint(selected))
+        self.assertTrue(GENERATED_SKILL_DOCUMENTATION.isdisjoint(selected))
+        self.assertNotIn(generated_document, selected)
 
     def test_explicit_anchors_resolve_with_accents_and_across_chapters(self):
         anchor = "run-the-night-owl-cafe-example"

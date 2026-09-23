@@ -15,9 +15,11 @@ The script creates `.venv-compilations/`, installs the Python packages pinned in
 and skills compilations as Markdown, PDF, and EPUB in `docs/compilations/`. The
 environment is ignored by Git; it is not part of the repository or a release
 commit.
-When Markdown is generated (`all` or `--format markdown`), the two Markdown
-compilations are also synchronized to the HyperBricks skill and packaged Codex
-plugin references. PDF-only and EPUB-only builds leave those copies unchanged.
+When Markdown is generated (`all` or `--format markdown`), the documentation
+compilation and a versioned, one-file-per-source documentation snapshot are also
+synchronized to the HyperBricks skill and packaged Codex plugin references. The
+skills compilation remains a publication artifact in `docs/compilations/`.
+PDF-only and EPUB-only builds leave the skill references unchanged.
 
 ## Text and cover copy
 
@@ -50,6 +52,30 @@ Mermaid dependencies:
 ./scripts/compilation-generation/build_markdown_compilations.py
 ```
 
+Build only the separate documentation snapshot used by the skill:
+
+```sh
+./scripts/compilation-generation/build_skill_documentation.py
+```
+
+The snapshot writes `DOCUMENTATION_INDEX.md`, `documentation-manifest.json`, and
+generated documents under `SKILLS/hyperbricks/references/docs/`. The documents
+retain the source prose from `/docs`; links within `/docs` remain local and links
+to other repository paths use the release version from `assets/version.md`.
+Pass `--check` to verify an existing snapshot without writing it. With no
+explicit `--ref`, the check uses the `source_commit` recorded in the snapshot
+manifest, so committing the generated files does not make the check stale.
+
+For safety, a custom non-empty output directory must already contain a valid
+snapshot manifest. Use an empty directory for its first generation; the
+repository root, canonical `docs/` tree, and symlinked output paths are never
+accepted as output.
+
+The snapshot records a committed source revision. Commit canonical documentation
+and tooling changes first, generate the snapshot from that commit, then commit
+the generated skill and plugin files separately. This avoids claiming that
+uncommitted documentation was part of the recorded source revision.
+
 The EPUB uses the PDF's Arial/sans-serif typography, navy/teal heading palette,
 code panels, and rendered Mermaid diagrams, with relative sizes and wrapping
 for e-readers. It includes chapter navigation, internal links, and a dark theme.
@@ -77,5 +103,5 @@ after the environment has been created:
 
 ```sh
 .venv-compilations/bin/python -m unittest discover \
-  -s scripts/compilation-generation -p 'test_build*compilations.py'
+  -s scripts/compilation-generation -p 'test_build*.py'
 ```

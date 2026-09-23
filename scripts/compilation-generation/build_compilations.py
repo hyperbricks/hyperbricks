@@ -243,6 +243,10 @@ def render_pdf(compilation, commit, snapshot_date, destination, font_dir, code_f
             if hasattr(flowable, "chapter_anchor"):
                 section = getattr(flowable, "document_section", "")
                 document_title = getattr(flowable, "contents_title", flowable.getPlainText())
+                if compilation_kind == "skills":
+                    self.canv.bookmarkPage(flowable.chapter_anchor)
+                    self.canv.addOutlineEntry(document_title, flowable.chapter_anchor, level=0)
+                    return
                 if section and section != self._last_section:
                     section_anchor = f"compilation-section-{assembly.slug(section)}"
                     self.canv.bookmarkPage(section_anchor)
@@ -253,6 +257,12 @@ def render_pdf(compilation, commit, snapshot_date, destination, font_dir, code_f
                 self.canv.bookmarkPage(flowable.chapter_anchor)
                 self.canv.addOutlineEntry(document_title, flowable.chapter_anchor, level=level)
                 self.notify("TOCEntry", (level, document_title, self.page, flowable.chapter_anchor))
+            elif hasattr(flowable, "skill_section_anchor"):
+                title = getattr(flowable, "contents_title", flowable.getPlainText())
+                anchor = flowable.skill_section_anchor
+                self.canv.bookmarkPage(anchor)
+                self.canv.addOutlineEntry(title, anchor, level=1)
+                self.notify("TOCEntry", (0, title, self.page, anchor))
 
     def draw_inline_code_background(canvas, kind, label):
         if kind != "onDraw" or not label:
@@ -408,9 +418,14 @@ def render_pdf(compilation, commit, snapshot_date, destination, font_dir, code_f
                     result.append(Code(token.content, "HTML"))
             elif token.type == "heading_open":
                 level = int(token.tag[1:])
-                markup = "".join(f'<a name="{escape(a, quote=True)}"/>' for a in anchors)
+                heading_anchors = tuple(anchors)
+                markup = "".join(f'<a name="{escape(a, quote=True)}"/>' for a in heading_anchors)
                 anchors.clear()
-                result.append(Paragraph(markup + inline(tokens[index + 1].children), styles[f"h{min(level, 4)}"]))
+                heading = Paragraph(markup + inline(tokens[index + 1].children), styles[f"h{min(level, 4)}"])
+                if compilation_kind == "skills" and level == 3 and heading_anchors:
+                    heading.skill_section_anchor = heading_anchors[-1]
+                    heading.contents_title = tokens[index + 1].content
+                result.append(heading)
                 index += 2
             elif token.type == "paragraph_open":
                 content = tokens[index + 1].content
@@ -489,13 +504,7 @@ def render_pdf(compilation, commit, snapshot_date, destination, font_dir, code_f
         return result
 
     included = {source.path: source for source in compilation.sources}
-    contents_intro = (
-        "Documents are grouped by subject. Select a title to jump to its source document."
-        if any(source.section for source in compilation.sources)
-        else "Each entry is a separate source document. Select a title to jump to it."
-    )
-    story = [Spacer(1, 1), PageBreak(), Paragraph("Contents", styles["chapter"]),
-             Paragraph(contents_intro, styles["body"])]
+    story = [Spacer(1, 1), PageBreak(), Paragraph("Contents", styles["chapter"])]
     toc = TableOfContents()
     toc.levelStyles = [
         ParagraphStyle("toc-section", parent=styles["body"], fontName="HB-Bold", spaceBefore=8, spaceAfter=3, alignment=TA_LEFT),
@@ -509,7 +518,12 @@ def render_pdf(compilation, commit, snapshot_date, destination, font_dir, code_f
         chapter.document_section = source.section
         chapter.contents_title = source.display_title or source.title
         story.append(chapter)
-        transformed = assembly.transform_source(source, included, commit, expose_front_matter=source.path.endswith("/SKILL.md"))
+        transformed = assembly.transform_source(
+            source,
+            included,
+            compilation.repository_ref or commit,
+            expose_front_matter=source.path.endswith("/SKILL.md"),
+        )
         story.extend(blocks(transformed))
     destination.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary = tempfile.mkstemp(suffix=".pdf", dir=destination.parent)
