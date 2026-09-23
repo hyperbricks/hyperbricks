@@ -62,17 +62,17 @@ Development updates for `v1.2.5-beta`; not a published release announcement.
 - Clarify deployment authentication/connection controls and move internal development
   notes out of the root manual into a dated local log.
 
-### Handbook automation
+### Compilation generation
 
 - Add one setup/build command for Markdown and styled PDF documentation/skills
-  handbooks, with pinned dependencies and shared committed-snapshot provenance.
+  compilations, with pinned dependencies and shared committed-snapshot provenance.
 - Recreate the existing typography and layout, linked contents, chapter bookmarks,
-  code panels, and tables. Publish both formats in `docs/handbooks/`, allow Git
-  tracking, and exclude generated handbooks from source discovery.
+  code panels, and tables. Publish all formats in `docs/compilations/`, allow Git
+  tracking, and exclude generated compilations from source discovery.
 - Render Mermaid diagrams in PDFs with print-safe colors; retain Mermaid source
   in Markdown and fail explicitly on rendering errors.
 - Document setup, fonts, build options, and validation in
-  [Handbook builds](docs/handbooks/HANDBOOKS.md).
+  [Compilation generation](scripts/compilation-generation/README.md).
 
 ### Regression coverage
 
@@ -81,7 +81,7 @@ Development updates for `v1.2.5-beta`; not a published release announcement.
   logging, and memory behavior.
 - Isolate dedicated echo/JWT tests on owned ephemeral servers, preventing accidental
   reuse of an existing server's signing secret; retain PostgREST integration.
-- Add handbook pagination, link/outline, missing-font, and source-exclusion tests.
+- Add compilation pagination, link/outline, missing-font, and source-exclusion tests.
   Browser and full release-candidate verification remain separate gates.
 
 ## 2026-09-12 updates
@@ -361,7 +361,7 @@ rendered pages.
   and document how a public HyperBricks skill resolves its versioned sources.
 - Document canonical HTMX page and fragment URLs, browser history behavior, and
   static-export compatibility.
-- Add a generator for standalone Markdown documentation and skill handbooks,
+- Add a generator for standalone Markdown documentation and skill compilations,
   sourced from an exact committed Git snapshot.
 - Add a Git-archive ZIP helper for sharing the current committed repository
   state without local or ignored output.
