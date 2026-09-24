@@ -56,13 +56,13 @@ func TestDeployRunUsesModulePathBaseName(t *testing.T) {
 	}
 	if _, err := updateBuildIndex(
 		filepath.Join(moduleDeployDir, versionIndexFile),
-		"build-1", "1.0", "hra", archivePath, "", "", "", "",
+		"build-1", "1.0", "hra", archivePath, "", "", "", "v1.2.5-beta", "",
 	); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := updateBuildIndex(
 		filepath.Join(moduleDeployDir, versionIndexFile),
-		"build-2", "1.0", "hra", archivePath, "", "", "", "",
+		"build-2", "1.0", "hra", archivePath, "", "", "", "v1.2.5-beta", "",
 	); err != nil {
 		t.Fatal(err)
 	}

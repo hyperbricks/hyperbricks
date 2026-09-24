@@ -43,6 +43,7 @@ type localBuildRow struct {
 	BuiltAt       string `json:"built_at"`
 	Commit        string `json:"commit"`
 	SourceHash    string `json:"source_hash"`
+	HyperBricks   string `json:"hyperbricks,omitempty"`
 	Production    bool   `json:"production,omitempty"`
 	PushedAt      string `json:"pushed_at,omitempty"`
 	RemoteTarget  string `json:"remote_target,omitempty"`
@@ -698,6 +699,7 @@ func (api *deployLocalServer) handleBuildStatus(w http.ResponseWriter, module st
 		"commit":            status.Commit,
 		"built_at":          status.BuiltAt,
 		"source_hash":       status.SourceHash,
+		"hyperbricks":       status.HyperBricks,
 		"format":            status.Format,
 		"production":        status.Production,
 		"pushed_at":         status.PushedAt,

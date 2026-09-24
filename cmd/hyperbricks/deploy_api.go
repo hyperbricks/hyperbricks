@@ -54,6 +54,7 @@ type deployIndexRow struct {
 	BuiltAt       string `json:"built_at"`
 	Commit        string `json:"commit"`
 	SourceHash    string `json:"source_hash"`
+	HyperBricks   string `json:"hyperbricks,omitempty"`
 	Production    bool   `json:"production,omitempty"`
 }
 
@@ -988,6 +989,7 @@ func (api *deployAPI) handleBuildStatus(w http.ResponseWriter, module string, bu
 		"commit":        row.Commit,
 		"built_at":      row.BuiltAt,
 		"source_hash":   row.SourceHash,
+		"hyperbricks":   row.HyperBricks,
 		"format":        row.Format,
 		"production":    row.Production,
 	})
@@ -1326,6 +1328,7 @@ func (api *deployAPI) activateModuleBuild(module string, buildID string) (map[st
 		BuiltAt:       metadata["built_at"],
 		Commit:        metadata["commit"],
 		SourceHash:    metadata["source_hash"],
+		HyperBricks:   metadata["hyperbricks"],
 		Production:    production,
 	}
 	index = upsertDeployRow(index, row)

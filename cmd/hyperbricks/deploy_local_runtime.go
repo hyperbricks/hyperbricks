@@ -14,12 +14,23 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/hyperbricks/hyperbricks/pkg/packagemetadata"
 )
 
 const localDevBuildID = "dev"
 
 func (api *deployLocalServer) isDevBuildID(buildID string) bool {
 	return strings.EqualFold(strings.TrimSpace(buildID), localDevBuildID)
+}
+
+func (api *deployLocalServer) devSourceCommit(module string) string {
+	moduleRoot := filepath.Join(api.modulesDir, module)
+	commit := packagemetadata.GitShortCommit(moduleRoot)
+	if commit == packagemetadata.UnknownCommit {
+		return ""
+	}
+	return commit
 }
 
 func (api *deployLocalServer) devBuildRow(module string) (localBuildRowResponse, bool) {
@@ -37,10 +48,6 @@ func (api *deployLocalServer) devBuildRow(module string) (localBuildRowResponse,
 	if moduleVersion == "" || moduleVersion == "unknown" {
 		moduleVersion = "dev"
 	}
-	commit := strings.TrimSpace(meta["commit"])
-	if commit == "unknown" {
-		commit = ""
-	}
 
 	row := localBuildRow{
 		BuildID:       localDevBuildID,
@@ -48,7 +55,7 @@ func (api *deployLocalServer) devBuildRow(module string) (localBuildRowResponse,
 		Format:        "dev",
 		File:          "",
 		BuiltAt:       "",
-		Commit:        commit,
+		Commit:        api.devSourceCommit(module),
 		SourceHash:    "",
 		Production:    false,
 	}
@@ -83,10 +90,6 @@ func (api *deployLocalServer) devBuildStatus(module string) (map[string]interfac
 	if moduleVersion == "" || moduleVersion == "unknown" {
 		moduleVersion = "dev"
 	}
-	commit := strings.TrimSpace(meta["commit"])
-	if commit == "unknown" {
-		commit = ""
-	}
 
 	return map[string]interface{}{
 		"module":        module,
@@ -94,7 +97,7 @@ func (api *deployLocalServer) devBuildStatus(module string) (map[string]interfac
 		"running":       running,
 		"port":          port,
 		"moduleversion": moduleVersion,
-		"commit":        commit,
+		"commit":        api.devSourceCommit(module),
 		"built_at":      "",
 		"source_hash":   "",
 		"format":        "dev",
