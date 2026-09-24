@@ -76,6 +76,7 @@ supplements; do not load all of them automatically.
 | Install HyperBricks or create a first module | [Quickstart](references/docs/QUICKSTART.md) |
 | Follow a common task recipe | [How-to guides](references/docs/HOWTOS.md) |
 | Check a source module before running or building it | [Doctor](references/docs/HYPERBRICKS_CLI.md#doctor) |
+| Review an existing project | Project instructions and the affected feature; use [Doctor](references/docs/HYPERBRICKS_CLI.md#doctor) when module health is in scope |
 | Diagnose a runtime or rendered-output problem | [Troubleshooting](references/docs/TROUBLESHOOTING.md), then the affected feature |
 | Change an existing project | [Changing Existing Projects](references/docs/AUTHOR.md) |
 | Check the exact authoring contract | [Author Command Reference](references/docs/AUTHOR_REFERENCE.md) |
@@ -108,6 +109,18 @@ publication fallback, not the normal skill input. Prefer the separate source
 documents.
 
 ## Choose the task mode
+
+### Review an existing project
+
+Keep a review read-only unless the user requests a change. Inspect project
+instructions, the affected source and ownership boundaries, and the existing
+focused tests before inventing new verification. Use Doctor when source-module
+health is in scope, and verify runtime, browser, integration, or delivery
+behavior only when that layer is material to the review. Use the read-only
+`author context` or `author inspect` operations only when exact ownership or an
+effective contract is needed; do not run `author apply` or another source
+mutation without a requested change. For a review spanning multiple layers,
+report each mechanism and result and identify material layers not verified.
 
 ### Change an existing project
 
@@ -152,6 +165,10 @@ Resolve the project, runtime, and documentation source; inspect the relevant
 existing files and state; choose the smallest documented workflow that satisfies
 the request; preserve unrelated files and conventions; and report the result,
 documentation source, and checks performed.
+
+Before inventing a verification command, find and prefer the project's existing
+focused test or smoke workflow. Supplement it only when it does not cover the
+requested behavior.
 
 Do not start a server, export, push, publish, deploy, or perform a mutating test
 unless it belongs to the user's request. Use disposable or explicitly approved

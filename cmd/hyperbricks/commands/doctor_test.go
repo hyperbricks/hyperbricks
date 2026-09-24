@@ -529,6 +529,56 @@ second:
 	}
 }
 
+func TestDoctorValidatesRoutedEditableSpaceSource(t *testing.T) {
+	projectRoot := t.TempDir()
+	writeDoctorFixture(t, projectRoot, "demo", strings.TrimSpace(assets.VersionMD), "", `page:
+  - type: hypermedia
+  - route: index
+  - title: Routed Space source
+  - content:
+      - type: template
+      - inline: '<h1>{{.heading}}</h1>'
+      - values:
+          heading: Welcome
+      - editable:
+          heading: {type: text, label: Heading}
+`)
+
+	report, _, code := executeDoctorJSON(t, projectRoot, "-m", "demo")
+	if code != 0 || report.Status != "healthy" {
+		t.Fatalf("routed Space source result code=%d report=%+v", code, report)
+	}
+	check := doctorCheckByID(t, report, "spaces.contract")
+	if check.Status != doctorPass || check.Message != "1 eligible editable Space sources validated" {
+		t.Fatalf("Spaces check=%+v", check)
+	}
+}
+
+func TestDoctorRejectsInvalidRoutedEditableSpaceSource(t *testing.T) {
+	projectRoot := t.TempDir()
+	writeDoctorFixture(t, projectRoot, "demo", strings.TrimSpace(assets.VersionMD), "", `page:
+  - type: hypermedia
+  - route: index
+  - title: Invalid routed Space source
+  - content:
+      - type: template
+      - inline: '<h1>{{.heading}}</h1>'
+      - values:
+          heading: Welcome
+      - editable:
+          heading: {type: unsupported}
+`)
+
+	report, _, code := executeDoctorJSON(t, projectRoot, "-m", "demo")
+	if code != 1 || report.Status != "unhealthy" {
+		t.Fatalf("invalid routed Space source result code=%d report=%+v", code, report)
+	}
+	check := doctorCheckByID(t, report, "spaces.contract")
+	if check.Status != doctorFail || !strings.Contains(check.Message, "source page") || !strings.Contains(check.Message, "unsupported field type") {
+		t.Fatalf("Spaces check=%+v", check)
+	}
+}
+
 func TestDoctorDoesNotMutateRuntimeTemplateStore(t *testing.T) {
 	previousTemplates := parser.GetTemplateStore()
 	parser.ClearTemplateStore()

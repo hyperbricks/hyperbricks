@@ -787,9 +787,6 @@ func checkDoctorSpaces(collector *doctorCollector, graph doctorGraph) {
 		if object["@type"] != "<HYPERMEDIA>" {
 			continue
 		}
-		if route, _ := object["route"].(string); route != "" {
-			continue
-		}
 		fields, err := spaces.SourceFields(object)
 		if err != nil {
 			collector.simple("spaces.contract", doctorFail, fmt.Sprintf("source %s: %v", name, err))
@@ -799,7 +796,7 @@ func checkDoctorSpaces(collector *doctorCollector, graph doctorGraph) {
 			count++
 		}
 	}
-	collector.simple("spaces.contract", doctorPass, fmt.Sprintf("%d editable Space sources validated", count))
+	collector.simple("spaces.contract", doctorPass, fmt.Sprintf("%d eligible editable Space sources validated", count))
 }
 
 func checkDoctorPlugins(collector *doctorCollector, config *shared.Config, cwd, moduleRoot string) {
