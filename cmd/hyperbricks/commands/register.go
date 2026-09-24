@@ -49,6 +49,7 @@ func RegisterSubcommands() {
 	RootCmd.AddCommand(NewScaffoldCommand())
 	RootCmd.AddCommand(NewAuthorCommand())
 	RootCmd.AddCommand(NewSpaceCommand())
+	RootCmd.AddCommand(NewDoctorCommand())
 	RootCmd.AddCommand(NewStartCommand())
 	RootCmd.AddCommand(NewDeployCommand())
 	RootCmd.AddCommand(VersionCommand())

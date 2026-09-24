@@ -62,6 +62,10 @@ func run() {
 		commands.ReportError(err)
 		return
 	}
+	if err := hbConfig.ValidateRuntimeSettings(); err != nil {
+		commands.ReportError(err)
+		return
+	}
 	if err := configureGoMaxProcs(hbConfig.Server.GoMaxProcs); err != nil {
 		commands.ReportError(err)
 		return

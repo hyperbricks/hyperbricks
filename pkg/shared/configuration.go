@@ -270,8 +270,53 @@ func loadHyperBricksConfiguration() *Config {
 	}
 	parser.HbConfig = parsedConfig
 
-	// Initialize with default values
-	var config = Config{
+	config, decodeErr := decodePackageConfig(parsedConfig, moduleDir)
+	if decodeErr != nil {
+		GetLogger().Errorw("Failed to decode configuration", "file", logging.ModulePath(moduleDir, configFilePath), "error", logging.ModuleText(moduleDir, decodeErr.Error()))
+	}
+	applyRuntimeOptions(config, runtimeOptions)
+	normalizePackageMode(config)
+	GetLogger().Debugw("Package configuration loaded", "file", logging.ModulePath(moduleDir, Module), "mode", config.Mode)
+	return config
+}
+
+// LoadPackageConfigStrict loads and validates one module package configuration
+// without changing the runtime singleton or parser configuration globals. It
+// uses the same defaults, typed decoding, and runtime overrides as normal
+// startup, while returning errors that startup may log or recover from.
+func LoadPackageConfigStrict(configFilePath string, moduleDir string) (*Config, error) {
+	result, err := yamlparser.ProcessConfigFile(configFilePath, packageConfigYAMLOptions(moduleDir))
+	if err != nil {
+		return nil, fmt.Errorf("load package configuration: %w", err)
+	}
+	for _, diagnostic := range result.Diagnostics {
+		if strings.EqualFold(diagnostic.Level, "error") {
+			return nil, fmt.Errorf("load package configuration: %s at %s: %s", diagnostic.Code, diagnostic.Path, diagnostic.Message)
+		}
+	}
+
+	config, decodeErr := decodePackageConfigStrict(result.Materialized, moduleDir)
+	if decodeErr != nil {
+		return nil, fmt.Errorf("decode package configuration: %w", decodeErr)
+	}
+	if err := validatePackageMode(config.Mode); err != nil {
+		return nil, err
+	}
+	if err := config.ValidateDevelopmentDashboard(); err != nil {
+		return nil, fmt.Errorf("validate development dashboard: %w", err)
+	}
+	if err := config.ValidateFrontendEditing(); err != nil {
+		return nil, fmt.Errorf("validate frontend editing: %w", err)
+	}
+	applyRuntimeOptions(config, GetRuntimeOptions())
+	if err := config.ValidateRuntimeSettings(); err != nil {
+		return nil, fmt.Errorf("validate runtime settings: %w", err)
+	}
+	return config, nil
+}
+
+func defaultPackageConfig(moduleDir string) *Config {
+	return &Config{
 
 		Mode: LIVE_MODE, // Default mode
 
@@ -330,12 +375,25 @@ func loadHyperBricksConfiguration() *Config {
 			},
 		},
 	}
+}
 
-	// Decode the parsed config into the struct
-	err = decodeConfig(parsedConfig["hyperbricks"], &config)
-	if err != nil {
-		GetLogger().Errorw("Failed to decode configuration", "file", logging.ModulePath(moduleDir, configFilePath), "error", logging.ModuleText(moduleDir, err.Error()))
+func decodePackageConfig(parsedConfig map[string]interface{}, moduleDir string) (*Config, error) {
+	return decodePackageConfigWithPolicy(parsedConfig, moduleDir, false)
+}
+
+func decodePackageConfigStrict(parsedConfig map[string]interface{}, moduleDir string) (*Config, error) {
+	return decodePackageConfigWithPolicy(parsedConfig, moduleDir, true)
+}
+
+func decodePackageConfigWithPolicy(parsedConfig map[string]interface{}, moduleDir string, strict bool) (*Config, error) {
+	config := defaultPackageConfig(moduleDir)
+	if err := decodeConfigWithPolicy(parsedConfig["hyperbricks"], config, strict); err != nil {
+		return config, err
 	}
+	return config, nil
+}
+
+func applyRuntimeOptions(config *Config, runtimeOptions RuntimeOptions) {
 	if runtimeOptions.PortOverride {
 		config.Server.Port = runtimeOptions.Port
 	}
@@ -354,8 +412,18 @@ func loadHyperBricksConfiguration() *Config {
 	if runtimeOptions.Production || envTrue("HB_DEPLOY_PRODUCTION") || envTrue("HB_PRODUCTION") {
 		config.Mode = LIVE_MODE
 	}
+}
 
-	// Validate mode
+func validatePackageMode(mode string) error {
+	switch mode {
+	case LIVE_MODE, DEVELOPMENT_MODE, DEBUG_MODE:
+		return nil
+	default:
+		return fmt.Errorf("invalid hyperbricks.mode %q: expected %q, %q, or %q", mode, LIVE_MODE, DEVELOPMENT_MODE, DEBUG_MODE)
+	}
+}
+
+func normalizePackageMode(config *Config) {
 	if config.Mode == LIVE_MODE {
 		GetLogger().Debug("Setting mode to live (production) mode")
 	} else if config.Mode == DEVELOPMENT_MODE {
@@ -368,8 +436,6 @@ func loadHyperBricksConfiguration() *Config {
 		GetLogger().Warn("Setting mode not recognised, setting to live (production) mode")
 		config.Mode = LIVE_MODE
 	}
-	GetLogger().Debugw("Package configuration loaded", "file", logging.ModulePath(moduleDir, Module), "mode", config.Mode)
-	return &config
 }
 
 func LoadPackageConfigMap(configFilePath string, moduleDir string) (map[string]interface{}, error) {
@@ -401,6 +467,10 @@ func packageConfigYAMLOptions(moduleDir string) yamlparser.Options {
 
 // decodeConfig decodes map to struct with defaults using mapstructure.
 func decodeConfig(input interface{}, output interface{}) error {
+	return decodeConfigWithPolicy(input, output, false)
+}
+
+func decodeConfigWithPolicy(input interface{}, output interface{}, strict bool) error {
 	if config, ok := output.(*Config); ok {
 		dashboard, err := decodeDevelopmentDashboard(input)
 		config.dashboardConfigError = err
@@ -433,6 +503,9 @@ func decodeConfig(input interface{}, output interface{}) error {
 				var ct CacheTime
 				err := ct.Parse(value.(string))
 				if err != nil {
+					if strict {
+						return CacheTime{}, fmt.Errorf("invalid cache duration %q: %w", value, err)
+					}
 					GetLogger().Errorw("Failed to parse cache duration", "value", value, "error", err)
 					return fallback, nil // Use fallback value on error
 				}
@@ -445,6 +518,9 @@ func decodeConfig(input interface{}, output interface{}) error {
 			if srcType.Kind() == reflect.String && destType == reflect.TypeOf(time.Duration(0)) {
 				duration, err := time.ParseDuration(value.(string))
 				if err != nil {
+					if strict {
+						return time.Duration(0), fmt.Errorf("invalid duration %q: %w", value, err)
+					}
 					GetLogger().Errorw("Failed to parse duration", "value", value, "error", err)
 					return time.Duration(0), nil // Default to zero if parsing fails
 				}

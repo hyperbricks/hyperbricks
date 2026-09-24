@@ -102,27 +102,7 @@ func runtimeGatewayCleanURL(r *http.Request) string {
 }
 
 func validateRuntimeGatewayConfig(config shared.RuntimeGatewayConfig) error {
-	if !config.Enabled {
-		return nil
-	}
-	if len(runtimeGatewayDomains(config)) == 0 && len(runtimeGatewayHostSuffixes(config)) == 0 {
-		return fmt.Errorf("runtime gateway requires runtime domain or host suffix")
-	}
-	resolver := strings.TrimSpace(config.Resolver)
-	if resolver == "" {
-		return fmt.Errorf("runtime gateway requires runtime resolver")
-	}
-	parsed, err := url.Parse(resolver)
-	if err != nil {
-		return fmt.Errorf("runtime resolver is invalid: %w", err)
-	}
-	if parsed.Scheme != "http" && parsed.Scheme != "https" {
-		return fmt.Errorf("runtime resolver must use http or https")
-	}
-	if parsed.Host == "" {
-		return fmt.Errorf("runtime resolver host is empty")
-	}
-	return nil
+	return shared.ValidateRuntimeGatewayConfig(config)
 }
 
 func runtimeGatewayDomains(config shared.RuntimeGatewayConfig) []string {
