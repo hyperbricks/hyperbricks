@@ -11,16 +11,16 @@ import (
 func resetDeployCommandState(t *testing.T) {
 	t.Helper()
 	previousMode, previousPath := DeployServiceMode, DeployConfigPath
-	previousModule, previousDir, previousBuild := DeployModule, DeployDir, DeployBuildID
+	previousModule, previousDir, previousBuild, previousRuntimeMode := DeployModule, DeployDir, DeployBuildID, DeployRuntimeMode
 	previousStartMode, previousExit, previousExitCode := StartMode, Exit, ExitCode
 	previousStartModule, previousModuleRoot, previousConfigPath := StartModule, ModuleRoot, ModuleConfigPath
 	DeployServiceMode, DeployConfigPath = DeployServiceNone, ""
-	DeployModule, DeployDir, DeployBuildID = "", "", ""
+	DeployModule, DeployDir, DeployBuildID, DeployRuntimeMode = "", "", "", ""
 	StartMode, Exit, ExitCode = false, false, 0
 	StartModule, ModuleRoot, ModuleConfigPath = "", "", ""
 	t.Cleanup(func() {
 		DeployServiceMode, DeployConfigPath = previousMode, previousPath
-		DeployModule, DeployDir, DeployBuildID = previousModule, previousDir, previousBuild
+		DeployModule, DeployDir, DeployBuildID, DeployRuntimeMode = previousModule, previousDir, previousBuild, previousRuntimeMode
 		StartMode, Exit, ExitCode = previousStartMode, previousExit, previousExitCode
 		StartModule, ModuleRoot, ModuleConfigPath = previousStartModule, previousModuleRoot, previousConfigPath
 	})

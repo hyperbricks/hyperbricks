@@ -105,7 +105,8 @@ func applyCommandRuntimeOptions() {
 		Port:         int(commands.Port),
 		PortOverride: commands.Port != 8080,
 
-		Production: commands.Production,
+		Production:   commands.Production,
+		ModeOverride: commands.DeployRuntimeMode,
 
 		RuntimeGatewayEnabled:    commands.StartRuntimeGateway,
 		RuntimeGatewayDomain:     commands.StartRuntimeDomain,

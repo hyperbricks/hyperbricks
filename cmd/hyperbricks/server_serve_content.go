@@ -1668,20 +1668,13 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request, reques
 	hbConfig := getHyperBricksConfiguration()
 	cacheDuration := hbConfig.Live.CacheTime
 
+	if cacheDuration.Duration <= 0 {
+		logging.GetLogger().Debugw("Skipping disabled live cache", "route", route)
+		return renderFreshLiveEntry(w, route, r, requestID)
+	}
 	if routeConfiguredNoCache(route) {
 		logging.GetLogger().Debugw("Skipping live cache for nocache route", "route", route)
-		renderContent := renderContent(w, route, r, requestID)
-		now := time.Now()
-		return CacheEntry{
-			Content:     renderContent.Content,
-			Timestamp:   now,
-			ContentType: renderContent.ContentType,
-			Status:      renderContent.Status,
-			Headers:     renderContent.Headers,
-			Cookies:     renderContent.Cookies,
-			ErrorCount:  renderContent.ErrorCount,
-			Handled:     cloneHandledResponseData(renderContent.Handled),
-		}
+		return renderFreshLiveEntry(w, route, r, requestID)
 	}
 
 	cacheKey, cacheable := resolveLiveCacheKey(route, r)
@@ -1747,5 +1740,19 @@ func handleLiveMode(w http.ResponseWriter, route string, r *http.Request, reques
 		Cookies:       renderContent.Cookies,
 		ErrorCount:    renderContent.ErrorCount,
 		Handled:       cloneHandledResponseData(renderContent.Handled),
+	}
+}
+
+func renderFreshLiveEntry(w http.ResponseWriter, route string, r *http.Request, requestID string) CacheEntry {
+	rendered := renderContent(w, route, r, requestID)
+	return CacheEntry{
+		Content:     rendered.Content,
+		Timestamp:   time.Now(),
+		ContentType: rendered.ContentType,
+		Status:      rendered.Status,
+		Headers:     rendered.Headers,
+		Cookies:     rendered.Cookies,
+		ErrorCount:  rendered.ErrorCount,
+		Handled:     cloneHandledResponseData(rendered.Handled),
 	}
 }

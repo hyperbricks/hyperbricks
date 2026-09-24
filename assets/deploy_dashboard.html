@@ -136,7 +136,7 @@
                 <strong id="apiTime">-</strong>
               </div>
               <div class="hb-deploy-stat">
-                <span>Hyperbricks</span>
+                <span>HyperBricks</span>
                 <strong id="apiVersion">-</strong>
               </div>
             </div>
@@ -194,7 +194,7 @@
               <strong id="apiTimePlugins">-</strong>
             </div>
             <div class="hb-deploy-stat">
-              <span>Hyperbricks</span>
+              <span>HyperBricks</span>
               <strong id="apiVersionPlugins">-</strong>
             </div>
           </div>
@@ -297,6 +297,35 @@
       </div>
     </dialog>
 
+    <dialog class="modal" id="packageConfigDialog" aria-labelledby="packageConfigTitle">
+      <div class="modal-box hb-package-config-dialog">
+        <form id="packageConfigForm">
+          <div class="hb-dialog-heading">
+            <div>
+              <p class="hb-eyebrow" id="packageConfigContext">Build configuration</p>
+              <h2 id="packageConfigTitle">package.hyperbricks.yaml</h2>
+            </div>
+            <button class="btn btn-sm btn-square btn-ghost" id="closePackageConfig" type="button" aria-label="Close package configuration editor" title="Close"><i data-lucide="x"></i></button>
+          </div>
+          <p class="note hb-package-config-scope" id="packageConfigScope"></p>
+          <div class="hb-field" role="group" aria-labelledby="packageConfigEditorLabel">
+            <span class="sr-only" id="packageConfigEditorLabel">Package configuration YAML</span>
+            <div class="hb-package-config-editor-shell" id="packageConfigEditorShell">
+              <textarea class="textarea hb-package-config-editor" id="packageConfigContent" name="content" spellcheck="false" autocapitalize="off" autocomplete="off" aria-labelledby="packageConfigEditorLabel"></textarea>
+              <div class="hb-package-config-codemirror" id="packageConfigEditorHost" hidden></div>
+            </div>
+          </div>
+          <p class="note hb-package-config-editor-status" id="packageConfigEditorStatus" role="status" aria-live="polite"></p>
+          <p class="hb-form-error" id="packageConfigError" role="alert"></p>
+          <p class="note" id="packageConfigStatus" role="status"></p>
+          <footer class="hb-upload-footer">
+            <button class="btn btn-sm btn-ghost" id="cancelPackageConfig" type="button">Cancel</button>
+            <button class="btn btn-sm btn-primary" id="savePackageConfig" type="submit" disabled><i data-lucide="save"></i><span>Save configuration</span></button>
+          </footer>
+        </form>
+      </div>
+    </dialog>
+
     <script>
       const ui = {
         baseUrl: document.getElementById("baseUrl"),
@@ -334,6 +363,19 @@
         submitUpload: document.getElementById("submitUpload"),
         closeUpload: document.getElementById("closeUpload"),
         cancelUpload: document.getElementById("cancelUpload"),
+        packageConfigDialog: document.getElementById("packageConfigDialog"),
+        packageConfigForm: document.getElementById("packageConfigForm"),
+        packageConfigContext: document.getElementById("packageConfigContext"),
+        packageConfigScope: document.getElementById("packageConfigScope"),
+        packageConfigEditorShell: document.getElementById("packageConfigEditorShell"),
+        packageConfigEditorHost: document.getElementById("packageConfigEditorHost"),
+        packageConfigContent: document.getElementById("packageConfigContent"),
+        packageConfigEditorStatus: document.getElementById("packageConfigEditorStatus"),
+        packageConfigError: document.getElementById("packageConfigError"),
+        packageConfigStatus: document.getElementById("packageConfigStatus"),
+        closePackageConfig: document.getElementById("closePackageConfig"),
+        cancelPackageConfig: document.getElementById("cancelPackageConfig"),
+        savePackageConfig: document.getElementById("savePackageConfig"),
         rollbackModule: document.getElementById("rollbackModule"),
         rollbackTarget: document.getElementById("rollbackTarget"),
         activity: document.getElementById("activity"),
@@ -380,8 +422,24 @@
         pluginBuild: "",
         buildCounts: {},
         moduleFilter: "",
-        showAllModules: false
+        showAllModules: false,
+        packageConfigBuild: "",
+        packageConfigSHA: "",
+        packageConfigOriginal: "",
+        packageConfigDraft: "",
+        packageConfigLineSeparator: "\n",
+        packageConfigBusy: false,
+        packageConfigCloseBlocked: false,
+        packageConfigTrigger: null,
+        packageConfigEditor: null,
+        packageConfigEditorSession: 0,
+        archiveDownloads: {}
       };
+      let packageConfigEditorModulePromise = null;
+      let packageConfigEditorImportFailures = 0;
+      let packageConfigEditorImporter = (retrySuffix = "") => retrySuffix
+        ? import("/assets/deploy-yaml-editor.js" + retrySuffix)
+        : import("/assets/deploy-yaml-editor.js");
       const modulePreviewLimit = 10;
       document.body.classList.add(isLocalMode ? "mode-local" : "mode-remote");
 
@@ -405,7 +463,9 @@
         dashboard: '<i data-lucide="layout-dashboard"></i>',
         details: '<i data-lucide="info"></i>',
         delete: '<i data-lucide="trash-2"></i>',
-        push: '<i data-lucide="upload"></i>'
+        push: '<i data-lucide="upload"></i>',
+        download: '<i data-lucide="download"></i>',
+        config: '<i data-lucide="file-pen-line"></i>'
       };
 
       let rowMenuCounter = 0;
@@ -496,6 +556,18 @@
         const date = new Date(value);
         const time = date.getTime();
         return Number.isNaN(time) ? 0 : time;
+      }
+
+      function buildRuntimeMode(build) {
+        const explicit = String(build && build.runtime_mode || "").toLowerCase();
+        if (explicit === "development" || explicit === "live") {
+          return explicit;
+        }
+        return build && build.production ? "live" : "development";
+      }
+
+      function runtimeModeLabel(value) {
+        return value === "live" ? "Live" : "Development";
       }
 
       function copyText(value) {
@@ -1081,7 +1153,7 @@
         const className = opts.mono ? "mono wrap" : "";
         const titleAttr = titleText ? ` title="${escapeAttr(titleText)}"` : "";
         const classAttr = className ? ` class="${className}"` : "";
-        return `<strong${classAttr}${titleAttr}>${display}</strong>`;
+        return `<strong${classAttr}${titleAttr}>${escapeAttr(display)}</strong>`;
       }
 
       function metaRow(label, valueHtml) {
@@ -1095,7 +1167,7 @@
         const safeUrl = escapeAttr(url);
         return metaRow(
           label,
-          `<a class="link" href="${safeUrl}" target="_blank" rel="noreferrer">${url}</a>`
+          `<a class="link" href="${safeUrl}" target="_blank" rel="noreferrer">${escapeAttr(url)}</a>`
         );
       }
 
@@ -1123,15 +1195,15 @@
         const logsEnabled = state.logsEnabled !== false;
         const logPanel = logsEnabled
           ? `
-            <div class="log-panel" data-log-build="${buildValue}">
+            <div class="log-panel" data-log-build="${escapeAttr(buildValue)}">
               <div class="log-header">
                 <span>Logs (tail)</span>
                 <div class="log-actions">
-                  <button class="btn btn-sm btn-ghost log-btn" data-log-action="load" data-build="${buildValue}" type="button">Load</button>
-                  <button class="btn btn-sm btn-ghost log-btn" data-log-action="refresh" data-build="${buildValue}" type="button">Refresh</button>
+                  <button class="btn btn-sm btn-ghost log-btn" data-log-action="load" data-build="${escapeAttr(buildValue)}" type="button">Load</button>
+                  <button class="btn btn-sm btn-ghost log-btn" data-log-action="refresh" data-build="${escapeAttr(buildValue)}" type="button">Refresh</button>
                 </div>
               </div>
-              <pre class="hb-terminal log-output" data-log-output="${buildValue}">Logs not loaded.</pre>
+              <pre class="hb-terminal log-output" data-log-output="${escapeAttr(buildValue)}">Logs not loaded.</pre>
               <span class="note log-note hidden">Log output truncated.</span>
             </div>
           `
@@ -1154,23 +1226,23 @@
             <div class="hb-deploy-summary details-grid">
               <div class="hb-deploy-stat">
                 <span>State</span>
-                <strong>${stateText}</strong>
+                <strong>${escapeAttr(stateText)}</strong>
               </div>
               <div class="hb-deploy-stat">
                 <span>Module</span>
-                <strong>${moduleName}</strong>
+                <strong>${escapeAttr(moduleName)}</strong>
               </div>
               <div class="hb-deploy-stat">
                 <span>Build</span>
-                <strong class="mono wrap"${buildTitle}>${buildShort}</strong>
+                <strong class="mono wrap"${buildTitle}>${escapeAttr(buildShort)}</strong>
               </div>
               <div class="hb-deploy-stat">
                 <span>Port</span>
-                <strong>${portText}</strong>
+                <strong>${escapeAttr(portText)}</strong>
               </div>
             </div>
             <div class="meta-scroll">
-              ${metaRow("Mode", metaValue(data.production ? "production" : "default"))}
+              ${metaRow("Mode", metaValue(runtimeModeLabel(buildRuntimeMode(data))))}
               ${metaRow("Module Version", metaValue(data.moduleversion || "-"))}
               ${metaRow("Commit", metaValue(data.commit || "-", { mono: true, shorten: true }))}
               ${metaRow("Built", metaValue(builtDisplay, { title: builtRaw }))}
@@ -1410,7 +1482,7 @@
       }
 
 
-      async function apiRequest(method, path, bodyObj, secret = getSecret()) {
+      async function apiFetch(method, path, bodyObj, secret = getSecret()) {
         const baseUrl = isLocalMode ? window.location.origin : getBaseUrl();
         const url = new URL(path, baseUrl);
         const body = bodyObj ? JSON.stringify(bodyObj) : "";
@@ -1450,9 +1522,15 @@
         } else {
           setApiStatus("error " + response.status);
         }
+        return {response, baseUrl, secret};
+      }
+
+      async function apiRequest(method, path, bodyObj, secret = getSecret()) {
+        const result = await apiFetch(method, path, bodyObj, secret);
+        const response = result.response;
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          if (!isLocalMode && response.status === 401 && secret === getSecret() && baseUrl === getBaseUrl()) {
+          if (!isLocalMode && response.status === 401 && result.secret === getSecret() && result.baseUrl === getBaseUrl()) {
             setConnectionState("invalid");
           }
           const error = new Error(payload.error || response.statusText);
@@ -1593,6 +1671,378 @@
           setActivity(ui.uploadError.textContent, true);
         } finally {
           setUploadBusy(false);
+        }
+      }
+
+      function getPackageConfigValue() {
+        if (state.packageConfigEditor) {
+          const source = state.packageConfigEditor.getValue();
+          state.packageConfigDraft = source;
+          return source;
+        }
+        return state.packageConfigDraft;
+      }
+
+      function detectPackageConfigLineSeparator(value) {
+        const match = String(value ?? "").match(/\r\n|\r|\n/);
+        return match ? match[0] : "\n";
+      }
+
+      function packageConfigValueFromFallback() {
+        const normalized = String(ui.packageConfigContent.value ?? "").replace(/\r\n?/g, "\n");
+        return state.packageConfigLineSeparator === "\n"
+          ? normalized
+          : normalized.replace(/\n/g, state.packageConfigLineSeparator);
+      }
+
+      function updatePackageConfigFromFallback() {
+        state.packageConfigDraft = packageConfigValueFromFallback();
+        updatePackageConfigSaveState();
+      }
+
+      function setPackageConfigValue(value) {
+        const source = String(value ?? "");
+        state.packageConfigDraft = source;
+        state.packageConfigLineSeparator = detectPackageConfigLineSeparator(source);
+        ui.packageConfigContent.value = source;
+        if (state.packageConfigEditor) {
+          state.packageConfigEditor.setValue(source);
+        }
+        updatePackageConfigSaveState();
+      }
+
+      function packageConfigIsDirty() {
+        return getPackageConfigValue() !== state.packageConfigOriginal;
+      }
+
+      function updatePackageConfigSaveState() {
+        ui.savePackageConfig.disabled = state.packageConfigBusy || !packageConfigIsDirty();
+      }
+
+      function setPackageConfigBusy(busy, busyLabel, blockClose = busy) {
+        state.packageConfigBusy = busy;
+        state.packageConfigCloseBlocked = Boolean(busy && blockClose);
+        ui.packageConfigContent.disabled = busy;
+        if (state.packageConfigEditor) {
+          state.packageConfigEditor.setReadOnly(busy);
+        }
+        ui.closePackageConfig.disabled = state.packageConfigCloseBlocked;
+        ui.cancelPackageConfig.disabled = state.packageConfigCloseBlocked;
+        updatePackageConfigSaveState();
+        const label = ui.savePackageConfig.querySelector("span");
+        if (label) {
+          label.textContent = busy ? (busyLabel || "Saving…") : "Save configuration";
+        }
+      }
+
+      function setPackageConfigEditorStatus(validation) {
+        ui.packageConfigEditorStatus.classList.remove("is-error");
+        ui.packageConfigEditorStatus.classList.remove("is-warning");
+        if (validation?.skipped) {
+          ui.packageConfigEditorStatus.classList.add("is-warning");
+          ui.packageConfigEditorStatus.textContent = validation.message + " — HyperBricks still validates on save.";
+          return;
+        }
+        if (validation?.valid === false) {
+          ui.packageConfigEditorStatus.classList.add("is-error");
+          const position = validation.line && validation.column
+            ? "Line " + validation.line + ", column " + validation.column + ": "
+            : "";
+          ui.packageConfigEditorStatus.textContent = position + validation.message + " — HyperBricks still validates on save.";
+          return;
+        }
+        ui.packageConfigEditorStatus.textContent = "YAML syntax looks valid. HyperBricks validates on save.";
+      }
+
+      function destroyPackageConfigEditor() {
+        const editor = state.packageConfigEditor;
+        state.packageConfigEditor = null;
+        if (editor) {
+          const source = editor.getValue();
+          state.packageConfigDraft = source;
+          state.packageConfigLineSeparator = detectPackageConfigLineSeparator(source);
+          ui.packageConfigContent.value = source;
+          editor.destroy();
+        }
+        ui.packageConfigEditorHost.textContent = "";
+        ui.packageConfigEditorHost.hidden = true;
+        ui.packageConfigContent.hidden = false;
+        ui.packageConfigEditorShell.classList.remove("is-enhanced");
+      }
+
+      function loadPackageConfigEditorModule() {
+        if (!packageConfigEditorModulePromise) {
+          const retrySuffix = packageConfigEditorImportFailures > 0
+            ? "?retry=" + packageConfigEditorImportFailures
+            : "";
+          packageConfigEditorModulePromise = Promise.resolve()
+            .then(() => packageConfigEditorImporter(retrySuffix))
+            .catch((err) => {
+              packageConfigEditorModulePromise = null;
+              packageConfigEditorImportFailures += 1;
+              throw err;
+            });
+        }
+        return packageConfigEditorModulePromise;
+      }
+
+      function packageConfigEditorSessionIsCurrent(session, token, module, buildId) {
+        return ui.packageConfigDialog.open &&
+          state.packageConfigEditorSession === session &&
+          isSelectionCurrent(token, module) &&
+          state.packageConfigBuild === buildId;
+      }
+
+      async function activatePackageConfigEditor(modulePromise, session, token, module, buildId) {
+        try {
+          const editorModule = await modulePromise;
+          if (!packageConfigEditorSessionIsCurrent(session, token, module, buildId)) {
+            return;
+          }
+          if (!editorModule || typeof editorModule.createDeployYAMLEditor !== "function") {
+            throw new Error("YAML editor module did not expose its editor factory.");
+          }
+          ui.packageConfigEditorHost.hidden = false;
+          const editor = editorModule.createDeployYAMLEditor({
+            parent: ui.packageConfigEditorHost,
+            // The fallback textarea is already editable while a slow bundle
+            // import is pending. Mount with its latest value so switching to
+            // the enhanced editor can never discard typing done in that gap.
+            doc: getPackageConfigValue(),
+            readOnly: state.packageConfigBusy,
+            onChange: (value) => {
+              if (!packageConfigEditorSessionIsCurrent(session, token, module, buildId)) {
+                return;
+              }
+              const source = String(value ?? "");
+              state.packageConfigDraft = source;
+              state.packageConfigLineSeparator = detectPackageConfigLineSeparator(source);
+              ui.packageConfigContent.value = source;
+              updatePackageConfigSaveState();
+            },
+            onSave: () => {
+              if (packageConfigEditorSessionIsCurrent(session, token, module, buildId)) {
+                void savePackageConfig({preventDefault() {}});
+              }
+            },
+            onValidation: (validation) => {
+              if (packageConfigEditorSessionIsCurrent(session, token, module, buildId)) {
+                setPackageConfigEditorStatus(validation);
+              }
+            }
+          });
+          if (!packageConfigEditorSessionIsCurrent(session, token, module, buildId)) {
+            editor.destroy();
+            ui.packageConfigEditorHost.textContent = "";
+            ui.packageConfigEditorHost.hidden = true;
+            return;
+          }
+          state.packageConfigEditor = editor;
+          ui.packageConfigEditorShell.classList.add("is-enhanced");
+          ui.packageConfigContent.hidden = true;
+          editor.setReadOnly(state.packageConfigBusy);
+          editor.focus();
+        } catch (err) {
+          if (!packageConfigEditorSessionIsCurrent(session, token, module, buildId)) {
+            return;
+          }
+          destroyPackageConfigEditor();
+          ui.packageConfigEditorStatus.classList.add("is-warning");
+          ui.packageConfigEditorStatus.textContent = "Enhanced YAML editor unavailable; the plain text editor remains available.";
+          if (!state.packageConfigBusy) {
+            ui.packageConfigContent.focus();
+          }
+        }
+      }
+
+      function packageConfigPath(module, buildId) {
+        return apiPath(
+          "/modules/" + encodeURIComponent(module) +
+          "/builds/" + encodeURIComponent(buildId) +
+          "/package-config"
+        );
+      }
+
+      async function openPackageConfig(buildId, trigger) {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        if (!module || !buildId || buildId === "-") {
+          return;
+        }
+        destroyPackageConfigEditor();
+        const session = ++state.packageConfigEditorSession;
+        state.packageConfigBuild = buildId;
+        state.packageConfigSHA = "";
+        state.packageConfigOriginal = "";
+        state.packageConfigTrigger = trigger || null;
+        ui.packageConfigContext.textContent = module + " · " + (buildId === "dev" ? "source module" : shortenValue(buildId));
+        ui.packageConfigScope.textContent = "Loading configuration…";
+        setPackageConfigValue("");
+        ui.packageConfigError.textContent = "";
+        ui.packageConfigStatus.textContent = "";
+        ui.packageConfigEditorStatus.classList.remove("is-error");
+        ui.packageConfigEditorStatus.classList.remove("is-warning");
+        ui.packageConfigEditorStatus.textContent = "Loading YAML editor…";
+        // Loading may depend on a remote host, so keep Cancel/Escape available.
+        // The session guard below discards any response that arrives after close.
+        setPackageConfigBusy(true, "Loading…", false);
+        ui.packageConfigDialog.showModal();
+        const editorModulePromise = loadPackageConfigEditorModule();
+        void editorModulePromise.catch(() => {});
+        let content = "";
+        let loaded = false;
+        try {
+          const data = await apiRequest("GET", packageConfigPath(module, buildId));
+          if (!packageConfigEditorSessionIsCurrent(session, token, module, buildId)) {
+            return;
+          }
+          content = String(data.content ?? "");
+          loaded = true;
+          state.packageConfigOriginal = content;
+          state.packageConfigSHA = String(data.sha256 || "");
+          setPackageConfigValue(content);
+          ui.packageConfigScope.textContent = data.scope === "source"
+            ? "Edits the source module and affects future builds. This source workflow always runs in Development."
+            : "Edits this build’s extracted runtime configuration. The original .hra archive and its download remain unchanged.";
+          ui.packageConfigStatus.textContent = data.restart_required
+            ? "This build is running. Save, then restart it to apply configuration changes."
+            : "Changes apply the next time this build starts.";
+          ui.packageConfigContent.focus();
+        } catch (err) {
+          if (packageConfigEditorSessionIsCurrent(session, token, module, buildId)) {
+            ui.packageConfigError.textContent = err.message || String(err);
+            ui.packageConfigEditorStatus.textContent = "";
+            handleError(err);
+          }
+        } finally {
+          if (state.packageConfigEditorSession === session) {
+            setPackageConfigBusy(false);
+          }
+        }
+        if (loaded && packageConfigEditorSessionIsCurrent(session, token, module, buildId)) {
+          void activatePackageConfigEditor(editorModulePromise, session, token, module, buildId);
+        }
+      }
+
+      function closePackageConfigDialog(force) {
+        if (!ui.packageConfigDialog.open || state.packageConfigCloseBlocked) {
+          return false;
+        }
+        if (!force && packageConfigIsDirty() && !confirm("Discard unsaved package configuration changes?")) {
+          return false;
+        }
+        ui.packageConfigDialog.close();
+        const trigger = state.packageConfigTrigger;
+        state.packageConfigEditorSession += 1;
+        destroyPackageConfigEditor();
+        state.packageConfigBuild = "";
+        state.packageConfigSHA = "";
+        state.packageConfigOriginal = "";
+        state.packageConfigDraft = "";
+        state.packageConfigLineSeparator = "\n";
+        state.packageConfigBusy = false;
+        state.packageConfigCloseBlocked = false;
+        state.packageConfigTrigger = null;
+        ui.packageConfigEditorStatus.textContent = "";
+        if (trigger && typeof trigger.focus === "function") {
+          trigger.focus();
+        }
+        return true;
+      }
+
+      async function savePackageConfig(event) {
+        event.preventDefault();
+        const module = state.selectedModule;
+        const buildId = state.packageConfigBuild;
+        if (!module || !buildId || state.packageConfigBusy || !packageConfigIsDirty()) {
+          return;
+        }
+        ui.packageConfigError.textContent = "";
+        ui.packageConfigStatus.textContent = "Validating and saving…";
+        const submittedContent = getPackageConfigValue();
+        setPackageConfigBusy(true, "Saving…");
+        try {
+          const data = await apiRequest("PUT", packageConfigPath(module, buildId), {
+            content: submittedContent,
+            expected_sha256: state.packageConfigSHA
+          });
+          const content = String(data.content ?? submittedContent);
+          state.packageConfigOriginal = content;
+          state.packageConfigSHA = String(data.sha256 || "");
+          setPackageConfigValue(content);
+          ui.packageConfigStatus.textContent = data.restart_required
+            ? "Saved. Restart the running build to apply this configuration."
+            : "Saved. The configuration applies on the next start.";
+          setActivity("Saved package.hyperbricks.yaml for " + buildId + ".");
+        } catch (err) {
+          ui.packageConfigError.textContent = err.message || String(err);
+          setActivity(ui.packageConfigError.textContent, true);
+        } finally {
+          setPackageConfigBusy(false);
+        }
+      }
+
+      function filenameFromDisposition(value, fallback) {
+        const header = String(value || "");
+        const encoded = header.match(/filename\*=UTF-8''([^;]+)/i);
+        if (encoded) {
+          try {
+            return decodeURIComponent(encoded[1].trim());
+          } catch (err) {
+            return fallback;
+          }
+        }
+        const quoted = header.match(/filename="([^"]+)"/i);
+        if (quoted) {
+          return quoted[1];
+        }
+        const plain = header.match(/filename=([^;]+)/i);
+        return plain ? plain[1].trim() : fallback;
+      }
+
+      async function downloadBuildArchive(buildId) {
+        const module = state.selectedModule;
+        if (!module || !buildId || buildId === "dev" || buildId === "-" || state.archiveDownloads[buildId]) {
+          return;
+        }
+        state.archiveDownloads[buildId] = true;
+        try {
+          setActivity("Downloading " + shortenValue(buildId) + "…");
+          const path = apiPath(
+            "/modules/" + encodeURIComponent(module) +
+            "/builds/" + encodeURIComponent(buildId) +
+            "/archive"
+          );
+          const result = await apiFetch("GET", path);
+          const response = result.response;
+          if (!response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            if (!isLocalMode && response.status === 401 && result.secret === getSecret() && result.baseUrl === getBaseUrl()) {
+              setConnectionState("invalid");
+            }
+            const error = new Error(payload.error || response.statusText || "Archive download failed.");
+            error.status = response.status;
+            throw error;
+          }
+          const blob = await response.blob();
+          const fallback = module + "-" + buildId + ".hra";
+          const filename = filenameFromDisposition(response.headers.get("Content-Disposition"), fallback)
+            .replace(/[\\/\0]/g, "-");
+          const objectURL = URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+          try {
+            anchor.href = objectURL;
+            anchor.download = filename;
+            anchor.hidden = true;
+            document.body.appendChild(anchor);
+            anchor.click();
+          } finally {
+            anchor.remove();
+            URL.revokeObjectURL(objectURL);
+          }
+          setActivity("Downloaded " + filename + ".");
+        } finally {
+          delete state.archiveDownloads[buildId];
         }
       }
 
@@ -2489,11 +2939,14 @@
           const builtAt = formatRelativeTime(build.built_at || "");
           const builtTitle = build.built_at ? formatDate(build.built_at) : "";
           const isRunning = state.runningBuild && buildId === state.runningBuild;
-          const isProduction = !!build.production;
-          const modeDefaultSelected = isProduction ? "" : " selected";
-          const modeProductionSelected = isProduction ? " selected" : "";
+          const runtimeMode = buildRuntimeMode(build);
+          const modeDevelopmentSelected = runtimeMode === "development" ? " selected" : "";
+          const modeLiveSelected = runtimeMode === "live" ? " selected" : "";
           const isDisabled = buildId === "-";
           const modeDisabled = (isDev || isDisabled) ? " disabled" : "";
+          const modeTitle = isDev
+            ? ' title="Source modules run in Development; edit package.hyperbricks.yaml for source settings."'
+            : "";
           const buildAttr = ` data-build="${escapeAttr(buildId)}"`;
           const detailsDisabled = isDisabled ? " disabled" : "";
           if (isDev) {
@@ -2537,6 +2990,22 @@
             }
           }
           actionItems.push({
+            action: "config",
+            label: "Edit package config",
+            icon: icons.config,
+            attrs: buildAttr,
+            disabled: isDisabled
+          });
+          if (!isDev && String(build.format || "").toLowerCase() === "hra") {
+            actionItems.push({
+              action: "download",
+              label: "Download .hra",
+              icon: icons.download,
+              attrs: buildAttr,
+              disabled: isDisabled
+            });
+          }
+          actionItems.push({
             action: "link",
             label: "Open runtime",
             icon: icons.link,
@@ -2571,16 +3040,16 @@
           row.innerHTML = `
             <td data-label="Build">
               <div class="value-row">
-                <span class="mono wrap" title="${buildId}">${buildShort}</span>
-                <button class="btn btn-sm btn-square btn-ghost copy-btn" aria-label="Copy value" title="Copy value" data-copy="${buildId}" type="button"><i data-lucide="copy"></i></button>
+                <span class="mono wrap" title="${escapeAttr(buildId)}">${escapeAttr(buildShort)}</span>
+                <button class="btn btn-sm btn-square btn-ghost copy-btn" aria-label="Copy value" title="Copy value" data-copy="${escapeAttr(buildId)}" type="button"><i data-lucide="copy"></i></button>
               </div>
             </td>
-            <td data-label="Version">${isDev ? (build.moduleversion || "dev") : (build.moduleversion || "-")}</td>
-            <td data-label="Built" title="${builtTitle}">${builtAt}</td>
+            <td data-label="Version">${escapeAttr(isDev ? (build.moduleversion || "dev") : (build.moduleversion || "-"))}</td>
+            <td data-label="Built" title="${escapeAttr(builtTitle)}">${escapeAttr(builtAt)}</td>
             <td data-label="Mode">
-              <select class="select select-sm mode-select" data-action="mode" data-build="${buildId}"${modeDisabled}>
-                <option value="default"${modeDefaultSelected}>Default</option>
-                <option value="production"${modeProductionSelected}>Production</option>
+              <select class="select select-sm mode-select" data-action="mode" data-build="${escapeAttr(buildId)}"${modeDisabled}${modeTitle}>
+                <option value="development"${modeDevelopmentSelected}>Development</option>
+                <option value="live"${modeLiveSelected}>Live</option>
               </select>
             </td>
             <td data-label="Status">
@@ -2588,7 +3057,7 @@
             </td>
             <td data-label="Action">
               <div class="row-actions">
-                <button class="btn btn-sm btn-square btn-ghost" data-action="details" data-build="${escapeAttr(buildId)}"${detailsDisabled} type="button" aria-label="Details">
+                <button class="btn btn-sm btn-square btn-ghost" data-action="details" data-build="${escapeAttr(buildId)}"${detailsDisabled} type="button" aria-label="Details" title="Show details">
                   ${icons.details}
                 </button>
                 ${actionMenu}
@@ -2599,7 +3068,7 @@
           detailsRow.className = "details-row hidden";
           detailsRow.innerHTML = `
             <td colspan="6">
-              <div class="build-details" data-build="${buildId}">
+              <div class="build-details" data-build="${escapeAttr(buildId)}">
                 <span class="note">Open details to load build status.</span>
               </div>
             </td>
@@ -2623,6 +3092,10 @@
                 openBuildLink(buildId, "", "runtime").catch(handleError);
               } else if (action === "dashboard") {
                 openBuildLink(buildId, "/dashboard", "dashboard").catch(handleError);
+              } else if (action === "config") {
+                openPackageConfig(buildId, element).catch(handleError);
+              } else if (action === "download") {
+                downloadBuildArchive(buildId).catch(handleError);
               } else if (action === "push") {
                 pushBuild(buildId).catch(handleError);
               } else if (action === "delete") {
@@ -2633,7 +3106,7 @@
           row.querySelectorAll("select[data-action=\"mode\"]").forEach((select) => {
             select.addEventListener("change", (event) => {
               const value = event.target.value;
-              setBuildProduction(buildId, value === "production").catch(handleError);
+              setBuildMode(buildId, value, select).catch(handleError);
             });
           });
           row.querySelectorAll(".copy-btn").forEach((button) => {
@@ -2761,38 +3234,64 @@
         setActivity("Builds updated.");
       }
 
-      async function setBuildProduction(buildId, isProduction) {
+      async function setBuildMode(buildId, mode, select) {
         const module = state.selectedModule;
         const token = state.selectionToken;
         if (!module || !buildId || buildId === "-") {
           return;
         }
-        const label = isProduction ? "production" : "default";
-        setActivity("Setting mode for " + buildId + " to " + label + "...");
-        const data = await apiRequest(
-          "POST",
-          apiPath("/modules/" + module + "/builds/" + buildId + "/production"),
-          { production: isProduction }
-        );
-        if (!isSelectionCurrent(token, module)) {
-          return;
-        }
         const target = state.builds.find((build) => build.build_id === buildId);
-        if (target) {
-          target.production = typeof data.production === "boolean" ? data.production : isProduction;
+        if (mode !== "development" && mode !== "live") {
+          throw new Error("Choose Development or Live.");
         }
-        renderBuilds();
-        updateRollbackTarget();
-        if (data.restarted) {
-          clearBuildLogOutput(buildId, "Logs cleared. Module restarting...");
-          await refreshStatus(token, module);
+        const previousMode = buildRuntimeMode(target);
+        const label = runtimeModeLabel(mode);
+        if (select) {
+          select.disabled = true;
+        }
+        setActivity("Setting mode for " + buildId + " to " + label + "…");
+        try {
+          const data = await apiRequest(
+            "PUT",
+            apiPath(
+              "/modules/" + encodeURIComponent(module) +
+              "/builds/" + encodeURIComponent(buildId) +
+              "/mode"
+            ),
+            { mode: mode }
+          );
           if (!isSelectionCurrent(token, module)) {
             return;
           }
-          setActivity("Mode updated and module restarted.");
-          return;
+          if (target) {
+            target.runtime_mode = buildRuntimeMode({
+              runtime_mode: data.runtime_mode || mode,
+              production: data.production
+            });
+            target.production = target.runtime_mode === "live";
+          }
+          renderBuilds();
+          updateRollbackTarget();
+          if (data.restarted) {
+            clearBuildLogOutput(buildId, "Logs cleared. Module restarting…");
+            await refreshStatus(token, module);
+            if (!isSelectionCurrent(token, module)) {
+              return;
+            }
+            setActivity("Mode changed to " + label + "; running build restarted.");
+            return;
+          }
+          setActivity("Mode saved as " + label + ". It applies on the next start.");
+        } catch (err) {
+          if (select) {
+            select.value = previousMode;
+          }
+          throw err;
+        } finally {
+          if (select && select.isConnected) {
+            select.disabled = false;
+          }
         }
-        setActivity("Mode updated.");
       }
 
       async function refreshStatus(token, moduleOverride) {
@@ -3107,6 +3606,26 @@
           ui.uploadForm.addEventListener("submit", submitArchiveUpload);
           ui.closeUpload.addEventListener("click", closeUploadDialog);
           ui.cancelUpload.addEventListener("click", closeUploadDialog);
+          ui.uploadDialog.addEventListener("cancel", (event) => {
+            event.preventDefault();
+            closeUploadDialog();
+          });
+        }
+        if (ui.packageConfigForm) {
+          ui.packageConfigForm.addEventListener("submit", savePackageConfig);
+          ui.packageConfigContent.addEventListener("input", updatePackageConfigFromFallback);
+          ui.packageConfigContent.addEventListener("keydown", (event) => {
+            if ((event.metaKey || event.ctrlKey) && String(event.key || "").toLowerCase() === "s") {
+              event.preventDefault();
+              void savePackageConfig({preventDefault() {}});
+            }
+          });
+          ui.closePackageConfig.addEventListener("click", () => closePackageConfigDialog(false));
+          ui.cancelPackageConfig.addEventListener("click", () => closePackageConfigDialog(false));
+          ui.packageConfigDialog.addEventListener("cancel", (event) => {
+            event.preventDefault();
+            closePackageConfigDialog(false);
+          });
         }
 
         if (ui.menuToggle) {
@@ -3120,6 +3639,9 @@
           ui.secret.focus();
         });
         document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            closeRowMenus();
+          }
           if (event.key === "Escape" && !ui.menuPanel.classList.contains("hidden")) {
             event.preventDefault();
             closeMenu(true);

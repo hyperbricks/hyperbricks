@@ -118,6 +118,40 @@ hyperbricks:
 	}
 }
 
+func TestValidatePackageConfigBytesAcceptsDisabledLiveCacheWithoutRuntimeOverrides(t *testing.T) {
+	preserveStrictConfigGlobals(t)
+	t.Setenv("HB_DEPLOY_PRODUCTION", "1")
+	t.Setenv("HB_PRODUCTION", "1")
+	SetRuntimeOptions(RuntimeOptions{Production: true, ModeOverride: LIVE_MODE})
+
+	moduleDir := filepath.Join(t.TempDir(), "modules", "demo")
+	config, err := ValidatePackageConfigBytes([]byte(`
+hyperbricks:
+  mode: development
+  live:
+    cache: 0s
+`), moduleDir)
+	if err != nil {
+		t.Fatalf("ValidatePackageConfigBytes() error = %v", err)
+	}
+	if config.Mode != DEVELOPMENT_MODE || config.Live.CacheTime.Duration != 0 {
+		t.Fatalf("validated config = mode %q cache %s", config.Mode, config.Live.CacheTime.Duration)
+	}
+}
+
+func TestValidatePackageConfigBytesRejectsNegativeLiveCache(t *testing.T) {
+	moduleDir := filepath.Join(t.TempDir(), "modules", "demo")
+	_, err := ValidatePackageConfigBytes([]byte(`
+hyperbricks:
+  mode: live
+  live:
+    cache: -1s
+`), moduleDir)
+	if err == nil || !strings.Contains(err.Error(), "live.cache") {
+		t.Fatalf("negative cache error = %v", err)
+	}
+}
+
 func TestLoadPackageConfigStrictProductionOverride(t *testing.T) {
 	preserveStrictConfigGlobals(t)
 	t.Setenv("HB_DEPLOY_PRODUCTION", "")
@@ -133,6 +167,57 @@ func TestLoadPackageConfigStrictProductionOverride(t *testing.T) {
 	}
 	if config.Mode != LIVE_MODE {
 		t.Fatalf("mode = %q, want production override %q", config.Mode, LIVE_MODE)
+	}
+}
+
+func TestLoadPackageConfigStrictExplicitModeOverridesLegacyProductionSignals(t *testing.T) {
+	preserveStrictConfigGlobals(t)
+	moduleDir := filepath.Join(t.TempDir(), "modules", "demo")
+	configPath := writeStrictPackageConfig(t, moduleDir, "hyperbricks: {mode: live}\n")
+
+	for _, tt := range []struct {
+		name              string
+		options           RuntimeOptions
+		environmentMode   string
+		deployProduction  string
+		genericProduction string
+		want              string
+	}{
+		{
+			name:              "command development beats production option and environment",
+			options:           RuntimeOptions{Production: true, ModeOverride: DEVELOPMENT_MODE},
+			deployProduction:  "1",
+			genericProduction: "1",
+			want:              DEVELOPMENT_MODE,
+		},
+		{
+			name:              "environment development beats legacy environments",
+			environmentMode:   DEVELOPMENT_MODE,
+			deployProduction:  "1",
+			genericProduction: "1",
+			want:              DEVELOPMENT_MODE,
+		},
+		{
+			name:            "command live beats development environment",
+			options:         RuntimeOptions{ModeOverride: LIVE_MODE},
+			environmentMode: DEVELOPMENT_MODE,
+			want:            LIVE_MODE,
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("HB_DEPLOY_RUNTIME_MODE", tt.environmentMode)
+			t.Setenv("HB_DEPLOY_PRODUCTION", tt.deployProduction)
+			t.Setenv("HB_PRODUCTION", tt.genericProduction)
+			SetRuntimeOptions(tt.options)
+
+			config, err := LoadPackageConfigStrict(configPath, moduleDir)
+			if err != nil {
+				t.Fatalf("LoadPackageConfigStrict() error = %v", err)
+			}
+			if config.Mode != tt.want {
+				t.Fatalf("mode = %q, want %q", config.Mode, tt.want)
+			}
+		})
 	}
 }
 

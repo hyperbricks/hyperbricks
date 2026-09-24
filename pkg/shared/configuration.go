@@ -289,6 +289,22 @@ func LoadPackageConfigStrict(configFilePath string, moduleDir string) (*Config, 
 	if err != nil {
 		return nil, fmt.Errorf("load package configuration: %w", err)
 	}
+	return validatePackageConfigResult(result, moduleDir, GetRuntimeOptions(), true)
+}
+
+// ValidatePackageConfigBytes validates a proposed package configuration in the
+// selected module context without applying command-line or process overrides.
+// It is intended for editors that validate what will be persisted rather than
+// the effective configuration of the process performing the validation.
+func ValidatePackageConfigBytes(input []byte, moduleDir string) (*Config, error) {
+	result, err := yamlparser.ProcessConfigBytes(input, packageConfigYAMLOptions(moduleDir))
+	if err != nil {
+		return nil, fmt.Errorf("load package configuration: %w", err)
+	}
+	return validatePackageConfigResult(result, moduleDir, RuntimeOptions{}, false)
+}
+
+func validatePackageConfigResult(result *yamlparser.ConfigResult, moduleDir string, runtimeOptions RuntimeOptions, applyOverrides bool) (*Config, error) {
 	for _, diagnostic := range result.Diagnostics {
 		if strings.EqualFold(diagnostic.Level, "error") {
 			return nil, fmt.Errorf("load package configuration: %s at %s: %s", diagnostic.Code, diagnostic.Path, diagnostic.Message)
@@ -308,7 +324,12 @@ func LoadPackageConfigStrict(configFilePath string, moduleDir string) (*Config, 
 	if err := config.ValidateFrontendEditing(); err != nil {
 		return nil, fmt.Errorf("validate frontend editing: %w", err)
 	}
-	applyRuntimeOptions(config, GetRuntimeOptions())
+	if applyOverrides {
+		applyRuntimeOptions(config, runtimeOptions)
+	}
+	if err := validatePackageMode(config.Mode); err != nil {
+		return nil, err
+	}
 	if err := config.ValidateRuntimeSettings(); err != nil {
 		return nil, fmt.Errorf("validate runtime settings: %w", err)
 	}
@@ -409,7 +430,13 @@ func applyRuntimeOptions(config *Config, runtimeOptions RuntimeOptions) {
 	if strings.TrimSpace(runtimeOptions.RuntimeGatewayResolver) != "" {
 		config.Server.RuntimeGateway.Resolver = strings.TrimSpace(runtimeOptions.RuntimeGatewayResolver)
 	}
-	if runtimeOptions.Production || envTrue("HB_DEPLOY_PRODUCTION") || envTrue("HB_PRODUCTION") {
+	modeOverride := strings.ToLower(strings.TrimSpace(runtimeOptions.ModeOverride))
+	if modeOverride == "" {
+		modeOverride = strings.ToLower(strings.TrimSpace(os.Getenv("HB_DEPLOY_RUNTIME_MODE")))
+	}
+	if modeOverride != "" {
+		config.Mode = modeOverride
+	} else if runtimeOptions.Production || envTrue("HB_DEPLOY_PRODUCTION") || envTrue("HB_PRODUCTION") {
 		config.Mode = LIVE_MODE
 	}
 }

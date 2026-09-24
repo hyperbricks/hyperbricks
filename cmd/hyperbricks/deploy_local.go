@@ -44,6 +44,7 @@ type localBuildRow struct {
 	Commit        string `json:"commit"`
 	SourceHash    string `json:"source_hash"`
 	HyperBricks   string `json:"hyperbricks,omitempty"`
+	RuntimeMode   string `json:"runtime_mode,omitempty"`
 	Production    bool   `json:"production,omitempty"`
 	PushedAt      string `json:"pushed_at,omitempty"`
 	RemoteTarget  string `json:"remote_target,omitempty"`
@@ -142,12 +143,7 @@ func startDeployLocalServer(configPath string) error {
 	mux.HandleFunc("/local/remote/sync", api.handleRemoteSync)
 	mux.HandleFunc("/local/plugins", api.handlePluginRoutes)
 	mux.HandleFunc("/local/plugins/", api.handlePluginRoutes)
-	mux.HandleFunc("/assets/dashboard.css", serveDashboardCSS)
-	mux.HandleFunc("/assets/hyperbricks-ui.css", serveHyperbricksUIStylesheet)
-	mux.HandleFunc("/assets/hyperbricks-theme.js", serveHyperbricksThemeScript)
-	mux.HandleFunc("/assets/hyperbricks-icons.js", serveHyperbricksIconsScript)
-	mux.HandleFunc("/assets/brandmark.svg", serveBrandMark)
-	mux.HandleFunc("/assets/favicon.svg", serveFavicon)
+	registerDeployUIAssets(mux)
 	mux.HandleFunc("/", api.serveLocalDashboard)
 
 	addr := fmt.Sprintf("%s:%d", bind, port)
@@ -285,8 +281,20 @@ func (api *deployLocalServer) handleModuleRoutes(w http.ResponseWriter, r *http.
 		api.handleBuildProduction(w, r, module, pathParts[3])
 		return
 	}
+	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "mode" && r.Method == http.MethodPut {
+		api.handleBuildMode(w, r, module, pathParts[3])
+		return
+	}
 	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "delete" && r.Method == http.MethodPost {
 		api.handleBuildDelete(w, module, pathParts[3])
+		return
+	}
+	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "package-config" && (r.Method == http.MethodGet || r.Method == http.MethodPut) {
+		api.handleBuildPackageConfig(w, r, module, pathParts[3])
+		return
+	}
+	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "archive" && r.Method == http.MethodGet {
+		api.handleBuildArchive(w, r, module, pathParts[3])
 		return
 	}
 
@@ -701,6 +709,7 @@ func (api *deployLocalServer) handleBuildStatus(w http.ResponseWriter, module st
 		"source_hash":       status.SourceHash,
 		"hyperbricks":       status.HyperBricks,
 		"format":            status.Format,
+		"runtime_mode":      normalizedDeployRuntimeMode(status.RuntimeMode, status.Production),
 		"production":        status.Production,
 		"pushed_at":         status.PushedAt,
 		"remote_target":     status.RemoteTarget,
@@ -729,6 +738,41 @@ func (api *deployLocalServer) handleBuildProduction(w http.ResponseWriter, r *ht
 			return
 		}
 	}
+	mode := shared.DEVELOPMENT_MODE
+	if payload.Production {
+		mode = shared.LIVE_MODE
+	}
+	api.updateBuildMode(w, module, buildID, mode)
+}
+
+func (api *deployLocalServer) handleBuildMode(w http.ResponseWriter, r *http.Request, module string, buildID string) {
+	if api.isDevBuildID(buildID) {
+		writeError(w, http.StatusBadRequest, errors.New("source modules always run in development mode"))
+		return
+	}
+	body, err := readJSONBody(r)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	var payload deployBuildModeRequest
+	if err := json.Unmarshal(body, &payload); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	mode, err := validateDeployRuntimeMode(payload.Mode)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	api.updateBuildMode(w, module, buildID, mode)
+}
+
+func (api *deployLocalServer) updateBuildMode(w http.ResponseWriter, module string, buildID string, mode string) {
+	if !validDeployPathPart(module) || !validDeployPathPart(buildID) {
+		writeError(w, http.StatusBadRequest, errors.New("invalid module or build_id"))
+		return
+	}
 
 	indexPath := api.indexPath(module)
 	index, err := loadLocalBuildIndex(indexPath)
@@ -739,7 +783,8 @@ func (api *deployLocalServer) handleBuildProduction(w http.ResponseWriter, r *ht
 	updated := false
 	for i := range index.Versions {
 		if index.Versions[i].BuildID == buildID {
-			index.Versions[i].Production = payload.Production
+			index.Versions[i].RuntimeMode = mode
+			index.Versions[i].Production = mode == shared.LIVE_MODE
 			updated = true
 			break
 		}
@@ -752,11 +797,21 @@ func (api *deployLocalServer) handleBuildProduction(w http.ResponseWriter, r *ht
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
+	restarted := false
+	if proc, ok := api.readProcess(module); ok && proc.BuildID == buildID {
+		if err := api.startLocalBuild(module, buildID); err != nil {
+			writeError(w, http.StatusInternalServerError, err)
+			return
+		}
+		restarted = true
+	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"module":     module,
-		"build_id":   buildID,
-		"production": payload.Production,
+		"module":       module,
+		"build_id":     buildID,
+		"runtime_mode": mode,
+		"production":   mode == shared.LIVE_MODE,
+		"restarted":    restarted,
 	})
 }
 
@@ -1130,6 +1185,11 @@ func loadLocalBuildIndex(path string) (localBuildIndex, error) {
 	if err := json.Unmarshal(data, &index); err != nil {
 		return index, err
 	}
+	for i := range index.Versions {
+		mode := normalizedDeployRuntimeMode(index.Versions[i].RuntimeMode, index.Versions[i].Production)
+		index.Versions[i].RuntimeMode = mode
+		index.Versions[i].Production = mode == shared.LIVE_MODE
+	}
 	return index, nil
 }
 
@@ -1141,7 +1201,8 @@ func saveLocalBuildIndex(path string, index localBuildIndex) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0644)
+	data = append(data, '\n')
+	return atomicWriteDeployFile(path, data, 0o644)
 }
 
 func findLocalRow(index localBuildIndex, buildID string) (localBuildRow, bool) {

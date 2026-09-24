@@ -8,18 +8,34 @@ const html = readFileSync(new URL('./deploy_dashboard.html', import.meta.url), '
 const source = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
-function setup({saved = '', savedBase = '', savedView = '', blocked = false, mode = 'remote', apiError = '', networkError = '', responseGate} = {}) {
+function setup({
+  saved = '',
+  savedBase = '',
+  savedView = '',
+  blocked = false,
+  mode = 'remote',
+  apiError = '',
+  networkError = '',
+  responseGate,
+  packageConfigGate,
+  packageConfig,
+  editorModule,
+  editorImportError = '',
+  confirmResult = true
+} = {}) {
   const elements = new Map(), events = new Map(), requests = [];
+  const editorImportURLs = [];
   const storage = new Map(saved ? [['hbDeploySecret', saved]] : []);
   if (savedBase) storage.set('hbDeployBaseUrl', savedBase);
   if (savedView) storage.set('hbDeployView', savedView);
   const reply = {status: apiError ? 401 : 200, error: apiError, networkError};
-  let focused = '', reloads = 0, moduleLoads = 0, pluginLoads = 0;
+  let focused = '', reloads = 0, moduleLoads = 0, pluginLoads = 0, editorImports = 0;
   for (const [, id] of html.matchAll(/\bid="([^"]+)"/g)) {
     const classes = new Set(id === 'menuPanel' ? ['hidden'] : []);
     const listeners = new Map(), attrs = new Map();
-    elements.set(id, {
-      value: '', textContent: '', disabled: false, hidden: false, open: false, files: [], listeners, attrs,
+    let currentValue = '';
+    const element = {
+      textContent: '', disabled: false, hidden: false, open: false, files: [], listeners, attrs,
       addEventListener: (name, fn) => listeners.set(name, fn),
       setAttribute: (name, value) => attrs.set(name, value),
       removeAttribute: name => attrs.delete(name),
@@ -34,12 +50,21 @@ function setup({saved = '', savedBase = '', savedView = '', blocked = false, mod
         contains: name => classes.has(name),
         toggle: (name, force = !classes.has(name)) => force ? classes.add(name) : classes.delete(name)
       }
+    };
+    Object.defineProperty(element, 'value', {
+      get: () => currentValue,
+      set: value => {
+        const source = String(value ?? '');
+        currentValue = id === 'packageConfigContent' ? source.replace(/\r\n?/g, '\n') : source;
+      }
     });
+    elements.set(id, element);
   }
   const context = vm.createContext({
     document: {
       body: {dataset: {mode}, classList: {add() {}}},
       getElementById: id => elements.get(id),
+      querySelectorAll: () => [],
       addEventListener: (name, fn) => events.set(name, fn)
     },
     window: {
@@ -58,20 +83,89 @@ function setup({saved = '', savedBase = '', savedView = '', blocked = false, mod
     URL, TextEncoder, Uint8Array, ArrayBuffer, crypto: {getRandomValues: bytes => randomFillSync(bytes)}, setInterval: () => 1,
     recordModuleLoad: async () => { moduleLoads++; },
     recordPluginLoad: async () => { pluginLoads++; },
-    fetch: async (url, options) => {
+    confirm: () => confirmResult,
+    fetch: async (url, options = {}) => {
       requests.push({url, ...options});
       if (responseGate) await responseGate;
       if (reply.networkError) throw Error(reply.networkError);
-      return {ok: reply.status === 200, status: reply.status, json: async () => reply.error ? {error: reply.error} : {version: 'test'}};
+      const path = new URL(url).pathname;
+      if (packageConfigGate && path.endsWith('/package-config')) await packageConfigGate;
+      let payload = {version: 'test'};
+      if (packageConfig && path.endsWith('/package-config')) {
+        if ((options.method || 'GET') === 'PUT') {
+          const submitted = JSON.parse(options.body);
+          payload = {...packageConfig, content: submitted.content, sha256: 'saved-sha256'};
+        } else {
+          payload = packageConfig;
+        }
+      }
+      return {ok: reply.status === 200, status: reply.status, json: async () => reply.error ? {error: reply.error} : payload};
     }
   });
   // Keep production event wiring and initialization, but avoid unrelated module rendering.
   vm.runInContext(source.replace(/\s+wireEvents\(\);\s+initDefaults\(\);\s*$/, ''), context);
+  if (editorModule || editorImportError) {
+    context.testEditorImporter = (retrySuffix = '') => {
+      editorImports++;
+      editorImportURLs.push('/assets/deploy-yaml-editor.js' + retrySuffix);
+      return editorImportError ? Promise.reject(new Error(editorImportError)) : Promise.resolve(editorModule);
+    };
+    vm.runInContext('packageConfigEditorImporter = testEditorImporter;', context);
+  }
   vm.runInContext('loadModules = recordModuleLoad; loadGlobalPlugins = recordPluginLoad; renderPluginModules = () => {}; renderPluginBuilds = () => {}; wireEvents(); initDefaults();', context);
   const element = id => elements.get(id);
   const fire = (id, name, event = {}) => element(id).listeners.get(name)({preventDefault() {}, stopPropagation() {}, ...event});
   const type = value => { element('secret').value = value; fire('secret', 'input'); };
-  return {element, fire, type, events, storage, requests, reply, moduleLoads: () => moduleLoads, pluginLoads: () => pluginLoads, reloads: () => reloads, focused: () => focused, run: code => vm.runInContext(code, context)};
+  return {
+    element,
+    fire,
+    type,
+    events,
+    storage,
+    requests,
+    reply,
+    moduleLoads: () => moduleLoads,
+    pluginLoads: () => pluginLoads,
+    reloads: () => reloads,
+    editorImports: () => editorImports,
+    editorImportURLs: () => [...editorImportURLs],
+    focused: () => focused,
+    expose: (name, value) => { context[name] = value; },
+    run: code => vm.runInContext(code, context)
+  };
+}
+
+function createEditorHarness() {
+  const instances = [];
+  const module = {
+    createDeployYAMLEditor(options) {
+      let value = String(options.doc ?? '');
+      const instance = {
+        options,
+        readOnly: Boolean(options.readOnly),
+        focused: 0,
+        destroyed: 0,
+        getValue: () => value,
+        setValue(next) {
+          value = String(next ?? '');
+          options.onChange(value);
+        },
+        setReadOnly(next) { this.readOnly = Boolean(next); },
+        focus() { this.focused++; },
+        destroy() { this.destroyed++; },
+        userChange(next) {
+          value = String(next);
+          options.onChange(value);
+        },
+        save() { options.onSave(); },
+        validate(result) { options.onValidation(result); }
+      };
+      instances.push(instance);
+      options.onValidation({valid: true});
+      return instance;
+    }
+  };
+  return {module, instances, current: () => instances.at(-1)};
 }
 
 function assertSignedWith(request, secret) {
@@ -342,6 +436,277 @@ test('module cards use explicit compact build labels instead of dash placeholder
   assert.equal(ui.run('moduleBuildLabel(0)'), 'No packaged builds');
   assert.equal(ui.run('moduleBuildLabel(1)'), '1 packaged build');
   assert.equal(ui.run('moduleBuildLabel(12)'), '12 packaged builds');
+});
+
+test('runtime modes use explicit Development and Live labels with legacy production compatibility', () => {
+  const ui = setup();
+  assert.equal(ui.run('buildRuntimeMode({runtime_mode: "development", production: true})'), 'development');
+  assert.equal(ui.run('buildRuntimeMode({runtime_mode: "live", production: false})'), 'live');
+  assert.equal(ui.run('buildRuntimeMode({production: true})'), 'live');
+  assert.equal(ui.run('buildRuntimeMode({production: false})'), 'development');
+  assert.equal(ui.run('buildRuntimeMode({runtime_mode: "unknown", production: true})'), 'live');
+  assert.equal(ui.run('runtimeModeLabel("development")'), 'Development');
+  assert.equal(ui.run('runtimeModeLabel("live")'), 'Live');
+});
+
+test('mode updates use the explicit signed contract and restore the selector after failure', async () => {
+  const ui = setup({saved: 'test-secret'});
+  await flush();
+  ui.requests.length = 0;
+  ui.run(`
+    renderBuilds = () => {};
+    state.selectedModule = "demo";
+    state.selectionToken = 7;
+    state.builds = [{build_id: "build-1", runtime_mode: "development", production: false}];
+    testModeSelect = {value: "live", disabled: false, isConnected: true};
+  `);
+
+  await ui.run('setBuildMode("build-1", "live", testModeSelect)');
+  const request = ui.requests.at(-1);
+  const headers = request.headers;
+  const bodyHash = createHash('sha256').update(request.body).digest('hex');
+  const canonical = ['PUT', '/deploy/modules/demo/builds/build-1/mode', bodyHash, headers['X-HB-Timestamp'], headers['X-HB-Nonce']].join('\n');
+  assert.equal(new URL(request.url).pathname, '/deploy/modules/demo/builds/build-1/mode');
+  assert.equal(request.method, 'PUT');
+  assert.equal(request.body, JSON.stringify({mode: 'live'}));
+  assert.equal(headers['X-HB-Signature'], createHmac('sha256', 'test-secret').update(canonical).digest('hex'));
+  assert.equal(ui.run('state.builds[0].runtime_mode'), 'live');
+  assert.equal(ui.run('testModeSelect.disabled'), false);
+
+  ui.reply.status = 500;
+  ui.reply.error = 'mode rejected';
+  ui.run('state.builds[0].runtime_mode = "development"; state.builds[0].production = false; testModeSelect.value = "live";');
+  await assert.rejects(ui.run('setBuildMode("build-1", "live", testModeSelect)'), /mode rejected/);
+  assert.equal(ui.run('testModeSelect.value'), 'development');
+  assert.equal(ui.run('testModeSelect.disabled'), false);
+});
+
+test('package configuration routes share the local and remote API prefixes and encode identifiers', () => {
+  const remote = setup();
+  const local = setup({mode: 'local'});
+  assert.equal(
+    remote.run('packageConfigPath("owner/demo", "build id")'),
+    '/deploy/modules/owner%2Fdemo/builds/build%20id/package-config'
+  );
+  assert.equal(
+    local.run('packageConfigPath("owner/demo", "build id")'),
+    '/local/modules/owner%2Fdemo/builds/build%20id/package-config'
+  );
+});
+
+test('package YAML editor loads lazily once and saves exact raw text', async () => {
+  const source = '# keep this comment\r\nhyperbricks:\r\n  mode: "live"\r\n\r\nvars:\r\n  free_value: "001"\r\n';
+  const edited = source.replace('"001"', '"002"');
+  const editor = createEditorHarness();
+  const ui = setup({
+    mode: 'local',
+    editorModule: editor.module,
+    packageConfig: {content: source, sha256: 'opened-sha256', scope: 'runtime', restart_required: false}
+  });
+  await flush();
+  assert.equal(ui.editorImports(), 0);
+
+  ui.run('state.selectedModule = "demo"; state.selectionToken = 11;');
+  await ui.run('openPackageConfig("build-1", null)');
+  await flush();
+  assert.equal(ui.editorImports(), 1);
+  assert.equal(editor.instances.length, 1);
+  assert.equal(editor.current().getValue(), source);
+  assert.equal(ui.element('packageConfigContent').value, source.replaceAll('\r\n', '\n'));
+  assert.equal(ui.element('packageConfigContent').hidden, true);
+  assert.equal(ui.element('savePackageConfig').disabled, true);
+
+  editor.current().userChange(edited);
+  assert.equal(ui.element('savePackageConfig').disabled, false);
+  editor.current().validate({valid: false, line: 3, column: 9, message: 'unexpected value'});
+  assert.match(ui.element('packageConfigEditorStatus').textContent, /Line 3, column 9: unexpected value/);
+  assert.equal(ui.element('savePackageConfig').disabled, false, 'client syntax feedback must not replace Go validation');
+
+  editor.current().save();
+  await flush();
+  const put = ui.requests.find(request => request.method === 'PUT' && new URL(request.url).pathname.endsWith('/package-config'));
+  assert.ok(put);
+  assert.deepEqual(JSON.parse(put.body), {content: edited, expected_sha256: 'opened-sha256'});
+  assert.equal(editor.current().readOnly, false);
+  assert.equal(ui.element('savePackageConfig').disabled, true);
+
+  assert.equal(ui.run('closePackageConfigDialog(true)'), true);
+  assert.equal(editor.instances[0].destroyed, 1);
+  ui.run('state.selectedModule = "demo"; state.selectionToken = 12;');
+  await ui.run('openPackageConfig("build-2", null)');
+  await flush();
+  assert.equal(ui.editorImports(), 1, 'the already imported bundle should be reused');
+  assert.equal(editor.instances.length, 2, 'each dialog session gets fresh editor state and undo history');
+});
+
+test('failed YAML editor import keeps a retryable exact-text fallback', async () => {
+  const source = '# fallback\r\nhyperbricks:\r\n  mode: development\r\n';
+  const edited = source + 'free: "yes"\r\n';
+  const ui = setup({
+    mode: 'local',
+    editorImportError: 'asset unavailable',
+    packageConfig: {content: source, sha256: 'fallback-sha', scope: 'source', restart_required: false}
+  });
+  await flush();
+  ui.run('state.selectedModule = "demo"; state.selectionToken = 21;');
+  await ui.run('openPackageConfig("dev", null)');
+  await flush();
+
+  assert.equal(ui.element('packageConfigContent').hidden, false);
+  assert.equal(ui.element('packageConfigContent').disabled, false);
+  assert.equal(ui.element('packageConfigContent').value, source.replaceAll('\r\n', '\n'));
+  assert.equal(ui.run('getPackageConfigValue()'), source);
+  assert.equal(ui.element('savePackageConfig').disabled, true, 'textarea normalization alone must not make CRLF input dirty');
+  assert.match(ui.element('packageConfigEditorStatus').textContent, /plain text editor remains available/);
+  assert.deepEqual(ui.editorImportURLs(), ['/assets/deploy-yaml-editor.js']);
+
+  ui.element('packageConfigContent').value = edited;
+  ui.fire('packageConfigContent', 'input');
+  let prevented = 0;
+  ui.fire('packageConfigContent', 'keydown', {key: 's', ctrlKey: true, preventDefault: () => { prevented++; }});
+  await flush();
+  assert.equal(prevented, 1);
+  const put = ui.requests.find(request => request.method === 'PUT' && new URL(request.url).pathname.endsWith('/package-config'));
+  assert.equal(JSON.parse(put.body).content, edited);
+
+  assert.equal(ui.run('closePackageConfigDialog(true)'), true);
+  const retry = createEditorHarness();
+  let retryImports = 0;
+  let retrySuffix = '';
+  ui.expose('retryEditorImporter', suffix => {
+    retryImports++;
+    retrySuffix = suffix;
+    return Promise.resolve(retry.module);
+  });
+  ui.run('packageConfigEditorImporter = retryEditorImporter; state.selectedModule = "demo"; state.selectionToken = 22;');
+  await ui.run('openPackageConfig("dev", null)');
+  await flush();
+  assert.equal(retryImports, 1, 'a rejected import promise must not poison later attempts');
+  assert.equal(retrySuffix, '?retry=1', 'retry must bypass the browser module map failure cache');
+  assert.equal(retry.instances.length, 1);
+});
+
+test('typing in the fallback is retained while a slow YAML editor import finishes', async () => {
+  let resolveEditor;
+  const pendingEditor = new Promise(resolve => { resolveEditor = resolve; });
+  const editor = createEditorHarness();
+  const source = 'hyperbricks:\n  mode: development\n';
+  const edited = source + 'free_variable: "kept"\n';
+  const ui = setup({
+    mode: 'local',
+    editorModule: pendingEditor,
+    packageConfig: {content: source, sha256: 'sha', scope: 'source', restart_required: false}
+  });
+  await flush();
+  ui.run('state.selectedModule = "demo"; state.selectionToken = 30;');
+  await ui.run('openPackageConfig("dev", null)');
+  assert.equal(ui.element('packageConfigContent').hidden, false);
+
+  ui.element('packageConfigContent').value = edited;
+  ui.fire('packageConfigContent', 'input');
+  resolveEditor(editor.module);
+  await flush();
+
+  assert.equal(editor.instances.length, 1);
+  assert.equal(editor.current().getValue(), edited);
+  assert.equal(ui.element('packageConfigContent').value, edited);
+  assert.equal(ui.element('savePackageConfig').disabled, false);
+});
+
+test('a late YAML editor import cannot mount into a closed configuration dialog', async () => {
+  let resolveEditor;
+  const pendingEditor = new Promise(resolve => { resolveEditor = resolve; });
+  const editor = createEditorHarness();
+  const ui = setup({
+    mode: 'local',
+    editorModule: pendingEditor,
+    packageConfig: {content: 'hyperbricks:\n  mode: live\n', sha256: 'sha', scope: 'runtime', restart_required: false}
+  });
+  await flush();
+  ui.run('state.selectedModule = "demo"; state.selectionToken = 31;');
+  await ui.run('openPackageConfig("build-1", null)');
+  assert.equal(ui.run('closePackageConfigDialog(true)'), true);
+  resolveEditor(editor.module);
+  await flush();
+  assert.equal(editor.instances.length, 0);
+  assert.equal(ui.element('packageConfigEditorHost').hidden, true);
+});
+
+test('a pending package configuration load can be cancelled and its late response is ignored', async () => {
+  let releaseConfig;
+  const packageConfigGate = new Promise(resolve => { releaseConfig = resolve; });
+  const editor = createEditorHarness();
+  const ui = setup({
+    mode: 'local',
+    editorModule: editor.module,
+    packageConfigGate,
+    packageConfig: {content: 'hyperbricks:\n  mode: live\n', sha256: 'sha', scope: 'runtime', restart_required: false}
+  });
+  await flush();
+  ui.run('state.selectedModule = "demo"; state.selectionToken = 32;');
+  const opening = ui.run('openPackageConfig("build-1", null)');
+  await flush();
+
+  assert.equal(ui.element('packageConfigDialog').open, true);
+  assert.equal(ui.element('packageConfigContent').disabled, true);
+  assert.equal(ui.element('cancelPackageConfig').disabled, false);
+  ui.fire('packageConfigDialog', 'cancel');
+  assert.equal(ui.element('packageConfigDialog').open, false);
+
+  releaseConfig();
+  await opening;
+  await flush();
+  assert.equal(editor.instances.length, 0);
+  assert.equal(ui.run('state.packageConfigBuild'), '');
+  assert.equal(ui.run('state.packageConfigBusy'), false);
+});
+
+test('archive filenames prefer RFC 5987, support quoted names, and fall back safely', () => {
+  const ui = setup();
+  assert.equal(
+    ui.run(`filenameFromDisposition("attachment; filename*=UTF-8''demo%20release.hra; filename=ignored.hra", "fallback.hra")`),
+    'demo release.hra'
+  );
+  assert.equal(
+    ui.run('filenameFromDisposition(\'attachment; filename="demo-build.hra"\', "fallback.hra")'),
+    'demo-build.hra'
+  );
+  assert.equal(
+    ui.run('filenameFromDisposition("attachment; filename=demo-build.hra", "fallback.hra")'),
+    'demo-build.hra'
+  );
+  assert.equal(
+    ui.run(`filenameFromDisposition("attachment; filename*=UTF-8''%E0%A4%A", "fallback.hra")`),
+    'fallback.hra'
+  );
+  assert.equal(ui.run('filenameFromDisposition("attachment", "fallback.hra")'), 'fallback.hra');
+});
+
+test('deployment markup exposes mode, package editor, and archive-download contracts', () => {
+  for (const value of [
+    'id="packageConfigDialog"',
+    'id="packageConfigForm"',
+    'id="packageConfigEditorShell"',
+    'id="packageConfigEditorHost"',
+    'id="packageConfigContent"',
+    'id="packageConfigEditorStatus"',
+    'id="packageConfigError"',
+    'id="packageConfigStatus"',
+    'id="savePackageConfig"',
+    'value="development"',
+    '>Development</option>',
+    'value="live"',
+    '>Live</option>',
+    'action: "config"',
+    'action: "download"',
+    '"/package-config"',
+    'import("/assets/deploy-yaml-editor.js")',
+    '"/archive"'
+  ]) {
+    assert.ok(html.includes(value), `deployment markup missing ${value}`);
+  }
+  assert.doesNotMatch(html, /<script[^>]+src="\/assets\/deploy-yaml-editor\.js"/);
+  assert.doesNotMatch(html, />Default<\/option>|>Production<\/option>/);
 });
 
 test('archive filename parsing extracts module and build ID from the canonical name', () => {

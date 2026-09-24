@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"compress/gzip"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
@@ -55,6 +56,7 @@ type deployIndexRow struct {
 	Commit        string `json:"commit"`
 	SourceHash    string `json:"source_hash"`
 	HyperBricks   string `json:"hyperbricks,omitempty"`
+	RuntimeMode   string `json:"runtime_mode,omitempty"`
 	Production    bool   `json:"production,omitempty"`
 }
 
@@ -62,8 +64,8 @@ type deployActivateRequest struct {
 	BuildID string `json:"build_id"`
 }
 
-type deployBuildProductionRequest struct {
-	Production bool `json:"production"`
+type deployBuildModeRequest struct {
+	Mode string `json:"mode"`
 }
 
 type pluginGlobalRequest struct {
@@ -105,7 +107,30 @@ type deployProcess struct {
 	StartedUnix int64  `json:"started_unix"`
 	Binary      string `json:"binary"`
 	Command     string `json:"command"`
+	RuntimeMode string `json:"runtime_mode,omitempty"`
 	Production  bool   `json:"production,omitempty"`
+}
+
+func normalizedDeployRuntimeMode(mode string, production bool) string {
+	switch strings.ToLower(strings.TrimSpace(mode)) {
+	case shared.LIVE_MODE:
+		return shared.LIVE_MODE
+	case shared.DEVELOPMENT_MODE:
+		return shared.DEVELOPMENT_MODE
+	default:
+		if production {
+			return shared.LIVE_MODE
+		}
+		return shared.DEVELOPMENT_MODE
+	}
+}
+
+func validateDeployRuntimeMode(mode string) (string, error) {
+	mode = strings.ToLower(strings.TrimSpace(mode))
+	if mode != shared.DEVELOPMENT_MODE && mode != shared.LIVE_MODE {
+		return "", fmt.Errorf("invalid runtime mode %q: expected development or live", mode)
+	}
+	return mode, nil
 }
 
 type deployNonceStore struct {
@@ -226,12 +251,7 @@ func startDeployAPIServer(configPath string) error {
 
 	mux := http.NewServeMux()
 	mux.Handle("/deploy/", api.wrapAuth(api.handleDeploy))
-	mux.HandleFunc("/assets/dashboard.css", serveDashboardCSS)
-	mux.HandleFunc("/assets/hyperbricks-ui.css", serveHyperbricksUIStylesheet)
-	mux.HandleFunc("/assets/hyperbricks-theme.js", serveHyperbricksThemeScript)
-	mux.HandleFunc("/assets/hyperbricks-icons.js", serveHyperbricksIconsScript)
-	mux.HandleFunc("/assets/brandmark.svg", serveBrandMark)
-	mux.HandleFunc("/assets/favicon.svg", serveFavicon)
+	registerDeployUIAssets(mux)
 	mux.HandleFunc("/", serveDeployDashboard)
 
 	addr := fmt.Sprintf("%s:%d", bind, port)
@@ -241,6 +261,16 @@ func startDeployAPIServer(configPath string) error {
 	}
 
 	return serveDeployHTTP(server, "remote")
+}
+
+func registerDeployUIAssets(mux *http.ServeMux) {
+	mux.HandleFunc("/assets/dashboard.css", serveDashboardCSS)
+	mux.HandleFunc("/assets/deploy-yaml-editor.js", serveDeployYAMLEditorScript)
+	mux.HandleFunc("/assets/hyperbricks-ui.css", serveHyperbricksUIStylesheet)
+	mux.HandleFunc("/assets/hyperbricks-theme.js", serveHyperbricksThemeScript)
+	mux.HandleFunc("/assets/hyperbricks-icons.js", serveHyperbricksIconsScript)
+	mux.HandleFunc("/assets/brandmark.svg", serveBrandMark)
+	mux.HandleFunc("/assets/favicon.svg", serveFavicon)
 }
 
 func serveDeployDashboard(w http.ResponseWriter, r *http.Request) {
@@ -271,6 +301,59 @@ func serveDashboardCSS(w http.ResponseWriter, r *http.Request) {
 	_, _ = io.WriteString(w, assets.DashboardCSS)
 }
 
+var compressedDeployYAMLEditorScript = sync.OnceValue(func() []byte {
+	var compressed bytes.Buffer
+	writer, _ := gzip.NewWriterLevel(&compressed, gzip.BestCompression)
+	_, _ = writer.Write(assets.DeployYAMLEditorScript)
+	_ = writer.Close()
+	return compressed.Bytes()
+})
+
+func acceptsGzip(r *http.Request) bool {
+	for _, candidate := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
+		parts := strings.Split(strings.TrimSpace(candidate), ";")
+		if len(parts) == 0 || !strings.EqualFold(strings.TrimSpace(parts[0]), "gzip") {
+			continue
+		}
+		quality := 1.0
+		for _, parameter := range parts[1:] {
+			key, value, found := strings.Cut(strings.TrimSpace(parameter), "=")
+			if !found || !strings.EqualFold(strings.TrimSpace(key), "q") {
+				continue
+			}
+			parsed, err := strconv.ParseFloat(strings.TrimSpace(value), 64)
+			if err != nil {
+				return false
+			}
+			quality = parsed
+		}
+		return quality > 0
+	}
+	return false
+}
+
+func serveDeployYAMLEditorScript(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Vary", "Accept-Encoding")
+	payload := assets.DeployYAMLEditorScript
+	if acceptsGzip(r) {
+		payload = compressedDeployYAMLEditorScript()
+		w.Header().Set("Content-Encoding", "gzip")
+	}
+	w.Header().Set("Content-Length", strconv.Itoa(len(payload)))
+	w.WriteHeader(http.StatusOK)
+	if r.Method != http.MethodHead {
+		_, _ = w.Write(payload)
+	}
+}
+
 func loadDeployConfig(path string) (shared.DeployConfig, error) {
 	cfg := shared.DefaultDeployConfig()
 
@@ -287,9 +370,17 @@ func loadDeployConfig(path string) (shared.DeployConfig, error) {
 
 func (api *deployAPI) wrapAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut && strings.HasSuffix(strings.TrimSuffix(r.URL.Path, "/"), "/package-config") {
+			r.Body = http.MaxBytesReader(w, r.Body, maxPackageConfigRequestBytes)
+		}
 		body, err := readBody(r)
 		if err != nil {
-			writeError(w, http.StatusBadRequest, err)
+			status := http.StatusBadRequest
+			var limitError *http.MaxBytesError
+			if errors.As(err, &limitError) {
+				status = http.StatusRequestEntityTooLarge
+			}
+			writeError(w, status, err)
 			return
 		}
 		if err := api.verifyRequest(r, body); err != nil {
@@ -437,7 +528,7 @@ func deployEnvPart(value string) string {
 
 func validDeployPathPart(value string) bool {
 	value = strings.TrimSpace(value)
-	if value == "" || strings.Contains(value, "..") {
+	if value == "" || value == "." || strings.Contains(value, "..") {
 		return false
 	}
 	for _, r := range value {
@@ -518,20 +609,32 @@ func (api *deployAPI) handleDeploy(w http.ResponseWriter, r *http.Request) {
 	module := segments[2]
 	action := segments[3]
 
-	if action == "builds" && len(segments) >= 6 && r.Method == http.MethodPost && segments[5] == "production" {
+	if action == "builds" && len(segments) == 6 && r.Method == http.MethodPut && segments[5] == "mode" {
+		api.handleBuildMode(w, r, module, segments[4])
+		return
+	}
+	if action == "builds" && len(segments) == 6 && r.Method == http.MethodPost && segments[5] == "production" {
 		api.handleBuildProduction(w, r, module, segments[4])
 		return
 	}
-	if action == "builds" && len(segments) >= 6 && r.Method == http.MethodGet && segments[5] == "status" {
+	if action == "builds" && len(segments) == 6 && r.Method == http.MethodGet && segments[5] == "status" {
 		api.handleBuildStatus(w, module, segments[4])
 		return
 	}
-	if action == "builds" && len(segments) >= 6 && r.Method == http.MethodGet && segments[5] == "logs" {
+	if action == "builds" && len(segments) == 6 && r.Method == http.MethodGet && segments[5] == "logs" {
 		api.handleBuildLogs(w, r, module, segments[4])
 		return
 	}
-	if action == "builds" && len(segments) >= 6 && r.Method == http.MethodPost && segments[5] == "delete" {
+	if action == "builds" && len(segments) == 6 && r.Method == http.MethodPost && segments[5] == "delete" {
 		api.handleBuildDelete(w, module, segments[4])
+		return
+	}
+	if action == "builds" && len(segments) == 6 && segments[5] == "package-config" && (r.Method == http.MethodGet || r.Method == http.MethodPut) {
+		api.handleBuildPackageConfig(w, r, module, segments[4])
+		return
+	}
+	if action == "builds" && len(segments) == 6 && segments[5] == "archive" && r.Method == http.MethodGet {
+		api.handleBuildArchive(w, r, module, segments[4])
 		return
 	}
 
@@ -900,9 +1003,37 @@ func (api *deployAPI) handleBuildProduction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var req deployBuildProductionRequest
+	var req struct {
+		Production bool `json:"production"`
+	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	mode := shared.DEVELOPMENT_MODE
+	if req.Production {
+		mode = shared.LIVE_MODE
+	}
+	api.updateBuildMode(w, module, buildID, mode)
+}
+
+func (api *deployAPI) handleBuildMode(w http.ResponseWriter, r *http.Request, module string, buildID string) {
+	var req deployBuildModeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	mode, err := validateDeployRuntimeMode(req.Mode)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	api.updateBuildMode(w, module, buildID, mode)
+}
+
+func (api *deployAPI) updateBuildMode(w http.ResponseWriter, module string, buildID string, mode string) {
+	if !validDeployPathPart(module) || !validDeployPathPart(buildID) {
+		writeError(w, http.StatusBadRequest, errors.New("invalid module or build_id"))
 		return
 	}
 
@@ -919,7 +1050,8 @@ func (api *deployAPI) handleBuildProduction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	row.Production = req.Production
+	row.RuntimeMode = mode
+	row.Production = mode == shared.LIVE_MODE
 	index = upsertDeployRow(index, row)
 	if err := saveDeployIndex(indexPath, index); err != nil {
 		writeError(w, http.StatusInternalServerError, err)
@@ -936,10 +1068,11 @@ func (api *deployAPI) handleBuildProduction(w http.ResponseWriter, r *http.Reque
 	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"module":     module,
-		"build_id":   buildID,
-		"production": req.Production,
-		"restarted":  restarted,
+		"module":       module,
+		"build_id":     buildID,
+		"runtime_mode": mode,
+		"production":   mode == shared.LIVE_MODE,
+		"restarted":    restarted,
 	})
 }
 
@@ -991,6 +1124,7 @@ func (api *deployAPI) handleBuildStatus(w http.ResponseWriter, module string, bu
 		"source_hash":   row.SourceHash,
 		"hyperbricks":   row.HyperBricks,
 		"format":        row.Format,
+		"runtime_mode":  normalizedDeployRuntimeMode(row.RuntimeMode, row.Production),
 		"production":    row.Production,
 	})
 }
@@ -1315,9 +1449,9 @@ func (api *deployAPI) activateModuleBuild(module string, buildID string) (map[st
 		index.Port = packagePort
 	}
 
-	production := false
+	runtimeMode := shared.DEVELOPMENT_MODE
 	if existing, ok := findDeployRow(index, buildID); ok {
-		production = existing.Production
+		runtimeMode = normalizedDeployRuntimeMode(existing.RuntimeMode, existing.Production)
 	}
 
 	row := deployIndexRow{
@@ -1329,7 +1463,8 @@ func (api *deployAPI) activateModuleBuild(module string, buildID string) (map[st
 		Commit:        metadata["commit"],
 		SourceHash:    metadata["source_hash"],
 		HyperBricks:   metadata["hyperbricks"],
-		Production:    production,
+		RuntimeMode:   runtimeMode,
+		Production:    runtimeMode == shared.LIVE_MODE,
 	}
 	index = upsertDeployRow(index, row)
 	index.Current = buildID
@@ -2067,9 +2202,9 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 		return errors.New("no build id available for start")
 	}
 
-	production := false
+	runtimeMode := shared.DEVELOPMENT_MODE
 	if row, ok := findDeployRow(index, buildID); ok {
-		production = row.Production
+		runtimeMode = normalizedDeployRuntimeMode(row.RuntimeMode, row.Production)
 	}
 
 	prevProc, hasPrev := api.readBuildProcessFile(module, buildID)
@@ -2114,10 +2249,8 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 	}
 
 	args := []string{"deploy", "run"}
-	if production {
-		args = append(args, "--production")
-	}
 	args = append(args,
+		"--mode", runtimeMode,
 		"-m", module,
 		"--build", buildID,
 		"--deploy-dir", api.root,
@@ -2125,6 +2258,7 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 	)
 
 	cmd := exec.Command(binary, args...)
+	production := runtimeMode == shared.LIVE_MODE
 	productionValue := "0"
 	if production {
 		productionValue = "1"
@@ -2134,6 +2268,7 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 		fmt.Sprintf("HB_DEPLOY_BUILD_ID=%s", buildID),
 		fmt.Sprintf("HB_DEPLOY_PORT=%d", port),
 		fmt.Sprintf("HB_DEPLOY_ROOT=%s", api.root),
+		fmt.Sprintf("HB_DEPLOY_RUNTIME_MODE=%s", runtimeMode),
 		fmt.Sprintf("HB_DEPLOY_PRODUCTION=%s", productionValue),
 		"HB_NO_KEYBOARD=1",
 	)
@@ -2203,6 +2338,7 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 		StartedUnix: startedAt.Unix(),
 		Binary:      binary,
 		Command:     commandLine,
+		RuntimeMode: runtimeMode,
 		Production:  production,
 	}
 	if err := api.writeProcess(module, proc); err != nil {
@@ -2303,6 +2439,11 @@ func loadDeployIndex(path string) (deployIndex, error) {
 	if err := json.Unmarshal(data, &index); err != nil {
 		return index, err
 	}
+	for i := range index.Versions {
+		mode := normalizedDeployRuntimeMode(index.Versions[i].RuntimeMode, index.Versions[i].Production)
+		index.Versions[i].RuntimeMode = mode
+		index.Versions[i].Production = mode == shared.LIVE_MODE
+	}
 	return index, nil
 }
 
@@ -2315,7 +2456,7 @@ func saveDeployIndex(path string, index deployIndex) error {
 		return err
 	}
 	payload = append(payload, '\n')
-	return os.WriteFile(path, payload, 0644)
+	return atomicWriteDeployFile(path, payload, 0o644)
 }
 
 func upsertDeployRow(index deployIndex, row deployIndexRow) deployIndex {

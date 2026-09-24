@@ -57,6 +57,7 @@ type buildIndexRow struct {
 	Commit        string `json:"commit"`
 	SourceHash    string `json:"source_hash"`
 	HyperBricks   string `json:"hyperbricks,omitempty"`
+	RuntimeMode   string `json:"runtime_mode,omitempty"`
 	Production    bool   `json:"production,omitempty"`
 }
 
@@ -544,10 +545,20 @@ func updateBuildIndex(indexPath string, buildID string, moduleVersion string, fo
 		Commit:        commit,
 		SourceHash:    sourceHash,
 		HyperBricks:   hyperBricks,
+		RuntimeMode:   "development",
 	}
 	if existing, ok := findBuildIndex(index, buildID); ok {
+		entry.RuntimeMode = strings.ToLower(strings.TrimSpace(existing.RuntimeMode))
+		if entry.RuntimeMode != "development" && entry.RuntimeMode != "live" {
+			if existing.Production {
+				entry.RuntimeMode = "live"
+			} else {
+				entry.RuntimeMode = "development"
+			}
+		}
 		entry.Production = existing.Production
 	}
+	entry.Production = entry.RuntimeMode == "live"
 
 	updated := false
 	for i, row := range index.Versions {

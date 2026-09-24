@@ -18,6 +18,9 @@ func (config *Config) ValidateRuntimeSettings() error {
 	if config.System.MetricsWatchInterval <= 0 {
 		return fmt.Errorf("hyperbricks.system.metrics_watch_interval must be greater than zero")
 	}
+	if config.Live.CacheTime.Duration < 0 {
+		return fmt.Errorf("hyperbricks.live.cache must be zero (disabled) or a positive duration")
+	}
 	if _, err := ResolveGoMaxProcs(config.Server.GoMaxProcs, runtime.NumCPU()); err != nil {
 		return err
 	}

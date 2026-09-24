@@ -16,6 +16,11 @@ share this package. The approved reference remains in
   ignored design directory. Wordmark: **HyperBricks**, IBM Plex Mono Bold 700.
 - `web/favicon.svg`: same geometry, with system light/dark contrast.
 - `web/lucide.js`: the existing vendored icon library, now shared by all tools.
+- `../../assets/src/deploy_yaml_editor.mjs`: deployment-only CodeMirror source;
+  `../../assets/deploy_yaml_editor.js` is its generated, committed, lazy-loaded
+  browser bundle. The shared deployment asset handler serves a negotiated gzip
+  representation. The editor keeps the textarea as a failure fallback and
+  never parses or serializes saved YAML.
 
 Page-specific layout belongs to `assets/dashboard.css` or
 `pkg/spaces/web/style.css`. The sandboxed Markdown preview imports the shared
@@ -50,15 +55,17 @@ From the repository root:
 
 ```sh
 npm ci
-npm run ui:build
-node --test pkg/ui/theme.test.mjs pkg/spaces/*.test.mjs
+npm run ui:build:deploy-editor
+npm run test:ui
 go test ./...
 ```
 
-Commit `web/hyperbricks.css` with its source changes. Go embeds the stylesheet,
+Commit `web/hyperbricks.css` with its source changes and commit the generated
+deployment editor bundle with its source changes. Go embeds these assets, the
 theme script, mark, favicon, and icons; a running binary requires neither Node
-nor the Tailwind plugin. Google Fonts is optional at runtime; system fonts are
-the fallback. See `THIRD_PARTY_NOTICES.md` for asset provenance.
+nor npm. Google Fonts is optional at runtime; system fonts are the fallback.
+The generated editor bundle retains the complete MIT notices for its bundled
+dependencies.
 
 When changing layout, verify the real screens in both themes at desktop and
 320/390px widths. Check long Space titles, save bars, dialogs, inactive views,

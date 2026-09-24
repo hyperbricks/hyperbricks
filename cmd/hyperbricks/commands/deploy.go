@@ -23,6 +23,7 @@ var (
 	DeployModule      string
 	DeployDir         string
 	DeployBuildID     string
+	DeployRuntimeMode string
 )
 
 // NewDeployCommand creates the deployment command family. Deployment runtime,
@@ -112,6 +113,15 @@ func newDeployRunCommand() *cobra.Command {
 			if deployDir == "" {
 				deployDir = "deploy"
 			}
+			DeployRuntimeMode = strings.ToLower(strings.TrimSpace(DeployRuntimeMode))
+			if DeployRuntimeMode != "" && DeployRuntimeMode != "development" && DeployRuntimeMode != "live" {
+				failf("Invalid deploy runtime mode %q: expected development or live\n", DeployRuntimeMode)
+				return
+			}
+			if cmd.Flags().Changed("production") && DeployRuntimeMode != "" && DeployRuntimeMode != "live" {
+				failf("--production cannot be combined with --mode %s\n", DeployRuntimeMode)
+				return
+			}
 
 			runtimeDir, err := prepareDeployRuntime(module, deployDir, DeployBuildID)
 			if err != nil {
@@ -135,6 +145,7 @@ func newDeployRunCommand() *cobra.Command {
 	_ = cmd.RegisterFlagCompletionFunc("module", completeModuleSelection)
 	cmd.Flags().StringVar(&DeployBuildID, "build", "", "deploy build ID to run (defaults to current)")
 	cmd.Flags().StringVar(&DeployDir, "deploy-dir", "deploy", "deploy directory containing module builds")
+	cmd.Flags().StringVar(&DeployRuntimeMode, "mode", "", "override runtime mode (development or live)")
 	cmd.Flags().Int32VarP(&Port, "port", "p", 8080, "port")
 	cmd.Flags().BoolVarP(&Production, "production", "P", false, "set production mode")
 	cmd.Flags().BoolVarP(&Debug, "debug", "d", false, "debug")
