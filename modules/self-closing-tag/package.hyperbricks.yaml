@@ -1,21 +1,13 @@
 myconf:
   some: value
-
 hyperbricks:
   mode: development
-
   metadata:
-    module: default
-    moduleversion: "1.0"
-    format: hra
-    format_version: "1"
-    commit: unknown
-    built_at: "1970-01-01T00:00:00Z"
-    hyperbricks: v0.0.0
-
+    module: self-closing-tag
+    moduleversion: "1.0.0"
+    hyperbricks: v1.2.5-beta
   debug:
     level: debugging
-
   development:
     watch: true
     reload: true
@@ -23,7 +15,6 @@ hyperbricks:
       enabled: false
   live:
     cache: 30s
-
   server:
     port: 8080
     beautify: true
@@ -40,17 +31,13 @@ hyperbricks:
     write_timeout: 10s
     idle_timeout: 20s
     keep_alives_enabled: true
-
   system:
     metrics_watch_interval: 10s
-
   rate_limit:
     requests_per_second: 100
     burst: 500
-
   plugins:
     enabled: []
-
   directories:
     render:
       path:

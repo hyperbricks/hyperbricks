@@ -3,6 +3,7 @@ hyperbricks:
   metadata:
     module: project-lifecycle-test
     moduleversion: "1.0.0"
+    hyperbricks: v1.2.5-beta
   development:
     watch: true
     watch_dirs: [hyperbricks, templates, resources]
