@@ -75,7 +75,8 @@ supplements; do not load all of them automatically.
 | Understand HyperBricks or its application model | [Introduction](references/docs/INTRODUCTION.md) |
 | Install HyperBricks or create a first module | [Quickstart](references/docs/QUICKSTART.md) |
 | Follow a common task recipe | [How-to guides](references/docs/HOWTOS.md) |
-| Diagnose a problem | [Troubleshooting](references/docs/TROUBLESHOOTING.md), then the affected feature |
+| Check a source module before running or building it | [Doctor](references/docs/HYPERBRICKS_CLI.md#doctor) |
+| Diagnose a runtime or rendered-output problem | [Troubleshooting](references/docs/TROUBLESHOOTING.md), then the affected feature |
 | Change an existing project | [Changing Existing Projects](references/docs/AUTHOR.md) |
 | Check the exact authoring contract | [Author Command Reference](references/docs/AUTHOR_REFERENCE.md) |
 | Work with YAML, imports, inheritance, or resolvers | [YAML Usage](references/docs/YAML_USAGE.md) |
@@ -115,12 +116,29 @@ which supported workflow fits the change. Read `docs/AUTHOR_REFERENCE.md` only
 when the exact machine-facing contract is needed. Do not duplicate its command
 sequences, fields, or limits in `SKILL.md`.
 
+After changing module source or package configuration, use the selected module
+and package configuration with `hyperbricks doctor -m <module> --json` as the
+default read-only static preflight when the selected CLI supports it. Add
+`--config <file>` when the workflow uses an alternate package configuration.
+Read [Doctor](references/docs/HYPERBRICKS_CLI.md#doctor) for its checks, output
+contract, status meanings, and exit behavior. Add `--strict` only when the
+acceptance policy requires warnings to fail. A `healthy` report confirms the
+static checks Doctor performed. A `warning` report leaves the listed uncertainty
+unresolved; `--strict` changes the acceptance policy and exit behavior only.
+Neither status proves runtime, browser, integration, or delivery behavior.
+
 ### Diagnose
 
 Observe the failure, logs, diagnostics, source, and selected runtime before
-proposing a cause. Start with the selected source's `docs/TROUBLESHOOTING.md`,
-then read the affected feature document. Distinguish configuration, runtime,
-browser, external-service, and packaging failures.
+proposing a cause. If the selected CLI supports it and the problem may come from
+module source or package configuration, run Doctor first with the selected
+module and package configuration: `hyperbricks doctor -m <module> --json`. Add
+`--config <file>` when the workflow uses an alternate package configuration,
+and follow [Doctor](references/docs/HYPERBRICKS_CLI.md#doctor). Treat failures
+and warnings as static evidence. A `warning` status remains unresolved even when
+normal mode exits successfully. Then read `docs/TROUBLESHOOTING.md` and the
+affected feature document for runtime, browser, external-service, plugin, and
+packaging failures.
 
 ### Package or deploy
 
