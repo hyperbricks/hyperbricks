@@ -19,11 +19,15 @@ function setup({saved = '', savedBase = '', savedView = '', blocked = false, mod
     const classes = new Set(id === 'menuPanel' ? ['hidden'] : []);
     const listeners = new Map(), attrs = new Map();
     elements.set(id, {
-      value: '', textContent: '', disabled: false, hidden: false, listeners, attrs,
+      value: '', textContent: '', disabled: false, hidden: false, open: false, files: [], listeners, attrs,
       addEventListener: (name, fn) => listeners.set(name, fn),
       setAttribute: (name, value) => attrs.set(name, value),
       removeAttribute: name => attrs.delete(name),
       focus: () => { focused = id; },
+      reset: () => {},
+      showModal() { this.open = true; },
+      close() { this.open = false; },
+      querySelector: () => ({textContent: ''}),
       classList: {
         add: name => classes.add(name),
         remove: name => classes.delete(name),
@@ -51,7 +55,7 @@ function setup({saved = '', savedBase = '', savedView = '', blocked = false, mod
       },
       removeItem: key => storage.delete(key)
     },
-    URL, TextEncoder, crypto: {getRandomValues: bytes => randomFillSync(bytes)}, setInterval: () => 1,
+    URL, TextEncoder, Uint8Array, ArrayBuffer, crypto: {getRandomValues: bytes => randomFillSync(bytes)}, setInterval: () => 1,
     recordModuleLoad: async () => { moduleLoads++; },
     recordPluginLoad: async () => { pluginLoads++; },
     fetch: async (url, options) => {
@@ -338,4 +342,57 @@ test('module cards use explicit compact build labels instead of dash placeholder
   assert.equal(ui.run('moduleBuildLabel(0)'), 'No packaged builds');
   assert.equal(ui.run('moduleBuildLabel(1)'), '1 packaged build');
   assert.equal(ui.run('moduleBuildLabel(12)'), '12 packaged builds');
+});
+
+test('archive filename parsing extracts module and build ID from the canonical name', () => {
+  const ui = setup();
+  const hash = 'a'.repeat(64);
+  assert.equal(
+    ui.run(`JSON.stringify(archiveIdentityFromName("hyperbricks-patterns-yaml-1.0-${hash}.hra"))`),
+    JSON.stringify({module: 'hyperbricks-patterns-yaml', buildID: hash})
+  );
+  assert.equal(
+    ui.run(`JSON.stringify(archiveIdentityFromName("project-2-demo-1.0-beta.2-${hash.toUpperCase()}.hra"))`),
+    JSON.stringify({module: 'project-2-demo', buildID: hash})
+  );
+  assert.equal(ui.run('archiveIdentityFromName("demo-1.0-manual.hra")'), null);
+  assert.equal(ui.run('archiveIdentityFromName("demo.zip")'), null);
+});
+
+test('choosing an archive populates read-only upload identity fields from its filename', () => {
+  const ui = setup({saved: 'test-secret'});
+  const hash = 'b'.repeat(64);
+  ui.element('uploadFile').files = [{name: `hyperbricks-patterns-yaml-1.0-${hash}.hra`}];
+  ui.fire('uploadFile', 'change');
+  assert.equal(ui.element('uploadModule').value, 'hyperbricks-patterns-yaml');
+  assert.equal(ui.element('uploadBuildID').value, hash);
+  assert.equal(ui.element('uploadError').textContent, '');
+});
+
+test('archive upload signs binary bytes with build metadata and content hash', async () => {
+  const ui = setup({saved: 'test-secret'});
+  await flush();
+  ui.requests.length = 0;
+  await ui.run('uploadArchiveBytes("demo", "build-123", new Uint8Array([0, 1, 2, 255]))');
+  const request = ui.requests.at(-1);
+  const headers = request.headers;
+  const bodyHash = createHash('sha256').update(Buffer.from([0, 1, 2, 255])).digest('hex');
+  const canonical = ['POST', '/deploy/v1/modules/demo/releases', bodyHash, headers['X-HB-Timestamp'], headers['X-HB-Nonce'], '', 'build-123'].join('\n');
+  assert.equal(new URL(request.url).pathname, '/deploy/v1/modules/demo/releases');
+  assert.equal(headers['Content-Type'], 'application/vnd.hyperbricks.hra');
+  assert.equal(headers['X-HB-Build-ID'], 'build-123');
+  assert.equal(headers['X-HB-SHA256'], bodyHash);
+  assert.equal(headers['X-HB-Signature'], createHmac('sha256', 'test-secret').update(canonical).digest('hex'));
+  assert.deepEqual(Array.from(request.body), [0, 1, 2, 255]);
+});
+
+test('archive upload rejects local mode and invalid identifiers before fetching', async () => {
+  const local = setup({mode: 'local'});
+  const remote = setup({saved: 'test-secret'});
+  await flush();
+  const remoteCount = remote.requests.length;
+  await assert.rejects(local.run('uploadArchiveBytes("demo", "build", new Uint8Array([1]))'), /remote deployment dashboard/);
+  await assert.rejects(remote.run('uploadArchiveBytes("../demo", "build", new Uint8Array([1]))'), /valid module name/);
+  await assert.rejects(remote.run('uploadArchiveBytes("demo", "../build", new Uint8Array([1]))'), /valid build ID/);
+  assert.equal(remote.requests.length, remoteCount);
 });

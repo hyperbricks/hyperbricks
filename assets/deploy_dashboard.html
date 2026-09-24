@@ -148,6 +148,7 @@
               <div class="hb-actions hb-deploy-actions">
                 <button class="btn btn-sm btn-primary local-only" id="buildModule" type="button">Build</button>
                 <button class="btn btn-sm btn-ghost local-only" id="syncRemote" type="button">Sync Remote</button>
+                <button class="btn btn-sm btn-primary remote-only" id="openUpload" type="button"><i data-lucide="upload"></i>Upload .hra</button>
                 <button class="btn btn-sm btn-error remote-only" id="rollbackModule" disabled>Rollback</button>
                 <span id="rollbackTarget" class="note remote-only">-</span>
               </div>
@@ -267,6 +268,34 @@
       </div>
       </div>
     </main>
+    <dialog class="modal" id="uploadDialog" aria-labelledby="uploadTitle">
+      <div class="modal-box hb-upload-dialog">
+        <form id="uploadForm">
+          <div class="hb-dialog-heading">
+            <h2 id="uploadTitle">Upload and activate release</h2>
+            <button class="btn btn-sm btn-square btn-ghost" id="closeUpload" type="button" aria-label="Close upload dialog" title="Close"><i data-lucide="x"></i></button>
+          </div>
+          <label class="hb-field" for="uploadFile">Archive
+            <input class="file-input" id="uploadFile" name="archive" type="file" accept=".hra,application/vnd.hyperbricks.hra" required />
+            <span class="note">Choose one HyperBricks <code>.hra</code> archive.</span>
+          </label>
+          <label class="hb-field" for="uploadModule">Module
+            <input class="input" id="uploadModule" name="module" required readonly />
+            <span class="note">Read from the archive filename.</span>
+          </label>
+          <label class="hb-field" for="uploadBuildID">Build ID
+            <input class="input mono" id="uploadBuildID" name="build_id" required readonly />
+            <span class="note">Read from the archive filename.</span>
+          </label>
+          <p class="alert alert-warning hb-upload-warning"><i data-lucide="triangle-alert"></i><span>The remote host will activate this release immediately after upload.</span></p>
+          <p class="hb-form-error" id="uploadError" role="alert"></p>
+          <footer class="hb-upload-footer">
+            <button class="btn btn-sm btn-ghost" id="cancelUpload" type="button">Cancel</button>
+            <button class="btn btn-sm btn-primary" id="submitUpload" type="submit"><i data-lucide="upload"></i><span>Upload and activate</span></button>
+          </footer>
+        </form>
+      </div>
+    </dialog>
 
     <script>
       const ui = {
@@ -295,6 +324,16 @@
         clearSecret: document.getElementById("clearSecret"),
         buildModule: document.getElementById("buildModule"),
         syncRemote: document.getElementById("syncRemote"),
+        openUpload: document.getElementById("openUpload"),
+        uploadDialog: document.getElementById("uploadDialog"),
+        uploadForm: document.getElementById("uploadForm"),
+        uploadFile: document.getElementById("uploadFile"),
+        uploadModule: document.getElementById("uploadModule"),
+        uploadBuildID: document.getElementById("uploadBuildID"),
+        uploadError: document.getElementById("uploadError"),
+        submitUpload: document.getElementById("submitUpload"),
+        closeUpload: document.getElementById("closeUpload"),
+        cancelUpload: document.getElementById("cancelUpload"),
         rollbackModule: document.getElementById("rollbackModule"),
         rollbackTarget: document.getElementById("rollbackTarget"),
         activity: document.getElementById("activity"),
@@ -787,6 +826,10 @@
         return toHex(hashBytes);
       }
 
+      function sha256HexBytesFallback(bytes) {
+        return toHex(sha256Bytes(bytes));
+      }
+
       function hmacHexFallback(key, text) {
         const keyBytes = utf8Bytes(key);
         const msgBytes = utf8Bytes(text);
@@ -805,6 +848,19 @@
           }
         }
         return sha256HexFallback(text);
+      }
+
+      async function sha256HexBytes(bytes) {
+        const input = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+        if (hasWebCrypto()) {
+          try {
+            const hash = await crypto.subtle.digest("SHA-256", input);
+            return toHex(hash);
+          } catch (err) {
+            return sha256HexBytesFallback(input);
+          }
+        }
+        return sha256HexBytesFallback(input);
       }
 
       async function hmacHex(key, text) {
@@ -1404,6 +1460,140 @@
           throw error;
         }
         return payload;
+      }
+
+      function validDeployIdentifier(value) {
+        return /^[A-Za-z0-9_.-]+$/.test(String(value || "").trim()) && !String(value || "").includes("..");
+      }
+
+      function archiveIdentityFromName(name) {
+        const match = String(name || "").match(/^(.+)-([0-9][A-Za-z0-9._+-]*)-([a-fA-F0-9]{64})\.hra$/);
+        if (!match || !validDeployIdentifier(match[1])) {
+          return null;
+        }
+        return {module: match[1], buildID: match[3].toLowerCase()};
+      }
+
+      async function uploadArchiveBytes(module, buildID, bytes, secret = getSecret()) {
+        module = String(module || "").trim();
+        buildID = String(buildID || "").trim();
+        if (isLocalMode) {
+          throw new Error("Archive upload is available only on the remote deployment dashboard.");
+        }
+        if (!secret) {
+          throw new Error("Missing HMAC secret.");
+        }
+        if (!validDeployIdentifier(module)) {
+          throw new Error("Enter a valid module name.");
+        }
+        if (!validDeployIdentifier(buildID)) {
+          throw new Error("Enter a valid build ID.");
+        }
+        const body = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+        if (!body.byteLength) {
+          throw new Error("The selected archive is empty.");
+        }
+        const path = "/deploy/v1/modules/" + encodeURIComponent(module) + "/releases";
+        const url = new URL(path, getBaseUrl());
+        const timestamp = Math.floor(Date.now() / 1000).toString();
+        const nonce = randomHex(32);
+        const bodyHash = await sha256HexBytes(body);
+        const canonical = ["POST", url.pathname, bodyHash, timestamp, nonce, "", buildID].join("\n");
+        const signature = await hmacHex(secret, canonical);
+        const headers = {
+          "Accept": "application/json",
+          "Content-Type": "application/vnd.hyperbricks.hra",
+          "X-HB-Timestamp": timestamp,
+          "X-HB-Nonce": nonce,
+          "X-HB-Signature": signature,
+          "X-HB-Build-ID": buildID,
+          "X-HB-SHA256": bodyHash
+        };
+        let response;
+        try {
+          response = await fetch(url.toString(), {method: "POST", headers, body});
+        } catch (err) {
+          setApiStatus("offline");
+          throw err;
+        }
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setApiStatus("error " + response.status);
+          if (response.status === 401 && secret === getSecret()) {
+            setConnectionState("invalid");
+          }
+          const error = new Error(payload.error || response.statusText || "Archive upload failed.");
+          error.status = response.status;
+          throw error;
+        }
+        setApiStatus("online");
+        return payload;
+      }
+
+      function setUploadBusy(busy) {
+        ui.submitUpload.disabled = busy;
+        ui.cancelUpload.disabled = busy;
+        ui.closeUpload.disabled = busy;
+        ui.uploadFile.disabled = busy;
+        ui.uploadModule.disabled = busy;
+        ui.uploadBuildID.disabled = busy;
+        ui.submitUpload.querySelector("span").textContent = busy ? "Uploading…" : "Upload and activate";
+      }
+
+      function openUploadDialog() {
+        if (isLocalMode || !state.authenticated) {
+          return;
+        }
+        ui.uploadForm.reset();
+        ui.uploadModule.value = "";
+        ui.uploadBuildID.value = "";
+        ui.uploadError.textContent = "";
+        setUploadBusy(false);
+        ui.uploadDialog.showModal();
+        ui.uploadFile.focus();
+      }
+
+      function closeUploadDialog() {
+        if (!ui.submitUpload.disabled && ui.uploadDialog.open) {
+          ui.uploadDialog.close();
+          ui.openUpload.focus();
+        }
+      }
+
+      async function submitArchiveUpload(event) {
+        event.preventDefault();
+        const file = ui.uploadFile.files && ui.uploadFile.files[0];
+        ui.uploadError.textContent = "";
+        if (!file) {
+          ui.uploadError.textContent = "Choose an .hra archive.";
+          return;
+        }
+        if (!/\.hra$/i.test(file.name)) {
+          ui.uploadError.textContent = "The selected file must use the .hra extension.";
+          return;
+        }
+        const identity = archiveIdentityFromName(file.name);
+        if (!identity) {
+          ui.uploadError.textContent = "The archive filename must use <module>-<moduleversion>-<build-id>.hra with a 64-character build ID.";
+          return;
+        }
+        const module = identity.module;
+        const buildID = identity.buildID;
+        setUploadBusy(true);
+        setActivity("Uploading and activating " + file.name + "...");
+        try {
+          const bytes = new Uint8Array(await file.arrayBuffer());
+          await uploadArchiveBytes(module, buildID, bytes);
+          saveModule(module);
+          ui.uploadDialog.close();
+          await loadModules();
+          setActivity("Uploaded and activated " + buildID + ".");
+        } catch (err) {
+          ui.uploadError.textContent = err.message || String(err);
+          setActivity(ui.uploadError.textContent, true);
+        } finally {
+          setUploadBusy(false);
+        }
       }
 
       function setLocalConnectionDetails(status) {
@@ -2898,6 +3088,25 @@
         }
         if (ui.syncRemote) {
           ui.syncRemote.addEventListener("click", () => syncRemote().catch(handleError));
+        }
+        if (ui.openUpload) {
+          ui.openUpload.addEventListener("click", openUploadDialog);
+        }
+        if (ui.uploadFile) {
+          ui.uploadFile.addEventListener("change", () => {
+            const file = ui.uploadFile.files && ui.uploadFile.files[0];
+            const identity = file ? archiveIdentityFromName(file.name) : null;
+            ui.uploadModule.value = identity ? identity.module : "";
+            ui.uploadBuildID.value = identity ? identity.buildID : "";
+            ui.uploadError.textContent = file && !identity
+              ? "The archive filename must use <module>-<moduleversion>-<build-id>.hra with a 64-character build ID."
+              : "";
+          });
+        }
+        if (ui.uploadForm) {
+          ui.uploadForm.addEventListener("submit", submitArchiveUpload);
+          ui.closeUpload.addEventListener("click", closeUploadDialog);
+          ui.cancelUpload.addEventListener("click", closeUploadDialog);
         }
 
         if (ui.menuToggle) {

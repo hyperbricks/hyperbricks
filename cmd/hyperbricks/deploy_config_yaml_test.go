@@ -11,6 +11,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/hyperbricks/hyperbricks/assets"
 )
 
 func TestLoadDeployConfigReadsYAMLSpec(t *testing.T) {
@@ -47,6 +49,55 @@ deploy:
 	}
 	if cfg.Remote.Auth.EnvPrefix != "HB_DEPLOY_SECRET_" {
 		t.Fatalf("remote auth env_prefix = %q", cfg.Remote.Auth.EnvPrefix)
+	}
+}
+
+func TestValidateDeployArchiveMetadata(t *testing.T) {
+	version := strings.TrimSpace(assets.VersionMD)
+	tests := []struct {
+		name       string
+		module     string
+		metadata   map[string]string
+		wantStatus int
+		wantError  string
+	}{
+		{
+			name:       "matching metadata",
+			module:     "demo",
+			metadata:   map[string]string{"module": "demo", "hyperbricks": version},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "module mismatch",
+			module:     "demo",
+			metadata:   map[string]string{"module": "other", "hyperbricks": version},
+			wantStatus: http.StatusBadRequest,
+			wantError:  "does not match deploy module",
+		},
+		{
+			name:       "version mismatch",
+			module:     "demo",
+			metadata:   map[string]string{"module": "demo", "hyperbricks": "v0.0.0"},
+			wantStatus: http.StatusConflict,
+			wantError:  "does not match deploy host version",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			status, err := validateDeployArchiveMetadata(tt.module, tt.metadata)
+			if status != tt.wantStatus {
+				t.Fatalf("status = %d, want %d", status, tt.wantStatus)
+			}
+			if tt.wantError == "" {
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return
+			}
+			if err == nil || !strings.Contains(err.Error(), tt.wantError) {
+				t.Fatalf("error = %v, want substring %q", err, tt.wantError)
+			}
+		})
 	}
 }
 

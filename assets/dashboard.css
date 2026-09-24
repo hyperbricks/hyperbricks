@@ -35,6 +35,7 @@
 .build-row-dev td { background: var(--color-base-200); }.build-details { padding: 16px; text-align: left; }.details-grid { grid-template-columns: repeat(4,minmax(0,1fr)); padding-bottom: 20px; }
 .meta-scroll { max-height: 400px; overflow: auto; }.meta-row { display: grid; grid-template-columns: 140px minmax(0,1fr); gap: 20px; border-bottom: 1px solid var(--color-base-300); padding: 10px 0; }.meta-row>span { color: color-mix(in oklab,var(--color-base-content) 65%,transparent); }.meta-row strong { font-weight: 500; overflow-wrap: anywhere; }
 .log-panel { margin-top: 24px; }.log-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }.log-actions { display: flex; gap: 8px; }.log-note { display: block; margin-top: 8px; }
+.hb-upload-dialog { width: min(520px,calc(100vw - 32px)); max-width: 520px; max-height: calc(100dvh - 40px); padding: 24px; }.hb-upload-dialog .hb-field { margin-bottom: 18px; }.hb-upload-dialog .file-input { width: 100%; }.hb-upload-warning { grid-template-columns: 18px minmax(0,1fr); align-items: start; padding: 12px; font-size: 12px; text-align: left; }.hb-upload-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
 .mode-local .remote-only, .mode-remote .local-only { display: none !important; }
 @media (max-width:1100px) {
   .hb-dashboard-grid { grid-template-columns: minmax(230px,1fr) minmax(0,1.7fr); }
@@ -61,5 +62,6 @@
   .hb-deploy-grid .table td[colspan] { grid-column: 1 / -1; text-align: left; }.hb-deploy-grid .table .badge { white-space: nowrap; font-size: 10px; }
   .hb-deploy-grid .table tr.details-row { display: block; }.build-details { padding: 12px 0; }.meta-row { grid-template-columns: 1fr; gap: 6px; }.hb-deploy-actions #rollbackTarget { text-align: left; }
   .connect-row { grid-template-columns: 1fr; gap: 0; }.menu-panel { padding: 20px; }.hb-deploy-actions .hb-field { width: 100%; }.hb-deploy-actions .hb-field .select { width: 100%; }
+  .hb-upload-dialog { padding: 20px; }.hb-upload-footer { align-items: stretch; flex-direction: column-reverse; }.hb-upload-footer .btn { width: 100%; }
   .hb-module-list { display: flex; flex-flow: row nowrap; align-items: stretch; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; }.hb-module-list.is-expanded { display: grid; grid-template-columns: minmax(0,1fr); max-height: 280px; overflow-y: auto; }.hb-module-list .module-item { flex: 0 0 170px; scroll-snap-align: start; }.hb-module-list.is-expanded .module-item { width: auto; }.hb-module-picker-controls { align-items: stretch; flex-direction: column; }.hb-module-picker-controls .btn { width: 100%; }
 }

@@ -1338,6 +1338,9 @@ func (api *deployAPI) activateModuleBuild(module string, buildID string) (map[st
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
+	if status, err := validateDeployArchiveMetadata(module, metadata); err != nil {
+		return nil, status, err
+	}
 
 	if packagePort > 0 {
 		index.Port = packagePort
@@ -1382,6 +1385,19 @@ func (api *deployAPI) activateModuleBuild(module string, buildID string) (map[st
 		"archived":  api.relativePath(archivePath),
 		"activated": true,
 	}, http.StatusOK, nil
+}
+
+func validateDeployArchiveMetadata(module string, metadata map[string]string) (int, error) {
+	archiveModule := strings.TrimSpace(metadata["module"])
+	if archiveModule != module {
+		return http.StatusBadRequest, fmt.Errorf("archive module %q does not match deploy module %q", archiveModule, module)
+	}
+	archiveVersion := strings.TrimSpace(metadata["hyperbricks"])
+	serverVersion := strings.TrimSpace(assets.VersionMD)
+	if archiveVersion != serverVersion {
+		return http.StatusConflict, fmt.Errorf("archive HyperBricks version %q does not match deploy host version %q", archiveVersion, serverVersion)
+	}
+	return http.StatusOK, nil
 }
 
 func (api *deployAPI) handleModuleRollback(w http.ResponseWriter, module string) {
@@ -2460,18 +2476,22 @@ func readMetadataAndPort(path string) (map[string]string, int, error) {
 	}
 
 	meta := map[string]string{
+		"module":        "",
 		"moduleversion": "unknown",
 		"format":        "unknown",
 		"built_at":      "",
 		"commit":        "unknown",
 		"source_hash":   "",
+		"hyperbricks":   "",
 	}
 	if rawMeta, ok := hyper["metadata"].(map[string]interface{}); ok {
+		meta["module"] = getString(rawMeta, "module", meta["module"])
 		meta["moduleversion"] = getString(rawMeta, "moduleversion", meta["moduleversion"])
 		meta["format"] = getString(rawMeta, "format", meta["format"])
 		meta["built_at"] = getString(rawMeta, "built_at", meta["built_at"])
 		meta["commit"] = getString(rawMeta, "commit", meta["commit"])
 		meta["source_hash"] = getString(rawMeta, "source_hash", meta["source_hash"])
+		meta["hyperbricks"] = getString(rawMeta, "hyperbricks", meta["hyperbricks"])
 	}
 
 	port, _ := readServerPortFromMap(hyper)
