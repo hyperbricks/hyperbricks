@@ -8,7 +8,13 @@ hyperbricks:
     watch_dirs: [hyperbricks, templates, resources]
     reload: false
     frontend_errors: false
-    dashboard: true
+    dashboard:
+      enabled: true
+      credentials:
+        user:
+          env: HB_DEVELOPER_USER
+        password:
+          env: HB_DEVELOPER_PASSWORD
     frontend_editing:
       enabled: true
       spaces:

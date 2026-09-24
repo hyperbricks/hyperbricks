@@ -5,8 +5,8 @@ hyperbricks:
     watch: false
     reload: false
     frontend_errors: false
-    dashboard: false
-
+    dashboard:
+      enabled: false
   live:
     cache: 30s
 

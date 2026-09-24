@@ -30,11 +30,12 @@ func TestBuiltinSpacesMountDefaultsAndSafety(t *testing.T) {
 	cfg.Directories = nil
 	cfg.Plugins.Enabled = nil
 	cfg.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
+	cfg.Development.Dashboard.Credentials = developerTestCredentials
 	shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: module})
 	request := func(method, path, body string) *httptest.ResponseRecorder {
 		t.Helper()
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest(method, "http://localhost"+path, strings.NewReader(body))
+		r := developerTestRequest(method, "http://localhost"+path, strings.NewReader(body))
 		r.Header.Set("Origin", "http://localhost")
 		r.Header.Set("X-Spaces-Request", "1")
 		r.Header.Set("Content-Type", "application/json")
@@ -53,7 +54,7 @@ func TestBuiltinSpacesMountDefaultsAndSafety(t *testing.T) {
 		t.Fatalf("removed licenses endpoint: %d %s", w.Code, w.Body.String())
 	}
 	for _, dashboard := range []bool{true, false} {
-		cfg.Development.Dashboard = dashboard
+		cfg.Development.Dashboard.Enabled = dashboard
 		body := request("GET", shared.DefaultSpacesRoute, "").Body.String()
 		if strings.Contains(body, `href="/__hyperbricks/errors"`) != dashboard || strings.Contains(body, "__ERRORS_NAV__") {
 			t.Fatalf("Errors navigation does not follow Dashboard availability: %v", dashboard)
@@ -129,13 +130,15 @@ func (p *editorTestPlugin) Render(instance interface{}, ctx context.Context) (an
 func TestFrontendEditorGenericMountDevelopmentAndEnablement(t *testing.T) {
 	setupDevelopmentModeServeContentTest(t, false)
 	cfg := shared.GetHyperBricksConfiguration()
-	oldEditing, oldPlugins, oldRuntime := cfg.Development.FrontendEditing, cfg.Plugins, shared.GetRuntimeOptions()
+	oldDashboard, oldEditing, oldPlugins, oldRuntime := cfg.Development.Dashboard, cfg.Development.FrontendEditing, cfg.Plugins, shared.GetRuntimeOptions()
 	t.Cleanup(func() {
+		cfg.Development.Dashboard = oldDashboard
 		cfg.Development.FrontendEditing = oldEditing
 		cfg.Plugins = oldPlugins
 		shared.SetRuntimeOptions(oldRuntime)
 	})
 	cfg.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
+	cfg.Development.Dashboard.Credentials = developerTestCredentials
 	cfg.Development.FrontendEditing.Editors = map[string]shared.FrontendEditorConfig{"test": {Plugin: "Editor@1.0.0", Route: "/__hyperbricks/test", Data: map[string]interface{}{"route": "/cannot-override"}}}
 	cfg.Plugins.Enabled = []string{"Editor@1.0.0"}
 	shared.SetRuntimeOptions(shared.RuntimeOptions{})
@@ -159,7 +162,7 @@ func TestFrontendEditorGenericMountDevelopmentAndEnablement(t *testing.T) {
 			cfg.Development.FrontendEditing.Enabled = tc.enabled
 			shared.SetRuntimeOptions(shared.RuntimeOptions{Production: tc.production})
 			w := httptest.NewRecorder()
-			handled := handleFrontendEditor(w, httptest.NewRequest("GET", tc.path, nil))
+			handled := handleFrontendEditor(w, developerTestRequest("GET", tc.path, nil))
 			if handled != tc.handled || w.Code != tc.status {
 				t.Fatalf("handled %t status %d", handled, w.Code)
 			}
@@ -176,7 +179,7 @@ func TestFrontendEditorGenericMountDevelopmentAndEnablement(t *testing.T) {
 	shared.SetRuntimeOptions(shared.RuntimeOptions{})
 	cfg.Plugins.Enabled = nil
 	w := httptest.NewRecorder()
-	if !handleFrontendEditor(w, httptest.NewRequest("POST", "/__hyperbricks/test/api", nil)) || w.Code != 503 {
+	if !handleFrontendEditor(w, developerTestRequest("POST", "/__hyperbricks/test/api", nil)) || w.Code != 503 {
 		t.Fatal("unlisted plugin was called")
 	}
 }

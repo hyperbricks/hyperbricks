@@ -378,9 +378,6 @@ func commandMatchesStart(command string, module string, port int) bool {
 	if len(args) == 0 || !hasArg(args, "start") {
 		return false
 	}
-	if hasArg(args, "--deploy") {
-		return false
-	}
 	if module != "" {
 		value := flagValue(args, "-m", "--module")
 		if value == "" || value != module {
@@ -599,7 +596,7 @@ func (api *deployLocalServer) startLocalBuild(module string, buildID string) err
 		}
 	}
 
-	args := []string{"start", "--deploy"}
+	args := []string{"deploy", "run"}
 	if production {
 		args = append(args, "--production")
 	}

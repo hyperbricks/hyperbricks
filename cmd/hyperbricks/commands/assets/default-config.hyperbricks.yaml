@@ -25,7 +25,13 @@ hyperbricks:
     reload: false
     watch_dirs: [hyperbricks, templates, resources]
     frontend_errors: false
-    dashboard: false
+    dashboard:
+      enabled: false
+      credentials:
+        user:
+          env: HB_DEVELOPER_USER
+        password:
+          env: HB_DEVELOPER_PASSWORD
 
   live:
     cache: 30s

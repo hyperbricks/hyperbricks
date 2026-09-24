@@ -8,13 +8,15 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 func TestDeployConfigPathDefaultsToYAML(t *testing.T) {
 	t.Setenv("HB_DEPLOY_CONFIG", "")
-	previous := StartDeployConfig
-	StartDeployConfig = ""
-	t.Cleanup(func() { StartDeployConfig = previous })
+	previous := DeployConfigPath
+	DeployConfigPath = ""
+	t.Cleanup(func() { DeployConfigPath = previous })
 	if got := deployConfigPath(); got != DeployConfigFileName {
 		t.Fatalf("deployConfigPath() = %q, want %q", got, DeployConfigFileName)
 	}
@@ -41,9 +43,11 @@ func TestResolveDeployConfigPathPrecedence(t *testing.T) {
 }
 
 func TestLoadDeployPushConfigReadsGeneratedYAML(t *testing.T) {
-	t.Setenv("HB_DEPLOY_SECRET", "test-secret")
+	t.Setenv("HB_DEPLOY_CLIENT_PRODUCTION_USER", "deploy-user")
+	t.Setenv("HB_DEPLOY_CLIENT_PRODUCTION_PASSWORD", "deploy-password")
+	t.Setenv("HB_DEPLOY_CLIENT_PRODUCTION_HMAC_SECRET", "test-secret")
 	path := filepath.Join(t.TempDir(), DeployConfigFileName)
-	if err := os.WriteFile(path, []byte(deployInitTemplate("local")), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte(deployInitTemplate()), 0o644); err != nil {
 		t.Fatalf("write deploy config: %v", err)
 	}
 
@@ -51,22 +55,19 @@ func TestLoadDeployPushConfigReadsGeneratedYAML(t *testing.T) {
 	if err != nil {
 		t.Fatalf("loadDeployPushConfig() error = %v", err)
 	}
-	if cfg.HMACSecret != "test-secret" {
-		t.Fatalf("hmac_secret = %q", cfg.HMACSecret)
-	}
-	if cfg.Remote.APIPort != 9090 {
-		t.Fatalf("remote api port = %d", cfg.Remote.APIPort)
-	}
-	target := cfg.Client.Targets["prod"]
-	if cfg.Client.Target != "prod" || target.API != "https://deploy.example.com" || target.KeyID != "" {
+	target := cfg.Client.Targets["production"]
+	if cfg.Client.Target != "production" || target.API != "https://deploy.example.com" || target.KeyID != "" {
 		t.Fatalf("client config = %#v", cfg.Client)
+	}
+	if target.Credentials.User != "deploy-user" || target.Credentials.Password != "deploy-password" || target.HMACSecret != "test-secret" {
+		t.Fatalf("client target secrets were not resolved: %#v", target)
 	}
 }
 
-func TestRemoteDeployInitTemplateUsesSharedSecretEnvironment(t *testing.T) {
-	t.Setenv("HB_DEPLOY_SECRET", "shared-secret")
+func TestDeployInitTemplateUsesRoleOwnedSecrets(t *testing.T) {
+	t.Setenv("HB_DEPLOY_REMOTE_HMAC_SECRET", "remote-secret")
 	path := filepath.Join(t.TempDir(), DeployConfigFileName)
-	if err := os.WriteFile(path, []byte(deployInitTemplate("remote")), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte(deployInitTemplate()), 0o644); err != nil {
 		t.Fatalf("write deploy config: %v", err)
 	}
 
@@ -74,20 +75,59 @@ func TestRemoteDeployInitTemplateUsesSharedSecretEnvironment(t *testing.T) {
 	if err != nil {
 		t.Fatalf("loadDeployYAMLRoot() error = %v", err)
 	}
-	if got := deploy["hmac_secret"]; got != "shared-secret" {
-		t.Fatalf("hmac_secret = %q, want %q", got, "shared-secret")
+	remote, ok := deploy["remote"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("remote block = %#v", deploy["remote"])
+	}
+	if got := remote["hmac_secret"]; got != "remote-secret" {
+		t.Fatalf("remote hmac_secret = %q, want %q", got, "remote-secret")
+	}
+	if _, exists := deploy["hmac_secret"]; exists {
+		t.Fatal("obsolete top-level hmac_secret is present")
 	}
 }
 
-func TestResolveDeploySecretSelectsSharedAndScopedModes(t *testing.T) {
-	cfg := deployPushConfig{HMACSecret: "shared-secret"}
-	if got := resolveDeploySecret(cfg, "demo", ""); got != "shared-secret" {
-		t.Fatalf("shared secret = %q, want %q", got, "shared-secret")
+func TestResolveDeploySecretUsesSelectedTarget(t *testing.T) {
+	target := shared.DeployClientTarget{HMACSecret: "target-secret", KeyID: "staging"}
+	if got := resolveDeploySecret(target); got != "target-secret" {
+		t.Fatalf("target secret = %q, want %q", got, "target-secret")
 	}
+}
 
-	t.Setenv("HB_DEPLOY_SECRET_DEMO_STAGING", "scoped-secret")
-	if got := resolveDeploySecret(cfg, "demo", "staging"); got != "scoped-secret" {
-		t.Fatalf("scoped secret = %q, want %q", got, "scoped-secret")
+func TestResolveDeployTargetKeepsTargetAuthenticationIsolated(t *testing.T) {
+	cfg := deployPushConfig{
+		Client: shared.DeployClientConfig{
+			Target: "staging",
+			Targets: map[string]shared.DeployClientTarget{
+				"staging": {
+					API:         "https://staging.example.com",
+					Credentials: shared.CredentialsConfig{User: "staging-user", Password: "staging-password"},
+					HMACSecret:  "staging-secret",
+				},
+				"production": {
+					API:         "https://production.example.com",
+					Credentials: shared.CredentialsConfig{User: "production-user", Password: "production-password"},
+					HMACSecret:  "production-secret",
+				},
+			},
+		},
+	}
+	name, target, err := resolveDeployTarget(cfg, "production")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if name != "production" || target.Credentials.User != "production-user" || resolveDeploySecret(target) != "production-secret" {
+		t.Fatalf("selected target = %q %#v", name, target)
+	}
+}
+
+func TestLoadDeployPushConfigRejectsLegacyOwnership(t *testing.T) {
+	path := filepath.Join(t.TempDir(), DeployConfigFileName)
+	if err := os.WriteFile(path, []byte("deploy:\n  hmac_secret: legacy\n  client:\n    targets: {}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := loadDeployPushConfig(path); err == nil || !strings.Contains(err.Error(), "hmac_secret") {
+		t.Fatalf("legacy config error = %v", err)
 	}
 }
 

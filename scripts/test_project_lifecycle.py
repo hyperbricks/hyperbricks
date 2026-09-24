@@ -212,7 +212,7 @@ def verify_packaging(binary, workspace):
                   and path.name not in (".env", ".DS_Store"), f"Unwanted archive content: {path}")
     port = free_port()
     base = f"http://127.0.0.1:{port}"
-    with server([binary, "start", "--deploy", "-m", NAME, "-p", port, "--non-interactive"], project,
+    with server([binary, "deploy", "run", "-m", NAME, "-p", port, "--non-interactive"], project,
                 workspace / "deploy.log", base + "/"):
         _, body = html(base, "/estimate?quantity=3")
         check("€59.85" in body, "Runtime archive did not execute the estimate")

@@ -19,7 +19,7 @@ var errorsTemplate = template.Must(template.New("errors").Parse(assets.ErrorsPag
 func errorsViewEnabled() bool {
 	cfg := getHyperBricksConfiguration()
 	return (cfg.Mode == shared.DEVELOPMENT_MODE || cfg.Mode == shared.DEBUG_MODE) &&
-		cfg.Development.Dashboard && !shared.GetRuntimeOptions().Production && !commands.RenderStatic
+		cfg.Development.Dashboard.Enabled && !shared.GetRuntimeOptions().Production && !commands.RenderStatic
 }
 
 func handleErrorsView(w http.ResponseWriter, r *http.Request) bool {
@@ -31,6 +31,9 @@ func handleErrorsView(w http.ResponseWriter, r *http.Request) bool {
 	w.Header().Set("Referrer-Policy", "same-origin")
 	if !errorsViewEnabled() {
 		http.NotFound(w, r)
+		return true
+	}
+	if !requireDeveloperInterfaceAuth(w, r) {
 		return true
 	}
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {

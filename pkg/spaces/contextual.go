@@ -26,6 +26,9 @@ func (h *Handler) ContextualPage(r *http.Request, route, content string) (string
 	if len(query) != 1 || query[0] != "true" {
 		return content, false, nil
 	}
+	if !shared.BasicAuthAuthorized(r, cfg.Development.Dashboard.Credentials) {
+		return content, false, nil
+	}
 	options := cfg.Development.FrontendEditing.Spaces
 	// Check the same trusted hosts before loading any editorial source metadata.
 	if !(&service{allowedHosts: options.AllowedHosts}).allowedHost(r.Host) {

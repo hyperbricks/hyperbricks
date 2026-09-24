@@ -14,7 +14,8 @@ hyperbricks:
     watch_dirs: [hyperbricks, templates, resources]
     reload: false
     frontend_errors: true
-    dashboard: false
+    dashboard:
+      enabled: false
   server:
     port: 8097
     beautify: false

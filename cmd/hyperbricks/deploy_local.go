@@ -23,39 +23,11 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
-	"github.com/mitchellh/mapstructure"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
-type deployLocalConfig struct {
-	HMACSecret string                  `mapstructure:"hmac_secret"`
-	Remote     deployLocalRemoteConfig `mapstructure:"remote"`
-	Local      deployLocalSettings     `mapstructure:"local"`
-	Client     deployClientConfig      `mapstructure:"client"`
-}
-
-type deployLocalRemoteConfig struct {
-	Root        string `mapstructure:"root"`
-	APIPort     int    `mapstructure:"api_port"`
-	PortStart   int    `mapstructure:"port_start"`
-	LogsEnabled bool   `mapstructure:"logs_enabled"`
-}
-
-type deployLocalSettings struct {
-	Bind       string `mapstructure:"bind"`
-	Port       int    `mapstructure:"port"`
-	ModulesDir string `mapstructure:"modules_dir"`
-	BuildRoot  string `mapstructure:"build_root"`
-}
-
-type deployClientConfig struct {
-	Target  string                        `mapstructure:"target"`
-	Targets map[string]deployClientTarget `mapstructure:"targets"`
-}
-
-type deployClientTarget struct {
-	API   string `mapstructure:"api"`
-	KeyID string `mapstructure:"key_id"`
-}
+type deployLocalConfig = shared.DeployConfig
+type deployClientTarget = shared.DeployClientTarget
 
 type localBuildIndex struct {
 	Current  string          `json:"current"`
@@ -116,10 +88,6 @@ func startDeployLocalServer(configPath string) error {
 	if err != nil {
 		return err
 	}
-	if len(cfg.Client.Targets) == 0 {
-		return fmt.Errorf("deploy.client.targets is required in %s", configPath)
-	}
-
 	bind := strings.TrimSpace(cfg.Local.Bind)
 	if bind == "" {
 		bind = "127.0.0.1"
@@ -127,6 +95,9 @@ func startDeployLocalServer(configPath string) error {
 	port := cfg.Local.Port
 	if port == 0 {
 		port = 9091
+	}
+	if port < 1 || port > 65535 {
+		return fmt.Errorf("deploy.local.port must be between 1 and 65535")
 	}
 	modulesDir := strings.TrimSpace(cfg.Local.ModulesDir)
 	if modulesDir == "" {
@@ -136,11 +107,14 @@ func startDeployLocalServer(configPath string) error {
 	if buildRoot == "" {
 		buildRoot = "deploy"
 	}
-	portStart := cfg.Remote.PortStart
+	portStart := cfg.Local.PortStart
 	if portStart == 0 {
 		portStart = 8080
 	}
-	logsEnabled := cfg.Remote.LogsEnabled
+	if portStart < 1 || portStart > 65535 {
+		return fmt.Errorf("deploy.local.port_start must be between 1 and 65535")
+	}
+	logsEnabled := cfg.Local.LogsEnabled
 
 	api := &deployLocalServer{
 		cfg:         cfg,
@@ -178,27 +152,14 @@ func startDeployLocalServer(configPath string) error {
 	addr := fmt.Sprintf("%s:%d", bind, port)
 	server := &http.Server{
 		Addr:    addr,
-		Handler: mux,
+		Handler: shared.BasicAuth(mux, cfg.Local.Credentials, "HyperBricks local deployment"),
 	}
 
 	return serveDeployHTTP(server, "local")
 }
 
 func loadDeployLocalConfig(path string) (deployLocalConfig, error) {
-	cfg := deployLocalConfig{
-		Local: deployLocalSettings{
-			Bind:       "127.0.0.1",
-			Port:       9091,
-			ModulesDir: "modules",
-			BuildRoot:  "deploy",
-		},
-		Remote: deployLocalRemoteConfig{
-			Root:        "deploy",
-			APIPort:     9090,
-			PortStart:   8080,
-			LogsEnabled: true,
-		},
-	}
+	cfg := shared.DefaultDeployConfig()
 
 	deployRaw, err := loadDeployYAMLRoot(path)
 	if err != nil {
@@ -207,23 +168,7 @@ func loadDeployLocalConfig(path string) (deployLocalConfig, error) {
 	if _, ok := deployRaw["local"].(map[string]interface{}); !ok {
 		return cfg, fmt.Errorf("missing deploy.local block in %s", path)
 	}
-	if _, ok := deployRaw["client"].(map[string]interface{}); !ok {
-		return cfg, fmt.Errorf("missing deploy.client block in %s", path)
-	}
-
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &cfg,
-		TagName:          "mapstructure",
-		WeaklyTypedInput: true,
-	})
-	if err != nil {
-		return cfg, err
-	}
-	if err := decoder.Decode(deployRaw); err != nil {
-		return cfg, err
-	}
-
-	return cfg, nil
+	return shared.DecodeDeployConfig(deployRaw)
 }
 
 func (api *deployLocalServer) serveLocalDashboard(w http.ResponseWriter, r *http.Request) {
@@ -1108,12 +1053,12 @@ func (api *deployLocalServer) syncRemoteModule(module string, targetName string)
 	if err != nil {
 		return time.Time{}, err
 	}
-	secret := resolveLocalDeploySecret(api.cfg.HMACSecret, module, target.KeyID)
+	secret := resolveLocalDeploySecret(target)
 	if secret == "" {
-		return time.Time{}, errors.New("deploy.hmac_secret, HB_DEPLOY_SECRET, or module/key deploy secret is required for sync")
+		return time.Time{}, errors.New("deploy.client target hmac_secret is required for sync")
 	}
 
-	buildIDs, err := fetchRemoteBuildIDs(target.API, module, secret, target.KeyID)
+	buildIDs, err := fetchRemoteBuildIDs(target, module, secret)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -1140,6 +1085,9 @@ func (api *deployLocalServer) normalizeTarget(target deployClientTarget) (deploy
 	target.KeyID = strings.TrimSpace(target.KeyID)
 	if target.API == "" {
 		return target, errors.New("deploy target api is required")
+	}
+	if err := target.Credentials.Validate("deploy target"); err != nil {
+		return target, err
 	}
 	return target, nil
 }
@@ -1256,12 +1204,12 @@ func readJSONBody(r *http.Request) ([]byte, error) {
 	return body, nil
 }
 
-func fetchRemoteBuildIDs(apiBase string, module string, secret string, keyID string) ([]string, error) {
-	endpoint, err := buildRemoteURL(apiBase, module, "builds")
+func fetchRemoteBuildIDs(target deployClientTarget, module string, secret string) ([]string, error) {
+	endpoint, err := buildRemoteURL(target.API, module, "builds")
 	if err != nil {
 		return nil, err
 	}
-	headers, err := signLocalDeployHeaders(http.MethodGet, endpoint.Path, nil, secret, keyID, "")
+	headers, err := signLocalDeployHeaders(http.MethodGet, endpoint.Path, nil, secret, target.KeyID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -1271,6 +1219,9 @@ func fetchRemoteBuildIDs(apiBase string, module string, secret string, keyID str
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
+	if err := shared.ApplyBasicAuth(req, target.Credentials, "deploy target"); err != nil {
+		return nil, err
+	}
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
@@ -1370,42 +1321,8 @@ func signLocalDeployHeaders(method string, requestPath string, body []byte, secr
 	return headers, nil
 }
 
-func resolveLocalDeploySecret(configSecret string, module string, keyID string) string {
-	keyID = strings.TrimSpace(keyID)
-	if keyID != "" {
-		if secret := strings.TrimSpace(os.Getenv(deploySecretEnvNameLocal("HB_DEPLOY_SECRET_", module, keyID))); secret != "" {
-			return secret
-		}
-	}
-	secret := strings.TrimSpace(configSecret)
-	if secret == "" || strings.Contains(secret, "{{") {
-		secret = strings.TrimSpace(os.Getenv("HB_DEPLOY_SECRET"))
-	}
-	return secret
-}
-
-func deploySecretEnvNameLocal(prefix string, module string, keyID string) string {
-	return strings.TrimSpace(prefix) + deployEnvPartLocal(module) + "_" + deployEnvPartLocal(keyID)
-}
-
-func deployEnvPartLocal(value string) string {
-	value = strings.ToUpper(strings.TrimSpace(value))
-	var builder strings.Builder
-	lastUnderscore := false
-	for _, r := range value {
-		isAlpha := r >= 'A' && r <= 'Z'
-		isDigit := r >= '0' && r <= '9'
-		if isAlpha || isDigit {
-			builder.WriteRune(r)
-			lastUnderscore = false
-			continue
-		}
-		if !lastUnderscore {
-			builder.WriteByte('_')
-			lastUnderscore = true
-		}
-	}
-	return strings.Trim(builder.String(), "_")
+func resolveLocalDeploySecret(target deployClientTarget) string {
+	return strings.TrimSpace(target.HMACSecret)
 }
 
 func randomHexLocal(bytesLen int) (string, error) {

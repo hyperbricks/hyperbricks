@@ -13,6 +13,9 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
+	if contextualEditingRequested(r) && !requireDeveloperInterfaceAuth(w, r) {
+		return
+	}
 
 	if handleErrorsView(w, r) {
 		return
@@ -45,6 +48,9 @@ func handleRenderDiagnosticsEndpoint(w http.ResponseWriter, r *http.Request) boo
 	}
 	if shared.GetHyperBricksConfiguration().Mode == shared.LIVE_MODE {
 		http.NotFound(w, r)
+		return true
+	}
+	if !requireDeveloperInterfaceAuth(w, r) {
 		return true
 	}
 	if r.URL.Query().Get("view") == "current" {

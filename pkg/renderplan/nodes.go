@@ -49,7 +49,7 @@ func (n *hyperMediaNode) Render(state *renderState) (string, []error) {
 	output = shared.EncloseContent(config.Enclose, output)
 
 	hbConfig := shared.GetHyperBricksConfiguration()
-	if hbConfig.Development.FrontendErrors && hbConfig.Mode != shared.LIVE_MODE {
+	if hbConfig.Development.FrontendErrors && hbConfig.Mode != shared.LIVE_MODE && shared.DeveloperInterfaceAuthorized(state.ctx) {
 		output += composite.ErrorPanelTemplate
 	}
 	return output, errors

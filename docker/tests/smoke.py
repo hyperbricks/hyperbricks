@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise an existing deploy image; isolated Compose project, ports and storage."""
 import argparse
+import base64
 import hashlib
 import hmac
 import json
@@ -22,7 +23,11 @@ args = parser.parse_args()
 root = Path(__file__).resolve().parents[2]
 project = 'hb-smoke-' + secrets.token_hex(4)
 secret = secrets.token_hex(32)
-env = dict(os.environ, HB_DEPLOY_SECRET=secret, HB_API_PORT=str(args.api_port),
+deploy_user = 'smoke-deploy'
+deploy_password = secrets.token_urlsafe(24)
+env = dict(os.environ, HB_DEPLOY_REMOTE_USER=deploy_user,
+           HB_DEPLOY_REMOTE_PASSWORD=deploy_password,
+           HB_DEPLOY_REMOTE_HMAC_SECRET=secret, HB_API_PORT=str(args.api_port),
            HB_RUNTIME_PORTS=f'{args.runtime_port}-{args.runtime_port + 20}',
            HB_BIND_ADDRESS='127.0.0.1')
 base = f'http://127.0.0.1:{args.api_port}'
@@ -37,12 +42,13 @@ def command(*parts):
 def api(path, body=None, signed=True):
     payload = body or b''
     method = 'GET' if body is None else 'POST'
-    headers = {}
+    basic = base64.b64encode(f'{deploy_user}:{deploy_password}'.encode()).decode()
+    headers = {'Authorization': 'Basic ' + basic}
     if signed:
         stamp, nonce = str(int(time.time())), secrets.token_hex(16)
         canonical = '\n'.join([method, path.split('?')[0], hashlib.sha256(payload).hexdigest(), stamp, nonce])
-        headers = {'X-HB-Timestamp': stamp, 'X-HB-Nonce': nonce,
-                   'X-HB-Signature': hmac.new(secret.encode(), canonical.encode(), hashlib.sha256).hexdigest()}
+        headers.update({'X-HB-Timestamp': stamp, 'X-HB-Nonce': nonce,
+                        'X-HB-Signature': hmac.new(secret.encode(), canonical.encode(), hashlib.sha256).hexdigest()})
     request = urllib.request.Request(base + path, data=body, headers=headers, method=method)
     with urllib.request.urlopen(request, timeout=60) as response:
         return response.read()

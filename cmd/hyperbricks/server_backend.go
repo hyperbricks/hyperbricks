@@ -149,24 +149,24 @@ func bToMb(b uint64) uint64 {
 // statusServer registers the HTTP handler for the dashboard.
 func statusServer() {
 	hbConfig := getHyperBricksConfiguration()
-	if !hbConfig.Development.Dashboard {
+	if !hbConfig.Development.Dashboard.Enabled {
 		return
 	}
 
 	//plugins = GetPlugins(hbConfig)
-	http.HandleFunc("/assets/brandmark.svg", serveBrandMark)
-	http.HandleFunc("/assets/favicon.svg", serveFavicon)
+	http.Handle("/assets/brandmark.svg", developerInterfaceHandler(http.HandlerFunc(serveBrandMark)))
+	http.Handle("/assets/favicon.svg", developerInterfaceHandler(http.HandlerFunc(serveFavicon)))
 
-	http.HandleFunc("/assets/dashboard.css", func(w http.ResponseWriter, r *http.Request) {
+	http.Handle("/assets/dashboard.css", developerInterfaceHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", mime.TypeByExtension(".css"))
 		w.Header().Set("Cache-Control", "no-store")
 		w.Write([]byte(assets.DashboardCSS))
-	})
-	http.HandleFunc("/assets/hyperbricks-ui.css", serveHyperbricksUIStylesheet)
-	http.HandleFunc("/assets/hyperbricks-theme.js", serveHyperbricksThemeScript)
-	http.HandleFunc("/assets/hyperbricks-icons.js", serveHyperbricksIconsScript)
+	})))
+	http.Handle("/assets/hyperbricks-ui.css", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksUIStylesheet)))
+	http.Handle("/assets/hyperbricks-theme.js", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksThemeScript)))
+	http.Handle("/assets/hyperbricks-icons.js", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksIconsScript)))
 
-	http.HandleFunc("/dashboard", func(w http.ResponseWriter, r *http.Request) {
+	http.Handle("/dashboard", developerInterfaceHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var data SysData
 
 		// Gather memory stats.
@@ -213,7 +213,7 @@ func statusServer() {
 		if err := tmpl.Execute(w, data); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-	})
+	})))
 	go updateCPUUsage()
 
 }

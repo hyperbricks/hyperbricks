@@ -35,14 +35,14 @@ func run() {
 	shared.Init_configuration()
 	applyCommandRuntimeOptions()
 
-	if commands.StartDeployRemote {
-		if err := startDeployAPIServer(commands.GetStartDeployConfigPath()); err != nil {
-			commands.ReportError(fmt.Errorf("start deploy daemon: %w", err))
+	if commands.DeployServiceMode == commands.DeployServiceRemote {
+		if err := startDeployAPIServer(commands.GetDeployConfigPath()); err != nil {
+			commands.ReportError(fmt.Errorf("start remote deployment service: %w", err))
 		}
 		return
 	}
-	if commands.StartDeployLocal {
-		if err := startDeployLocalServer(commands.GetStartDeployConfigPath()); err != nil {
+	if commands.DeployServiceMode == commands.DeployServiceLocal {
+		if err := startDeployLocalServer(commands.GetDeployConfigPath()); err != nil {
 			commands.ReportError(fmt.Errorf("start local deploy server: %w", err))
 		}
 		return
@@ -51,6 +51,10 @@ func run() {
 	shared.Module = commands.GetModuleConfigPath()
 	hbConfig := getHyperBricksConfiguration()
 	if err := configureRuntimeLogging(hbConfig); err != nil {
+		commands.ReportError(err)
+		return
+	}
+	if err := hbConfig.ValidateDevelopmentDashboard(); err != nil {
 		commands.ReportError(err)
 		return
 	}

@@ -6,8 +6,10 @@ import (
 	"strings"
 )
 
+const DeployConfigFileName = "deploy.hyperbricks.yaml"
+
 func deployConfigPath() string {
-	return resolveDeployConfigPath("", os.Getenv("HB_DEPLOY_CONFIG"))
+	return resolveDeployConfigPath(DeployConfigPath, os.Getenv("HB_DEPLOY_CONFIG"))
 }
 
 func resolveDeployConfigPath(explicitPath, environmentPath string) string {
@@ -20,8 +22,8 @@ func resolveDeployConfigPath(explicitPath, environmentPath string) string {
 	return DeployConfigFileName
 }
 
-// GetStartDeployConfigPath returns the deployment config selected by the start
-// flag, environment, or conventional default, in that order.
-func GetStartDeployConfigPath() string {
-	return resolveDeployConfigPath(StartDeployConfig, os.Getenv("HB_DEPLOY_CONFIG"))
+// GetDeployConfigPath returns the deployment config selected by the deploy
+// command, environment, or conventional default, in that order.
+func GetDeployConfigPath() string {
+	return resolveDeployConfigPath(DeployConfigPath, os.Getenv("HB_DEPLOY_CONFIG"))
 }

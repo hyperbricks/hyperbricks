@@ -239,7 +239,7 @@ test('without a secret only the connection notice is shown and its action opens 
   await flush();
   assert.equal(ui.element('deploymentContent').hidden, true);
   assert.equal(ui.element('connectionNotice').hidden, false);
-  assert.match(ui.element('connectionNoticeText').textContent, /HB_DEPLOY_SECRET/);
+  assert.match(ui.element('connectionNoticeText').textContent, /deploy\.remote\.hmac_secret/);
   assert.match(ui.element('connectionNoticeText').textContent, /secret itself/);
   assert.equal(ui.element('killAllProcesses').hidden, true);
   assert.equal(ui.element('loadModules').disabled, true);

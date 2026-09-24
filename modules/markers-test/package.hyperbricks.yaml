@@ -19,7 +19,13 @@ hyperbricks:
   development:
     watch: true
     reload: true
-    dashboard: true
+    dashboard:
+      enabled: true
+      credentials:
+        user:
+          env: HB_DEVELOPER_USER
+        password:
+          env: HB_DEVELOPER_PASSWORD
 
   live:
     cache: 30s

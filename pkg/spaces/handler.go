@@ -101,6 +101,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	options := cfg.Development.FrontendEditing.Spaces
+	if r.URL.Path != options.Route && !strings.HasPrefix(r.URL.Path, options.Route+"/") {
+		http.NotFound(w, r)
+		return
+	}
+	if !shared.RequireBasicAuth(w, r, cfg.Development.Dashboard.Credentials, shared.DeveloperInterfaceRealm, shared.DeveloperInterfaceUnavailableMessage) {
+		return
+	}
 	s, err := newService(runtime.ModuleRoot, options.Route, cfg.Directories, options, cfg.Development.Watch)
 	if err != nil {
 		logging.GetLogger().Errorw("Spaces initialization failed", "error", err)
@@ -108,7 +115,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.config = parser.HbConfig
-	s.dashboard = cfg.Development.Dashboard
+	s.dashboard = cfg.Development.Dashboard.Enabled
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	s.ServeHTTP(w, r)

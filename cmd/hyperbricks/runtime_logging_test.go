@@ -45,7 +45,7 @@ func setupModuleLogTest(t *testing.T) string {
 func TestRuntimeSummaryAndRoutesStayCompactAtInfo(t *testing.T) {
 	root := setupModuleLogTest(t)
 	config := &shared.Config{Mode: shared.DEVELOPMENT_MODE, Logger: shared.LoggerConfig{Path: filepath.Join(root, "logs/runtime.jsonl")},
-		Development: shared.DevelopmentConfig{Watch: true, Reload: true, Dashboard: true, WatchDirs: []string{"hyperbricks", "templates"}},
+		Development: shared.DevelopmentConfig{Watch: true, Reload: true, Dashboard: shared.DevelopmentDashboardConfig{Enabled: true, Credentials: developerTestCredentials}, WatchDirs: []string{"hyperbricks", "templates"}},
 		Directories: map[string]string{"hyperbricks": filepath.Join(root, "content"), "templates": filepath.Join(root, "views")}}
 	config.Development.FrontendEditing.Enabled = true
 	config.Development.FrontendEditing.Spaces.Route = "/__hyperbricks/spaces"

@@ -80,6 +80,10 @@ func TestRenderDiagnosticsURL(t *testing.T) {
 
 func TestRecordConfigDiagnosticsLogsWorkingURL(t *testing.T) {
 	setupDevelopmentModeServeContentTest(t, false)
+	cfg := getHyperBricksConfiguration()
+	oldDashboard := cfg.Development.Dashboard
+	cfg.Development.Dashboard.Credentials = developerTestCredentials
+	t.Cleanup(func() { cfg.Development.Dashboard = oldDashboard })
 	recordConfigDiagnostics([]error{errors.New("invalid YAML source")})
 	records := collectRecentRenderDiagnostics(1)
 	if len(records) != 1 {
@@ -87,7 +91,7 @@ func TestRecordConfigDiagnosticsLogsWorkingURL(t *testing.T) {
 	}
 	link := loggedRenderDiagnosticsURL(t, records[0].RequestID)
 	response := httptest.NewRecorder()
-	handler(response, httptest.NewRequest(http.MethodGet, link, nil))
+	handler(response, developerTestRequest(http.MethodGet, link, nil))
 	if response.Code != http.StatusOK {
 		t.Fatalf("diagnostics status = %d, want 200", response.Code)
 	}

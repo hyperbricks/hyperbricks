@@ -1739,6 +1739,10 @@ func TestServeContent_DevelopmentRecordsDiagnosticsSeparately(t *testing.T) {
 
 func TestRenderDiagnosticsEndpointReturnsRecordedRequest(t *testing.T) {
 	setupDevelopmentModeServeContentTest(t, false)
+	cfg := getHyperBricksConfiguration()
+	oldDashboard := cfg.Development.Dashboard
+	cfg.Development.Dashboard.Credentials = developerTestCredentials
+	t.Cleanup(func() { cfg.Development.Dashboard = oldDashboard })
 
 	setTestRouteConfig("missing-plugin", map[string]interface{}{
 		"@type":  component.PluginRenderGetName(),
@@ -1761,6 +1765,7 @@ func TestRenderDiagnosticsEndpointReturnsRecordedRequest(t *testing.T) {
 		t.Fatalf("logged diagnostics URL = %q, want %q", diagnosticsURL, want)
 	}
 	diagnosticsRequest := httptest.NewRequest(http.MethodGet, diagnosticsURL, nil)
+	diagnosticsRequest.SetBasicAuth(developerTestCredentials.User, developerTestCredentials.Password)
 	handler(diagnosticsWriter, diagnosticsRequest)
 
 	if diagnosticsWriter.Code != http.StatusOK {

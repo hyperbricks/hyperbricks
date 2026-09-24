@@ -3,7 +3,7 @@
 name="hyperbricks-deploy"
 description="Hyperbricks Deploy API"
 command="/usr/local/bin/hyperbricks"
-command_args="start --deploy-remote"
+command_args="deploy remote"
 command_user="deploy:deploy"
 pidfile="/run/${name}.pid"
 directory="/opt/hyperbricks"

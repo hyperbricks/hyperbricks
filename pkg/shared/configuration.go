@@ -93,11 +93,11 @@ type Config struct {
 	Development          DevelopmentConfig `mapstructure:"development"`
 	Debug                DebugConfig       `mapstructure:"debug"`
 	Live                 LiveConfig        `mapstructure:"live"`
-	Deploy               DeployConfig      `mapstructure:"deploy"`
 	Directories          map[string]string `mapstructure:"directories"`
 	Plugins              PluginsConfig     `mapstructure:"plugins"`
 	System               SystemConfig      `mapstructure:"system"`
 	frontendEditingError error
+	dashboardConfigError error
 }
 
 // Frontend editors are development-only; Spaces is built in, other editors are plugins.
@@ -130,12 +130,17 @@ type PluginsConfig struct {
 }
 
 type DevelopmentConfig struct {
-	FrontendEditing FrontendEditingConfig `mapstructure:"frontend_editing"`
-	Dashboard       bool                  `mapstructure:"dashboard"`
-	FrontendErrors  bool                  `mapstructure:"frontend_errors"`
-	Watch           bool                  `mapstructure:"watch"`
-	WatchDirs       []string              `mapstructure:"watch_dirs"`
-	Reload          bool                  `mapstructure:"reload"`
+	FrontendEditing FrontendEditingConfig      `mapstructure:"frontend_editing"`
+	Dashboard       DevelopmentDashboardConfig `mapstructure:"dashboard"`
+	FrontendErrors  bool                       `mapstructure:"frontend_errors"`
+	Watch           bool                       `mapstructure:"watch"`
+	WatchDirs       []string                   `mapstructure:"watch_dirs"`
+	Reload          bool                       `mapstructure:"reload"`
+}
+
+type DevelopmentDashboardConfig struct {
+	Enabled     bool              `mapstructure:"enabled"`
+	Credentials CredentialsConfig `mapstructure:"credentials"`
 }
 
 // LoggerConfig with defaults.
@@ -182,20 +187,20 @@ type RateLimitConfig struct {
 }
 
 type DeployConfig struct {
-	HMACSecret string             `mapstructure:"hmac_secret"`
-	Remote     DeployRemoteConfig `mapstructure:"remote"`
-	Local      DeployLocalConfig  `mapstructure:"local"`
-	Client     DeployClientConfig `mapstructure:"client"`
+	Remote DeployRemoteConfig `mapstructure:"remote"`
+	Local  DeployLocalConfig  `mapstructure:"local"`
+	Client DeployClientConfig `mapstructure:"client"`
 }
 
 type DeployRemoteConfig struct {
-	APIEnabled  bool                   `mapstructure:"api_enabled"`
-	APIBind     string                 `mapstructure:"api_bind"`
-	APIPort     int                    `mapstructure:"api_port"`
+	Bind        string                 `mapstructure:"bind"`
+	Port        int                    `mapstructure:"port"`
 	Root        string                 `mapstructure:"root"`
 	PortStart   int                    `mapstructure:"port_start"`
 	LogsEnabled bool                   `mapstructure:"logs_enabled"`
 	Binary      string                 `mapstructure:"binary"`
+	Credentials CredentialsConfig      `mapstructure:"credentials"`
+	HMACSecret  string                 `mapstructure:"hmac_secret"`
 	Auth        DeployRemoteAuthConfig `mapstructure:"auth"`
 }
 
@@ -204,10 +209,13 @@ type DeployRemoteAuthConfig struct {
 }
 
 type DeployLocalConfig struct {
-	Bind       string `mapstructure:"bind"`
-	Port       int    `mapstructure:"port"`
-	ModulesDir string `mapstructure:"modules_dir"`
-	BuildRoot  string `mapstructure:"build_root"`
+	Bind        string            `mapstructure:"bind"`
+	Port        int               `mapstructure:"port"`
+	ModulesDir  string            `mapstructure:"modules_dir"`
+	BuildRoot   string            `mapstructure:"build_root"`
+	PortStart   int               `mapstructure:"port_start"`
+	LogsEnabled bool              `mapstructure:"logs_enabled"`
+	Credentials CredentialsConfig `mapstructure:"credentials"`
 }
 
 type DeployClientConfig struct {
@@ -216,8 +224,15 @@ type DeployClientConfig struct {
 }
 
 type DeployClientTarget struct {
-	API   string `mapstructure:"api"`
-	KeyID string `mapstructure:"key_id"`
+	API         string            `mapstructure:"api"`
+	Credentials CredentialsConfig `mapstructure:"credentials"`
+	HMACSecret  string            `mapstructure:"hmac_secret"`
+	KeyID       string            `mapstructure:"key_id"`
+}
+
+type CredentialsConfig struct {
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"`
 }
 
 var (
@@ -314,22 +329,6 @@ func loadHyperBricksConfiguration() *Config {
 				Duration: 10 * time.Minute, // Default cache duration
 			},
 		},
-		Deploy: DeployConfig{
-			Remote: DeployRemoteConfig{
-				APIEnabled:  true,
-				APIBind:     "127.0.0.1",
-				APIPort:     9090,
-				Root:        "deploy",
-				PortStart:   8080,
-				LogsEnabled: true,
-			},
-			Local: DeployLocalConfig{
-				Bind:       "127.0.0.1",
-				Port:       9091,
-				ModulesDir: "modules",
-				BuildRoot:  "deploy",
-			},
-		},
 	}
 
 	// Decode the parsed config into the struct
@@ -403,6 +402,15 @@ func packageConfigYAMLOptions(moduleDir string) yamlparser.Options {
 // decodeConfig decodes map to struct with defaults using mapstructure.
 func decodeConfig(input interface{}, output interface{}) error {
 	if config, ok := output.(*Config); ok {
+		dashboard, err := decodeDevelopmentDashboard(input)
+		config.dashboardConfigError = err
+		config.Development.Dashboard = dashboard
+		if err != nil {
+			return err
+		}
+		// Use the separately validated value even when decoding into a reused config.
+		defer func() { config.Development.Dashboard = dashboard }()
+
 		editing, err := decodeFrontendEditing(input)
 		config.frontendEditingError = err
 		config.Development.FrontendEditing = editing

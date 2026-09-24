@@ -263,7 +263,7 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 	}
 
 	hbconfig := shared.GetHyperBricksConfiguration()
-	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE {
+	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE && shared.DeveloperInterfaceAuthorized(ctx) {
 		if config.Debug && config.DebugPanel {
 			builder.WriteString(ErrorPanelTemplate)
 		}

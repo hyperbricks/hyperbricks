@@ -27,7 +27,6 @@ import (
 	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
-	"github.com/mitchellh/mapstructure"
 )
 
 const (
@@ -139,10 +138,6 @@ func startDeployAPIServer(configPath string) error {
 	if err != nil {
 		return err
 	}
-	if !deployCfg.Remote.APIEnabled {
-		return fmt.Errorf("deploy api disabled in %s", configPath)
-	}
-
 	root := strings.TrimSpace(deployCfg.Remote.Root)
 	if root == "" {
 		root = "deploy"
@@ -151,7 +146,7 @@ func startDeployAPIServer(configPath string) error {
 		root = envRoot
 	}
 
-	bind := strings.TrimSpace(deployCfg.Remote.APIBind)
+	bind := strings.TrimSpace(deployCfg.Remote.Bind)
 	if bind == "" {
 		bind = "127.0.0.1"
 	}
@@ -159,26 +154,28 @@ func startDeployAPIServer(configPath string) error {
 		bind = envBind
 	}
 
-	port := deployCfg.Remote.APIPort
+	port := deployCfg.Remote.Port
 	if port == 0 {
 		port = 9090
 	}
 	if envPort := strings.TrimSpace(os.Getenv("HB_DEPLOY_PORT")); envPort != "" {
-		if parsed, err := strconv.Atoi(envPort); err == nil && parsed > 0 {
-			port = parsed
+		parsed, err := strconv.Atoi(envPort)
+		if err != nil || parsed < 1 || parsed > 65535 {
+			return fmt.Errorf("invalid HB_DEPLOY_PORT %q", envPort)
 		}
+		port = parsed
+	}
+	if port < 1 || port > 65535 {
+		return fmt.Errorf("deploy.remote.port must be between 1 and 65535")
 	}
 
-	secret := strings.TrimSpace(deployCfg.HMACSecret)
-	if secret == "" {
-		secret = strings.TrimSpace(os.Getenv("HB_DEPLOY_SECRET"))
-	}
+	secret := strings.TrimSpace(deployCfg.Remote.HMACSecret)
 	authEnvPrefix := strings.TrimSpace(deployCfg.Remote.Auth.EnvPrefix)
 	if authEnvPrefix == "" {
 		authEnvPrefix = deploySecretEnvPrefix
 	}
 	if secret == "" && authEnvPrefix == "" {
-		return fmt.Errorf("deploy api requires deploy.hmac_secret, HB_DEPLOY_SECRET, or deploy.remote.auth.env_prefix")
+		return fmt.Errorf("deploy.remote requires hmac_secret or auth.env_prefix")
 	}
 
 	portStart := deployCfg.Remote.PortStart
@@ -186,9 +183,14 @@ func startDeployAPIServer(configPath string) error {
 		portStart = 8080
 	}
 	if envStart := strings.TrimSpace(os.Getenv("HB_DEPLOY_PORT_START")); envStart != "" {
-		if parsed, err := strconv.Atoi(envStart); err == nil && parsed > 0 {
-			portStart = parsed
+		parsed, err := strconv.Atoi(envStart)
+		if err != nil || parsed < 1 || parsed > 65535 {
+			return fmt.Errorf("invalid HB_DEPLOY_PORT_START %q", envStart)
 		}
+		portStart = parsed
+	}
+	if portStart < 1 || portStart > 65535 {
+		return fmt.Errorf("deploy.remote.port_start must be between 1 and 65535")
 	}
 
 	logsEnabled := deployCfg.Remote.LogsEnabled
@@ -234,7 +236,7 @@ func startDeployAPIServer(configPath string) error {
 	addr := fmt.Sprintf("%s:%d", bind, port)
 	server := &http.Server{
 		Addr:    addr,
-		Handler: mux,
+		Handler: shared.BasicAuth(mux, deployCfg.Remote.Credentials, "HyperBricks remote deployment"),
 	}
 
 	return serveDeployHTTP(server, "remote")
@@ -269,25 +271,7 @@ func serveDashboardCSS(w http.ResponseWriter, r *http.Request) {
 }
 
 func loadDeployConfig(path string) (shared.DeployConfig, error) {
-	cfg := shared.DeployConfig{
-		Remote: shared.DeployRemoteConfig{
-			APIEnabled:  true,
-			APIBind:     "127.0.0.1",
-			APIPort:     9090,
-			Root:        "deploy",
-			PortStart:   8080,
-			LogsEnabled: true,
-			Auth: shared.DeployRemoteAuthConfig{
-				EnvPrefix: deploySecretEnvPrefix,
-			},
-		},
-		Local: shared.DeployLocalConfig{
-			Bind:       "127.0.0.1",
-			Port:       9091,
-			ModulesDir: "modules",
-			BuildRoot:  "deploy",
-		},
-	}
+	cfg := shared.DefaultDeployConfig()
 
 	deployRaw, err := loadDeployYAMLRoot(path)
 	if err != nil {
@@ -297,19 +281,7 @@ func loadDeployConfig(path string) (shared.DeployConfig, error) {
 		return cfg, fmt.Errorf("missing deploy.remote block in %s", path)
 	}
 
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &cfg,
-		TagName:          "mapstructure",
-		WeaklyTypedInput: true,
-	})
-	if err != nil {
-		return cfg, err
-	}
-	if err := decoder.Decode(deployRaw); err != nil {
-		return cfg, err
-	}
-
-	return cfg, nil
+	return shared.DecodeDeployConfig(deployRaw)
 }
 
 func (api *deployAPI) wrapAuth(next http.HandlerFunc) http.HandlerFunc {
@@ -1522,7 +1494,7 @@ func (api *deployAPI) handleKillAll(w http.ResponseWriter, r *http.Request) {
 			skipped = append(skipped, proc.PID)
 			continue
 		}
-		if strings.Contains(proc.Command, "--deploy-remote") {
+		if hasArgSequence(strings.Fields(proc.Command), "deploy", "remote") {
 			skipped = append(skipped, proc.PID)
 			continue
 		}
@@ -1974,7 +1946,7 @@ func flagValue(args []string, names ...string) string {
 
 func commandMatchesDeploy(command string, module string, buildID string, port int) bool {
 	args := strings.Fields(command)
-	if len(args) == 0 || !hasArg(args, "--deploy") {
+	if len(args) < 3 || !hasArgSequence(args, "deploy", "run") {
 		return false
 	}
 	if module != "" {
@@ -1996,6 +1968,15 @@ func commandMatchesDeploy(command string, module string, buildID string, port in
 		}
 	}
 	return true
+}
+
+func hasArgSequence(args []string, first string, second string) bool {
+	for i := 0; i+1 < len(args); i++ {
+		if args[i] == first && args[i+1] == second {
+			return true
+		}
+	}
+	return false
 }
 
 func verifyProcess(proc deployProcess) error {
@@ -2129,7 +2110,7 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 		return errors.New("deploy binary path is not configured")
 	}
 
-	args := []string{"start", "--deploy"}
+	args := []string{"deploy", "run"}
 	if production {
 		args = append(args, "--production")
 	}

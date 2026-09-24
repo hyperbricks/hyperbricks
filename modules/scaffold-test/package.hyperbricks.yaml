@@ -25,8 +25,8 @@ hyperbricks:
     reload: false
     watch_dirs: [hyperbricks, templates, resources]
     frontend_errors: false
-    dashboard: false
-
+    dashboard:
+      enabled: false
   live:
     cache: 30s
 

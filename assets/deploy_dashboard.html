@@ -94,7 +94,7 @@
         <i data-lucide="lock-keyhole" aria-hidden="true"></i>
         <div>
           <h2 id="connectionNoticeTitle">Connect to the deployment API</h2>
-          <p id="connectionNoticeText">No HMAC secret is set. In Connection settings, enter the value of HB_DEPLOY_SECRET used by the deploy daemon, then press Set. Enter the secret itself, not the environment variable name.</p>
+          <p id="connectionNoticeText">No HMAC secret is set. In Connection settings, enter the value resolved by deploy.remote.hmac_secret, then press Set. Enter the secret itself, not the environment variable name.</p>
           <button id="openConnection" class="btn btn-sm btn-primary" type="button"><i data-lucide="settings-2"></i>Connection settings</button>
         </div>
       </section>
@@ -554,9 +554,9 @@
         ui.killAll.disabled = !state.authenticated;
         ui.connectionAdminDivider.hidden = ui.killAll.hidden;
         const messages = {
-          missing: ["Connect to the deployment API", "No HMAC secret is set. In Connection settings, enter the value of HB_DEPLOY_SECRET used by the deploy daemon, then press Set. Enter the secret itself, not the environment variable name."],
+          missing: ["Connect to the deployment API", "No HMAC secret is set. In Connection settings, enter the value resolved by deploy.remote.hmac_secret, then press Set. Enter the secret itself, not the environment variable name."],
           checking: ["Checking connection", "Verifying the HMAC secret with the deployment API."],
-          invalid: ["Secret not accepted", "The deployment API rejected the HMAC secret. In Connection settings, use the same value as HB_DEPLOY_SECRET on the deploy daemon, then press Set. Enter the secret itself, not the environment variable name."],
+          invalid: ["Secret not accepted", "The deployment API rejected the HMAC secret. In Connection settings, use the value resolved by deploy.remote.hmac_secret, then press Set. Enter the secret itself, not the environment variable name."],
           storage: ["Connection could not be saved", "The API accepted the secret, but this browser could not save the connection. Check the site's browser storage permissions, then try Set again."],
           unavailable: ["Deployment API unavailable", "Check that the deploy daemon is running and that API Base in Connection settings points to its address. Your saved secret has not been changed."]
         };

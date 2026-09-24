@@ -78,6 +78,7 @@ func TestContextualPageEnforcesDevelopmentHostAndRequestBoundaries(t *testing.T)
 	cfg := shared.GetHyperBricksConfiguration()
 	old, runtime := *cfg, shared.GetRuntimeOptions()
 	t.Cleanup(func() { *cfg = old; shared.SetRuntimeOptions(runtime) })
+	credentials := shared.CredentialsConfig{User: "developer", Password: "secret"}
 	var handler Handler
 	const body = "<html><body>Page</body></html>"
 	cases := []struct {
@@ -103,10 +104,12 @@ func TestContextualPageEnforcesDevelopmentHostAndRequestBoundaries(t *testing.T)
 			cfg.Directories = s.dirs
 			cfg.Plugins.Enabled = nil
 			cfg.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
+			cfg.Development.Dashboard.Credentials = credentials
 			cfg.Development.FrontendEditing.Enabled = !tc.disabled
 			cfg.Development.FrontendEditing.Spaces.AllowedHosts = []string{"editor.test"}
 			shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: s.module, Production: tc.production})
 			request := httptest.NewRequest(tc.method, "http://"+tc.host+"/portfolio/english?"+tc.query, nil)
+			request.SetBasicAuth(credentials.User, credentials.Password)
 			got, active, err := handler.ContextualPage(request, "portfolio/english", body)
 			if err != nil || active != tc.want {
 				t.Fatalf("active=%v err=%v", active, err)
@@ -118,6 +121,7 @@ func TestContextualPageEnforcesDevelopmentHostAndRequestBoundaries(t *testing.T)
 				// Contextual navigation does not grant write access.
 				writer := httptest.NewRecorder()
 				request = httptest.NewRequest(http.MethodPost, "http://"+tc.host+cfg.Development.FrontendEditing.Spaces.Route+"/api", strings.NewReader(`{}`))
+				request.SetBasicAuth(credentials.User, credentials.Password)
 				handler.ServeHTTP(writer, request)
 				if writer.Code != 403 {
 					t.Fatalf("read-only editor mutation: %d", writer.Code)

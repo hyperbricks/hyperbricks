@@ -26,6 +26,7 @@ func TestContextualEditingResponseBoundaries(t *testing.T) {
 	cfg.Plugins.Enabled = nil
 	cfg.Server.Beautify = false
 	cfg.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
+	cfg.Development.Dashboard.Credentials = developerTestCredentials
 	shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: module})
 	cases := []struct {
 		name, kind, contentType string
@@ -52,7 +53,7 @@ func TestContextualEditingResponseBoundaries(t *testing.T) {
 			setTestRouteConfig("index", config)
 			commands.RenderStatic = tc.static
 			response := httptest.NewRecorder()
-			ServeContent(response, httptest.NewRequest("GET", "http://localhost/?edit=true", nil))
+			ServeContent(response, developerTestRequest("GET", "http://localhost/?edit=true", nil))
 			got := strings.Contains(response.Body.String(), `id="hb-spaces-context"`)
 			if got != tc.want {
 				t.Fatalf("editing=%v status=%d body=%s", got, response.Code, response.Body.String())

@@ -6,7 +6,8 @@ hyperbricks:
   development:
     watch: false
     reload: false
-    dashboard: false
+    dashboard:
+      enabled: false
   server:
     port: 18110
     beautify: false

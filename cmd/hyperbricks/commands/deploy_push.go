@@ -22,29 +22,11 @@ import (
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
-	"github.com/mitchellh/mapstructure"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
-type deployPushConfig struct {
-	HMACSecret string                 `mapstructure:"hmac_secret"`
-	Remote     deployPushRemoteConfig `mapstructure:"remote"`
-	Client     deployClientConfig     `mapstructure:"client"`
-}
-
-type deployPushRemoteConfig struct {
-	Root    string `mapstructure:"root"`
-	APIPort int    `mapstructure:"api_port"`
-}
-
-type deployClientConfig struct {
-	Target  string                        `mapstructure:"target"`
-	Targets map[string]deployClientTarget `mapstructure:"targets"`
-}
-
-type deployClientTarget struct {
-	API   string `mapstructure:"api"`
-	KeyID string `mapstructure:"key_id"`
-}
+type deployPushConfig = shared.DeployConfig
+type deployClientTarget = shared.DeployClientTarget
 
 func runBuildPush(result buildResult) error {
 	if !result.Built {
@@ -94,14 +76,13 @@ func runBuildPush(result buildResult) error {
 		return fmt.Errorf("archive not found: %s", archivePath)
 	}
 
-	secret := resolveDeploySecret(cfg, result.Module, target.KeyID)
-	if secret == "" {
-		return errors.New("deploy.hmac_secret, HB_DEPLOY_SECRET, or module/key deploy secret is required for push")
-	}
-
 	resolved, err := normalizeDeployTarget(target)
 	if err != nil {
 		return err
+	}
+	secret := resolveDeploySecret(resolved)
+	if secret == "" {
+		return errors.New("deploy.client target hmac_secret is required for push")
 	}
 
 	logging.GetLogger().Named("deploy").Infow("Uploading and activating build", "archive", filepath.Base(archivePath), "target", targetName)
@@ -156,9 +137,9 @@ func PushBuildToTarget(module string, buildID string, archivePath string, target
 		return "", fmt.Errorf("archive not found: %s", archivePath)
 	}
 
-	secret := resolveDeploySecret(cfg, module, resolved.KeyID)
+	secret := resolveDeploySecret(resolved)
 	if secret == "" {
-		return "", errors.New("deploy.hmac_secret, HB_DEPLOY_SECRET, or module/key deploy secret is required for push")
+		return "", errors.New("deploy.client target hmac_secret is required for push")
 	}
 
 	if err := uploadRemoteBuild(resolved, module, buildID, archivePath, secret); err != nil {
@@ -169,35 +150,15 @@ func PushBuildToTarget(module string, buildID string, archivePath string, target
 }
 
 func loadDeployPushConfig(path string) (deployPushConfig, error) {
-	cfg := deployPushConfig{
-		Remote: deployPushRemoteConfig{
-			APIPort: 9090,
-		},
-	}
+	cfg := shared.DefaultDeployConfig()
 	deployRaw, err := loadDeployYAMLRoot(path)
 	if err != nil {
 		return cfg, err
 	}
-	if _, ok := deployRaw["remote"].(map[string]interface{}); !ok {
-		return cfg, fmt.Errorf("missing deploy.remote block in %s", path)
-	}
 	if _, ok := deployRaw["client"].(map[string]interface{}); !ok {
 		return cfg, fmt.Errorf("missing deploy.client block in %s", path)
 	}
-
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &cfg,
-		TagName:          "mapstructure",
-		WeaklyTypedInput: true,
-	})
-	if err != nil {
-		return cfg, err
-	}
-	if err := decoder.Decode(deployRaw); err != nil {
-		return cfg, err
-	}
-
-	return cfg, nil
+	return shared.DecodeDeployConfig(deployRaw)
 }
 
 func selectDeployTarget(cfg deployPushConfig, explicit string, reader *bufio.Reader) (string, deployClientTarget, error) {
@@ -265,21 +226,14 @@ func normalizeDeployTarget(target deployClientTarget) (deployClientTarget, error
 	if target.API == "" {
 		return target, errors.New("deploy target api is required")
 	}
+	if err := target.Credentials.Validate("deploy target"); err != nil {
+		return target, err
+	}
 	return target, nil
 }
 
-func resolveDeploySecret(cfg deployPushConfig, module string, keyID string) string {
-	keyID = strings.TrimSpace(keyID)
-	if keyID != "" {
-		if secret := strings.TrimSpace(os.Getenv(deploySecretEnvName("HB_DEPLOY_SECRET_", module, keyID))); secret != "" {
-			return secret
-		}
-	}
-	secret := strings.TrimSpace(cfg.HMACSecret)
-	if secret == "" || strings.Contains(secret, "{{") {
-		secret = strings.TrimSpace(os.Getenv("HB_DEPLOY_SECRET"))
-	}
-	return secret
+func resolveDeploySecret(target deployClientTarget) string {
+	return strings.TrimSpace(target.HMACSecret)
 }
 
 func uploadRemoteBuild(target deployClientTarget, module string, buildID string, archivePath string, secret string) error {
@@ -303,6 +257,9 @@ func uploadRemoteBuild(target deployClientTarget, module string, buildID string,
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/vnd.hyperbricks.hra")
+	if err := shared.ApplyBasicAuth(req, target.Credentials, "deploy target"); err != nil {
+		return err
+	}
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
@@ -397,28 +354,4 @@ func randomHex(bytesLen int) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(data), nil
-}
-
-func deploySecretEnvName(prefix string, module string, keyID string) string {
-	return strings.TrimSpace(prefix) + deployEnvPart(module) + "_" + deployEnvPart(keyID)
-}
-
-func deployEnvPart(value string) string {
-	value = strings.ToUpper(strings.TrimSpace(value))
-	var builder strings.Builder
-	lastUnderscore := false
-	for _, r := range value {
-		isAlpha := r >= 'A' && r <= 'Z'
-		isDigit := r >= '0' && r <= '9'
-		if isAlpha || isDigit {
-			builder.WriteRune(r)
-			lastUnderscore = false
-			continue
-		}
-		if !lastUnderscore {
-			builder.WriteByte('_')
-			lastUnderscore = true
-		}
-	}
-	return strings.Trim(builder.String(), "_")
 }

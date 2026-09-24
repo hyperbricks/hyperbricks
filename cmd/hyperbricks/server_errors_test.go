@@ -18,7 +18,7 @@ func setupErrorsViewTest(t *testing.T) {
 	cfg := getHyperBricksConfiguration()
 	oldDashboard, oldEditing := cfg.Development.Dashboard, cfg.Development.FrontendEditing
 	oldRuntime, oldStatic := shared.GetRuntimeOptions(), commands.RenderStatic
-	cfg.Development.Dashboard = true
+	cfg.Development.Dashboard = shared.DevelopmentDashboardConfig{Enabled: true, Credentials: developerTestCredentials}
 	cfg.Development.FrontendEditing.Enabled = true
 	cfg.Development.FrontendEditing.Spaces.Route = "/__hyperbricks/custom-spaces"
 	runtime := oldRuntime
@@ -37,7 +37,7 @@ func TestErrorsViewReadOnlyAssetsAndNavigation(t *testing.T) {
 	for _, path := range []string{errorsViewPath, errorsViewPath + "/web/errors.css", errorsViewPath + "/web/errors.js", errorsViewPath + "/web/errors-model.mjs"} {
 		t.Run(path, func(t *testing.T) {
 			response := httptest.NewRecorder()
-			handler(response, httptest.NewRequest(http.MethodGet, path, nil))
+			handler(response, developerTestRequest(http.MethodGet, path, nil))
 			if response.Code != 200 || response.Body.Len() == 0 || response.Header().Get("Cache-Control") != "no-store" || response.Header().Get("X-Content-Type-Options") != "nosniff" {
 				t.Fatalf("GET %s: status=%d headers=%v", path, response.Code, response.Header())
 			}
@@ -56,12 +56,12 @@ func TestErrorsViewReadOnlyAssetsAndNavigation(t *testing.T) {
 				}
 			}
 			response = httptest.NewRecorder()
-			handler(response, httptest.NewRequest(http.MethodHead, path, nil))
+			handler(response, developerTestRequest(http.MethodHead, path, nil))
 			if response.Code != 200 || response.Body.Len() != 0 {
 				t.Fatalf("HEAD: %d, %d bytes", response.Code, response.Body.Len())
 			}
 			response = httptest.NewRecorder()
-			handler(response, httptest.NewRequest(http.MethodPost, path, nil))
+			handler(response, developerTestRequest(http.MethodPost, path, nil))
 			if response.Code != 405 {
 				t.Fatalf("POST: %d", response.Code)
 			}
@@ -69,7 +69,7 @@ func TestErrorsViewReadOnlyAssetsAndNavigation(t *testing.T) {
 	}
 	for _, path := range []string{errorsViewPath + "/unknown", errorsViewPath + "/logs"} {
 		response := httptest.NewRecorder()
-		handler(response, httptest.NewRequest(http.MethodGet, path, nil))
+		handler(response, developerTestRequest(http.MethodGet, path, nil))
 		if response.Code != 404 {
 			t.Fatalf("unexpected endpoint %s: %d", path, response.Code)
 		}
@@ -81,7 +81,8 @@ func TestErrorsViewDisabledOutsideDevelopmentDashboard(t *testing.T) {
 	cfg := getHyperBricksConfiguration()
 	for _, scenario := range []string{"live", "production", "static", "dashboard disabled", "debug"} {
 		t.Run(scenario, func(t *testing.T) {
-			cfg.Mode, cfg.Development.Dashboard = shared.DEVELOPMENT_MODE, true
+			cfg.Mode = shared.DEVELOPMENT_MODE
+			cfg.Development.Dashboard = shared.DevelopmentDashboardConfig{Enabled: true, Credentials: developerTestCredentials}
 			runtime := shared.GetRuntimeOptions()
 			runtime.Production, commands.RenderStatic = false, false
 			switch scenario {
@@ -94,7 +95,7 @@ func TestErrorsViewDisabledOutsideDevelopmentDashboard(t *testing.T) {
 			case "static":
 				commands.RenderStatic = true
 			case "dashboard disabled":
-				cfg.Development.Dashboard = false
+				cfg.Development.Dashboard.Enabled = false
 			}
 			shared.SetRuntimeOptions(runtime)
 			want := 404
@@ -103,7 +104,7 @@ func TestErrorsViewDisabledOutsideDevelopmentDashboard(t *testing.T) {
 			}
 			for _, path := range []string{errorsViewPath, errorsViewPath + "/web/errors.js"} {
 				response := httptest.NewRecorder()
-				handler(response, httptest.NewRequest(http.MethodGet, path, nil))
+				handler(response, developerTestRequest(http.MethodGet, path, nil))
 				if response.Code != want {
 					t.Fatalf("%s: got %d want %d", path, response.Code, want)
 				}
@@ -121,7 +122,7 @@ func TestErrorsViewUsesExistingDiagnosticsAndPreservesSeverity(t *testing.T) {
 		errors.New(message),
 	})
 	response := httptest.NewRecorder()
-	handler(response, httptest.NewRequest(http.MethodGet, renderDiagnosticsPath+"?limit=200", nil))
+	handler(response, developerTestRequest(http.MethodGet, renderDiagnosticsPath+"?limit=200", nil))
 	var records []RenderDiagnostics
 	if err := json.Unmarshal(response.Body.Bytes(), &records); err != nil {
 		t.Fatal(err)
@@ -136,7 +137,7 @@ func TestErrorsViewUsesExistingDiagnosticsAndPreservesSeverity(t *testing.T) {
 		t.Error("JSON should escape HTML")
 	}
 	response = httptest.NewRecorder()
-	handler(response, httptest.NewRequest(http.MethodGet, renderDiagnosticsPath+"?request_id=expired", nil))
+	handler(response, developerTestRequest(http.MethodGet, renderDiagnosticsPath+"?request_id=expired", nil))
 	if response.Code != 404 {
 		t.Errorf("expired diagnostic: %d", response.Code)
 	}

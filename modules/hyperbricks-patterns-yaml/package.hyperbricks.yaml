@@ -24,7 +24,13 @@ hyperbricks:
   development:
     watch: true
     reload: true
-    dashboard: false
+    dashboard:
+      enabled: false
+      credentials:
+        user:
+          env: HB_DEVELOPER_USER
+        password:
+          env: HB_DEVELOPER_PASSWORD
     frontend_editing:
       spaces:
         route: /__hyperbricks/spaces

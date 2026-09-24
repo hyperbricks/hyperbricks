@@ -19,8 +19,8 @@ hyperbricks:
   development:
     watch: true
     reload: true
-    dashboard: false
-
+    dashboard:
+      enabled: false
   live:
     cache: 30s
 

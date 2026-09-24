@@ -315,7 +315,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 	errorPanelTemplateHtml := ""
 
 	hbconfig := shared.GetHyperBricksConfiguration()
-	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE {
+	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE && shared.DeveloperInterfaceAuthorized(ctx) {
 		errorPanelTemplateHtml = ErrorPanelTemplate
 	}
 

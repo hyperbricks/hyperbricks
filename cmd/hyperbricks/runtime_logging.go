@@ -70,7 +70,7 @@ func logRuntimeSummary(config *shared.Config) {
 		return
 	}
 	dashboard, errors, spaces := "disabled", "disabled", "disabled"
-	if config.Development.Dashboard {
+	if config.Development.Dashboard.Enabled {
 		dashboard, errors = "/dashboard", errorsViewPath
 	}
 	if config.Mode == shared.DEVELOPMENT_MODE && config.Development.FrontendEditing.Enabled {
@@ -81,6 +81,10 @@ func logRuntimeSummary(config *shared.Config) {
 			"spaces_write", spaces != "disabled" && config.Development.FrontendEditing.Spaces.Write)
 	} else if dashboard != "disabled" || spaces != "disabled" {
 		logger.Infof("Developer tools  dashboard=%s spaces=%s write=%t", dashboard, spaces, spaces != "disabled" && config.Development.FrontendEditing.Spaces.Write)
+	}
+	if (config.Development.Dashboard.Enabled || config.Development.FrontendEditing.Enabled) &&
+		!config.Development.Dashboard.Credentials.Complete() {
+		logger.Warn("Developer interface locked: hyperbricks.development.dashboard.credentials is not fully configured")
 	}
 	watching := config.Mode == shared.DEVELOPMENT_MODE && config.Development.Watch
 	directories := []string{}

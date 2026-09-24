@@ -25,6 +25,9 @@ func handleFrontendEditor(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 	if r.URL.Path == editing.Spaces.Route || strings.HasPrefix(r.URL.Path, editing.Spaces.Route+"/") {
+		if !requireDeveloperInterfaceAuth(w, r) {
+			return true
+		}
 		spacesEditor.ServeHTTP(w, r)
 		return true
 	}
@@ -37,6 +40,9 @@ func handleFrontendEditor(w http.ResponseWriter, r *http.Request) bool {
 		editor := editing.Editors[name]
 		if !validEditorRoute(editor.Route) || (r.URL.Path != editor.Route && !strings.HasPrefix(r.URL.Path, editor.Route+"/")) {
 			continue
+		}
+		if !requireDeveloperInterfaceAuth(w, r) {
+			return true
 		}
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("X-Content-Type-Options", "nosniff")

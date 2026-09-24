@@ -14,8 +14,8 @@ hyperbricks:
     watch: true
     reload: true
     frontend_errors: false
-    dashboard: false
-
+    dashboard:
+      enabled: false
   server:
     port: 8105
     beautify: false
