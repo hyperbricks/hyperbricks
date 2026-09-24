@@ -134,12 +134,7 @@ func (s *deployNonceStore) seen(nonce string, now time.Time) bool {
 	return false
 }
 
-func startDeployAPIServer() error {
-	configPath := commands.DeployConfigFileName
-	if envPath := strings.TrimSpace(os.Getenv("HB_DEPLOY_CONFIG")); envPath != "" {
-		configPath = envPath
-	}
-
+func startDeployAPIServer(configPath string) error {
 	deployCfg, err := loadDeployConfig(configPath)
 	if err != nil {
 		return err

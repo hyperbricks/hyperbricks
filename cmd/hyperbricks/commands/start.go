@@ -22,6 +22,7 @@ var (
 	StartBuildID           string
 	StartDeployRemote      bool
 	StartDeployLocal       bool
+	StartDeployConfig      string
 	StartDeployInit        string
 	StartRuntimeGateway    bool
 	StartRuntimeDomain     string
@@ -86,6 +87,20 @@ func NewStartCommand() *cobra.Command {
 		Example: "  hyperbricks start -m demo\n" +
 			"  hyperbricks start -m ./modules/demo",
 		Run: func(cmd *cobra.Command, args []string) {
+			deployConfigChanged := cmd.Flags().Changed("deploy-config")
+			if deployConfigChanged && strings.TrimSpace(StartDeployConfig) == "" {
+				failf("--deploy-config cannot be empty")
+				return
+			}
+			if deployConfigChanged && strings.TrimSpace(StartDeployInit) != "" {
+				failf("--deploy-config cannot be combined with --deploy-init-config")
+				return
+			}
+			if deployConfigChanged && !StartDeployRemote && !StartDeployLocal {
+				failf("--deploy-config requires --deploy-local or --deploy-remote")
+				return
+			}
+
 			if strings.TrimSpace(StartDeployInit) != "" {
 				if err := writeDeployInitConfig(StartDeployInit); err != nil {
 					failf("Error creating deploy config: %v\n", err)
@@ -146,7 +161,7 @@ func NewStartCommand() *cobra.Command {
 					ExitCode = 1
 					return
 				}
-				moduleRoot, err := resolveDirectStartModuleRoot(StartModule, workingDirectory)
+				moduleRoot, err := resolveModuleRoot(StartModule, workingDirectory)
 				if err != nil {
 					failf("Invalid module selection %q: %v\n", StartModule, err)
 					Exit = true
@@ -181,13 +196,14 @@ func NewStartCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&StartModule, "module", "m", "default", "module name or directory path")
-	_ = cmd.RegisterFlagCompletionFunc("module", completeStartModule)
+	_ = cmd.RegisterFlagCompletionFunc("module", completeModuleSelection)
 	cmd.Flags().StringVar(&StartConfigPath, "config", "", "package config path relative to the selected module")
 	cmd.Flags().BoolVar(&StartDeploy, "deploy", false, "Start server from the deploy folder using the current build")
 	cmd.Flags().StringVar(&StartDeployDir, "deploy-dir", "deploy", "deploy directory containing module builds")
 	cmd.Flags().StringVar(&StartBuildID, "build", "", "Deploy build ID to start (defaults to current)")
 	cmd.Flags().BoolVar(&StartDeployRemote, "deploy-remote", false, "Start deploy API daemon (remote)")
 	cmd.Flags().BoolVar(&StartDeployLocal, "deploy-local", false, "Start local deploy dashboard")
+	cmd.Flags().StringVar(&StartDeployConfig, "deploy-config", "", "deployment configuration file")
 	cmd.Flags().StringVar(&StartDeployInit, "deploy-init-config", "", "Create a default deploy.hyperbricks.yaml (local or remote)")
 	cmd.Flags().BoolVar(&StartRuntimeGateway, "runtime-gateway", false, "Enable host-based runtime gateway before normal route rendering")
 	cmd.Flags().StringVar(&StartRuntimeDomain, "runtime-domain", "", "Runtime host suffix to match, for example runtime.local")
@@ -199,7 +215,7 @@ func NewStartCommand() *cobra.Command {
 	return cmd
 }
 
-func completeStartModule(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func completeModuleSelection(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if isModulePath(toComplete) {
 		return nil, cobra.ShellCompDirectiveDefault
 	}

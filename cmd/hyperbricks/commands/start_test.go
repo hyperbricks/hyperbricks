@@ -17,6 +17,7 @@ func resetStartCommandState(t *testing.T) {
 	previousStartBuildID := StartBuildID
 	previousStartDeployRemote := StartDeployRemote
 	previousStartDeployLocal := StartDeployLocal
+	previousStartDeployConfig := StartDeployConfig
 	previousStartDeployInit := StartDeployInit
 	previousStartRuntimeGateway := StartRuntimeGateway
 	previousStartRuntimeDomain := StartRuntimeDomain
@@ -38,6 +39,7 @@ func resetStartCommandState(t *testing.T) {
 	StartBuildID = ""
 	StartDeployRemote = false
 	StartDeployLocal = false
+	StartDeployConfig = ""
 	StartDeployInit = ""
 	StartRuntimeGateway = false
 	StartRuntimeDomain = ""
@@ -60,6 +62,7 @@ func resetStartCommandState(t *testing.T) {
 		StartBuildID = previousStartBuildID
 		StartDeployRemote = previousStartDeployRemote
 		StartDeployLocal = previousStartDeployLocal
+		StartDeployConfig = previousStartDeployConfig
 		StartDeployInit = previousStartDeployInit
 		StartRuntimeGateway = previousStartRuntimeGateway
 		StartRuntimeDomain = previousStartRuntimeDomain
@@ -173,5 +176,48 @@ func TestStartCommandRejectsExplicitEmptyModuleSelection(t *testing.T) {
 	}
 	if !Exit || ExitCode != 1 {
 		t.Fatalf("exit state = (%t, %d), want rejected selection", Exit, ExitCode)
+	}
+}
+
+func TestStartCommandAcceptsDeployConfigForLocalAndRemoteModes(t *testing.T) {
+	for _, mode := range []string{"--deploy-local", "--deploy-remote"} {
+		t.Run(mode, func(t *testing.T) {
+			resetStartCommandState(t)
+			command := NewStartCommand()
+			command.SetArgs([]string{mode, "--deploy-config", filepath.Join("configs", "deploy.yaml")})
+			if err := command.Execute(); err != nil {
+				t.Fatalf("execute start command: %v", err)
+			}
+			if !StartMode || Exit || ExitCode != 0 {
+				t.Fatalf("start state = (mode=%t, exit=%t, code=%d), want deploy startup", StartMode, Exit, ExitCode)
+			}
+			if got, want := GetStartDeployConfigPath(), filepath.Join("configs", "deploy.yaml"); got != want {
+				t.Fatalf("deploy config = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
+func TestStartCommandRejectsInvalidDeployConfigCombinations(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{name: "without deploy service", args: []string{"--deploy-config", "deploy.yaml"}},
+		{name: "empty value", args: []string{"--deploy-local", "--deploy-config", ""}},
+		{name: "with init", args: []string{"--deploy-init-config", "local", "--deploy-config", "deploy.yaml"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resetStartCommandState(t)
+			command := NewStartCommand()
+			command.SetArgs(tt.args)
+			if err := command.Execute(); err != nil {
+				t.Fatalf("execute start command: %v", err)
+			}
+			if !Exit || ExitCode != 1 || StartMode {
+				t.Fatalf("start state = (mode=%t, exit=%t, code=%d), want rejected command", StartMode, Exit, ExitCode)
+			}
+		})
 	}
 }

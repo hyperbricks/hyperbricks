@@ -168,13 +168,6 @@ func PushBuildToTarget(module string, buildID string, archivePath string, target
 	return resolvedName, nil
 }
 
-func deployConfigPath() string {
-	if envPath := strings.TrimSpace(os.Getenv("HB_DEPLOY_CONFIG")); envPath != "" {
-		return envPath
-	}
-	return DeployConfigFileName
-}
-
 func loadDeployPushConfig(path string) (deployPushConfig, error) {
 	cfg := deployPushConfig{
 		Remote: deployPushRemoteConfig{

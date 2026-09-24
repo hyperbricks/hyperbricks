@@ -12,8 +12,31 @@ import (
 
 func TestDeployConfigPathDefaultsToYAML(t *testing.T) {
 	t.Setenv("HB_DEPLOY_CONFIG", "")
+	previous := StartDeployConfig
+	StartDeployConfig = ""
+	t.Cleanup(func() { StartDeployConfig = previous })
 	if got := deployConfigPath(); got != DeployConfigFileName {
 		t.Fatalf("deployConfigPath() = %q, want %q", got, DeployConfigFileName)
+	}
+}
+
+func TestResolveDeployConfigPathPrecedence(t *testing.T) {
+	tests := []struct {
+		name        string
+		explicit    string
+		environment string
+		want        string
+	}{
+		{name: "explicit overrides environment", explicit: " configs/explicit.yaml ", environment: "configs/environment.yaml", want: filepath.Join("configs", "explicit.yaml")},
+		{name: "environment overrides default", environment: " configs/environment.yaml ", want: filepath.Join("configs", "environment.yaml")},
+		{name: "default", want: DeployConfigFileName},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := resolveDeployConfigPath(tt.explicit, tt.environment); got != tt.want {
+				t.Fatalf("resolveDeployConfigPath() = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }
 

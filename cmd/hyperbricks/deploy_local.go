@@ -111,8 +111,7 @@ type localPushRequest struct {
 	Target string `json:"target"`
 }
 
-func startDeployLocalServer() error {
-	configPath := deployLocalConfigPath()
+func startDeployLocalServer(configPath string) error {
 	cfg, err := loadDeployLocalConfig(configPath)
 	if err != nil {
 		return err
@@ -183,13 +182,6 @@ func startDeployLocalServer() error {
 	}
 
 	return serveDeployHTTP(server, "local")
-}
-
-func deployLocalConfigPath() string {
-	if envPath := strings.TrimSpace(os.Getenv("HB_DEPLOY_CONFIG")); envPath != "" {
-		return envPath
-	}
-	return commands.DeployConfigFileName
 }
 
 func loadDeployLocalConfig(path string) (deployLocalConfig, error) {

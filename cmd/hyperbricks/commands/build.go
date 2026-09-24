@@ -108,7 +108,8 @@ func NewBuildCommand() *cobra.Command {
 	cmd.Flags().StringVar(&buildReplaceTarget, "replace", "", "Replace the current build or a specific build ID")
 	cmd.Flags().Lookup("replace").NoOptDefVal = "current"
 	cmd.Flags().StringVar(&buildOutDir, "out", "deploy", "output directory for build archives")
-	cmd.Flags().StringVarP(&buildModule, "module", "m", "default", "module in the ./modules directory")
+	cmd.Flags().StringVarP(&buildModule, "module", "m", "default", "module name or directory path")
+	_ = cmd.RegisterFlagCompletionFunc("module", completeModuleSelection)
 	cmd.Flags().BoolVar(&buildPush, "push", false, "Push build archive to a deploy target")
 	cmd.Flags().StringVar(&buildPushTarget, "target", "", "Deploy target name for --push")
 
@@ -164,9 +165,7 @@ func BuildModuleWithOptions(opts BuildOptions) (buildResult, error) {
 }
 
 func runBuild() (buildResult, error) {
-	result := buildResult{
-		Module: buildModule,
-	}
+	result := buildResult{}
 	format, ext, err := resolveBuildFormat()
 	if err != nil {
 		return result, err
@@ -176,7 +175,17 @@ func runBuild() (buildResult, error) {
 		return result, fmt.Errorf("module name cannot be empty")
 	}
 
-	moduleDir := filepath.Join("modules", buildModule)
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return result, fmt.Errorf("resolve current working directory: %w", err)
+	}
+	selection, err := resolveModuleSelection(buildModule, workingDirectory)
+	if err != nil {
+		return result, fmt.Errorf("resolve module %q: %w", buildModule, err)
+	}
+	moduleDir := selection.Root
+	moduleName := selection.Name
+	result.Module = moduleName
 	if _, err := os.Stat(moduleDir); err != nil {
 		return result, fmt.Errorf("module directory not found: %s", moduleDir)
 	}
@@ -197,7 +206,7 @@ func runBuild() (buildResult, error) {
 		return result, err
 	}
 
-	outDir := filepath.Join(buildOutDir, buildModule)
+	outDir := filepath.Join(buildOutDir, moduleName)
 	indexPath := filepath.Join(outDir, versionIndexFile)
 	index, err := loadBuildIndex(indexPath)
 	if err != nil {
@@ -219,7 +228,7 @@ func runBuild() (buildResult, error) {
 	hbVersion := strings.TrimSpace(assets.VersionMD)
 
 	updates := map[string]string{
-		"module":         buildModule,
+		"module":         moduleName,
 		"commit":         commit,
 		"built_at":       builtAt,
 		"hyperbricks":    hbVersion,
@@ -241,7 +250,7 @@ func runBuild() (buildResult, error) {
 		return result, fmt.Errorf("failed to create output directory %s: %w", outDir, err)
 	}
 
-	filename := fmt.Sprintf("%s-%s-%s.%s", buildModule, moduleVersion, buildID, ext)
+	filename := fmt.Sprintf("%s-%s-%s.%s", moduleName, moduleVersion, buildID, ext)
 	outPath := filepath.Join(outDir, filename)
 
 	if err := writeArchive(outPath, files, []byte(updatedConfig)); err != nil {

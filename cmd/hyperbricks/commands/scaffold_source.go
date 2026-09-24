@@ -32,7 +32,7 @@ func loadAuthoringModule(selection, config string) (*authoringModule, error) {
 	if err != nil {
 		return nil, err
 	}
-	root, err := resolveDirectStartModuleRoot(selection, cwd)
+	root, err := resolveModuleRoot(selection, cwd)
 	if err != nil {
 		return nil, err
 	}

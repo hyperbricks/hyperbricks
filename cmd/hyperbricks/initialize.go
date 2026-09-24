@@ -36,13 +36,13 @@ func run() {
 	applyCommandRuntimeOptions()
 
 	if commands.StartDeployRemote {
-		if err := startDeployAPIServer(); err != nil {
+		if err := startDeployAPIServer(commands.GetStartDeployConfigPath()); err != nil {
 			commands.ReportError(fmt.Errorf("start deploy daemon: %w", err))
 		}
 		return
 	}
 	if commands.StartDeployLocal {
-		if err := startDeployLocalServer(); err != nil {
+		if err := startDeployLocalServer(commands.GetStartDeployConfigPath()); err != nil {
 			commands.ReportError(fmt.Errorf("start local deploy server: %w", err))
 		}
 		return
