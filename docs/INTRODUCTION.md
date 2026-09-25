@@ -1,26 +1,80 @@
 # Introduction
 
-HyperBricks is a Go runtime and build system for hypermedia applications. You describe pages, fragments, templates, data calls, and route behavior in `*.hyperbricks.yaml` files; HyperBricks materializes that configuration into the same runtime component model for serving or static rendering.
+## What is HyperBricks
 
-The goal is simple: keep the authoring model readable, reusable, and versionable while still giving developers full control over HTML, routing, templates, and deployment.
+HyperBricks is a native full-stack build system with an integrated rendering engine for hypermedia web applications.
+
+Applications are assembled from nested component maps described and connected through declarative, YAML-based configuration files. At startup, HyperBricks preloads these configurations. It compiles the output they define at runtime.
+
+HyperBricks processes configuration in three steps:
+
+1. Routes and reusable components are declared in YAML source files.
+2. The parser converts the source into configuration maps that preserve component order.
+3. The runtime reads those maps, selects the registered components, and renders them.
+
+These declaratively configured components are the building blocks of HyperBricks.
+
+**Leaf** components render their own output. Common examples are:
+- `html`,
+- `text`,
+- `image`,
+- `css`,
+- `javascript`,
+- `json_render`,
+- `menu`
+- `plugin`
+
+**Composite** components contain or transform other components. Common examples are:
+
+- `tree`
+- `template`
+- `head`
+- `api_render`
+- `fragment`
+- `hypermedia`.
+
+
+HyperBricks replaces recurring application orchestration code with declarative component configuration, while the runtime handles component selection, execution, and composition.
+
+The rendering engine runs these components on the server and combines their output into HTML. Their configuration declaratively defines what they render and how they are composed.
+
+The following example defines `page` as a `hypermedia` component with the route `/first`. Its `main` field contains a `tree` component that recursively renders two child components, `html` and `text`, in their configured order.
+
+```yaml
+page:
+  - type: hypermedia
+  - route: first
+  - main:
+      - type: tree
+      - heading:
+          - type: html
+          - value: <h1>First</h1>
+      - copy:
+          - type: text
+          - value: Second
+```
+
+Application-specific backend logic can use native Go plugins through the `plugin` component or JavaScript through the `goja_render` component. Like the built-in components, they are configured and composed declaratively.
+
+The integrated `esbuild` component bundles JavaScript, TypeScript, and CSS and adds `script` or `style` tags for the generated files to the HTML.
 
 ## Authoring Format
 
-As of `v1.2.0-beta`, HyperBricks uses YAML as its canonical authoring format. Earlier internal configuration experiments have been retired in favor of a single, readable format for modules, routes, components, and examples.
+The components and their children are rendered in order of the sequence in the YAML configuration file. Then the runtime uses that order when rendering tree-like structures. Each entry starts with `-`. This preserves the configured order of component children.
 
-## Mental Model
+Data fields such as `values` and `headers`, and the module's package settings, use ordinary mappings. See [YAML Usage: Ordered objects and ordinary mappings](YAML_USAGE.md#ordered-objects-and-ordinary-mappings).
 
-HyperBricks has three layers:
+## When to use HyperBricks
 
-- YAML source files describe route owners and reusable components.
-- The parser materializes those files into ordered runtime configuration maps.
-- The runtime registry decodes those maps into components and renders them.
+HyperBricks suits websites and web applications that iterate quickly. Think of projects where the interface needs to evolve independently of business logic, and where new pages, languages, and interactions build on existing structures.
 
-That separation matters. YAML is the source format, but the runtime contract is still component based. A YAML page, fragment, or template must become the same shape the renderer expects.
+When AI agents contribute to development by using HyperBricks plugins or skills, they work with configuration that describes the application’s structure and composition, keeping architectural decisions explicit rather than buried in generated glue code.
+
+With HyperBricks, server-side domain logic can remain in local or remote APIs, Go plugins, or trusted JavaScript components. A browser library such as HTMX can provide partial page updates, while static HTML can be exported for content rendered in advance.
 
 ## Route Owners
 
-Route owners are top-level components that can answer a request.
+Route owners are top-level components that handle requests for a defined URL.
 
 - `hypermedia` renders full HTML documents.
 - `fragment` renders partial HTML responses.
@@ -66,63 +120,25 @@ HyperBricks renders the fragment and sends the configured headers. HTMX interpre
 
 ## Runtime Request Flow
 
-For an application route, HyperBricks resolves a browser or HTMX request to a route owner. Development mode renders the route fresh. Live mode can return an eligible cached response; all other requests continue through the optional route guard and renderer. Hover over or focus a step for details.
+For an application route, HyperBricks resolves a browser or HTMX request to a route owner. Development mode renders the route fresh. Live mode can return an eligible cached response; all other requests continue through the optional route guard and renderer. The letters connect each step in the diagram to its caption below.
 
 ```mermaid
----
-config:
-  flowchart:
-    htmlLabels: true
-  themeCSS: |
-    .label foreignObject { overflow: visible; }
-    .hb-tip { display: inline-block; position: relative; }
-    .hb-tip::after {
-      background: #ffffff !important;
-      border: 1px solid #111111;
-      border-radius: 6px;
-      bottom: calc(100% + 8px);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
-      box-sizing: border-box;
-      color: #000000 !important;
-      content: attr(aria-description);
-      font-family: Arial, sans-serif;
-      font-size: 12px;
-      font-weight: 400;
-      left: 50%;
-      line-height: 1.4;
-      max-width: calc(100vw - 32px);
-      opacity: 0;
-      overflow-wrap: anywhere;
-      padding: 8px 10px;
-      pointer-events: none;
-      position: absolute;
-      text-align: left;
-      transform: translateX(-50%);
-      visibility: hidden;
-      white-space: normal;
-      width: 240px;
-      z-index: 1000;
-    }
-    .hb-tip--below::after { bottom: auto; top: calc(100% + 8px); }
-    .node:hover .hb-tip::after,
-    .hb-tip:focus::after { opacity: 1; visibility: visible; }
----
 flowchart TB
-    BROWSER(["<span class='hb-tip hb-tip--below' tabindex='0' aria-description='A browser, HTMX, or another HTTP client requests an application route.'>Client Request</span>"])
+    BROWSER(["A. Client Request"])
 
     subgraph RUNTIME["HyperBricks Runtime"]
         direction TB
-        ROUTE("<span class='hb-tip hb-tip--below' tabindex='0' aria-description='Resolve the request to a route-owning hypermedia, fragment, or api_fragment_render component.'>Resolve Route</span>")
-        POLICY("<span class='hb-tip' tabindex='0' aria-description='Development mode renders fresh. Live mode decides whether the request can reuse cached output.'>Check Cache</span>")
-        CACHE("<span class='hb-tip' tabindex='0' aria-description='Return a stored live response without rendering components or running integrations.'>Reuse Cache</span>")
-        GUARD("<span class='hb-tip' tabindex='0' aria-description='Evaluate a configured route guard before rendering child components. A denial returns immediately.'>Check Guard</span>")
+        ROUTE("B. Resolve Route")
+        POLICY("C. Check Cache")
+        CACHE("D. Reuse Cache")
+        GUARD("E. Check Guard")
 
-        RENDER("<span class='hb-tip' tabindex='0' aria-description='Build the renderer request context, then traverse the configured component graph recursively.'>Render Graph</span>")
-        WORK("<span class='hb-tip' tabindex='0' aria-description='Where configured, render nested template values, run trusted Goja logic, call APIs, or invoke native and WASM plugins.'>Component Work</span>")
-        RESULT("<span class='hb-tip' tabindex='0' aria-description='After rendering, use the composed output or a captured native plugin HandledResponse.'>Select Output</span>")
+        RENDER("F. Render Graph")
+        WORK("G. Component Work")
+        RESULT("H. Select Output")
 
-        STORE("<span class='hb-tip' tabindex='0' aria-description='Store eligible live output with its ETag, render time, and expiry metadata.'>Store Output</span>")
-        WRITE("<span class='hb-tip' tabindex='0' aria-description='Write status, content type, headers, cookies, and a buffered body, or flush headers before a native plugin stream.'>Write Response</span>")
+        STORE("I. Store Output")
+        WRITE("J. Write Response")
 
         ROUTE --> POLICY
         POLICY -->|"hit"| CACHE --> WRITE
@@ -135,56 +151,48 @@ flowchart TB
         RESULT -->|"uncached"| WRITE
     end
 
-    DELIVERED(["<span class='hb-tip' tabindex='0' aria-description='Load a document, swap a fragment, process another body type, or consume flushed chunks.'>Handle Response</span>"])
+    DELIVERED(["K. Handle Response"])
 
     BROWSER -->|"HTTP"| ROUTE
     WRITE --> DELIVERED
 
-    classDef node fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:2.5px;
-    classDef emphasis fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
-    classDef output fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
-    classDef boundary fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-dasharray:4 3;
+    classDef node fill:transparent,stroke:currentColor,color:currentColor,stroke-width:2.5px;
+    classDef emphasis fill:transparent,stroke:currentColor,color:currentColor,stroke-width:1.5px;
+    classDef output fill:transparent,stroke:currentColor,color:currentColor,stroke-width:1.5px;
+    classDef boundary fill:transparent,stroke:currentColor,color:currentColor,stroke-dasharray:4 3;
 
     class ROUTE,POLICY,GUARD node;
     class RENDER,WORK,RESULT emphasis;
     class CACHE,STORE output;
     class BROWSER,WRITE,DELIVERED boundary;
 
-    linkStyle default stroke:#ffffff,stroke-width:1.5px;
-    style RUNTIME fill:transparent,stroke:#ffffff00,color:#ffffff,stroke-width:1px;
+    linkStyle default stroke:currentColor,stroke-width:1.5px;
+    style RUNTIME fill:transparent,stroke:transparent,color:currentColor,stroke-width:1px;
 ```
 
-Templates, API calls, scripts, and plugins run where their components occur in the recursive graph; the work box does not define a fixed global order. Nested template values and plugin components can re-enter the same graph. An eligible live-cache hit skips that graph. A native plugin may capture a `HandledResponse`, which the runtime selects after the render call; a `Stream` callback starts only after the response headers are written. See [Routing](ROUTING.md), [Live Mode HTTP Settings](LIVE_MODE_HTTP.md), [Route Guard](ROUTE_GUARD.md), [API Render](API_RENDER.md), and [Plugins](PLUGINS.md) for the detailed rules.
+| Node | Caption |
+| --- | --- |
+| A | A browser, HTMX, or another HTTP client requests an application route. |
+| B | HyperBricks matches the request to a route-owning `hypermedia`, `fragment`, or `api_fragment_render` component. |
+| C | Development mode always renders the route. In live mode, HyperBricks checks whether it can return cached output. |
+| D | On a live-cache hit, HyperBricks returns the stored response without rendering the component graph. |
+| E | If configured, the route guard checks access before rendering child components. A denied request goes straight to the response. |
+| F | HyperBricks builds the render context and traverses the configured component graph. |
+| G | Components perform their configured work, such as rendering templates, calling APIs, running trusted Goja logic, or invoking plugins. |
+| H | HyperBricks selects the rendered output or a response captured by a native plugin. |
+| I | If the output is eligible for live caching, HyperBricks stores it with its ETag and expiry metadata. |
+| J | HyperBricks writes the response status, headers, and body, or flushes the headers before a native plugin streams its response. |
+| K | The client handles the response as a document, fragment, other body type, or stream. |
 
-## Components
+HyperBricks renders tree children concurrently and combines their output in the configured YAML sequence order. This keeps the rendered result in the expected order, while allowing independent child work—such as API calls, scripts, and plugins—to run concurrently.
 
-Components are the building blocks of a route.
+Nested template values and plugin components can re-enter the same graph. An eligible live-cache hit skips that graph. A native plugin may capture a `HandledResponse`, which the runtime selects after the render call; a `Stream` callback starts only after the response headers are written. See [Routing](ROUTING.md), [Live Mode HTTP Settings](LIVE_MODE_HTTP.md), [Route Guard](ROUTE_GUARD.md), [API Render](API_RENDER.md), and [Plugins](PLUGINS.md) for the detailed rules.
 
-Leaf components render their own output. Common examples are `html`, `text`, `image`, `css`, `javascript`, `json_render`, `menu`, and `plugin`.
 
-Composite components contain or transform other components. Common examples are `tree`, `template`, `head`, `api_render`, `fragment`, and `hypermedia`.
-
-The most important rule is that ordered render content belongs in component children. HyperBricks records the YAML sequence order as `@order`, then the runtime uses that order when rendering tree-like structures.
-
-```yaml
-page:
-  - type: hypermedia
-  - route: ordered
-  - main:
-      - type: tree
-      - heading:
-          - type: html
-          - value: <h1>First</h1>
-      - copy:
-          - type: text
-          - value: Second
-```
-
-Maps are data. Trees are ordered content.
 
 ## Templates
 
-Templates use Go `html/template` with Sprig functions. Template files can be loaded explicitly through YAML resolvers, or inline content can live directly in the config.
+Hyperbricks SSR component templates use Go `html/template` with [Sprig functions](https://masterminds.github.io/sprig/). See [Using Sprig functions](YAML_USAGE.md#using-sprig-functions) for examples. Template files can be loaded explicitly through YAML resolvers, or inline content can live directly in the config.
 
 ```yaml
 card:
@@ -225,9 +233,9 @@ page:
 
 ## Runtime Behavior
 
-HyperBricks is intentionally tolerant at runtime. If a user edits a config file and introduces a bad component, the runtime should still render what it can and surface diagnostics for the broken parts.
+When an edit introduces an invalid component, HyperBricks aims to render the valid parts and report errors for the broken ones. This supports local development and hosted editing.
 
-That browser-like behavior is important for local development and for hosted editing flows. Configuration diagnostics belong in the render diagnostics pipeline, not as process-ending failures.
+The render diagnostics pipeline reports configuration problems so that an invalid component does not need to stop the process.
 
 ## Project Layout
 
@@ -239,7 +247,27 @@ A typical module contains:
 - `static/` for files served directly.
 - `rendered/` for static output.
 
+HyperBricks automatically loads `*.hyperbricks.yaml` files directly inside the configured `hyperbricks/` directory. It does not scan subdirectories for source files. Load those files through file-level `imports` in a loaded source file; paths are relative to the importing file. See [YAML Usage: Imports](YAML_USAGE.md#imports).
+
 Directory locations are configured in `package.hyperbricks.yaml`. See [YAML Usage](YAML_USAGE.md) for the YAML source contract and [Reference](REFERENCE.md) for generated component fields.
+
+## Glossary
+
+| Term | Meaning |
+| --- | --- |
+| Module | A folder containing an application. It contains all configuration, plugins, settings, component definitions, templates, and other resources. |
+| Component | A configured building block with a task, such as `html`, `template`, or `api_render`. |
+| Composite component | A component that contains and renders other components, such as `tree`, `hypermedia`, or `fragment`. |
+| Component graph | The connected structure of components that the runtime traverses and renders. |
+| Declarative component configuration | YAML that describes which components form an application, their values, and how they are composed, without implementing their orchestration in application code. |
+| Runtime | The part of HyperBricks that resolves routes and executes configured components to produce responses. |
+| Rendering engine | The runtime subsystem that executes the component graph and combines component output. |
+| Application orchestration | The selection, execution, and composition of components required to handle a request and produce output. |
+| Route owner | A top-level `hypermedia`, `fragment`, or `api_fragment_render` component with a route that answers an HTTP request. |
+| Space source | A named `hypermedia` definition, including one resolved through inheritance, that supplies a page structure and declares editable fields. |
+| Space | A YAML instance that inherits a page source and has its own route, title, and values. The development editor edits the fields allowed by that source. |
+
+See [Spaces](SPACES.md) for source-owned editing and [Routing](ROUTING.md) for route owners.
 
 ## Next Steps
 
@@ -248,3 +276,5 @@ Directory locations are configured in `package.hyperbricks.yaml`. See [YAML Usag
 - [YAML Usage](YAML_USAGE.md) documents the YAML syntax and resolvers.
 - [Reference](REFERENCE.md) lists runtime component fields.
 - [Route Guard](ROUTE_GUARD.md) documents request-time authorization.
+- [Troubleshooting](TROUBLESHOOTING.md): find and resolve configuration and render errors.
+- [Migration Guide](MIGRATION.md): update older response and API authentication settings.

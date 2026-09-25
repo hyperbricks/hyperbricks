@@ -1,12 +1,12 @@
 # Routing
 
-This document explains how HyperBricks resolves routes and clean URLs for dynamic rendering and static output.
+HyperBricks matches request URLs to configured routes. This guide covers route matching and clean URLs for dynamic rendering and static output.
 
-Route guard behavior is documented in [ROUTE_GUARD.md](ROUTE_GUARD.md). Configure browser status and headers with the route's `response` block; see [HTTP responses](HTTP_RESPONSES.md).
+Use a [route guard](ROUTE_GUARD.md) to check access. Use the route's `response` block to set the browser's HTTP status and headers; see [HTTP responses](HTTP_RESPONSES.md).
 
 ## Route Owners
 
-Routes are owned by root components:
+These root components can own routes:
 
 - `hypermedia`
 - `fragment`
@@ -54,7 +54,7 @@ hyperbricks:
         - htm
 ```
 
-Defaults are used when routing config is omitted:
+If you omit routing settings, HyperBricks uses these defaults:
 
 | Field | Default |
 | --- | --- |
@@ -62,7 +62,7 @@ Defaults are used when routing config is omitted:
 | `index_files` | `index.html`, `index.htm` |
 | `extensions` | `html`, `htm` |
 
-Defaults are also applied for empty list values.
+HyperBricks also uses the defaults for empty lists.
 
 ## Clean URLs
 

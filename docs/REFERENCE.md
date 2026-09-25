@@ -1,12 +1,12 @@
 **Licence:** MIT
-**Version:** v1.2.4-beta
+**Version:** v1.2.5-beta
 
-**Build time:** 2026-09-11 22:40 UTC
+**Build time:** 2026-09-25 10:25 UTC
 
 
 # HyperBricks Component Reference
 
-This reference is generated from the runtime schema and YAML documentation fixtures. It is intentionally compact: field tables come from Go struct tags, while examples come from curated executable YAML fixtures.
+Use this reference to check component fields, types, and required values. HyperBricks generates the field tables from Go struct tags and the examples from executable YAML fixtures in the runtime documentation tests.
 
 Regenerate this reference and the root README with:
 
@@ -52,6 +52,45 @@ Expected output:
 ```
 
 
+### `<MARKDOWN>`
+
+
+Sanitized Markdown from declared text or bounded resources-relative files; no plugin or request-driven file selection.
+
+| Field | Kind | Required | Description |
+| --- | --- | --- | --- |
+| `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
+| `class` | `string` | no | Optional escaped CSS class for a wrapping div. Empty emits only Markdown HTML. |
+| `content` | `string` | no | Inline Markdown text, including an explicitly empty string. Mutually exclusive with file. The file resolver can also supply content at load time. |
+| `editable` | `interface` | no | Source-owned Spaces metadata for this component's content or file field. Not rendered. |
+| `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
+| `file` | `string` | no | Clean resources-relative .md or .markdown reference, read at render time. No absolute paths, remote URLs, or query parameter selection. |
+| `max_bytes` | `int` | no | Maximum input bytes. Default 1048576 (1 MiB); must be between 1 and 20971520 when specified. |
+
+#### Example
+
+Fixture: `markdown-@doc.hyperbricks.yaml.test`
+
+Render Markdown text as sanitized HTML. Alternatively, use file with a clean resources-relative .md or .markdown reference to read a document at render time. Content and file are mutually exclusive. Fragments and hypermedia own routes, guards, caching, and page layout. The component never selects files from query parameters. See MARKDOWN.md for file limits and Spaces editing.
+
+
+```yaml
+introduction:
+  - type: markdown
+  - content: |
+      ## Welcome
+
+      This is **Markdown**, rendered without a plugin.
+  - class: prose
+```
+
+Expected output:
+
+```html
+<div class="prose"><h2>Welcome</h2><p>This is <strong>Markdown</strong>, rendered without a plugin.</p></div>
+```
+
+
 ### `<PLUGIN>`
 
 
@@ -92,10 +131,11 @@ Template-backed component that binds scalar values and value-mounted bricks into
 
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
+| `editable` | `interface` | no | Source-owned Spaces editing metadata for this template's values. Not rendered as content. |
 | `enclose` | `string` | no | Enclosing property for the template rendered output |
 | `inline` | `string` | no | Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
-| `querykeys` | `list` | no | Set allowed proxy query keys |
-| `queryparams` | `map` | no | Set proxy query keys in the configuration |
+| `querykeys` | `list` | no | Incoming URL query keys exposed as .Params. Omitted: id, name, order; empty list: none. |
+| `queryparams` | `map` | no | Reserved; currently does not populate template .Params. |
 | `template` | `string` | no | Loads contents of a template file in the modules template directory |
 | `values` | `map` | no | Key-value pairs for template rendering |
 
@@ -158,7 +198,7 @@ Plain text leaf node.
 | --- | --- | --- | --- |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
-| `value` | `string` | yes | The paragraph content |
+| `value` | `string` | yes | Required text emitted unchanged, without HTML escaping. Use trusted configuration content. |
 
 #### Example
 
@@ -208,7 +248,7 @@ Route-owning API fragment that always bypasses rendered-output caching and makes
 | `guard.on_unauthenticated.default.headers` | `map` | no | HTTP response headers sent to the browser |
 | `guard.on_unauthenticated.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
 | `guard.on_unauthenticated.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
-| `guard.require.authenticated` | `bool` | no | Require an authenticated request before rendering |
+| `guard.require.authenticated` | `bool` | no | Require a resolved token before rendering; presence alone does not validate its signature, expiry, or session. |
 | `guard.require.query` | `map` | no | Required query keys, set each key to true to enforce presence |
 | `headers` | `map` | no | Explicit upstream headers. Authorization, JWT, Basic Auth and forwardtoken are mutually exclusive authentication sources |
 | `index` | `int` | no | Index number is a sort order option for the api-fragment-render menu section. See MENU and MENU_TEMPLATE for further explanation |
@@ -254,7 +294,7 @@ A `<FRAGMENT>` dynamically renders part of an HTML page, allowing updates withou
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
 | `beautify` | `bool` | no | Override server.beautify for this object when rendered directly |
-| `cache` | `string` | no | Cache expire string |
+| `cache` | `string` | no | Legacy field; does not override the process-wide hyperbricks.live.cache duration. |
 | `content_type` | `string` | no | content type header definition |
 | `enclose` | `string` | no | Wrapping property for the fragment rendered output |
 | `guard.auth.cookie` | `string` | no | Cookie name used to resolve the request token |
@@ -271,7 +311,7 @@ A `<FRAGMENT>` dynamically renders part of an HTML page, allowing updates withou
 | `guard.on_unauthenticated.default.headers` | `map` | no | HTTP response headers sent to the browser |
 | `guard.on_unauthenticated.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
 | `guard.on_unauthenticated.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
-| `guard.require.authenticated` | `bool` | no | Require an authenticated request before rendering |
+| `guard.require.authenticated` | `bool` | no | Require a resolved token before rendering; presence alone does not validate its signature, expiry, or session. |
 | `guard.require.query` | `map` | no | Required query keys, set each key to true to enforce presence |
 | `index` | `int` | no | Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation |
 | `nocache` | `bool` | no | Explicitly disable cache |
@@ -282,8 +322,8 @@ A `<FRAGMENT>` dynamically renders part of an HTML page, allowing updates withou
 | `static` | `string` | no | Static file path associated with the fragment |
 | `template.enclose` | `string` | no | Enclosing property for the template rendered output |
 | `template.inline` | `string` | no | Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
-| `template.querykeys` | `list` | no | Set allowed proxy query keys |
-| `template.queryparams` | `map` | no | Set proxy query keys in the configuration |
+| `template.querykeys` | `list` | no | Incoming URL query keys exposed as .Params. Omitted: id, name, order; empty list: none. |
+| `template.queryparams` | `map` | no | Reserved; currently does not populate template .Params. |
 | `template.template` | `string` | no | Loads contents of a template file in the modules template directory |
 | `template.values` | `map` | no | Key-value pairs for template rendering |
 | `title` | `string` | no | The title of the fragment |
@@ -339,7 +379,7 @@ Document head helper that assembles title, meta, CSS, and JavaScript.
 | `css` | `list` | no | CSS files to include |
 | `favicon` | `string` | no | Path to the favicon for the hypermedia document |
 | `js` | `list` | no | JavaScript files to include |
-| `meta` | `map` | no | Metadata for the head section |
+| `meta` | `map` | no | Metadata for the head section; null suppresses inherited entries |
 | `title` | `string` | no | The title of the hypermedia document |
 
 #### Example
@@ -414,7 +454,7 @@ Route-owning page shell that renders the main HyperBricks document.
 | --- | --- | --- | --- |
 | `beautify` | `bool` | no | Override server.beautify for this object when rendered directly |
 | `bodytag` | `string` | no | Special body enclose with use of \|. Please note that this will not work when a `<HYPERMEDIA>`.template is configured. In that case, you have to add the bodytag in the template. |
-| `cache` | `string` | no | Cache expire string |
+| `cache` | `string` | no | Legacy field; does not override the process-wide hyperbricks.live.cache duration. |
 | `content_type` | `string` | no | content type header definition |
 | `cookies` | `list` | no | Set-Cookie values to include when serving this hypermedia |
 | `doctype` | `string` | no | Alternative Doctype for the HTML document |
@@ -434,7 +474,7 @@ Route-owning page shell that renders the main HyperBricks document.
 | `guard.on_unauthenticated.default.headers` | `map` | no | HTTP response headers sent to the browser |
 | `guard.on_unauthenticated.default.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
 | `guard.on_unauthenticated.variants` | `list` | no | Ordered alternatives with when.request_headers, response.status and response.headers. All header values must match exactly; names are case-insensitive. The first match replaces the default response completely |
-| `guard.require.authenticated` | `bool` | no | Require an authenticated request before rendering |
+| `guard.require.authenticated` | `bool` | no | Require a resolved token before rendering; presence alone does not validate its signature, expiry, or session. |
 | `guard.require.query` | `map` | no | Required query keys, set each key to true to enforce presence |
 | `head` | `map` | no | Configurations for the head section of the hypermedia |
 | `headers` | `map` | no | HTTP response headers to include when serving this hypermedia |
@@ -448,8 +488,8 @@ Route-owning page shell that renders the main HyperBricks document.
 | `static` | `string` | no | Static file path associated with the hypermedia, for rendering out the hypermedia to static files. |
 | `template.enclose` | `string` | no | Enclosing property for the template rendered output |
 | `template.inline` | `string` | no | Inline Go template source. Use a normal YAML string, or a YAML block scalar when the source spans multiple lines. |
-| `template.querykeys` | `list` | no | Set allowed proxy query keys |
-| `template.queryparams` | `map` | no | Set proxy query keys in the configuration |
+| `template.querykeys` | `list` | no | Incoming URL query keys exposed as .Params. Omitted: id, name, order; empty list: none. |
+| `template.queryparams` | `map` | no | Reserved; currently does not populate template .Params. |
 | `template.template` | `string` | no | Loads contents of a template file in the modules template directory |
 | `template.values` | `map` | no | Key-value pairs for template rendering |
 | `title` | `string` | no | The title of the hypermedia site |
@@ -516,7 +556,7 @@ Expected output:
 ### `<TREE>`
 
 
-Ordered container that renders nested child items in key order.
+Ordered container that places child output in YAML sequence order; runtime maps without order metadata use alphanumeric key order.
 
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |

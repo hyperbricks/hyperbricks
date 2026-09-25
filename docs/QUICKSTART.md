@@ -1,17 +1,19 @@
 # Quickstart
 
-Build a small module with external HTML templates, JavaScript and CSS. HyperBricks renders the page and fragment; native esbuild bundles the browser assets. This example uses [HTMX 4](https://four.htmx.org/) to update part of the page.
+Create a small module with HTML templates, JavaScript, and CSS. HyperBricks renders a full page and an HTML fragment. The built-in `esbuild` component bundles the browser assets.
+
+The example uses [HTMX 4](https://four.htmx.org/) to update part of the page.
 
 ## Install And Create A Module
 
-Requires Go 1.26.1 or newer.
+Requires Go 1.26.1 or newer and internet access to install HyperBricks, download the starter, and fetch HTMX.
 
 **1. Install HyperBricks**
 
-Install `v1.2.4-beta`:
+Install `v1.2.5-beta`:
 
 ```bash
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@v1.2.4-beta
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@v1.2.5-beta
 ```
 
 Make sure your Go binary directory (`GOBIN`, or `$(go env GOPATH)/bin` by default) is on your `PATH`.
@@ -21,10 +23,40 @@ Make sure your Go binary directory (`GOBIN`, or `$(go env GOPATH)/bin` by defaul
 From your project root, the directory that will contain `modules/`:
 
 ```bash
-hyperbricks init -m demo
+hyperbricks init-starter get hello-world -m demo
 ```
 
-The generated HyperBricks Starter already runs with `hyperbricks start -m demo`: it includes Overview, Templates and Fragments pages with HTMX 4 navigation. Continue below to replace those pages with a smaller custom example.
+The downloaded `hello-world` starter already runs with `hyperbricks start -m demo` and displays a simple Hello World page. Continue below to replace it with a page that uses templates, bundled assets, and an HTML fragment.
+
+Initialization also reconciles the new module's source metadata. Its
+`package.hyperbricks.yaml` identifies the destination module, starts its module
+version at `1.0.0`, and records the version of the HyperBricks binary that
+installed it:
+
+```yaml
+hyperbricks:
+  metadata:
+    module: demo
+    moduleversion: "1.0.0"
+    hyperbricks: v1.2.5-beta
+```
+
+The exact `hyperbricks` value follows the binary you run. Later, refresh the
+identity and runtime version without changing the scaffold, or bump the module
+version at the same time:
+
+```bash
+hyperbricks init -m demo --update-metadata
+hyperbricks init -m demo --bump-version          # patch
+hyperbricks init -m demo --bump-version=minor
+hyperbricks init -m demo --bump-version=major
+```
+
+These metadata-only commands also accept a relative or absolute module path,
+just like `start -m` and `build -m`. A regular build leaves this source package
+unchanged and writes `format`, `format_version`, `commit`, `built_at`, and the
+exact building HyperBricks version only into the resulting deployment archive.
+The build's `source_hash` is recorded separately in its build index.
 
 **3. Create the asset directories**
 
@@ -54,6 +86,8 @@ modules/demo/
   static/                       Generated browser bundles
   rendered/                     Generated static site
 ```
+
+HyperBricks automatically loads `*.hyperbricks.yaml` files directly inside the module's configured `hyperbricks/` directory. Files in subdirectories need a file-level `imports` entry in a loaded source file. For example, `hyperbricks/partials/site.hyperbricks.yaml` needs an import such as `partials/site.hyperbricks.yaml` from a file directly inside `hyperbricks/`. Import paths are relative to the importing file. See [YAML Usage: Imports](YAML_USAGE.md#imports).
 
 ## Add The Templates
 
@@ -140,6 +174,8 @@ button {
 
 ## Connect The Routes, Templates And Assets
 
+Components use YAML sequences: each `-` adds an entry, preserving the configured order of component children. Data fields such as `values` use ordinary mappings. See [YAML Usage: Ordered objects and ordinary mappings](YAML_USAGE.md#ordered-objects-and-ordinary-mappings).
+
 Replace `modules/demo/hyperbricks/hello-world.hyperbricks.yaml` with:
 
 ```yaml
@@ -214,11 +250,38 @@ hello_fragment:
 
 Edit files under `resources/` and `templates/`; the files under `static/` are build output. See [JavaScript and CSS](ESBUILD.md) for more esbuild options.
 
+## Developer Interface
+
+Open `modules/demo/package.hyperbricks.yaml` and enable the module's developer
+dashboard. Keep credentials in environment variables rather than committing a
+password:
+
+```yaml
+hyperbricks:
+  development:
+    dashboard:
+      enabled: true
+      credentials:
+        user:
+          env: HB_DEVELOPER_USER
+        password:
+          env: HB_DEVELOPER_PASSWORD
+```
+
+The same module-owned login protects the Dashboard's Overview and Errors views,
+render diagnostics, Spaces, contextual editing, and configured frontend-editor
+plugins. There is no
+default account; unresolved credentials lock those interfaces while public
+application routes remain available.
+
+
 ## Run And Try It
 
 From the project root:
 
 ```bash
+export HB_DEVELOPER_USER=developer
+export HB_DEVELOPER_PASSWORD='choose-a-long-password'
 hyperbricks start -m demo
 ```
 
@@ -226,20 +289,42 @@ Open [localhost:8080](http://localhost:8080/). The first page render builds the 
 
 Click **Load fragment**. The card changes and your JavaScript increments the status counter. Click again: the counter increases without reloading the page. A full reload restores the initial card and resets the counter.
 
+With the dashboard enabled, open [localhost:8080/__hyperbricks/dashboard](http://localhost:8080/__hyperbricks/dashboard) to inspect the routes and follow their links. If a page reports an error, select **Errors** to read its diagnostics. See [Troubleshooting](TROUBLESHOOTING.md).
+
+
 Try changing the card text in YAML, the markup in `templates/card.html`, or the styles in `resources/css/app.css`. With development watching enabled, save and reload the page to see the change. Keep browser behavior in `app.js`, styling in `app.css`, and route composition in YAML.
 
 ## Render Static Output
 
+If you want to host the static site on Cloudflare, GitHub Pages or other static hosting service, you can export the site to a static version and serve it with the `--serve` option.
+
 ```bash
-hyperbricks static -m demo
+hyperbricks static -m demo --serve
 ```
 
+When asked `Delete directory "modules/demo/rendered"? (y/n)` type yes, it will just remove the last static export. You can omit that with the `--force` option.
+
 The generated site is written to `modules/demo/rendered/`. Static rendering requests routes through an internal runtime before writing the HTML and assets. On a separate static host, the fragment URL `/hello-fragment` must resolve to its exported HTML file; configure clean-URL handling to match your runtime routes.
+
+## Zip Archive
+
+To create a zip archive of your site use the --zip option. It will export a .zip archive to the default `/export/<module_name>` folder.
+
+
+
+```bash
+hyperbricks static -m demo --zip --force
+```
+
+The `--force ` option automatically overrides the exported files in `rendered/`.
+Type `hyperbricks static --help` for all static options.
 
 ## Next Steps
 
 - [General HyperBricks skill](../SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
-- [YAML_USAGE.md](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
-- [REFERENCE.md](REFERENCE.md): component fields and executable examples.
+- [YAML usage](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
+- [Component reference](REFERENCE.md): component fields and executable examples.
 - [ROUTING.md](ROUTING.md): route resolution and clean URLs.
-- [ROUTE_GUARD.md](ROUTE_GUARD.md): pre-render route authorization.
+- [Route guards](ROUTE_GUARD.md): pre-render route authorization.
+- [Troubleshooting](TROUBLESHOOTING.md): find and resolve configuration and render errors.
+- [Migration Guide](MIGRATION.md): update older response and API authentication settings.

@@ -1,6 +1,6 @@
 # HTTP Responses
 
-Use `response` on a `hypermedia`, `fragment`, or `api_fragment_render` route to configure the HTTP status and headers returned to the browser. These settings work independently of the JavaScript library used by the page:
+Set `response` on a `hypermedia`, `fragment`, or `api_fragment_render` route to choose the browser response status and headers. These settings work with any browser JavaScript library:
 
 ```yaml
 status_fragment:
@@ -16,7 +16,9 @@ status_fragment:
       - value: '<section id="status">Ready</section>'
 ```
 
-`response.status` is optional and defaults to `200` for a rendered route. Configured statuses must be between `200` and `599`. `response.headers` maps valid HTTP header names to literal strings. Quote values that YAML would otherwise interpret as booleans or numbers, such as `"true"` and `"60"`. Names are case-insensitive; duplicate names with different capitalization and invalid header names or values are rejected.
+`response.status` defaults to `200` for a rendered route. If you set it, use a value between `200` and `599`.
+
+`response.headers` maps valid header names to literal strings. Quote values such as `"true"` and `"60"` so YAML does not read them as booleans or numbers. Header names are case-insensitive. HyperBricks rejects duplicate names with different capitalization and invalid names or values.
 
 HyperBricks renders the HTML and applies the configured HTTP response. The application chooses any library-specific headers; the browser library interprets them. For example, a project using HTMX can configure `HX-Redirect`, while a normal browser redirect uses a `3xx` status and `Location`. HyperBricks does not automatically convert one into the other.
 
@@ -43,7 +45,11 @@ For ordinary rendered responses:
 - Existing cookie fields remain supported. Use `setcookies` on an API fragment to send multiple cookies, and keep its upstream-success condition in mind.
 - A plugin that explicitly handles the HTTP response retains ownership of its status and headers; route response defaults do not overwrite it.
 
-Configured headers and status are retained with cached rendered content, so cache hits preserve them. A configured `Vary` header includes those request headers in the internal cache key; `Vary: "*"` bypasses the cache. `nocache: true` controls HyperBricks' internal route cache; setting `Cache-Control` alone does not replace that setting. Routes with an enabled guard bypass the internal cache, as do API fragment routes. Guard responses use `Cache-Control: no-store` and derive `Vary` from configured authentication inputs and request-header selectors. No `HX-Request` cache variation is added unless configuration uses that header.
+HyperBricks caches the configured headers and status with the rendered content. Cache hits return the same metadata. A configured `Vary` adds those request headers to the internal cache key. `Vary: "*"` bypasses the cache.
+
+Use `nocache: true` to disable the internal route cache. Setting `Cache-Control` alone does not replace it. Routes with an enabled guard and API fragment routes bypass the internal cache.
+
+Guard responses use `Cache-Control: no-store`. Their `Vary` includes configured authentication inputs and request-header selectors. HyperBricks adds `HX-Request` variation only when configuration uses that header.
 
 ## Migrate Existing Configuration
 
@@ -151,7 +157,9 @@ guard:
 
 Apply the same shape to `on_forbidden`, typically with `403` in its HTMX variant and `/forbidden` as the destination. Keep `auth`, `require`, and `authorize` settings intact. A plain denial can use only `default: {status: 401}` or `default: {status: 403}` without a redirect.
 
-Every configured header in `when.request_headers` must match. Names are case-insensitive and values are exact and case-sensitive. The first matching variant replaces the entire default response; otherwise the default applies. For example, the HTMX response above has no `Location` header. Missing headers do not match. Header selection happens after access is denied and cannot grant access. See [Route Guard](ROUTE_GUARD.md) for the complete contract.
+A variant matches only when every header in `when.request_headers` matches. Names are case-insensitive; values require an exact, case-sensitive match. Missing headers do not match.
+
+The first matching variant replaces the whole default response. Without a match, HyperBricks uses the default. For example, the HTMX variant above has no `Location` header. Selection happens after access is denied and cannot grant access. See [Route guards](ROUTE_GUARD.md) for the full rules.
 
 ## Another Browser Client
 

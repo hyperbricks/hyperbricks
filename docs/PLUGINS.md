@@ -1,18 +1,15 @@
 # Plugins
 
-HyperBricks plugins let a module delegate rendering to compiled code while keeping the route and component structure in YAML.
+Use plugins to run compiled code inside a module's component tree. YAML defines the routes and component structure; the plugin handles its rendering task.
 
-There are two runtime artifact formats:
+HyperBricks supports two formats:
 
-- Native Go plugins: `.so`
-- WebAssembly plugins: `.wasm`
+- **Native Go plugins:** `.so` files.
+- **WebAssembly plugins:** `.wasm` files.
 
-There are two plugin source types:
+Global plugin sources live in `./plugins`. Module-specific sources live in `modules/<module>/plugins`. Both formats install into `./bin/plugins`. Enable them in `package.hyperbricks.yaml`.
 
-- Global plugins from `./plugins`.
-- Custom module plugins from `modules/<module>/plugins`.
-
-Both artifact formats are installed into `./bin/plugins` and enabled from `package.hyperbricks.yaml`.
+Spaces and Markdown are built in on supporting runtimes. Configure development editing under `hyperbricks.development.frontend_editing.spaces`; see [Spaces](SPACES.md). Use `type: markdown` to render content or resource files; see [Markdown](MARKDOWN.md).
 
 ## Platform Support
 
@@ -62,6 +59,18 @@ page:
 ```
 
 The `plugin` field must match the enabled artifact name exactly, without `.so` or `.wasm`. The `data` map is plugin-specific input.
+
+## Returning Component Configuration
+
+A native plugin can return runtime component configuration for HyperBricks to
+render. This is useful when the plugin validates, normalizes, or calculates
+values while a regular HyperBricks template remains responsible for the HTML.
+The returned map uses runtime metadata such as `"@type": "<TEMPLATE>"`; YAML
+source continues to use declarations such as `type: template`. A `<TREE>` wrapper
+is optional when the plugin needs to compose several returned components.
+
+The [template configuration plugin pattern](../modules/hyperbricks-patterns-yaml/docs/pages/template-config-plugin.md)
+contains a complete input, output, template, and safety example.
 
 ## Native Streaming Responses
 
@@ -154,9 +163,11 @@ Only `kind: "html"` is supported in the first WASM runtime pass. The adapter ret
 
 WASM plugins may be plain no-import modules or Go/WASI modules. If a module imports `wasi_snapshot_preview1`, HyperBricks provides wazero's WASI imports without mounting a filesystem or configuring environment variables. WASM does not provide network or process-spawning APIs. Each render call creates a fresh module instance from the compiled module and runs with a host-side timeout and memory-page limit.
 
-## Global Plugins
+## Shared (Global) Plugins
 
 Global plugins come from the public plugin index and are shared across modules.
+The local and remote deployment interfaces label this host-wide list **Shared
+Plugins**; module-specific plugins appear under **Modules → Custom plugins**.
 
 Source layout:
 
@@ -317,7 +328,7 @@ hyperbricks start -m demo
 
 Installing with `go install ./cmd/hyperbricks` still produces a local-source runtime. Ensure the `hyperbricks` command on `PATH` is that installation. Native plugins and their host must match in source, toolchain, platform, and shared dependencies.
 
-The override works with both `plugin build` and `plugin install`. It points at the **HyperBricks checkout**, not the plugin directory. `plugin build` does not accept `--hyperbricks-path`; use the environment variable. No local path is needed for normal builds targeting an installed published release.
+The override works with both `plugin build` and `plugin install`. It points at the **HyperBricks checkout**, not the plugin directory. `plugin install` also accepts `--hyperbricks-path /absolute/path/to/hyperbricks` as a command-specific alternative. `plugin build` does not accept that flag; use the environment variable. No local path is needed for normal builds targeting an installed published release.
 
 ### How The CLI Selects The Dependency
 

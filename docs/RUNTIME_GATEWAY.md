@@ -1,8 +1,8 @@
 # Runtime Gateway
 
-The runtime gateway is a host-based proxy hook. It lets a HyperBricks server intercept configured hosts before normal route rendering and ask a trusted resolver where the request should go.
+Use the runtime gateway to send requests for configured hosts to separate runtime views. Before normal route rendering, HyperBricks asks a trusted resolver where to forward the request.
 
-HyperBricks only decides whether a request matches a configured gateway domain or host suffix. The resolver decides what the host means and whether the request is allowed.
+HyperBricks checks whether the host matches a gateway domain or host suffix. The resolver interprets the host, checks access, and selects the target.
 
 ## Use Cases
 
@@ -47,7 +47,7 @@ hyperbricks start -m my-module --port 8080 \
 
 ## Package Configuration
 
-The same behavior can be configured in `package.hyperbricks.yaml`:
+You can also configure the gateway in `package.hyperbricks.yaml`:
 
 ```yaml
 hyperbricks:
@@ -87,7 +87,7 @@ control.local                   does not match
 site.other.local                does not match
 ```
 
-The left-hand host label is opaque to HyperBricks. It may contain project names, build IDs, variants, or any resolver-specific convention.
+HyperBricks does not interpret the left-hand host label. Your resolver can use it for project names, build IDs, variants, or another convention.
 
 Given `-runtime.example.test`, HyperBricks matches flat hosts ending in that suffix:
 
@@ -146,12 +146,12 @@ When a request is not allowed, the resolver can deny it:
 
 Resolvers may return `set_cookies` values. HyperBricks forwards those cookies to the browser.
 
-If the original URL contains `runtime_token`, HyperBricks sets the resolver cookies and redirects once to the same URL without the token.
+If the resolver returns a non-empty `set_cookies` list and the original URL contains `runtime_token`, HyperBricks forwards those cookies and redirects once to the same URL without the token.
 
 That supports this flow:
 
 1. An authenticated application creates a short-lived handoff token.
-2. The browser is redirected to the runtime host with that token.
+2. The application redirects the browser to the runtime host with that token.
 3. The resolver validates the token and returns scoped cookies.
 4. HyperBricks removes the token from the URL.
 

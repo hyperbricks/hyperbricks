@@ -1,17 +1,25 @@
 # Docker Deploy Host
 
-The Docker setup runs the HyperBricks Deploy API and the module processes it starts from uploaded HRA archives. Use it to test deployments locally or run a remote deploy host. It includes Go and build tools so native plugins can be built for the same Linux runtime.
+Use the Docker deploy host to test deployments locally or run them on a remote server. It runs the HyperBricks Deploy API and starts modules from uploaded `.hra` archives.
+
+The image includes Go and build tools. This lets you build native plugins for the same Linux runtime that runs your modules.
 
 ## Build And Start
 
-From the repository root, set a secret shared with your deploy client:
+From the repository root, set the remote interface credentials and the HMAC
+secret shared with your deploy client:
 
 ```bash
-export HB_DEPLOY_SECRET="$(openssl rand -hex 32)"
+export HB_DEPLOY_REMOTE_USER="deploy"
+export HB_DEPLOY_REMOTE_PASSWORD="$(openssl rand -hex 24)"
+export HB_DEPLOY_REMOTE_HMAC_SECRET="$(openssl rand -hex 32)"
 docker compose -f docker/docker-compose.yml up --build -d
 ```
 
-Keep that secret for subsequent commands and container recreation. Compose refuses to start when it is missing or empty. Configure the same secret in the client as described in [Deploy](DEPLOY.md#authentication).
+Keep these values for subsequent commands and container recreation. Compose
+refuses to start when any is missing or empty. Configure the same credentials
+and HMAC value in the client's selected target as described in
+[Deploy](DEPLOY.md#authentication).
 
 By default, the image builds HyperBricks from **the current checkout**, including local source changes. It does not download `@latest`. For reproducible builds, use a known commit and record any local changes.
 
@@ -19,7 +27,7 @@ To build a published release instead:
 
 ```bash
 export HB_BUILD_SOURCE=release
-export HB_VERSION=v1.2.4-beta
+export HB_VERSION=v1.2.5-beta
 docker compose -f docker/docker-compose.yml up --build -d
 ```
 
@@ -46,7 +54,7 @@ docker compose -f docker/docker-compose.yml up -d
 
 The Deploy API reports container ports. In this example, runtime port `8080` is reached through host port `18080`. The deploy configuration sets the first runtime port; the published range does not limit the daemon's allocation.
 
-For access from other machines, explicitly choose `HB_BIND_ADDRESS`, such as a host LAN address. Use HTTPS through a reverse proxy or a private network for remote deployment traffic. HMAC authenticates requests; it does not encrypt them.
+For access from other machines, explicitly choose `HB_BIND_ADDRESS`, such as a host LAN address. Use HTTPS through a reverse proxy or a private network for remote deployment traffic. Basic Auth and HMAC authenticate requests; neither encrypts them.
 
 ## Upload And Activate A Module
 
@@ -100,6 +108,6 @@ docker compose -f docker/docker-compose.yml exec hyperbricks-deploy hyperbricks 
 docker compose -f docker/docker-compose.yml down
 ```
 
-The entrypoint prepares writable directories and runs `deploy-daemon` in the foreground as `deploy`. Docker manages the container lifecycle; OpenRC is not used by this image. The old OpenRC service files are retained only as historical files, not as a supported Docker startup option.
+The entrypoint prepares writable directories and runs `hyperbricks deploy remote` in the foreground as `deploy`. Docker manages the container lifecycle; OpenRC is not used by this image. The old OpenRC service files are retained only as historical files, not as a supported Docker startup option.
 
 When a module is unreachable, check its activation result and logs, assigned container port, host port mapping, and whether its process is still running. Rebuild the image after runtime source changes and rebuild affected plugins.

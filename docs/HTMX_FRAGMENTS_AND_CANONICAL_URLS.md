@@ -1,6 +1,6 @@
 # HTMX Fragments And Canonical URLs
 
-HyperBricks serves full HTML pages with `hypermedia` and HTML fragments with `fragment`. This guide shows how to use those routes with [HTMX 4](https://four.htmx.org/), while keeping a full page URL available for direct visits, reloads, and links without JavaScript.
+Use `hypermedia` for full HTML pages and `fragment` for partial updates. This guide connects those routes with [HTMX 4](https://four.htmx.org/). Each view keeps a full-page URL for direct visits, reloads, and links without JavaScript.
 
 Pages, fragments, and shared content are general HyperBricks features. The `hx-*` attributes and `HX-*` response headers below configure the HTMX integration.
 

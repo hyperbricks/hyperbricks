@@ -1,16 +1,12 @@
 # Goja Render
 
-> **Note: goja_render is intended for testing with trusted project scripts. It is not a security sandbox for scripts supplied by client users.** 
+Use `goja_render` to run JavaScript on the server and pass its result to a Go HTML template. HyperBricks includes the component; you do not need a Node.js server or a separate plugin build. The browser receives the rendered HTML.
 
-The component is ready for beta use with JavaScript written and reviewed as part of your HyperBricks project. It is not a security sandbox for scripts supplied by visitors, customers, or other untrusted authors.
+The component is ready for beta use with scripts written and reviewed as part of your project. **It is intended for testing with trusted project scripts. It is not a security sandbox for code supplied by visitors, customers, or other untrusted authors.**
 
-`goja_render` runs JavaScript on the server and inserts the returned data into a Go HTML template. It is built into HyperBricks, so you do not need a Node server or a separate plugin build. The browser receives finished HTML without needing to run the calculation itself.
+Use it for small, synchronous calculations, such as price estimates, availability messages, configuration summaries, and printable results. It can replace a custom plugin when the calculation only needs configured values and selected query parameters.
 
-This is useful for small, synchronous calculations such as price estimates, availability messages, configuration summaries, and printable results.
-
-`goja_render` is a practical alternative to a custom HyperBricks plugin for small, synchronous server-side logic. It avoids building and deploying a separate plugin when the logic only needs configured values and selected query parameters. Use a Go plugin when you need persistent state, external services, filesystem or database access, or heavier processing.
-
-Use a normal Go template when you only need simple formatting. Use browser JavaScript for interactions that only matter after the page loads.
+Use a Go plugin for persistent state, external services, filesystem or database access, or heavier processing. Use a Go template for simple formatting. Use browser JavaScript for interactions after the page loads.
 
 ## Quick start
 
@@ -31,7 +27,7 @@ function main(input) {
 }
 ```
 
-Add the component to a page or another renderable object:
+Create `hyperbricks/availability.hyperbricks.yaml` in your module with the component and a page that renders it:
 
 ```yaml
 availability:
@@ -45,9 +41,16 @@ availability:
       stock: 12
   - timeout: 100ms
   - inline: '<p>{{.Data.message}}</p>'
+
+availability_page:
+  - type: hypermedia
+  - route: availability
+  - title: Availability
+  - content:
+      - inherit: availability
 ```
 
-Start the module and open the route with `?quantity=2`. HyperBricks passes the configured `stock` value and the allowed `quantity` query parameter to `main(input)`. The returned `message` is available to the template as `.Data.message`.
+Start the module and open `/availability?quantity=2` on your running server. HyperBricks passes the configured `stock` value and the allowed `quantity` query parameter to `main(input)`. The returned `message` is available to the template as `.Data.message`.
 
 The main fields are:
 
@@ -145,11 +148,13 @@ The template reads these values as `.Data.title`, `.Data.total`, and `.Data.avai
 
 ### How requests stay separate
 
-Each time a `goja_render` component renders, HyperBricks creates a fresh [Goja](https://github.com/dop251/goja) JavaScript runtime for that execution. The script and template are prepared when the module loads, but the [JavaScript runtime itself is new](../pkg/gojaruntime/program.go) for every render. Globals, modified prototypes, and other JavaScript state disappear when the render finishes. Two clients making requests at the same time therefore do not share JavaScript variables or objects.
+HyperBricks prepares the script and template when the module loads. Each render creates a fresh [Goja JavaScript runtime](https://github.com/dop251/goja).
 
-Before calling `main(input)`, the [component prepares the input](../pkg/component/goja_render.go) by converting the configured `values` and that request's allowed query parameters to JSON. This gives the script its own data instead of references to shared Go objects. The returned value crosses the same boundary as plain JSON-compatible data, and the temporary runtime is then discarded.
+Globals, modified prototypes, and other JavaScript state disappear after the render. Concurrent requests do not share JavaScript variables or objects. See the [runtime implementation](../pkg/gojaruntime/program.go).
 
-Scripts are loaded and checked when the module loads. Changes take effect after the normal development reload or a restart. Keep request-specific work inside `main(input)`. For information that must survive a request, such as a session, cart, or counter, use persistent storage through a Go component or plugin.
+Before calling `main(input)`, the [component](../pkg/component/goja_render.go) converts configured `values` and allowed request query parameters to JSON. The script receives its own data, with no references to shared Go objects. It returns plain JSON-compatible data. HyperBricks then discards the temporary runtime.
+
+HyperBricks loads and checks scripts when the module loads. Changes take effect after the normal development reload or a restart. Keep request-specific work inside `main(input)`. For information that must survive a request, such as a session, cart, or counter, use persistent storage through a Go component or plugin.
 
 ### Rendered-output caching and HTTP caching
 
@@ -183,7 +188,7 @@ when the response should not be stored by browsers or proxies.
 
 ## Errors and beta limits
 
-Syntax errors, a missing `main` function, invalid return data, timeouts, and template errors are reported as normal HyperBricks component errors. A failed render does not produce partial component HTML, and the next request starts with a fresh runtime.
+HyperBricks reports syntax errors, a missing `main` function, invalid return data, timeouts, and template errors through its normal component diagnostics. A failed render does not produce partial component HTML, and the next request starts with a fresh runtime.
 
 The current beta has these boundaries:
 
@@ -194,7 +199,7 @@ The current beta has these boundaries:
 - Filesystem, network, process, environment, and Node.js APIs are not provided.
 - The timeout and fresh runtime improve request isolation, but they do not make Goja a security or memory sandbox. Only run project scripts you trust.
 
-Request values are passed as data and are never evaluated as JavaScript source. Project data enters the script through the configuration and allowed query values in `input`; the script does not receive direct access to HyperBricks internals.
+HyperBricks passes request values as data and never evaluates them as JavaScript source. Project data enters the script through the configuration and allowed query values in `input`; the script does not receive direct access to HyperBricks internals.
 
 ## Performance
 
