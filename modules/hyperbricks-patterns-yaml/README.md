@@ -139,7 +139,7 @@ hyperbricks plugin install markdown@2.0.0
 hyperbricks plugin install tailwindcss@2.0.0
 ```
 
-`plugin install` downloads source from the plugin registry's repository and compiles it locally for the installed runtime. It requires Git, Go, and network access. These versions match the module configuration. Use `plugin build` for later rebuilds of downloaded source, including after local edits:
+The shared Markdown and Tailwind CSS plugin sources are not bundled with this module or the HyperBricks source checkout. `plugin install` downloads them from the plugin registry's repository into `plugins/<name>/<version>/` and compiles them locally for the installed runtime. It requires Git, Go, and network access. These versions match the module configuration. Use `plugin build` for later rebuilds of downloaded source, including after local edits:
 
 ```sh
 hyperbricks plugin build markdown@2.0.0
@@ -167,13 +167,20 @@ If you choose other published plugin versions, update both `hyperbricks.plugins.
 
 ### 2. Build From The Local Repository During Development
 
-Use this workflow when developing in a HyperBricks source checkout. The shared plugins and the four module plugins are already included in the repository. Build them against that checkout:
+Use this workflow when developing in a HyperBricks source checkout. First install the pinned shared Markdown and Tailwind CSS plugins through the local CLI. The override makes both installs compile against this checkout instead of a published HyperBricks release:
+
+```sh
+GOWORK=off HYPERBRICKS_LOCAL_PATH="$PWD" go run ./cmd/hyperbricks plugin install markdown@2.0.0
+GOWORK=off HYPERBRICKS_LOCAL_PATH="$PWD" go run ./cmd/hyperbricks plugin install tailwindcss@2.0.0
+```
+
+This initial installation needs Git, Go, and network access and creates the shared source directories under `plugins/`. The four custom module plugins are already included under `modules/hyperbricks-patterns-yaml/plugins/`; they do not need registry installation. Now build the complete plugin set against the checkout:
 
 ```sh
 scripts/plugins/build_hyperbricks_plugins.sh --module hyperbricks-patterns-yaml
 ```
 
-The script uses the local CLI through `go run ./cmd/hyperbricks` and sets `HYPERBRICKS_LOCAL_PATH` to this checkout. It builds both the shared Markdown and Tailwind CSS plugins and this module's custom plugins. See the [plugin build and smoke scripts](../../scripts/plugins/README.md) for the available options.
+The script uses the local CLI through `go run ./cmd/hyperbricks` and sets `HYPERBRICKS_LOCAL_PATH` to this checkout. It rebuilds the installed shared plugins and builds this module's custom plugins; it does not download missing plugin sources. Use it again after runtime or plugin changes rather than reinstalling source you have edited. See the [plugin build and smoke scripts](../../scripts/plugins/README.md) for the available options.
 
 Start the module with the same local runtime:
 

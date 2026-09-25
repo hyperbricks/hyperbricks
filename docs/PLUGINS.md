@@ -340,6 +340,8 @@ See the [native plugin builder](../cmd/hyperbricks/commands/plugin-commands.go),
 
 The CLI commands above are the application-developer workflow for individual plugins. HyperBricks contributors can use the aggregate [plugin build and smoke scripts](../scripts/plugins/README.md) to rebuild the repository's plugin-backed demos and fixtures against this checkout. `./tests.sh --with-plugins` invokes that workflow as part of the full test suite.
 
+On a clean checkout, first install the pinned shared Markdown and Tailwind CSS plugins through the local CLI with `HYPERBRICKS_LOCAL_PATH` pointing at the checkout, as shown in the [shared plugin setup](../scripts/plugins/README.md#install-the-shared-plugin-sources). Their sources are downloaded into `./plugins`; they are not bundled in the HyperBricks repository. Module-specific custom plugin sources are bundled under `modules/<module>/plugins`. The aggregate build wrapper rebuilds these existing sources and does not install missing shared plugins.
+
 ## Rules
 
 - Use the compiled binary name in `plugins.enabled`.
