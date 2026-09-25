@@ -153,10 +153,7 @@ def render_document(
     repository_ref: str = "",
 ) -> str:
     repository_ref = repository_ref or commit
-    notice = (
-        f"<!-- Generated from {source.path} at Git commit {commit}. "
-        f"Do not edit directly. -->"
-    )
+    notice = f"<!-- Generated from {source.path}. Do not edit directly. -->"
     output = [notice, ""]
     fence_character = ""
     fence_length = 0
@@ -215,7 +212,7 @@ def render_index(
         "",
         f"- **HyperBricks version:** {version}",
         f"- **Source version:** [`{repository_ref}`]({source_url})",
-        f"- **Snapshot date:** {commit_date.isoformat()}",
+        f"- **Snapshot provenance:** [Manifest]({MANIFEST_FILENAME})",
         f"- **Included documents:** {len(documents)}",
         "",
         "## Contents",
@@ -356,7 +353,7 @@ def manifest_source_commit(output_directory: Path) -> str:
     if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise assembly.BuildError(
             f"{MANIFEST_FILENAME} does not contain a valid source_commit; "
-            "pass --ref explicitly"
+            "regenerate the snapshot with --ref <revision>"
         )
     return commit
 
@@ -454,6 +451,21 @@ def remove_stale_outputs(
                 pass
 
 
+def snapshot_content(outputs: dict[PurePosixPath, str]) -> dict[PurePosixPath, str]:
+    """Compare generated content without treating another source revision as stale.
+
+    The on-disk snapshot must still pass the exact recorded-provenance check.
+    This normalization is only for comparing it with another requested revision.
+    """
+    content = dict(outputs)
+    manifest_path = PurePosixPath(MANIFEST_FILENAME)
+    manifest = json.loads(content[manifest_path])
+    del manifest["source_commit"]
+    del manifest["source_date"]
+    content[manifest_path] = json.dumps(manifest, sort_keys=True)
+    return content
+
+
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -474,7 +486,11 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Verify the generated snapshot without writing it.",
+        help=(
+            "Verify the recorded snapshot without writing it. With --ref, also "
+            "verify that its content matches that revision, allowing a different "
+            "source commit or date."
+        ),
     )
     return parser.parse_args()
 
@@ -488,13 +504,11 @@ def main() -> int:
             output_directory = repository / output_directory
         ensure_safe_output_directory(repository, output_directory)
 
-        source_ref = arguments.ref
-        if source_ref is None:
-            source_ref = (
-                manifest_source_commit(output_directory)
-                if arguments.check
-                else "HEAD"
-            )
+        source_ref = (
+            manifest_source_commit(output_directory)
+            if arguments.check
+            else arguments.ref or "HEAD"
+        )
         commit = assembly.resolve_commit(repository, source_ref)
         commit_date = date.fromisoformat(
             assembly.run_git(
@@ -533,6 +547,38 @@ def main() -> int:
                 )
             return 1
         if arguments.check:
+            if arguments.ref is not None:
+                requested_commit = assembly.resolve_commit(repository, arguments.ref)
+                if requested_commit != commit:
+                    requested_date = date.fromisoformat(
+                        assembly.run_git(
+                            repository, "show", "-s", "--format=%cs", requested_commit
+                        ).strip()
+                    )
+                    recorded_content = snapshot_content(outputs)
+                    requested_content = snapshot_content(
+                        build_skill_documentation(
+                            repository, requested_commit, requested_date
+                        )
+                    )
+                    changed = sorted(
+                        relative
+                        for relative in recorded_content.keys() | requested_content.keys()
+                        if recorded_content.get(relative) != requested_content.get(relative)
+                    )
+                    if changed:
+                        for relative in changed:
+                            print(
+                                f"Out of date against {requested_commit[:7]}: "
+                                f"{assembly.display_path(output_directory / relative, repository)}",
+                                file=sys.stderr,
+                            )
+                        return 1
+                print(
+                    f"Skill documentation content matches {requested_commit[:7]} "
+                    f"(recorded source: {commit[:7]})"
+                )
+                return 0
             print(f"Skill documentation snapshot matches {commit[:7]}")
         else:
             print(

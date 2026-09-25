@@ -68,6 +68,12 @@ class SkillDocumentationTests(unittest.TestCase):
         )
 
         self.assertIn("[Two](TWO.md#details)", rendered)
+        self.assertTrue(
+            rendered.startswith(
+                "<!-- Generated from docs/ONE.md. Do not edit directly. -->\n"
+            )
+        )
+        self.assertNotIn(commit, rendered)
         self.assertIn(
             f"[Module](https://github.com/hyperbricks/hyperbricks/blob/{repository_ref}/modules/demo/README.md)",
             rendered,
@@ -138,6 +144,11 @@ class SkillDocumentationTests(unittest.TestCase):
             },
         )
         self.assertIn("[Introduction](docs/INTRODUCTION.md)", outputs[PurePosixPath(INDEX_FILENAME)])
+        self.assertIn(
+            "**Snapshot provenance:** [Manifest](documentation-manifest.json)",
+            outputs[PurePosixPath(INDEX_FILENAME)],
+        )
+        self.assertNotIn("Snapshot date", outputs[PurePosixPath(INDEX_FILENAME)])
         manifest = json.loads(outputs[PurePosixPath(MANIFEST_FILENAME)])
         self.assertEqual(manifest["hyperbricks_version"], "v1.2.5-beta")
         self.assertEqual(manifest["source_commit"], "c" * 40)

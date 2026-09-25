@@ -62,9 +62,32 @@ The snapshot writes `DOCUMENTATION_INDEX.md`, `documentation-manifest.json`, and
 generated documents under `SKILLS/hyperbricks/references/docs/`. The documents
 retain the source prose from `/docs`; links within `/docs` remain local and links
 to other repository paths use the release version from `assets/version.md`.
+Each document has a stable `Generated from docs/...` notice without a commit ID.
+The index links to the manifest for provenance instead of embedding a snapshot
+date. The source commit and date live centrally in the manifest alongside the
+runtime version, complete document inventory, and source/bundled content hashes.
+An unrelated source commit therefore does not change individual documents or
+their bundled hashes. Publication compilations retain their snapshot dates.
+
 Pass `--check` to verify an existing snapshot without writing it. With no
 explicit `--ref`, the check uses the `source_commit` recorded in the snapshot
 manifest, so committing the generated files does not make the check stale.
+To check freshness against the current committed canonical documentation, run:
+
+```sh
+.venv-compilations/bin/python scripts/compilation-generation/build_skill_documentation.py --check --ref HEAD
+.venv-compilations/bin/python scripts/compilation-generation/build_skill_documentation.py --check --ref HEAD --output-dir codex-plugin/hyperbricks/skills/hyperbricks/references
+bash scripts/check_codex_plugin_sync.sh
+```
+
+With an explicit `--ref`, the check first verifies the files and manifest exactly
+against their recorded source revision, then compares their content with the
+requested revision. Different source commits or dates alone do not make the
+snapshot stale. Changed source text, version, document inventory, generated
+links, or bundled content still fail. This is read-only and uses committed
+sources; uncommitted `docs/` edits are not included. The tree-sync script checks
+that skill and plugin copies match each other; it does not replace the content
+checks against canonical documentation.
 
 For safety, a custom non-empty output directory must already contain a valid
 snapshot manifest. Use an empty directory for its first generation; the
