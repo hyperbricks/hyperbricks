@@ -308,7 +308,7 @@ The generated site is written to `modules/demo/rendered/`. Static rendering requ
 
 ## Zip Archive
 
-To create a zip archive of your site use the --zip option. It will export a .zip archive to the default `/export/<module_name>` folder.
+To create a ZIP archive of your site, use the `--zip` option. The default output directory is `./exports/<module>/`, so this example writes its archive to `./exports/demo/`.
 
 
 

@@ -2,7 +2,7 @@
   "schema_version": 2,
   "hyperbricks_version": "v1.2.5-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_digest": "cbae9157c7c1080ea2f586dd1e7f4511914574c13733ad667c2f356f14becbce",
+  "source_digest": "969e17fc297496b186d77e7a16e91e0bc7051d545c2e299cabb4e0c60899128a",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
@@ -13,8 +13,8 @@
     {
       "source_path": "docs/QUICKSTART.md",
       "bundled_path": "docs/QUICKSTART.md",
-      "source_sha256": "b74e2dc2e26b869694b0d48f0023c6d4448bbd35f05c5ba5520ab6e2746677df",
-      "bundled_sha256": "ce8e247190bffdefd3a737e19d7762e9fc892213a09856438cf74f1e5c6d684b"
+      "source_sha256": "6f370055d0f189e76fdaca6bd5df5e2766ade5740ad9666f797c6059064acff9",
+      "bundled_sha256": "fe849757a59070839af8df500ed9f9115730b60cdf4fbecd432bd8644b85d779"
     },
     {
       "source_path": "docs/HOWTOS.md",
