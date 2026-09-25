@@ -1,4 +1,8 @@
 <div class="split-result" data-state="error">
   <strong>Rename rejected</strong><br>
-  {{ index .Data "message" }}
+  {{ if and (kindIs "map" .Data) (kindIs "string" (index .Data "message")) (index .Data "message") }}
+    {{ index .Data "message" }}
+  {{ else }}
+    The mock API request failed or returned an unexpected response. Check PATTERNS_API_BASE_URL for this server.
+  {{ end }}
 </div>
