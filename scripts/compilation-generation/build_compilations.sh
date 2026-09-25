@@ -52,7 +52,7 @@ export HB_MERMAID_CLI="${MERMAID_DIR}/node_modules/.bin/mmdc"
 
 FORMAT="all"
 OUTPUT_DIR="${ROOT}/docs/compilations"
-SOURCE_REF="HEAD"
+SOURCE_REF="WORKTREE"
 BUILD_ARGUMENT_COUNT=$#
 BUILD_ARGUMENTS=("$@")
 while (($#)); do

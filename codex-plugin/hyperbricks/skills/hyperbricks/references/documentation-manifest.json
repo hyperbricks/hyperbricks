@@ -1,9 +1,8 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "hyperbricks_version": "v1.2.5-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_commit": "1098c6fd6c38b52178984557c07e7b0d54ff61fb",
-  "source_date": "2026-09-25",
+  "source_digest": "cbae9157c7c1080ea2f586dd1e7f4511914574c13733ad667c2f356f14becbce",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
@@ -38,8 +37,8 @@
     {
       "source_path": "docs/REFERENCE.md",
       "bundled_path": "docs/REFERENCE.md",
-      "source_sha256": "786102461371109e9fa3e50c362cd6b07853ff57b6110b4df9db510fdf82d9c4",
-      "bundled_sha256": "7f7f21d3149ec1c20d34eaf8359794661567daf820d349f4cffcd8ffd2ad7048"
+      "source_sha256": "ced82211c1ff1b66b36c9b8e227185d54ba43669cae1fc2edb726364817f43c3",
+      "bundled_sha256": "8a454326ae82b95eac0e4905866f6ecb5a38c5166c46c4320a79da2509be8302"
     },
     {
       "source_path": "docs/MARKDOWN.md",

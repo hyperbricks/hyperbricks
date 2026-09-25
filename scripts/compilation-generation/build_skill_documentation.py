@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
-from datetime import date
 import hashlib
 import json
 import os
@@ -38,14 +37,17 @@ def snapshot_repository_paths(
     repository: Path,
     commit: str,
 ) -> tuple[set[str], set[str]]:
-    listing = assembly.run_git(
-        repository,
-        "ls-tree",
-        "-r",
-        "--name-only",
-        commit,
-    )
-    files = {line for line in listing.splitlines() if line}
+    if commit == assembly.WORKTREE:
+        listing = assembly.run_git(
+            repository, "ls-files", "--cached", "--others", "--exclude-standard"
+        )
+        files = {
+            line for line in listing.splitlines()
+            if line and (repository / line).is_file() and not (repository / line).is_symlink()
+        }
+    else:
+        listing = assembly.run_git(repository, "ls-tree", "-r", "--name-only", commit)
+        files = {line for line in listing.splitlines() if line}
     directories: set[str] = set()
     for filename in files:
         path = PurePosixPath(filename)
@@ -196,8 +198,6 @@ def render_document(
 def render_index(
     documents: tuple[BundledDocument, ...],
     version: str,
-    commit: str,
-    commit_date: date,
 ) -> str:
     repository_ref = assembly.repository_link_ref(version)
     source_url = f"{assembly.REPOSITORY_URL}/tree/{repository_ref}"
@@ -242,15 +242,19 @@ def sha256_text(value: str) -> str:
 def render_manifest(
     documents: tuple[BundledDocument, ...],
     version: str,
-    commit: str,
-    commit_date: date,
 ) -> str:
+    source_entries = [
+        (document.source.path, sha256_text(document.source.text))
+        for document in documents
+    ]
+    source_digest = sha256_text(json.dumps(
+        [version, source_entries], ensure_ascii=False, separators=(",", ":")
+    ))
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "hyperbricks_version": version,
         "source_repository": assembly.REPOSITORY_URL,
-        "source_commit": commit,
-        "source_date": commit_date.isoformat(),
+        "source_digest": source_digest,
         "documents": [
             {
                 "source_path": document.source.path,
@@ -274,7 +278,7 @@ def read_managed_manifest(output_directory: Path) -> dict | None:
         return None
     if not isinstance(manifest, dict):
         return None
-    if manifest.get("schema_version") != 1:
+    if manifest.get("schema_version") not in (1, 2):
         return None
     if manifest.get("source_repository") != assembly.REPOSITORY_URL:
         return None
@@ -347,21 +351,9 @@ def ensure_safe_output_directory(repository: Path, output_directory: Path) -> No
         )
 
 
-def manifest_source_commit(output_directory: Path) -> str:
-    manifest = read_managed_manifest(output_directory)
-    commit = manifest.get("source_commit") if manifest else None
-    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
-        raise assembly.BuildError(
-            f"{MANIFEST_FILENAME} does not contain a valid source_commit; "
-            "regenerate the snapshot with --ref <revision>"
-        )
-    return commit
-
-
 def build_skill_documentation(
     repository: Path,
     commit: str,
-    commit_date: date,
 ) -> dict[PurePosixPath, str]:
     version = assembly.snapshot_version(repository, commit)
     repository_ref = assembly.repository_link_ref(version)
@@ -402,14 +394,10 @@ def build_skill_documentation(
     outputs[PurePosixPath(INDEX_FILENAME)] = render_index(
         documents,
         version,
-        commit,
-        commit_date,
     )
     outputs[PurePosixPath(MANIFEST_FILENAME)] = render_manifest(
         documents,
         version,
-        commit,
-        commit_date,
     )
     return outputs
 
@@ -451,28 +439,12 @@ def remove_stale_outputs(
                 pass
 
 
-def snapshot_content(outputs: dict[PurePosixPath, str]) -> dict[PurePosixPath, str]:
-    """Compare generated content without treating another source revision as stale.
-
-    The on-disk snapshot must still pass the exact recorded-provenance check.
-    This normalization is only for comparing it with another requested revision.
-    """
-    content = dict(outputs)
-    manifest_path = PurePosixPath(MANIFEST_FILENAME)
-    manifest = json.loads(content[manifest_path])
-    del manifest["source_commit"]
-    del manifest["source_date"]
-    content[manifest_path] = json.dumps(manifest, sort_keys=True)
-    return content
-
-
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--ref",
         help=(
-            "Git commit, tag, or branch to build. Defaults to HEAD when writing "
-            "and to the manifest's source_commit with --check."
+            "Git commit, tag, or branch to build. Defaults to the current working tree."
         ),
     )
     parser.add_argument(
@@ -487,9 +459,7 @@ def parse_arguments() -> argparse.Namespace:
         "--check",
         action="store_true",
         help=(
-            "Verify the recorded snapshot without writing it. With --ref, also "
-            "verify that its content matches that revision, allowing a different "
-            "source commit or date."
+            "Verify that generated files match the selected source without writing."
         ),
     )
     return parser.parse_args()
@@ -504,22 +474,9 @@ def main() -> int:
             output_directory = repository / output_directory
         ensure_safe_output_directory(repository, output_directory)
 
-        source_ref = (
-            manifest_source_commit(output_directory)
-            if arguments.check
-            else arguments.ref or "HEAD"
-        )
-        commit = assembly.resolve_commit(repository, source_ref)
-        commit_date = date.fromisoformat(
-            assembly.run_git(
-                repository,
-                "show",
-                "-s",
-                "--format=%cs",
-                commit,
-            ).strip()
-        )
-        outputs = build_skill_documentation(repository, commit, commit_date)
+        source_ref = arguments.ref or assembly.WORKTREE
+        commit = assembly.WORKTREE if source_ref == assembly.WORKTREE else assembly.resolve_commit(repository, source_ref)
+        outputs = build_skill_documentation(repository, commit)
         expected = set(outputs)
         stale: list[Path] = []
         for relative, content in outputs.items():
@@ -528,7 +485,8 @@ def main() -> int:
                 if not output.is_file() or output.read_text(encoding="utf-8") != content:
                     stale.append(output)
                 continue
-            assembly.write_atomic(output, content)
+            if not output.is_file() or output.read_text(encoding="utf-8") != content:
+                assembly.write_atomic(output, content)
 
         unexpected = existing_generated_paths(output_directory) - expected
         if arguments.check:
@@ -547,43 +505,11 @@ def main() -> int:
                 )
             return 1
         if arguments.check:
-            if arguments.ref is not None:
-                requested_commit = assembly.resolve_commit(repository, arguments.ref)
-                if requested_commit != commit:
-                    requested_date = date.fromisoformat(
-                        assembly.run_git(
-                            repository, "show", "-s", "--format=%cs", requested_commit
-                        ).strip()
-                    )
-                    recorded_content = snapshot_content(outputs)
-                    requested_content = snapshot_content(
-                        build_skill_documentation(
-                            repository, requested_commit, requested_date
-                        )
-                    )
-                    changed = sorted(
-                        relative
-                        for relative in recorded_content.keys() | requested_content.keys()
-                        if recorded_content.get(relative) != requested_content.get(relative)
-                    )
-                    if changed:
-                        for relative in changed:
-                            print(
-                                f"Out of date against {requested_commit[:7]}: "
-                                f"{assembly.display_path(output_directory / relative, repository)}",
-                                file=sys.stderr,
-                            )
-                        return 1
-                print(
-                    f"Skill documentation content matches {requested_commit[:7]} "
-                    f"(recorded source: {commit[:7]})"
-                )
-                return 0
-            print(f"Skill documentation snapshot matches {commit[:7]}")
+            print(f"Skill documentation snapshot matches {source_ref}")
         else:
             print(
                 f"Wrote {len(outputs) - 2} skill documentation files and provenance "
-                f"for {commit[:7]}"
+                f"for {source_ref}"
             )
         return 0
     except (assembly.BuildError, OSError, UnicodeError, ValueError) as error:

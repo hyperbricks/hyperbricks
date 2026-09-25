@@ -4,8 +4,6 @@
 
 **Version:** v1.2.5-beta
 
-**Build time:** 2026-09-25 10:25 UTC
-
 
 HyperBricks is under active development. Features, configuration, and APIs may change as the project evolves. See [CHANGELOG.md](CHANGELOG.md) for details about `v1.2.5-beta`.
 

@@ -3,6 +3,7 @@
 from datetime import date
 from pathlib import Path
 import re
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -19,9 +20,12 @@ from build_markdown_compilations import (
     GENERATED_SKILL_DOCUMENTATION,
     GENERATED_SKILL_DOCUMENTATION_PREFIX,
     SKILLS_ORDER,
+    WORKTREE,
     SourceDocument,
     build_compilations as assemble_compilations,
     documentation_paths,
+    committed_text,
+    ensure_worktree_texts_are_stable,
     format_text,
     load_compilation_texts,
     render_compilation,
@@ -46,10 +50,27 @@ class CompilationTests(unittest.TestCase):
                     snapshot_version(Path("."), "old-commit")
 
     def test_compilation_includes_version(self):
-        compilation = Compilation("test.md", "Test Compilation v1.2.5-beta", "Source documents", "Description", "Topics", (), "v1.2.5-beta")
+        compilation = Compilation("test.md", "Test Compilation v1.2.5-beta", "Source documents", "Description", "Topics", (), "v1.2.5-beta", repository_ref="v1.2.5-beta")
         markdown = render_compilation(compilation, "a" * 40, date(2026, 9, 22))
         self.assertIn("# Test Compilation v1.2.5-beta", markdown)
         self.assertIn("- **HyperBricks version:** v1.2.5-beta", markdown)
+        self.assertNotIn("Snapshot date", markdown)
+        self.assertNotIn("a" * 40, markdown)
+
+    def test_worktree_sources_include_uncommitted_edits_and_new_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            subprocess.run(["git", "init", "--quiet"], cwd=repository, check=True)
+            docs = repository / "docs"
+            docs.mkdir()
+            introduction = docs / "INTRODUCTION.md"
+            introduction.write_text("# Before\n", encoding="utf-8")
+            subprocess.run(["git", "add", "docs/INTRODUCTION.md"], cwd=repository, check=True)
+            introduction.write_text("# After\n", encoding="utf-8")
+            (docs / "NEW.md").write_text("# New\n", encoding="utf-8")
+
+            self.assertEqual(committed_text(repository, WORKTREE, "docs/INTRODUCTION.md"), "# After\n")
+            self.assertIn("docs/NEW.md", documentation_paths(repository, WORKTREE))
 
     def test_generated_copy_comes_from_text_file(self):
         def paths(_repository, _commit, directory):
@@ -82,6 +103,16 @@ class CompilationTests(unittest.TestCase):
         self.assertEqual(documentation.cover.heading, texts["documentation"]["cover"]["heading"])
         self.assertEqual(skills.cover.detail, texts["skills"]["cover"]["detail"])
         self.assertNotIn("Handbook", skills.title)
+
+    def test_worktree_copy_rejects_commit_and_clock_placeholders(self):
+        texts = load_compilation_texts()
+        ensure_worktree_texts_are_stable(texts)
+        texts["documentation"]["cover"]["source"] = "Commit {short_commit}"
+        with self.assertRaisesRegex(BuildError, "short_commit"):
+            ensure_worktree_texts_are_stable(texts)
+        texts["documentation"]["cover"]["source"] = "Built {snapshot_date}"
+        with self.assertRaisesRegex(BuildError, "snapshot_date"):
+            ensure_worktree_texts_are_stable(texts)
 
     def test_repository_links_use_release_version(self):
         self.assertEqual(repository_link_ref("v1.2.5-beta"), "v1.2.5-beta")

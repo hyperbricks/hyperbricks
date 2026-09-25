@@ -10,8 +10,8 @@
       "brand": "HyperBricks",
       "heading": "Documentation compilation",
       "detail": "{version}",
-      "summary": "{version} • {document_count} documents • {snapshot_date}",
-      "source": "Source snapshot: Git commit {short_commit}; all chapters use this committed revision."
+      "summary": "{version} • {document_count} documents",
+      "source": "Source version: {version}; chapters use the matching maintained sources."
     }
   },
   "skills": {
@@ -25,8 +25,8 @@
       "brand": "HyperBricks",
       "heading": "Skills compilation",
       "detail": "{subtitle}",
-      "summary": "{version} • {document_count} documents • {snapshot_date}",
-      "source": "Source snapshot: Git commit {short_commit}; all chapters use this committed revision."
+      "summary": "{version} • {document_count} documents",
+      "source": "Source version: {version}; chapters use the matching maintained sources."
     }
   }
 }

@@ -19,7 +19,7 @@ import build_markdown_compilations as assembly
 
 def arguments():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--ref", default="HEAD", help="Committed Git revision (default: HEAD)")
+    parser.add_argument("--ref", default=assembly.WORKTREE, help="Git revision to build (default: current working tree)")
     parser.add_argument("--format", choices=("all", "markdown", "pdf", "epub"), default="all")
     parser.add_argument("--output-dir", default="docs/compilations", help="Destination for generated compilations (default: docs/compilations)")
     parser.add_argument("--font-dir", default="/System/Library/Fonts/Supplemental")
@@ -315,8 +315,8 @@ def render_pdf(compilation, commit, snapshot_date, destination, font_dir, code_f
                 cover_heading = f"{kind} compilation"
                 cover_detail = compilation.subtitle if kind == "Skills" else compilation.version
                 version_label = f"{compilation.version} • " if compilation.version else ""
-                cover_summary = f"{version_label}{len(compilation.sources)} documents • {stamp}"
-                cover_source = f"Source snapshot: Git commit {commit[:7]}; all chapters use this committed revision."
+                cover_summary = f"{version_label}{len(compilation.sources)} documents"
+                cover_source = f"Source version: {compilation.version}; chapters use the matching maintained sources."
             cover_lines = (
                 ("label", cover_label, "HB-Bold", 9),
                 ("brand", cover_brand, "HB-Bold", 42),
@@ -548,8 +548,11 @@ def main():
     args = arguments()
     try:
         repository = assembly.repository_root()
-        commit = assembly.resolve_commit(repository, args.ref)
-        snapshot_date = date.fromisoformat(assembly.run_git(repository, "show", "-s", "--format=%cs", commit).strip())
+        commit = assembly.WORKTREE if args.ref == assembly.WORKTREE else assembly.resolve_commit(repository, args.ref)
+        snapshot_date = (
+            date(1970, 1, 1) if commit == assembly.WORKTREE
+            else date.fromisoformat(assembly.run_git(repository, "show", "-s", "--format=%cs", commit).strip())
+        )
         output = Path(args.output_dir)
         if not output.is_absolute():
             output = repository / output

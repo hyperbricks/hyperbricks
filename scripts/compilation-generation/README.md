@@ -4,7 +4,20 @@ These scripts collect separately maintained HyperBricks documents into two
 snapshot compilations. The generated files preserve their source paths and are
 not intended to read as one continuous manual.
 
-From the repository root, run:
+After changing canonical documentation or the skill, run one command from the
+repository root:
+
+```sh
+./scripts/sync_docs.sh
+```
+
+It regenerates the README and component reference, every compilation format,
+both skill-reference trees, and the packaged Codex plugin mirror from the
+current working tree. It runs the focused checks and never commits, tags, or
+pushes. Repeating it without source changes leaves tracked output bytes
+unchanged.
+
+To build compilations alone, run:
 
 ```sh
 ./scripts/compilation-generation/build_compilations.sh
@@ -29,10 +42,12 @@ sections. The top-level `title`, `subtitle`, `description`, `topics_label`, and
 `topics` values are shared by the generated formats; the nested `cover` values
 only control the PDF cover.
 
-Cover text may use `{version}`, `{subtitle}`, `{document_count}`,
-`{snapshot_date}`, and `{short_commit}`. The shared top-level text may use
-`{version}`, `{document_count}`, and `{short_commit}`. Unknown placeholders,
-missing fields, and invalid JSON stop the build with an explicit error.
+The default cover copy uses only `{version}`, `{subtitle}`, and
+`{document_count}` to keep the release output stable. The template engine also
+supports `{snapshot_date}` and `{short_commit}` only when building custom
+compilations with an explicit committed `--ref`; the working-tree build rejects
+them so it cannot silently introduce clock or commit-ID churn.
+Unknown placeholders, missing fields, and invalid JSON stop the build.
 
 You need Python 3 with `venv` and `pip`, Node.js with `npm`, and network access
 for the first build. PDF generation also needs fonts. The defaults use Arial
@@ -64,28 +79,23 @@ retain the source prose from `/docs`; links within `/docs` remain local and link
 to other repository paths use the release version from `assets/version.md`.
 Each document has a stable `Generated from docs/...` notice without a commit ID.
 The index links to the manifest for provenance instead of embedding a snapshot
-date. The source commit and date live centrally in the manifest alongside the
-runtime version, complete document inventory, and source/bundled content hashes.
-An unrelated source commit therefore does not change individual documents or
-their bundled hashes. Publication compilations retain their snapshot dates.
+date. The manifest records a digest of the canonical document inventory and
+content, the runtime version, and source/bundled hashes for every document.
+It does not depend on a commit ID that may become unreachable after an amend.
 
-Pass `--check` to verify an existing snapshot without writing it. With no
-explicit `--ref`, the check uses the `source_commit` recorded in the snapshot
-manifest, so committing the generated files does not make the check stale.
-To check freshness against the current committed canonical documentation, run:
+Pass `--check` to verify an existing snapshot against the current working tree
+without writing it. The one-command workflow runs both mirror checks;
+manually:
 
 ```sh
-.venv-compilations/bin/python scripts/compilation-generation/build_skill_documentation.py --check --ref HEAD
-.venv-compilations/bin/python scripts/compilation-generation/build_skill_documentation.py --check --ref HEAD --output-dir codex-plugin/hyperbricks/skills/hyperbricks/references
+.venv-compilations/bin/python scripts/compilation-generation/build_skill_documentation.py --check
+.venv-compilations/bin/python scripts/compilation-generation/build_skill_documentation.py --check --output-dir codex-plugin/hyperbricks/skills/hyperbricks/references
 bash scripts/check_codex_plugin_sync.sh
 ```
 
-With an explicit `--ref`, the check first verifies the files and manifest exactly
-against their recorded source revision, then compares their content with the
-requested revision. Different source commits or dates alone do not make the
-snapshot stale. Changed source text, version, document inventory, generated
-links, or bundled content still fail. This is read-only and uses committed
-sources; uncommitted `docs/` edits are not included. The tree-sync script checks
+With an explicit `--ref`, the check compares against that committed revision.
+Changed source text, version, document inventory, generated links, or bundled
+content fail. The tree-sync script checks
 that skill and plugin copies match each other; it does not replace the content
 checks against canonical documentation.
 
@@ -94,10 +104,9 @@ snapshot manifest. Use an empty directory for its first generation; the
 repository root, canonical `docs/` tree, and symlinked output paths are never
 accepted as output.
 
-The snapshot records a committed source revision. Commit canonical documentation
-and tooling changes first, generate the snapshot from that commit, then commit
-the generated skill and plugin files separately. This avoids claiming that
-uncommitted documentation was part of the recorded source revision.
+The snapshot records content rather than a particular commit. Canonical docs,
+generated references, and the packaged mirror can be verified together before
+any commit and committed as one coherent change.
 
 The EPUB uses the PDF's Arial/sans-serif typography, navy/teal heading palette,
 code panels, and rendered Mermaid diagrams, with relative sizes and wrapping
@@ -105,7 +114,7 @@ for e-readers. It includes chapter navigation, internal links, and a dark theme.
 Reader font/theme overrides may change its appearance. No system fonts are
 embedded or required for EPUB generation.
 
-Build only EPUBs from a committed snapshot (also accepts `--output-dir`):
+Build only EPUBs (also accepts `--ref` and `--output-dir`):
 
 ```sh
 ./scripts/compilation-generation/build_compilations.sh --format epub
@@ -117,9 +126,9 @@ To rebuild EPUBs from existing generated Markdown, without rebuilding PDF:
 .venv-compilations/bin/python scripts/compilation-generation/build_epub_compilations.py
 ```
 
-The documents included in a compilation are read from a committed Git revision
-(default `HEAD`), not from uncommitted working-tree or staged content. Pass
-`--ref <revision>` to select another commit. The generator code, visual assets,
+The documents included in a compilation are read from the current working tree
+by default, including uncommitted changes. Pass `--ref <revision>` to select a
+committed snapshot instead. The generator code, visual assets,
 and `compilation-texts.json` are read from the current checkout, so text changes
 can be previewed before committing them. Run the PDF and EPUB regression tests
 after the environment has been created:

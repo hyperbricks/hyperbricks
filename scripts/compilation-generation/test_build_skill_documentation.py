@@ -1,6 +1,5 @@
 """Regression checks for the documentation snapshot bundled with the skill."""
 
-from datetime import date
 import json
 from pathlib import Path, PurePosixPath
 import tempfile
@@ -16,7 +15,7 @@ from build_skill_documentation import (
     bundled_document_path,
     ensure_safe_output_directory,
     existing_generated_paths,
-    manifest_source_commit,
+    read_managed_manifest,
     remove_stale_outputs,
     render_document,
 )
@@ -128,7 +127,6 @@ class SkillDocumentationTests(unittest.TestCase):
             outputs = build_skill_documentation(
                 Path("."),
                 "c" * 40,
-                date(2026, 9, 23),
             )
         self.assertIn(
             "**Source version:** [`v1.2.5-beta`](https://github.com/hyperbricks/hyperbricks/tree/v1.2.5-beta)",
@@ -150,8 +148,10 @@ class SkillDocumentationTests(unittest.TestCase):
         )
         self.assertNotIn("Snapshot date", outputs[PurePosixPath(INDEX_FILENAME)])
         manifest = json.loads(outputs[PurePosixPath(MANIFEST_FILENAME)])
+        self.assertEqual(manifest["schema_version"], 2)
         self.assertEqual(manifest["hyperbricks_version"], "v1.2.5-beta")
-        self.assertEqual(manifest["source_commit"], "c" * 40)
+        self.assertRegex(manifest["source_digest"], r"^[0-9a-f]{64}$")
+        self.assertNotIn("source_commit", manifest)
         self.assertEqual(
             manifest["documents"][0]["source_path"],
             "docs/INTRODUCTION.md",
@@ -217,7 +217,7 @@ class SkillDocumentationTests(unittest.TestCase):
             with self.assertRaisesRegex(BuildError, "symlinks"):
                 ensure_safe_output_directory(repository, output)
 
-    def test_managed_output_supplies_default_check_commit(self):
+    def test_managed_output_accepts_legacy_manifest_for_regeneration(self):
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             repository.mkdir()
@@ -238,7 +238,7 @@ class SkillDocumentationTests(unittest.TestCase):
             )
 
             ensure_safe_output_directory(repository, output)
-            self.assertEqual(manifest_source_commit(output), commit)
+            self.assertEqual(read_managed_manifest(output)["source_commit"], commit)
 
 
 if __name__ == "__main__":

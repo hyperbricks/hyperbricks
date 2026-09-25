@@ -1,4 +1,4 @@
-"""Content-stability and provenance checks against disposable Git snapshots."""
+"""Content-stability checks against disposable Git snapshots and worktrees."""
 
 from contextlib import redirect_stderr, redirect_stdout
 import io
@@ -134,24 +134,15 @@ class SkillDocumentationStabilityTests(unittest.TestCase):
         self.write_source("unrelated.txt", "An unrelated implementation change.\n")
         return self.commit("Unrelated change on a later day")
 
-    def test_regeneration_changes_only_provenance_for_an_unrelated_commit(self):
+    def test_regeneration_is_identical_after_an_unrelated_commit(self):
         self.generate()
         before = self.snapshot_bytes()
-        before_manifest = self.manifest()
         later_commit = self.unrelated_commit()
         self.generate()
         after = self.snapshot_bytes()
-        after_manifest = self.manifest()
-
-        self.assertEqual(set(before), set(after))
-        for relative in before:
-            if relative != skill_docs.MANIFEST_FILENAME:
-                self.assertEqual(before[relative], after[relative], relative)
-        self.assertEqual(before_manifest["documents"], after_manifest["documents"])
-        self.assertEqual(before_manifest["source_commit"], self.original_commit)
-        self.assertEqual(after_manifest["source_commit"], later_commit)
-        self.assertEqual(before_manifest["source_date"], "2026-09-24")
-        self.assertEqual(after_manifest["source_date"], "2026-09-25")
+        self.assertEqual(before, after)
+        self.assertEqual(self.manifest()["schema_version"], 2)
+        self.assertNotIn("source_commit", self.manifest())
 
         document = after["docs/INTRODUCTION.md"].decode("utf-8")
         self.assertTrue(document.startswith(
@@ -174,16 +165,18 @@ class SkillDocumentationStabilityTests(unittest.TestCase):
         self.assertNotIn("Snapshot date", index)
         self.assertIn(skill_docs.MANIFEST_FILENAME, index)
 
-    def test_explicit_ref_accepts_unchanged_content_without_updating_provenance(self):
+    def test_explicit_ref_accepts_unchanged_content(self):
         self.generate()
         self.unrelated_commit()
         self.assert_check_passes("--ref", "HEAD")
-        self.assertEqual(self.manifest()["source_commit"], self.original_commit)
+        self.assert_check_passes()
 
-    def test_default_check_verifies_recorded_snapshot_not_new_head(self):
+    def test_default_check_detects_uncommitted_canonical_changes(self):
         self.generate()
         self.write_source("docs/EXTRA.md", "# Extra documentation\n\nNew prose.\n")
-        self.commit("Change canonical documentation")
+        self.assert_check_fails()
+        self.assert_check_passes("--ref", "HEAD")
+        self.generate()
         self.assert_check_passes()
         self.assert_check_fails("--ref", "HEAD")
 
@@ -243,10 +236,9 @@ class SkillDocumentationStabilityTests(unittest.TestCase):
         self.unrelated_commit()
         original_manifest = self.manifest()
         for field, value in (
-            ("source_commit", "0" * 40),
-            ("source_commit", "not-a-commit"),
-            ("source_date", "2026-09-23"),
-            ("source_date", "not-a-date"),
+            ("source_digest", "0" * 64),
+            ("source_digest", "not-a-digest"),
+            ("schema_version", 1),
         ):
             with self.subTest(field=field, value=value):
                 manifest = dict(original_manifest)
@@ -254,6 +246,13 @@ class SkillDocumentationStabilityTests(unittest.TestCase):
                 self.write_manifest(manifest)
                 self.assert_check_fails()
                 self.assert_check_fails("--ref", "HEAD")
+
+    def test_check_survives_rewritten_commit_history(self):
+        self.generate()
+        self.write_source("unrelated.txt", "Changed outside the documentation.\n")
+        self.commit("Unrelated change")
+        self.git("-c", "commit.gpgsign=false", "commit", "--amend", "--no-edit", "--quiet")
+        self.assert_check_passes()
 
     def test_checks_reject_unexpected_generated_document(self):
         self.generate()

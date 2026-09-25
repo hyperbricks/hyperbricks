@@ -11,7 +11,6 @@ A collection of the separate guides and references in the docs directory.
 - **HyperBricks version:** v1.2.5-beta
 - **Included documents:** 26
 - **Source version:** [`v1.2.5-beta`](https://github.com/hyperbricks/hyperbricks/tree/v1.2.5-beta)
-- **Snapshot date:** 25 September 2026
 
 ## Contents
 
@@ -1593,8 +1592,6 @@ _Source: [`docs/REFERENCE.md`](https://github.com/hyperbricks/hyperbricks/blob/v
 
 **Licence:** MIT
 **Version:** v1.2.5-beta
-
-**Build time:** 2026-09-25 10:25 UTC
 
 
 
