@@ -30,10 +30,11 @@ type packageConfigUpdateRequest struct {
 }
 
 type deployPackageConfigLocation struct {
-	moduleRoot string
-	path       string
-	scope      string
-	running    bool
+	moduleRoot  string
+	path        string
+	scope       string
+	running     bool
+	runtimeMode string
 }
 
 var packageConfigWriteMu sync.Mutex
@@ -51,6 +52,7 @@ func writePackageConfigResponse(w http.ResponseWriter, module string, buildID st
 		"content":          string(content),
 		"scope":            location.scope,
 		"restart_required": location.running,
+		"runtime_mode":     location.runtimeMode,
 		"sha256":           packageConfigSHA256(content),
 	})
 }
@@ -434,9 +436,10 @@ func (api *deployLocalServer) localPackageConfig(module string, buildID string) 
 			return deployPackageConfigLocation{}, err
 		}
 		location := deployPackageConfigLocation{
-			moduleRoot: moduleRoot,
-			path:       filepath.Join(moduleRoot, shared.PackageConfigFileName),
-			scope:      "source",
+			moduleRoot:  moduleRoot,
+			path:        filepath.Join(moduleRoot, shared.PackageConfigFileName),
+			scope:       "source",
+			runtimeMode: shared.DEVELOPMENT_MODE,
 		}
 		_, location.running = api.readBuildProcess(module, localDevBuildID)
 		return location, nil
@@ -471,6 +474,15 @@ func (api *deployLocalServer) localPackageConfig(module string, buildID string) 
 		scope:      "runtime",
 	}
 	_, location.running = api.readBuildProcess(module, buildID)
+	index, err := loadLocalBuildIndex(api.indexPath(module))
+	if err != nil {
+		return deployPackageConfigLocation{}, err
+	}
+	row, ok := findLocalRow(index, buildID)
+	if !ok {
+		return deployPackageConfigLocation{}, errors.New("build_id not found")
+	}
+	location.runtimeMode = normalizedDeployRuntimeMode(row.RuntimeMode, row.Production)
 	return location, nil
 }
 
@@ -505,6 +517,15 @@ func (api *deployAPI) remotePackageConfig(module string, buildID string) (deploy
 		scope:      "runtime",
 	}
 	_, location.running = api.readBuildProcess(module, buildID)
+	index, err := loadDeployIndex(api.indexPath(module))
+	if err != nil {
+		return deployPackageConfigLocation{}, err
+	}
+	row, ok := findDeployRow(index, buildID)
+	if !ok {
+		return deployPackageConfigLocation{}, errors.New("build_id not found")
+	}
+	location.runtimeMode = normalizedDeployRuntimeMode(row.RuntimeMode, row.Production)
 	return location, nil
 }
 

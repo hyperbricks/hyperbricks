@@ -54,6 +54,7 @@ type deployIndexRow struct {
 	File          string `json:"file"`
 	BuiltAt       string `json:"built_at"`
 	Commit        string `json:"commit"`
+	OriginBuildID string `json:"origin_build_id,omitempty"`
 	SourceHash    string `json:"source_hash"`
 	HyperBricks   string `json:"hyperbricks,omitempty"`
 	RuntimeMode   string `json:"runtime_mode,omitempty"`
@@ -96,6 +97,7 @@ type deployAPI struct {
 	workingDir    string
 	nonceStore    *deployNonceStore
 	pluginTasks   *pluginTaskStore
+	runtimeMu     sync.Mutex
 }
 
 type deployProcess struct {
@@ -370,6 +372,12 @@ func loadDeployConfig(path string) (shared.DeployConfig, error) {
 
 func (api *deployAPI) wrapAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(strings.TrimSuffix(r.URL.Path, "/"), "/credentials") {
+			w.Header().Set("Cache-Control", "no-store")
+			if r.Method == http.MethodPut {
+				r.Body = http.MaxBytesReader(w, r.Body, maxDeployCredentialsRequestBytes)
+			}
+		}
 		if r.Method == http.MethodPut && strings.HasSuffix(strings.TrimSuffix(r.URL.Path, "/"), "/package-config") {
 			r.Body = http.MaxBytesReader(w, r.Body, maxPackageConfigRequestBytes)
 		}
@@ -633,8 +641,16 @@ func (api *deployAPI) handleDeploy(w http.ResponseWriter, r *http.Request) {
 		api.handleBuildPackageConfig(w, r, module, segments[4])
 		return
 	}
+	if action == "builds" && len(segments) == 6 && segments[5] == "credentials" && (r.Method == http.MethodGet || r.Method == http.MethodPut) {
+		api.handleBuildCredentials(w, r, module, segments[4])
+		return
+	}
 	if action == "builds" && len(segments) == 6 && segments[5] == "archive" && r.Method == http.MethodGet {
 		api.handleBuildArchive(w, r, module, segments[4])
+		return
+	}
+	if action == "builds" && len(segments) == 6 && segments[5] == "duplicate" && r.Method == http.MethodPost {
+		api.handleBuildDuplicate(w, r, module, segments[4])
 		return
 	}
 
@@ -1032,6 +1048,8 @@ func (api *deployAPI) handleBuildMode(w http.ResponseWriter, r *http.Request, mo
 }
 
 func (api *deployAPI) updateBuildMode(w http.ResponseWriter, module string, buildID string, mode string) {
+	api.runtimeMu.Lock()
+	defer api.runtimeMu.Unlock()
 	if !validDeployPathPart(module) || !validDeployPathPart(buildID) {
 		writeError(w, http.StatusBadRequest, errors.New("invalid module or build_id"))
 		return
@@ -1059,20 +1077,22 @@ func (api *deployAPI) updateBuildMode(w http.ResponseWriter, module string, buil
 	}
 
 	restarted := false
+	restartError := ""
 	if proc, ok := api.readProcess(module); ok && proc.BuildID == buildID {
-		if err := api.restartModule(module, buildID); err != nil {
-			writeError(w, http.StatusInternalServerError, err)
-			return
+		if err := api.startManagedLocked(module, buildID); err != nil {
+			restartError = err.Error()
+		} else {
+			restarted = true
 		}
-		restarted = true
 	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"module":       module,
-		"build_id":     buildID,
-		"runtime_mode": mode,
-		"production":   mode == shared.LIVE_MODE,
-		"restarted":    restarted,
+		"module":        module,
+		"build_id":      buildID,
+		"runtime_mode":  mode,
+		"production":    mode == shared.LIVE_MODE,
+		"restarted":     restarted,
+		"restart_error": restartError,
 	})
 }
 
@@ -1098,10 +1118,14 @@ func (api *deployAPI) handleBuildStatus(w http.ResponseWriter, module string, bu
 
 	running := false
 	port := 0
+	runningMode := ""
+	dashboardPath := ""
 	if proc, ok := api.readBuildProcessFile(module, buildID); ok {
 		if isProcessRunning(proc.PID) {
 			running = true
 			port = proc.Port
+			runningMode, _ = validateDeployRuntimeMode(proc.RuntimeMode)
+			dashboardPath = api.dashboardPath(module, proc)
 		} else {
 			api.clearBuildProcess(module, buildID)
 		}
@@ -1114,18 +1138,21 @@ func (api *deployAPI) handleBuildStatus(w http.ResponseWriter, module string, bu
 	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"module":        module,
-		"build_id":      buildID,
-		"running":       running,
-		"port":          port,
-		"moduleversion": row.ModuleVersion,
-		"commit":        row.Commit,
-		"built_at":      row.BuiltAt,
-		"source_hash":   row.SourceHash,
-		"hyperbricks":   row.HyperBricks,
-		"format":        row.Format,
-		"runtime_mode":  normalizedDeployRuntimeMode(row.RuntimeMode, row.Production),
-		"production":    row.Production,
+		"module":          module,
+		"build_id":        buildID,
+		"running":         running,
+		"port":            port,
+		"moduleversion":   row.ModuleVersion,
+		"commit":          row.Commit,
+		"origin_build_id": row.OriginBuildID,
+		"built_at":        row.BuiltAt,
+		"source_hash":     row.SourceHash,
+		"hyperbricks":     row.HyperBricks,
+		"format":          row.Format,
+		"runtime_mode":    normalizedDeployRuntimeMode(row.RuntimeMode, row.Production),
+		"production":      row.Production,
+		"running_mode":    runningMode,
+		"dashboard_path":  dashboardPath,
 	})
 }
 
@@ -1176,6 +1203,8 @@ func (api *deployAPI) handleBuildLogs(w http.ResponseWriter, r *http.Request, mo
 }
 
 func (api *deployAPI) handleBuildDelete(w http.ResponseWriter, module string, buildID string) {
+	api.runtimeMu.Lock()
+	defer api.runtimeMu.Unlock()
 	buildID = strings.TrimSpace(buildID)
 	if buildID == "" {
 		writeError(w, http.StatusBadRequest, errors.New("build_id is required"))
@@ -1207,7 +1236,7 @@ func (api *deployAPI) handleBuildDelete(w http.ResponseWriter, module string, bu
 				break
 			}
 		}
-		if err := api.stopModule(module, buildID); err != nil {
+		if err := api.stopManagedLocked(module); err != nil {
 			writeError(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -1266,7 +1295,7 @@ func (api *deployAPI) handleBuildDelete(w http.ResponseWriter, module string, bu
 	rolledBack := false
 	rollbackErr := ""
 	if isCurrent && rollbackTarget != "" && !moduleDeleted {
-		if err := api.restartModule(module, rollbackTarget); err != nil {
+		if err := api.startManagedLocked(module, rollbackTarget); err != nil {
 			rollbackErr = err.Error()
 		} else {
 			rolledBack = true
@@ -1307,10 +1336,15 @@ func (api *deployAPI) handleModuleStatus(w http.ResponseWriter, module string) {
 
 	running := false
 	runningBuild := ""
+	runningMode := ""
+	dashboardPath := ""
 	if proc, ok := api.readProcess(module); ok {
 		if isProcessRunning(proc.PID) {
 			running = true
 			runningBuild = proc.BuildID
+			port = proc.Port
+			runningMode, _ = validateDeployRuntimeMode(proc.RuntimeMode)
+			dashboardPath = api.dashboardPath(module, proc)
 		} else {
 			api.clearProcess(module)
 		}
@@ -1320,12 +1354,14 @@ func (api *deployAPI) handleModuleStatus(w http.ResponseWriter, module string) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"module":        module,
-		"current":       index.Current,
-		"port":          port,
-		"versions":      len(index.Versions),
-		"running":       running,
-		"running_build": runningBuild,
+		"module":         module,
+		"current":        index.Current,
+		"port":           port,
+		"versions":       len(index.Versions),
+		"running":        running,
+		"running_build":  runningBuild,
+		"running_mode":   runningMode,
+		"dashboard_path": dashboardPath,
 	})
 }
 
@@ -1445,32 +1481,39 @@ func (api *deployAPI) activateModuleBuild(module string, buildID string) (map[st
 		return nil, status, err
 	}
 
-	if packagePort > 0 {
-		index.Port = packagePort
-	}
-
-	runtimeMode := shared.DEVELOPMENT_MODE
-	if existing, ok := findDeployRow(index, buildID); ok {
-		runtimeMode = normalizedDeployRuntimeMode(existing.RuntimeMode, existing.Production)
-	}
-
-	row := deployIndexRow{
-		BuildID:       buildID,
-		ModuleVersion: metadata["moduleversion"],
-		Format:        metadata["format"],
-		File:          api.relativePath(archivePath),
-		BuiltAt:       metadata["built_at"],
-		Commit:        metadata["commit"],
-		SourceHash:    metadata["source_hash"],
-		HyperBricks:   metadata["hyperbricks"],
-		RuntimeMode:   runtimeMode,
-		Production:    runtimeMode == shared.LIVE_MODE,
-	}
-	index = upsertDeployRow(index, row)
-	index.Current = buildID
-
-	if err := saveDeployIndex(indexPath, index); err != nil {
-		return nil, http.StatusInternalServerError, err
+	status, err := func() (int, error) {
+		api.runtimeMu.Lock()
+		defer api.runtimeMu.Unlock()
+		// Extraction may take time; register against the latest index so an
+		// intervening duplicate, rollback, or mode edit is not lost.
+		latest, err := loadDeployIndex(indexPath)
+		if err != nil {
+			return http.StatusInternalServerError, err
+		}
+		if packagePort > 0 {
+			latest.Port = packagePort
+		}
+		runtimeMode := shared.DEVELOPMENT_MODE
+		if existing, ok := findDeployRow(latest, buildID); ok {
+			runtimeMode = normalizedDeployRuntimeMode(existing.RuntimeMode, existing.Production)
+		}
+		latest = upsertDeployRow(latest, deployIndexRow{
+			BuildID: buildID, ModuleVersion: metadata["moduleversion"],
+			Format: metadata["format"], File: api.relativePath(archivePath),
+			BuiltAt: metadata["built_at"], Commit: metadata["commit"],
+			OriginBuildID: metadata["origin_build_id"], SourceHash: metadata["source_hash"],
+			HyperBricks: metadata["hyperbricks"], RuntimeMode: runtimeMode,
+			Production: runtimeMode == shared.LIVE_MODE,
+		})
+		latest.Current = buildID
+		if err := saveDeployIndex(indexPath, latest); err != nil {
+			return http.StatusInternalServerError, err
+		}
+		index = latest
+		return http.StatusOK, nil
+	}()
+	if err != nil {
+		return nil, status, err
 	}
 
 	if err := api.restartModule(module, buildID); err != nil {
@@ -1507,32 +1550,34 @@ func validateDeployArchiveMetadata(module string, metadata map[string]string) (i
 
 func (api *deployAPI) handleModuleRollback(w http.ResponseWriter, module string) {
 	indexPath := api.indexPath(module)
-	index, err := loadDeployIndex(indexPath)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	if len(index.Versions) < 2 {
-		writeError(w, http.StatusBadRequest, errors.New("no previous build available"))
-		return
-	}
-
 	var previous string
-	for i := len(index.Versions) - 1; i >= 0; i-- {
-		if index.Versions[i].BuildID != index.Current {
-			previous = index.Versions[i].BuildID
-			break
+	status, err := func() (int, error) {
+		api.runtimeMu.Lock()
+		defer api.runtimeMu.Unlock()
+		index, err := loadDeployIndex(indexPath)
+		if err != nil {
+			return http.StatusInternalServerError, err
 		}
-	}
-	if previous == "" {
-		writeError(w, http.StatusBadRequest, errors.New("no previous build available"))
-		return
-	}
-
-	index.Current = previous
-	if err := saveDeployIndex(indexPath, index); err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		if len(index.Versions) < 2 {
+			return http.StatusBadRequest, errors.New("no previous build available")
+		}
+		for i := len(index.Versions) - 1; i >= 0; i-- {
+			if index.Versions[i].BuildID != index.Current {
+				previous = index.Versions[i].BuildID
+				break
+			}
+		}
+		if previous == "" {
+			return http.StatusBadRequest, errors.New("no previous build available")
+		}
+		index.Current = previous
+		if err := saveDeployIndex(indexPath, index); err != nil {
+			return http.StatusInternalServerError, err
+		}
+		return http.StatusOK, nil
+	}()
+	if err != nil {
+		writeError(w, status, err)
 		return
 	}
 
@@ -2190,6 +2235,12 @@ func (api *deployAPI) stopManagedProcessesByPort(module string, port int, exclud
 }
 
 func (api *deployAPI) startManaged(module string, buildID string) error {
+	api.runtimeMu.Lock()
+	defer api.runtimeMu.Unlock()
+	return api.startManagedLocked(module, buildID)
+}
+
+func (api *deployAPI) startManagedLocked(module string, buildID string) error {
 	indexPath := api.indexPath(module)
 	index, err := loadDeployIndex(indexPath)
 	if err != nil {
@@ -2205,6 +2256,13 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 	runtimeMode := shared.DEVELOPMENT_MODE
 	if row, ok := findDeployRow(index, buildID); ok {
 		runtimeMode = normalizedDeployRuntimeMode(row.RuntimeMode, row.Production)
+	}
+	location, err := prepareDeployStartupConfig(api.root, module, buildID)
+	if err != nil {
+		return err
+	}
+	if err := validateDeployStartupConfig(location); err != nil {
+		return err
 	}
 
 	prevProc, hasPrev := api.readBuildProcessFile(module, buildID)
@@ -2239,7 +2297,7 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 		}
 	}
 
-	if err := api.stopManaged(module); err != nil {
+	if err := api.stopManagedLocked(module); err != nil {
 		return err
 	}
 
@@ -2282,8 +2340,9 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 	}
 
 	var logFile *os.File
+	var logPath string
 	if api.logsEnabled {
-		logPath := api.buildLogPath(module, buildID)
+		logPath = api.buildLogPath(module, buildID)
 		if err := os.MkdirAll(api.logDir(module), 0755); err != nil {
 			if devNull != nil {
 				devNull.Close()
@@ -2297,11 +2356,6 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 			}
 			return err
 		}
-		cmd.Stdout = logFile
-		cmd.Stderr = logFile
-	} else {
-		cmd.Stdout = io.Discard
-		cmd.Stderr = io.Discard
 	}
 
 	if runtime.GOOS != "windows" {
@@ -2309,24 +2363,15 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 	}
 
 	startedAt := time.Now().UTC()
-	if err := cmd.Start(); err != nil {
+	if err := startDeployProcess(cmd, port, logFile, logPath); err != nil {
 		if devNull != nil {
 			devNull.Close()
 		}
-		if logFile != nil {
-			logFile.Close()
-		}
 		return err
-	}
-	if logFile != nil {
-		logFile.Close()
 	}
 	if devNull != nil {
 		devNull.Close()
 	}
-	go func() {
-		_ = cmd.Wait()
-	}()
 
 	commandLine := strings.Join(append([]string{binary}, args...), " ")
 	proc := deployProcess{
@@ -2343,13 +2388,20 @@ func (api *deployAPI) startManaged(module string, buildID string) error {
 	}
 	if err := api.writeProcess(module, proc); err != nil {
 		_ = cmd.Process.Kill()
-		logFile.Close()
+		api.clearProcess(module)
+		api.clearBuildProcess(module, buildID)
 		return err
 	}
 	return nil
 }
 
 func (api *deployAPI) stopManaged(module string) error {
+	api.runtimeMu.Lock()
+	defer api.runtimeMu.Unlock()
+	return api.stopManagedLocked(module)
+}
+
+func (api *deployAPI) stopManagedLocked(module string) error {
 	proc, ok := api.readProcess(module)
 	if !ok {
 		api.clearProcess(module)
@@ -2596,13 +2648,14 @@ func readMetadataAndPort(path string) (map[string]string, int, error) {
 	}
 
 	meta := map[string]string{
-		"module":        "",
-		"moduleversion": "unknown",
-		"format":        "unknown",
-		"built_at":      "",
-		"commit":        "unknown",
-		"source_hash":   "",
-		"hyperbricks":   "",
+		"module":          "",
+		"moduleversion":   "unknown",
+		"format":          "unknown",
+		"built_at":        "",
+		"commit":          "unknown",
+		"origin_build_id": "",
+		"source_hash":     "",
+		"hyperbricks":     "",
 	}
 	if rawMeta, ok := hyper["metadata"].(map[string]interface{}); ok {
 		meta["module"] = getString(rawMeta, "module", meta["module"])
@@ -2610,6 +2663,7 @@ func readMetadataAndPort(path string) (map[string]string, int, error) {
 		meta["format"] = getString(rawMeta, "format", meta["format"])
 		meta["built_at"] = getString(rawMeta, "built_at", meta["built_at"])
 		meta["commit"] = getString(rawMeta, "commit", meta["commit"])
+		meta["origin_build_id"] = getString(rawMeta, "origin_build_id", meta["origin_build_id"])
 		meta["source_hash"] = getString(rawMeta, "source_hash", meta["source_hash"])
 		meta["hyperbricks"] = getString(rawMeta, "hyperbricks", meta["hyperbricks"])
 	}

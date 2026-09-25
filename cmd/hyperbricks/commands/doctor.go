@@ -822,7 +822,10 @@ func checkDoctorPlugins(collector *doctorCollector, config *shared.Config, cwd, 
 
 func checkDoctorCredentials(collector *doctorCollector, config *shared.Config) {
 	credentials := config.Development.Dashboard.Credentials
-	surfaceEnabled := config.Development.Dashboard.Enabled || config.Development.FrontendEditing.Enabled
+	dashboardEnabled := (config.Mode == shared.DEVELOPMENT_MODE || config.Mode == shared.DEBUG_MODE) && config.Development.Dashboard.Enabled
+	frontendEditorsEnabled := config.Mode == shared.DEVELOPMENT_MODE && config.Development.FrontendEditing.Enabled &&
+		(config.Development.FrontendEditing.Spaces.Enabled || len(config.Development.FrontendEditing.Editors) > 0)
+	surfaceEnabled := dashboardEnabled || frontendEditorsEnabled
 	switch {
 	case credentials.Complete():
 		collector.simple("security.developer_credentials", doctorPass, "developer-interface credentials are configured")

@@ -190,7 +190,7 @@ func TestDeploymentSharedUIRendering(t *testing.T) {
 			response := httptest.NewRecorder()
 			fixture.handler(response, httptest.NewRequest(http.MethodGet, "/", nil))
 			page := response.Body.String()
-			for _, expected := range []string{`data-mode="` + fixture.name + `"`, `class="hb-header"`, `data-theme-toggle`, `id="buildRows"`, `id="pluginBuild"`, `id="menuPanel"`, `/assets/hyperbricks-ui.css`, `/assets/hyperbricks-icons.js`, `class="hb-deploy-workspace hb-surface"`, `id="pluginsView" class="hb-deploy-grid hb-surface hidden"`} {
+			for _, expected := range []string{`data-mode="` + fixture.name + `"`, `class="hb-header"`, `data-theme-toggle`, `id="deploymentNav"`, `id="viewModules"`, `id="viewPlugins"`, `id="moduleSidebar"`, `id="moduleDrawerToggle"`, `id="pluginSidebar"`, `id="pluginDrawerToggle"`, `id="buildRows"`, `id="pluginBuild"`, `id="menuPanel"`, `/assets/hyperbricks-ui.css`, `/assets/hyperbricks-icons.js`, `id="modulesView" class="drawer hb-deploy-modules"`, `id="pluginsView" class="drawer hb-deploy-plugins hidden"`} {
 				if !strings.Contains(page, expected) {
 					t.Errorf("deployment page missing %s", expected)
 				}

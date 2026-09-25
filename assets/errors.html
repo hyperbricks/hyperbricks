@@ -17,8 +17,8 @@
 <body>
   <a class="hb-skip btn btn-primary" href="#main">Skip to content</a>
   <header class="hb-header">
-    <a class="hb-brand" href="/dashboard" aria-label="HyperBricks dashboard"><img src="/assets/brandmark.svg" width="20" height="28" alt=""><span>HyperBricks</span></a>
-    <nav class="hb-nav" aria-label="Product"><a href="/dashboard"><i data-lucide="layout-dashboard"></i>Dashboard</a>{{if .SpacesRoute}}<a href="{{.SpacesRoute}}"><i data-lucide="panels-top-left"></i>Spaces</a>{{end}}<a href="/__hyperbricks/errors" aria-current="page"><i data-lucide="circle-alert"></i>Errors</a></nav>
+    <a class="hb-brand" href="/__hyperbricks/dashboard" aria-label="HyperBricks dashboard"><img src="/assets/brandmark.svg" width="20" height="28" alt=""><span>HyperBricks</span></a>
+    <nav class="hb-nav" aria-label="Product"><a href="/__hyperbricks/dashboard"><i data-lucide="layout-dashboard"></i>Dashboard</a>{{if .SpacesRoute}}<a href="{{.SpacesRoute}}"><i data-lucide="panels-top-left"></i>Spaces</a>{{end}}<a href="/__hyperbricks/errors" aria-current="page"><i data-lucide="circle-alert"></i>Errors</a></nav>
     <div class="hb-header-actions"><span class="hb-header-context hb-muted">{{.Mode}}</span><button class="btn btn-sm btn-square btn-ghost" data-theme-toggle type="button" title="Switch theme" aria-label="Switch theme"><i data-lucide="sun-moon"></i></button></div>
   </header>
   <main id="main" class="hb-page errors-page">

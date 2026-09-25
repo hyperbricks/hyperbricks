@@ -31,10 +31,11 @@ func TestContextualEditingResponseBoundaries(t *testing.T) {
 	cases := []struct {
 		name, kind, contentType string
 		status                  int
-		static                  bool
+		static, spacesDisabled  bool
 		want                    bool
 	}{
 		{name: "HTML development", kind: "<HYPERMEDIA>", want: true},
+		{name: "Spaces disabled", kind: "<HYPERMEDIA>", spacesDisabled: true},
 		{name: "explicit HTML", kind: "<HYPERMEDIA>", contentType: "text/html; charset=utf-8", want: true},
 		{name: "fragment", kind: "<FRAGMENT>"},
 		{name: "JSON", kind: "<HYPERMEDIA>", contentType: "application/json"},
@@ -52,6 +53,7 @@ func TestContextualEditingResponseBoundaries(t *testing.T) {
 			}
 			setTestRouteConfig("index", config)
 			commands.RenderStatic = tc.static
+			cfg.Development.FrontendEditing.Spaces.Enabled = !tc.spacesDisabled
 			response := httptest.NewRecorder()
 			ServeContent(response, developerTestRequest("GET", "http://localhost/?edit=true", nil))
 			got := strings.Contains(response.Body.String(), `id="hb-spaces-context"`)

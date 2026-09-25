@@ -408,6 +408,31 @@ func TestRenderArtifactRequiresValidSourceMetadataAndOptions(t *testing.T) {
 	}
 }
 
+func TestRenderArtifactTracksDuplicateOriginOnlyInDerivedArchive(t *testing.T) {
+	source := []byte("hyperbricks:\n  metadata:\n    module: demo\n    moduleversion: \"1.0.0\"\n    origin_build_id: stale\n")
+	options := ArtifactOptions{
+		Module: "demo", Format: "hra", FormatVersion: "1", Commit: "source7",
+		BuiltAt: "2026-09-24T12:34:56.123Z", HyperBricks: "v1.2.5-beta",
+		OriginBuildID: "original-id",
+	}
+	derived, err := RenderArtifact(source, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if derived.Metadata.OriginBuildID != "original-id" {
+		t.Fatalf("origin metadata = %q", derived.Metadata.OriginBuildID)
+	}
+	assertScalar(t, decodedMetadata(t, derived.Content), "origin_build_id", "original-id")
+	options.OriginBuildID = ""
+	ordinary, err := RenderArtifact(source, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, found, err := mappingField(decodedMetadata(t, ordinary.Content), "origin_build_id"); err != nil || found {
+		t.Fatalf("ordinary build retained stale origin (found=%v, err=%v)", found, err)
+	}
+}
+
 func TestGitShortCommitIsScopedToRoot(t *testing.T) {
 	if _, err := exec.LookPath("git"); err != nil {
 		t.Skip("git is not installed")

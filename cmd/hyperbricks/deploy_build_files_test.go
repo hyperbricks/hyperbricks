@@ -157,12 +157,18 @@ func TestLocalPackageConfigEditorAndArchiveDownload(t *testing.T) {
 	if dev.Code != http.StatusOK || devOpened["scope"] != "source" {
 		t.Fatalf("source package response status=%d body=%s", dev.Code, dev.Body.String())
 	}
+	if devOpened["runtime_mode"] != "development" {
+		t.Fatalf("source workflow must report development mode, got %v", devOpened["runtime_mode"])
+	}
 	devUpdated := strings.Replace(deployPackageFixture, "mode: development", "mode: live", 1)
 	devBody, _ := json.Marshal(packageConfigUpdateRequest{Content: devUpdated, ExpectedSHA256: devOpened["sha256"].(string)})
 	devPut := httptest.NewRecorder()
 	api.handleBuildPackageConfig(devPut, httptest.NewRequest(http.MethodPut, "/local/modules/demo/builds/dev/package-config", bytes.NewReader(devBody)), "demo", "dev")
 	if devPut.Code != http.StatusOK {
 		t.Fatalf("source package PUT status=%d body=%s", devPut.Code, devPut.Body.String())
+	}
+	if saved := decodeResponseMap(t, devPut); saved["runtime_mode"] != "development" || saved["content"] != devUpdated {
+		t.Fatalf("source mode override must be separate from saved YAML: %#v", saved)
 	}
 	devSaved, err := os.ReadFile(filepath.Join(moduleDir, "package.hyperbricks.yaml"))
 	if err != nil || string(devSaved) != devUpdated {
@@ -487,5 +493,51 @@ func TestBuildRuntimeModeCompatibilityAndHandlers(t *testing.T) {
 	api.handleBuildMode(invalid, httptest.NewRequest(http.MethodPut, "/local/modules/demo/builds/build-1/mode", strings.NewReader(`{"mode":"default"}`)), "demo", "build-1")
 	if invalid.Code != http.StatusBadRequest {
 		t.Fatalf("invalid mode status=%d", invalid.Code)
+	}
+}
+
+func TestPackageConfigReportsPersistedModeWithoutRewritingYAML(t *testing.T) {
+	for _, server := range []string{"local", "remote"} {
+		t.Run(server, func(t *testing.T) {
+			root := t.TempDir()
+			archivePath := filepath.Join(root, "demo", "demo-1.0.0-build-1.hra")
+			archive := writeDeployHRAFixture(t, archivePath, deployPackageFixture)
+			local := &deployLocalServer{buildRoot: root}
+			remote := &deployAPI{root: root}
+			if err := saveDeployIndex(remote.indexPath("demo"), deployIndex{Current: "build-1", Versions: []deployIndexRow{{
+				BuildID: "build-1", Format: "hra", File: archivePath, RuntimeMode: "development",
+			}}}); err != nil {
+				t.Fatal(err)
+			}
+			setMode := remote.handleBuildMode
+			packageConfig := remote.handleBuildPackageConfig
+			if server == "local" {
+				setMode = local.handleBuildMode
+				packageConfig = local.handleBuildPackageConfig
+			}
+			modeResponse := httptest.NewRecorder()
+			setMode(modeResponse, httptest.NewRequest(http.MethodPut, "/mode", strings.NewReader(`{"mode":"live"}`)), "demo", "build-1")
+			if modeResponse.Code != http.StatusOK {
+				t.Fatalf("set mode: status=%d body=%s", modeResponse.Code, modeResponse.Body.String())
+			}
+			openedResponse := httptest.NewRecorder()
+			packageConfig(openedResponse, httptest.NewRequest(http.MethodGet, "/package-config", nil), "demo", "build-1")
+			opened := decodeResponseMap(t, openedResponse)
+			if openedResponse.Code != http.StatusOK || opened["runtime_mode"] != "live" || opened["content"] != deployPackageFixture {
+				t.Fatalf("effective mode and raw source must remain distinct: status=%d body=%s", openedResponse.Code, openedResponse.Body.String())
+			}
+			edited := strings.Replace(deployPackageFixture, "cache: 10m", "cache: 0s", 1)
+			body, _ := json.Marshal(packageConfigUpdateRequest{Content: edited, ExpectedSHA256: opened["sha256"].(string)})
+			savedResponse := httptest.NewRecorder()
+			packageConfig(savedResponse, httptest.NewRequest(http.MethodPut, "/package-config", bytes.NewReader(body)), "demo", "build-1")
+			saved := decodeResponseMap(t, savedResponse)
+			if savedResponse.Code != http.StatusOK || saved["runtime_mode"] != "live" || saved["content"] != edited {
+				t.Fatalf("save must retain runtime mode and literal YAML: status=%d body=%s", savedResponse.Code, savedResponse.Body.String())
+			}
+			archiveAfter, err := os.ReadFile(archivePath)
+			if err != nil || !bytes.Equal(archiveAfter, archive) {
+				t.Fatal("mode change or package edit modified the original archive")
+			}
+		})
 	}
 }

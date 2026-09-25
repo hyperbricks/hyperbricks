@@ -20,6 +20,7 @@ func setupErrorsViewTest(t *testing.T) {
 	oldRuntime, oldStatic := shared.GetRuntimeOptions(), commands.RenderStatic
 	cfg.Development.Dashboard = shared.DevelopmentDashboardConfig{Enabled: true, Credentials: developerTestCredentials}
 	cfg.Development.FrontendEditing.Enabled = true
+	cfg.Development.FrontendEditing.Spaces.Enabled = true
 	cfg.Development.FrontendEditing.Spaces.Route = "/__hyperbricks/custom-spaces"
 	runtime := oldRuntime
 	runtime.Production = false
@@ -43,7 +44,7 @@ func TestErrorsViewReadOnlyAssetsAndNavigation(t *testing.T) {
 			}
 			if path == errorsViewPath {
 				body := response.Body.String()
-				for _, expected := range []string{`href="/__hyperbricks/custom-spaces"`, `aria-current="page"`, `id="issues"`, `/assets/hyperbricks-ui.css`, `data-theme-toggle`} {
+				for _, expected := range []string{`href="/__hyperbricks/custom-spaces"`, `href="` + developerDashboardPath + `"`, `aria-current="page"`, `id="issues"`, `/assets/hyperbricks-ui.css`, `data-theme-toggle`} {
 					if !strings.Contains(body, expected) {
 						t.Errorf("missing %s", expected)
 					}
@@ -73,6 +74,13 @@ func TestErrorsViewReadOnlyAssetsAndNavigation(t *testing.T) {
 		if response.Code != 404 {
 			t.Fatalf("unexpected endpoint %s: %d", path, response.Code)
 		}
+	}
+	cfg := getHyperBricksConfiguration()
+	cfg.Development.FrontendEditing.Spaces.Enabled = false
+	response := httptest.NewRecorder()
+	handler(response, developerTestRequest(http.MethodGet, errorsViewPath, nil))
+	if response.Code != http.StatusOK || strings.Contains(response.Body.String(), `href="/__hyperbricks/custom-spaces"`) {
+		t.Fatalf("Errors view should remain available without a Spaces link: %d", response.Code)
 	}
 }
 

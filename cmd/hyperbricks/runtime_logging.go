@@ -66,14 +66,14 @@ func logRuntimeSummary(config *shared.Config) {
 	if logging.VerboseEnabled() {
 		logger.Debugw("Logging configured", "level", logger.Level().String(), "file", file)
 	}
-	if commands.RenderStatic || config.Mode == shared.LIVE_MODE {
+	if commands.RenderStatic || shared.GetRuntimeOptions().Production || (config.Mode != shared.DEVELOPMENT_MODE && config.Mode != shared.DEBUG_MODE) {
 		return
 	}
 	dashboard, errors, spaces := "disabled", "disabled", "disabled"
 	if config.Development.Dashboard.Enabled {
-		dashboard, errors = "/dashboard", errorsViewPath
+		dashboard, errors = developerDashboardPath, errorsViewPath
 	}
-	if config.Mode == shared.DEVELOPMENT_MODE && config.Development.FrontendEditing.Enabled {
+	if config.Mode == shared.DEVELOPMENT_MODE && config.Development.FrontendEditing.Enabled && config.Development.FrontendEditing.Spaces.Enabled {
 		spaces = runtimeRoutePath(config.Development.FrontendEditing.Spaces.Route)
 	}
 	if logging.VerboseEnabled() {
@@ -82,7 +82,9 @@ func logRuntimeSummary(config *shared.Config) {
 	} else if dashboard != "disabled" || spaces != "disabled" {
 		logger.Infof("Developer tools  dashboard=%s spaces=%s write=%t", dashboard, spaces, spaces != "disabled" && config.Development.FrontendEditing.Spaces.Write)
 	}
-	if (config.Development.Dashboard.Enabled || config.Development.FrontendEditing.Enabled) &&
+	if (config.Development.Dashboard.Enabled ||
+		(config.Mode == shared.DEVELOPMENT_MODE && config.Development.FrontendEditing.Enabled &&
+			(config.Development.FrontendEditing.Spaces.Enabled || len(config.Development.FrontendEditing.Editors) > 0))) &&
 		!config.Development.Dashboard.Credentials.Complete() {
 		logger.Warn("Developer interface locked: hyperbricks.development.dashboard.credentials is not fully configured")
 	}

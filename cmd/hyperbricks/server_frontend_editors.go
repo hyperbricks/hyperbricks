@@ -25,6 +25,9 @@ func handleFrontendEditor(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 	if r.URL.Path == editing.Spaces.Route || strings.HasPrefix(r.URL.Path, editing.Spaces.Route+"/") {
+		if !editing.Spaces.Enabled {
+			return false
+		}
 		if !requireDeveloperInterfaceAuth(w, r) {
 			return true
 		}

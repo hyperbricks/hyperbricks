@@ -46,6 +46,7 @@ var artifactOnlyFields = []string{
 	"format",
 	"format_version",
 	"commit",
+	"origin_build_id",
 	"built_at",
 	"source_hash",
 }
@@ -56,6 +57,7 @@ var artifactFieldOrder = []string{
 	"format",
 	"format_version",
 	"commit",
+	"origin_build_id",
 	"built_at",
 	"hyperbricks",
 }
@@ -73,6 +75,7 @@ type ArtifactMetadata struct {
 	Format        string
 	FormatVersion string
 	Commit        string
+	OriginBuildID string
 	BuiltAt       string
 }
 
@@ -91,6 +94,7 @@ type ArtifactOptions struct {
 	Format        string
 	FormatVersion string
 	Commit        string
+	OriginBuildID string
 	BuiltAt       string
 	HyperBricks   string
 }
@@ -288,6 +292,7 @@ func RenderArtifact(content []byte, opts ArtifactOptions) (ArtifactResult, error
 		Format:        strings.TrimSpace(opts.Format),
 		FormatVersion: strings.TrimSpace(opts.FormatVersion),
 		Commit:        strings.TrimSpace(opts.Commit),
+		OriginBuildID: strings.TrimSpace(opts.OriginBuildID),
 		BuiltAt:       strings.TrimSpace(opts.BuiltAt),
 	}
 
@@ -295,6 +300,11 @@ func RenderArtifact(content []byte, opts ArtifactOptions) (ArtifactResult, error
 	setMappingString(metadata, "format", effective.Format, 0)
 	setMappingString(metadata, "format_version", effective.FormatVersion, yaml.DoubleQuotedStyle)
 	setMappingString(metadata, "commit", effective.Commit, 0)
+	if effective.OriginBuildID != "" {
+		setMappingString(metadata, "origin_build_id", effective.OriginBuildID, 0)
+	} else {
+		removeMappingField(metadata, "origin_build_id")
+	}
 	setMappingString(metadata, "built_at", effective.BuiltAt, yaml.DoubleQuotedStyle)
 	setMappingString(metadata, "hyperbricks", effective.HyperBricks, 0)
 	// source_hash is owned by the build index until the archive format gives it

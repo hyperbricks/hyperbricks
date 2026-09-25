@@ -2,6 +2,7 @@ package commands
 
 import (
 	"archive/zip"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -33,6 +34,14 @@ var (
 
 var buildMu sync.Mutex
 
+// WithBuildIndexLock serializes deployment-index registration with a source
+// build in this process. It does not lock independent CLI processes.
+func WithBuildIndexLock(update func() error) error {
+	buildMu.Lock()
+	defer buildMu.Unlock()
+	return update()
+}
+
 const versionIndexFile = "hyperbricks.versions.json"
 
 type buildFile struct {
@@ -55,6 +64,7 @@ type buildIndexRow struct {
 	File          string `json:"file"`
 	BuiltAt       string `json:"built_at"`
 	Commit        string `json:"commit"`
+	OriginBuildID string `json:"origin_build_id,omitempty"`
 	SourceHash    string `json:"source_hash"`
 	HyperBricks   string `json:"hyperbricks,omitempty"`
 	RuntimeMode   string `json:"runtime_mode,omitempty"`
@@ -443,13 +453,22 @@ func computeBuildID(files []buildFile, updatedConfig []byte) (string, error) {
 }
 
 func writeArchive(outPath string, files []buildFile, updatedConfig []byte) error {
+	return writeArchiveWithContext(context.Background(), outPath, files, updatedConfig)
+}
+
+func writeArchiveWithContext(ctx context.Context, outPath string, files []buildFile, updatedConfig []byte) error {
 	archiveFile, err := os.Create(outPath)
 	if err != nil {
 		return fmt.Errorf("failed to create archive %s: %w", outPath, err)
 	}
+	defer archiveFile.Close()
 	zipWriter := zip.NewWriter(archiveFile)
 
 	for _, fileEntry := range files {
+		if err := ctx.Err(); err != nil {
+			archiveFile.Close()
+			return err
+		}
 		header, err := zip.FileInfoHeader(fileEntry.info)
 		if err != nil {
 			return err
@@ -486,7 +505,7 @@ func writeArchive(outPath string, files []buildFile, updatedConfig []byte) error
 			return err
 		}
 
-		if _, err := io.Copy(writer, source); err != nil {
+		if _, err := io.Copy(writer, runtimeContextReader{ctx: ctx, reader: source}); err != nil {
 			source.Close()
 			archiveFile.Close()
 			return err

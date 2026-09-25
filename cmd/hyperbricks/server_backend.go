@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/assets"
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/ui"
@@ -50,6 +51,14 @@ var (
 	startTime      time.Time
 	bandwidth      string
 )
+
+const developerDashboardPath = "/__hyperbricks/dashboard"
+
+func developerDashboardEnabled() bool {
+	cfg := getHyperBricksConfiguration()
+	return (cfg.Mode == shared.DEVELOPMENT_MODE || cfg.Mode == shared.DEBUG_MODE) &&
+		cfg.Development.Dashboard.Enabled && !shared.GetRuntimeOptions().Production && !commands.RenderStatic
+}
 
 func MonitorBandwidth(interval time.Duration) string {
 	prevStats, _ := net.IOCounters(false)
@@ -148,25 +157,37 @@ func bToMb(b uint64) uint64 {
 
 // statusServer registers the HTTP handler for the dashboard.
 func statusServer() {
-	hbConfig := getHyperBricksConfiguration()
-	if !hbConfig.Development.Dashboard.Enabled {
-		return
+	if registerDashboardHandlers(http.DefaultServeMux) {
+		go updateCPUUsage()
+	}
+}
+
+func registerDashboardHandlers(mux *http.ServeMux) bool {
+	if !developerDashboardEnabled() {
+		return false
 	}
 
-	//plugins = GetPlugins(hbConfig)
-	http.Handle("/assets/brandmark.svg", developerInterfaceHandler(http.HandlerFunc(serveBrandMark)))
-	http.Handle("/assets/favicon.svg", developerInterfaceHandler(http.HandlerFunc(serveFavicon)))
+	mux.Handle("/assets/brandmark.svg", developerInterfaceHandler(http.HandlerFunc(serveBrandMark)))
+	mux.Handle("/assets/favicon.svg", developerInterfaceHandler(http.HandlerFunc(serveFavicon)))
 
-	http.Handle("/assets/dashboard.css", developerInterfaceHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/assets/dashboard.css", developerInterfaceHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", mime.TypeByExtension(".css"))
 		w.Header().Set("Cache-Control", "no-store")
 		w.Write([]byte(assets.DashboardCSS))
 	})))
-	http.Handle("/assets/hyperbricks-ui.css", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksUIStylesheet)))
-	http.Handle("/assets/hyperbricks-theme.js", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksThemeScript)))
-	http.Handle("/assets/hyperbricks-icons.js", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksIconsScript)))
+	mux.Handle("/assets/hyperbricks-ui.css", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksUIStylesheet)))
+	mux.Handle("/assets/hyperbricks-theme.js", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksThemeScript)))
+	mux.Handle("/assets/hyperbricks-icons.js", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksIconsScript)))
 
-	http.Handle("/dashboard", developerInterfaceHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle(developerDashboardPath, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !developerDashboardEnabled() {
+			http.NotFound(w, r)
+			return
+		}
+		if !requireDeveloperInterfaceAuth(w, r) {
+			return
+		}
+		w.Header().Set("Cache-Control", "no-store")
 		var data SysData
 
 		// Gather memory stats.
@@ -190,7 +211,8 @@ func statusServer() {
 		if errorsViewEnabled() {
 			data.ErrorsRoute = errorsViewPath
 		}
-		if data.HbConfig.Mode == shared.DEVELOPMENT_MODE && !shared.GetRuntimeOptions().Production && data.HbConfig.Development.FrontendEditing.Enabled && data.HbConfig.ValidateFrontendEditing() == nil {
+		if data.HbConfig.Mode == shared.DEVELOPMENT_MODE && !shared.GetRuntimeOptions().Production && data.HbConfig.Development.FrontendEditing.Enabled &&
+			data.HbConfig.Development.FrontendEditing.Spaces.Enabled && data.HbConfig.ValidateFrontendEditing() == nil {
 			data.SpacesRoute = data.HbConfig.Development.FrontendEditing.Spaces.Route
 		}
 		data.CacheExpire = data.HbConfig.Live.CacheTime.String()
@@ -213,9 +235,8 @@ func statusServer() {
 		if err := tmpl.Execute(w, data); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-	})))
-	go updateCPUUsage()
-
+	}))
+	return true
 }
 
 func serveHyperbricksUIStylesheet(w http.ResponseWriter, r *http.Request) {

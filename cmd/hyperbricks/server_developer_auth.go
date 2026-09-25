@@ -33,7 +33,7 @@ func contextualEditingRequested(r *http.Request) bool {
 	}
 	cfg := getHyperBricksConfiguration()
 	if cfg.Mode != shared.DEVELOPMENT_MODE || shared.GetRuntimeOptions().Production ||
-		!cfg.Development.FrontendEditing.Enabled || cfg.ValidateFrontendEditing() != nil {
+		!cfg.Development.FrontendEditing.Enabled || !cfg.Development.FrontendEditing.Spaces.Enabled || cfg.ValidateFrontendEditing() != nil {
 		return false
 	}
 	values := r.URL.Query()["edit"]

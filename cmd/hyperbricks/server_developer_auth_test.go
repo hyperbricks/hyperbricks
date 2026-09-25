@@ -102,6 +102,13 @@ func TestContextualEditingRequiresLoginButPublicRouteDoesNot(t *testing.T) {
 	if lockedResponse.Code != http.StatusServiceUnavailable {
 		t.Fatalf("locked edit response = %d", lockedResponse.Code)
 	}
+
+	cfg.Development.FrontendEditing.Spaces.Enabled = false
+	spacesDisabled := httptest.NewRecorder()
+	handler(spacesDisabled, httptest.NewRequest(http.MethodGet, "http://localhost/?edit=true", nil))
+	if spacesDisabled.Code != http.StatusOK || !strings.Contains(spacesDisabled.Body.String(), "Public") || spacesDisabled.Header().Get("WWW-Authenticate") != "" {
+		t.Fatalf("disabled Spaces should leave public route accessible: %d", spacesDisabled.Code)
+	}
 }
 
 func TestFrontendErrorPanelRequiresDeveloperLogin(t *testing.T) {

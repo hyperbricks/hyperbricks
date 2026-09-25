@@ -19,7 +19,8 @@ func (h *Handler) ContextualPage(r *http.Request, route, content string) (string
 	cfg := shared.GetHyperBricksConfiguration()
 	runtime := shared.GetRuntimeOptions()
 	if r == nil || r.URL == nil || (r.Method != http.MethodGet && r.Method != http.MethodHead) ||
-		cfg.Mode != shared.DEVELOPMENT_MODE || runtime.Production || !cfg.Development.FrontendEditing.Enabled || cfg.ValidateFrontendEditing() != nil {
+		cfg.Mode != shared.DEVELOPMENT_MODE || runtime.Production || !cfg.Development.FrontendEditing.Enabled ||
+		!cfg.Development.FrontendEditing.Spaces.Enabled || cfg.ValidateFrontendEditing() != nil {
 		return content, false, nil
 	}
 	query := r.URL.Query()["edit"]

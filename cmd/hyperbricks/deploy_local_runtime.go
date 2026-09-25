@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -76,10 +75,14 @@ func (api *deployLocalServer) devBuildStatus(module string) (map[string]interfac
 
 	running := false
 	port := 0
+	runningMode := ""
+	dashboardPath := ""
 	if proc, ok := api.readBuildProcessFile(module, localDevBuildID); ok {
 		if isProcessRunning(proc.PID) {
 			running = true
 			port = proc.Port
+			runningMode, _ = validateDeployRuntimeMode(proc.RuntimeMode)
+			dashboardPath = api.dashboardPath(module, proc)
 		} else {
 			api.clearBuildProcess(module, localDevBuildID)
 		}
@@ -94,18 +97,20 @@ func (api *deployLocalServer) devBuildStatus(module string) (map[string]interfac
 	}
 
 	return map[string]interface{}{
-		"module":        module,
-		"build_id":      localDevBuildID,
-		"running":       running,
-		"port":          port,
-		"moduleversion": moduleVersion,
-		"commit":        api.devSourceCommit(module),
-		"built_at":      "",
-		"source_hash":   "",
-		"format":        "dev",
-		"runtime_mode":  shared.DEVELOPMENT_MODE,
-		"production":    false,
-		"is_dev":        true,
+		"module":         module,
+		"build_id":       localDevBuildID,
+		"running":        running,
+		"port":           port,
+		"moduleversion":  moduleVersion,
+		"commit":         api.devSourceCommit(module),
+		"built_at":       "",
+		"source_hash":    "",
+		"format":         "dev",
+		"runtime_mode":   shared.DEVELOPMENT_MODE,
+		"production":     false,
+		"is_dev":         true,
+		"running_mode":   runningMode,
+		"dashboard_path": dashboardPath,
 	}, nil
 }
 
@@ -472,6 +477,12 @@ func (api *deployLocalServer) stopManagedProcessesByPort(module string, port int
 }
 
 func (api *deployLocalServer) stopLocalModule(module string) (string, error) {
+	api.runtimeMu.Lock()
+	defer api.runtimeMu.Unlock()
+	return api.stopLocalModuleLocked(module)
+}
+
+func (api *deployLocalServer) stopLocalModuleLocked(module string) (string, error) {
 	proc, ok := api.readProcessFile(api.pidPath(module))
 	if !ok {
 		api.clearProcess(module)
@@ -545,6 +556,12 @@ func (api *deployLocalServer) selectPortForDev(module string, preferredPort int)
 }
 
 func (api *deployLocalServer) startLocalBuild(module string, buildID string) error {
+	api.runtimeMu.Lock()
+	defer api.runtimeMu.Unlock()
+	return api.startLocalBuildLocked(module, buildID)
+}
+
+func (api *deployLocalServer) startLocalBuildLocked(module string, buildID string) error {
 	buildID = strings.TrimSpace(buildID)
 	if buildID == "" {
 		return errors.New("build_id is required")
@@ -565,6 +582,13 @@ func (api *deployLocalServer) startLocalBuild(module string, buildID string) err
 	}
 
 	runtimeMode := normalizedDeployRuntimeMode(row.RuntimeMode, row.Production)
+	location, err := prepareDeployStartupConfig(api.buildRoot, module, buildID)
+	if err != nil {
+		return err
+	}
+	if err := validateDeployStartupConfig(location); err != nil {
+		return err
+	}
 
 	prevProc, hasPrev := api.readBuildProcessFile(module, buildID)
 	previousPort := 0
@@ -586,7 +610,7 @@ func (api *deployLocalServer) startLocalBuild(module string, buildID string) err
 	if err := api.stopManagedProcessesByPort(module, preferredPort, buildID); err != nil {
 		return err
 	}
-	if _, err := api.stopLocalModule(module); err != nil {
+	if _, err := api.stopLocalModuleLocked(module); err != nil {
 		return err
 	}
 
@@ -615,9 +639,22 @@ func (api *deployLocalServer) startLocalBuild(module string, buildID string) err
 }
 
 func (api *deployLocalServer) startLocalDev(module string) error {
+	api.runtimeMu.Lock()
+	defer api.runtimeMu.Unlock()
+	return api.startLocalDevLocked(module)
+}
+
+func (api *deployLocalServer) startLocalDevLocked(module string) error {
 	configPath := filepath.Join(api.modulesDir, module, "package.hyperbricks.yaml")
 	if _, err := os.Stat(configPath); err != nil {
 		return fmt.Errorf("module config not found: %s", configPath)
+	}
+	location, err := api.localPackageConfig(module, localDevBuildID)
+	if err != nil {
+		return err
+	}
+	if err := validateDeployStartupConfig(location); err != nil {
+		return err
 	}
 
 	preferredPort, _ := readServerPort(configPath)
@@ -632,7 +669,7 @@ func (api *deployLocalServer) startLocalDev(module string) error {
 	if err := api.stopManagedProcessesByPort(module, preferredPort, localDevBuildID); err != nil {
 		return err
 	}
-	if _, err := api.stopLocalModule(module); err != nil {
+	if _, err := api.stopLocalModuleLocked(module); err != nil {
 		return err
 	}
 
@@ -677,8 +714,9 @@ func (api *deployLocalServer) startProcess(module string, buildID string, port i
 	}
 
 	var logFile *os.File
+	var logPath string
 	if api.logsEnabled {
-		logPath := api.buildLogPath(module, buildID)
+		logPath = api.buildLogPath(module, buildID)
 		if err := os.MkdirAll(api.logDir(module), 0755); err != nil {
 			if devNull != nil {
 				devNull.Close()
@@ -692,11 +730,6 @@ func (api *deployLocalServer) startProcess(module string, buildID string, port i
 			}
 			return err
 		}
-		cmd.Stdout = logFile
-		cmd.Stderr = logFile
-	} else {
-		cmd.Stdout = io.Discard
-		cmd.Stderr = io.Discard
 	}
 
 	if runtime.GOOS != "windows" {
@@ -704,24 +737,15 @@ func (api *deployLocalServer) startProcess(module string, buildID string, port i
 	}
 
 	startedAt := time.Now().UTC()
-	if err := cmd.Start(); err != nil {
+	if err := startDeployProcess(cmd, port, logFile, logPath); err != nil {
 		if devNull != nil {
 			devNull.Close()
 		}
-		if logFile != nil {
-			logFile.Close()
-		}
 		return err
-	}
-	if logFile != nil {
-		logFile.Close()
 	}
 	if devNull != nil {
 		devNull.Close()
 	}
-	go func() {
-		_ = cmd.Wait()
-	}()
 
 	commandLine := strings.Join(append([]string{binary}, args...), " ")
 	proc := deployProcess{
@@ -738,9 +762,8 @@ func (api *deployLocalServer) startProcess(module string, buildID string, port i
 	}
 	if err := api.writeProcess(module, proc); err != nil {
 		_ = cmd.Process.Kill()
-		if logFile != nil {
-			logFile.Close()
-		}
+		api.clearProcess(module)
+		api.clearBuildProcess(module, buildID)
 		return err
 	}
 	return nil

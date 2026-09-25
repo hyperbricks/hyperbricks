@@ -48,6 +48,7 @@ func TestRuntimeSummaryAndRoutesStayCompactAtInfo(t *testing.T) {
 		Development: shared.DevelopmentConfig{Watch: true, Reload: true, Dashboard: shared.DevelopmentDashboardConfig{Enabled: true, Credentials: developerTestCredentials}, WatchDirs: []string{"hyperbricks", "templates"}},
 		Directories: map[string]string{"hyperbricks": filepath.Join(root, "content"), "templates": filepath.Join(root, "views")}}
 	config.Development.FrontendEditing.Enabled = true
+	config.Development.FrontendEditing.Spaces.Enabled = true
 	config.Development.FrontendEditing.Spaces.Route = "/__hyperbricks/spaces"
 	started := time.Now()
 	logRuntimeSummary(config)
@@ -67,7 +68,7 @@ func TestRuntimeSummaryAndRoutesStayCompactAtInfo(t *testing.T) {
 		}
 		events[event.Message] = event
 	}
-	for _, message := range []string{"Module configured  module=demo mode=development", "Developer tools  dashboard=/dashboard spaces=/__hyperbricks/spaces write=false", "Watching directories  content, views", "Routes registered  count=2"} {
+	for _, message := range []string{"Module configured  module=demo mode=development", "Developer tools  dashboard=/__hyperbricks/dashboard spaces=/__hyperbricks/spaces write=false", "Watching directories  content, views", "Routes registered  count=2"} {
 		if _, ok := events[message]; !ok {
 			t.Fatalf("missing compact event %q: %#v", message, events)
 		}
@@ -78,6 +79,34 @@ func TestRuntimeSummaryAndRoutesStayCompactAtInfo(t *testing.T) {
 	if _, ok := events["internal trace should stay hidden"]; ok {
 		t.Fatal("DEBUG visible at INFO")
 	}
+}
+
+func TestRuntimeSummaryCredentialWarningFollowsAvailableEditor(t *testing.T) {
+	setupModuleLogTest(t)
+	oldRuntime := shared.GetRuntimeOptions()
+	runtime := oldRuntime
+	runtime.Production = false
+	shared.SetRuntimeOptions(runtime)
+	t.Cleanup(func() { shared.SetRuntimeOptions(oldRuntime) })
+	config := &shared.Config{Mode: shared.DEVELOPMENT_MODE}
+	config.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
+	config.Development.FrontendEditing.Spaces.Enabled = false
+	started := time.Now()
+	logRuntimeSummary(config)
+	for _, event := range logging.GetLogs() {
+		if !event.Time.Before(started) && strings.Contains(event.Message, "Developer interface locked") {
+			t.Fatal("disabled Spaces should not require developer credentials")
+		}
+	}
+	config.Development.FrontendEditing.Editors = map[string]shared.FrontendEditorConfig{"other": {Plugin: "Other@1", Route: "/__hyperbricks/other"}}
+	started = time.Now()
+	logRuntimeSummary(config)
+	for _, event := range logging.GetLogs() {
+		if !event.Time.Before(started) && strings.Contains(event.Message, "Developer interface locked") {
+			return
+		}
+	}
+	t.Fatal("enabled external editor should require developer credentials")
 }
 
 func TestRuntimeRoutesGroupedBySourceAndSorted(t *testing.T) {

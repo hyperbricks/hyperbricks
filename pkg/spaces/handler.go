@@ -96,7 +96,8 @@ func (s *service) parserOptions() yamlparser.Options {
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	cfg := shared.GetHyperBricksConfiguration()
 	runtime := shared.GetRuntimeOptions()
-	if cfg.Mode != shared.DEVELOPMENT_MODE || runtime.Production || !cfg.Development.FrontendEditing.Enabled || cfg.ValidateFrontendEditing() != nil {
+	if cfg.Mode != shared.DEVELOPMENT_MODE || runtime.Production || !cfg.Development.FrontendEditing.Enabled ||
+		!cfg.Development.FrontendEditing.Spaces.Enabled || cfg.ValidateFrontendEditing() != nil {
 		http.NotFound(w, r)
 		return
 	}
@@ -209,7 +210,7 @@ func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			navigation := ""
 			errorsNavigation := ""
 			if s.dashboard {
-				navigation = `<a href="/dashboard"><i data-lucide="layout-dashboard"></i>Dashboard</a>`
+				navigation = `<a href="/__hyperbricks/dashboard"><i data-lucide="layout-dashboard"></i>Dashboard</a>`
 				errorsNavigation = `<a href="/__hyperbricks/errors"><i data-lucide="circle-alert"></i>Errors</a>`
 			}
 			b = []byte(strings.ReplaceAll(string(b), "__DASHBOARD_NAV__", navigation))

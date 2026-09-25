@@ -82,8 +82,8 @@ func TestContextualPageEnforcesDevelopmentHostAndRequestBoundaries(t *testing.T)
 	var handler Handler
 	const body = "<html><body>Page</body></html>"
 	cases := []struct {
-		name, mode, method, host, query string
-		production, disabled, want      bool
+		name, mode, method, host, query            string
+		production, disabled, spacesDisabled, want bool
 	}{
 		{name: "development", mode: shared.DEVELOPMENT_MODE, method: "GET", host: "localhost", query: "edit=true", want: true},
 		{name: "head", mode: shared.DEVELOPMENT_MODE, method: "HEAD", host: "127.0.0.1", query: "edit=true", want: true},
@@ -93,6 +93,7 @@ func TestContextualPageEnforcesDevelopmentHostAndRequestBoundaries(t *testing.T)
 		{name: "duplicate", mode: shared.DEVELOPMENT_MODE, method: "GET", host: "localhost", query: "edit=true&edit=false"},
 		{name: "untrusted host", mode: shared.DEVELOPMENT_MODE, method: "GET", host: "other.test", query: "edit=true"},
 		{name: "disabled", mode: shared.DEVELOPMENT_MODE, method: "GET", host: "localhost", query: "edit=true", disabled: true},
+		{name: "Spaces disabled", mode: shared.DEVELOPMENT_MODE, method: "GET", host: "localhost", query: "edit=true", spacesDisabled: true},
 		{name: "production", mode: shared.DEVELOPMENT_MODE, method: "GET", host: "localhost", query: "edit=true", production: true},
 		{name: "live", mode: shared.LIVE_MODE, method: "GET", host: "localhost", query: "edit=true"},
 		{name: "debug", mode: shared.DEBUG_MODE, method: "GET", host: "localhost", query: "edit=true"},
@@ -106,6 +107,7 @@ func TestContextualPageEnforcesDevelopmentHostAndRequestBoundaries(t *testing.T)
 			cfg.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
 			cfg.Development.Dashboard.Credentials = credentials
 			cfg.Development.FrontendEditing.Enabled = !tc.disabled
+			cfg.Development.FrontendEditing.Spaces.Enabled = !tc.spacesDisabled
 			cfg.Development.FrontendEditing.Spaces.AllowedHosts = []string{"editor.test"}
 			shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: s.module, Production: tc.production})
 			request := httptest.NewRequest(tc.method, "http://"+tc.host+"/portfolio/english?"+tc.query, nil)

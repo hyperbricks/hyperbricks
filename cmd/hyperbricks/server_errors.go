@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/assets"
-	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
@@ -17,9 +16,7 @@ const errorsViewPath = "/__hyperbricks/errors"
 var errorsTemplate = template.Must(template.New("errors").Parse(assets.ErrorsPage))
 
 func errorsViewEnabled() bool {
-	cfg := getHyperBricksConfiguration()
-	return (cfg.Mode == shared.DEVELOPMENT_MODE || cfg.Mode == shared.DEBUG_MODE) &&
-		cfg.Development.Dashboard.Enabled && !shared.GetRuntimeOptions().Production && !commands.RenderStatic
+	return developerDashboardEnabled()
 }
 
 func handleErrorsView(w http.ResponseWriter, r *http.Request) bool {
@@ -47,7 +44,8 @@ func handleErrorsView(w http.ResponseWriter, r *http.Request) bool {
 	case "", "/":
 		cfg := getHyperBricksConfiguration()
 		data := SysData{Module: filepath.Base(shared.GetRuntimeOptions().ModuleRoot), Mode: cfg.Mode}
-		if cfg.Mode == shared.DEVELOPMENT_MODE && cfg.Development.FrontendEditing.Enabled && cfg.ValidateFrontendEditing() == nil {
+		if cfg.Mode == shared.DEVELOPMENT_MODE && cfg.Development.FrontendEditing.Enabled &&
+			cfg.Development.FrontendEditing.Spaces.Enabled && cfg.ValidateFrontendEditing() == nil {
 			data.SpacesRoute = cfg.Development.FrontendEditing.Spaces.Route
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")

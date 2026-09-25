@@ -24,21 +24,22 @@ func TestFrontendEditingDefaultsAndSequentialDecode(t *testing.T) {
 	Init_configuration()
 	var config Config
 	for _, tc := range []struct {
-		yaml           string
-		enabled, write bool
-		route          string
+		yaml                          string
+		enabled, spacesEnabled, write bool
+		route                         string
 	}{
-		{"hyperbricks: {mode: development}", true, false, DefaultSpacesRoute},
-		{"hyperbricks: {development: {frontend_editing: {spaces: {write: true, route: /__hyperbricks/content, allowed_hosts: [192.168.2.55]}}}}", true, true, "/__hyperbricks/content"},
-		{"hyperbricks: {development: {frontend_editing: {enabled: false}}}", false, false, DefaultSpacesRoute},
-		{"hyperbricks: {mode: development}", true, false, DefaultSpacesRoute},
-		{"hyperbricks: {development: {frontend_editing: {spaces: {write: false}}}}", true, false, DefaultSpacesRoute},
+		{"hyperbricks: {mode: development}", true, true, false, DefaultSpacesRoute},
+		{"hyperbricks: {development: {frontend_editing: {spaces: {write: true, route: /__hyperbricks/content, allowed_hosts: [192.168.2.55]}}}}", true, true, true, "/__hyperbricks/content"},
+		{"hyperbricks: {development: {frontend_editing: {spaces: {enabled: false, write: true}}}}", true, false, true, DefaultSpacesRoute},
+		{"hyperbricks: {development: {frontend_editing: {enabled: false}}}", false, true, false, DefaultSpacesRoute},
+		{"hyperbricks: {mode: development}", true, true, false, DefaultSpacesRoute},
+		{"hyperbricks: {development: {frontend_editing: {spaces: {write: false}}}}", true, true, false, DefaultSpacesRoute},
 	} {
 		if err := frontendConfig(t, tc.yaml, &config); err != nil {
 			t.Fatal(err)
 		}
 		got := config.Development.FrontendEditing
-		if got.Enabled != tc.enabled || got.Spaces.Write != tc.write || got.Spaces.Route != tc.route {
+		if got.Enabled != tc.enabled || got.Spaces.Enabled != tc.spacesEnabled || got.Spaces.Write != tc.write || got.Spaces.Route != tc.route {
 			t.Fatalf("unexpected config: %+v", got)
 		}
 		if tc.route == DefaultSpacesRoute && len(got.Spaces.AllowedHosts) != 0 {
@@ -58,6 +59,8 @@ func TestFrontendEditingStrictConfigurationAndRoutes(t *testing.T) {
 		{"unknown", "hyperbricks: {development: {frontend_editing: {spaces: {allowed_host: [example.com]}}}}", "invalid keys"},
 		{"enabled-ambiguous", "hyperbricks: {development: {frontend_editing: {enabled: 'no'}}}", "boolean"},
 		{"enabled-null", "hyperbricks: {development: {frontend_editing: {enabled: null}}}", "boolean"},
+		{"spaces-enabled-ambiguous", "hyperbricks: {development: {frontend_editing: {spaces: {enabled: 'no'}}}}", "spaces.enabled must be a boolean"},
+		{"spaces-enabled-null", "hyperbricks: {development: {frontend_editing: {spaces: {enabled: null}}}}", "spaces.enabled must be a boolean"},
 		{"write-number", "hyperbricks: {development: {frontend_editing: {spaces: {write: 1}}}}", "boolean"},
 		{"write-null", "hyperbricks: {development: {frontend_editing: {spaces: {write: null}}}}", "boolean"},
 		{"null", "hyperbricks: {development: {frontend_editing: null}}", "mapping"},

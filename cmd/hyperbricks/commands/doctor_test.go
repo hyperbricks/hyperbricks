@@ -873,3 +873,34 @@ func TestDoctorHumanReportEscapesTerminalControlCharacters(t *testing.T) {
 		}
 	}
 }
+
+func TestDoctorCredentialsFollowEnabledDeveloperSurfaces(t *testing.T) {
+	for _, tc := range []struct {
+		name, mode                                         string
+		dashboard, frontendEditing, spaces, externalEditor bool
+		want                                               doctorCheckStatus
+	}{
+		{"Spaces disabled", shared.DEVELOPMENT_MODE, false, true, false, false, doctorPass},
+		{"Spaces enabled", shared.DEVELOPMENT_MODE, false, true, true, false, doctorWarn},
+		{"external editor", shared.DEVELOPMENT_MODE, false, true, false, true, doctorWarn},
+		{"parent disabled", shared.DEVELOPMENT_MODE, false, false, true, true, doctorPass},
+		{"Dashboard enabled", shared.DEVELOPMENT_MODE, true, true, false, false, doctorWarn},
+		{"live mode", shared.LIVE_MODE, true, true, true, true, doctorPass},
+		{"debug Dashboard", shared.DEBUG_MODE, true, false, false, false, doctorWarn},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			config := &shared.Config{Mode: tc.mode}
+			config.Development.Dashboard.Enabled = tc.dashboard
+			config.Development.FrontendEditing.Enabled = tc.frontendEditing
+			config.Development.FrontendEditing.Spaces.Enabled = tc.spaces
+			if tc.externalEditor {
+				config.Development.FrontendEditing.Editors = map[string]shared.FrontendEditorConfig{"other": {Plugin: "Other@1", Route: "/__hyperbricks/other"}}
+			}
+			collector := newDoctorCollector()
+			checkDoctorCredentials(collector, config)
+			if got := collector.checks["security.developer_credentials"].Status; got != tc.want {
+				t.Fatalf("credentials status = %s, want %s", got, tc.want)
+			}
+		})
+	}
+}

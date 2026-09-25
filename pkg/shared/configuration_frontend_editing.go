@@ -26,6 +26,7 @@ type SpacesUploadPolicy struct {
 }
 
 type SpacesConfig struct {
+	Enabled      bool                `mapstructure:"enabled"`
 	Route        string              `mapstructure:"route"`
 	Write        bool                `mapstructure:"write"`
 	PublicOrigin string              `mapstructure:"public_origin"`
@@ -34,7 +35,7 @@ type SpacesConfig struct {
 }
 
 func DefaultFrontendEditingConfig() FrontendEditingConfig {
-	return FrontendEditingConfig{Enabled: true, Spaces: SpacesConfig{Route: DefaultSpacesRoute}}
+	return FrontendEditingConfig{Enabled: true, Spaces: SpacesConfig{Enabled: true, Route: DefaultSpacesRoute}}
 }
 
 var frontendEditorRoutePattern = regexp.MustCompile(`^/__hyperbricks/[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*$`)
@@ -113,6 +114,11 @@ func decodeFrontendEditing(input interface{}) (FrontendEditingConfig, error) {
 			spaces, ok := rawSpaces.(map[string]interface{})
 			if !ok {
 				return fail(fmt.Errorf("development.frontend_editing.spaces must be a mapping"))
+			}
+			if enabled, exists := spaces["enabled"]; exists {
+				if !frontendBoolean(enabled) {
+					return fail(fmt.Errorf("development.frontend_editing.spaces.enabled must be a boolean"))
+				}
 			}
 			if write, exists := spaces["write"]; exists {
 				if !frontendBoolean(write) {

@@ -15,11 +15,17 @@
   </head>
   <body data-mode="remote">
       <a class="hb-skip btn btn-primary" href="#main">Skip to content</a>
-      <header class="hb-header">
+      <header class="hb-header" id="deployHeader">
         <a class="hb-brand" href="/" aria-label="HyperBricks deployment"><img src="/assets/brandmark.svg" width="20" height="28" alt=""><span>HyperBricks</span></a>
-        <nav class="hb-nav" aria-label="Product"><a href="/" aria-current="page"><i data-lucide="cloud-upload"></i>Deployment</a></nav>
+        <nav class="hb-nav hb-deploy-header-tabs tabs tabs-border" id="deploymentNav" role="tablist" aria-label="Deployment view" hidden>
+          <button id="viewModules" class="tab" role="tab" aria-selected="true" aria-controls="modulesView" tabindex="0" type="button"><i data-lucide="boxes"></i>Modules</button>
+          <button id="viewPlugins" class="tab" role="tab" aria-selected="false" aria-controls="pluginsView" tabindex="-1" type="button"><i data-lucide="plug"></i>Shared Plugins</button>
+        </nav>
           <div class="hb-header-actions">
-            <span id="deployMode" class="hb-muted hb-header-context">Remote host</span>
+            <div id="apiHealth" class="badge badge-sm badge-outline hb-deploy-health" role="status" aria-live="polite" aria-label="Deployment API offline">
+              <span id="apiStatusDot" class="status status-xs status-error" aria-hidden="true"></span>
+              <span class="hb-deploy-health-label">DEPLOY API ·</span><strong id="apiHostMode">Remote</strong>
+            </div>
             <button id="themeToggle" class="btn btn-sm btn-square btn-ghost" data-theme-toggle type="button" aria-label="Switch theme"><i data-lucide="sun-moon"></i></button>
             <div class="hb-settings">
               <button id="menuToggle" class="btn btn-sm btn-square btn-ghost" type="button" aria-label="Connection settings" title="Connection settings" aria-controls="menuPanel" aria-expanded="false"><i data-lucide="settings-2"></i></button>
@@ -27,6 +33,10 @@
                 <div class="hb-connection-heading">
                   <div class="menu-title">Connection</div>
                   <button id="closeConnection" class="btn btn-sm btn-square btn-ghost" type="button" aria-label="Close connection settings" title="Close connection settings"><i data-lucide="x"></i></button>
+                </div>
+                <div class="hb-deploy-connection-meta" aria-label="API details">
+                  <div><span>Last checked</span><strong id="apiTime">-</strong></div>
+                  <div><span>HyperBricks</span><strong id="apiVersion">-</strong></div>
                 </div>
                 <div class="menu-section remote-only">
                   <div class="connect menu-connect">
@@ -88,8 +98,7 @@
             </div>
           </div>
       </header>
-    <main id="main" class="hb-page">
-      <div class="hb-page-heading"><div><p id="deploySubtitle" class="hb-eyebrow">Remote host</p><h1>Deployment</h1></div></div>
+    <main id="main" class="hb-page hb-deploy-page">
       <section id="connectionNotice" class="alert hb-connection-notice" role="status" aria-live="polite">
         <i data-lucide="lock-keyhole" aria-hidden="true"></i>
         <div>
@@ -99,60 +108,37 @@
         </div>
       </section>
       <div id="deploymentContent" hidden>
-      <div class="tabs tabs-border hb-deploy-tabs" role="tablist" aria-label="Deployment view">
-        <button id="viewModules" class="tab" role="tab" aria-selected="true" type="button">Modules</button>
-        <button id="viewPlugins" class="tab" role="tab" aria-selected="false" type="button">Plugins</button>
-      </div>
       <div id="deployFeedback" class="alert alert-error hb-deploy-feedback" role="alert" hidden><i data-lucide="circle-alert"></i><p id="deployFeedbackText"></p></div>
 
-      <div id="modulesView" class="hb-deploy-grid">
-        <section class="hb-module-picker" aria-labelledby="modulesHeading">
-          <div class="hb-module-picker-heading">
-            <div>
-              <h2 id="modulesHeading">Modules</h2>
-              <span id="moduleSummary" class="note">Choose a module to manage its builds.</span>
+      <div id="modulesView" class="drawer hb-deploy-modules" role="tabpanel" aria-labelledby="viewModules">
+        <input id="moduleDrawerToggle" class="drawer-toggle" type="checkbox" tabindex="-1" aria-hidden="true" />
+        <div class="drawer-content hb-deploy-module-content" id="moduleDrawerContent">
+        <div class="hb-deploy-workspace">
+          <div class="navbar hb-deploy-module-toolbar" aria-label="Module actions">
+            <div class="navbar-start hb-deploy-module-identity">
+              <button class="btn btn-sm btn-neutral" id="moduleDrawerOpen" type="button" aria-controls="moduleSidebar" aria-expanded="false"><i data-lucide="panel-left"></i>Browse modules</button>
+              <h2 id="selectedModuleTitle" tabindex="-1">Choose a module</h2>
             </div>
-            <div class="hb-module-picker-controls">
-              <label class="hb-module-search">
-                <span class="sr-only">Search modules</span>
-                <input class="input input-sm" id="moduleSearch" type="search" placeholder="Search modules…" autocomplete="off" />
-              </label>
-              <button class="btn btn-sm btn-ghost" id="toggleAllModules" type="button" hidden>Show all</button>
+            <div class="navbar-end">
+              <details class="dropdown dropdown-end hb-module-actions" id="moduleActions">
+                <summary class="btn btn-sm btn-ghost" id="moduleActionsToggle" aria-controls="moduleActionsMenu"><i data-lucide="ellipsis"></i>Actions</summary>
+                <ul class="dropdown-content menu bg-base-100 rounded-box shadow-md" id="moduleActionsMenu" aria-label="Module actions">
+                  <li class="local-only"><button id="buildModule" type="button"><i data-lucide="hammer"></i>Build</button></li>
+                  <li class="local-only"><button id="syncRemote" type="button"><i data-lucide="refresh-cw"></i>Sync Remote</button></li>
+                  <li class="remote-only"><button id="openUpload" type="button"><i data-lucide="upload"></i>Upload .hra</button></li>
+                  <li class="remote-only"><button id="rollbackModule" type="button" disabled><i data-lucide="rotate-ccw"></i>Rollback</button></li>
+                  <li class="remote-only hb-rollback-target"><span id="rollbackTarget" class="note">No previous build</span></li>
+                </ul>
+              </details>
             </div>
           </div>
-          <ul id="moduleList" class="menu hb-module-list"></ul>
-        </section>
 
-        <div class="hb-deploy-workspace hb-surface">
-          <section class="hb-deploy-status">
-            <h2>Server Status</h2>
-            <div class="hb-deploy-summary">
-              <div class="hb-deploy-stat">
-                <span>API</span>
-                <strong id="apiStatus">offline</strong>
-              </div>
-              <div class="hb-deploy-stat">
-                <span>Last Check</span>
-                <strong id="apiTime">-</strong>
-              </div>
-              <div class="hb-deploy-stat">
-                <span>HyperBricks</span>
-                <strong id="apiVersion">-</strong>
-              </div>
-            </div>
-          </section>
-
-          <section class="hb-deploy-builds">
-            <div class="hb-section-heading">
-              <h2>Builds</h2>
-              <div class="hb-actions hb-deploy-actions">
-                <button class="btn btn-sm btn-primary local-only" id="buildModule" type="button">Build</button>
-                <button class="btn btn-sm btn-ghost local-only" id="syncRemote" type="button">Sync Remote</button>
-                <button class="btn btn-sm btn-primary remote-only" id="openUpload" type="button"><i data-lucide="upload"></i>Upload .hra</button>
-                <button class="btn btn-sm btn-error remote-only" id="rollbackModule" disabled>Rollback</button>
-                <span id="rollbackTarget" class="note remote-only">-</span>
-              </div>
-            </div>
+          <div class="tabs tabs-border hb-module-tabs" role="tablist" aria-label="Module details">
+            <button id="moduleTabOverview" class="tab" role="tab" aria-selected="true" aria-controls="moduleOverviewPanel" tabindex="0" type="button">Overview</button>
+            <button id="moduleTabPlugins" class="tab" role="tab" aria-selected="false" aria-controls="moduleCustomPluginsPanel" tabindex="-1" type="button">Custom plugins</button>
+          </div>
+          <div id="moduleOverviewPanel" role="tabpanel" aria-labelledby="moduleTabOverview">
+          <section class="hb-deploy-builds" aria-label="Builds">
             <div class="hb-table-scroll">
               <table class="table">
                 <thead>
@@ -173,39 +159,70 @@
               </table>
             </div>
           </section>
+          </div>
+
+          <div id="moduleCustomPluginsPanel" class="hidden" role="tabpanel" aria-labelledby="moduleTabPlugins">
+            <div class="hb-deploy-custom-toolbar">
+              <div class="hb-field remote-only">
+                <label for="pluginBuild">Build</label>
+                <select class="select select-sm" id="pluginBuild"></select>
+              </div>
+              <button class="btn btn-sm btn-ghost" id="refreshCustomPlugins" type="button"><i data-lucide="refresh-cw"></i>Refresh</button>
+            </div>
+            <section class="hb-section hb-deploy-custom" id="customPluginSection" aria-label="Custom plugins">
+              <div class="hb-table-scroll">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Plugin</th>
+                      <th>Version</th>
+                      <th>Status</th>
+                      <th>Config</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="customPluginRows">
+                    <tr><td colspan="5" class="note">Select a module to load its plugins.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
 
           <section class="hb-section hb-deploy-log">
             <h2>Activity</h2>
             <pre class="hb-terminal" id="activity">Ready.</pre>
           </section>
         </div>
+        </div>
+        <div class="drawer-side hb-deploy-drawer-side">
+          <label for="moduleDrawerToggle" class="drawer-overlay" aria-label="Close modules"></label>
+          <aside class="hb-module-picker" id="moduleSidebar" aria-labelledby="modulesHeading">
+            <div class="hb-module-picker-heading">
+              <div><h2 id="modulesHeading">Modules</h2><span id="moduleSummary" class="note">Choose a module to manage its builds.</span></div>
+              <button class="btn btn-sm btn-square btn-ghost" id="moduleDrawerClose" type="button" aria-label="Close modules" title="Close modules"><i data-lucide="x"></i></button>
+            </div>
+            <label class="input input-sm hb-module-search"><i data-lucide="search" aria-hidden="true"></i><input id="moduleSearch" type="search" placeholder="Search modules…" aria-label="Search modules" autocomplete="off" /></label>
+            <nav aria-label="Modules"><ul id="moduleList" class="menu hb-module-list"></ul></nav>
+          </aside>
+        </div>
       </div>
 
-      <div id="pluginsView" class="hb-deploy-grid hb-surface hidden">
-        <section class="hb-deploy-status">
-          <h2>Server Status</h2>
-          <div class="hb-deploy-summary">
-            <div class="hb-deploy-stat">
-              <span>API</span>
-              <strong id="apiStatusPlugins">offline</strong>
+      <div id="pluginsView" class="drawer hb-deploy-plugins hidden" role="tabpanel" aria-labelledby="viewPlugins">
+        <input id="pluginDrawerToggle" class="drawer-toggle" type="checkbox" tabindex="-1" aria-hidden="true" />
+        <div class="drawer-content hb-deploy-module-content" id="pluginDrawerContent">
+        <div class="hb-deploy-workspace">
+          <div class="hb-deploy-module-toolbar">
+            <button class="btn btn-sm btn-neutral" id="pluginDrawerOpen" type="button" aria-controls="pluginSidebar" aria-expanded="false"><i data-lucide="panel-left"></i>Browse plugins</button>
+            <div class="hb-deploy-plugin-heading">
+              <h2 id="selectedPluginTitle" tabindex="-1">Shared plugins</h2>
+              <p id="selectedPluginContext" class="note" hidden></p>
             </div>
-            <div class="hb-deploy-stat">
-              <span>Last Check</span>
-              <strong id="apiTimePlugins">-</strong>
-            </div>
-            <div class="hb-deploy-stat">
-              <span>HyperBricks</span>
-              <strong id="apiVersionPlugins">-</strong>
+            <div class="hb-actions hb-deploy-actions hb-deploy-toolbar-actions" id="pluginRefreshActions">
+              <button class="btn btn-sm btn-ghost" id="refreshPlugins" type="button">Refresh</button>
             </div>
           </div>
-        </section>
-        <section class="hb-section hb-deploy-global">
-          <div class="hb-section-heading">
-            <h2>Global Plugins</h2>
-            <div class="hb-actions hb-deploy-actions">
-              <button class="btn btn-sm btn-primary " id="refreshGlobalPlugins" type="button">Refresh</button>
-            </div>
-          </div>
+        <section class="hb-section hb-deploy-global" id="globalPluginSection" aria-label="Shared plugins">
           <div class="hb-table-scroll">
             <table class="table">
               <thead>
@@ -219,42 +236,7 @@
               </thead>
               <tbody id="globalPluginRows">
                 <tr>
-                  <td colspan="5" class="note">Load plugins to see the global index.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section class="hb-section hb-deploy-custom">
-          <div class="hb-section-heading">
-            <h2>Custom Plugins</h2>
-            <div class="hb-actions hb-deploy-actions">
-              <div class="hb-field">
-                <label for="pluginModule">Module</label>
-                <select class="select" id="pluginModule"></select>
-              </div>
-              <div class="field remote-only">
-                <label for="pluginBuild">Build</label>
-                <select class="select" id="pluginBuild"></select>
-              </div>
-              <button class="btn btn-sm btn-primary " id="loadCustomPlugins" type="button">Load</button>
-            </div>
-          </div>
-          <div class="hb-table-scroll">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Plugin</th>
-                  <th>Version</th>
-                  <th>Status</th>
-                  <th>Config</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="customPluginRows">
-                <tr>
-                  <td colspan="5" class="note">Select a module to load custom plugins.</td>
+                  <td colspan="5" class="note">Loading shared plugins...</td>
                 </tr>
               </tbody>
             </table>
@@ -265,6 +247,19 @@
           <h2>Activity</h2>
           <pre class="hb-terminal" id="pluginActivity">Ready.</pre>
         </section>
+        </div>
+        </div>
+        <div class="drawer-side hb-deploy-drawer-side">
+          <label for="pluginDrawerToggle" class="drawer-overlay" aria-label="Close plugins"></label>
+          <aside class="hb-module-picker" id="pluginSidebar" aria-labelledby="pluginsHeading">
+            <div class="hb-module-picker-heading">
+              <div><h2 id="pluginsHeading">Shared plugins</h2><span id="pluginSummary" class="note">Choose a shared plugin to manage it.</span></div>
+              <button class="btn btn-sm btn-square btn-ghost" id="pluginDrawerClose" type="button" aria-label="Close plugins" title="Close plugins"><i data-lucide="x"></i></button>
+            </div>
+            <label class="input input-sm hb-module-search"><i data-lucide="search" aria-hidden="true"></i><input id="pluginSearch" type="search" placeholder="Search shared plugins…" aria-label="Search shared plugins" autocomplete="off" /></label>
+            <nav aria-label="Shared plugins"><ul id="pluginList" class="menu hb-module-list hb-plugin-list"></ul></nav>
+          </aside>
+        </div>
       </div>
       </div>
     </main>
@@ -308,6 +303,13 @@
             <button class="btn btn-sm btn-square btn-ghost" id="closePackageConfig" type="button" aria-label="Close package configuration editor" title="Close"><i data-lucide="x"></i></button>
           </div>
           <p class="note hb-package-config-scope" id="packageConfigScope"></p>
+          <div class="hb-package-config-mode" id="packageConfigMode" role="status" hidden>
+            <div class="hb-package-config-mode-heading">
+              <span id="packageConfigModeLabel">Saved runtime mode</span>
+              <strong class="badge" id="packageConfigModeValue"></strong>
+            </div>
+            <p class="note" id="packageConfigModeHelp"></p>
+          </div>
           <div class="hb-field" role="group" aria-labelledby="packageConfigEditorLabel">
             <span class="sr-only" id="packageConfigEditorLabel">Package configuration YAML</span>
             <div class="hb-package-config-editor-shell" id="packageConfigEditorShell">
@@ -326,6 +328,62 @@
       </div>
     </dialog>
 
+    <dialog class="modal" id="credentialsDialog" aria-labelledby="credentialsTitle">
+      <div class="modal-box hb-upload-dialog hb-credentials-dialog">
+        <form id="credentialsForm" autocomplete="off">
+          <div class="hb-dialog-heading">
+            <div>
+              <p class="hb-eyebrow" id="credentialsContext">Build credentials</p>
+              <h2 id="credentialsTitle">Developer access</h2>
+            </div>
+            <button class="btn btn-sm btn-square btn-ghost" id="closeCredentials" type="button" aria-label="Close credentials" title="Close"><i data-lucide="x"></i></button>
+          </div>
+          <div class="hb-credentials-scroll">
+          <p class="note hb-credentials-intro">One developer login protects Dashboard, Errors and Spaces. These settings do not change the deployment login or HMAC secret.</p>
+          <p class="note hb-credentials-intro" id="credentialsScope"></p>
+          <section class="hb-developer-visibility" aria-labelledby="developerVisibilityHeading">
+            <h3 id="developerVisibilityHeading">Visible in Development mode</h3>
+            <label class="hb-developer-tool" for="credentialsDashboardEnabled">
+              <span><strong>Dashboard &amp; Errors</strong><small>Show the developer dashboard and error view.</small></span>
+              <input class="toggle toggle-sm" id="credentialsDashboardEnabled" type="checkbox" disabled />
+            </label>
+            <label class="hb-developer-tool" for="credentialsSpacesEnabled">
+              <span><strong>Spaces</strong><small>Show the Spaces editor without changing other frontend editors.</small></span>
+              <input class="toggle toggle-sm" id="credentialsSpacesEnabled" type="checkbox" disabled />
+            </label>
+            <p class="note" id="credentialsSpacesParentWarning" hidden>Spaces is also disabled by <code>development.frontend_editing.enabled</code>. Enable that setting in the package editor to make Spaces visible.</p>
+          </section>
+          <section class="hb-credentials-current" aria-label="Configured credentials">
+            <label class="hb-field" for="credentialsUser">Current username
+              <input class="input mono" id="credentialsUser" readonly autocomplete="off" />
+              <span class="note" id="credentialsUserSource"></span>
+            </label>
+            <label class="hb-field" for="credentialsPassword">Current password
+              <input class="input mono" id="credentialsPassword" type="password" readonly autocomplete="off" />
+              <span class="note" id="credentialsPasswordSource"></span>
+            </label>
+            <button class="btn btn-sm btn-ghost" id="showCredentials" type="button" aria-pressed="false" disabled>Show credentials</button>
+          </section>
+          <div class="hb-credentials-fields">
+            <label class="hb-field" for="credentialsNewUser">New username
+              <input class="input" id="credentialsNewUser" placeholder="Leave unchanged" autocomplete="off" spellcheck="false" autocapitalize="off" disabled />
+            </label>
+            <label class="hb-field" for="credentialsNewPassword">New password
+              <input class="input" id="credentialsNewPassword" type="password" placeholder="Leave unchanged" autocomplete="new-password" disabled />
+            </label>
+          </div>
+          <p class="note">New credentials are stored as plain text. References are shown as configured, not resolved. Restart a running module to apply changes.</p>
+          </div>
+          <p class="hb-form-error" id="credentialsError" role="alert"></p>
+          <p class="note hb-credentials-status" id="credentialsStatus" role="status" aria-live="polite"></p>
+          <footer class="hb-upload-footer">
+            <button class="btn btn-sm btn-ghost" id="cancelCredentials" type="button">Close</button>
+            <button class="btn btn-sm btn-primary" id="saveCredentials" type="submit" disabled><i data-lucide="save"></i><span>Save changes</span></button>
+          </footer>
+        </form>
+      </div>
+    </dialog>
+
     <script>
       const ui = {
         baseUrl: document.getElementById("baseUrl"),
@@ -339,14 +397,12 @@
         moduleList: document.getElementById("moduleList"),
         moduleSearch: document.getElementById("moduleSearch"),
         moduleSummary: document.getElementById("moduleSummary"),
-        toggleAllModules: document.getElementById("toggleAllModules"),
         buildRows: document.getElementById("buildRows"),
-        apiStatus: document.getElementById("apiStatus"),
+        apiHostMode: document.getElementById("apiHostMode"),
+        apiHealth: document.getElementById("apiHealth"),
+        apiStatusDot: document.getElementById("apiStatusDot"),
         apiTime: document.getElementById("apiTime"),
         apiVersion: document.getElementById("apiVersion"),
-        apiStatusPlugins: document.getElementById("apiStatusPlugins"),
-        apiTimePlugins: document.getElementById("apiTimePlugins"),
-        apiVersionPlugins: document.getElementById("apiVersionPlugins"),
         signerMode: document.getElementById("signerMode"),
         loadModules: document.getElementById("loadModules"),
         refreshStatus: document.getElementById("refreshStatus"),
@@ -367,6 +423,10 @@
         packageConfigForm: document.getElementById("packageConfigForm"),
         packageConfigContext: document.getElementById("packageConfigContext"),
         packageConfigScope: document.getElementById("packageConfigScope"),
+        packageConfigMode: document.getElementById("packageConfigMode"),
+        packageConfigModeLabel: document.getElementById("packageConfigModeLabel"),
+        packageConfigModeValue: document.getElementById("packageConfigModeValue"),
+        packageConfigModeHelp: document.getElementById("packageConfigModeHelp"),
         packageConfigEditorShell: document.getElementById("packageConfigEditorShell"),
         packageConfigEditorHost: document.getElementById("packageConfigEditorHost"),
         packageConfigContent: document.getElementById("packageConfigContent"),
@@ -376,6 +436,25 @@
         closePackageConfig: document.getElementById("closePackageConfig"),
         cancelPackageConfig: document.getElementById("cancelPackageConfig"),
         savePackageConfig: document.getElementById("savePackageConfig"),
+        credentialsDialog: document.getElementById("credentialsDialog"),
+        credentialsForm: document.getElementById("credentialsForm"),
+        credentialsContext: document.getElementById("credentialsContext"),
+        credentialsScope: document.getElementById("credentialsScope"),
+        credentialsUser: document.getElementById("credentialsUser"),
+        credentialsPassword: document.getElementById("credentialsPassword"),
+        credentialsUserSource: document.getElementById("credentialsUserSource"),
+        credentialsPasswordSource: document.getElementById("credentialsPasswordSource"),
+        credentialsNewUser: document.getElementById("credentialsNewUser"),
+        credentialsNewPassword: document.getElementById("credentialsNewPassword"),
+        credentialsDashboardEnabled: document.getElementById("credentialsDashboardEnabled"),
+        credentialsSpacesEnabled: document.getElementById("credentialsSpacesEnabled"),
+        credentialsSpacesParentWarning: document.getElementById("credentialsSpacesParentWarning"),
+        credentialsError: document.getElementById("credentialsError"),
+        credentialsStatus: document.getElementById("credentialsStatus"),
+        showCredentials: document.getElementById("showCredentials"),
+        saveCredentials: document.getElementById("saveCredentials"),
+        closeCredentials: document.getElementById("closeCredentials"),
+        cancelCredentials: document.getElementById("cancelCredentials"),
         rollbackModule: document.getElementById("rollbackModule"),
         rollbackTarget: document.getElementById("rollbackTarget"),
         activity: document.getElementById("activity"),
@@ -389,17 +468,43 @@
         connectionNoticeText: document.getElementById("connectionNoticeText"),
         connectionAdminDivider: document.getElementById("connectionAdminDivider"),
         deploymentContent: document.getElementById("deploymentContent"),
+        deploymentNav: document.getElementById("deploymentNav"),
+        deployHeader: document.getElementById("deployHeader"),
+        moduleDrawerToggle: document.getElementById("moduleDrawerToggle"),
+        moduleDrawerContent: document.getElementById("moduleDrawerContent"),
+        moduleDrawerOpen: document.getElementById("moduleDrawerOpen"),
+        moduleDrawerClose: document.getElementById("moduleDrawerClose"),
+        moduleSidebar: document.getElementById("moduleSidebar"),
+        selectedModuleTitle: document.getElementById("selectedModuleTitle"),
+        moduleActions: document.getElementById("moduleActions"),
+        moduleActionsToggle: document.getElementById("moduleActionsToggle"),
+        moduleTabOverview: document.getElementById("moduleTabOverview"),
+        moduleTabPlugins: document.getElementById("moduleTabPlugins"),
+        moduleOverviewPanel: document.getElementById("moduleOverviewPanel"),
+        moduleCustomPluginsPanel: document.getElementById("moduleCustomPluginsPanel"),
+        pluginDrawerToggle: document.getElementById("pluginDrawerToggle"),
+        pluginDrawerContent: document.getElementById("pluginDrawerContent"),
+        pluginDrawerOpen: document.getElementById("pluginDrawerOpen"),
+        pluginDrawerClose: document.getElementById("pluginDrawerClose"),
+        pluginSidebar: document.getElementById("pluginSidebar"),
+        pluginList: document.getElementById("pluginList"),
+        pluginSearch: document.getElementById("pluginSearch"),
+        pluginSummary: document.getElementById("pluginSummary"),
+        selectedPluginTitle: document.getElementById("selectedPluginTitle"),
+        selectedPluginContext: document.getElementById("selectedPluginContext"),
+        pluginRefreshActions: document.getElementById("pluginRefreshActions"),
+        globalPluginSection: document.getElementById("globalPluginSection"),
+        customPluginSection: document.getElementById("customPluginSection"),
         killAll: document.getElementById("killAllProcesses"),
         modulesView: document.getElementById("modulesView"),
         pluginsView: document.getElementById("pluginsView"),
         viewModules: document.getElementById("viewModules"),
         viewPlugins: document.getElementById("viewPlugins"),
         globalPluginRows: document.getElementById("globalPluginRows"),
-        refreshGlobalPlugins: document.getElementById("refreshGlobalPlugins"),
+        refreshPlugins: document.getElementById("refreshPlugins"),
+        refreshCustomPlugins: document.getElementById("refreshCustomPlugins"),
         customPluginRows: document.getElementById("customPluginRows"),
-        pluginModule: document.getElementById("pluginModule"),
         pluginBuild: document.getElementById("pluginBuild"),
-        loadCustomPlugins: document.getElementById("loadCustomPlugins")
       };
 
       const mode = (document.body.dataset.mode || "remote").toLowerCase();
@@ -414,15 +519,26 @@
         selectedModule: "",
         builds: [],
         runningBuild: "",
+        runningMode: "",
+        runningDashboardPath: "",
         currentBuild: "",
         selectionToken: 0,
         logsEnabled: !isLocalMode,
         view: "modules",
+        moduleTab: "overview",
         pluginModule: "",
         pluginBuild: "",
+        pluginKey: "",
+        pluginFilter: "",
+        globalPluginEntries: [],
+        customPluginEntries: [],
+        customPluginInventory: new Map(),
+        pluginInventoryRequests: new Map(),
+        pluginInventoryGeneration: 0,
+        pluginInventoryLoaded: false,
+        pluginLoadPromise: null,
         buildCounts: {},
         moduleFilter: "",
-        showAllModules: false,
         packageConfigBuild: "",
         packageConfigSHA: "",
         packageConfigOriginal: "",
@@ -433,14 +549,32 @@
         packageConfigTrigger: null,
         packageConfigEditor: null,
         packageConfigEditorSession: 0,
-        archiveDownloads: {}
+        credentialsModule: "",
+        credentialsBuild: "",
+        credentialsSHA: "",
+        credentialsSession: 0,
+        credentialsSelectionToken: 0,
+        credentialsBusy: false,
+        credentialsSaving: false,
+        credentialsLoaded: false,
+        credentialsRevealed: false,
+        credentialsUserSource: "missing",
+        credentialsPasswordSource: "missing",
+        credentialsDashboardEnabled: false,
+        credentialsSpacesEnabled: true,
+        credentialsFrontendEditingEnabled: true,
+        credentialsTrigger: null,
+        archiveDownloads: {},
+        duplicateBuilds: new Set()
       };
       let packageConfigEditorModulePromise = null;
       let packageConfigEditorImportFailures = 0;
       let packageConfigEditorImporter = (retrySuffix = "") => retrySuffix
         ? import("/assets/deploy-yaml-editor.js" + retrySuffix)
         : import("/assets/deploy-yaml-editor.js");
-      const modulePreviewLimit = 10;
+      const deploymentDrawerMedia = window.matchMedia
+        ? window.matchMedia("(min-width: 1050px)")
+        : {matches: true, addEventListener() {}};
       document.body.classList.add(isLocalMode ? "mode-local" : "mode-remote");
 
       const storageKeys = {
@@ -465,6 +599,7 @@
         delete: '<i data-lucide="trash-2"></i>',
         push: '<i data-lucide="upload"></i>',
         download: '<i data-lucide="download"></i>',
+        duplicate: '<i data-lucide="copy-plus"></i>',
         config: '<i data-lucide="file-pen-line"></i>'
       };
 
@@ -570,6 +705,13 @@
         return value === "live" ? "Live" : "Development";
       }
 
+      function dashboardPathFromStatus(status) {
+        const path = status && status.dashboard_path;
+        return status && status.running && typeof path === "string" &&
+          path.startsWith("/") && !path.startsWith("//") && !path.includes("\\")
+          ? path : "";
+      }
+
       function copyText(value) {
         if (!value || value === "-") {
           return Promise.resolve();
@@ -618,6 +760,16 @@
 
       function setConnectionState(kind) {
         state.authenticated = isLocalMode || kind === "ready";
+        if (!state.authenticated) {
+          state.pluginInventoryGeneration += 1;
+          state.pluginInventoryLoaded = false;
+          state.customPluginInventory.clear();
+          state.pluginInventoryRequests.clear();
+          state.pluginLoadPromise = null;
+        }
+        if (!state.authenticated && ui.credentialsDialog.open) closeCredentialsDialog(true);
+        if (!state.authenticated) closeModuleDrawer(false);
+        ui.deploymentNav.hidden = !state.authenticated;
         ui.deploymentContent.hidden = !state.authenticated;
         ui.connectionNotice.hidden = state.authenticated;
         ui.loadModules.disabled = !state.authenticated;
@@ -973,18 +1125,13 @@
 
       function setApiStatus(stateText) {
         const timeText = new Date().toLocaleTimeString();
-        if (ui.apiStatus) {
-          ui.apiStatus.textContent = stateText;
-        }
-        if (ui.apiTime) {
-          ui.apiTime.textContent = timeText;
-        }
-        if (ui.apiStatusPlugins) {
-          ui.apiStatusPlugins.textContent = stateText;
-        }
-        if (ui.apiTimePlugins) {
-          ui.apiTimePlugins.textContent = timeText;
-        }
+        const hostMode = isLocalMode ? "Local" : "Remote";
+        ui.apiHostMode.textContent = hostMode;
+        ui.apiHealth.setAttribute("aria-label", "Deploy API " + hostMode + ": " + stateText);
+        ui.apiHealth.title = hostMode + " deployment API: " + stateText;
+        ui.apiStatusDot.classList.toggle("status-success", stateText === "online");
+        ui.apiStatusDot.classList.toggle("status-error", stateText !== "online");
+        ui.apiTime.textContent = timeText;
       }
 
       function findRollbackTarget(builds, currentBuild) {
@@ -1189,7 +1336,8 @@
         const buildTitle = buildValue && buildShort !== buildValue ? ` title="${escapeAttr(buildValue)}"` : "";
         const stateText = running ? "running" : "stopped";
         const link = running && portValue ? moduleLinkFromPort(portValue) : "";
-        const dash = link ? link + "/dashboard" : "";
+        const dashboardPath = dashboardPathFromStatus(data);
+        const dash = link && dashboardPath ? link + dashboardPath : "";
         const builtRaw = data.built_at || "";
         const builtDisplay = builtRaw ? formatDate(builtRaw) : "-";
         const logsEnabled = state.logsEnabled !== false;
@@ -1210,7 +1358,7 @@
           : `<span class="note">Logs disabled in deploy config.</span>`;
         const linkMeta = `
               ${metaLink("Module Link", link)}
-              ${metaLink("Module Dashboard", dash)}
+              ${dash ? metaLink("Module Dashboard", dash) : ""}
             `;
         const remoteMeta = localMode
           ? `
@@ -1243,6 +1391,7 @@
             </div>
             <div class="meta-scroll">
               ${metaRow("Mode", metaValue(runtimeModeLabel(buildRuntimeMode(data))))}
+              ${data.origin_build_id ? metaRow("Origin build", metaValue(data.origin_build_id, { mono: true, shorten: true })) : ""}
               ${metaRow("Module Version", metaValue(data.moduleversion || "-"))}
               ${metaRow("Commit", metaValue(data.commit || "-", { mono: true, shorten: true }))}
               ${metaRow("Built", metaValue(builtDisplay, { title: builtRaw }))}
@@ -1402,6 +1551,13 @@
         if (!isSelectionCurrent(token, module)) {
           return;
         }
+        if (label === "dashboard") {
+          suffix = dashboardPathFromStatus(data);
+          if (!suffix) {
+            setActivity("Dashboard unavailable. It requires a running Development build with its dashboard enabled.", true);
+            return;
+          }
+        }
         const port = data.port || 0;
         const base = port ? moduleLinkFromPort(port) : "";
         if (!base) {
@@ -1428,21 +1584,6 @@
           ui.signerMode.textContent = "Signer: WebCrypto (secure context)";
         } else {
           ui.signerMode.textContent = "Signer: JS fallback (http)";
-        }
-      }
-
-      function applyModeLabels() {
-        if (!isLocalMode) {
-          return;
-        }
-        const badge = document.getElementById("deployMode");
-        if (badge) {
-          badge.textContent = "Local workspace";
-        }
-       
-        const subtitle = document.getElementById("deploySubtitle");
-        if (subtitle) {
-          subtitle.textContent = "Local workspace";
         }
       }
 
@@ -1634,7 +1775,7 @@
       function closeUploadDialog() {
         if (!ui.submitUpload.disabled && ui.uploadDialog.open) {
           ui.uploadDialog.close();
-          ui.openUpload.focus();
+          ui.moduleActionsToggle.focus();
         }
       }
 
@@ -1672,6 +1813,21 @@
         } finally {
           setUploadBusy(false);
         }
+      }
+
+      function showPackageConfigMode(data) {
+        const isSource = data.scope === "source";
+        const runtimeMode = isSource ? "development" : String(data.runtime_mode || "");
+        const label = runtimeMode === "development" || runtimeMode === "live"
+          ? runtimeModeLabel(runtimeMode)
+          : "unavailable";
+        ui.packageConfigModeLabel.textContent = isSource ? "Runtime mode" : "Saved runtime mode";
+        ui.packageConfigModeValue.textContent = label.toUpperCase();
+        ui.packageConfigModeValue.setAttribute("data-mode", label === "unavailable" ? "" : runtimeMode);
+        ui.packageConfigModeHelp.textContent = isSource
+          ? "This source workflow always runs in Development, regardless of hyperbricks.mode in this file."
+          : "The saved build setting overrides hyperbricks.mode in this file when the build starts. Change it with the build’s Development/Live selector.";
+        ui.packageConfigMode.hidden = false;
       }
 
       function getPackageConfigValue() {
@@ -1877,6 +2033,7 @@
         state.packageConfigTrigger = trigger || null;
         ui.packageConfigContext.textContent = module + " · " + (buildId === "dev" ? "source module" : shortenValue(buildId));
         ui.packageConfigScope.textContent = "Loading configuration…";
+        ui.packageConfigMode.hidden = true;
         setPackageConfigValue("");
         ui.packageConfigError.textContent = "";
         ui.packageConfigStatus.textContent = "";
@@ -1902,8 +2059,9 @@
           state.packageConfigSHA = String(data.sha256 || "");
           setPackageConfigValue(content);
           ui.packageConfigScope.textContent = data.scope === "source"
-            ? "Edits the source module and affects future builds. This source workflow always runs in Development."
+            ? "Edits the source module and affects future builds."
             : "Edits this build’s extracted runtime configuration. The original .hra archive and its download remain unchanged.";
+          showPackageConfigMode(data);
           ui.packageConfigStatus.textContent = data.restart_required
             ? "This build is running. Save, then restart it to apply configuration changes."
             : "Changes apply the next time this build starts.";
@@ -1970,6 +2128,7 @@
           state.packageConfigOriginal = content;
           state.packageConfigSHA = String(data.sha256 || "");
           setPackageConfigValue(content);
+          showPackageConfigMode(data);
           ui.packageConfigStatus.textContent = data.restart_required
             ? "Saved. Restart the running build to apply this configuration."
             : "Saved. The configuration applies on the next start.";
@@ -1979,6 +2138,197 @@
           setActivity(ui.packageConfigError.textContent, true);
         } finally {
           setPackageConfigBusy(false);
+        }
+      }
+
+      function credentialsPath(module, buildId) {
+        return apiPath("/modules/" + encodeURIComponent(module) + "/builds/" + encodeURIComponent(buildId) + "/credentials");
+      }
+
+      function credentialsAreDirty() {
+        return ui.credentialsNewUser.value !== "" || ui.credentialsNewPassword.value !== "" ||
+          ui.credentialsDashboardEnabled.checked !== state.credentialsDashboardEnabled ||
+          ui.credentialsSpacesEnabled.checked !== state.credentialsSpacesEnabled;
+      }
+
+      function revealCredentials(reveal) {
+        state.credentialsRevealed = reveal;
+        ui.credentialsPassword.type = reveal ? "text" : "password";
+        ui.credentialsNewPassword.type = reveal ? "text" : "password";
+        ui.showCredentials.textContent = reveal ? "Hide credentials" : "Show credentials";
+        ui.showCredentials.setAttribute("aria-pressed", String(reveal));
+      }
+
+      function updateCredentialsControls() {
+        const disabled = state.credentialsBusy || !state.credentialsLoaded;
+        ui.credentialsNewUser.disabled = disabled;
+        ui.credentialsNewPassword.disabled = disabled;
+        ui.credentialsDashboardEnabled.disabled = disabled;
+        ui.credentialsSpacesEnabled.disabled = disabled;
+        ui.showCredentials.disabled = disabled;
+        ui.saveCredentials.disabled = disabled || !credentialsAreDirty();
+        ui.saveCredentials.querySelector("span").textContent = state.credentialsSaving ? "Saving…" : "Save changes";
+        ui.credentialsSpacesParentWarning.hidden = !state.credentialsLoaded ||
+          !ui.credentialsSpacesEnabled.checked || state.credentialsFrontendEditingEnabled;
+        ui.closeCredentials.disabled = state.credentialsSaving;
+        ui.cancelCredentials.disabled = state.credentialsSaving;
+      }
+
+      function clearCredentialValues() {
+        ui.credentialsUser.value = "";
+        ui.credentialsPassword.value = "";
+        ui.credentialsNewUser.value = "";
+        ui.credentialsNewPassword.value = "";
+        ui.credentialsDashboardEnabled.checked = false;
+        ui.credentialsSpacesEnabled.checked = true;
+        ui.credentialsUserSource.textContent = "";
+        ui.credentialsPasswordSource.textContent = "";
+        state.credentialsUserSource = "missing";
+        state.credentialsPasswordSource = "missing";
+        state.credentialsDashboardEnabled = false;
+        state.credentialsSpacesEnabled = true;
+        state.credentialsFrontendEditingEnabled = true;
+        revealCredentials(false);
+      }
+
+      function populateCredentials(data) {
+        const describe = source => source === "reference" ? "YAML reference — not resolved" : source === "literal" ? "Configured value" : "Not configured";
+        state.credentialsSHA = String(data.sha256 || "");
+        state.credentialsUserSource = data.user?.source || "missing";
+        state.credentialsPasswordSource = data.password?.source || "missing";
+        state.credentialsDashboardEnabled = data.dashboard_enabled === true;
+        state.credentialsSpacesEnabled = data.spaces_enabled !== false;
+        state.credentialsFrontendEditingEnabled = data.frontend_editing_enabled !== false;
+        ui.credentialsDashboardEnabled.checked = state.credentialsDashboardEnabled;
+        ui.credentialsSpacesEnabled.checked = state.credentialsSpacesEnabled;
+        ui.credentialsUser.value = String(data.user?.value ?? "");
+        ui.credentialsPassword.value = String(data.password?.value ?? "");
+        ui.credentialsUserSource.textContent = describe(state.credentialsUserSource);
+        ui.credentialsPasswordSource.textContent = describe(state.credentialsPasswordSource);
+        ui.credentialsNewUser.value = "";
+        ui.credentialsNewPassword.value = "";
+        ui.credentialsNewUser.placeholder = state.credentialsUserSource === "missing" ? "Enter a username" : "Leave unchanged";
+        ui.credentialsNewPassword.placeholder = state.credentialsPasswordSource === "missing" ? "Enter a password" : "Leave unchanged";
+        ui.credentialsScope.textContent = data.scope === "source"
+          ? "Editing the source module's package configuration."
+          : "Editing this build's extracted runtime. The original .hra archive stays unchanged.";
+        state.credentialsLoaded = Boolean(state.credentialsSHA);
+        revealCredentials(false);
+      }
+
+      async function openCredentials(buildId, trigger) {
+        const module = state.selectedModule;
+        if (!module || !buildId || buildId === "-" || state.credentialsSaving) return;
+        const session = ++state.credentialsSession;
+        const token = state.selectionToken;
+        state.credentialsModule = module;
+        state.credentialsBuild = buildId;
+        state.credentialsSelectionToken = token;
+        state.credentialsTrigger = trigger || null;
+        state.credentialsSHA = "";
+        state.credentialsLoaded = false;
+        state.credentialsBusy = true;
+        clearCredentialValues();
+        ui.credentialsContext.textContent = module + " · " + (buildId === "dev" ? "source module" : shortenValue(buildId));
+        ui.credentialsScope.textContent = "";
+        ui.credentialsError.textContent = "";
+        ui.credentialsStatus.textContent = "Loading developer access…";
+        updateCredentialsControls();
+        if (!ui.credentialsDialog.open) ui.credentialsDialog.showModal();
+        const current = () => session === state.credentialsSession && ui.credentialsDialog.open && isSelectionCurrent(token, module);
+        try {
+          const data = await apiRequest("GET", credentialsPath(module, buildId));
+          if (!current()) return;
+          populateCredentials(data);
+          ui.credentialsStatus.textContent = "";
+        } catch (err) {
+          if (current()) {
+            ui.credentialsError.textContent = err.message || "Could not load developer access.";
+            ui.credentialsStatus.textContent = "";
+          }
+        } finally {
+          if (session === state.credentialsSession && ui.credentialsDialog.open) {
+            state.credentialsBusy = false;
+            if (!current()) ui.credentialsStatus.textContent = "Selection changed. Close and reopen credentials for this build.";
+            updateCredentialsControls();
+          }
+        }
+      }
+
+      function closeCredentialsDialog(force) {
+        if (force !== true && state.credentialsSaving) return false;
+        if (force !== true && credentialsAreDirty() && !confirm("Discard unsaved developer access changes?")) return false;
+        const trigger = state.credentialsTrigger;
+        ui.credentialsDialog.close();
+        state.credentialsSession++;
+        state.credentialsModule = "";
+        state.credentialsBuild = "";
+        state.credentialsSHA = "";
+        state.credentialsLoaded = false;
+        state.credentialsBusy = false;
+        state.credentialsSaving = false;
+        state.credentialsTrigger = null;
+        clearCredentialValues();
+        ui.credentialsError.textContent = "";
+        ui.credentialsStatus.textContent = "";
+        updateCredentialsControls();
+        if (trigger && typeof trigger.focus === "function") trigger.focus();
+        return true;
+      }
+
+      async function saveCredentials(event) {
+        event.preventDefault();
+        if (!ui.credentialsDialog.open || state.credentialsBusy || !state.credentialsLoaded || !credentialsAreDirty()) return;
+        const module = state.credentialsModule;
+        const buildId = state.credentialsBuild;
+        const session = state.credentialsSession;
+        if (!isSelectionCurrent(state.credentialsSelectionToken, module)) {
+          ui.credentialsError.textContent = "Selection changed. Close and reopen credentials before saving.";
+          return;
+        }
+        const request = {expected_sha256: state.credentialsSHA};
+        if (ui.credentialsNewUser.value !== "") request.user = ui.credentialsNewUser.value;
+        if (ui.credentialsNewPassword.value !== "") request.password = ui.credentialsNewPassword.value;
+        if (ui.credentialsDashboardEnabled.checked !== state.credentialsDashboardEnabled) {
+          request.dashboard_enabled = ui.credentialsDashboardEnabled.checked;
+        }
+        if (ui.credentialsSpacesEnabled.checked !== state.credentialsSpacesEnabled) {
+          request.spaces_enabled = ui.credentialsSpacesEnabled.checked;
+        }
+        const changingCredentials = request.user !== undefined || request.password !== undefined;
+        if (changingCredentials && ((state.credentialsUserSource === "missing" && request.user === undefined) ||
+            (state.credentialsPasswordSource === "missing" && request.password === undefined))) {
+          ui.credentialsError.textContent = "Enter both a username and password when credentials are not yet configured.";
+          return;
+        }
+        const replacements = [];
+        if (request.user !== undefined && state.credentialsUserSource === "reference") replacements.push("username");
+        if (request.password !== undefined && state.credentialsPasswordSource === "reference") replacements.push("password");
+        if (replacements.length && !confirm("Replace the " + replacements.join(" and ") + " YAML reference with a literal value stored in package.hyperbricks.yaml?")) return;
+        ui.credentialsError.textContent = "";
+        ui.credentialsStatus.textContent = "Validating and saving…";
+        state.credentialsSaving = true;
+        state.credentialsBusy = true;
+        updateCredentialsControls();
+        try {
+          const data = await apiRequest("PUT", credentialsPath(module, buildId), request);
+          if (session !== state.credentialsSession || !ui.credentialsDialog.open) return;
+          populateCredentials(data);
+          ui.credentialsStatus.textContent = data.restart_required
+            ? "Saved. Restart the running module to apply these settings."
+            : "Saved. The settings apply on the next start.";
+          setActivity("Saved developer access settings for " + buildId + ".");
+        } catch (err) {
+          if (session === state.credentialsSession && ui.credentialsDialog.open) {
+            ui.credentialsError.textContent = err.message || "Could not save developer access.";
+            ui.credentialsStatus.textContent = "Not saved. Your changes are still in the form.";
+          }
+        } finally {
+          if (session === state.credentialsSession) {
+            state.credentialsSaving = false;
+            state.credentialsBusy = false;
+            updateCredentialsControls();
+          }
         }
       }
 
@@ -2082,12 +2432,7 @@
         if (!isLocalMode && (secret !== getSecret() || baseUrl !== getBaseUrl())) {
           return;
         }
-        if (ui.apiVersion) {
-          ui.apiVersion.textContent = (data.version || "").trim() || "-";
-        }
-        if (ui.apiVersionPlugins) {
-          ui.apiVersionPlugins.textContent = (data.version || "").trim() || "-";
-        }
+        ui.apiVersion.textContent = (data.version || "").trim() || "-";
         setLocalConnectionDetails(data);
         state.logsEnabled = data.logs_enabled !== false;
         if (!isLocalMode && !state.authenticated) {
@@ -2127,17 +2472,33 @@
         return !!buildId;
       }
 
-      async function autoLoadPlugins() {
+      async function autoLoadPlugins(force = false) {
         if (!canAutoLoadPlugins()) {
           return;
         }
-        if (!state.modules.length) {
-          await loadModules();
+        if (state.pluginLoadPromise) {
+          return state.pluginLoadPromise;
         }
-        await loadGlobalPlugins();
-        if (canAutoLoadCustomPlugins()) {
-          await loadCustomPlugins();
+        if (state.pluginInventoryLoaded && !force) {
+          return;
         }
+        const load = (async () => {
+          if (!state.modules.length) {
+            await loadModules();
+          }
+          setActivity("Loading shared plugins...");
+          const generation = state.pluginInventoryGeneration;
+          const catalogAvailable = await loadGlobalPlugins(true);
+          if (generation !== state.pluginInventoryGeneration || !state.authenticated) return;
+          state.pluginInventoryLoaded = !!catalogAvailable;
+          setActivity(catalogAvailable ? "Shared plugins updated."
+            : "Shared plugin catalog unavailable; showing installed plugins only. Refresh to retry.", !catalogAvailable);
+        })();
+        const pending = load.finally(() => {
+          if (state.pluginLoadPromise === pending) state.pluginLoadPromise = null;
+        });
+        state.pluginLoadPromise = pending;
+        return pending;
       }
 
       function autoLoadCustomPlugins() {
@@ -2164,8 +2525,173 @@
         return "";
       }
 
+      function updateModuleDrawerAccessibility(restoreFocus) {
+        const open = !deploymentDrawerMedia.matches && ui.moduleDrawerToggle.checked && state.view === "modules";
+        ui.moduleDrawerOpen.setAttribute("aria-expanded", String(open));
+        ui.deployHeader.inert = open;
+        ui.moduleDrawerContent.inert = open;
+        if (open) {
+          ui.moduleSidebar.setAttribute("role", "dialog");
+          ui.moduleSidebar.setAttribute("aria-modal", "true");
+        } else {
+          ui.moduleSidebar.removeAttribute("role");
+          ui.moduleSidebar.removeAttribute("aria-modal");
+          if (restoreFocus && !deploymentDrawerMedia.matches && state.view === "modules") ui.moduleDrawerOpen.focus();
+        }
+      }
+
+      function setModuleDrawerOpen(open) {
+        if (deploymentDrawerMedia.matches) return;
+        ui.moduleDrawerToggle.checked = open;
+        updateModuleDrawerAccessibility(!open);
+        if (open) {
+          const focusSearch = () => {
+            if (ui.moduleDrawerToggle.checked && !deploymentDrawerMedia.matches) ui.moduleSearch.focus();
+          };
+          // The drawer starts hidden; focus once its visibility transition ends.
+          setTimeout(focusSearch, 250);
+        }
+      }
+
+      function closeModuleDrawer(restoreFocus) {
+        if (!ui.moduleDrawerToggle.checked) return;
+        ui.moduleDrawerToggle.checked = false;
+        updateModuleDrawerAccessibility(restoreFocus);
+      }
+
+      function syncDeploymentDrawerBreakpoint() {
+        ui.modulesView.classList.toggle("drawer-open", deploymentDrawerMedia.matches);
+        ui.pluginsView.classList.toggle("drawer-open", deploymentDrawerMedia.matches);
+        closeModuleDrawer(false);
+        closePluginDrawer(false);
+        updateModuleDrawerAccessibility(false);
+        updatePluginDrawerAccessibility(false);
+      }
+
+      function handleModuleDrawerKeydown(event) {
+        if (deploymentDrawerMedia.matches || !ui.moduleDrawerToggle.checked) return;
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeModuleDrawer(true);
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const controls = Array.from(ui.moduleSidebar.querySelectorAll("button,input"))
+          .filter((node) => !node.disabled && node.getClientRects().length);
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (first && event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (last && !event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+
+      function updatePluginDrawerAccessibility(restoreFocus) {
+        const open = !deploymentDrawerMedia.matches && ui.pluginDrawerToggle.checked && state.view === "plugins";
+        ui.pluginDrawerOpen.setAttribute("aria-expanded", String(open));
+        ui.deployHeader.inert = open;
+        ui.pluginDrawerContent.inert = open;
+        if (open) {
+          ui.pluginSidebar.setAttribute("role", "dialog");
+          ui.pluginSidebar.setAttribute("aria-modal", "true");
+        } else {
+          ui.pluginSidebar.removeAttribute("role");
+          ui.pluginSidebar.removeAttribute("aria-modal");
+          if (restoreFocus && !deploymentDrawerMedia.matches && state.view === "plugins") ui.pluginDrawerOpen.focus();
+        }
+      }
+
+      function setPluginDrawerOpen(open) {
+        if (deploymentDrawerMedia.matches) return;
+        ui.pluginDrawerToggle.checked = open;
+        updatePluginDrawerAccessibility(!open);
+        if (open) {
+          setTimeout(() => {
+            if (ui.pluginDrawerToggle.checked && !deploymentDrawerMedia.matches) ui.pluginSearch.focus();
+          }, 250);
+        }
+      }
+
+      function closePluginDrawer(restoreFocus) {
+        if (!ui.pluginDrawerToggle.checked) return;
+        ui.pluginDrawerToggle.checked = false;
+        updatePluginDrawerAccessibility(restoreFocus);
+      }
+
+      function handlePluginDrawerKeydown(event) {
+        if (deploymentDrawerMedia.matches || !ui.pluginDrawerToggle.checked) return;
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closePluginDrawer(true);
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const controls = Array.from(ui.pluginSidebar.querySelectorAll("button,input"))
+          .filter((node) => !node.disabled && node.getClientRects().length);
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (first && event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (last && !event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+
+      function handleDeploymentTabKeydown(event) {
+        const next = event.key === "ArrowRight" || event.key === "End" ? "plugins"
+          : event.key === "ArrowLeft" || event.key === "Home" ? "modules" : "";
+        if (!next) return;
+        event.preventDefault();
+        setView(next);
+        (next === "modules" ? ui.viewModules : ui.viewPlugins).focus();
+      }
+
+      function handleModuleTabKeydown(event) {
+        const next = event.key === "ArrowRight" || event.key === "End" ? "plugins"
+          : event.key === "ArrowLeft" || event.key === "Home" ? "overview" : "";
+        if (!next) return;
+        event.preventDefault();
+        setModuleTab(next);
+        (next === "overview" ? ui.moduleTabOverview : ui.moduleTabPlugins).focus();
+      }
+
+      function setModuleTab(tab) {
+        const showPlugins = tab === "plugins";
+        state.moduleTab = showPlugins ? "plugins" : "overview";
+        ui.moduleActions.open = false;
+        ui.moduleTabOverview.setAttribute("aria-selected", String(!showPlugins));
+        ui.moduleTabPlugins.setAttribute("aria-selected", String(showPlugins));
+        ui.moduleTabOverview.tabIndex = showPlugins ? -1 : 0;
+        ui.moduleTabPlugins.tabIndex = showPlugins ? 0 : -1;
+        ui.moduleOverviewPanel.classList.toggle("hidden", showPlugins);
+        ui.moduleCustomPluginsPanel.classList.toggle("hidden", !showPlugins);
+        if (!showPlugins) return;
+        if (!state.selectedModule) {
+          setPluginRowsMessage(ui.customPluginRows, "Select a module to load its plugins.");
+          return;
+        }
+        if (!canAutoLoadCustomPlugins()) {
+          setPluginRowsMessage(ui.customPluginRows, "No packaged build available for this module.");
+          return;
+        }
+        const cached = state.customPluginInventory.get(state.selectedModule);
+        if (cached && !cached.error && (isLocalMode || cached.buildId === state.pluginBuild)) {
+          renderCustomPlugins(cached.plugins, state.selectedModule, cached.buildId);
+        } else {
+          loadCustomPlugins(true).catch(handleError);
+        }
+      }
+
       function setView(view) {
         const target = view === "plugins" ? "plugins" : "modules";
+        closeModuleDrawer(false);
+        closePluginDrawer(false);
+        ui.moduleActions.open = false;
         state.view = target;
         try {
           localStorage.setItem(storageKeys.view, target);
@@ -2179,21 +2705,112 @@
         }
         if (ui.viewModules) {
           ui.viewModules.setAttribute("aria-selected", String(showModules));
+          ui.viewModules.tabIndex = showModules ? 0 : -1;
         }
         if (ui.viewPlugins) {
           ui.viewPlugins.setAttribute("aria-selected", String(!showModules));
+          ui.viewPlugins.tabIndex = showModules ? -1 : 0;
         }
         if (!showModules && canAutoLoadPlugins()) {
-          renderPluginModules();
-          renderPluginBuilds();
+          renderPluginSidebar();
           autoLoadPlugins().catch(handleError);
+        } else if (showModules && state.moduleTab === "plugins") {
+          setModuleTab("plugins");
         }
+      }
+
+      function updatePluginWorkspace() {
+        const selected = state.globalPluginEntries.find((entry) => entry.key === state.pluginKey);
+        if (state.pluginKey && !selected) state.pluginKey = "";
+        ui.selectedPluginTitle.textContent = selected
+          ? (selected.displayName || selected.name) + (selected.version ? " · " + selected.version : "")
+          : "Shared plugins";
+        ui.selectedPluginContext.hidden = true;
+        ui.globalPluginRows.querySelectorAll("tr[data-plugin-key]").forEach((row) => {
+          row.classList.toggle("hidden", !!state.pluginKey && row.dataset.pluginKey !== state.pluginKey);
+        });
+      }
+
+      function selectPluginEntry(key) {
+        state.pluginKey = key;
+        closePluginDrawer(false);
+        updatePluginWorkspace();
+        renderPluginSidebar();
+        ui.selectedPluginTitle.focus();
+      }
+
+      function renderPluginSidebar() {
+        const query = state.pluginFilter.trim().toLowerCase();
+        ui.pluginList.innerHTML = "";
+        const count = state.globalPluginEntries.length;
+        ui.pluginSummary.textContent = count + " shared " + (count === 1 ? "plugin" : "plugins");
+        const entries = state.globalPluginEntries.filter((entry) => !query ||
+          [entry.name, entry.version, entry.configName, entry.status, entry.description]
+            .some((value) => String(value || "").toLowerCase().includes(query)));
+        entries.forEach((entry) => {
+          const item = document.createElement("li");
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "hb-plugin-entry";
+          button.setAttribute("aria-current", String(state.pluginKey === entry.key));
+          const name = document.createElement("span");
+          name.className = "module-name";
+          name.textContent = entry.displayName || entry.name;
+          const details = document.createElement("span");
+          details.className = "module-count";
+          details.textContent = [entry.version, formatPluginStatus(entry.status)].filter(Boolean).join(" · ");
+          button.append(name, details);
+          button.addEventListener("click", () => selectPluginEntry(entry.key));
+          item.appendChild(button);
+          ui.pluginList.appendChild(item);
+        });
+        if (!entries.length) {
+          const empty = document.createElement("li");
+          empty.className = "note hb-module-empty";
+          empty.textContent = query ? "No shared plugins match “" + state.pluginFilter.trim() + "”." : "No shared plugins found.";
+          ui.pluginList.appendChild(empty);
+        }
+        updatePluginWorkspace();
       }
 
       function pluginShortName(fullName) {
         const text = String(fullName || "");
         const idx = text.lastIndexOf("/");
         return idx >= 0 ? text.slice(idx + 1) : text;
+      }
+
+      function customPluginDisplayName(name, module) {
+        const fullName = String(name || "");
+        const moduleSuffix = module ? "__" + module : "";
+        if (moduleSuffix && fullName.endsWith(moduleSuffix)) {
+          return fullName.slice(0, -moduleSuffix.length);
+        }
+        const separator = fullName.lastIndexOf("__");
+        return separator > 0 ? fullName.slice(0, separator) : fullName;
+      }
+
+      function customPluginEntry(plugin, module, buildId, index) {
+        const name = plugin.name || plugin.config_name || "-";
+        const owner = plugin.module || module;
+        const build = plugin.build_id || buildId || "";
+        const identity = plugin.config_name || plugin.name || String(index);
+        return {
+          key: ["custom", owner, build, identity].map(encodeURIComponent).join(":"),
+          name,
+          displayName: customPluginDisplayName(name, owner),
+          version: plugin.version || "",
+          configName: plugin.config_name || "",
+          status: plugin.status || "",
+          description: plugin.source_path || "",
+          module: owner,
+          buildId: build
+        };
+      }
+
+      function nextPluginInventoryRequest(module) {
+        const next = (state.pluginInventoryRequests.get(module) || 0) + 1;
+        state.pluginInventoryRequests.set(module, next);
+        return next;
       }
 
       function toCamelCase(value) {
@@ -2302,7 +2919,7 @@
         if (!container) {
           return;
         }
-        container.innerHTML = "<tr><td colspan=\"5\" class=\"note\">" + message + "</td></tr>";
+        container.innerHTML = "<tr><td colspan=\"5\" class=\"note\">" + escapeAttr(message) + "</td></tr>";
       }
 
       function wireCopyButtons(container) {
@@ -2320,43 +2937,6 @@
               .catch(() => setActivity("Copy failed.", true));
           });
         });
-      }
-
-      function renderPluginModules() {
-        if (!ui.pluginModule) {
-          return;
-        }
-        ui.pluginModule.innerHTML = "";
-        if (!state.modules.length) {
-          const option = document.createElement("option");
-          option.value = "";
-          option.textContent = "Load modules first";
-          option.disabled = true;
-          option.selected = true;
-          ui.pluginModule.appendChild(option);
-          state.pluginModule = "";
-          return;
-        }
-        const placeholder = document.createElement("option");
-        placeholder.value = "";
-        placeholder.textContent = "Select module";
-        placeholder.disabled = true;
-        ui.pluginModule.appendChild(placeholder);
-        state.modules.forEach((module) => {
-          const option = document.createElement("option");
-          option.value = module;
-          option.textContent = module;
-          ui.pluginModule.appendChild(option);
-        });
-        const current = state.pluginModule || state.selectedModule || "";
-        if (current && state.modules.includes(current)) {
-          ui.pluginModule.value = current;
-          state.pluginModule = current;
-        } else {
-          ui.pluginModule.value = "";
-          placeholder.selected = true;
-          state.pluginModule = "";
-        }
       }
 
       function renderPluginBuilds() {
@@ -2410,21 +2990,38 @@
         state.pluginBuild = selected;
       }
 
+      async function fetchPluginInventory(module, buildId = "") {
+        if (!isLocalMode && !buildId) throw new Error("Select a build first.");
+        const params = new URLSearchParams({module});
+        if (!isLocalMode) params.set("build_id", buildId);
+        const data = await apiRequest("GET", apiPath("/plugins/custom?" + params.toString()));
+        const plugins = Array.isArray(data.plugins) ? data.plugins : [];
+        return {
+          buildId,
+          plugins,
+          entries: plugins.map((plugin, index) => customPluginEntry(plugin, module, buildId, index)),
+          error: ""
+        };
+      }
+
       async function loadGlobalPlugins(silent) {
         if (!silent) {
-          setActivity("Loading global plugins...");
-          setPluginRowsMessage(ui.globalPluginRows, "Loading global plugins...");
+          setActivity("Loading shared plugins...");
+          setPluginRowsMessage(ui.globalPluginRows, "Loading shared plugins...");
         }
-        const responses = await Promise.all([
+        const responses = await Promise.allSettled([
           apiRequest("GET", apiPath("/plugins/global/index")),
           apiRequest("GET", apiPath("/plugins/global"))
         ]);
-        const index = responses[0] ? responses[0].plugins : {};
-        const installed = responses[1] ? responses[1].plugins : [];
+        if (responses[1].status === "rejected") throw responses[1].reason;
+        const index = responses[0].status === "fulfilled" ? responses[0].value.plugins : {};
+        const installed = responses[1].value.plugins;
         renderGlobalPlugins(index, installed);
         if (!silent) {
-          setActivity("Global plugins updated.");
+          setActivity(responses[0].status === "fulfilled" ? "Shared plugins updated." :
+            "Installed plugins loaded; plugin catalog unavailable.", responses[0].status !== "fulfilled");
         }
+        return responses[0].status === "fulfilled";
       }
 
       function renderGlobalPlugins(index, installed) {
@@ -2448,6 +3045,7 @@
             const configName = pluginConfigName(meta, version);
             const status = configName && installedMap.has(configName) ? "installed" : (configName ? "missing" : "unknown");
             rows.push({
+              key: "index:" + fullName + "@" + version,
               name: shortName || fullName,
               version: version || (meta && meta.version) || "",
               configName: configName,
@@ -2467,6 +3065,7 @@
           }
           const parts = splitConfigName(entry.config_name);
           rows.push({
+            key: "installed:" + entry.config_name,
             name: entry.name || parts.name,
             version: entry.version || parts.version,
             configName: entry.config_name,
@@ -2479,6 +3078,8 @@
         });
         if (!rows.length) {
           setPluginRowsMessage(ui.globalPluginRows, "No plugins found.");
+          state.globalPluginEntries = [];
+          renderPluginSidebar();
           return;
         }
         rows.sort((a, b) => {
@@ -2489,8 +3090,10 @@
           return compareVersion(b.version, a.version);
         });
         ui.globalPluginRows.innerHTML = "";
+        state.globalPluginEntries = rows;
         rows.forEach((entry) => {
           const row = document.createElement("tr");
+          row.dataset.pluginKey = entry.key;
           const pluginName = entry.name || "-";
           const version = entry.version || "-";
           const statusText = formatPluginStatus(entry.status);
@@ -2573,6 +3176,7 @@
               });
           });
         });
+        renderPluginSidebar();
       }
 
       async function runGlobalPluginAction(action, name, version) {
@@ -2592,7 +3196,9 @@
           () => apiRequest("POST", apiPath("/plugins/global/" + action), { name: name, version: version })
         );
         if (ok) {
-          await loadGlobalPlugins(true);
+          if (!await loadGlobalPlugins(true)) {
+            setActivity("Installed plugins updated; shared plugin catalog unavailable. Refresh to retry.", true);
+          }
         }
       }
 
@@ -2610,34 +3216,61 @@
             return;
           }
         }
-        if (!silent) {
-          setActivity("Loading custom plugins for " + module + "...");
-          setPluginRowsMessage(ui.customPluginRows, "Loading custom plugins...");
+        if (!silent) setActivity("Loading plugins for " + module + "...");
+        setPluginRowsMessage(ui.customPluginRows, "Loading module plugins...");
+        const generation = state.pluginInventoryGeneration;
+        const request = nextPluginInventoryRequest(module);
+        let inventory;
+        try {
+          inventory = await fetchPluginInventory(module, buildId);
+        } catch (err) {
+          if (generation !== state.pluginInventoryGeneration ||
+              state.pluginInventoryRequests.get(module) !== request ||
+              state.pluginModule !== module || (!isLocalMode && state.pluginBuild !== buildId)) return;
+          state.customPluginInventory.set(module, {buildId, plugins: [], error: String(err.message || err)});
+          setPluginRowsMessage(ui.customPluginRows, "Could not load module plugins. Refresh to retry.");
+          throw err;
         }
-        const params = new URLSearchParams({ module: module });
-        if (!isLocalMode) {
-          params.set("build_id", buildId);
+        if (generation !== state.pluginInventoryGeneration ||
+            state.pluginInventoryRequests.get(module) !== request) return;
+        state.customPluginInventory.set(module, inventory);
+        if (state.pluginModule === module && (isLocalMode || state.pluginBuild === buildId)) {
+          renderCustomPlugins(inventory.plugins, module, buildId);
         }
-        const data = await apiRequest("GET", apiPath("/plugins/custom?" + params.toString()));
-        renderCustomPlugins(data.plugins || []);
         if (!silent) {
-          setActivity("Custom plugins loaded.");
+          setActivity("Module plugins loaded.");
         }
       }
 
-      function renderCustomPlugins(plugins) {
+      async function refreshCustomPluginModule(module, buildId) {
+        const generation = state.pluginInventoryGeneration;
+        const request = nextPluginInventoryRequest(module);
+        const inventory = await fetchPluginInventory(module, buildId);
+        if (generation !== state.pluginInventoryGeneration ||
+            state.pluginInventoryRequests.get(module) !== request) return;
+        const previous = state.customPluginInventory.get(module);
+        if (previous && previous.buildId !== buildId) return;
+        state.customPluginInventory.set(module, inventory);
+        if (state.pluginModule === module && (isLocalMode || state.pluginBuild === buildId)) {
+          renderCustomPlugins(inventory.plugins, module, buildId);
+        }
+      }
+
+      function renderCustomPlugins(plugins, module = state.pluginModule || state.selectedModule || "", buildId = state.pluginBuild || "") {
         if (!ui.customPluginRows) {
           return;
         }
         const list = Array.isArray(plugins) ? plugins : [];
         if (!list.length) {
           setPluginRowsMessage(ui.customPluginRows, "No plugins configured for this build.");
+          state.customPluginEntries = [];
           return;
         }
         ui.customPluginRows.innerHTML = "";
-        list.forEach((plugin) => {
+        state.customPluginEntries = list.map((plugin, index) => customPluginEntry(plugin, module, buildId, index));
+        list.forEach((plugin, index) => {
           const configName = plugin.config_name || "";
-          const pluginName = plugin.name || configName || "-";
+          const pluginName = customPluginDisplayName(plugin.name || configName || "-", module);
           const version = plugin.version || "-";
           const statusText = formatPluginStatus(plugin.status);
           const statusClass = plugin.status === "installed" ? "badge badge-sm badge-success" : "badge badge-sm";
@@ -2652,9 +3285,9 @@
           const pluginTitle = sourcePath ? ` title="${escapeAttr(sourcePath)}"` : "";
           const configTitle = configName ? ` title="${escapeAttr(configName)}"` : "";
           const copyDisabled = configName ? "" : " disabled";
-          const moduleName = plugin.module || state.pluginModule || state.selectedModule || "";
-          const buildId = plugin.build_id || state.pluginBuild || "";
-          const actionAttr = ` data-plugin="${escapeAttr(configName)}" data-module="${escapeAttr(moduleName)}" data-build="${escapeAttr(buildId)}" data-status="${escapeAttr(plugin.status || "")}"`;
+          const moduleName = plugin.module || module;
+          const pluginBuildId = plugin.build_id || buildId;
+          const actionAttr = ` data-plugin="${escapeAttr(configName)}" data-module="${escapeAttr(moduleName)}" data-build="${escapeAttr(pluginBuildId)}" data-status="${escapeAttr(plugin.status || "")}"`;
           const actionItems = [
             {
               action: "compile",
@@ -2676,6 +3309,7 @@
           }
           const actionMenu = renderRowMenu(actionItems);
           const row = document.createElement("tr");
+          row.dataset.pluginKey = state.customPluginEntries[index].key;
           row.innerHTML = `
             <td data-label="Plugin"${pluginTitle}>${escapeAttr(pluginName)}</td>
             <td data-label="Version">${escapeAttr(version)}</td>
@@ -2777,7 +3411,7 @@
         }
         const ok = await runPluginTask(label, () => apiRequest("POST", apiPath("/plugins/custom/compile"), body));
         if (ok) {
-          await loadCustomPlugins(true);
+          await refreshCustomPluginModule(module, buildId);
         }
       }
 
@@ -2810,7 +3444,7 @@
         }
         const ok = await runPluginTask(label, () => apiRequest("POST", apiPath("/plugins/custom/remove"), body));
         if (ok) {
-          await loadCustomPlugins(true);
+          await refreshCustomPluginModule(module, buildId);
         }
       }
 
@@ -2883,14 +3517,7 @@
         ui.moduleList.innerHTML = "";
         const query = state.moduleFilter.trim().toLowerCase();
         const filtered = state.modules.filter((module) => module.toLowerCase().includes(query));
-        let visible = filtered;
-        if (!query && !state.showAllModules && filtered.length > modulePreviewLimit) {
-          visible = filtered.slice(0, modulePreviewLimit);
-          if (state.selectedModule && filtered.includes(state.selectedModule) && !visible.includes(state.selectedModule)) {
-            visible[visible.length - 1] = state.selectedModule;
-          }
-        }
-        visible.forEach((module) => {
+        filtered.forEach((module) => {
           const item = document.createElement("li");
           item.className = "module-item";
           const count = typeof state.buildCounts[module] === "number" ? state.buildCounts[module] : null;
@@ -2898,11 +3525,15 @@
           button.type = "button";
           button.setAttribute("aria-current", String(module === state.selectedModule));
           button.innerHTML = "<span class=\"module-name\">" + escapeAttr(module) + "</span><span class=\"module-count\">" + moduleBuildLabel(count) + "</span>";
-          button.addEventListener("click", () => selectModule(module));
+          button.addEventListener("click", () => {
+            closeModuleDrawer(false);
+            selectModule(module).catch(handleError);
+            ui.selectedModuleTitle.focus();
+          });
           item.appendChild(button);
           ui.moduleList.appendChild(item);
         });
-        if (!visible.length) {
+        if (!filtered.length) {
           const empty = document.createElement("li");
           empty.className = "hb-module-empty note";
           empty.textContent = query ? "No modules match “" + state.moduleFilter.trim() + "”." : "No modules found.";
@@ -2912,14 +3543,7 @@
           const visibleText = query ? String(filtered.length) + " matching" : String(state.modules.length);
           ui.moduleSummary.textContent = visibleText + (filtered.length === 1 ? " module" : " modules");
         }
-        if (ui.toggleAllModules) {
-          const canToggle = !query && state.modules.length > modulePreviewLimit;
-          ui.toggleAllModules.hidden = !canToggle;
-          ui.toggleAllModules.textContent = state.showAllModules ? "Show fewer" : "Show all " + state.modules.length;
-          ui.toggleAllModules.setAttribute("aria-expanded", String(state.showAllModules));
-        }
-        ui.moduleList.classList.toggle("is-expanded", state.showAllModules && !query);
-        renderPluginModules();
+        ui.selectedModuleTitle.textContent = state.selectedModule || "Choose a module";
       }
 
       function renderBuilds() {
@@ -2996,6 +3620,13 @@
             attrs: buildAttr,
             disabled: isDisabled
           });
+          actionItems.push({
+            action: "credentials",
+            label: "Developer access",
+            icon: '<i data-lucide="key-round"></i>',
+            attrs: buildAttr,
+            disabled: isDisabled
+          });
           if (!isDev && String(build.format || "").toLowerCase() === "hra") {
             actionItems.push({
               action: "download",
@@ -3003,6 +3634,13 @@
               icon: icons.download,
               attrs: buildAttr,
               disabled: isDisabled
+            });
+            actionItems.push({
+              action: "duplicate",
+              label: "Duplicate as new build",
+              icon: icons.duplicate,
+              attrs: buildAttr + ' title="Create a new build from this build’s current runtime without starting it."',
+              disabled: isDisabled || state.duplicateBuilds.has(state.selectedModule + "\0" + buildId)
             });
           }
           actionItems.push({
@@ -3012,13 +3650,15 @@
             attrs: buildAttr,
             disabled: isDisabled
           });
-          actionItems.push({
-            action: "dashboard",
-            label: "Open dashboard",
-            icon: icons.dashboard,
-            attrs: buildAttr,
-            disabled: isDisabled
-          });
+          if (isRunning && state.runningMode === "development") {
+            actionItems.push({
+              action: "dashboard",
+              label: state.runningDashboardPath ? "Open dashboard" : "Open dashboard (disabled)",
+              icon: icons.dashboard,
+              attrs: buildAttr + (state.runningDashboardPath ? "" : ' title="Dashboard unavailable. Enable development.dashboard.enabled in the package config and restart the module."'),
+              disabled: isDisabled || !state.runningDashboardPath
+            });
+          }
           actionItems.push({
             action: "details",
             label: "Details",
@@ -3091,11 +3731,15 @@
               } else if (action === "link") {
                 openBuildLink(buildId, "", "runtime").catch(handleError);
               } else if (action === "dashboard") {
-                openBuildLink(buildId, "/dashboard", "dashboard").catch(handleError);
+                openBuildLink(buildId, "", "dashboard").catch(handleError);
               } else if (action === "config") {
                 openPackageConfig(buildId, element).catch(handleError);
+              } else if (action === "credentials") {
+                openCredentials(buildId, row.querySelector(".row-menu-toggle")).catch(handleError);
               } else if (action === "download") {
                 downloadBuildArchive(buildId).catch(handleError);
+              } else if (action === "duplicate") {
+                duplicateBuild(buildId).catch(handleError);
               } else if (action === "push") {
                 pushBuild(buildId).catch(handleError);
               } else if (action === "delete") {
@@ -3128,26 +3772,33 @@
         const fullBuild = status.current && status.current !== "-" ? status.current : "";
         state.currentBuild = fullBuild;
         state.runningBuild = status.running_build || "";
+        state.runningMode = status.running ? String(status.running_mode || "") : "";
+        state.runningDashboardPath = dashboardPathFromStatus(status);
         updateRollbackTarget();
       }
 
       async function loadModules() {
         setActivity("Loading modules...");
         state.selectionToken += 1;
+        state.pluginInventoryGeneration += 1;
+        state.pluginInventoryLoaded = false;
+        state.customPluginInventory.clear();
+        state.pluginInventoryRequests.clear();
         const data = await apiRequest("GET", apiPath("/modules"));
         state.modules = data.modules || [];
         state.selectedModule = "";
         state.pluginModule = "";
         state.pluginBuild = "";
+        state.customPluginEntries = [];
+        renderPluginSidebar();
         state.buildCounts = {};
         state.moduleFilter = "";
-        state.showAllModules = false;
         if (ui.moduleSearch) {
           ui.moduleSearch.value = "";
         }
         renderModules();
         renderPluginBuilds();
-        setPluginRowsMessage(ui.customPluginRows, "Select a module to load custom plugins.");
+        setPluginRowsMessage(ui.customPluginRows, "Select a module to load its plugins.");
         ui.buildRows.innerHTML = "<tr><td colspan=\"6\" class=\"note\">Select a module to load builds.</td></tr>";
         updateStatus({ module: "", current: "", port: "-", versions: "-" });
         ui.refreshStatus.disabled = true;
@@ -3171,10 +3822,19 @@
         refreshServerStatus().catch(handleError);
       }
 
+      async function reloadModules() {
+        const previousPluginLoad = state.pluginLoadPromise;
+        await loadModules();
+        if (previousPluginLoad) await previousPluginLoad.catch(() => {});
+        if (state.view === "plugins") await autoLoadPlugins(true);
+      }
+
       async function selectModule(module) {
         state.selectedModule = module;
         state.pluginModule = module;
         state.pluginBuild = "";
+        state.customPluginEntries = [];
+        ui.moduleActions.open = false;
         saveModule(module);
         renderModules();
         state.builds = [];
@@ -3183,7 +3843,7 @@
         state.currentBuild = "";
         setPluginRowsMessage(
           ui.customPluginRows,
-          isLocalMode ? "Press Load to view custom plugins." : "Select a build to load custom plugins."
+          state.moduleTab === "plugins" ? "Loading module plugins..." : "Open Custom plugins to load this module's plugins."
         );
         ui.buildRows.innerHTML = "<tr><td colspan=\"6\" class=\"note\">Loading builds...</td></tr>";
         ui.refreshStatus.disabled = true;
@@ -3232,6 +3892,10 @@
         renderModules();
         updateRollbackTarget();
         setActivity("Builds updated.");
+        if (state.moduleTab === "plugins" && state.pluginModule === module) {
+          if (canAutoLoadCustomPlugins()) loadCustomPlugins(true).catch(handleError);
+          else setPluginRowsMessage(ui.customPluginRows, "No packaged build available for this module.");
+        }
       }
 
       async function setBuildMode(buildId, mode, select) {
@@ -3246,6 +3910,7 @@
         }
         const previousMode = buildRuntimeMode(target);
         const label = runtimeModeLabel(mode);
+        let modeSaved = false;
         if (select) {
           select.disabled = true;
         }
@@ -3260,6 +3925,7 @@
             ),
             { mode: mode }
           );
+          modeSaved = true;
           if (!isSelectionCurrent(token, module)) {
             return;
           }
@@ -3272,6 +3938,18 @@
           }
           renderBuilds();
           updateRollbackTarget();
+          if (data.restart_error) {
+            let message = "Mode saved as " + label + ", but restart failed: " + data.restart_error;
+            try {
+              await refreshStatus(token, module);
+            } catch (err) {
+              message += ". Status refresh failed: " + (err.message || String(err));
+            }
+            if (isSelectionCurrent(token, module)) {
+              setActivity(message, true);
+            }
+            return;
+          }
           if (data.restarted) {
             clearBuildLogOutput(buildId, "Logs cleared. Module restarting…");
             await refreshStatus(token, module);
@@ -3283,7 +3961,7 @@
           }
           setActivity("Mode saved as " + label + ". It applies on the next start.");
         } catch (err) {
-          if (select) {
+          if (select && !modeSaved) {
             select.value = previousMode;
           }
           throw err;
@@ -3439,6 +4117,56 @@
         setActivity("Build deleted.");
       }
 
+      async function duplicateBuild(buildId) {
+        const module = state.selectedModule;
+        const token = state.selectionToken;
+        const source = state.builds.find((build) => build.build_id === buildId);
+        if (!module || !source || source.is_dev || String(source.format || "").toLowerCase() !== "hra") {
+          return;
+        }
+        const pendingKey = module + "\0" + buildId;
+        if (state.duplicateBuilds.has(pendingKey)) {
+          return;
+        }
+        state.duplicateBuilds.add(pendingKey);
+        renderBuilds();
+        setActivity("Duplicating current runtime of " + shortenValue(buildId) + "…");
+        try {
+          const data = await apiRequest(
+            "POST",
+            apiPath(
+              "/modules/" + encodeURIComponent(module) +
+              "/builds/" + encodeURIComponent(buildId) +
+              "/duplicate"
+            )
+          );
+          if (!data || !data.build_id) {
+            throw new Error("The API did not return a new build ID. The duplicate may have been created; refresh the build list before retrying.");
+          }
+          if (!isSelectionCurrent(token, module)) {
+            return;
+          }
+          try {
+            await loadBuilds(token, module);
+          } catch (err) {
+            setActivity(
+              "Created build " + shortenValue(data.build_id) + " from " + shortenValue(buildId) +
+              ", but could not refresh the build list: " + (err.message || String(err)),
+              true
+            );
+            return;
+          }
+          if (isSelectionCurrent(token, module)) {
+            setActivity("Created build " + shortenValue(data.build_id) + " from " + shortenValue(buildId) + ". It has not been started.");
+          }
+        } finally {
+          state.duplicateBuilds.delete(pendingKey);
+          if (state.selectedModule === module && state.builds.some((build) => build.build_id === buildId)) {
+            renderBuilds();
+          }
+        }
+      }
+
       async function buildLocalModule() {
         const module = state.selectedModule;
         const token = state.selectionToken;
@@ -3495,60 +4223,63 @@
       }
 
       function wireEvents() {
-        ui.loadModules.addEventListener("click", () => loadModules().catch(handleError));
+        ui.loadModules.addEventListener("click", () => reloadModules().catch(handleError));
+        syncDeploymentDrawerBreakpoint();
+        deploymentDrawerMedia.addEventListener("change", syncDeploymentDrawerBreakpoint);
+        ui.moduleDrawerOpen.addEventListener("click", () => setModuleDrawerOpen(true));
+        ui.moduleDrawerClose.addEventListener("click", () => closeModuleDrawer(true));
+        ui.moduleDrawerToggle.addEventListener("change", () => updateModuleDrawerAccessibility(true));
+        ui.moduleSidebar.addEventListener("keydown", handleModuleDrawerKeydown);
+        ui.pluginDrawerOpen.addEventListener("click", () => setPluginDrawerOpen(true));
+        ui.pluginDrawerClose.addEventListener("click", () => closePluginDrawer(true));
+        ui.pluginDrawerToggle.addEventListener("change", () => updatePluginDrawerAccessibility(true));
+        ui.pluginSidebar.addEventListener("keydown", handlePluginDrawerKeydown);
         if (ui.viewModules) {
           ui.viewModules.addEventListener("click", () => setView("modules"));
+          ui.viewModules.addEventListener("keydown", handleDeploymentTabKeydown);
         }
         if (ui.viewPlugins) {
           ui.viewPlugins.addEventListener("click", () => setView("plugins"));
+          ui.viewPlugins.addEventListener("keydown", handleDeploymentTabKeydown);
         }
+        ui.moduleTabOverview.addEventListener("click", () => setModuleTab("overview"));
+        ui.moduleTabPlugins.addEventListener("click", () => setModuleTab("plugins"));
+        ui.moduleTabOverview.addEventListener("keydown", handleModuleTabKeydown);
+        ui.moduleTabPlugins.addEventListener("keydown", handleModuleTabKeydown);
+        ui.moduleActions.addEventListener("keydown", (event) => {
+          if (event.key !== "Escape") return;
+          event.preventDefault();
+          ui.moduleActions.open = false;
+          ui.moduleActionsToggle.focus();
+        });
+        document.addEventListener("click", (event) => {
+          if (ui.moduleActions.open && ui.moduleActions.contains &&
+              !ui.moduleActions.contains(event.target)) ui.moduleActions.open = false;
+        });
         if (ui.moduleSearch) {
           ui.moduleSearch.addEventListener("input", () => {
             state.moduleFilter = ui.moduleSearch.value;
             renderModules();
           });
         }
-        if (ui.toggleAllModules) {
-          ui.toggleAllModules.addEventListener("click", () => {
-            state.showAllModules = !state.showAllModules;
-            renderModules();
-          });
-        }
-        if (ui.refreshGlobalPlugins) {
-          ui.refreshGlobalPlugins.addEventListener("click", () => loadGlobalPlugins().catch(handleError));
-        }
-        if (ui.loadCustomPlugins) {
-          ui.loadCustomPlugins.addEventListener("click", () => loadCustomPlugins().catch(handleError));
-        }
-        if (ui.pluginModule) {
-          ui.pluginModule.addEventListener("change", () => {
-            const module = ui.pluginModule.value;
-            state.pluginModule = module;
-            state.pluginBuild = "";
-            const message = module
-              ? (isLocalMode ? "Press Load to view custom plugins." : "Select a build to load custom plugins.")
-              : "Select a module to load custom plugins.";
-            setPluginRowsMessage(ui.customPluginRows, message);
-            if (module && module !== state.selectedModule) {
-              selectModule(module)
-                .then(() => {
-                  if (state.view === "plugins") {
-                    autoLoadCustomPlugins();
-                  }
-                })
-                .catch(handleError);
-              return;
-            }
-            if (state.view === "plugins") {
-              autoLoadCustomPlugins();
-            }
-          });
-        }
+        ui.pluginSearch.addEventListener("input", () => {
+          state.pluginFilter = ui.pluginSearch.value;
+          renderPluginSidebar();
+        });
+        ui.refreshPlugins.addEventListener("click", () => autoLoadPlugins(true).catch(handleError));
+        ui.refreshCustomPlugins.addEventListener("click", () => {
+          if (canAutoLoadCustomPlugins()) loadCustomPlugins().catch(handleError);
+        });
         if (ui.pluginBuild) {
           ui.pluginBuild.addEventListener("change", () => {
             state.pluginBuild = ui.pluginBuild.value;
-            setPluginRowsMessage(ui.customPluginRows, "Press Load to view custom plugins.");
-            if (state.view === "plugins") {
+            setPluginRowsMessage(ui.customPluginRows, "Loading module plugins...");
+            state.customPluginEntries = [];
+            if (state.pluginModule) {
+              nextPluginInventoryRequest(state.pluginModule);
+              state.customPluginInventory.delete(state.pluginModule);
+            }
+            if (state.moduleTab === "plugins") {
               autoLoadCustomPlugins();
             }
           });
@@ -3565,12 +4296,7 @@
           setConnectionState("missing");
           ui.secretStatus.textContent = "Secret cleared.";
           setApiStatus("offline");
-          if (ui.apiVersion) {
-            ui.apiVersion.textContent = "-";
-          }
-          if (ui.apiVersionPlugins) {
-            ui.apiVersionPlugins.textContent = "-";
-          }
+          ui.apiVersion.textContent = "-";
           setActivity("Secret cleared.");
         });
         ui.setSecret.addEventListener("click", applySecret);
@@ -3581,15 +4307,27 @@
             applySecret();
           }
         });
-        ui.rollbackModule.addEventListener("click", () => rollbackModule().catch(handleError));
+        ui.rollbackModule.addEventListener("click", () => {
+          ui.moduleActions.open = false;
+          rollbackModule().catch(handleError);
+        });
         if (ui.buildModule) {
-          ui.buildModule.addEventListener("click", () => buildLocalModule().catch(handleError));
+          ui.buildModule.addEventListener("click", () => {
+            ui.moduleActions.open = false;
+            buildLocalModule().catch(handleError);
+          });
         }
         if (ui.syncRemote) {
-          ui.syncRemote.addEventListener("click", () => syncRemote().catch(handleError));
+          ui.syncRemote.addEventListener("click", () => {
+            ui.moduleActions.open = false;
+            syncRemote().catch(handleError);
+          });
         }
         if (ui.openUpload) {
-          ui.openUpload.addEventListener("click", openUploadDialog);
+          ui.openUpload.addEventListener("click", () => {
+            ui.moduleActions.open = false;
+            openUploadDialog();
+          });
         }
         if (ui.uploadFile) {
           ui.uploadFile.addEventListener("change", () => {
@@ -3627,6 +4365,19 @@
             closePackageConfigDialog(false);
           });
         }
+
+        ui.credentialsForm.addEventListener("submit", saveCredentials);
+        ui.credentialsNewUser.addEventListener("input", updateCredentialsControls);
+        ui.credentialsNewPassword.addEventListener("input", updateCredentialsControls);
+        ui.credentialsDashboardEnabled.addEventListener("change", updateCredentialsControls);
+        ui.credentialsSpacesEnabled.addEventListener("change", updateCredentialsControls);
+        ui.showCredentials.addEventListener("click", () => revealCredentials(!state.credentialsRevealed));
+        ui.closeCredentials.addEventListener("click", closeCredentialsDialog);
+        ui.cancelCredentials.addEventListener("click", closeCredentialsDialog);
+        ui.credentialsDialog.addEventListener("cancel", (event) => {
+          event.preventDefault();
+          closeCredentialsDialog();
+        });
 
         if (ui.menuToggle) {
           ui.menuToggle.addEventListener("click", toggleMenu);
@@ -3701,13 +4452,14 @@
           state.view = savedView;
         }
         updateSignerMode();
-        applyModeLabels();
+        setApiStatus("checking");
         setConnectionState(isLocalMode ? "ready" : (getSecret() ? "checking" : "missing"));
         setView(state.view);
         updateRollbackTarget();
         startServerStatusTick();
         if (isLocalMode) {
-          loadModules().catch(handleError);
+          // The Plugins view starts its own module + plugin load in setView().
+          if (state.view !== "plugins") loadModules().catch(handleError);
           refreshServerStatus().catch(handleError);
         } else if (savedSecret) {
           refreshServerStatus().catch(handleError);

@@ -56,6 +56,9 @@ func TestBuiltinSpacesMountDefaultsAndSafety(t *testing.T) {
 	for _, dashboard := range []bool{true, false} {
 		cfg.Development.Dashboard.Enabled = dashboard
 		body := request("GET", shared.DefaultSpacesRoute, "").Body.String()
+		if strings.Contains(body, `href="`+developerDashboardPath+`"`) != dashboard || strings.Contains(body, `href="/dashboard"`) || strings.Contains(body, "__DASHBOARD_NAV__") {
+			t.Fatalf("Dashboard navigation does not follow its reserved route and availability: %v", dashboard)
+		}
 		if strings.Contains(body, `href="/__hyperbricks/errors"`) != dashboard || strings.Contains(body, "__ERRORS_NAV__") {
 			t.Fatalf("Errors navigation does not follow Dashboard availability: %v", dashboard)
 		}
@@ -114,6 +117,22 @@ func TestBuiltinSpacesMountDefaultsAndSafety(t *testing.T) {
 					}
 				}
 			}
+		}
+	}
+	cfg.Mode = shared.DEVELOPMENT_MODE
+	cfg.Development.FrontendEditing.Enabled = true
+	cfg.Development.FrontendEditing.Spaces.Enabled = false
+	shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: module})
+	for _, path := range []string{shared.DefaultSpacesRoute, shared.DefaultSpacesRoute + "/web/app.js", shared.DefaultSpacesRoute + "/api"} {
+		r := httptest.NewRequest(http.MethodGet, "http://localhost"+path, nil)
+		if handleFrontendEditor(httptest.NewRecorder(), r) {
+			t.Fatalf("disabled Spaces route mounted: %s", path)
+		}
+		var handler spaces.Handler
+		w := httptest.NewRecorder()
+		handler.ServeHTTP(w, r)
+		if w.Code != http.StatusNotFound {
+			t.Fatalf("disabled Spaces direct handler = %d for %s", w.Code, path)
 		}
 	}
 }
@@ -176,9 +195,14 @@ func TestFrontendEditorGenericMountDevelopmentAndEnablement(t *testing.T) {
 	}
 	cfg.Mode = shared.DEVELOPMENT_MODE
 	cfg.Development.FrontendEditing.Enabled = true
+	cfg.Development.FrontendEditing.Spaces.Enabled = false
 	shared.SetRuntimeOptions(shared.RuntimeOptions{})
-	cfg.Plugins.Enabled = nil
 	w := httptest.NewRecorder()
+	if !handleFrontendEditor(w, developerTestRequest("GET", "/__hyperbricks/test/api", nil)) || w.Code != 201 || p.calls != 2 {
+		t.Fatalf("external editor should remain available with Spaces disabled: %d calls=%d", w.Code, p.calls)
+	}
+	cfg.Plugins.Enabled = nil
+	w = httptest.NewRecorder()
 	if !handleFrontendEditor(w, developerTestRequest("POST", "/__hyperbricks/test/api", nil)) || w.Code != 503 {
 		t.Fatal("unlisted plugin was called")
 	}
