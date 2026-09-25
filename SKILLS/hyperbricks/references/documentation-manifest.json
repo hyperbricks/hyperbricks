@@ -2,7 +2,7 @@
   "schema_version": 2,
   "hyperbricks_version": "v1.2.5-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_digest": "969e17fc297496b186d77e7a16e91e0bc7051d545c2e299cabb4e0c60899128a",
+  "source_digest": "cbbb1d0e8d63538a3e8ce89907a300e009014889c12553a5d29d270000720e16",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
@@ -73,8 +73,8 @@
     {
       "source_path": "docs/PLUGINS.md",
       "bundled_path": "docs/PLUGINS.md",
-      "source_sha256": "c5c7a8c2e479ecacf8a0de5267ca6b9aedf1236f44c0f2d0f5e6d665077dd722",
-      "bundled_sha256": "d345180ae70b421fc366caf853be67f6ae850d97012e903a8bc4ff03097ed0a7"
+      "source_sha256": "6719b73dc733a1f4ce8196262dab6dde998861a16e046a46fe91f5502581b14e",
+      "bundled_sha256": "585cb26eccaf4bd907f00271598fc030c6774dcd9e9f4a1b52dee8b2e82cad17"
     },
     {
       "source_path": "docs/ESBUILD.md",
@@ -91,14 +91,14 @@
     {
       "source_path": "docs/DOCKER.md",
       "bundled_path": "docs/DOCKER.md",
-      "source_sha256": "86952e048252ff13211624cfa6b59cd700f236b299e5a28d7d88321edcc7e8ca",
-      "bundled_sha256": "5b7b9c00d5194bd7ac2193461b1615554566f9a452cbf3cfc159e0d33953a651"
+      "source_sha256": "773ce2407f18c2c475756f973de1be425c71731c823a78ad2991c2dbd432c3d3",
+      "bundled_sha256": "6602972e545dd023b2c09c1c050481216c998d0b11302ed74de3f55ad6e8bb7f"
     },
     {
       "source_path": "docs/MIGRATION.md",
       "bundled_path": "docs/MIGRATION.md",
-      "source_sha256": "c827b5e5d6f6378e9be56c4113ac1e045374552025ccff017b9ee15aae0bf477",
-      "bundled_sha256": "7cb89a28ecef9443a6684184814e6ac6217364c18b2535cc4bb90e282558fda0"
+      "source_sha256": "027607aff03c95a45e9e8d58435ce7cbdbc04161b47645513bb87c6c10ccdd17",
+      "bundled_sha256": "cb7cf7b6f24db0b1c67c2e73ef5305a98ebf2bc6c690bdfb35b6074c1bef0617"
     },
     {
       "source_path": "docs/AUTHOR_REFERENCE.md",
