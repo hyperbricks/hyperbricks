@@ -5,7 +5,6 @@ body { margin: 0; color: var(--ink); background: #fff; font: 15px/1.5 system-ui,
 .container { max-width: 1060px; padding-inline: 32px; margin-inline: auto; }
 .masthead { border-bottom: 1px solid var(--line); }
 .masthead-inner { min-height: 86px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-.brand { display: block; width: 214px; height: 50px; flex-shrink: 0; background: url("../images/logo.png") center / contain no-repeat; }
 .workspace { color: var(--muted); font-size: 13px; }
 .page-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 44px 36px; }
 .eyebrow { color: var(--muted); font-size: 11px; margin: 0 0 6px; }
@@ -38,8 +37,6 @@ input[type="checkbox"] { accent-color: var(--accent); width: 17px; height: 17px;
 @media (max-width: 760px) {
   .container { padding-inline: 20px; }
   .masthead-inner { min-height: 72px; }
-  .brand { width: 180px; height: 42px; }
-  .workspace { display: none; }
   .page-heading { padding-block: 30px 24px; }
   h1 { font-size: 28px; }
   .estimate-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }

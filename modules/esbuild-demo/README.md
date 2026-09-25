@@ -1,6 +1,6 @@
 # Native esbuild demo
 
-This module contains a working estimate calculator, imported TypeScript and CSS, a copied logo, source maps, and development watch configuration.
+This module contains a working estimate calculator, imported TypeScript and CSS, source maps, and development watch configuration.
 
 ## Development
 
@@ -14,8 +14,8 @@ Open <http://localhost:8097/>. Adjust quantities or VAT and check the estimate. 
 
 - `hyperbricks/page.hyperbricks.yaml` declares independent JS and CSS builds and inherits them into the page head.
 - `resources/js/main.ts` imports the calculation from `calculate.ts`.
-- `resources/css/site.css` imports `tokens.css` and references the logo. The file loader copies the logo next to the generated stylesheet with a hashed name.
-- Both entries use `fingerprint: true`. The first uncached page request creates `static/js/app.<hash>.js`, `static/css/site.<hash>.css`, their source maps, and the image. Later renders reuse valid builds, including after restart when the private persistent manifest and its recorded files validate.
+- `resources/css/site.css` imports `tokens.css` for the calculator's color tokens.
+- Both entries use `fingerprint: true`. The first uncached page request creates `static/js/app.<hash>.js`, `static/css/site.<hash>.css` and their source maps. Later renders reuse valid builds, including after restart when the private persistent manifest and its recorded files validate.
 - Editing a resource triggers the existing development reload; refreshing the page rebuilds on demand. Generated static assets do not trigger a reload loop.
 - Set a component's `cache: false` to rebuild it on every render. The page has `nocache: true` so HTML caching cannot bypass component rendering in this demo.
 - Changed generated content produces a new asset URL. Previous versions remain available; there is no automatic cleanup. Set `fingerprint: false` for fixed names.
