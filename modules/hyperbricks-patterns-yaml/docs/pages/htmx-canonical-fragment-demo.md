@@ -48,7 +48,6 @@ The summary, settings, and plugin links fetch separate panel fragments and push 
 Files:
 
 - Config: `hyperbricks/20-htmx-canonical-fragment-demo.hyperbricks.yaml`
-- Landing page: `hyperbricks/10-template-config-plugin.hyperbricks.yaml`
 - Shell template: `templates/patterns/layout-shell.html`
 - Section template: `templates/patterns/status-demo.html`
 - Panel fragments: `templates/patterns/status-overview.html` `templates/patterns/status-summary.html` `templates/patterns/status-settings.html`

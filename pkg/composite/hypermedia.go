@@ -23,7 +23,7 @@ type HyperMediaConfig struct {
 	Enclose            string                 `mapstructure:"enclose" description:"Enclosure of the property for the hypermedia" example:"{!{hypermedia-enclose.hyperbricks.yaml}}"`
 	Favicon            string                 `mapstructure:"favicon" description:"Path to the favicon for the hypermedia" example:"{!{hypermedia-favicon.hyperbricks.yaml}}"`
 	Template           *TemplateOptions       `mapstructure:"template" description:"Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions." example:"{!{hypermedia-template.hyperbricks.yaml}}"`
-	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{hypermedia-cache.hyperbricks.yaml}}"`
+	Cache              string                 `mapstructure:"cache" description:"Legacy field; does not override the process-wide hyperbricks.live.cache duration." example:"{!{hypermedia-cache.hyperbricks.yaml}}"`
 	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly disable cache" example:"{!{hypermedia-nocache.hyperbricks.yaml}}"`
 	Static             string                 `mapstructure:"static" description:"Static file path associated with the hypermedia, for rendering out the hypermedia to static files." example:"{!{hypermedia-static.hyperbricks.yaml}}"`
 	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options" example:"{!{hypermedia-index.hyperbricks.yaml}}"`
@@ -257,7 +257,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 		//head := shared.StructToMap(config.Head)
 		config.Head["@type"] = HeadConfigGetName()
 		config.Head["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
-		config.Head["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
+		config.Head["hyperbrickspath"] = config.Composite.Meta.RenderPath()
 
 		if config.Title != "" {
 			config.Head["title"] = config.Title
@@ -277,6 +277,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 		templateConfig := config.Template.ToRenderMap()
 		templateConfig["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
 		templateConfig["hyperbrickspath"] = config.Composite.Meta.HyperBricksKey + ".template"
+		config.Template.Source.Apply(templateConfig)
 
 		// INSERT HEAD to TEMPLATE VALUES....
 		// Ensure 'values' exists inside Template
@@ -301,7 +302,8 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 		if config.Composite.Items != nil {
 			config.Composite.Items = shared.CloneMapDeep(config.Composite.Items)
 			config.Composite.Items["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
-			config.Composite.Items["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
+			config.Composite.Items["hyperbrickspath"] = config.Composite.Meta.RenderPath()
+			config.Composite.Meta.Source.Apply(config.Composite.Items)
 		}
 
 		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items, ctx)
@@ -313,7 +315,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 	errorPanelTemplateHtml := ""
 
 	hbconfig := shared.GetHyperBricksConfiguration()
-	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE {
+	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE && shared.DeveloperInterfaceAuthorized(ctx) {
 		errorPanelTemplateHtml = ErrorPanelTemplate
 	}
 

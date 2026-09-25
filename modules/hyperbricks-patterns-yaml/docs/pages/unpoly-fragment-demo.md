@@ -12,7 +12,7 @@ The page pins Unpoly `3.14.3` using the CDN URLs published in its [installation 
 | `/unpoly-demo/loaded` | Full page with the loaded panel; ordinary link fallback. |
 | `/fragments/unpoly-demo` | Only the loaded panel HTML, with `X-Demo-Frontend: unpoly`. |
 
-All three are defined in `hyperbricks/85-unpoly-fragment-demo.hyperbricks.yaml`. `unpoly_demo_panel` owns the shared HTML; `unpoly_demo_loaded_panel` changes only its values. The page and fragment each inherit that loaded panel.
+All three are defined in `hyperbricks/85-unpoly-fragment-demo.hyperbricks.yaml`. `unpoly_demo_panel` owns the shared HTML and initial values. `unpoly_demo_loaded_panel` inherits it and overrides the values. The initial page uses the initial panel; the loaded page and fragment use the loaded panel.
 
 ## Browser Contract
 

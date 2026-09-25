@@ -1,6 +1,9 @@
 package commands
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
@@ -22,6 +25,10 @@ func NewMakeStaticCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmd.Flags().NFlag() == 0 {
 				RunStaticWizard()
+				return
+			}
+			if _, err := os.ReadFile(GetModuleConfigPath()); err != nil {
+				ReportError(fmt.Errorf("read module config %q: %w", GetModuleConfigPath(), err))
 				return
 			}
 			RenderStatic = true

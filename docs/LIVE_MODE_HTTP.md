@@ -1,12 +1,12 @@
 # Live Mode HTTP Settings
 
-Live mode has three separate concerns:
+Configure live mode in `package.hyperbricks.yaml`:
 
-- `live.cache` controls rendered output reuse.
-- `server.*` controls HTTP connection behavior and CPU parallelism.
+- `live.cache` controls reuse of rendered output.
+- `server.*` controls HTTP connections and CPU parallelism.
 - `rate_limit.*` controls the process-level request limiter.
 
-Those settings solve different problems. Cache settings decide whether a route can reuse rendered content. Server settings decide how long clients may hold network resources. Rate limiting controls how many requests the process accepts. These settings work independently of the browser library used by the application.
+Caching determines whether a route can reuse its output. Server settings limit how long clients can hold network resources. Rate limiting controls how many requests the process accepts. These settings work independently of the application's browser library.
 
 ## Connection Settings
 
@@ -70,7 +70,18 @@ hyperbricks:
 
 When a route is cacheable, HyperBricks can add live cache metadata headers and serve repeated requests from the cache until the entry expires.
 
-Use a valid duration such as `15s`, `10m`, or `1h`. An invalid duration string currently logs a parse error and falls back to `24h`; check startup logs after changing this value. Use route-level `nocache: true` to bypass caching explicitly.
+Set the duration to exactly `0s` to disable the internal HyperBricks rendered-output cache for the complete live process:
+
+```yaml
+hyperbricks:
+  mode: live
+  live:
+    cache: 0s
+```
+
+With `0s`, every route passes through rendering instead of looking up or storing an internal cache entry. The response consequently has no HyperBricks cache metadata. This is a process-wide switch; use route-level `nocache: true` when only selected routes must bypass the internal cache.
+
+Use zero or a positive duration such as `15s`, `10m`, or `1h`. A negative duration such as `-1s` is invalid and runtime validation stops startup; the deployment package editor rejects it before saving. An invalid duration string currently logs a parse error and falls back to `24h` during ordinary startup, while the deployment package editor's strict validation rejects it. Check startup logs after changing this value.
 
 The cached response retains its configured status and headers. Configure request-header variation with a literal `Vary` response header:
 
@@ -147,9 +158,9 @@ Embedding an `api_render` or ordinary plugin inside a page does **not** make the
 
 ### Internal Caching and HTTP Caching
 
-`nocache` and `Cache-Control` control different layers. `nocache: true` bypasses HyperBricks' internal rendered-output cache. The HTTP `Cache-Control` header tells browsers and shared HTTP caches how to handle the response.
+`live.cache: 0s`, `nocache`, and `Cache-Control` control different scopes or layers. `live.cache: 0s` bypasses HyperBricks' internal rendered-output cache process-wide. `nocache: true` bypasses that same internal cache for one route owner. The HTTP `Cache-Control` header tells browsers and shared HTTP caches how to handle the response.
 
-Setting `response.headers.Cache-Control: no-store` by itself **does not disable HyperBricks' internal cache**. Likewise, `nocache: true` alone does not add an HTTP `Cache-Control` policy. For private content that must stay fresh at both layers, configure both:
+Setting `response.headers.Cache-Control: no-store` by itself **does not disable HyperBricks' internal cache**. Conversely, neither `live.cache: 0s` nor `nocache: true` adds an HTTP `Cache-Control` policy. Browser caches, reverse proxies, and CDNs therefore remain separate and must be configured through response headers and their own policies. For private content that must stay fresh at both layers, configure both:
 
 ```yaml
 account_status:
@@ -176,17 +187,17 @@ Internal query/authentication/cookie separation does not automatically declare t
 
 ### Expiry, Updates, and Memory
 
-Entries live in memory in each HyperBricks process. On a request for an expired entry, HyperBricks renders fresh content and replaces that entry. It does not refresh entries in the background. The cache currently has no size limit or periodic removal of expired entries; an unused expired variant can remain in memory until the cache is cleared or the process stops.
+With a positive `live.cache` duration, entries live in memory in each HyperBricks process. On a request for an expired entry, HyperBricks renders fresh content and replaces that entry. It does not refresh entries in the background. The cache currently has no size limit or periodic removal of expired entries; an unused expired variant can remain in memory until the cache is cleared or the process stops. With `live.cache: 0s`, no internal entries are looked up or stored.
 
 Choose `live.cache` according to how long public content may remain stale. After a data change, an already cached page can continue serving its previous output until expiry. A full configuration reinitialization clears the internal cache; restarting or deploying a new process also starts with an empty cache. There is no public per-route invalidation API. With multiple processes, each has its own cache and expiry timing.
 
 Use `nocache: true` for routes with many distinct search queries, session cookies, large request bodies, or rapidly changing data when storing all those variants offers little reuse. Monitor process memory for applications with many cacheable variants. Expiry limits reuse time, not memory usage.
 
-Invalid HTTP/guard configuration and handled responses bypass caching. Ordinary component render errors are recorded separately: a nonempty partial render can still be cached with its error count. Do not assume every diagnostic or non-200 status automatically disables caching; set the route policy explicitly and check `X-Hyperbricks-Render-Error-Count` during verification.
+Invalid HTTP/guard configuration and handled responses bypass caching. Render failures, rejected diagnostics, and HTTP statuses of `500` or higher also bypass caching and receive `Cache-Control: no-store`, so the next request can retry. Warnings and notices alone do not disable caching. Other non-200 statuses can still be cached; set the route policy explicitly and check `X-Hyperbricks-Render-Error-Count` during verification.
 
 ### Verifying a Mixed Configuration
 
-Request each route twice with the same inputs. A cacheable response includes `X-Hyperbricks-Rendered-At`, `X-Hyperbricks-Cache-Expires-At`, and an `ETag`; a cache hit retains the rendering timestamps. An uncached response has no HyperBricks cache metadata. Repeat with changed query/header values to confirm the intended variants, and retry after expiry to confirm a fresh render.
+Request each route twice with the same inputs. With a positive cache duration, a cacheable response includes `X-Hyperbricks-Rendered-At`, `X-Hyperbricks-Cache-Expires-At`, and an `ETag`; a cache hit retains the rendering timestamps. An uncached response has no HyperBricks cache metadata. With `live.cache: 0s`, both requests must render independently and neither response should contain HyperBricks cache metadata. Repeat with changed query/header values to confirm the intended variants, and retry after expiry to confirm a fresh render.
 
 For a guarded route, verify that revoking access is enforced on the next request with the same token. For an API action or stream, verify fresh upstream work or a new producer on every request. Browser refresh alone is not proof of a server-side render when the route remains cacheable.
 

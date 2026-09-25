@@ -1,9 +1,16 @@
 <article class="place-page {{.theme}}">
-  <div class="breadcrumb transition-item"><a href="/">All places</a><span aria-hidden="true">/</span><span>{{.number}} of 04</span></div>
-  <header class="place-intro transition-item"><p class="eyebrow">{{.category}}</p><h1>{{.title}}</h1><p class="lede">{{.intro}}</p></header>
+  <div class="breadcrumb transition-item"><a href="/">{{default "All places" .all_places_label}}</a><span aria-hidden="true">/</span><span>{{.number}} {{default "of" .of_label}} 04</span></div>
+  {{if .language}}
+  <nav class="cafe-languages transition-item" aria-label="{{.language_label}}">
+    <a href="/night-owl-cafe" hreflang="en" lang="en"{{if eq .language "en"}} aria-current="page"{{end}}>English</a>
+    <a href="/night-owl-cafe/de" hreflang="de" lang="de"{{if eq .language "de"}} aria-current="page"{{end}}>Deutsch</a>
+    <a href="/night-owl-cafe/nl" hreflang="nl" lang="nl"{{if eq .language "nl"}} aria-current="page"{{end}}>Nederlands</a>
+  </nav>
+  {{end}}
+  <header class="place-intro transition-item"><p class="eyebrow" data-hb-space-field="/body/values/content/values/category">{{.category}}</p><h1 data-hb-space-field="/body/values/content/values/title">{{.title}}</h1><p class="lede" data-hb-space-field="/body/values/content/values/intro">{{.intro}}</p></header>
   <div class="place-layout">
-    <div class="place-copy"><p class="description transition-item">{{.description}}</p><section class="highlights" aria-labelledby="highlights-heading"><h2 id="highlights-heading" class="transition-item">{{.highlight}}</h2><div class="highlight transition-item"><h3>{{.one}}</h3><p>{{.onebody}}</p></div><div class="highlight transition-item"><h3>{{.two}}</h3><p>{{.twobody}}</p></div><div class="highlight transition-item"><h3>{{.three}}</h3><p>{{.threebody}}</p></div></section></div>
-    <aside class="visit-details transition-item"><h2>Plan your visit</h2><dl><dt>Opening hours</dt><dd>{{.hours}}<span>{{.days}}</span></dd><dt>Find it</dt><dd>{{.address}}</dd></dl><p>{{.note}}</p></aside>
+    <div class="place-copy"><p class="description transition-item" data-hb-space-field="/body/values/content/values/description">{{.description}}</p><section class="highlights" aria-labelledby="highlights-heading"><h2 id="highlights-heading" class="transition-item" data-hb-space-field="/body/values/content/values/highlight">{{.highlight}}</h2><div class="highlight transition-item"><h3 data-hb-space-field="/body/values/content/values/one">{{.one}}</h3><p data-hb-space-field="/body/values/content/values/onebody">{{.onebody}}</p></div><div class="highlight transition-item"><h3 data-hb-space-field="/body/values/content/values/two">{{.two}}</h3><p data-hb-space-field="/body/values/content/values/twobody">{{.twobody}}</p></div><div class="highlight transition-item"><h3 data-hb-space-field="/body/values/content/values/three">{{.three}}</h3><p data-hb-space-field="/body/values/content/values/threebody">{{.threebody}}</p></div></section></div>
+    <aside class="visit-details transition-item"><h2>{{default "Plan your visit" .visit_label}}</h2><dl><dt>{{default "Opening hours" .hours_label}}</dt><dd data-hb-space-field="/body/values/content/values/hours">{{.hours}}<span data-hb-space-field="/body/values/content/values/days">{{.days}}</span></dd><dt>{{default "Find it" .address_label}}</dt><dd data-hb-space-field="/body/values/content/values/address">{{.address}}</dd></dl><p data-hb-space-field="/body/values/content/values/note">{{.note}}</p></aside>
   </div>
-  <a class="next-stop transition-item" href="/{{.next_route}}"><span><span class="category">Next stop</span><strong>{{.next_title}}</strong></span><span aria-hidden="true">→</span></a>
+  <a class="next-stop transition-item" href="/{{.next_route}}"><span><span class="category">{{default "Next stop" .next_label}}</span><strong>{{.next_title}}</strong></span><span aria-hidden="true">→</span></a>
 </article>

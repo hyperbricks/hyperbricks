@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestResolveDirectStartModuleRoot(t *testing.T) {
+func TestResolveModuleRoot(t *testing.T) {
 	workingDirectory := t.TempDir()
 	absoluteModule := filepath.Join(t.TempDir(), "demo")
 
@@ -29,7 +29,7 @@ func TestResolveDirectStartModuleRoot(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := resolveDirectStartModuleRoot(tt.module, workingDirectory)
+			got, err := resolveModuleRoot(tt.module, workingDirectory)
 			if err != nil {
 				t.Fatalf("resolve direct start module root: %v", err)
 			}
@@ -40,22 +40,36 @@ func TestResolveDirectStartModuleRoot(t *testing.T) {
 	}
 }
 
-func TestResolveDirectStartModuleRootRejectsEmptySelection(t *testing.T) {
+func TestResolveModuleRootRejectsEmptySelection(t *testing.T) {
 	for _, module := range []string{"", "   "} {
-		if _, err := resolveDirectStartModuleRoot(module, t.TempDir()); err == nil {
+		if _, err := resolveModuleRoot(module, t.TempDir()); err == nil {
 			t.Fatalf("expected %q to be rejected", module)
 		}
 	}
 }
 
-func TestResolveDirectStartModuleRootClassifiesBeforeCleaning(t *testing.T) {
+func TestResolveModuleRootClassifiesBeforeCleaning(t *testing.T) {
 	workingDirectory := t.TempDir()
-	got, err := resolveDirectStartModuleRoot("."+string(filepath.Separator)+"demo", workingDirectory)
+	got, err := resolveModuleRoot("."+string(filepath.Separator)+"demo", workingDirectory)
 	if err != nil {
 		t.Fatalf("resolve explicit relative path: %v", err)
 	}
 	if want := filepath.Join(workingDirectory, "demo"); got != want {
 		t.Fatalf("resolved root = %q, want %q", got, want)
+	}
+}
+
+func TestResolveModuleSelectionSeparatesRootAndDeploymentName(t *testing.T) {
+	workingDirectory := t.TempDir()
+	selection, err := resolveModuleSelection(filepath.Join("modules", "demo"), workingDirectory)
+	if err != nil {
+		t.Fatalf("resolve module selection: %v", err)
+	}
+	if want := filepath.Join(workingDirectory, "modules", "demo"); selection.Root != want {
+		t.Fatalf("selection root = %q, want %q", selection.Root, want)
+	}
+	if selection.Name != "demo" {
+		t.Fatalf("selection name = %q, want demo", selection.Name)
 	}
 }
 
@@ -78,7 +92,7 @@ func TestResolveModuleConfigPathRejectsPathsOutsideModule(t *testing.T) {
 	}
 }
 
-func TestCompleteStartModuleSuggestsNamesAndKeepsPathCompletion(t *testing.T) {
+func TestCompleteModuleSelectionSuggestsNamesAndKeepsPathCompletion(t *testing.T) {
 	workingDirectory := t.TempDir()
 	modulesDirectory := filepath.Join(workingDirectory, "modules")
 	if err := os.MkdirAll(filepath.Join(modulesDirectory, "demo"), 0755); err != nil {
@@ -101,7 +115,7 @@ func TestCompleteStartModuleSuggestsNamesAndKeepsPathCompletion(t *testing.T) {
 		}
 	})
 
-	completions, directive := completeStartModule(nil, nil, "de")
+	completions, directive := completeModuleSelection(nil, nil, "de")
 	if directive != 0 {
 		t.Fatalf("completion directive = %d, want default", directive)
 	}
@@ -109,7 +123,7 @@ func TestCompleteStartModuleSuggestsNamesAndKeepsPathCompletion(t *testing.T) {
 		t.Fatalf("completions = %#v, want demo module", completions)
 	}
 
-	completions, directive = completeStartModule(nil, nil, "."+string(filepath.Separator)+"modules"+string(filepath.Separator))
+	completions, directive = completeModuleSelection(nil, nil, "."+string(filepath.Separator)+"modules"+string(filepath.Separator))
 	if len(completions) != 0 || directive != 0 {
 		t.Fatalf("path completion = (%#v, %d), want shell default", completions, directive)
 	}

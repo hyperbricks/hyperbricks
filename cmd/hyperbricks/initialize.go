@@ -2,73 +2,75 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
-	"log"
 	"os"
-	"runtime"
-	"strings"
 
 	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"go.uber.org/zap/zapcore"
 	"golang.org/x/time/rate"
 )
 
-func init() {
-	if isTestRun() || flag.Lookup("test.v") != nil {
-		return
-	}
-
+func run() {
+	defer func() {
+		if err := logging.Close(); err != nil {
+			commands.ReportError(fmt.Errorf("close log output: %w", err))
+		}
+	}()
 	commands.RegisterSubcommands()
-	commands.PluginCommand()
 
 	// Execute the root command
 	if err := commands.Execute(); err != nil {
-		fmt.Println(err)
+		commands.ReportError(err)
+		return
 	}
 
 	// exit if Version or Plugin command
-	if commands.Exit {
+	if commands.Exit || (!commands.StartMode && !commands.RenderStatic) {
 		return
 	}
 
 	shared.Init_configuration()
 	applyCommandRuntimeOptions()
 
-	orangeTrueColor := "\033[38;2;255;165;0m"
-	reset := "\033[0m"
-	logo := `
- _   _                       ____       _      _        
-| | | |_   _ _ __   ___ _ __| __ ) _ __(_) ___| | _____ 
-| |_| | | | | '_ \ / _ \ '__|  _ \| '__| |/ __| |/ / __|
-|  _  | |_| | |_) |  __/ |  | |_) | |  | | (__|   <\__ \
-|_| |_|\__, | .__/ \___|_|  |____/|_|  |_|\___|_|\_\___/
-       |___/|_|                                        
-
-`
-	logging.GetLogger().Info(orangeTrueColor, fmt.Sprintf(`%s%s`, logo, assets.VersionMD), reset)
-
-	if commands.StartDeployRemote {
-		if err := startDeployAPIServer(); err != nil {
-			log.Fatalf("Deploy API server error: %v", err)
+	if commands.DeployServiceMode == commands.DeployServiceRemote {
+		if err := startDeployAPIServer(commands.GetDeployConfigPath()); err != nil {
+			commands.ReportError(fmt.Errorf("start remote deployment service: %w", err))
 		}
 		return
 	}
-	if commands.StartDeployLocal {
-		if err := startDeployLocalServer(); err != nil {
-			log.Fatalf("Deploy local server error: %v", err)
+	if commands.DeployServiceMode == commands.DeployServiceLocal {
+		if err := startDeployLocalServer(commands.GetDeployConfigPath()); err != nil {
+			commands.ReportError(fmt.Errorf("start local deploy server: %w", err))
 		}
 		return
 	}
 
 	shared.Module = commands.GetModuleConfigPath()
 	hbConfig := getHyperBricksConfiguration()
-	if err := configureGoMaxProcs(hbConfig.Server.GoMaxProcs); err != nil {
-		log.Fatal(err)
+	if err := configureRuntimeLogging(hbConfig); err != nil {
+		commands.ReportError(err)
+		return
 	}
-	logging.GetLogger().Infow("Go execution parallelism configured", "gomaxprocs", runtime.GOMAXPROCS(0))
+	if err := hbConfig.ValidateDevelopmentDashboard(); err != nil {
+		commands.ReportError(err)
+		return
+	}
+	if err := hbConfig.ValidateFrontendEditing(); err != nil {
+		commands.ReportError(err)
+		return
+	}
+	if err := hbConfig.ValidateRuntimeSettings(); err != nil {
+		commands.ReportError(err)
+		return
+	}
+	if err := configureGoMaxProcs(hbConfig.Server.GoMaxProcs); err != nil {
+		commands.ReportError(err)
+		return
+	}
+	logRuntimeSummary(hbConfig)
 
 	if commands.RenderStatic {
 		basic_initialisation()
@@ -76,7 +78,7 @@ func init() {
 		// serve
 		if commands.ServeStatic {
 			if err := serveStatic(); err != nil {
-				log.Fatalf("Static server error: %v", err)
+				commands.ReportError(fmt.Errorf("serve static output: %w", err))
 			}
 		}
 	}
@@ -103,7 +105,8 @@ func applyCommandRuntimeOptions() {
 		Port:         int(commands.Port),
 		PortOverride: commands.Port != 8080,
 
-		Production: commands.Production,
+		Production:   commands.Production,
+		ModeOverride: commands.DeployRuntimeMode,
 
 		RuntimeGatewayEnabled:    commands.StartRuntimeGateway,
 		RuntimeGatewayDomain:     commands.StartRuntimeDomain,
@@ -112,13 +115,34 @@ func applyCommandRuntimeOptions() {
 	})
 }
 
-func isTestRun() bool {
-	for _, arg := range os.Args {
-		if strings.HasPrefix(arg, "-test.") {
-			return true
+func configureRuntimeLogging(config *shared.Config) error {
+	level, format := config.Logger.Level, config.Logger.Format
+	if level == "" {
+		level = "info"
+		if config.Mode == shared.DEBUG_MODE {
+			level = "debug"
 		}
 	}
-	return false
+	if format == "" {
+		format = "console"
+	}
+	level = commands.EffectiveLogLevel(level)
+	if commands.LogFormat != "" {
+		format = commands.LogFormat
+	}
+	if err := logging.Configure(level, format); err != nil {
+		return err
+	}
+	path := runtimeLogFile(config)
+	if path != "" {
+		if err := logging.AddFileOutput(path); err != nil {
+			return fmt.Errorf("open log file %q: %w", path, err)
+		}
+	}
+	if format == "console" && !commands.NonInteractive && os.Getenv("HB_NO_KEYBOARD") == "" && logging.GetLogger().Desugar().Core().Enabled(zapcore.InfoLevel) {
+		logging.WriteHeading(commands.RootCmd.ErrOrStderr(), string(assets.VersionMD))
+	}
+	return nil
 }
 
 func initialisation(ctx context.Context) {

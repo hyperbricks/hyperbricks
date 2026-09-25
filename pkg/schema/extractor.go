@@ -330,6 +330,8 @@ func inferPublishScalarPresentation(field Field, token string) (string, string) 
 		return "literal", "html"
 	case key == "value" && normalizedToken == "<TEXT>":
 		return "folded", "text"
+	case key == "content" && normalizedToken == "<MARKDOWN>":
+		return "literal", "markdown"
 	case key == "htmltag" || key == "bodytag":
 		return "literal", "html"
 	case key == "enclose" || strings.HasSuffix(path, ".enclose"):

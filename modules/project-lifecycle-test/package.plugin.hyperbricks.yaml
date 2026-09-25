@@ -14,7 +14,8 @@ hyperbricks:
       - path: {base: module, path: profiles}
     reload: true
     frontend_errors: false
-    dashboard: false
+    dashboard:
+      enabled: false
   server:
     port: 8104
     beautify: true

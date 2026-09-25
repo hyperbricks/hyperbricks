@@ -22,6 +22,7 @@ type Options struct {
 	Paths                    PathMarkers
 	RecoverDuplicateChildren bool
 	AllowUnknownTypes        bool
+	IncludeSourceMetadata    bool
 }
 
 // PathMarkers are the standard HyperBricks path bases available to YAML value
@@ -83,7 +84,10 @@ type Node struct {
 	Children       []*Node
 	Line           int
 	Column         int
+	Source         string
+	positions      map[string]sourcePosition
 	nativeAPIProps map[string]interface{}
+	headMetaProps  map[string]interface{}
 }
 
 // ProcessBytes applies YAML-safe HyperBricks preprocessing, parses the source
@@ -140,9 +144,20 @@ func PreprocessBytes(input []byte, _ Options) ([]byte, error) {
 
 // LoadFile loads a HyperBricks YAML file and all top-level model imports.
 func LoadFile(path string, opts Options) (*Document, error) {
+	return LoadFileWithReader(path, opts, os.ReadFile)
+}
+
+// LoadFileWithReader resolves the same source graph as LoadFile using a supplied
+// reader. Authoring tools can validate pending source changes without writing them.
+// The reader receives absolute filenames and is responsible for access boundaries.
+func LoadFileWithReader(path string, opts Options, readFile func(string) ([]byte, error)) (*Document, error) {
+	if readFile == nil {
+		return nil, fmt.Errorf("source reader is required")
+	}
 	state := &loadState{
-		loading: make(map[string]bool),
-		loaded:  make(map[string]*Document),
+		loading:  make(map[string]bool),
+		loaded:   make(map[string]*Document),
+		readFile: readFile,
 	}
 	return loadFile(path, opts, state)
 }
@@ -311,14 +326,16 @@ type parseContext struct {
 type sourcePosition struct {
 	line   int
 	column int
+	file   string
 }
 
 func parseNodeSequence(name string, seq *yaml.Node, ctx *parseContext, path string) (*Node, error) {
 	node := &Node{
-		Name:   strings.TrimSpace(name),
-		Props:  make(map[string]interface{}),
-		Line:   seq.Line,
-		Column: seq.Column,
+		Name:      strings.TrimSpace(name),
+		Props:     make(map[string]interface{}),
+		Line:      seq.Line,
+		Column:    seq.Column,
+		positions: make(map[string]sourcePosition),
 	}
 	explicitAPIType := isAPIComponentType(explicitNodeType(seq))
 	seenEntries := make(map[string]bool)
@@ -336,6 +353,7 @@ func parseNodeSequence(name string, seq *yaml.Node, ctx *parseContext, path stri
 		if key == "" {
 			return nil, nodeError(keyNode, "node entry key cannot be empty")
 		}
+		collectSourcePositions(node.positions, key, valueNode)
 
 		switch key {
 		case "type":
@@ -393,6 +411,15 @@ func parseNodeSequence(name string, seq *yaml.Node, ctx *parseContext, path stri
 				return nil, err
 			}
 			node.Props[key] = value
+			// Retain explicit metadata removals until the inherited type is known.
+			if key == "meta" && valueNode.Kind == yaml.MappingNode {
+				node.headMetaProps = cloneMap(value.(map[string]interface{}))
+				for i := 0; i < len(valueNode.Content); i += 2 {
+					if valueNode.Content[i+1].Tag == "!!null" {
+						node.headMetaProps[valueNode.Content[i].Value] = nil
+					}
+				}
+			}
 		}
 	}
 	return node, nil
@@ -635,6 +662,7 @@ var canonicalTypeTokens = map[string]string{
 	"json":                "<JSON_RENDER>",
 	"json_render":         "<JSON_RENDER>",
 	"menu":                "<MENU>",
+	"markdown":            "<MARKDOWN>",
 	"plugin":              "<PLUGIN>",
 	"styles":              "<STYLES>",
 	"template":            "<TEMPLATE>",
@@ -691,9 +719,10 @@ var runtimeFieldsByType = map[string]map[string]bool{
 	"<JS>":          fieldSet("file", "inline", "link"),
 	"<JSON_RENDER>": fieldSet("debug", "file", "inline", "template", "values"),
 	"<MENU>":        fieldSet("active", "item", "order", "section", "sort"),
+	"<MARKDOWN>":    fieldSet("content", "file", "class", "max_bytes", "editable"),
 	"<PLUGIN>":      fieldSet("classes", "data", "plugin"),
 	"<STYLES>":      fieldSet("file"),
-	"<TEMPLATE>":    fieldSet("inline", "querykeys", "queryparams", "template", "values"),
+	"<TEMPLATE>":    fieldSet("editable", "inline", "querykeys", "queryparams", "template", "values"),
 	"<TEXT>":        fieldSet("value"),
 }
 
@@ -855,8 +884,9 @@ func parseNativeAPIValue(node *yaml.Node) (interface{}, error) {
 }
 
 type loadState struct {
-	loading map[string]bool
-	loaded  map[string]*Document
+	loading  map[string]bool
+	loaded   map[string]*Document
+	readFile func(string) ([]byte, error)
 }
 
 func loadFile(path string, opts Options, state *loadState) (*Document, error) {
@@ -872,9 +902,9 @@ func loadFile(path string, opts Options, state *loadState) (*Document, error) {
 		return cloneDocument(loaded), nil
 	}
 
-	raw, err := os.ReadFile(absolutePath)
+	raw, err := state.readFile(absolutePath)
 	if err != nil {
-		return nil, err
+		return nil, sourceError(absolutePath, err)
 	}
 	preprocessed, err := PreprocessBytes(raw, opts)
 	if err != nil {
@@ -885,9 +915,12 @@ func loadFile(path string, opts Options, state *loadState) (*Document, error) {
 		AllowUnknownTypes:        opts.AllowUnknownTypes,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("parse %s: %w", absolutePath, err)
+		return nil, sourceError(absolutePath, fmt.Errorf("parse %s: %w", absolutePath, err))
 	}
 	applyDiagnosticSource(doc.Diagnostics, absolutePath)
+	for _, root := range doc.Roots {
+		setNodeSource(root, absolutePath)
+	}
 
 	state.loading[absolutePath] = true
 	defer delete(state.loading, absolutePath)
@@ -1137,6 +1170,13 @@ func nodeWithoutInherit(node *Node) *Node {
 func mergeNodes(base *Node, overlay *Node) *Node {
 	out := cloneNode(base)
 	out.Name = overlay.Name
+	out.Source, out.Line, out.Column = overlay.Source, overlay.Line, overlay.Column
+	if out.positions == nil {
+		out.positions = make(map[string]sourcePosition)
+	}
+	for key, position := range overlay.positions {
+		out.positions[key] = position
+	}
 	if strings.TrimSpace(overlay.Type) != "" {
 		out.Type = overlay.Type
 	}
@@ -1145,6 +1185,14 @@ func mergeNodes(base *Node, overlay *Node) *Node {
 	}
 	for key, value := range overlay.Props {
 		out.Props[key] = mergeValues(out.Props[key], value)
+	}
+	if overlay.headMetaProps != nil {
+		if out.headMetaProps == nil {
+			out.headMetaProps = make(map[string]interface{})
+		}
+		for key, value := range overlay.headMetaProps {
+			out.headMetaProps[key] = cloneValue(value)
+		}
 	}
 	if len(overlay.nativeAPIProps) > 0 {
 		if out.nativeAPIProps == nil {
@@ -1223,7 +1271,13 @@ func cloneNode(node *Node) *Node {
 		Props:          cloneMap(node.Props),
 		Line:           node.Line,
 		Column:         node.Column,
+		Source:         node.Source,
+		positions:      make(map[string]sourcePosition, len(node.positions)),
 		nativeAPIProps: cloneMap(node.nativeAPIProps),
+		headMetaProps:  cloneMap(node.headMetaProps),
+	}
+	for key, position := range node.positions {
+		out.positions[key] = position
 	}
 	if len(node.Children) > 0 {
 		out.Children = make([]*Node, 0, len(node.Children))
@@ -1281,12 +1335,12 @@ func nodeError(node *yaml.Node, format string, args ...interface{}) error {
 	if node == nil || node.Line == 0 {
 		return errors.New(message)
 	}
-	return fmt.Errorf("line %d:%d: %s", node.Line, node.Column, message)
+	return nodeSourceError(node.Line, node.Column, message)
 }
 
 func nodeErrorFromNode(node *Node, message string) error {
 	if node == nil || node.Line == 0 {
 		return errors.New(message)
 	}
-	return fmt.Errorf("line %d:%d: %s", node.Line, node.Column, message)
+	return sourceError(node.Source, nodeSourceError(node.Line, node.Column, message))
 }

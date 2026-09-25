@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -14,7 +15,7 @@ func promptYesNo(reader *bufio.Reader, prompt string) (bool, error) {
 
 func promptYesNoDefault(reader *bufio.Reader, prompt string, defaultYes bool) (bool, error) {
 	for {
-		fmt.Print(prompt)
+		fmt.Fprint(os.Stderr, prompt)
 		input, err := readLine(reader)
 		if err != nil {
 			return false, err
@@ -29,18 +30,18 @@ func promptYesNoDefault(reader *bufio.Reader, prompt string, defaultYes bool) (b
 		if input == "n" || input == "no" {
 			return false, nil
 		}
-		fmt.Println("Please enter y or n.")
+		fmt.Fprintln(os.Stderr, "Please enter y or n.")
 	}
 }
 
 func promptInput(reader *bufio.Reader, prompt string) (string, error) {
-	fmt.Print(prompt)
+	fmt.Fprint(os.Stderr, prompt)
 	return readLine(reader)
 }
 
 func promptPort(reader *bufio.Reader, prompt string, defaultPort int) (int, error) {
 	for {
-		fmt.Print(prompt)
+		fmt.Fprint(os.Stderr, prompt)
 		input, err := readLine(reader)
 		if err != nil {
 			return 0, err
@@ -51,7 +52,7 @@ func promptPort(reader *bufio.Reader, prompt string, defaultPort int) (int, erro
 		}
 		port, err := strconv.Atoi(input)
 		if err != nil || port <= 0 || port > 65535 {
-			fmt.Println("Please enter a valid port number.")
+			fmt.Fprintln(os.Stderr, "Please enter a valid port number.")
 			continue
 		}
 		return port, nil

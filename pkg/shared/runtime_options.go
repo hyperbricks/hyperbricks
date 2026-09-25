@@ -12,7 +12,8 @@ type RuntimeOptions struct {
 	Port         int
 	PortOverride bool
 
-	Production bool
+	Production   bool
+	ModeOverride string
 
 	RuntimeGatewayEnabled    bool
 	RuntimeGatewayDomain     string

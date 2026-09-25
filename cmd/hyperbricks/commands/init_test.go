@@ -1,14 +1,18 @@
 package commands
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
 	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
+	"go.yaml.in/yaml/v4"
 )
 
 func TestDefaultInitAssetsWriteThreePageStarter(t *testing.T) {
@@ -25,8 +29,20 @@ func TestDefaultInitAssetsWriteThreePageStarter(t *testing.T) {
 		t.Fatal(err)
 	}
 	hb := config.Materialized["hyperbricks"].(map[string]interface{})
-	if got := hb["metadata"].(map[string]interface{})["module"]; got != "demo" {
+	metadata := hb["metadata"].(map[string]interface{})
+	if got := metadata["module"]; got != "demo" {
 		t.Fatalf("module = %v", got)
+	}
+	if got := metadata["moduleversion"]; got != "1.0.0" {
+		t.Fatalf("moduleversion = %v", got)
+	}
+	if got := metadata["hyperbricks"]; got != strings.TrimSpace(assets.VersionMD) {
+		t.Fatalf("hyperbricks = %v", got)
+	}
+	for _, artifactField := range []string{"format", "format_version", "commit", "built_at", "source_hash"} {
+		if _, present := metadata[artifactField]; present {
+			t.Fatalf("source package contains artifact-only metadata %q", artifactField)
+		}
 	}
 	if got := hb["directories"].(map[string]interface{})["render"]; got != filepath.Join(root, "rendered") {
 		t.Fatalf("render = %v", got)
@@ -347,4 +363,275 @@ func TestInitCommandRejectsInvalidModuleWithFailureStatus(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(tmpDir, "outside")); !os.IsNotExist(err) {
 		t.Fatalf("invalid module selection created an outside path: %v", err)
 	}
+}
+
+func TestInitCommandUpdatesMetadataByNameRelativeAndAbsolutePath(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+
+	tests := []struct {
+		name       string
+		moduleRoot string
+		selection  func(string) string
+	}{
+		{
+			name:       "module name",
+			moduleRoot: filepath.Join(root, "modules", "named-module"),
+			selection:  func(string) string { return "named-module" },
+		},
+		{
+			name:       "relative path",
+			moduleRoot: filepath.Join(root, "custom", "relative-module"),
+			selection: func(moduleRoot string) string {
+				relative, err := filepath.Rel(root, moduleRoot)
+				if err != nil {
+					t.Fatal(err)
+				}
+				return "." + string(filepath.Separator) + relative
+			},
+		},
+		{
+			name:       "absolute path",
+			moduleRoot: filepath.Join(root, "external", "absolute-module"),
+			selection:  func(moduleRoot string) string { return moduleRoot },
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			configPath := writeInitMetadataFixture(t, test.moduleRoot, `# keep this comment
+hyperbricks:
+  metadata:
+    module: stale
+    moduleversion: "1.0"
+    format: zip
+    format_version: "0"
+    commit: stale
+    built_at: "1970-01-01T00:00:00Z"
+    source_hash: stale
+    hyperbricks: v0.0.0
+    owner: platform
+  mode: live
+`)
+			output, err := executeInitCommand(t, "--module", test.selection(test.moduleRoot), "--update-metadata")
+			if err != nil {
+				t.Fatalf("metadata update failed: %v\n%s", err, output)
+			}
+			content, err := os.ReadFile(configPath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			metadata := decodeInitMetadata(t, content)
+			if got := metadata["module"]; got != filepath.Base(test.moduleRoot) {
+				t.Fatalf("module = %v, want %s", got, filepath.Base(test.moduleRoot))
+			}
+			if got := metadata["moduleversion"]; got != "1.0.0" {
+				t.Fatalf("moduleversion = %v, want 1.0.0", got)
+			}
+			if got := metadata["hyperbricks"]; got != strings.TrimSpace(assets.VersionMD) {
+				t.Fatalf("hyperbricks = %v", got)
+			}
+			if got := metadata["owner"]; got != "platform" {
+				t.Fatalf("unrelated metadata = %v", got)
+			}
+			for _, field := range []string{"format", "format_version", "commit", "built_at", "source_hash"} {
+				if _, present := metadata[field]; present {
+					t.Fatalf("artifact-only field %q survived refresh", field)
+				}
+			}
+			text := string(content)
+			if !strings.Contains(text, "# keep this comment") || !strings.Contains(text, "mode: live") {
+				t.Fatalf("unrelated YAML/comment was not preserved:\n%s", text)
+			}
+		})
+	}
+}
+
+func TestInitCommandMetadataNoOpDoesNotRewrite(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	configPath := writeInitMetadataFixture(t, filepath.Join(root, "modules", "demo"), currentInitMetadataFixture("1.0.0"))
+	oldTime := time.Unix(1_600_000_000, 0)
+	if err := os.Chtimes(configPath, oldTime, oldTime); err != nil {
+		t.Fatal(err)
+	}
+
+	output, err := executeInitCommand(t, "--module", "demo", "--update-metadata")
+	if err != nil {
+		t.Fatalf("metadata update failed: %v\n%s", err, output)
+	}
+	if !strings.Contains(output, "Metadata already current") {
+		t.Fatalf("no-op output = %q", output)
+	}
+	info, err := os.Stat(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !info.ModTime().Equal(oldTime) {
+		t.Fatalf("no-op modified file at %v, want %v", info.ModTime(), oldTime)
+	}
+}
+
+func TestInitCommandMetadataFailuresDoNotCreateScaffold(t *testing.T) {
+	tests := []struct {
+		name         string
+		prepare      func(*testing.T, string)
+		selection    string
+		missingPaths []string
+	}{
+		{
+			name:      "missing module",
+			prepare:   func(*testing.T, string) {},
+			selection: "missing",
+			missingPaths: []string{
+				filepath.Join("modules", "missing"),
+			},
+		},
+		{
+			name: "missing package",
+			prepare: func(t *testing.T, root string) {
+				t.Helper()
+				if err := os.MkdirAll(filepath.Join(root, "modules", "demo"), 0o755); err != nil {
+					t.Fatal(err)
+				}
+			},
+			selection: "demo",
+			missingPaths: []string{
+				filepath.Join("modules", "demo", "hyperbricks"),
+				filepath.Join("modules", "demo", "templates"),
+				filepath.Join("modules", "demo", "resources"),
+				filepath.Join("modules", "demo", "rendered"),
+				filepath.Join("modules", "demo", "static"),
+				filepath.Join("modules", "demo", "logs"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := t.TempDir()
+			t.Chdir(root)
+			test.prepare(t, root)
+			if output, err := executeInitCommand(t, "--module", test.selection, "--update-metadata"); err == nil {
+				t.Fatalf("metadata update succeeded unexpectedly:\n%s", output)
+			}
+			for _, path := range append(test.missingPaths, filepath.Join("bin", "plugins")) {
+				if _, err := os.Stat(path); !os.IsNotExist(err) {
+					t.Fatalf("metadata-only failure created %s: %v", path, err)
+				}
+			}
+		})
+	}
+}
+
+func TestInitCommandBumpVersionModes(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{name: "bare patch", args: []string{"--bump-version"}, want: "1.2.4"},
+		{name: "explicit patch", args: []string{"--bump-version=patch"}, want: "1.2.4"},
+		{name: "explicit minor", args: []string{"--bump-version=minor"}, want: "1.3.0"},
+		{name: "explicit major", args: []string{"--bump-version=major"}, want: "2.0.0"},
+		{name: "update plus bump once", args: []string{"--update-metadata", "--bump-version=patch"}, want: "1.2.4"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := t.TempDir()
+			t.Chdir(root)
+			configPath := writeInitMetadataFixture(t, filepath.Join(root, "modules", "demo"), currentInitMetadataFixture("1.2.3"))
+			args := append([]string{"--module", "demo"}, test.args...)
+			output, err := executeInitCommand(t, args...)
+			if err != nil {
+				t.Fatalf("version bump failed: %v\n%s", err, output)
+			}
+			content, err := os.ReadFile(configPath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := decodeInitMetadata(t, content)["moduleversion"]; got != test.want {
+				t.Fatalf("moduleversion = %v, want %s", got, test.want)
+			}
+		})
+	}
+}
+
+func TestInitCommandInvalidBumpLeavesPackageUnchanged(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{name: "unsupported value", args: []string{"--bump-version=build"}},
+		{name: "explicit empty value", args: []string{"--bump-version="}},
+		{name: "positional value", args: []string{"--bump-version", "minor"}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := t.TempDir()
+			t.Chdir(root)
+			configPath := writeInitMetadataFixture(t, filepath.Join(root, "modules", "demo"), currentInitMetadataFixture("1.2.3"))
+			original, err := os.ReadFile(configPath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			args := append([]string{"--module", "demo"}, test.args...)
+			if output, err := executeInitCommand(t, args...); err == nil {
+				t.Fatalf("invalid bump succeeded unexpectedly:\n%s", output)
+			}
+			current, err := os.ReadFile(configPath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(current, original) {
+				t.Fatalf("invalid bump changed package:\n%s", current)
+			}
+		})
+	}
+}
+
+func executeInitCommand(t *testing.T, args ...string) (string, error) {
+	t.Helper()
+	previousModule, previousExit, previousExitCode := module, Exit, ExitCode
+	t.Cleanup(func() {
+		module, Exit, ExitCode = previousModule, previousExit, previousExitCode
+	})
+	Exit = false
+	ExitCode = 0
+	command := NewInitCommand()
+	var output bytes.Buffer
+	command.SetOut(&output)
+	command.SetErr(&output)
+	command.SetArgs(args)
+	err := command.Execute()
+	return output.String(), err
+}
+
+func writeInitMetadataFixture(t *testing.T, moduleRoot, content string) string {
+	t.Helper()
+	if err := os.MkdirAll(moduleRoot, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(moduleRoot, PackageConfigFileName)
+	if err := os.WriteFile(path, []byte(content), 0o640); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+func currentInitMetadataFixture(version string) string {
+	return "hyperbricks:\n  metadata:\n    module: demo\n    moduleversion: \"" + version + "\"\n    hyperbricks: " + strings.TrimSpace(assets.VersionMD) + "\n"
+}
+
+func decodeInitMetadata(t *testing.T, content []byte) map[string]interface{} {
+	t.Helper()
+	var document struct {
+		HyperBricks struct {
+			Metadata map[string]interface{} `yaml:"metadata"`
+		} `yaml:"hyperbricks"`
+	}
+	if err := yaml.Unmarshal(content, &document); err != nil {
+		t.Fatal(err)
+	}
+	return document.HyperBricks.Metadata
 }

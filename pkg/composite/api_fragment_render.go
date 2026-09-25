@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/shared/apiutil"
@@ -262,7 +263,7 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 	}
 
 	hbconfig := shared.GetHyperBricksConfiguration()
-	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE {
+	if hbconfig.Development.FrontendErrors && hbconfig.Mode != shared.LIVE_MODE && shared.DeveloperInterfaceAuthorized(ctx) {
 		if config.Debug && config.DebugPanel {
 			builder.WriteString(ErrorPanelTemplate)
 		}
@@ -373,7 +374,7 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 		return nil, 400, err
 	}
 	if config.Debug {
-		fmt.Printf("API request: %+v\n", apiutil.DescribeRequest(req))
+		logging.GetLogger().Named("api").Debugw("Upstream request", "request", apiutil.DescribeRequest(req))
 	}
 	resp, err := apiutil.NewAPIHTTPClient().Do(req)
 	if err != nil {
@@ -381,7 +382,7 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 	}
 	defer resp.Body.Close()
 	if config.Debug {
-		fmt.Printf("API response: %+v\n", apiutil.DescribeResponse(resp))
+		logging.GetLogger().Named("api").Debugw("Upstream response", "response", apiutil.DescribeResponse(resp))
 	}
 	result, err := apiutil.DecodeAPIResponse(resp)
 	if err != nil {

@@ -1,6 +1,7 @@
 # Declared integration-fixture sources. Generated bundles, logs, and credentials are excluded.
 README.md
 SOURCE_FILES.txt
+NOTICES.md
 docs/profiles.md
 fixtures/about.hyperbricks.yaml
 fixtures/navigation-about.hyperbricks.yaml

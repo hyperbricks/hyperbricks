@@ -126,3 +126,27 @@ function installSectionRailScrolling() {
 
 installStatusDemoDiagnostics()
 installSectionRailScrolling()
+
+async function revealWritableSpacesLink() {
+  const link = document.querySelector('[data-spaces-editor-link]')
+  if (!(link instanceof HTMLAnchorElement)) {
+    return
+  }
+
+  try {
+    const route = new URL(link.href)
+    if (route.origin !== window.location.origin) {
+      return
+    }
+    const response = await fetch(`${route.pathname.replace(/\/$/, '')}/api`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (response.ok && (await response.json()).write === true) {
+      link.hidden = false
+    }
+  } catch {
+    // The editor is optional outside a writable development runtime.
+  }
+}
+
+revealWritableSpacesLink()

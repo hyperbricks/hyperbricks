@@ -8,7 +8,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type moduleItem struct {
@@ -30,14 +29,14 @@ func newModulePickerModel(items []list.Item, title string) modulePickerModel {
 	const listHeight = 14
 
 	delegate := list.NewDefaultDelegate()
-	orange := lipgloss.Color("#FFA500")
+	accent := terminalAccent
 
-	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(orange).Bold(true).BorderLeftForeground(orange)
-	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(orange).BorderLeftForeground(orange)
+	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(accent).Bold(true).BorderLeftForeground(accent)
+	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(accent).BorderLeftForeground(accent)
 
 	l := list.New(items, delegate, defaultWidth, listHeight)
 	l.Title = title
-	l.Styles.Title = l.Styles.Title.Background(orange)
+	l.Styles.Title = l.Styles.Title.UnsetBackground().Foreground(accent).Bold(true)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
 	l.SetShowHelp(true)
@@ -76,12 +75,15 @@ func (m modulePickerModel) View() string {
 }
 
 func RunModulePicker(title string) (string, bool, error) {
+	if err := requireTerminal(); err != nil {
+		return "", false, err
+	}
 	items, err := loadModuleItems()
 	if err != nil {
 		return "", false, err
 	}
 
-	program := tea.NewProgram(newModulePickerModel(items, title))
+	program := tea.NewProgram(newModulePickerModel(items, title), tea.WithOutput(os.Stderr))
 	finalModel, err := program.Run()
 	if err != nil {
 		return "", false, err

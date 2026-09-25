@@ -8,3 +8,5 @@ patterns_index:
       - type: template
       - template:
           file: patterns/index.html
+      - values:
+          spaces_editor_url: {config: {path: hyperbricks.development.frontend_editing.spaces.route, default: /__hyperbricks/spaces}}

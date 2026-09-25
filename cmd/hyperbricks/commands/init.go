@@ -2,13 +2,17 @@ package commands
 
 import (
 	"embed"
+	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
+	"github.com/hyperbricks/hyperbricks/assets"
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
+	"github.com/hyperbricks/hyperbricks/pkg/packagemetadata"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +27,7 @@ type initFile struct {
 }
 
 type initPlan struct {
+	moduleDir   string
 	directories []string
 	files       []initFile
 }
@@ -35,14 +40,14 @@ func ensureDir(dir string) error {
 		if !info.IsDir() {
 			return fmt.Errorf("path already exists and is not a directory: %s", dir)
 		}
-		fmt.Printf("Directory already exists: %s\n", dir)
+		logging.GetLogger().Named("init").Debugw("Directory exists", "directory", dir)
 		return nil
 	}
 	if os.IsNotExist(err) {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			return fmt.Errorf("failed to create directory %s: %w", dir, err)
 		}
-		fmt.Printf("Created directory: %s\n", dir)
+		logging.GetLogger().Named("init").Debugw("Directory created", "directory", dir)
 		return nil
 	}
 	return fmt.Errorf("failed to inspect directory %s: %w", dir, err)
@@ -53,28 +58,29 @@ func ensureDir(dir string) error {
 func createModuleDirectories(module string) {
 	for _, dir := range initModuleDirectories(module) {
 		if err := ensureDir(dir); err != nil {
-			fmt.Println(err)
+			ReportError(err)
 		}
 	}
+}
+
+var standardModuleSubdirectories = []string{
+	"rendered",
+	"static",
+	"hyperbricks",
+	"resources",
+	"templates",
+	"logs",
 }
 
 func initModuleDirectories(module string) []string {
 	baseDir := "modules"
 	moduleDir := filepath.Join(baseDir, module)
-	subDirs := []string{
-		"rendered",
-		"static",
-		"hyperbricks",
-		"resources",
-		"templates",
-		"logs",
-	}
 
 	dirs := []string{
 		baseDir,
 		moduleDir,
 	}
-	for _, sub := range subDirs {
+	for _, sub := range standardModuleSubdirectories {
 		dirs = append(dirs, filepath.Join(moduleDir, sub))
 	}
 	return append(dirs, filepath.Join("bin", "plugins"))
@@ -96,7 +102,7 @@ func validateInitModuleName(value string) (string, error) {
 
 func buildInitPlan(moduleName string) (initPlan, error) {
 	moduleDir := filepath.Join("modules", moduleName)
-	plan := initPlan{directories: initModuleDirectories(moduleName)}
+	plan := initPlan{moduleDir: moduleDir, directories: initModuleDirectories(moduleName)}
 	directorySeen := make(map[string]bool, len(plan.directories))
 	for _, dir := range plan.directories {
 		directorySeen[dir] = true
@@ -114,10 +120,18 @@ func buildInitPlan(moduleName string) (initPlan, error) {
 	if err != nil {
 		return initPlan{}, fmt.Errorf("read embedded default config %s: %w", defaultConfigPath, err)
 	}
+	metadataResult, err := packagemetadata.ReconcileSource(defaultConfigContent, packagemetadata.ReconcileOptions{
+		Module:             moduleName,
+		HyperBricks:        strings.TrimSpace(assets.VersionMD),
+		ResetModuleVersion: true,
+	})
+	if err != nil {
+		return initPlan{}, fmt.Errorf("prepare embedded package metadata: %w", err)
+	}
 	plan.files = append(plan.files, initFile{
 		source: defaultConfigPath,
 		target: filepath.Join(moduleDir, PackageConfigFileName),
-		data:   []byte(strings.Replace(string(defaultConfigContent), "    module: default\n", "    module: "+strconv.Quote(moduleName)+"\n", 1)),
+		data:   metadataResult.Content,
 	})
 
 	const embeddedDir = "assets/default"
@@ -239,14 +253,10 @@ func applyInitPlan(plan initPlan) error {
 			return err
 		}
 		if !created {
-			fmt.Printf("Skipping existing file: %s\n", file.target)
+			logging.GetLogger().Named("init").Infow("Existing file preserved", "module", filepath.Base(plan.moduleDir), "file", logging.ModulePath(plan.moduleDir, file.target))
 			continue
 		}
-		if file.source == "assets/default-config.hyperbricks.yaml" {
-			fmt.Printf("Config file created successfully at %s\n", file.target)
-		} else {
-			fmt.Printf("Extracted file: %s -> %s\n", file.source, file.target)
-		}
+		logging.GetLogger().Named("init").Infow("File created", "module", filepath.Base(plan.moduleDir), "file", logging.ModulePath(plan.moduleDir, file.target))
 	}
 	return nil
 }
@@ -266,24 +276,93 @@ func initializeModule(value string) error {
 	return applyInitPlan(plan)
 }
 
+func updateExistingModuleMetadata(value string, bump packagemetadata.Bump) (string, packagemetadata.ReconcileResult, error) {
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return "", packagemetadata.ReconcileResult{}, fmt.Errorf("resolve current working directory: %w", err)
+	}
+	selection, err := resolveModuleSelection(value, workingDirectory)
+	if err != nil {
+		return "", packagemetadata.ReconcileResult{}, fmt.Errorf("resolve module %q: %w", value, err)
+	}
+	configPath := filepath.Join(selection.Root, PackageConfigFileName)
+	result, err := packagemetadata.ReconcileSourceFile(configPath, packagemetadata.ReconcileOptions{
+		Module:                    selection.Name,
+		HyperBricks:               strings.TrimSpace(assets.VersionMD),
+		CanonicalizeModuleVersion: true,
+		Bump:                      bump,
+	})
+	if err != nil {
+		return "", packagemetadata.ReconcileResult{}, err
+	}
+	return configPath, result, nil
+}
+
+func writeMetadataUpdate(out io.Writer, path string, result packagemetadata.ReconcileResult) {
+	if !result.Changed {
+		fmt.Fprintf(out, "Metadata already current: %s\n", path)
+		return
+	}
+	fmt.Fprintf(out, "Updated metadata: %s\n", path)
+	for _, change := range result.Changes {
+		before := change.Before
+		if before == "" {
+			before = "(missing)"
+		}
+		if change.Removed {
+			fmt.Fprintf(out, "  %s: %s -> (removed)\n", change.Field, before)
+			continue
+		}
+		fmt.Fprintf(out, "  %s: %s -> %s\n", change.Field, before, change.After)
+	}
+}
+
 // NewInitCommand creates the "init" subcommand.
 func NewInitCommand() *cobra.Command {
+	var updateMetadata bool
+	var bumpVersion string
 	cmd := &cobra.Command{
 		Use:           "init",
 		Short:         "Create a three-page HyperBricks Starter with HTMX 4",
+		Args:          cobra.NoArgs,
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			Exit = true
 			ExitCode = 0
+			bumpChanged := cmd.Flags().Changed("bump-version")
+			if updateMetadata || bumpChanged {
+				bump := packagemetadata.BumpNone
+				if bumpChanged {
+					value := strings.ToLower(strings.TrimSpace(bumpVersion))
+					if value == "" {
+						ExitCode = 1
+						return errors.New("bump version cannot be empty")
+					}
+					bump = packagemetadata.Bump(value)
+				}
+				path, result, err := updateExistingModuleMetadata(module, bump)
+				if err != nil {
+					ExitCode = 1
+					return fmt.Errorf("update module metadata: %w", err)
+				}
+				writeMetadataUpdate(cmd.OutOrStdout(), path, result)
+				return nil
+			}
 			if err := initializeModule(module); err != nil {
 				ExitCode = 1
 				return fmt.Errorf("initialize module: %w", err)
 			}
+			fmt.Fprintf(cmd.OutOrStdout(), "Module ready: modules/%s\n", module)
+			fmt.Fprintf(cmd.OutOrStdout(), "Start: hyperbricks start -m %s\n", module)
 			return nil
 		},
 	}
 
-	cmd.Flags().StringVarP(&module, "module", "m", "default", "module name below ./modules")
+	cmd.Flags().StringVarP(&module, "module", "m", "default", "module name below ./modules; metadata modes also accept a directory path")
+	_ = cmd.RegisterFlagCompletionFunc("module", completeModuleSelection)
+	cmd.Flags().BoolVar(&updateMetadata, "update-metadata", false, "refresh stable metadata in an existing module without changing its scaffold")
+	cmd.Flags().StringVar(&bumpVersion, "bump-version", "", "bump module version: patch, minor, or major (default patch)")
+	cmd.Flags().Lookup("bump-version").NoOptDefVal = "patch"
 	return cmd
 }

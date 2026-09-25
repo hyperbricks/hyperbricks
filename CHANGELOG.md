@@ -1,12 +1,58 @@
 # Changelog
 
+## v1.2.5-beta
+
+Changes since `v1.2.4-beta`.
+
+### Breaking changes
+
+- Replace `deploy-daemon` and the deployment flags on `start` with
+  `deploy init`, `deploy run`, `deploy local`, and `deploy remote`. Deployment
+  configuration now separates local, client, and remote settings; configure
+  Basic Auth for the interfaces and HMAC for remote deployment operations.
+- Replace the Boolean `development.dashboard` setting with an `enabled` and
+  `credentials` mapping. Dashboard, Errors, and Spaces share developer Basic
+  Auth; enabled views remain locked when credentials are missing.
+- Move the developer dashboard from `/dashboard` to `/__hyperbricks/dashboard`
+  without a redirect alias. Review the [migration guide](docs/MIGRATION.md) and
+  [deployment configuration](docs/DEPLOY.md) before upgrading.
+
+### Authoring and content
+
+- Add [project-aware authoring](docs/AUTHOR.md) with discovery, previews,
+  revision checks, and source-owned root, child, and inherited Space additions.
+- Add `scaffold` and `space` workflows with interactive prompts, flags, dry-run,
+  and JSON output. Ship an embedded starter with shared navigation and local HTMX.
+- Add the development-only [Spaces editor](docs/SPACES.md): explicit write
+  enablement, editable-field rules, asset uploads, recoverable Trash, Markdown
+  previews, and revision/conflict handling that preserves drafts.
+- Add native [Markdown](docs/MARKDOWN.md) from inline text or files, with bounded
+  reads, sanitized output, path validation, and Spaces editing support.
+
+### Deployment and diagnostics
+
+- Add offline `doctor` checks for module configuration, source, routes, and
+  referenced assets, plus metadata refresh/version-bump commands and build provenance.
+- Expand the deployment interfaces with signed HRA uploads, archive downloads,
+  build duplication, a YAML package editor, developer-access controls, and responsive
+  navigation for modules and shared plugins.
+- Store Development/Live mode per build, validate configuration before restarting a
+  running module, and report restart failures. Support `live.cache: 0s` to bypass
+  the internal rendered-output cache.
+- Add contextual Errors diagnostics and clearer console/JSON logging; reduce
+  rendering and diagnostic overhead. Update example modules and developer logins.
+
+### Documentation and distribution
+
+- Refresh guides and component examples, and synchronize versioned documentation
+  in the HyperBricks skill and Codex plugin.
+- Include project and module `NOTICES.md` files with third-party license texts
+  for the distributed source and browser assets.
+
 ## 2026-09-12 updates
 
 ### Beta release preparation
 
-- Document the beta release protocol in `AGENTS.md`, including version
-  selection, docs generation, release verification, confirmation before
-  publishing, commit, tag, and push.
 - Prepare the next beta patch release as `v1.2.4-beta`.
 
 ### Deploy authentication
@@ -277,7 +323,7 @@ rendered pages.
   and document how a public HyperBricks skill resolves its versioned sources.
 - Document canonical HTMX page and fragment URLs, browser history behavior, and
   static-export compatibility.
-- Add a generator for standalone Markdown documentation and skill handbooks,
+- Add a generator for standalone Markdown documentation and skill compilations,
   sourced from an exact committed Git snapshot.
 - Add a Git-archive ZIP helper for sharing the current committed repository
   state without local or ignored output.

@@ -1,0 +1,32 @@
+{
+  "name": "hyperbricks",
+  "version": "0.1.1+codex.20260923164609",
+  "description": "Develop and maintain full-stack applications with HyperBricks.",
+  "author": {
+    "name": "Robbert Streng"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "HyperBricks",
+    "shortDescription": "Develop and maintain HyperBricks applications.",
+    "longDescription": "Develop and maintain HyperBricks applications across their full lifecycle: configure components and routes, change existing projects, troubleshoot runtime behavior, and package applications for delivery.",
+    "developerName": "Robbert Streng",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": [
+      "Use $hyperbricks to develop or change this HyperBricks project.",
+      "Use $hyperbricks to troubleshoot this HyperBricks project.",
+      "Use $hyperbricks to review or package this HyperBricks project."
+    ],
+    "logo": "./assets/hyperbricks_round_black_on_white.svg",
+    "composerIcon": "./assets/hyperbricks_round_black_on_white.svg",
+    "logoDark": "./assets/hyperbricks_round_white_on_black.svg"
+  },
+  "keywords": [
+    "hyperbricks",
+    "web-development",
+    "full-stack",
+    "rapid-development",
+    "deployment"
+  ]
+}

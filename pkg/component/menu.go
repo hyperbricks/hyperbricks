@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"html/template"
-	"log"
 	"sort"
 	"strings"
 
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
+	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
@@ -119,7 +119,7 @@ func (mr *MenuRenderer) Render(instance interface{}, ctx context.Context) (strin
 
 	sortedHyperMedias, err := SortHyperMediasBySection(config.HyperMediasBySection, options)
 	if err != nil {
-		log.Printf("Error sorting pages: %v", err)
+		logging.GetLogger().Errorw("Failed to sort menu pages", "error", err)
 		builder.WriteString(fmt.Sprintf("<!-- Error sorting pages: %v -->\n", err))
 		errors = append(errors, shared.ComponentError{
 			Hash: shared.GenerateHash(),

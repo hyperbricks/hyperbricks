@@ -7,6 +7,8 @@ pattern_docs_shell:
       - type: template
       - template:
           file: patterns/docs-shell.html
+      - values:
+          spaces_editor_url: {config: {path: hyperbricks.development.frontend_editing.spaces.route, default: /__hyperbricks/spaces}}
 
 pattern_docs_overview:
   - type: fragment
@@ -114,7 +116,7 @@ pattern_docs_section_rail:
           content:
             file:
               base: module
-              path: docs/pages/config-driven-section-rail.md
+              path: docs/pages/sidebar-section-navigation.md
 
 pattern_docs_single_plugin:
   - type: fragment
@@ -238,12 +240,12 @@ app_pattern_docs_menu_htmx:
 
 app_pattern_docs_section_rail:
   - inherit: "pattern_docs_shell"
-  - route: docs/config-driven-section-rail
+  - route: docs/sidebar-section-navigation
   - title: HyperBricks Patterns Docs
   - content:
       - values:
-          current_doc: config-driven-section-rail
-          doc_title: Config-Driven Section Rail
+          current_doc: sidebar-section-navigation
+          doc_title: Build sidebar navigation with section links
           doc_intro: See how a left rail can be driven from structured config instead of hand-written links.
           content:
             - inherit: "pattern_docs_section_rail.plugin_10"
@@ -295,3 +297,27 @@ app_pattern_docs_unpoly:
           doc_intro: Reuse a panel in a complete page and a fragment response with Unpoly.
           content:
             - inherit: "pattern_docs_unpoly.plugin_10"
+
+pattern_docs_localized_spaces:
+  - type: fragment
+  - plugin_10:
+      - type: plugin
+      - plugin: "MarkdownPlugin@2.0.0"
+      - data:
+          class: pattern-docs-markdown
+          content:
+            file:
+              base: module
+              path: docs/pages/localized-spaces.md
+
+app_pattern_docs_localized_spaces:
+  - inherit: "pattern_docs_shell"
+  - route: docs/localized-spaces
+  - title: Localized Spaces Pattern
+  - content:
+      - values:
+          current_doc: localized-spaces
+          doc_title: Localized pages with Spaces
+          doc_intro: Two route-less page sources produce four English and German pages with shared layout and source-owned editing rules.
+          content:
+            - inherit: "pattern_docs_localized_spaces.plugin_10"

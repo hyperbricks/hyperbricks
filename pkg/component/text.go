@@ -12,7 +12,7 @@ type TextConfig struct {
 	shared.Component   `mapstructure:",squash"`
 	MetaDocDescription string `mapstructure:"@doc" description:"Render simple text" example:"{!{text-@doc.hyperbricks.yaml}}"`
 
-	Value string `mapstructure:"value" validate:"required" description:"The paragraph content" example:"{!{text-value.hyperbricks.yaml}}"`
+	Value string `mapstructure:"value" validate:"required" description:"Required text emitted unchanged, without HTML escaping. Use trusted configuration content." example:"{!{text-value.hyperbricks.yaml}}"`
 }
 
 func TextConfigGetName() string {

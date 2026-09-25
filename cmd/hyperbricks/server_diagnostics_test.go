@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"strings"
 	"testing"
 
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
@@ -16,14 +15,13 @@ import (
 
 func loggedRenderDiagnosticsURL(t *testing.T, requestID string) string {
 	t.Helper()
-	const prefix = "Render diagnostics recorded: "
 	entries := logging.GetLogs()
 	for index := len(entries) - 1; index >= 0; index-- {
 		entry := entries[index]
-		if !strings.HasPrefix(entry.Message, prefix) {
+		if entry.Fields["request_id"] != requestID {
 			continue
 		}
-		link := strings.TrimPrefix(entry.Message, prefix)
+		link, _ := entry.Fields["diagnostics_url"].(string)
 		parsed, err := url.Parse(link)
 		if err == nil && parsed.Query().Get("request_id") == requestID {
 			return link
@@ -82,6 +80,10 @@ func TestRenderDiagnosticsURL(t *testing.T) {
 
 func TestRecordConfigDiagnosticsLogsWorkingURL(t *testing.T) {
 	setupDevelopmentModeServeContentTest(t, false)
+	cfg := getHyperBricksConfiguration()
+	oldDashboard := cfg.Development.Dashboard
+	cfg.Development.Dashboard.Credentials = developerTestCredentials
+	t.Cleanup(func() { cfg.Development.Dashboard = oldDashboard })
 	recordConfigDiagnostics([]error{errors.New("invalid YAML source")})
 	records := collectRecentRenderDiagnostics(1)
 	if len(records) != 1 {
@@ -89,7 +91,7 @@ func TestRecordConfigDiagnosticsLogsWorkingURL(t *testing.T) {
 	}
 	link := loggedRenderDiagnosticsURL(t, records[0].RequestID)
 	response := httptest.NewRecorder()
-	handler(response, httptest.NewRequest(http.MethodGet, link, nil))
+	handler(response, developerTestRequest(http.MethodGet, link, nil))
 	if response.Code != http.StatusOK {
 		t.Fatalf("diagnostics status = %d, want 200", response.Code)
 	}

@@ -137,6 +137,36 @@ func TestServeContent_LiveCacheMixedPolicies(t *testing.T) {
 	}
 }
 
+func TestServeContent_LiveCacheZeroDurationDisablesCache(t *testing.T) {
+	setupLiveModeServeContentTest(t)
+	getHyperBricksConfiguration().Live.CacheTime.Duration = 0
+
+	plugin := &liveCacheMatrixPlugin{}
+	rm.SetPlugin("zero-cache", plugin)
+	setTestRouteConfig("zero-cache", liveCacheMatrixRoute("zero-cache", "zero-cache"))
+
+	first := serveLiveCacheMatrix(httptest.NewRequest(http.MethodGet, "/zero-cache", nil))
+	second := serveLiveCacheMatrix(httptest.NewRequest(http.MethodGet, "/zero-cache", nil))
+
+	if first.Code != http.StatusOK || second.Code != http.StatusOK {
+		t.Fatalf("unexpected statuses: first=%d second=%d", first.Code, second.Code)
+	}
+	if first.Body.String() == second.Body.String() {
+		t.Fatalf("zero-duration live cache reused output: first=%q second=%q", first.Body.String(), second.Body.String())
+	}
+	if calls := plugin.calls.Load(); calls != 2 {
+		t.Fatalf("renderer calls=%d, want 2", calls)
+	}
+	if _, found := cachedEntry("zero-cache"); found {
+		t.Fatal("zero-duration live cache stored a route entry")
+	}
+	for _, response := range []*httptest.ResponseRecorder{first, second} {
+		if response.Header().Get(liveCacheRenderedAtHeader) != "" || response.Header().Get(liveCacheExpiresAtHeader) != "" || response.Header().Get("ETag") != "" {
+			t.Fatalf("disabled cache emitted cache metadata: %#v", response.Header())
+		}
+	}
+}
+
 func TestServeContent_LiveCacheAPIRenderOwnership(t *testing.T) {
 	setupLiveModeServeContentTest(t)
 	var cachedCalls, uncachedCalls, fragmentCalls atomic.Int32

@@ -1,0 +1,41 @@
+# Dutch Space inheriting the English café page. Editing fields are declared on the source.
+night_owl_cafe_nl:
+  - inherit: night_owl_cafe_page
+  - route: night-owl-cafe/nl
+  - title: "Night Owl Café – Nederlands"
+  - htmltag: '<html lang="nl">'
+  - section: cafe_translations
+  - head:
+      - meta:
+          description: "Een late koffie, een stuk taart en een fijne plek om te zitten."
+  - body:
+      - type: template
+      - values:
+          page_language: nl
+          content:
+            - type: template
+            - values:
+                title: "Night Owl Café"
+                hours: "18:00–02:00"
+                address: "12 Market Street"
+                language: "nl"
+                route: "night-owl-cafe/nl"
+                category: "Koffie & taart"
+                days: "Dinsdag–zondag"
+                intro: "Een late koffie, een stuk taart en een fijne plek om te zitten."
+                description: "Een klein café in een zijstraat. Kom na het eten langs voor een espresso of neem een tafel bij het raam om wat langer bij te praten. Tot sluitingstijd zijn er een paar eenvoudige warme gerechten."
+                highlight: "Op de kaart"
+                one: "Koffie zoals jij die wilt"
+                onebody: "Espresso, filterkoffie en cafeïnevrije koffie. Havermelk is ook beschikbaar."
+                two: "Iets zoets"
+                twobody: "Citroentaart en chocoladebrownies, elke middag vers gebakken."
+                three: "Een lichte avondmaaltijd"
+                threebody: "Tosti’s met kaas en een wisselende soep."
+                note: "Loop gewoon binnen en zoek een tafel. Achterin zit je wat rustiger."
+                language_label: "Taal van de cafépagina"
+                all_places_label: "Alle plekken"
+                of_label: "van"
+                visit_label: "Plan je bezoek"
+                hours_label: "Openingstijden"
+                address_label: "Adres"
+                next_label: "Volgende stop"

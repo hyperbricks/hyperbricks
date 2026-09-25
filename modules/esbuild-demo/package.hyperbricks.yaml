@@ -1,11 +1,21 @@
 hyperbricks:
   mode: development
+  metadata:
+    module: esbuild-demo
+    moduleversion: "1.0.0"
+    hyperbricks: v1.2.5-beta
   development:
     watch: true
     watch_dirs: [hyperbricks, templates, resources]
     reload: false
     frontend_errors: true
-    dashboard: false
+    dashboard:
+      enabled: false
+      credentials:
+        user:
+          env: HB_DEVELOPER_USER
+        password:
+          env: HB_DEVELOPER_PASSWORD
   server:
     port: 8097
     beautify: false

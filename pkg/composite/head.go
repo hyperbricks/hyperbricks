@@ -3,6 +3,7 @@ package composite
 import (
 	"context"
 	"fmt"
+	"html"
 	"sort"
 	"strings"
 
@@ -19,11 +20,11 @@ const (
 // HeadConfig represents the configuration for the head section.
 type HeadConfig struct {
 	shared.Composite `mapstructure:",squash"`
-	Title            string            `mapstructure:"title" description:"The title of the hypermedia document" example:"{!{head-title.hyperbricks.yaml}}"`
-	Favicon          string            `mapstructure:"favicon" description:"Path to the favicon for the hypermedia document" example:"{!{head-favicon.hyperbricks.yaml}}"`
-	MetaData         map[string]string `mapstructure:"meta" description:"Metadata for the head section" example:"{!{head-meta.hyperbricks.yaml}}"`
-	Css              []string          `mapstructure:"css" description:"CSS files to include" example:"{!{head-css.hyperbricks.yaml}}"`
-	Js               []string          `mapstructure:"js" description:"JavaScript files to include" example:"{!{head-js.hyperbricks.yaml}}"`
+	Title            string                 `mapstructure:"title" description:"The title of the hypermedia document" example:"{!{head-title.hyperbricks.yaml}}"`
+	Favicon          string                 `mapstructure:"favicon" description:"Path to the favicon for the hypermedia document" example:"{!{head-favicon.hyperbricks.yaml}}"`
+	MetaData         map[string]interface{} `mapstructure:"meta" description:"Metadata for the head section; null suppresses inherited entries" example:"{!{head-meta.hyperbricks.yaml}}"`
+	Css              []string               `mapstructure:"css" description:"CSS files to include" example:"{!{head-css.hyperbricks.yaml}}"`
+	Js               []string               `mapstructure:"js" description:"JavaScript files to include" example:"{!{head-js.hyperbricks.yaml}}"`
 }
 
 // HeadConfigGetName returns the HyperBricks type associated with the HeadConfig.
@@ -102,7 +103,7 @@ func (cr *HeadRenderer) Render(instance interface{}, ctx context.Context) (strin
 
 	// Generate title tag
 	if config.Title != "" {
-		headbuilder.WriteString(fmt.Sprintf(`<title>%s</title>`, config.Title))
+		headbuilder.WriteString(fmt.Sprintf(`<title>%s</title>`, html.EscapeString(config.Title)))
 		headbuilder.WriteString("\n")
 	}
 
@@ -177,7 +178,7 @@ func appendGeneratedHeadItemsToOrder(items map[string]interface{}) {
 	items["@order"] = order
 }
 
-func renderMeta(meta map[string]string) string {
+func renderMeta(meta map[string]interface{}) string {
 	// Extract keys
 	keys := make([]string, 0, len(meta))
 	for k := range meta {
@@ -191,7 +192,14 @@ func renderMeta(meta map[string]string) string {
 	var sb strings.Builder
 	for _, k := range keys {
 		v := meta[k]
-		sb.WriteString(fmt.Sprintf(`<meta name="%s" content="%s">`, k, v))
+		if v == nil {
+			continue
+		}
+		attribute := "name"
+		if strings.HasPrefix(k, "og:") {
+			attribute = "property"
+		}
+		sb.WriteString(fmt.Sprintf(`<meta %s="%s" content="%s">`, attribute, html.EscapeString(k), html.EscapeString(fmt.Sprint(v))))
 		sb.WriteString("\n")
 	}
 

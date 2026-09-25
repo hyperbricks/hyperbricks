@@ -1,0 +1,16 @@
+# Generated HyperBricks Space: Localized about (English)
+localized_about_en:
+  - inherit: localized_about_source
+  - route: localized-spaces/about
+  - title: Localized about (English)
+  - htmltag: '<html lang="en">'
+  - head:
+      - meta:
+          description: See how two Spaces sources share one template across English and German pages.
+  - content:
+      - type: template
+      - values:
+          heading: About this pattern
+          intro: This page uses a second source with the same template. Its English and German Spaces keep their own content and page titles.
+          section_copy: The source declares editable fields. The instances override text and metadata while preserving the shared layout.
+          section_heading: Ownership is visible

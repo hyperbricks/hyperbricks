@@ -1,6 +1,6 @@
 # Route Guard
 
-Route guard is an optional pre-render authorization barrier for route-owning components.
+Use a route guard to check access before a route renders. Add it to the component that owns the route.
 
 If `guard` is absent, or `guard.enabled` is `false`, the route renders normally.
 
@@ -24,7 +24,7 @@ Examples:
 - a fragment should not execute its children unless the user is allowed
 - an API fragment should not call an upstream API unless the request is allowed
 
-Route guard is evaluated before rendering starts.
+HyperBricks evaluates the guard before rendering starts.
 
 The access check runs on the server and does not depend on HTMX. After a denial, the configured response determines how the browser is notified.
 
@@ -141,6 +141,8 @@ Rules:
 - `authenticated: true` requires a resolved token.
 - `query.<key>: true` requires a non-empty query string value.
 
+Requiring a token checks its presence, not its signature, expiry, or session validity. Configure `authorize.endpoint` to call the service that validates access.
+
 ### `authorize`
 
 Performs an optional upstream authorization check before the route renders.
@@ -241,7 +243,9 @@ Both denial actions use the same HTTP response shape: `default` plus optional or
 - If no variant matches, HyperBricks uses `default`.
 - Without a configured status, unauthenticated denials use `401` and forbidden denials use `403`. Redirects need an explicit redirect status, such as `303`, and `headers.Location`.
 
-The examples above explicitly choose `303` with `Location` for a normal browser request and `401`/`403` with `HX-Redirect` for an HTMX request. There is no built-in HTMX request detection or automatic redirect-header conversion. A project using another client can configure that client's HTTP conventions in the same shape. The removed `redirect` and `hx_redirect` shorthands are invalid; see [HTTP response migration](HTTP_RESPONSES.md#migrate-existing-configuration).
+The examples use `303` with `Location` for normal browser requests. For HTMX, they use `401`/`403` with `HX-Redirect`. HyperBricks does not detect HTMX requests or convert redirect headers automatically.
+
+Use the same structure to configure another client's HTTP conventions. The old `redirect` and `hx_redirect` fields are invalid. See [HTTP response migration](HTTP_RESPONSES.md#migrate-existing-configuration).
 
 Guarded routes bypass the internal response cache and use `Cache-Control: no-store`. `Vary` includes the configured authentication inputs and request header selectors, so response selection is reflected in HTTP cache metadata. For the complete guard example above that includes:
 
@@ -301,6 +305,8 @@ dashboard:
 ```
 
 Anonymous requests are redirected before the page renders.
+
+This example checks only that the `token` cookie is present. Add an authorization endpoint before using it to protect real user data, as shown in the next example.
 
 ## Owner-Only Page
 
@@ -422,7 +428,9 @@ project_status:
   - type: api_fragment_render
   - route: project/status
   - method: GET
-  - endpoint: http://127.0.0.1:13000/rpc/project_status?project=$project
+  - endpoint: https://api.example.test/rpc/project_status
+  - querykeys: [project]
+  - forwardtoken: token
   - guard:
       enabled: true
       auth:

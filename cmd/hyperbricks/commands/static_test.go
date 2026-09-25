@@ -1,8 +1,19 @@
 package commands
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
 
 func TestStaticServeAlsoEnablesRendering(t *testing.T) {
+	t.Chdir(t.TempDir())
+	if err := os.MkdirAll(filepath.Join("modules", "demo"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join("modules", "demo", "package.hyperbricks.yaml"), []byte("hyperbricks: {}\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
 	previousRenderStatic := RenderStatic
 	previousServeStatic := ServeStatic
 	previousStartModule := StartModule

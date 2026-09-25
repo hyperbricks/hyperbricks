@@ -12,6 +12,11 @@ var (
 	ModuleConfigPath string
 )
 
+type moduleSelection struct {
+	Root string
+	Name string
+}
+
 const PackageConfigFileName = "package.hyperbricks.yaml"
 
 func GetModuleRoot() string {
@@ -31,7 +36,7 @@ func GetModuleConfigPath() string {
 	return filepath.Join(GetModuleRoot(), PackageConfigFileName)
 }
 
-func resolveDirectStartModuleRoot(module, workingDirectory string) (string, error) {
+func resolveModuleRoot(module, workingDirectory string) (string, error) {
 	module = strings.TrimSpace(module)
 	if module == "" {
 		return "", fmt.Errorf("module name or directory path is empty")
@@ -51,6 +56,19 @@ func resolveDirectStartModuleRoot(module, workingDirectory string) (string, erro
 		return "", fmt.Errorf("working directory must be absolute")
 	}
 	return filepath.Clean(filepath.Join(workingDirectory, module)), nil
+}
+
+func resolveModuleSelection(module, workingDirectory string) (moduleSelection, error) {
+	root, err := resolveModuleRoot(module, workingDirectory)
+	if err != nil {
+		return moduleSelection{}, err
+	}
+
+	name := filepath.Base(filepath.Clean(root))
+	if name == "." || name == string(filepath.Separator) || strings.TrimSpace(name) == "" {
+		return moduleSelection{}, fmt.Errorf("module directory has no usable name: %s", root)
+	}
+	return moduleSelection{Root: root, Name: name}, nil
 }
 
 func isModulePath(module string) bool {

@@ -52,29 +52,26 @@ func PreProcessAndPopulateConfigs() error {
 	// Populate the related indexes before linking renderer resources.
 	addRouteSourceErrors(tempRouteSourceErrors, configDiagnosticsRoute, sourceErrors)
 	updateGlobalHyperMediasBySection(tempHyperMediasBySection)
-	recordConfigDiagnostics(sourceErrors)
 
 	// linking resources to the renderers
 	linkRendererResources()
 	prepareGojaRouteConfigs(tempConfigs, tempRouteSourceErrors)
 	prepareEsbuildRouteConfigs(tempConfigs, tempRouteSourceErrors)
-	updateGlobalRouteSourceErrors(tempRouteSourceErrors)
 	tempRoutePlans := compileRoutePlans(tempConfigs, logger)
-	updateGlobalRoutes(tempConfigs, tempRoutePlans)
+	generation := publishRouteSnapshot(tempConfigs, tempRoutePlans, tempRouteSourceErrors)
+	recordConfigDiagnosticsAtGeneration(sourceErrors, generation)
 
 	// clear cache
 	clearHTMLCache()
 
-	logger.Infow("Hyperbricks configurations loaded", "count", len(tempConfigs))
+	logger.Infof("Configurations loaded  count=%d", len(tempConfigs))
+	printFilenameToRoutesMapping(filenameToRoutes, tempConfigs)
 
 	// prepare for static rendering
 	if commands.RenderStatic {
 		if err := PrepareForStaticRendering(tempConfigs); err != nil {
 			return err
 		}
-	} else {
-		// Print mapping from filename to routes
-		printFilenameToRoutesMapping(filenameToRoutes)
 	}
 
 	return nil
@@ -145,10 +142,13 @@ func loadYAMLHyperBricksSources() ([]hyperBricksConfigSource, []error, error) {
 	sourceErrors := make([]error, 0)
 	for _, file := range files {
 		result, err := yamlparser.ProcessFile(file, opts)
+		if err == nil {
+			err = prepareSourceMetadata(result.Materialized)
+		}
 		if err != nil {
 			componentError := yamlLoadErrorToComponentError(file, err)
 			sourceErrors = append(sourceErrors, componentError)
-			logging.GetLogger().Warnw("Skipping invalid YAML HyperBricks source", "file", file, "error", err)
+			logging.GetLogger().Warnw("Skipping invalid YAML HyperBricks source", "file", runtimeLogPath(file), "error", relativeYAMLLoadError(err.Error()))
 			continue
 		}
 		sources = append(sources, hyperBricksConfigSource{
@@ -156,19 +156,32 @@ func loadYAMLHyperBricksSources() ([]hyperBricksConfigSource, []error, error) {
 			Config:   result.Materialized,
 			Errors:   yamlDiagnosticsToComponentErrors(result.Diagnostics),
 		})
-		logging.GetLogger().Debug("Loaded YAML configuration for route: ", file)
+		logging.GetLogger().Debugw("Loaded YAML configuration", "file", runtimeLogPath(file))
 	}
 	return sources, sourceErrors, nil
 }
 
 func recordConfigDiagnostics(errors []error) {
-	if len(errors) == 0 || getHyperBricksConfiguration().Mode == shared.LIVE_MODE {
+	renderDiagnosticsMutex.RLock()
+	generation := diagnosticsGeneration
+	renderDiagnosticsMutex.RUnlock()
+	recordConfigDiagnosticsAtGeneration(errors, generation)
+}
+
+func recordConfigDiagnosticsAtGeneration(errors []error, generation uint64) {
+	requestID := nextRenderRequestID()
+	errors = shared.EnrichDiagnostics(errors, shared.Meta{}, "load")
+	logRenderDiagnostics(nil, requestID, configDiagnosticsRoute, errors)
+	if getHyperBricksConfiguration().Mode == shared.LIVE_MODE {
 		return
 	}
-	recordRenderDiagnostics(nil, nextRenderRequestID(), "__config", errors)
+	outcome := newDiagnosticOutcome(nil, requestID, configDiagnosticsRoute, generation, nil)
+	outcome.checked, outcome.errors = true, errors
+	commitRenderDiagnostics(nil, outcome)
 }
 
 func yamlRuntimeOptions() yamlparser.Options {
+	mode := getHyperBricksConfiguration().Mode
 	return yamlparser.Options{
 		Config:      parser.HbConfig,
 		Variables:   yamlRuntimeVariables(),
@@ -185,6 +198,7 @@ func yamlRuntimeOptions() yamlparser.Options {
 		},
 		RecoverDuplicateChildren: true,
 		AllowUnknownTypes:        true,
+		IncludeSourceMetadata:    mode == shared.DEVELOPMENT_MODE || mode == shared.DEBUG_MODE,
 	}
 }
 
@@ -192,7 +206,7 @@ func yamlDiagnosticsToComponentErrors(diagnostics []yamlparser.Diagnostic) []err
 	out := make([]error, 0, len(diagnostics))
 	for _, diagnostic := range diagnostics {
 		errorPath := fmt.Sprintf("%s:%d:%d:%s", diagnostic.Source, diagnostic.Line, diagnostic.Column, diagnostic.Code)
-		fileName := hyperBricksSourceName(diagnostic.Source, ".hyperbricks.yaml")
+		fileName := diagnosticSourceFile(diagnostic.Source)
 		out = append(out, shared.ComponentError{
 			Hash:  shared.HyperScriptErrorHash(errorPath),
 			File:  fileName,
@@ -201,6 +215,7 @@ func yamlDiagnosticsToComponentErrors(diagnostics []yamlparser.Diagnostic) []err
 			Key:   diagnostic.OriginalName,
 			Err:   formatYAMLDiagnosticMessage(diagnostic),
 			Level: strings.ToUpper(defaultDiagnosticLevel(diagnostic.Level)),
+			Line:  diagnostic.Line, Column: diagnostic.Column, Phase: "load",
 		})
 	}
 	return out
@@ -208,15 +223,37 @@ func yamlDiagnosticsToComponentErrors(diagnostics []yamlparser.Diagnostic) []err
 
 func yamlLoadErrorToComponentError(file string, err error) shared.ComponentError {
 	errorPath := fmt.Sprintf("%s:%v", file, err)
+	var source *yamlparser.SourceError
+	line, column := 0, 0
+	if errors.As(err, &source) {
+		if source.File != "" {
+			file = source.File
+		}
+		line, column = source.Line, source.Column
+	}
 	return shared.ComponentError{
-		Hash:     shared.HyperScriptErrorHash(errorPath),
-		File:     hyperBricksSourceName(file, ".hyperbricks.yaml"),
-		Type:     "YAML",
-		Path:     hyperBricksSourceName(file, ".hyperbricks.yaml"),
+		Hash: shared.HyperScriptErrorHash(errorPath),
+		File: diagnosticSourceFile(file),
+		Type: "YAML",
+		Line: line, Column: column, Phase: "load", Cause: err,
 		Err:      formatYAMLLoadError(file, err),
 		Level:    "ERROR",
 		Rejected: true,
 	}
+}
+
+func diagnosticSourceFile(file string) string {
+	if file == "" {
+		return ""
+	}
+	absolute, err := filepath.Abs(file)
+	module, moduleErr := filepath.Abs(core.ModuleDirectories.ModuleDir)
+	if err == nil && moduleErr == nil && core.ModuleDirectories.ModuleDir != "" {
+		if relative, err := filepath.Rel(module, absolute); err == nil {
+			return filepath.ToSlash(relative)
+		}
+	}
+	return filepath.ToSlash(filepath.Clean(file))
 }
 
 func formatYAMLLoadError(file string, err error) string {
@@ -272,10 +309,14 @@ func yamlPathPrefixReplacements() []pathPrefixReplacement {
 	addRoot(core.ModuleDirectories.StaticDir)
 	addRoot(core.ModuleDirectories.RenderedDir)
 
+	sort.Slice(replacements, func(i, j int) bool { return len(replacements[i].absolute) > len(replacements[j].absolute) })
 	return replacements
 }
 
 func relativeDisplayRoot(absolute string) string {
+	if core.ModuleDirectories.ModuleDir != "" {
+		return logging.ModulePath(core.ModuleDirectories.ModuleDir, absolute)
+	}
 	if cwd, err := os.Getwd(); err == nil {
 		if relative, err := filepath.Rel(cwd, absolute); err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
 			return filepath.Clean(relative)
@@ -415,13 +456,10 @@ func processScript(
 				tempHyperMediasBySection[hyperMediaConfig.Section],
 				hyperMediaConfig,
 			)
-			if hyperMediaConfig.Static == "" {
-				logger.Info(fmt.Sprintf("fragment (%s): [http://%s/%s] initialized", filename, shared.Location, hyperMediaConfig.Route))
-			} else {
-				logger.Info(fmt.Sprintf("static file: %s", hyperMediaConfig.Static))
+			if obj["@source"] == nil {
+				obj["hyperbricksfile"] = filename
+				obj["hyperbrickskey"] = key
 			}
-			obj["hyperbricksfile"] = filename
-			obj["hyperbrickskey"] = key
 			tempConfigs[fragmentRouteConfig.Route] = obj
 			addRouteSourceErrors(tempRouteSourceErrors, fragmentRouteConfig.Route, sourceErrors)
 
@@ -444,13 +482,10 @@ func processScript(
 				hyperMediaConfig,
 			)
 
-			if hyperMediaConfig.Static == "" {
-				logger.Info(fmt.Sprintf("route  (%s): [http://%s/%s] initialized", filename, shared.Location, hyperMediaConfig.Route))
-			} else {
-				logger.Info(fmt.Sprintf("static file: %s", hyperMediaConfig.Static))
+			if obj["@source"] == nil {
+				obj["hyperbricksfile"] = filename
+				obj["hyperbrickskey"] = key
 			}
-			obj["hyperbricksfile"] = filename
-			obj["hyperbrickskey"] = key
 			tempConfigs[hyperMediaConfig.Route] = obj
 			addRouteSourceErrors(tempRouteSourceErrors, hyperMediaConfig.Route, sourceErrors)
 
@@ -462,22 +497,6 @@ func processScript(
 		}
 	}
 	return nil
-}
-
-func printFilenameToRoutesMapping(filenameToRoutes map[string][]string) {
-	filenames := make([]string, 0, len(filenameToRoutes))
-	for fname := range filenameToRoutes {
-		filenames = append(filenames, fname)
-	}
-	logging.GetLogger().Info("====== route/config map ======")
-
-	sort.Strings(filenames)
-	for _, fname := range filenames {
-		routes := filenameToRoutes[fname]
-		logging.GetLogger().Info(fmt.Sprintf("%-24s -> %s", fname, strings.Join(routes, ", ")))
-
-	}
-	logging.GetLogger().Info("==============================")
 }
 
 type routeMetadataConfig struct {
@@ -593,7 +612,7 @@ func compileRoutePlans(
 		}
 		plans[route] = plan
 		if os.Getenv("HB_RENDER_PLAN_TRACE") == "1" {
-			logger.Infof("Compiled route render plan: %s", route)
+			logger.Debugw("Route render plan compiled", "route", route)
 		}
 	}
 	return plans
@@ -604,10 +623,20 @@ func updateGlobalRoutes(
 	tempConfigs map[string]map[string]interface{},
 	tempRoutePlans map[string]*renderplan.Plan,
 ) {
+	publishRouteSnapshot(tempConfigs, tempRoutePlans, nil)
+}
+
+func publishRouteSnapshot(tempConfigs map[string]map[string]interface{}, tempRoutePlans map[string]*renderplan.Plan, sourceErrors map[string][]error) uint64 {
 	configMutex.Lock()
 	defer configMutex.Unlock()
 	configs = tempConfigs
 	routePlans = tempRoutePlans
+	if sourceErrors != nil {
+		updateGlobalRouteSourceErrors(sourceErrors)
+	}
+	routeGeneration++
+	resetRenderDiagnostics(routeGeneration, tempConfigs)
+	return routeGeneration
 }
 
 // updateGlobalHyperMediasBySection safely updates the global hypermediasBySection map.

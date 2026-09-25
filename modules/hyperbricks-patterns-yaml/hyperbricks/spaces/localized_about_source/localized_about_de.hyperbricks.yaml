@@ -1,0 +1,28 @@
+# Generated HyperBricks Space: Über dieses Muster (Deutsch)
+localized_about_de:
+  - inherit: localized_about_source
+  - route: localized-spaces/de/ueber
+  - title: Über dieses Muster (Deutsch)
+  - htmltag: '<html lang="de">'
+  - head:
+      - meta:
+          description: Zwei Spaces-Quellen teilen eine Vorlage für englische und deutsche Seiten.
+  - content:
+      - type: template
+      - values:
+          nav_label: Hauptnavigation
+          back_label: Musterübersicht
+          home_url: /localized-spaces/de
+          home_label: Start
+          about_url: /localized-spaces/de/ueber
+          about_label: Über
+          alternate_url: /localized-spaces/about
+          alternate_language: en
+          alternate_label: English
+          kicker: Spaces / Über dieses Muster
+          heading: Über dieses Muster
+          intro: Diese Seite verwendet eine zweite Quelle mit derselben Vorlage. Die englischen und deutschen Spaces haben eigene Inhalte und Seitentitel.
+          section_copy: Die Quelle legt die bearbeitbaren Felder fest. Die Instanzen ändern Texte und Metadaten, während das Layout gemeinsam bleibt.
+          section_heading: Zuständigkeiten sind sichtbar
+          guide_label: Musterbeschreibung lesen
+          editor_label: Spaces verwalten

@@ -1,0 +1,581 @@
+#!/usr/bin/env python3
+"""Build Markdown, styled PDF, and reflowable EPUB compilations from one snapshot."""
+
+from __future__ import annotations
+
+import argparse
+from datetime import date
+from html import escape
+from io import BytesIO
+from pathlib import Path
+import os
+import re
+import sys
+import subprocess
+import tempfile
+
+import build_markdown_compilations as assembly
+
+
+def arguments():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--ref", default=assembly.WORKTREE, help="Git revision to build (default: current working tree)")
+    parser.add_argument("--format", choices=("all", "markdown", "pdf", "epub"), default="all")
+    parser.add_argument("--output-dir", default="docs/compilations", help="Destination for generated compilations (default: docs/compilations)")
+    parser.add_argument("--font-dir", default="/System/Library/Fonts/Supplemental")
+    parser.add_argument("--code-font", default="/System/Library/Fonts/Menlo.ttc")
+    parser.add_argument("--mermaid-cli", default=os.environ.get("HB_MERMAID_CLI", str(Path(__file__).resolve().parents[2] / ".venv-compilations/mermaid/node_modules/.bin/mmdc")))
+    return parser.parse_args()
+
+
+def print_mermaid_source(source):
+    # Mermaid emits class/style colors as inline !important declarations, which
+    # cannot be overridden by print CSS. Adapt only those presentation statements.
+    palette = {"fill": "#f0f5f8", "stroke": "#087f8c", "color": "#123044"}
+    lines = []
+    for line in source.splitlines():
+        if re.match(r"^\s*(classDef|style|linkStyle)\s", line):
+            line = re.sub(r"\b(fill|stroke|color)\s*:\s*[^,;]+",
+                          lambda match: f"{match[1]}:{palette[match[1]]}", line)
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def render_mermaid(source, executable):
+    if not executable or not Path(executable).is_file():
+        raise assembly.BuildError("Mermaid CLI is missing; run bash scripts/compilation-generation/build_compilations.sh or supply --mermaid-cli")
+    assets = Path(__file__).resolve().parent
+    with tempfile.TemporaryDirectory(prefix="hb-mermaid-") as directory:
+        input_path = Path(directory) / "diagram.mmd"
+        output_path = Path(directory) / "diagram.png"
+        input_path.write_text(print_mermaid_source(source), encoding="utf-8")
+        try:
+            result = subprocess.run(
+                [str(executable), "-i", str(input_path), "-o", str(output_path),
+                 "-b", "white", "-w", "1600", "-s", "2",
+                 "-C", str(assets / "compilation-mermaid.css"),
+                 "-c", str(assets / "compilation-mermaid.json")],
+                capture_output=True, text=True, timeout=120, check=False,
+            )
+        except subprocess.TimeoutExpired as error:
+            raise assembly.BuildError("Mermaid rendering exceeded 120 seconds") from error
+        if result.returncode or not output_path.is_file():
+            raise assembly.BuildError(f"Mermaid rendering failed: {(result.stderr or result.stdout)[-2500:]}")
+        return output_path.read_bytes()
+
+
+def render_pdf(compilation, commit, snapshot_date, destination, font_dir, code_font, mermaid_cli=None):
+    from markdown_it import MarkdownIt
+    from pypdf import PdfReader
+    from pygments import lex
+    from pygments.lexers import get_lexer_by_name, TextLexer
+    from pygments.token import Token
+    from pygments.util import ClassNotFound
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_LEFT
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.utils import ImageReader
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.platypus import (
+        BaseDocTemplate, Flowable, Frame, PageBreak, PageTemplate,
+        Image, Paragraph, Spacer, Table, TableStyle,
+    )
+    from reportlab.platypus.tableofcontents import TableOfContents
+
+    fonts = {
+        "HB": font_dir / "Arial.ttf",
+        "HB-Bold": font_dir / "Arial Bold.ttf",
+        "HB-Italic": font_dir / "Arial Italic.ttf",
+        "HB-BoldItalic": font_dir / "Arial Bold Italic.ttf",
+        "HB-Code": code_font,
+    }
+    for name, path in fonts.items():
+        if not path.is_file():
+            raise assembly.BuildError(f"Required font missing: {path}; set --font-dir/--code-font")
+        pdfmetrics.registerFont(TTFont(name, str(path)))
+    pdfmetrics.registerFontFamily("HB", normal="HB", bold="HB-Bold", italic="HB-Italic", boldItalic="HB-BoldItalic")
+    ink = colors.HexColor("#123044")
+    text = colors.HexColor("#243642")
+    teal = colors.HexColor("#087f8c")
+    border = colors.HexColor("#cedae1")
+    width, height = A4
+    content_width = width - 112
+    styles = {
+        "body": ParagraphStyle("body", fontName="HB", fontSize=9.5, leading=14, textColor=text, spaceAfter=7, splitLongWords=True),
+        "small": ParagraphStyle("small", fontName="HB", fontSize=8, leading=11, textColor=text, spaceAfter=7),
+        "chapter": ParagraphStyle("chapter", fontName="HB-Bold", fontSize=25, leading=30, textColor=ink, spaceAfter=14, keepWithNext=True),
+        "h1": ParagraphStyle("h1", fontName="HB-Bold", fontSize=20, leading=25, textColor=ink, spaceBefore=13, spaceAfter=9, keepWithNext=True),
+        "h2": ParagraphStyle("h2", fontName="HB-Bold", fontSize=15, leading=19, textColor=ink, spaceBefore=11, spaceAfter=6, keepWithNext=True,
+                              backColor=colors.HexColor("#f0f5f8"), borderColor=border, borderWidth=.5, borderPadding=(5, 7, 5, 7)),
+        "h3": ParagraphStyle("h3", fontName="HB-Bold", fontSize=11.5, leading=15, textColor=teal, spaceBefore=9, spaceAfter=4, keepWithNext=True),
+        "h4": ParagraphStyle("h4", fontName="HB-Bold", fontSize=10, leading=13, textColor=text, spaceBefore=7, spaceAfter=3, keepWithNext=True),
+        "list": ParagraphStyle("list", fontName="HB", fontSize=9.5, leading=13, textColor=text, spaceAfter=3, splitLongWords=True),
+        "quote": ParagraphStyle("quote", fontName="HB-Italic", fontSize=9.2, leading=13, textColor=text, leftIndent=10, rightIndent=6,
+                                 spaceBefore=4, spaceAfter=7, backColor=colors.HexColor("#f0f5f8"), borderColor=teal,
+                                 borderWidth=.6, borderPadding=(5, 7, 5, 7)),
+        "cell": ParagraphStyle("cell", fontName="HB", fontSize=8, leading=11, textColor=text, splitLongWords=True),
+        "cell_header": ParagraphStyle("cell_header", fontName="HB-Bold", fontSize=8, leading=11, textColor=ink, splitLongWords=True),
+    }
+    compilation_kind = compilation.kind or (
+        "skills" if "Skills" in compilation.title else "documentation"
+    )
+    if compilation_kind not in {"documentation", "skills"}:
+        raise assembly.BuildError(f"Unsupported compilation kind: {compilation_kind}")
+    kind = "Skills" if compilation_kind == "skills" else "Documentation"
+    running = f"{kind.upper()} COMPILATION"
+    code_palette = (
+        (Token.Comment, colors.HexColor("#576579")),
+        (Token.Keyword, colors.HexColor("#6639ba")),
+        (Token.Name.Tag, colors.HexColor("#0550ae")),
+        (Token.Name.Attribute, colors.HexColor("#0550ae")),
+        (Token.Name.Builtin, colors.HexColor("#6639ba")),
+        (Token.Literal.String, colors.HexColor("#116329")),
+        (Token.Literal.Number, colors.HexColor("#953800")),
+        (Token.Operator, colors.HexColor("#6639ba")),
+    )
+
+    class Code(Flowable):
+        def __init__(self, raw, language="", lines=None, continued=False, continues=False):
+            super().__init__()
+            self.raw, self.language, self.lines = raw, language, lines
+            self.continued, self.continues = continued, continues
+            self.spaceBefore, self.spaceAfter = 5, 10
+
+        def colored_lines(self):
+            options = {"stripnl": False, "ensurenl": False}
+            try:
+                lexer = get_lexer_by_name(self.language.lower(), **options)
+            except ClassNotFound:
+                lexer = TextLexer(**options)
+            source = self.raw.expandtabs(4)
+            lines = [[]]
+            for token, value in lex(source, lexer):
+                color = next((color for category, color in code_palette if token in category), text)
+                for index, piece in enumerate(value.split("\n")):
+                    if index:
+                        lines.append([])
+                    if piece:
+                        lines[-1].append((piece, color))
+            if source.endswith("\n"):
+                lines.pop()
+            return lines or [[]]
+
+        def wrap(self, available_width, available_height):
+            self.width = available_width
+            if self.lines is None:
+                self.lines = []
+                line_width = available_width - 28
+                for logical_line in self.colored_lines():
+                    line, remaining = [], line_width
+                    for piece, color in logical_line:
+                        while piece:
+                            end = len(piece)
+                            if pdfmetrics.stringWidth(piece, "HB-Code", 8) > remaining:
+                                lower, upper = 0, len(piece)
+                                while lower < upper:
+                                    middle = (lower + upper + 1) // 2
+                                    if pdfmetrics.stringWidth(piece[:middle], "HB-Code", 8) <= remaining:
+                                        lower = middle
+                                    else:
+                                        upper = middle - 1
+                                end = lower
+                            if end:
+                                part = piece[:end]
+                                line.append((part, color))
+                                remaining -= pdfmetrics.stringWidth(part, "HB-Code", 8)
+                                piece = piece[end:]
+                            if piece:
+                                if not line:
+                                    raise assembly.BuildError("PDF code frame is too narrow for a character")
+                                self.lines.append(line)
+                                line, remaining = [], line_width
+                    self.lines.append(line)
+            self.height = 36 + max(1, len(self.lines)) * 12 + (18 if self.continues else 0)
+            return self.width, self.height
+
+        def split(self, available_width, available_height):
+            self.wrap(available_width, available_height)
+            # Reserve footer space before splitting so the notice cannot cover code.
+            count = int((available_height - 36 - 18) // 12)
+            if count < 2 or count >= len(self.lines):
+                return []
+            return [Code("", self.language, self.lines[:count], self.continued, True),
+                    Code("", self.language, self.lines[count:], True, self.continues)]
+
+        def draw(self):
+            c = self.canv
+            c.setStrokeColor(border)
+            c.setFillColor(colors.HexColor("#f0f5f8"))
+            c.roundRect(0, 0, self.width, self.height, 6, fill=1, stroke=1)
+            c.setFillColor(colors.HexColor("#e4edf2"))
+            c.rect(1, self.height - 27, self.width - 2, 20, fill=1, stroke=0)
+            c.setFillColor(teal)
+            c.roundRect(12, self.height - 19, 3, 9, 1, fill=1, stroke=0)
+            c.setFillColor(colors.HexColor("#426176"))
+            c.setFont("HB-Bold", 7.4)
+            c.drawString(22, self.height - 18, self.language.upper() or "CODE")
+            if self.continued:
+                c.setFont("HB", 7.2)
+                c.drawRightString(self.width - 14, self.height - 18, "Continued from previous page")
+            for index, line in enumerate(self.lines):
+                code = c.beginText(14, self.height - 40 - index * 12)
+                code.setFont("HB-Code", 8)
+                for piece, color in line:
+                    code.setFillColor(color)
+                    code.textOut(piece)
+                c.drawText(code)
+            if self.continues:
+                c.setStrokeColor(border)
+                c.setLineWidth(.5)
+                c.line(14, 20, self.width - 14, 20)
+                c.setFillColor(teal)
+                c.setFont("HB-Italic", 7.2)
+                c.drawRightString(self.width - 14, 8, "Continues on next page")
+
+    class Book(BaseDocTemplate):
+        def beforeDocument(self):
+            super().beforeDocument()
+            self._last_section = None
+
+        def afterFlowable(self, flowable):
+            if hasattr(flowable, "chapter_anchor"):
+                section = getattr(flowable, "document_section", "")
+                document_title = getattr(flowable, "contents_title", flowable.getPlainText())
+                if compilation_kind == "skills":
+                    self.canv.bookmarkPage(flowable.chapter_anchor)
+                    self.canv.addOutlineEntry(document_title, flowable.chapter_anchor, level=0)
+                    return
+                if section and section != self._last_section:
+                    section_anchor = f"compilation-section-{assembly.slug(section)}"
+                    self.canv.bookmarkPage(section_anchor)
+                    self.canv.addOutlineEntry(section, section_anchor, level=0)
+                    self.notify("TOCEntry", (0, section, self.page, section_anchor))
+                    self._last_section = section
+                level = 1 if section else 0
+                self.canv.bookmarkPage(flowable.chapter_anchor)
+                self.canv.addOutlineEntry(document_title, flowable.chapter_anchor, level=level)
+                self.notify("TOCEntry", (level, document_title, self.page, flowable.chapter_anchor))
+            elif hasattr(flowable, "skill_section_anchor"):
+                title = getattr(flowable, "contents_title", flowable.getPlainText())
+                anchor = flowable.skill_section_anchor
+                self.canv.bookmarkPage(anchor)
+                self.canv.addOutlineEntry(title, anchor, level=1)
+                self.notify("TOCEntry", (0, title, self.page, anchor))
+
+    def draw_inline_code_background(canvas, kind, label):
+        if kind != "onDraw" or not label:
+            return
+        position = canvas._curr_tx_info
+        code_width = pdfmetrics.stringWidth(label, "HB-Code", 8)
+        horizontal_padding = 1.25
+        canvas.saveState()
+        canvas.setFillColor(colors.HexColor("#edf2f5"))
+        canvas.roundRect(
+            position["cur_x"] - horizontal_padding,
+            position["cur_y"] - 2,
+            code_width + horizontal_padding * 2,
+            11,
+            1.5,
+            fill=1,
+            stroke=0,
+        )
+        canvas.restoreState()
+
+    def decorate(c, doc):
+        c.setNamedCB("drawInlineCodeBackground", draw_inline_code_background)
+        if doc.page == 1:
+            stamp = f"{snapshot_date.day} {assembly.MONTH_NAMES[snapshot_date.month - 1]} {snapshot_date.year}"
+            if compilation.cover:
+                cover_values = {
+                    "version": compilation.version,
+                    "subtitle": compilation.subtitle,
+                    "document_count": len(compilation.sources),
+                    "snapshot_date": stamp,
+                    "short_commit": commit[:7],
+                }
+
+                def cover_text(field):
+                    return assembly.format_text(
+                        getattr(compilation.cover, field),
+                        cover_values,
+                        f"cover.{field}",
+                    )
+
+                cover_label = cover_text("label")
+                cover_brand = cover_text("brand")
+                cover_heading = cover_text("heading")
+                cover_detail = cover_text("detail")
+                cover_summary = cover_text("summary")
+                cover_source = cover_text("source")
+            else:
+                cover_label = f"HYPERBRICKS / {kind.upper()}"
+                cover_brand = "HyperBricks"
+                cover_heading = f"{kind} compilation"
+                cover_detail = compilation.subtitle if kind == "Skills" else compilation.version
+                version_label = f"{compilation.version} • " if compilation.version else ""
+                cover_summary = f"{version_label}{len(compilation.sources)} documents"
+                cover_source = f"Source version: {compilation.version}; chapters use the matching maintained sources."
+            cover_lines = (
+                ("label", cover_label, "HB-Bold", 9),
+                ("brand", cover_brand, "HB-Bold", 42),
+                ("heading", cover_heading, "HB-Bold", 32),
+                ("detail", cover_detail, "HB-Bold", 21),
+                ("topics", f"{compilation.topics_label}: {compilation.topics}", "HB", 9.5),
+                ("summary", cover_summary, "HB-Bold", 9),
+                ("source", cover_source, "HB", 8),
+            )
+            for field, value, font, size in cover_lines:
+                if "\n" in value or "\r" in value:
+                    raise assembly.BuildError(f"PDF cover {field} must be a single line")
+                if pdfmetrics.stringWidth(value, font, size) > content_width:
+                    raise assembly.BuildError(f"PDF cover {field} is too wide for the page")
+            c.saveState()
+            c.setFillColor(teal)
+            c.setFont("HB-Bold", 9)
+            c.drawString(56, height - 165, cover_label)
+            c.setFillColor(ink)
+            c.setFont("HB-Bold", 42)
+            c.drawString(56, height - 220, cover_brand)
+            c.setFont("HB-Bold", 32)
+            c.drawString(56, height - 268, cover_heading)
+            c.setFont("HB-Bold", 21)
+            c.drawString(56, height - 338, cover_detail)
+            description = Paragraph(escape(compilation.description), styles["body"])
+            _, desc_height = description.wrap(content_width, 100)
+            description.drawOn(c, 56, height - 377 - desc_height)
+            c.setFont("HB", 9.5)
+            c.setFillColor(text)
+            c.drawString(
+                56,
+                height - 407 - desc_height,
+                f"{compilation.topics_label}: {compilation.topics}",
+            )
+            c.setFillColor(teal)
+            c.setFont("HB-Bold", 9)
+            c.drawString(56, height - 518, cover_summary)
+            c.setFillColor(text)
+            c.setFont("HB", 8)
+            c.drawString(56, height - 540, cover_source)
+            c.restoreState()
+            return
+        c.saveState()
+        c.setFillColor(teal)
+        c.rect(50, height - 35, 26, 3, fill=1, stroke=0)
+        c.setFont("HB", 7.2)
+        c.drawRightString(width - 56, height - 34, running)
+        c.setStrokeColor(border)
+        c.line(50, 42, width - 50, 42)
+        c.setFillColor(text)
+        c.setFont("HB", 7.5)
+        c.drawString(50, 29, f"HyperBricks / {kind}")
+        c.drawRightString(width - 50, 29, str(doc.page))
+        c.restoreState()
+
+    def inline(tokens):
+        parts = []
+        for token in tokens or []:
+            if token.type == "text":
+                parts.append(escape(token.content))
+            elif token.type == "code_inline":
+                label = escape(token.content, quote=True)
+                parts.append(
+                    f'<onDraw name="drawInlineCodeBackground" label="{label}"/>'
+                    f'<font name="HB-Code" size="8">{escape(token.content)}</font>'
+                )
+            elif token.type in {"strong_open", "strong_close", "em_open", "em_close"}:
+                tag = "b" if token.type.startswith("strong") else "i"
+                parts.append(f"<{tag}>" if token.nesting == 1 else f"</{tag}>")
+            elif token.type == "link_open":
+                parts.append(f'<a href="{escape(token.attrGet("href"), quote=True)}" color="#087f8c">')
+            elif token.type == "link_close":
+                parts.append("</a>")
+            elif token.type in {"softbreak", "hardbreak"}:
+                parts.append(" " if token.type == "softbreak" else "<br/>")
+            elif token.type == "image":
+                raise assembly.BuildError("Embedded Markdown images require an explicit PDF asset renderer")
+            elif token.type == "html_inline":
+                parts.append(escape(token.content))
+            else:
+                raise assembly.BuildError(f"Unsupported inline Markdown token: {token.type}")
+        return "".join(parts)
+
+    parser = MarkdownIt("commonmark", {"html": True}).enable("table")
+    diagrams = {}
+
+    def blocks(markdown):
+        tokens = parser.parse(markdown)
+        result, anchors, lists, quote_depth = [], [], [], 0
+        index = 0
+        while index < len(tokens):
+            token = tokens[index]
+            if token.type == "html_block":
+                found = re.findall(r'<a id="([^"]+)"></a>', token.content)
+                if found:
+                    anchors.extend(found)
+                elif not token.content.lstrip().startswith("<!--"):
+                    result.append(Code(token.content, "HTML"))
+            elif token.type == "heading_open":
+                level = int(token.tag[1:])
+                heading_anchors = tuple(anchors)
+                markup = "".join(f'<a name="{escape(a, quote=True)}"/>' for a in heading_anchors)
+                anchors.clear()
+                heading = Paragraph(markup + inline(tokens[index + 1].children), styles[f"h{min(level, 4)}"])
+                if compilation_kind == "skills" and level == 3 and heading_anchors:
+                    heading.skill_section_anchor = heading_anchors[-1]
+                    heading.contents_title = tokens[index + 1].content
+                result.append(heading)
+                index += 2
+            elif token.type == "paragraph_open":
+                content = tokens[index + 1].content
+                found = re.findall(r'<a id="([^"]+)"></a>', content)
+                if found and not re.sub(r'<a id="[^"]+"></a>', "", content).strip():
+                    anchors.extend(found)
+                    index += 3
+                    continue
+                prefix = ""
+                paragraph_style = styles["quote"] if quote_depth else styles["body"]
+                if lists:
+                    prefix = "• " if lists[-1] is None else f"{lists[-1]}. "
+                    if lists[-1] is not None:
+                        lists[-1] += 1
+                    depth = len(lists) - 1
+                    paragraph_style = ParagraphStyle(
+                        f"list-{depth}-{len(result)}",
+                        parent=styles["list"],
+                        leftIndent=14 + depth * 13,
+                        firstLineIndent=-10,
+                    )
+                result.append(Paragraph(prefix + inline(tokens[index + 1].children), paragraph_style))
+                index += 2
+            elif token.type in {"fence", "code_block"}:
+                language = token.info.split()[0] if token.info else ""
+                if language.lower() == "mermaid":
+                    if token.content not in diagrams:
+                        diagrams[token.content] = render_mermaid(token.content, mermaid_cli)
+                    data = diagrams[token.content]
+                    image_width, image_height = ImageReader(BytesIO(data)).getSize()
+                    scale = min(content_width / image_width, (height - 130) / image_height)
+                    diagram = Image(BytesIO(data), width=image_width * scale, height=image_height * scale)
+                    diagram.hAlign = "CENTER"
+                    result.extend([Spacer(1, 8), diagram, Spacer(1, 10)])
+                else:
+                    result.append(Code(token.content, language))
+            elif token.type in {"bullet_list_open", "ordered_list_open"}:
+                lists.append(None if token.type == "bullet_list_open" else int(token.attrGet("start") or 1))
+            elif token.type in {"bullet_list_close", "ordered_list_close"}:
+                lists.pop()
+            elif token.type == "blockquote_open":
+                quote_depth += 1
+            elif token.type == "blockquote_close":
+                quote_depth = max(0, quote_depth - 1)
+            elif token.type == "table_open":
+                rows, row, header_row = [], [], False
+                index += 1
+                while tokens[index].type != "table_close":
+                    entry = tokens[index]
+                    if entry.type == "tr_open":
+                        row = []
+                        header_row = False
+                    elif entry.type == "th_open":
+                        header_row = True
+                    elif entry.type == "th_close":
+                        header_row = False
+                    elif entry.type == "inline":
+                        row.append(Paragraph(inline(entry.children), styles["cell_header" if header_row else "cell"]))
+                    elif entry.type == "tr_close":
+                        rows.append(row)
+                    index += 1
+                table = Table(rows, colWidths=[content_width / len(rows[0])] * len(rows[0]), repeatRows=1, splitInRow=1, hAlign="LEFT")
+                table.setStyle(TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e4edf2")),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("GRID", (0, 0), (-1, -1), .4, border),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 7),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+                    ("TOPPADDING", (0, 0), (-1, -1), 6),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                ]))
+                for row_index in range(2, len(rows), 2):
+                    table.setStyle(TableStyle([("BACKGROUND", (0, row_index), (-1, row_index), colors.HexColor("#f7f9fa"))]))
+                result.extend([table, Spacer(1, 10)])
+            index += 1
+        return result
+
+    included = {source.path: source for source in compilation.sources}
+    story = [Spacer(1, 1), PageBreak(), Paragraph("Contents", styles["chapter"])]
+    toc = TableOfContents()
+    toc.levelStyles = [
+        ParagraphStyle("toc-section", parent=styles["body"], fontName="HB-Bold", spaceBefore=8, spaceAfter=3, alignment=TA_LEFT),
+        ParagraphStyle("toc-document", parent=styles["body"], leftIndent=14, spaceBefore=3, spaceAfter=3, alignment=TA_LEFT),
+    ]
+    story.append(toc)
+    for source in compilation.sources:
+        story.extend([PageBreak(), Paragraph(escape(source.path), ParagraphStyle("label", parent=styles["small"], fontName="HB-Bold", textColor=teal))])
+        chapter = Paragraph(f'<a name="{source.anchor}"/>{escape(source.title)}', styles["chapter"])
+        chapter.chapter_anchor = source.anchor
+        chapter.document_section = source.section
+        chapter.contents_title = source.display_title or source.title
+        story.append(chapter)
+        transformed = assembly.transform_source(
+            source,
+            included,
+            compilation.repository_ref or commit,
+            expose_front_matter=source.path.endswith("/SKILL.md"),
+        )
+        story.extend(blocks(transformed))
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary = tempfile.mkstemp(suffix=".pdf", dir=destination.parent)
+    os.close(descriptor)
+    try:
+        book = Book(temporary, pagesize=A4, title=compilation.title, author="HyperBricks", subject=compilation.subtitle)
+        frame = Frame(56, 54, content_width, height - 110, leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
+        book.addPageTemplates(PageTemplate(id="compilation", frames=frame, onPage=decorate))
+        book.multiBuild(story)
+        reader = PdfReader(temporary)
+        if len(reader.pages) < 3 or not reader.outline:
+            raise assembly.BuildError("PDF validation failed: missing pages or chapter outline")
+        os.chmod(temporary, destination.stat().st_mode & 0o777 if destination.exists() else 0o644)
+        os.replace(temporary, destination)
+        print(f"Wrote {destination} ({len(reader.pages)} pages)")
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def main():
+    args = arguments()
+    try:
+        repository = assembly.repository_root()
+        commit = assembly.WORKTREE if args.ref == assembly.WORKTREE else assembly.resolve_commit(repository, args.ref)
+        snapshot_date = (
+            date(1970, 1, 1) if commit == assembly.WORKTREE
+            else date.fromisoformat(assembly.run_git(repository, "show", "-s", "--format=%cs", commit).strip())
+        )
+        output = Path(args.output_dir)
+        if not output.is_absolute():
+            output = repository / output
+        for compilation in assembly.build_compilations(repository, commit):
+            if args.format in {"all", "markdown"}:
+                path = output / compilation.filename
+                assembly.write_atomic(path, assembly.render_compilation(compilation, commit, snapshot_date))
+                print(f"Wrote {path} ({len(compilation.sources)} sources)")
+            if args.format in {"all", "pdf"}:
+                render_pdf(compilation, commit, snapshot_date, output / Path(compilation.filename).with_suffix(".pdf"), Path(args.font_dir), Path(args.code_font), args.mermaid_cli)
+            if args.format in {"all", "epub"}:
+                from build_epub_compilations import epub_for
+                path = output / Path(compilation.filename).with_suffix(".epub")
+                epub_for(Path(compilation.filename), path, args.mermaid_cli,
+                         markdown=assembly.render_compilation(compilation, commit, snapshot_date),
+                         title=compilation.title)
+                print(f"Wrote {path}")
+        print(f"Source snapshot: {commit}")
+        return 0
+    except (assembly.BuildError, OSError, ValueError, ImportError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

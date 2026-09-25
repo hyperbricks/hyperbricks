@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"math/rand"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -139,15 +140,32 @@ func GenericTemplate() *template.Template {
 }
 
 func ParsedGenericTemplate(templateStr string) (*template.Template, error) {
-	if value, ok := genericTemplateCache.Load(templateStr); ok {
+	return ParsedNamedTemplate("hyperbricks-generic-template", templateStr)
+}
+
+func ParsedNamedTemplate(name, templateStr string) (*template.Template, error) {
+	if name == "" {
+		name = "hyperbricks-generic-template"
+	}
+	key := struct{ Name, Source string }{name, templateStr}
+	if value, ok := genericTemplateCache.Load(key); ok {
 		return value.(*template.Template), nil
 	}
 
-	tmpl, err := GenericTemplate().Parse(templateStr)
+	base := GenericTemplate()
+	if name != base.Name() {
+		base = base.New(name)
+	}
+	tmpl, err := base.Parse(templateStr)
 	if err != nil {
 		return nil, err
 	}
+	if name != "hyperbricks-generic-template" && tmpl.Tree != nil && strings.TrimSpace(tmpl.Tree.Root.String()) == "" {
+		if declared := tmpl.Lookup("hyperbricks-generic-template"); declared != nil && declared.Tree != nil && declared.Tree.Root != nil {
+			tmpl = declared
+		}
+	}
 
-	value, _ := genericTemplateCache.LoadOrStore(templateStr, tmpl)
+	value, _ := genericTemplateCache.LoadOrStore(key, tmpl)
 	return value.(*template.Template), nil
 }

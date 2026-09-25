@@ -1,6 +1,7 @@
 <main class="pattern-docs-shell">
   <nav class="pattern-docs-topnav">
     <a href="/index" class="page-link">← Pattern index</a>
+    {{if eq .current_doc `localized-spaces`}}<a href="#localized-guide-start" class="page-link">Read guide ↓</a>{{end}}
   </nav>
 
   <header id="pattern-docs-header" class="page-header">
@@ -26,15 +27,24 @@
           <a class="pattern-docs-link" data-active="{{if eq .current_doc `guarded-page-demo`}}true{{else}}false{{end}}" href="/docs/guarded-page-demo" hx-get="/docs/guarded-page-demo" hx-select="#pattern-docs-panel > *" hx-select-oob="#pattern-docs-sidebar-shell:outerHTML, #pattern-docs-header:outerHTML" hx-target="#pattern-docs-panel" hx-swap="innerHTML" hx-push-url="/docs/guarded-page-demo">Guarded page</a>
           <a class="pattern-docs-link" data-active="{{if eq .current_doc `api-fragment-write-demo`}}true{{else}}false{{end}}" href="/docs/api-fragment-write-demo" hx-get="/docs/api-fragment-write-demo" hx-select="#pattern-docs-panel > *" hx-select-oob="#pattern-docs-sidebar-shell:outerHTML, #pattern-docs-header:outerHTML" hx-target="#pattern-docs-panel" hx-swap="innerHTML" hx-push-url="/docs/api-fragment-write-demo">API fragment write</a>
           <a class="pattern-docs-link" data-active="{{if eq .current_doc `menu-htmx-demo`}}true{{else}}false{{end}}" href="/docs/menu-htmx-demo" hx-get="/docs/menu-htmx-demo" hx-select="#pattern-docs-panel > *" hx-select-oob="#pattern-docs-sidebar-shell:outerHTML, #pattern-docs-header:outerHTML" hx-target="#pattern-docs-panel" hx-swap="innerHTML" hx-push-url="/docs/menu-htmx-demo">MENU + HTMX</a>
-          <a class="pattern-docs-link" data-active="{{if eq .current_doc `config-driven-section-rail`}}true{{else}}false{{end}}" href="/docs/config-driven-section-rail" hx-get="/docs/config-driven-section-rail" hx-select="#pattern-docs-panel > *" hx-select-oob="#pattern-docs-sidebar-shell:outerHTML, #pattern-docs-header:outerHTML" hx-target="#pattern-docs-panel" hx-swap="innerHTML" hx-push-url="/docs/config-driven-section-rail">Section rail</a>
+          <a class="pattern-docs-link" data-active="{{if eq .current_doc `sidebar-section-navigation`}}true{{else}}false{{end}}" href="/docs/sidebar-section-navigation" hx-get="/docs/sidebar-section-navigation" hx-select="#pattern-docs-panel > *" hx-select-oob="#pattern-docs-sidebar-shell:outerHTML, #pattern-docs-header:outerHTML" hx-target="#pattern-docs-panel" hx-swap="innerHTML" hx-push-url="/docs/sidebar-section-navigation">Sidebar section navigation</a>
           <a class="pattern-docs-link" data-active="{{if eq .current_doc `single-plugin-many-actions`}}true{{else}}false{{end}}" href="/docs/single-plugin-many-actions" hx-get="/docs/single-plugin-many-actions" hx-select="#pattern-docs-panel > *" hx-select-oob="#pattern-docs-sidebar-shell:outerHTML, #pattern-docs-header:outerHTML" hx-target="#pattern-docs-panel" hx-swap="innerHTML" hx-push-url="/docs/single-plugin-many-actions">Single plugin, many actions</a>
           <a class="pattern-docs-link" data-active="{{if eq .current_doc `plugin-vs-api-route-split`}}true{{else}}false{{end}}" href="/docs/plugin-vs-api-route-split" hx-get="/docs/plugin-vs-api-route-split" hx-select="#pattern-docs-panel > *" hx-select-oob="#pattern-docs-sidebar-shell:outerHTML, #pattern-docs-header:outerHTML" hx-target="#pattern-docs-panel" hx-swap="innerHTML" hx-push-url="/docs/plugin-vs-api-route-split">Plugin vs API route split</a>
           <a class="pattern-docs-link" data-active="{{if eq .current_doc `unpoly-fragment-demo`}}true{{else}}false{{end}}" href="/docs/unpoly-fragment-demo" hx-get="/docs/unpoly-fragment-demo" hx-select="#pattern-docs-panel > *" hx-select-oob="#pattern-docs-sidebar-shell:outerHTML, #pattern-docs-header:outerHTML" hx-target="#pattern-docs-panel" hx-swap="innerHTML" hx-push-url="/docs/unpoly-fragment-demo">Unpoly fragment</a>
+        </div>
+
+        <div class="pattern-docs-group">
+          <p class="page-kicker mb-2">Spaces</p>
+          <a class="pattern-docs-link" data-active="{{if eq .current_doc `localized-spaces`}}true{{else}}false{{end}}" href="/docs/localized-spaces" hx-get="/docs/localized-spaces" hx-select="#pattern-docs-panel > *" hx-select-oob="#pattern-docs-sidebar-shell:outerHTML, #pattern-docs-header:outerHTML" hx-target="#pattern-docs-panel" hx-swap="innerHTML" hx-push-url="/docs/localized-spaces">Localized pages</a>
+          <a class="pattern-docs-link" href="/localized-spaces">English demo</a>
+          <a class="pattern-docs-link" href="/localized-spaces/de">German demo</a>
+          <a class="pattern-docs-link" href="{{.spaces_editor_url}}" data-spaces-editor-link hidden>Manage Spaces</a>
         </div>
       </aside>
     </div>
 
     <section id="pattern-docs-panel" class="pattern-docs-panel">
+      {{if eq .current_doc `localized-spaces`}}<span id="localized-guide-start" class="block h-px" aria-hidden="true"></span>{{end}}
       {{ .content }}
     </section>
   </section>

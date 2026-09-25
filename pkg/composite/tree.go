@@ -127,9 +127,11 @@ func (r *TreeRenderer) Render(data interface{}, ctx context.Context) (string, []
 		}
 
 		// Update componentConfig with path and key
-		localConfig["hyperbrickskey"] = key
-		localConfig["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
-		localConfig["hyperbrickspath"] = joinTreePath(config.Composite.Meta.HyperBricksPath, key)
+		if localConfig["@source"] == nil {
+			localConfig["hyperbrickskey"] = key
+			localConfig["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
+			localConfig["hyperbrickspath"] = joinTreePath(config.Composite.Meta.HyperBricksPath, key)
+		}
 
 		componentType := ""
 		if rawType, ok := component["@type"]; ok {
@@ -294,7 +296,7 @@ func filterTreeRenderKeys(keys []string, seen map[string]bool, prefixed ...strin
 
 func treeMetadataKey(key string) bool {
 	switch key {
-	case "@type", "@order", "hyperbricksfile", "hyperbrickspath", "hyperbrickskey":
+	case "@type", "@order", "@source", "hyperbricksfile", "hyperbrickspath", "hyperbrickskey":
 		return true
 	default:
 		return false

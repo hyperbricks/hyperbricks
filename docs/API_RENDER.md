@@ -1,11 +1,11 @@
 # API Render
 
-HyperBricks can fetch API data and render it into HTML through Go templates. There are two API-oriented components:
+Use an API component to fetch data and render it as HTML with a Go template:
 
 - `api_render` fetches API data inside another route and renders it as part of a page or fragment.
 - `api_fragment_render` owns its own route and returns a dynamic fragment.
 
-Use `api_render` for read-only API content nested in a page or fragment; that parent route owns the rendered-output cache policy. Use `api_fragment_render` for interactive, request-specific, or authenticated fragment responses.
+Use `api_render` for read-only content inside a page or fragment. The parent route controls caching of the rendered output. Use `api_fragment_render` for interactive fragments or responses that depend on the request or authentication.
 
 ## At A Glance
 
@@ -14,7 +14,7 @@ Use `api_render` for read-only API content nested in a page or fragment; that pa
 | `api_render` | `<API_RENDER>` | no | no API-response cache; rendered HTML follows the parent route policy | public feeds, public widgets, read-only API content |
 | `api_fragment_render` | `<API_FRAGMENT_RENDER>` | yes | always renders and calls its upstream API | forms, authenticated fragments, API-backed page sections |
 
-`api_fragment_render` is forced to `nocache` at runtime; it does not need a configured `nocache` field.
+HyperBricks always bypasses its rendered-output cache for `api_fragment_render`. You do not need to configure `nocache` on it.
 
 ### Cache Ownership
 
@@ -43,7 +43,7 @@ Do not put `nocache` on the nested component; it is not an `api_render` option a
 - nocache: true
 ```
 
-`api_fragment_render` is different because it is itself a route-owning root component. HyperBricks always bypasses the internal rendered-output cache for that route, so every request executes the component and calls the upstream API. The forced route policy still does not create or configure an API-response cache.
+`api_fragment_render` owns its route. HyperBricks bypasses the rendered-output cache, so every request runs the component and calls the upstream API. This policy does not create an API-response cache.
 
 `nocache` controls HyperBricks' internal rendered-route cache. `Cache-Control` controls browsers and HTTP intermediaries. Configure the route's response headers separately when clients must not store its HTML. Upstream caching performed by a proxy, CDN, or API service is outside both component contracts. See [Live-mode HTTP caching](LIVE_MODE_HTTP.md) and [HTTP responses](HTTP_RESPONSES.md).
 
@@ -86,11 +86,11 @@ The template receives the parsed upstream response as `.Data`, the upstream HTTP
 
 ### Static Snapshots
 
-`api_render` works with `hyperbricks static` because static rendering now starts an internal localhost runtime and requests routes over HTTP. This means nested `api_render` blocks receive normal request context and their rendered HTML is written into the static output file.
+`hyperbricks static` starts an internal localhost runtime and requests routes over HTTP. Nested `api_render` components receive the normal request context. HyperBricks writes their rendered HTML into the static output file.
 
-Use this for public or cacheable API-backed pages, for example a product list, blog feed, documentation index, or catalog page. The upstream API must be reachable when `hyperbricks static` runs. A non-2xx upstream response from `api_render` is treated as a render error, so static snapshot builds fail instead of freezing a broken API result into HTML.
+Use static snapshots for public or cacheable API content, such as a product list, blog feed, documentation index, or catalog. The API must be reachable during the build. A non-2xx upstream response from `api_render` causes a render error and fails the snapshot build.
 
-Explicit targets in `package.hyperbricks.yaml` win over automatic route discovery:
+Explicit targets in `package.hyperbricks.yaml` override discovered targets when their request path/query and output file match. Other configured targets add snapshots; they do not restrict discovery:
 
 ```yaml
 hyperbricks:
@@ -112,7 +112,9 @@ hyperbricks:
         output: products/shoes.html
 ```
 
-See `modules/sampleapis-coffee-static` for a runnable module that fetches the SampleAPIs Coffee endpoint with `api_render` and freezes the result into `rendered/index.html`.
+The [Coffee static example](../modules/sampleapis-coffee-static/README.md) fetches the SampleAPIs Coffee endpoint with `api_render` and saves the rendered result in `rendered/index.html`.
+
+See [static package configuration](HYPERBRICKS_CLI.md#package-configuration) for target matching and export boundaries.
 
 ## API Fragment Render
 
@@ -150,7 +152,7 @@ A typical HTMX flow is:
 2. HyperBricks resolves the `api_fragment_render` route.
 3. If a `guard` is configured, it runs before any upstream API call.
 4. HyperBricks forwards the allowed request data to the upstream API.
-5. The upstream response is rendered through `inline` or `template`.
+5. HyperBricks renders the upstream response through `inline` or `template`.
 6. HyperBricks returns fragment HTML plus the configured response headers.
 7. HTMX processes the response and updates the target in the page.
 

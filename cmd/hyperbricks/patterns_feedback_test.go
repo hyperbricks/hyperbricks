@@ -50,3 +50,39 @@ func TestPatternsAPIFeedbackHandlesUnavailableAndMalformedBackend(t *testing.T) 
 		})
 	}
 }
+
+func TestPatternsAPIConflictFeedbackHandlesUnavailableAndMalformedBackend(t *testing.T) {
+	source, err := os.ReadFile(filepath.Join("..", "..", "modules", "hyperbricks-patterns-yaml", "templates", "patterns", "route-split-api-conflict-result.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	tmpl, err := template.New("conflict").Funcs(sprig.HtmlFuncMap()).Parse(string(source))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		name   string
+		data   any
+		status int
+		want   string
+	}{
+		{"mock conflict", map[string]any{"message": "Asset already exists"}, 200, "Asset already exists"},
+		{"upstream conflict", map[string]any{"message": "Asset already exists"}, 409, "Asset already exists"},
+		{"unavailable", nil, 502, "Check PATTERNS_API_BASE_URL"},
+		{"text", "backend unavailable", 502, "Check PATTERNS_API_BASE_URL"},
+		{"array", []any{map[string]any{"message": "wrong shape"}}, 200, "Check PATTERNS_API_BASE_URL"},
+		{"missing message", map[string]any{}, 200, "Check PATTERNS_API_BASE_URL"},
+		{"empty message", map[string]any{"message": ""}, 200, "Check PATTERNS_API_BASE_URL"},
+		{"non-string message", map[string]any{"message": 123}, 200, "Check PATTERNS_API_BASE_URL"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var out bytes.Buffer
+			if err := tmpl.Execute(&out, map[string]any{"Data": tc.data, "Status": tc.status}); err != nil {
+				t.Fatal(err)
+			}
+			if !strings.Contains(out.String(), `data-state="error"`) || !strings.Contains(out.String(), tc.want) {
+				t.Fatalf("feedback = %s; want error state and %q", out.String(), tc.want)
+			}
+		})
+	}
+}

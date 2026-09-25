@@ -46,7 +46,7 @@ type dedicatedYAMLCase struct {
 func Test_All_Dedicated_YAML_Tests(t *testing.T) {
 	configureDedicatedJWTEnvironment(t)
 	validateDedicatedFixturePorts(t)
-	startDedicatedAPIFixtures(t)
+	echoURL := startDedicatedAPIFixtures(t)
 
 	rm := newDedicatedYAMLRenderManager(t)
 	count := 0
@@ -68,7 +68,7 @@ func Test_All_Dedicated_YAML_Tests(t *testing.T) {
 			if err != nil {
 				t.Fatalf("parse fixture sections: %v", err)
 			}
-			testCase.Source = normalizeDedicatedFixtureURLs(testCase.Source)
+			testCase.Source = normalizeDedicatedFixtureURLs(testCase.Source, echoURL)
 
 			result, err := yamlparser.ProcessBytes([]byte(testCase.Source), dedicatedYAMLOptions(path))
 			if err != nil {
@@ -290,9 +290,10 @@ func parseDedicatedYAMLContent(content string) (dedicatedYAMLCase, error) {
 	}, nil
 }
 
-func normalizeDedicatedFixtureURLs(config string) string {
+func normalizeDedicatedFixtureURLs(config, echoURL string) string {
 	replacer := strings.NewReplacer(
-		"http://localhost:8090", "http://127.0.0.1:8090",
+		"http://localhost:8090", echoURL,
+		"http://127.0.0.1:8090", echoURL,
 		"http://localhost:3000", "http://127.0.0.1:"+dedicatedPostgRESTPort(),
 	)
 	return replacer.Replace(config)
@@ -314,9 +315,6 @@ func validateDedicatedFixturePorts(t *testing.T) {
 	port, err := strconv.Atoi(dedicatedPostgRESTPort())
 	if err != nil || port < 1 || port > 65535 {
 		t.Fatalf("POSTGREST_PORT must be a number between 1 and 65535")
-	}
-	if port == 8090 {
-		t.Fatal("POSTGREST_PORT 8090 conflicts with the dedicated echo fixture")
 	}
 }
 
@@ -356,11 +354,21 @@ func configureDedicatedJWTEnvironment(t *testing.T) {
 	t.Setenv("PGRST_TEST_NO_SUB_JWT", signedOwnerlessToken)
 }
 
-func startDedicatedAPIFixtures(t *testing.T) {
+func startDedicatedAPIFixtures(t *testing.T) string {
 	t.Helper()
 
-	startDedicatedServer(t, ":8090", dedicatedEchoMux())
+	echoURL := startDedicatedEchoFixture(t)
 	startDedicatedServer(t, dedicatedPostgRESTAddress(), dedicatedPostgRESTMux())
+	return echoURL
+}
+
+func startDedicatedEchoFixture(t *testing.T) string {
+	t.Helper()
+
+	// JWT validation must use this test process's secret, not an existing server.
+	server := httptest.NewServer(dedicatedEchoMux())
+	t.Cleanup(server.Close)
+	return server.URL
 }
 
 func startDedicatedServer(t *testing.T, address string, handler http.Handler) {
@@ -403,22 +411,6 @@ func dedicatedFixtureAvailable(address string) bool {
 	}
 
 	switch {
-	case address == ":8090":
-		resp, err := http.Get(baseURL + "/echo/query?code=fixture")
-		if err != nil {
-			return false
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			return false
-		}
-		var payload struct {
-			QueryParams map[string]interface{} `json:"queryParams"`
-		}
-		if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
-			return false
-		}
-		return payload.QueryParams["code"] == "fixture"
 	case address == dedicatedPostgRESTAddress():
 		req, err := http.NewRequest(http.MethodGet, baseURL+"/tasks", nil)
 		if err != nil {

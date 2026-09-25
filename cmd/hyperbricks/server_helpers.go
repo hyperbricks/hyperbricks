@@ -26,6 +26,16 @@ func getConfigAndPlan(requestedSlug string) (map[string]interface{}, *renderplan
 	return config, routePlans[requestedSlug], found
 }
 
+func getRenderSnapshot(route string) (map[string]interface{}, *renderplan.Plan, []error, uint64, bool) {
+	configMutex.RLock()
+	defer configMutex.RUnlock()
+	config, found := configs[route]
+	if !found {
+		return nil, nil, getConfigSourceErrors(), routeGeneration, false
+	}
+	return config, routePlans[route], getRouteSourceErrors(route), routeGeneration, true
+}
+
 func getHostIPv4s() ([]string, error) {
 	var ipAddresses []string
 

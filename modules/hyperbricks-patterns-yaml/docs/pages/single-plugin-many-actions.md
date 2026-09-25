@@ -6,8 +6,8 @@ This pattern shows how to build a multi-step flow without scattering the logic e
 
 - each route has a clear name
 - all routes point to the same plugin
-- `data.action` selects the workflow branch
-- the plugin owns the state machine instead of spreading logic across many small plugins
+- configured `data.action` selects the workflow branch; submitted fields cannot change that action
+- the plugin selects the next stage from the configured action and submitted form fields
 - the plugin returns a `<TEMPLATE>` handoff with a values map, following the module's template-config pattern
 
 In plain language: the URL structure stays easy to read, but one piece of code still owns the “what should happen next?” decisions.

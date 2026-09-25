@@ -67,7 +67,7 @@ func (renderer *LocalJSONRenderer) Render(instance interface{}, ctx context.Cont
 	if config.Debug {
 		jsonBytes, err := json.MarshalIndent(jsonData, "", "  ")
 		if err != nil {
-			fmt.Println("Error marshaling struct to JSON:", err)
+			logging.GetLogger().Named("json").Errorw("Failed to encode JSON debug output", "error", err)
 
 		}
 		builder.WriteString(fmt.Sprintf("<!-- JSON_RENDER.debug = true -->\n<!--  <![CDATA[ \n%s\n ]]> -->", string(jsonBytes)))

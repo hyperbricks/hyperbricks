@@ -5,19 +5,23 @@ This container runs the Deploy API, accepts HRA uploads, and starts deployed mod
 From the repository root:
 
 ```bash
-export HB_DEPLOY_SECRET="$(openssl rand -hex 32)"
+export HB_DEPLOY_REMOTE_USER="deploy"
+export HB_DEPLOY_REMOTE_PASSWORD="$(openssl rand -hex 24)"
+export HB_DEPLOY_REMOTE_HMAC_SECRET="$(openssl rand -hex 32)"
 docker compose -f docker/docker-compose.yml up --build -d
 ```
 
-Keep the secret and use it for the deploy client too. It is required by Compose. The default image builds the current checkout, including local source changes. The dashboard is at http://localhost:9090/; runtime ports 8080–8100 bind locally.
+Configure the same user, password, and HMAC secret on the deploy client's selected target. All three values are required by Compose. The default image builds the current checkout, including local source changes. The dashboard is at http://localhost:9090/; runtime ports 8080–8100 bind locally.
 
 See [Docker Deploy Host](../docs/DOCKER.md) for release selection, alternate ports, upload/activation, plugin builds, persistence and troubleshooting.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `HB_BUILD_SOURCE` | `checkout` | Build local source, or use `release`. |
-| `HB_VERSION` | `v1.2.4-beta` | Published version installed in release mode. |
-| `HB_DEPLOY_SECRET` | Required | Shared client/server HMAC secret. |
+| `HB_VERSION` | `v1.2.5-beta` | Published version installed in release mode. |
+| `HB_DEPLOY_REMOTE_USER` | Required | Basic Auth user for the remote interface and API. |
+| `HB_DEPLOY_REMOTE_PASSWORD` | Required | Basic Auth password for the remote interface and API. |
+| `HB_DEPLOY_REMOTE_HMAC_SECRET` | Required | HMAC secret for signed deployment operations. |
 | `HB_BIND_ADDRESS` | `127.0.0.1` | Host address for published ports. |
 | `HB_API_PORT` | `9090` | Host Deploy API port. |
 | `HB_RUNTIME_PORTS` | `8080-8100` | Host range mapped to container ports 8080–8100. |
@@ -25,7 +29,7 @@ See [Docker Deploy Host](../docs/DOCKER.md) for release selection, alternate por
 
 Archives and extracted runtimes persist in `docker/data/deploy`; compiled global plugins persist in the Compose `plugin-builds` volume. Rebuild plugins when the runtime/toolchain changes. Native esbuild requires no external plugin.
 
-The image runs the daemon directly as `deploy`; OpenRC is no longer used.
+The image runs `hyperbricks deploy remote` directly as `deploy`; OpenRC is no longer used.
 
 ## Verify The Deploy Chain
 

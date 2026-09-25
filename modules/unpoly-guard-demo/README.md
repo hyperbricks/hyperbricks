@@ -30,6 +30,51 @@ scripts/plugins/build_hyperbricks_plugins.sh --module unpoly-guard-demo --skip-c
 
 Open [localhost:8132](http://localhost:8132/). Unpoly is included locally; native esbuild builds the application JavaScript and CSS. No separate authorization server is needed.
 
+## Developer access (optional)
+
+The public demonstration runs without a developer login. Its **Sign in** page
+uses the application accounts `member` / `open-sesame` and `blocked` /
+`open-sesame` described below. Those accounts are separate from the browser's
+developer-interface login and do not unlock Dashboard, Spaces, or diagnostics.
+
+The supplied package reads developer credentials from environment variables. To
+use this option, set both variables in the shell that starts the module:
+
+```sh
+export HB_DEVELOPER_USER=developer
+export HB_DEVELOPER_PASSWORD='choose-a-long-password'
+hyperbricks start -m unpoly-guard-demo --non-interactive
+```
+
+Choose your own password; there is no default developer account. Use those same
+values when the browser requests a username and password. If either value is
+missing, enabled developer routes return `503 Service Unavailable`; missing or
+incorrect browser credentials return `401 Unauthorized`. Restart the process
+after changing either environment variable or package configuration. For the
+local source workflow above, export the variables before the `go run` start
+command instead.
+
+Developer credentials can also be set directly in `package.hyperbricks.yaml`.
+Replace only `credentials` under `hyperbricks.development.dashboard`, leaving
+`enabled` and the other settings unchanged:
+
+```yaml
+credentials:
+  user: developer
+  password: choose-a-long-password
+```
+
+With direct values, the environment exports above are not needed. Choose your
+own password, restart the server, and use these values to log in. The password
+is stored as plain text; do not commit real credentials to a shared repository.
+
+Dashboard is disabled by default. To enable its Overview and Errors views, set
+`hyperbricks.development.dashboard.enabled: true` in
+`package.hyperbricks.yaml`, restart, and open
+[Dashboard](http://localhost:8132/__hyperbricks/dashboard). Independently enabled
+tools, including Spaces, use the same credentials even while Dashboard is
+disabled. See [developer-interface access](../../docs/SPACES.md#development-configuration).
+
 ## Try it
 
 1. Without signing in, click **Load protected fragment**. The server returns 401; the Unpoly integration opens the complete **Sign in** page.

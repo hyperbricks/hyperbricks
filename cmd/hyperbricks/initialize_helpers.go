@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,15 +51,15 @@ func validatePath(renderDir string) error {
 
 func confirmDeletion(dir string) bool {
 
-	fmt.Printf("Are you sure you want to delete directory %q? (y/n): ", dir)
+	fmt.Fprintf(os.Stderr, "Delete directory %q? (y/n): ", dir)
 
 	if os.Getenv("HB_NO_KEYBOARD") != "" {
-		fmt.Println("non-interactive mode: deletion aborted.")
+		fmt.Fprintln(os.Stderr, "Non-interactive mode: deletion canceled.")
 		return false
 	}
 
 	if err := keyboard.Open(); err != nil {
-		fmt.Println("Failed to open keyboard input, aborting deletion.")
+		logging.GetLogger().Warnw("Keyboard unavailable; deletion canceled", "error", err)
 		return false
 	}
 	defer keyboard.Close()
@@ -68,16 +67,16 @@ func confirmDeletion(dir string) bool {
 	for {
 		char, key, err := keyboard.GetKey()
 		if err != nil {
-			fmt.Printf("\nError reading input: %v\n", err)
+			logging.GetLogger().Warnw("Input unavailable; deletion canceled", "error", err)
 			return false
 		}
 
 		if char == 'y' || char == 'Y' {
-			fmt.Println("yes")
+			fmt.Fprintln(os.Stderr, "yes")
 			return true
 		}
 		if char == 'n' || char == 'N' || key == keyboard.KeyEsc || key == keyboard.KeyCtrlC {
-			fmt.Println("no")
+			fmt.Fprintln(os.Stderr, "no")
 			return false
 		}
 	}
@@ -85,37 +84,35 @@ func confirmDeletion(dir string) bool {
 
 func ensureDirectoriesExist(directories map[string]string) {
 	count := 0
-	//log.Printf("Checking hyperbricks.conf directories...")
 	for _, dir := range directories {
 
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			log.Printf("missing directory: ==>%s \n", dir)
+			logging.GetLogger().Errorw("Required directory missing", "directory", runtimeLogPath(dir))
 			count++
 
 		} else {
-			// log.Printf("directory %s exists\n", dir)
 		}
 
 	}
 
 	if count > 0 {
-		log.Fatalf("Exiting, please type \"hyperbricks init\" to create required files and directories\n")
+		logging.GetLogger().Fatal("Run hyperbricks init to create the required directories")
 	}
 
 	logger := logging.GetLogger()
 	for key, dir := range directories {
-		logger.Debugw("Checking directory", "key", key, "directory", dir)
+		logger.Debugw("Checking directory", "key", key, "directory", runtimeLogPath(dir))
 
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
 			err := os.MkdirAll(dir, 0755)
 			if err != nil {
 				logger.Fatalw("Failed to create directory", "directory", dir, "error", err)
 			}
-			log.Printf("Created directory ==>%s", dir)
+			logging.GetLogger().Debugw("Directory created", "directory", runtimeLogPath(dir))
 		} else if err != nil {
 			logger.Fatalw("Error checking directory", "directory", dir, "error", err)
 		} else {
-			logger.Debugw("Directory already exists", "directory", dir)
+			logger.Debugw("Directory already exists", "directory", runtimeLogPath(dir))
 		}
 	}
 
@@ -179,7 +176,7 @@ func watchDirectories(directories []string, reloadFunc func()) error {
 					logger.Errorw("Error watching directory", "directory", path, "error", err)
 					return nil
 				}
-				logger.Infow("Watching directory", "directory", path)
+				logger.Debugw("Watching directory", "directory", runtimeLogPath(path))
 			}
 			return nil
 		})
@@ -203,7 +200,7 @@ func watchDirectories(directories []string, reloadFunc func()) error {
 				if !ok {
 					return
 				}
-				logger.Debugw("File system event detected", "event", event)
+				logger.Debugw("File system event detected", "file", runtimeLogPath(event.Name), "operation", event.Op.String())
 				if strings.HasPrefix(filepath.Base(event.Name), ".hb-esbuild-") || isEsbuildOutput(event.Name) {
 					continue
 				}
@@ -312,17 +309,19 @@ func setWorkingDirectory() {
 	if err != nil {
 		logger.Fatalw("Failed to evaluate os.Getwd", "error", err)
 	}
-	logger.Debugw("Working directory set", "directory", exeDir)
+	logger.Debugw("Working directory set", "directory", runtimeLogPath(exeDir))
 }
 func PreProcessAndPopulateHyperbricksConfigurations() {
+	renderDiagnosticsMutex.RLock()
+	generation := diagnosticsGeneration
+	renderDiagnosticsMutex.RUnlock()
 	logger := logging.GetLogger()
 	err := PreProcessAndPopulateConfigs()
 	if err != nil {
-		logger.Errorw("Error preprocessing HyperBricks", "error", err)
-		recordConfigDiagnostics([]error{preprocessErrorToComponentError(err)})
 		if commands.RenderStatic {
-			logger.Fatalw("Static rendering failed", "error", err)
+			logger.Named("static").Fatalw("Static rendering failed", "error", err)
 		}
+		recordConfigDiagnosticsAtGeneration([]error{preprocessErrorToComponentError(err)}, generation)
 	}
 }
 

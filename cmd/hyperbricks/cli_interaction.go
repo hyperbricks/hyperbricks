@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"os"
 
 	"github.com/eiannone/keyboard"
@@ -16,7 +14,7 @@ var (
 )
 
 func keyboardActions(cancel context.CancelFunc) {
-	if os.Getenv("HB_NO_KEYBOARD") != "" {
+	if os.Getenv("HB_NO_KEYBOARD") != "" || !logging.IsTerminal(os.Stdin) {
 		return
 	}
 
@@ -33,7 +31,7 @@ func keyboardActions(cancel context.CancelFunc) {
 
 	// test and open keyboard
 	if err := keyboard.Open(); err != nil {
-		logging.GetLogger().Warnf("No keyboard...")
+		logging.GetLogger().Warnw("Keyboard unavailable; use Ctrl+C to stop", "error", err)
 		return
 	} else {
 		KeyboardEnabled = true
@@ -41,7 +39,7 @@ func keyboardActions(cancel context.CancelFunc) {
 
 	defer func() {
 		if err := keyboard.Close(); err != nil {
-			log.Fatalf("Failed to close keyboard: %v", err)
+			logging.GetLogger().Warnw("Failed to close keyboard", "error", err)
 		}
 	}()
 
@@ -57,7 +55,7 @@ func keyboardActions(cancel context.CancelFunc) {
 		for {
 			char, key, err := keyboard.GetKey()
 			if err != nil {
-				log.Printf("Keyboard input unavailable: %v", err)
+				logging.GetLogger().Warnw("Keyboard input unavailable", "error", err)
 				disabled <- true
 				return
 			}
@@ -74,15 +72,17 @@ func keyboardActions(cancel context.CancelFunc) {
 			}
 		}
 	}()
-	logging.GetLogger().Infoln("Press 'q', ESC or Ctrl+C to stop the server...")
+	hint := "Press q, Esc or Ctrl+C to stop"
+	if hbConfig.Development.Watch {
+		hint = "Press r to reload; q, Esc or Ctrl+C to stop"
+	}
+	logging.GetLogger().Named("server").Info(hint)
 	// Main loop to handle events
 	for {
 		select {
 		case <-rPressed:
 			if hbConfig.Development.Watch {
-				yellowTrueColor := "\033[38;2;255;255;0m"
-				reset := "\033[0m"
-				logging.GetLogger().Warn(yellowTrueColor, "....Reloading configurations....", reset)
+				logging.GetLogger().Info("Reloading configuration")
 				PreProcessAndPopulateHyperbricksConfigurations()
 			}
 		// Place your action here
@@ -90,7 +90,6 @@ func keyboardActions(cancel context.CancelFunc) {
 			KeyboardEnabled = false
 			return
 		case <-done:
-			fmt.Println("Exiting program.")
 			cancel()
 			return
 		}

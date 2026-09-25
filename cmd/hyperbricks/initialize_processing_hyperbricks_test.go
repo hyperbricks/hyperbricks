@@ -82,6 +82,9 @@ func TestProcessScriptRejectsFragmentScalarTemplate(t *testing.T) {
 }
 
 func TestYAMLDiagnosticsToComponentErrorsFormatsResolverDiagnosticsWithoutZeroPosition(t *testing.T) {
+	oldDirectories := core.ModuleDirectories
+	core.ModuleDirectories.ModuleDir = "/tmp/project"
+	t.Cleanup(func() { core.ModuleDirectories = oldDirectories })
 	errors := yamlDiagnosticsToComponentErrors([]yamlparser.Diagnostic{{
 		Level:   "warning",
 		Code:    "var_missing",
@@ -96,7 +99,7 @@ func TestYAMLDiagnosticsToComponentErrorsFormatsResolverDiagnosticsWithoutZeroPo
 	if !ok {
 		t.Fatalf("diagnostic type = %T, want shared.ComponentError", errors[0])
 	}
-	if diagnostic.Level != "WARNING" || diagnostic.File != "page" || diagnostic.Path != "page.title" {
+	if diagnostic.Level != "WARNING" || diagnostic.File != "page.hyperbricks.yaml" || diagnostic.Path != "page.title" {
 		t.Fatalf("diagnostic fields = %#v", diagnostic)
 	}
 	if strings.Contains(diagnostic.Err, ":0:0") {
@@ -206,13 +209,13 @@ func TestPreProcessAndPopulateConfigsKeepsRunningWhenYAMLSourceIsInvalid(t *test
 		t.Fatalf("diagnostics errors len = %d, want 1: %#v", len(diagnostics[0].Errors), diagnostics[0].Errors)
 	}
 	diagnostic := diagnostics[0].Errors[0]
-	if diagnostic.Type != "YAML" || diagnostic.File != "broken" || !strings.Contains(diagnostic.Err, "YAML source broken.hyperbricks.yaml was skipped") {
+	if diagnostic.Type != "YAML" || diagnostic.File != "hyperbricks/broken.hyperbricks.yaml" || diagnostic.Line != 4 || diagnostic.Phase != "load" || !strings.Contains(diagnostic.Err, "YAML source broken.hyperbricks.yaml was skipped") {
 		t.Fatalf("config diagnostic = %#v", diagnostic)
 	}
 	if strings.Contains(diagnostic.Err, repoRoot) {
 		t.Fatalf("config diagnostic should not expose absolute repo path: %#v", diagnostic.Err)
 	}
-	if !strings.Contains(diagnostic.Err, "modules/yaml-invalid-source/hyperbricks/broken.hyperbricks.yaml") {
+	if strings.Contains(diagnostic.Err, "modules/yaml-invalid-source/") || !strings.Contains(diagnostic.Err, "hyperbricks/broken.hyperbricks.yaml") {
 		t.Fatalf("config diagnostic should include relative YAML path: %#v", diagnostic.Err)
 	}
 
@@ -230,7 +233,7 @@ func TestPreProcessAndPopulateConfigsKeepsRunningWhenYAMLSourceIsInvalid(t *test
 	if strings.Contains(body, repoRoot) {
 		t.Fatalf("missing route body should not expose absolute repo path: %q", body)
 	}
-	if !strings.Contains(body, "modules/yaml-invalid-source/hyperbricks/broken.hyperbricks.yaml") {
+	if strings.Contains(body, "modules/yaml-invalid-source/") || !strings.Contains(body, "hyperbricks/broken.hyperbricks.yaml") {
 		t.Fatalf("missing route body should include relative YAML path: %q", body)
 	}
 	if got := writer.Header().Get(renderErrorCountHeader); got != "1" {
@@ -249,7 +252,7 @@ func TestPreProcessAndPopulateConfigsKeepsRunningWhenYAMLSourceIsInvalid(t *test
 	if routeDiagnostics.Route != "broken-route" {
 		t.Fatalf("missing route diagnostics route = %q, want broken-route", routeDiagnostics.Route)
 	}
-	if len(routeDiagnostics.Errors) != 1 || routeDiagnostics.Errors[0].File != "broken" {
+	if len(routeDiagnostics.Errors) != 1 || routeDiagnostics.Errors[0].File != "hyperbricks/broken.hyperbricks.yaml" {
 		t.Fatalf("missing route diagnostics errors = %#v", routeDiagnostics.Errors)
 	}
 }
@@ -400,7 +403,7 @@ func TestYAMLUnknownChildTypeRendersSiblingsAndRecordsDiagnostic(t *testing.T) {
 		t.Fatalf("render diagnostics len = %d, want 1: %#v", len(diagnostics.Errors), diagnostics.Errors)
 	}
 	diagnostic := diagnostics.Errors[0]
-	if diagnostic.Type != "<XXX>" || diagnostic.File != "page" || diagnostic.Path != "page.main.inline_css" || diagnostic.Key != "inline_css" {
+	if diagnostic.Type != "<XXX>" || diagnostic.File != "hyperbricks/page.hyperbricks.yaml" || diagnostic.Line != 11 || diagnostic.Path != "page.main.inline_css" || diagnostic.Key != "inline_css" {
 		t.Fatalf("render diagnostic metadata = %#v", diagnostic)
 	}
 	if !strings.Contains(diagnostic.Err, "type <XXX> not registered") {
@@ -643,7 +646,7 @@ func TestPreProcessAndPopulateConfigsLoadsYAMLRouteThroughServerRenderFlow(t *te
 	if diagnostic.Type != "YAML" || diagnostic.Path != "page.main" || diagnostic.Key != "intro" || !strings.Contains(diagnostic.Err, `using "intro_2" as runtime path`) {
 		t.Fatalf("render diagnostic = %#v", diagnostic)
 	}
-	if diagnostic.File != "page" {
+	if diagnostic.File != "hyperbricks/page.hyperbricks.yaml" {
 		t.Fatalf("render diagnostic file = %#v", diagnostic.File)
 	}
 }
@@ -931,9 +934,10 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 		"api-fragment-write-demo",
 		"docs",
 		"docs/api-fragment-write-demo",
-		"docs/config-driven-section-rail",
+		"docs/sidebar-section-navigation",
 		"docs/guarded-page-demo",
 		"docs/htmx-canonical-fragment-demo",
+		"docs/localized-spaces",
 		"docs/markdown-plugin",
 		"docs/menu-htmx-demo",
 		"docs/plugin-vs-api-route-split",
@@ -963,6 +967,10 @@ func TestPreProcessAndPopulateConfigsLoadsConvertedPatternsYAMLModule(t *testing
 		"guarded-demo/login",
 		"guarded-demo/secret",
 		"index",
+		"localized-spaces",
+		"localized-spaces/about",
+		"localized-spaces/de",
+		"localized-spaces/de/ueber",
 		"menu-demo",
 		"menu-demo/doc-1",
 		"menu-demo/doc-2",

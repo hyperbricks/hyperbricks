@@ -132,7 +132,7 @@ func Definitions() []Definition {
 			Category:    CategoryComposite,
 			ChildModel:  ChildModelTree,
 			ConfigType:  reflect.TypeOf(composite.TreeConfig{}),
-			Description: "Ordered container that renders nested child items in key order.",
+			Description: "Ordered container that places child output in YAML sequence order; runtime maps without order metadata use alphanumeric key order.",
 			FormGroups: []FormGroup{
 				{Key: "tree", Label: "Tree", Fields: []string{"enclose"}},
 			},
@@ -158,6 +158,13 @@ func Definitions() []Definition {
 			FormGroups: []FormGroup{
 				{Key: "content", Label: "Content", Fields: []string{"value", "enclose", "attributes"}},
 			},
+		},
+		{
+			Name: "Markdown", Token: component.MarkdownConfigGetName(),
+			Category: CategoryComponent, ChildModel: ChildModelNone,
+			ConfigType:  reflect.TypeOf(component.MarkdownConfig{}),
+			Description: "Sanitized Markdown from declared text or bounded resources-relative files; no plugin or request-driven file selection.",
+			FormGroups:  []FormGroup{{Key: "content", Label: "Content", Fields: []string{"content", "file", "max_bytes", "class", "enclose", "editable"}}},
 		},
 		{
 			Name:        "Css",

@@ -1,6 +1,8 @@
 # Native esbuild
 
-HyperBricks' built-in `esbuild` component lets you bundle, transform, and minify JavaScript, TypeScript, and ordinary CSS using the esbuild Go library embedded in HyperBricks. Optional, it can also generate source maps, fingerprint output filenames, and reuse cached builds without requiring a separate esbuild installation.
+Use the built-in `esbuild` component to bundle, transform, and minify JavaScript, TypeScript, and CSS. HyperBricks includes the esbuild Go library, so you do not need a separate esbuild installation.
+
+You can also generate source maps, add fingerprints to output filenames, and cache builds.
 
 ## JavaScript example
 
@@ -32,7 +34,9 @@ The child name `application_script` is arbitrary. Ordinary YAML ordering and inh
 <script src="/static/js/bundle.min.main.js" defer></script>
 ```
 
-Use **`path`**, not `file`: `path` supplies a filename, whereas `file` reads its contents. The resources/static bases honor the module's configured directories. Do not repeat `resources/` or `static/` inside the inner `path`. Output must stay inside the configured static directory, including when symlinks are involved. The public URL is always derived from the `/static/` mount, not the directory name.
+Use `path` to supply a filename. The `file` resolver reads the file's contents. The `resources` and `static` bases use the module's configured directories, so do not repeat `resources/` or `static/` inside the inner `path`.
+
+Output must stay inside the configured static directory, including through symlinks. HyperBricks derives the public URL from the `/static/` mount, regardless of the directory name.
 
 Local imports resolve relative to their importing file. Bare package imports require installed dependencies resolvable by esbuild; this component does not install npm packages. TypeScript is transpiled, not type-checked.
 
@@ -57,7 +61,11 @@ styles:
   - enclose: '<link rel="stylesheet" href="|">'
 ```
 
-Inherit `styles` into the head exactly like `scripts`. A CSS entry works on its own, without a JS entry. CSS `@import` files are bundled. Local `url()` images/fonts need an appropriate loader; unknown types fail instead of being silently externalized. The `file` loader emits hashed asset filenames alongside the bundle. The `dataurl` loader embeds bytes in the stylesheet. External references remain the application's responsibility. CSS Modules and Sass/Tailwind compilation are not part of this API.
+Inherit `styles` into the head in the same way as `scripts`. A CSS entry does not need a JavaScript entry. HyperBricks bundles CSS `@import` files.
+
+Configure a loader for local `url()` images and fonts. Unknown types cause a build error. The `file` loader writes assets with hashed filenames beside the bundle. The `dataurl` loader embeds their bytes in the stylesheet.
+
+The application must provide external references. This API does not compile CSS Modules, Sass, or Tailwind.
 
 | CSS need | Option |
 | --- | --- |
