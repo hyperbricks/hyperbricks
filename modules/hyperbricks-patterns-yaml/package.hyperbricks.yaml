@@ -19,10 +19,10 @@ hyperbricks:
     dashboard:
       enabled: true
       credentials:
-        user: hyperbricks
-        #env: HB_DEVELOPER_USER
-        password: test
-        #env: HB_DEVELOPER_PASSWORD
+        user:
+          env: HB_DEVELOPER_USER
+        password:
+          env: HB_DEVELOPER_PASSWORD
     frontend_editing:
       spaces:
         route: /__hyperbricks/spaces

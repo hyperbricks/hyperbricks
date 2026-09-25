@@ -11,6 +11,11 @@ hyperbricks:
     frontend_errors: false
     dashboard:
       enabled: false
+      credentials:
+        user:
+          env: HB_DEVELOPER_USER
+        password:
+          env: HB_DEVELOPER_PASSWORD
   server:
     port: 8121
     beautify: false
