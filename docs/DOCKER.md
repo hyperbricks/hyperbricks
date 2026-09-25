@@ -4,6 +4,11 @@ Use the Docker deploy host to test deployments locally or run them on a remote s
 
 The image includes Go and build tools. This lets you build native plugins for the same Linux runtime that runs your modules.
 
+The image includes the project's `LICENSE` and third-party `NOTICES.md` at
+`/usr/share/doc/hyperbricks/`. These files come from the build checkout; when
+building a published release, use the checkout matching `HB_VERSION` so the
+notices describe the selected runtime.
+
 ## Build And Start
 
 From the repository root, set the remote interface credentials and the HMAC

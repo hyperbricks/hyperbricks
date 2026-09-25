@@ -39,6 +39,8 @@ COPY cmd /opt/hyperbricks-source/cmd
 COPY pkg /opt/hyperbricks-source/pkg
 RUN chown -R "${HB_USER}:${HB_GROUP}" /opt/hyperbricks-source
 
+COPY LICENSE NOTICES.md /usr/share/doc/hyperbricks/
+
 COPY plugins "${HB_HOME}/plugins"
 RUN if [ -d "${HB_HOME}/plugins" ]; then \
       chown -R "${HB_USER}:${HB_GROUP}" "${HB_HOME}/plugins"; \
