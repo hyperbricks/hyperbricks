@@ -24,6 +24,47 @@ The `static` and `rendered` directories are generated and ignored. Source maps i
 
 See [ESBUILD.md](../../docs/ESBUILD.md) for options, migration, and limitations.
 
+## Optional Developer Access
+
+The calculator works without developer credentials. To use the protected
+development tools, choose your own password and export these values in the same
+terminal before starting the module from the repository root:
+
+```sh
+export HB_DEVELOPER_USER=developer
+export HB_DEVELOPER_PASSWORD='choose-a-long-password'
+hyperbricks start -m esbuild-demo
+```
+
+Replace the password placeholder before running the commands. By default, the
+package reads these variables through `development.dashboard.credentials`; use
+the same values for the browser's login prompt. There is no default account.
+Missing values lock the developer tools while the public calculator stays
+available. Restart the process after changing credentials or package settings.
+
+Developer credentials can also be set directly in `package.hyperbricks.yaml`.
+Replace only `credentials` under `hyperbricks.development.dashboard`, leaving
+`enabled` and the other settings unchanged:
+
+```yaml
+credentials:
+  user: developer
+  password: choose-a-long-password
+```
+
+With direct values, the environment exports above are not needed. Choose your
+own password, restart the server, and use these values to log in. The password
+is stored as plain text; do not commit real credentials to a shared repository.
+
+[Render diagnostics](http://localhost:8097/__hyperbricks/render-diagnostics) and
+the read-only [Spaces view](http://localhost:8097/__hyperbricks/spaces) share this
+login even though the dashboard is disabled. To also open the
+[Dashboard](http://localhost:8097/__hyperbricks/dashboard), set
+`hyperbricks.development.dashboard.enabled: true` in
+`package.hyperbricks.yaml` and restart. See
+[development configuration](../../docs/SPACES.md#development-configuration) for
+the shared access settings.
+
 ## Static export
 
 ```sh

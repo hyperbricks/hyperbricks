@@ -87,6 +87,43 @@ The rule is simple:
 - only invent a new pattern when none of these fits
 - if you add a new pattern, add both a working demo and a short doc
 
+## Developer access
+
+Before starting either the installed or local runtime, configure the developer
+login in the same terminal:
+
+```sh
+export HB_DEVELOPER_USER=developer
+export HB_DEVELOPER_PASSWORD='choose-a-long-password'
+```
+
+Replace the password placeholder with your own password. The package configuration
+reads these variables; there is no built-in developer account. Restart the server
+after changing them. Log in with these values at `/__hyperbricks/dashboard` or
+`/__hyperbricks/spaces`; the same login protects Overview, Errors and contextual
+editing. The module already enables the Dashboard and local Spaces writes.
+
+Developer credentials can also be set directly in `package.hyperbricks.yaml`.
+Replace only `credentials` under `hyperbricks.development.dashboard`, leaving
+`enabled` and the other settings unchanged:
+
+```yaml
+credentials:
+  user: developer
+  password: choose-a-long-password
+```
+
+With direct values, the environment exports above are not needed. Choose your
+own password, restart the server, and use these values to log in. The password
+is stored as plain text; do not commit real credentials to a shared repository.
+
+If either resolved credential is empty, developer routes return **Developer interface
+unavailable: credentials are not configured**. Public pattern pages still work,
+but the **Manage Spaces** links need an authenticated editor API response before
+they appear. Open the Spaces URL directly to log in, then reload the pattern page.
+This developer login is separate from the guarded application demo's
+`demo` / `open-sesame` credentials.
+
 ## Install Or Build The Plugins
 
 Choose the workflow that matches the HyperBricks runtime you use to run this module. Run these commands from the project root. Native Go plugins must match their host's source, Go toolchain, platform, and shared dependencies.

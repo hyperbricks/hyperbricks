@@ -70,6 +70,40 @@ defaults into each instance and creates the import files. Adapt the generated
 values, `htmltag`, and metadata for each language. Quote YAML prose containing
 `: `, as in `intro: "Pattern: a reusable page source."`.
 
+Before starting the server, set the module's shared developer credentials in the
+same terminal:
+
+```sh
+export HB_DEVELOPER_USER=developer
+export HB_DEVELOPER_PASSWORD='choose-a-long-password'
+```
+
+Replace the password placeholder with your own password. This module and new
+modules created by `hyperbricks init` read these variables through
+`hyperbricks.development.dashboard.credentials`. There is no default developer
+account.
+
+Developer credentials can also be set directly in `package.hyperbricks.yaml`.
+Replace only `credentials` under `hyperbricks.development.dashboard`, leaving
+`enabled` and the other settings unchanged:
+
+```yaml
+credentials:
+  user: developer
+  password: choose-a-long-password
+```
+
+With direct values, the environment exports above are not needed. Choose your
+own password, restart the server, and use these values to log in. The password
+is stored as plain text; do not commit real credentials to a shared repository.
+
+Empty credentials produce **Developer interface unavailable: credentials
+are not configured**; configure both values and restart. Open the configured Spaces
+URL directly to log in, then reload the public page to discover its editor links.
+The same login protects Overview, Errors and contextual editing, independently of
+the `spaces.write` setting. See `docs/SPACES.md`, Development Configuration, in
+the repository root for the complete access requirements.
+
 This pattern module enables `hyperbricks.development.frontend_editing.spaces.write`
 for local development. Every localized page, the pattern index, and the guide
 sidebar show a **Manage Spaces** link when the editor API confirms writes are

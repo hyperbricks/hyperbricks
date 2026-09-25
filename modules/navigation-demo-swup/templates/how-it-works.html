@@ -22,6 +22,7 @@
 
   <section class="transition-item"><h2>Translate the café with Spaces</h2><p>The English Night Owl Café page owns the shared layout and editable fields. Its German and Dutch Spaces inherit that page and store their own translated content, route, document language, and metadata.</p><p>Switch languages on the café page to compare the translations. In local development, use the links below to edit a Space or open its page with contextual edit controls. Save your changes, then refresh the public page.</p>
   {{if eq .runtime_mode "development"}}
+  <p>Spaces and contextual editing use the shared developer login. Set <code>HB_DEVELOPER_USER</code> and <code>HB_DEVELOPER_PASSWORD</code> before starting HyperBricks, or set <code>credentials.user</code> and <code>credentials.password</code> directly under <code>hyperbricks.development.dashboard</code> in <code>package.hyperbricks.yaml</code>. Direct values are stored as plain text and need no environment exports; keep real passwords out of shared repositories. Restart after changing either option, then use the configured values in the browser login prompt. There is no default account. See the module README for both examples.</p>
   <ul>
     <li><a href="{{.spaces_editor_url}}" data-no-swup>Manage Spaces</a></li>
     <li>Deutsch: <a href="{{.spaces_editor_url}}?name=night_owl_cafe_de" data-no-swup>Edit German Space</a> · <a href="/night-owl-cafe/de?edit=true" data-no-swup>Edit German page</a></li>
