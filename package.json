@@ -26,6 +26,6 @@
   "scripts": {
     "ui:build:deploy-editor": "esbuild assets/src/deploy_yaml_editor.mjs --bundle --minify --format=esm --platform=browser --target=es2020 --charset=utf8 --legal-comments=eof --outfile=assets/deploy_yaml_editor.js",
     "test:ui": "node --test assets/*.test.mjs pkg/ui/*.test.mjs pkg/spaces/*.test.mjs",
-    "test:module-screenshots": "node scripts/test_module_screenshots.mjs"
+    "test:module-screenshots": "node --test scripts/test_module_screenshots.test.mjs && node scripts/test_module_screenshots.mjs"
   }
 }
