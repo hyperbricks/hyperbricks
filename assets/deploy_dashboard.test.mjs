@@ -282,13 +282,14 @@ test('credentials load masked, reveal explicitly, and clear completely on close 
 });
 
 test('developer access loads explicit feature flags and defaults in both deployment modes', async () => {
-  assert.match(html, /id="credentialsTitle">Developer access<\/h2>/);
+  assert.match(html, /id="credentialsTitle" tabindex="-1">Developer access<\/h2>/);
   for (const mode of ['local', 'remote']) {
     for (const flags of [{}, {dashboard_enabled: true, spaces_enabled: false}, {dashboard_enabled: false, spaces_enabled: true}]) {
       const ui = setup({mode, saved: 'test-secret', credentials: {...credentialFixture, ...flags}});
       await flush();
       ui.run('state.selectedModule = "demo"');
       await ui.run('openCredentials("build-1")');
+      assert.equal(ui.focused(), 'credentialsTitle');
       assert.equal(ui.element('credentialsDashboardEnabled').checked, flags.dashboard_enabled ?? false);
       assert.equal(ui.element('credentialsSpacesEnabled').checked, flags.spaces_enabled ?? true);
       assert.equal(ui.element('credentialsDashboardEnabled').disabled, false);
@@ -929,28 +930,164 @@ test('module actions live in its navbar menu and Shared Plugins keeps its own Re
   }
 });
 
-test('deployment tables keep status pills on one line and scroll before mobile cards', () => {
+test('module Actions trigger exposes one responsive label at a time', () => {
+  const modules = html.slice(html.indexOf('id="modulesView"'), html.indexOf('id="pluginsView"'));
+  const trigger = modules.match(/<summary[^>]*id="moduleActionsToggle"[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+  assert.ok(trigger, 'module actions use a native disclosure trigger');
+  assert.match(trigger, /id="moduleActionsIcon"/);
+  assert.match(trigger, /id="moduleActionsLabel"/);
+  assert.match(modules, /id="moduleActionsToggle"[^>]*aria-label="Module actions"/);
+  const mobileStart = css.indexOf('@media (max-width:1049px)');
+  assert.ok(mobileStart > 0, 'the action trigger shares the drawer breakpoint');
+  const desktop = css.slice(0, mobileStart);
+  const mobile = css.slice(mobileStart);
+  assert.ok(/#moduleActionsIcon\s*\{[^}]*display:\s*none/.test(desktop), 'wide Actions shows text, not its icon');
+  assert.ok(/#moduleActionsIcon\s*\{[^}]*display:\s*(?:inline-flex|inline|flex|block)/.test(mobile), 'narrow Actions shows its icon');
+  assert.ok(/#moduleActionsLabel\s*\{[^}]*display:\s*none/.test(mobile), 'narrow Actions hides its text');
+});
+
+test('Deploy branding and process-stop copy describe the actual host-wide action', () => {
+  assert.match(html, /<a class="hb-brand"[^>]*aria-label="HyperBricks Deploy home"[^>]*>[\s\S]*?<span>Deploy<\/span><\/a>/);
+  assert.match(html, /id="killAllProcesses"[^>]*>Stop other HyperBricks processes<\/button>/);
+  assert.match(source, /Stop other HyperBricks processes on this host\? This may stop module runtimes and unrelated HyperBricks commands\. The Deploy API stays running\./);
+  assert.doesNotMatch(html, /Stop running builds|Kill all hyperbricks/);
+});
+
+test('developer access names Dashboard as the Overview and Errors switch, with Spaces separate', () => {
+  assert.match(html, /<label for="credentialsDashboardEnabled">Dashboard<\/label>/);
+  assert.match(html, /id="dashboardVisibilityHelp"[^>]*>Show the Overview and Errors views in Development mode\. Spaces has its own switch\./);
+  assert.match(html, /<label for="credentialsSpacesEnabled">Spaces<\/label>/);
+  assert.match(html, /id="spacesVisibilityHelp"[^>]*>Show the Spaces editor in Development mode without changing other frontend editors\./);
+});
+
+test('small explanations use hover, touch and keyboard help popovers while important state remains visible', () => {
+  for (const id of [
+    'requestSigningHelp', 'signerHelp', 'localSyncHelp', 'stopProcessesHelp',
+    'developerAccessHelp', 'credentialsScope', 'dashboardVisibilityHelp',
+    'spacesVisibilityHelp', 'credentialStorageHelp'
+  ]) {
+    const trigger = html.match(new RegExp(`<button[^>]*data-help-popover="${id}"[^>]*>`))?.[0];
+    assert.ok(trigger, `${id} needs a help trigger`);
+    assert.match(trigger, /aria-label="[^"]+"/);
+    assert.match(trigger, new RegExp(`aria-controls="${id}"`));
+    assert.match(trigger, /aria-expanded="false"/);
+    assert.match(html, new RegExp(`id="${id}" popover="manual" role="tooltip"`));
+  }
+  assert.match(source, /function wireHelpPopovers\(\)/);
+  assert.match(source, /trigger\.addEventListener\("pointermove"/);
+  assert.match(source, /trigger\.addEventListener\("click"/);
+  assert.doesNotMatch(source, /trigger\.addEventListener\("focus",\s*\(\)\s*=>\s*showHelpPopover/);
+  assert.match(html, /id="credentialsSpacesParentWarning" hidden/);
+  assert.match(html, /Stored as plain text · restart to apply\./);
+  assert.match(css, /\.hb-deploy-shell\s*\{[^}]*min-width:\s*300px/);
+});
+
+test('Kill and Delete build use danger text while Stop stays neutral', () => {
+  const kill = html.match(/<button[^>]*id="killAllProcesses"[^>]*>/)?.[0];
+  assert.ok(kill);
+  assert.match(kill, /class="[^"]*\bhb-danger-action\b/);
+  assert.doesNotMatch(kill, /\bbtn-error\b/);
+  assert.match(html, /action: "stop",\s*label: "Stop",\s*icon: icons\.stop,\s*attrs: buildAttr/);
+  assert.match(html, /action: "delete",\s*label: "Delete build",\s*icon: icons\.delete,\s*className: "hb-danger-action"/);
+  assert.match(css, /\.hb-danger-action:not\(:disabled\)\s*\{[^}]*color:\s*color-mix\(in oklab,var\(--color-error\) 70%,var\(--color-base-content\)\)/);
+  assert.match(html, /action: "remove",[\s\S]*?className: "btn-error"/, 'plugin Remove retains its existing treatment');
+  for (const mode of ['local', 'remote']) {
+    const ui = setup({mode});
+    ui.run(`
+      testRows = [];
+      document.createElement = () => ({innerHTML: "", classList: {add() {}}, querySelectorAll: () => []});
+      ui.buildRows.appendChild = row => testRows.push(row);
+      wireRowMenus = () => {};
+      state.builds = [{build_id: "build-1", runtime_mode: "development", format: "hra"}];
+      updateStatus({running: true, running_build: "build-1", running_mode: "development"});
+      renderBuilds();
+    `);
+    const row = ui.run('testRows[0].innerHTML');
+    const stopClass = row.match(/<button class="([^"]*)"[^>]*data-action="stop"/)?.[1];
+    const deleteClass = row.match(/<button class="([^"]*)"[^>]*data-action="delete"/)?.[1];
+    assert.ok(stopClass);
+    assert.ok(deleteClass);
+    assert.doesNotMatch(stopClass, /hb-danger-action|btn-error/, `${mode} Stop stays neutral`);
+    assert.match(deleteClass, /hb-danger-action/, `${mode} Delete uses danger text`);
+  }
+});
+
+test('both workspaces have native, collapsible sticky Activity panels with a latest-message preview', () => {
+  for (const [panelID, previewID, outputID] of [
+    ['moduleActivityPanel', 'moduleActivityLatest', 'activity'],
+    ['pluginActivityPanel', 'pluginActivityLatest', 'pluginActivity']
+  ]) {
+    const panel = html.match(new RegExp(`<details[^>]*id="${panelID}"[^>]*>([\\s\\S]*?)<\\/details>`));
+    assert.ok(panel, `${panelID} must use native details for Enter/Space disclosure`);
+    assert.doesNotMatch(panel[0].slice(0, panel[0].indexOf('>')), /\sopen(?:\s|=|>)/);
+    const summary = panel[1].match(/<summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+    assert.ok(summary, `${panelID} needs a native summary`);
+    assert.match(summary, /Activity/);
+    assert.match(summary, new RegExp(`id="${previewID}"`));
+    assert.match(panel[1], new RegExp(`<pre[^>]*id="${outputID}"`));
+  }
+  assert.ok(/\.hb-deploy-log\s*\{[^}]*position:\s*sticky;[^}]*bottom:\s*0/.test(css), 'Activity sticks to the workspace bottom');
+});
+
+test('mobile deployment height follows the wrapped header instead of a fixed header offset', () => {
+  assert.match(html, /<body[^>]*class="hb-deploy-shell"/);
+  assert.doesNotMatch(css, /100dvh\s*-\s*130px/, 'the mobile header height is content-dependent');
+  assert.match(css, /\.hb-deploy-shell\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column/);
+  assert.match(css, /#deploymentContent:not\(\[hidden\]\)\s*\{[^}]*flex:\s*1/);
+  assert.match(css, /\.hb-deploy-workspace\s*\{[^}]*flex:\s*1;[^}]*min-height:\s*auto/);
+});
+
+test('Activity preview mirrors success and error messages without forcing disclosure open', () => {
+  for (const mode of ['local', 'remote']) {
+    const ui = setup({mode});
+    ui.run('setActivity("Build ready.")');
+    assert.equal(ui.element('activity').textContent, 'Build ready.');
+    assert.equal(ui.element('pluginActivity').textContent, 'Build ready.');
+    assert.equal(ui.element('moduleActivityLatest').textContent, 'Build ready.');
+    assert.equal(ui.element('pluginActivityLatest').textContent, 'Build ready.');
+    assert.equal(ui.element('moduleActivityPanel').open, false);
+    assert.equal(ui.element('pluginActivityPanel').open, false);
+
+    ui.element('moduleActivityPanel').open = true;
+    ui.run('setActivity("Could not restart.", true)');
+    assert.equal(ui.element('activity').textContent, 'Could not restart.');
+    assert.equal(ui.element('pluginActivity').textContent, 'Could not restart.');
+    assert.equal(ui.element('moduleActivityLatest').textContent, 'Could not restart.');
+    assert.equal(ui.element('pluginActivityLatest').textContent, 'Could not restart.');
+    assert.equal(ui.element('deployFeedbackText').textContent, 'Could not restart.');
+    assert.equal(ui.element('moduleActivityPanel').classList.contains('is-error'), true);
+    assert.equal(ui.element('pluginActivityPanel').classList.contains('is-error'), true);
+    assert.equal(ui.element('moduleActivityPanel').open, true);
+    assert.equal(ui.element('pluginActivityPanel').open, false);
+  }
+});
+
+test('deployment tables wrap into subtly contrasted cards below 710px', () => {
+  const cardStart = css.indexOf('@media (max-width:710px)');
   const mobileStart = css.indexOf('@media (max-width:540px)');
-  assert.ok(mobileStart > 0);
-  const wideStyles = css.slice(0, mobileStart);
-  const mobileStyles = css.slice(mobileStart);
+  assert.ok(cardStart > 0 && mobileStart > cardStart);
+  const wideStyles = css.slice(0, cardStart);
+  const cardStyles = css.slice(cardStart, mobileStart);
   assert.match(wideStyles, /\.hb-deploy-page \.table \.badge\s*\{[^}]*white-space:\s*nowrap/);
   const pluginWidth = wideStyles.match(/\.hb-deploy-global \.table,\s*\.hb-deploy-custom \.table\s*\{[^}]*min-width:\s*(\d+)px/);
   assert.ok(pluginWidth && Number(pluginWidth[1]) >= 600);
-  assert.match(mobileStyles, /\.hb-deploy-builds \.table,\s*\.hb-deploy-global \.table,\s*\.hb-deploy-custom \.table\s*\{[^}]*min-width:\s*0/);
+  assert.match(cardStyles, /\.hb-deploy-page \.table thead\s*\{[^}]*display:\s*none/);
+  assert.match(cardStyles, /\.hb-deploy-builds \.table,\s*\.hb-deploy-global \.table,\s*\.hb-deploy-custom \.table\s*\{[^}]*min-width:\s*0/);
+  assert.match(cardStyles, /\.hb-deploy-page \.table tr\s*\{[^}]*display:\s*grid/);
+  assert.match(cardStyles, /\.hb-deploy-builds \.table tbody tr:not\(\.details-row\),\s*\.hb-deploy-global \.table tbody tr,\s*\.hb-deploy-custom \.table tbody tr\s*\{[^}]*border:\s*1px solid var\(--color-base-300\)[^}]*background:\s*var\(--color-base-100\)/);
   assert.match(wideStyles, /\.hb-module-picker\s*\{[^}]*position:\s*sticky;\s*top:\s*0/);
   assert.match(wideStyles, /\.hb-module-picker>nav\s*\{[^}]*overflow-y:\s*auto/);
-  assert.doesNotMatch(mobileStyles, /\.hb-deploy-health strong\s*\{[^}]*display:\s*none/);
+  assert.doesNotMatch(css.slice(mobileStart), /\.hb-deploy-health strong\s*\{[^}]*display:\s*none/);
 });
 
-test('mobile plugin rows stay grouped as cards without internal cell borders', () => {
-  const mobileStyles = css.slice(css.indexOf('@media (max-width:540px)'));
-  const cardRule = mobileStyles.match(/\.hb-deploy-global \.table (?:tbody )?tr,\s*\.hb-deploy-custom \.table (?:tbody )?tr\s*\{([^}]+)\}/);
-  assert.ok(cardRule, 'both plugin tables must group each row at the mobile breakpoint');
+test('compact plugin rows stay grouped as cards without internal cell borders', () => {
+  const cardStyles = css.slice(css.indexOf('@media (max-width:710px)'), css.indexOf('@media (max-width:540px)'));
+  const cardRule = cardStyles.match(/\.hb-deploy-builds \.table tbody tr:not\(\.details-row\),\s*\.hb-deploy-global \.table tbody tr,\s*\.hb-deploy-custom \.table tbody tr\s*\{([^}]+)\}/);
+  assert.ok(cardRule, 'all deployment tables must group each row at the compact breakpoint');
   assert.match(cardRule[1], /border:\s*1px solid/);
   assert.match(cardRule[1], /border-radius:\s*[^;]+/);
   assert.match(cardRule[1], /(?:margin(?:-block|-bottom)?:|gap:)\s*(?!0(?:px)?[;\s])[^;]+/);
-  const cellRule = mobileStyles.match(/\.hb-deploy-global \.table (?:tbody )?td,\s*\.hb-deploy-custom \.table (?:tbody )?td\s*\{([^}]+)\}/);
+  const cellRule = cardStyles.match(/\.hb-deploy-global \.table (?:tbody )?td,\s*\.hb-deploy-custom \.table (?:tbody )?td\s*\{([^}]+)\}/);
   assert.ok(cellRule, 'both plugin card types must suppress the table cell borders');
   assert.match(cellRule[1], /border:\s*(?:0|none)/);
 });

@@ -13,10 +13,10 @@
     <link rel="stylesheet" href="/assets/dashboard.css">
     <script src="/assets/hyperbricks-icons.js" defer></script>
   </head>
-  <body data-mode="remote">
+  <body class="hb-deploy-shell" data-mode="remote">
       <a class="hb-skip btn btn-primary" href="#main">Skip to content</a>
       <header class="hb-header" id="deployHeader">
-        <a class="hb-brand" href="/" aria-label="HyperBricks deployment"><img src="/assets/brandmark.svg" width="20" height="28" alt=""><span>HyperBricks</span></a>
+        <a class="hb-brand" href="/" aria-label="HyperBricks Deploy home"><img src="/assets/brandmark.svg" width="20" height="28" alt=""><span>Deploy</span></a>
         <nav class="hb-nav hb-deploy-header-tabs tabs tabs-border" id="deploymentNav" role="tablist" aria-label="Deployment view" hidden>
           <button id="viewModules" class="tab" role="tab" aria-selected="true" aria-controls="modulesView" tabindex="0" type="button"><i data-lucide="boxes"></i>Modules</button>
           <button id="viewPlugins" class="tab" role="tab" aria-selected="false" aria-controls="pluginsView" tabindex="-1" type="button"><i data-lucide="plug"></i>Shared Plugins</button>
@@ -46,7 +46,13 @@
                         <input class="input" id="baseUrl" placeholder="http://127.0.0.1:9090" />
                       </div>
                       <div class="hb-field">
-                        <label for="secret">HMAC Secret</label>
+                        <div class="hb-field-label">
+                          <label for="secret">HMAC Secret</label>
+                          <button class="btn btn-sm btn-square btn-ghost hb-help-trigger" type="button" data-help-popover="requestSigningHelp" aria-label="How requests are signed" aria-controls="requestSigningHelp" aria-expanded="false"><i data-lucide="circle-help"></i></button>
+                          <div class="hb-help-popover" id="requestSigningHelp" popover="manual" role="tooltip">Each request is signed with the HMAC secret. A fresh timestamp and nonce are generated for every request.</div>
+                          <button class="btn btn-sm btn-square btn-ghost hb-help-trigger" type="button" data-help-popover="signerHelp" aria-label="Signer information" aria-controls="signerHelp" aria-expanded="false"><i data-lucide="info"></i></button>
+                          <div class="hb-help-popover" id="signerHelp" popover="manual" role="tooltip"><span id="signerMode"></span></div>
+                        </div>
                         <div class="hb-secret-control">
                           <input class="input" id="secret" type="password" placeholder="Shared secret" aria-describedby="secretStatus" />
                           <button id="setSecret" class="btn btn-neutral" type="button" disabled>Set</button>
@@ -58,10 +64,6 @@
                       <button class="btn btn-sm btn-primary " id="loadModules">Load Modules</button>
                       <button class="btn btn-sm btn-primary " id="refreshStatus" disabled>Refresh Status</button>
                       <button class="btn btn-sm btn-ghost " id="clearSecret" type="button">Clear Secret</button>
-                    </div>
-                    <div class="note-row">
-                      <span class="note">Timestamp and nonce are generated per request.</span>
-                      <span id="signerMode" class="note"></span>
                     </div>
                   </div>
                 </div>
@@ -79,7 +81,11 @@
                     </div>
                     <div class="connect-row">
                       <div class="hb-field">
-                        <label for="localTargetApi">Remote API</label>
+                        <div class="hb-field-label">
+                          <label for="localTargetApi">Remote API</label>
+                          <button class="btn btn-sm btn-square btn-ghost hb-help-trigger" type="button" data-help-popover="localSyncHelp" aria-label="How local sync works" aria-controls="localSyncHelp" aria-expanded="false"><i data-lucide="circle-help"></i></button>
+                          <div class="hb-help-popover" id="localSyncHelp" popover="manual" role="tooltip">Local mode uses <code>deploy.client</code> for HTTP upload and sync.</div>
+                        </div>
                         <input class="input" id="localTargetApi" readonly />
                       </div>
                       <div class="hb-field">
@@ -87,13 +93,14 @@
                         <input class="input" id="localTargetRoot" readonly />
                       </div>
                     </div>
-                    <div class="note-row">
-                      <span class="note">Local mode uses deploy.client for HTTP upload/sync.</span>
-                    </div>
                   </div>
                 </div>
                 <div id="connectionAdminDivider" class="menu-divider" hidden></div>
-                <button class="btn btn-sm btn-error menu-action remote-only" id="killAllProcesses" type="button" hidden>Kill all hyperbricks (except API)</button>
+                <div class="hb-stop-process-row remote-only" id="killAllRow" hidden>
+                  <button class="btn btn-sm menu-action hb-danger-action" id="killAllProcesses" type="button" hidden>Stop other HyperBricks processes</button>
+                  <button class="btn btn-sm btn-square btn-ghost hb-help-trigger" type="button" data-help-popover="stopProcessesHelp" aria-label="About stopping other HyperBricks processes" aria-controls="stopProcessesHelp" aria-expanded="false"><i data-lucide="circle-help"></i></button>
+                  <div class="hb-help-popover" id="stopProcessesHelp" popover="manual" role="tooltip">Stops other HyperBricks processes on this host, including unrelated commands. The Deploy API and remote deployment processes stay running. You will be asked to confirm.</div>
+                </div>
               </div>
             </div>
           </div>
@@ -121,7 +128,7 @@
             </div>
             <div class="navbar-end">
               <details class="dropdown dropdown-end hb-module-actions" id="moduleActions">
-                <summary class="btn btn-sm btn-ghost" id="moduleActionsToggle" aria-controls="moduleActionsMenu"><i data-lucide="ellipsis"></i>Actions</summary>
+                <summary class="btn btn-sm btn-ghost" id="moduleActionsToggle" aria-label="Module actions" title="Module actions" aria-controls="moduleActionsMenu"><span id="moduleActionsIcon" aria-hidden="true"><i data-lucide="ellipsis"></i></span><span id="moduleActionsLabel">Actions</span></summary>
                 <ul class="dropdown-content menu bg-base-100 rounded-box shadow-md" id="moduleActionsMenu" aria-label="Module actions">
                   <li class="local-only"><button id="buildModule" type="button"><i data-lucide="hammer"></i>Build</button></li>
                   <li class="local-only"><button id="syncRemote" type="button"><i data-lucide="refresh-cw"></i>Sync Remote</button></li>
@@ -189,10 +196,10 @@
             </section>
           </div>
 
-          <section class="hb-section hb-deploy-log">
-            <h2>Activity</h2>
-            <pre class="hb-terminal" id="activity">Ready.</pre>
-          </section>
+          <details class="collapse hb-deploy-log" id="moduleActivityPanel">
+            <summary class="collapse-title hb-deploy-activity-toggle"><strong>Activity</strong><span class="hb-deploy-activity-latest" id="moduleActivityLatest" aria-live="polite">Ready.</span><i class="hb-deploy-activity-chevron" data-lucide="chevron-up" aria-hidden="true"></i></summary>
+            <div class="collapse-content hb-deploy-activity-content"><pre class="hb-terminal" id="activity">Ready.</pre></div>
+          </details>
         </div>
         </div>
         <div class="drawer-side hb-deploy-drawer-side">
@@ -243,10 +250,10 @@
           </div>
         </section>
 
-        <section class="hb-section hb-deploy-log">
-          <h2>Activity</h2>
-          <pre class="hb-terminal" id="pluginActivity">Ready.</pre>
-        </section>
+        <details class="collapse hb-deploy-log" id="pluginActivityPanel">
+          <summary class="collapse-title hb-deploy-activity-toggle"><strong>Activity</strong><span class="hb-deploy-activity-latest" id="pluginActivityLatest" aria-live="polite">Ready.</span><i class="hb-deploy-activity-chevron" data-lucide="chevron-up" aria-hidden="true"></i></summary>
+          <div class="collapse-content hb-deploy-activity-content"><pre class="hb-terminal" id="pluginActivity">Ready.</pre></div>
+        </details>
         </div>
         </div>
         <div class="drawer-side hb-deploy-drawer-side">
@@ -334,23 +341,38 @@
           <div class="hb-dialog-heading">
             <div>
               <p class="hb-eyebrow" id="credentialsContext">Build credentials</p>
-              <h2 id="credentialsTitle">Developer access</h2>
+              <div class="hb-field-label">
+                <h2 id="credentialsTitle" tabindex="-1">Developer access</h2>
+                <button class="btn btn-sm btn-square btn-ghost hb-help-trigger" type="button" data-help-popover="developerAccessHelp" aria-label="About developer access" aria-controls="developerAccessHelp" aria-expanded="false"><i data-lucide="circle-help"></i></button>
+                <div class="hb-help-popover" id="developerAccessHelp" popover="manual" role="tooltip">One developer login protects the Overview, Errors and Spaces views. These settings do not change the deployment login or HMAC secret.</div>
+              </div>
             </div>
             <button class="btn btn-sm btn-square btn-ghost" id="closeCredentials" type="button" aria-label="Close credentials" title="Close"><i data-lucide="x"></i></button>
           </div>
           <div class="hb-credentials-scroll">
-          <p class="note hb-credentials-intro">One developer login protects Dashboard, Errors and Spaces. These settings do not change the deployment login or HMAC secret.</p>
-          <p class="note hb-credentials-intro" id="credentialsScope"></p>
+          <div class="hb-credentials-scope">
+            <span class="note" id="credentialsScopeLabel">Build runtime</span>
+            <button class="btn btn-sm btn-square btn-ghost hb-help-trigger" type="button" data-help-popover="credentialsScope" aria-label="What this edit changes" aria-controls="credentialsScope" aria-expanded="false"><i data-lucide="info"></i></button>
+            <div class="hb-help-popover" id="credentialsScope" popover="manual" role="tooltip"></div>
+          </div>
           <section class="hb-developer-visibility" aria-labelledby="developerVisibilityHeading">
             <h3 id="developerVisibilityHeading">Visible in Development mode</h3>
-            <label class="hb-developer-tool" for="credentialsDashboardEnabled">
-              <span><strong>Dashboard &amp; Errors</strong><small>Show the developer dashboard and error view.</small></span>
+            <div class="hb-developer-tool">
+              <div class="hb-developer-tool-name">
+                <label for="credentialsDashboardEnabled">Dashboard</label>
+                <button class="btn btn-sm btn-square btn-ghost hb-help-trigger" type="button" data-help-popover="dashboardVisibilityHelp" aria-label="About Dashboard visibility" aria-controls="dashboardVisibilityHelp" aria-expanded="false"><i data-lucide="circle-help"></i></button>
+                <div class="hb-help-popover" id="dashboardVisibilityHelp" popover="manual" role="tooltip">Show the Overview and Errors views in Development mode. Spaces has its own switch.</div>
+              </div>
               <input class="toggle toggle-sm" id="credentialsDashboardEnabled" type="checkbox" disabled />
-            </label>
-            <label class="hb-developer-tool" for="credentialsSpacesEnabled">
-              <span><strong>Spaces</strong><small>Show the Spaces editor without changing other frontend editors.</small></span>
+            </div>
+            <div class="hb-developer-tool">
+              <div class="hb-developer-tool-name">
+                <label for="credentialsSpacesEnabled">Spaces</label>
+                <button class="btn btn-sm btn-square btn-ghost hb-help-trigger" type="button" data-help-popover="spacesVisibilityHelp" aria-label="About Spaces visibility" aria-controls="spacesVisibilityHelp" aria-expanded="false"><i data-lucide="circle-help"></i></button>
+                <div class="hb-help-popover" id="spacesVisibilityHelp" popover="manual" role="tooltip">Show the Spaces editor in Development mode without changing other frontend editors.</div>
+              </div>
               <input class="toggle toggle-sm" id="credentialsSpacesEnabled" type="checkbox" disabled />
-            </label>
+            </div>
             <p class="note" id="credentialsSpacesParentWarning" hidden>Spaces is also disabled by <code>development.frontend_editing.enabled</code>. Enable that setting in the package editor to make Spaces visible.</p>
           </section>
           <section class="hb-credentials-current" aria-label="Configured credentials">
@@ -372,7 +394,11 @@
               <input class="input" id="credentialsNewPassword" type="password" placeholder="Leave unchanged" autocomplete="new-password" disabled />
             </label>
           </div>
-          <p class="note">New credentials are stored as plain text. References are shown as configured, not resolved. Restart a running module to apply changes.</p>
+          <div class="hb-credentials-caution">
+            <span class="note">Stored as plain text · restart to apply.</span>
+            <button class="btn btn-sm btn-square btn-ghost hb-help-trigger" type="button" data-help-popover="credentialStorageHelp" aria-label="About credential storage and applying changes" aria-controls="credentialStorageHelp" aria-expanded="false"><i data-lucide="info"></i></button>
+            <div class="hb-help-popover" id="credentialStorageHelp" popover="manual" role="tooltip">New credentials are stored as plain text in <code>package.hyperbricks.yaml</code>. References are shown as configured, not resolved. Restart a running module to apply changes.</div>
+          </div>
           </div>
           <p class="hb-form-error" id="credentialsError" role="alert"></p>
           <p class="note hb-credentials-status" id="credentialsStatus" role="status" aria-live="polite"></p>
@@ -439,7 +465,9 @@
         credentialsDialog: document.getElementById("credentialsDialog"),
         credentialsForm: document.getElementById("credentialsForm"),
         credentialsContext: document.getElementById("credentialsContext"),
+        credentialsTitle: document.getElementById("credentialsTitle"),
         credentialsScope: document.getElementById("credentialsScope"),
+        credentialsScopeLabel: document.getElementById("credentialsScopeLabel"),
         credentialsUser: document.getElementById("credentialsUser"),
         credentialsPassword: document.getElementById("credentialsPassword"),
         credentialsUserSource: document.getElementById("credentialsUserSource"),
@@ -459,6 +487,10 @@
         rollbackTarget: document.getElementById("rollbackTarget"),
         activity: document.getElementById("activity"),
         pluginActivity: document.getElementById("pluginActivity"),
+        moduleActivityPanel: document.getElementById("moduleActivityPanel"),
+        pluginActivityPanel: document.getElementById("pluginActivityPanel"),
+        moduleActivityLatest: document.getElementById("moduleActivityLatest"),
+        pluginActivityLatest: document.getElementById("pluginActivityLatest"),
         menuToggle: document.getElementById("menuToggle"),
         menuPanel: document.getElementById("menuPanel"),
         closeConnection: document.getElementById("closeConnection"),
@@ -496,6 +528,7 @@
         globalPluginSection: document.getElementById("globalPluginSection"),
         customPluginSection: document.getElementById("customPluginSection"),
         killAll: document.getElementById("killAllProcesses"),
+        killAllRow: document.getElementById("killAllRow"),
         modulesView: document.getElementById("modulesView"),
         pluginsView: document.getElementById("pluginsView"),
         viewModules: document.getElementById("viewModules"),
@@ -614,6 +647,12 @@
         const targets = [ui.activity, ui.pluginActivity].filter(Boolean);
         targets.forEach((target) => {
           target.textContent = message;
+        });
+        [ui.moduleActivityLatest, ui.pluginActivityLatest].forEach((target) => {
+          target.textContent = message;
+        });
+        [ui.moduleActivityPanel, ui.pluginActivityPanel].forEach((panel) => {
+          panel.classList.toggle("is-error", !!isError);
         });
       }
 
@@ -761,6 +800,7 @@
       function setConnectionState(kind) {
         state.authenticated = isLocalMode || kind === "ready";
         if (!state.authenticated) {
+          closeHelpPopover();
           state.pluginInventoryGeneration += 1;
           state.pluginInventoryLoaded = false;
           state.customPluginInventory.clear();
@@ -775,6 +815,7 @@
         ui.loadModules.disabled = !state.authenticated;
         ui.refreshStatus.disabled = !state.authenticated || !state.selectedModule;
         ui.killAll.hidden = !state.authenticated || isLocalMode;
+        ui.killAllRow.hidden = ui.killAll.hidden;
         ui.killAll.disabled = !state.authenticated;
         ui.connectionAdminDivider.hidden = ui.killAll.hidden;
         const messages = {
@@ -1587,7 +1628,88 @@
         }
       }
 
+      let activeHelpPopover = null;
+      let helpCloseTimer = null;
+
+      function closeHelpPopover() {
+        if (helpCloseTimer) clearTimeout(helpCloseTimer);
+        helpCloseTimer = null;
+        if (!activeHelpPopover) return;
+        const {trigger, popover} = activeHelpPopover;
+        activeHelpPopover = null;
+        if (popover.matches(":popover-open")) popover.hidePopover();
+        trigger.setAttribute("aria-expanded", "false");
+      }
+
+      function positionHelpPopover(trigger, popover) {
+        const anchor = trigger.getBoundingClientRect();
+        const box = popover.getBoundingClientRect();
+        const left = Math.max(12, Math.min(anchor.left + anchor.width / 2 - box.width / 2, window.innerWidth - box.width - 12));
+        const below = anchor.bottom + 8;
+        const above = anchor.top - box.height - 8;
+        const top = below + box.height <= window.innerHeight - 12 || above < 12 ? below : above;
+        popover.style.left = left + "px";
+        popover.style.top = Math.max(12, Math.min(top, window.innerHeight - box.height - 12)) + "px";
+      }
+
+      function showHelpPopover(trigger, popover, pinned = false) {
+        if (helpCloseTimer) clearTimeout(helpCloseTimer);
+        helpCloseTimer = null;
+        if (activeHelpPopover && activeHelpPopover.popover !== popover) closeHelpPopover();
+        if (!popover.matches(":popover-open")) popover.showPopover();
+        activeHelpPopover = {trigger, popover, pinned: pinned || activeHelpPopover?.pinned || false};
+        positionHelpPopover(trigger, popover);
+        trigger.setAttribute("aria-expanded", "true");
+      }
+
+      function scheduleHelpPopoverClose(trigger) {
+        if (helpCloseTimer) clearTimeout(helpCloseTimer);
+        helpCloseTimer = setTimeout(() => {
+          if (activeHelpPopover?.trigger === trigger && !activeHelpPopover.pinned &&
+              !activeHelpPopover.popover.matches(":hover")) {
+            closeHelpPopover();
+          }
+        }, 150);
+      }
+
+      function wireHelpPopovers() {
+        for (const trigger of document.querySelectorAll("[data-help-popover]")) {
+          const popover = document.getElementById(trigger.dataset.helpPopover);
+          if (!popover) continue;
+          trigger.setAttribute("aria-describedby", popover.id);
+          trigger.addEventListener("pointermove", (event) => {
+            if (event.pointerType === "mouse") showHelpPopover(trigger, popover);
+          });
+          trigger.addEventListener("pointerleave", (event) => {
+            if (event.pointerType === "mouse") scheduleHelpPopoverClose(trigger);
+          });
+          trigger.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (activeHelpPopover?.trigger === trigger && activeHelpPopover.pinned) closeHelpPopover();
+            else showHelpPopover(trigger, popover, true);
+          });
+          popover.addEventListener("pointerenter", () => {
+            if (helpCloseTimer) clearTimeout(helpCloseTimer);
+          });
+          popover.addEventListener("pointerleave", () => scheduleHelpPopoverClose(trigger));
+          popover.addEventListener("toggle", (event) => {
+            if (event.newState === "closed" && activeHelpPopover?.popover === popover) closeHelpPopover();
+          });
+        }
+        document.addEventListener("pointerdown", (event) => {
+          if (activeHelpPopover && !activeHelpPopover.trigger.contains(event.target) &&
+              !activeHelpPopover.popover.contains(event.target)) closeHelpPopover();
+        }, true);
+        window.addEventListener("resize", () => {
+          if (activeHelpPopover) positionHelpPopover(activeHelpPopover.trigger, activeHelpPopover.popover);
+        });
+        window.addEventListener("scroll", () => {
+          if (activeHelpPopover) positionHelpPopover(activeHelpPopover.trigger, activeHelpPopover.popover);
+        }, true);
+      }
+
       function closeMenu(restoreFocus = false) {
+        if (activeHelpPopover && ui.menuPanel.contains(activeHelpPopover.trigger)) closeHelpPopover();
         if (ui.menuPanel) {
           ui.menuPanel.classList.add("hidden");
           ui.menuToggle.setAttribute("aria-expanded", "false");
@@ -1605,6 +1727,8 @@
           event.stopPropagation();
         }
         ui.menuPanel.classList.toggle("hidden");
+        if (ui.menuPanel.classList.contains("hidden") && activeHelpPopover &&
+            ui.menuPanel.contains(activeHelpPopover.trigger)) closeHelpPopover();
         ui.menuToggle.setAttribute("aria-expanded", String(!ui.menuPanel.classList.contains("hidden")));
       }
 
@@ -2183,6 +2307,8 @@
         ui.credentialsSpacesEnabled.checked = true;
         ui.credentialsUserSource.textContent = "";
         ui.credentialsPasswordSource.textContent = "";
+        ui.credentialsScopeLabel.textContent = "Build runtime";
+        ui.credentialsScope.textContent = "";
         state.credentialsUserSource = "missing";
         state.credentialsPasswordSource = "missing";
         state.credentialsDashboardEnabled = false;
@@ -2209,6 +2335,7 @@
         ui.credentialsNewPassword.value = "";
         ui.credentialsNewUser.placeholder = state.credentialsUserSource === "missing" ? "Enter a username" : "Leave unchanged";
         ui.credentialsNewPassword.placeholder = state.credentialsPasswordSource === "missing" ? "Enter a password" : "Leave unchanged";
+        ui.credentialsScopeLabel.textContent = data.scope === "source" ? "Source module" : "Extracted build runtime";
         ui.credentialsScope.textContent = data.scope === "source"
           ? "Editing the source module's package configuration."
           : "Editing this build's extracted runtime. The original .hra archive stays unchanged.";
@@ -2235,6 +2362,7 @@
         ui.credentialsStatus.textContent = "Loading developer access…";
         updateCredentialsControls();
         if (!ui.credentialsDialog.open) ui.credentialsDialog.showModal();
+        ui.credentialsTitle.focus({preventScroll: true});
         const current = () => session === state.credentialsSession && ui.credentialsDialog.open && isSelectionCurrent(token, module);
         try {
           const data = await apiRequest("GET", credentialsPath(module, buildId));
@@ -2259,6 +2387,7 @@
         if (force !== true && state.credentialsSaving) return false;
         if (force !== true && credentialsAreDirty() && !confirm("Discard unsaved developer access changes?")) return false;
         const trigger = state.credentialsTrigger;
+        if (activeHelpPopover && ui.credentialsDialog.contains(activeHelpPopover.trigger)) closeHelpPopover();
         ui.credentialsDialog.close();
         state.credentialsSession++;
         state.credentialsModule = "";
@@ -3589,7 +3718,6 @@
               action: "stop",
               label: "Stop",
               icon: icons.stop,
-              className: "btn-error",
               attrs: buildAttr,
               disabled: isDisabled
             });
@@ -3671,7 +3799,7 @@
               action: "delete",
               label: "Delete build",
               icon: icons.delete,
-              className: "btn-error",
+              className: "hb-danger-action",
               attrs: buildAttr,
               disabled: isDisabled
             });
@@ -4223,6 +4351,7 @@
       }
 
       function wireEvents() {
+        wireHelpPopovers();
         ui.loadModules.addEventListener("click", () => reloadModules().catch(handleError));
         syncDeploymentDrawerBreakpoint();
         deploymentDrawerMedia.addEventListener("change", syncDeploymentDrawerBreakpoint);
@@ -4390,6 +4519,12 @@
           ui.secret.focus();
         });
         document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && activeHelpPopover) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            closeHelpPopover();
+            return;
+          }
           if (event.key === "Escape") {
             closeRowMenus();
           }
@@ -4404,7 +4539,7 @@
         if (ui.killAll) {
           ui.killAll.addEventListener("click", () => {
             closeMenu();
-            if (!confirm("Kill all hyperbricks processes (except deploy API)?")) {
+            if (!confirm("Stop other HyperBricks processes on this host? This may stop module runtimes and unrelated HyperBricks commands. The Deploy API stays running.")) {
               return;
             }
             apiRequest("POST", apiPath("/admin/kill-all"))
@@ -4413,10 +4548,10 @@
                 const skipped = data.skipped || [];
                 const failed = data.failed || [];
                 if (failed.length) {
-                  setActivity("Kill all completed with errors: " + failed.join(", "), true);
+                  setActivity("Could not stop all HyperBricks processes: " + failed.join(", "), true);
                   return;
                 }
-                setActivity("Killed " + killed.length + " process(es). Skipped " + skipped.length + ".");
+                setActivity("Stopped " + killed.length + " HyperBricks process(es). Skipped " + skipped.length + ".");
               })
               .catch(handleError);
           });

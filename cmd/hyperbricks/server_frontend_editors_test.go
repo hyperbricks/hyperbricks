@@ -56,6 +56,9 @@ func TestBuiltinSpacesMountDefaultsAndSafety(t *testing.T) {
 	for _, dashboard := range []bool{true, false} {
 		cfg.Development.Dashboard.Enabled = dashboard
 		body := request("GET", shared.DefaultSpacesRoute, "").Body.String()
+		if !strings.Contains(body, `<title>Spaces | HyperBricks Dashboard</title>`) || !strings.Contains(body, `<span>Dashboard</span>`) || strings.Contains(body, `>Overview</a>`) != dashboard {
+			t.Fatalf("Spaces branding or Overview navigation does not match Dashboard availability: %v", dashboard)
+		}
 		if strings.Contains(body, `href="`+developerDashboardPath+`"`) != dashboard || strings.Contains(body, `href="/dashboard"`) || strings.Contains(body, "__DASHBOARD_NAV__") {
 			t.Fatalf("Dashboard navigation does not follow its reserved route and availability: %v", dashboard)
 		}

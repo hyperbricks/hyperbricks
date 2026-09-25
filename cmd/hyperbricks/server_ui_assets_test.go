@@ -156,7 +156,7 @@ func TestDashboardSharedUIRendering(t *testing.T) {
 	if got := strings.Count(page, ` hb-surface"`); got != 5 {
 		t.Errorf("dashboard should frame metrics, module, routes, logs and plugins, got %d surfaces", got)
 	}
-	for _, expected := range []string{`class="hb-header"`, `href="/custom/spaces"`, `href="/__hyperbricks/errors"`, `data-theme-toggle`, `&lt;HYPERMEDIA&gt;`, `badge-error`, `&lt;script&gt;`, `id="logLevel"`, `id="routeFilter"`} {
+	for _, expected := range []string{`<title>Overview | HyperBricks Dashboard</title>`, `class="hb-header"`, `<span>Dashboard</span>`, `>Overview</a>`, `<h1>Overview</h1>`, `href="/custom/spaces"`, `href="/__hyperbricks/errors"`, `data-theme-toggle`, `&lt;HYPERMEDIA&gt;`, `badge-error`, `&lt;script&gt;`, `id="logLevel"`, `id="routeFilter"`} {
 		if !strings.Contains(page, expected) {
 			t.Errorf("dashboard missing %s", expected)
 		}

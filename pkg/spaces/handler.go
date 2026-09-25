@@ -210,7 +210,7 @@ func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			navigation := ""
 			errorsNavigation := ""
 			if s.dashboard {
-				navigation = `<a href="/__hyperbricks/dashboard"><i data-lucide="layout-dashboard"></i>Dashboard</a>`
+				navigation = `<a href="/__hyperbricks/dashboard"><i data-lucide="layout-dashboard"></i>Overview</a>`
 				errorsNavigation = `<a href="/__hyperbricks/errors"><i data-lucide="circle-alert"></i>Errors</a>`
 			}
 			b = []byte(strings.ReplaceAll(string(b), "__DASHBOARD_NAV__", navigation))

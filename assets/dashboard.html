@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dashboard | HyperBricks</title>
+  <title>Overview | HyperBricks Dashboard</title>
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <script src="/assets/hyperbricks-theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,12 +16,12 @@
 <body>
   <a class="hb-skip btn btn-primary" href="#main">Skip to content</a>
   <header class="hb-header">
-    <a class="hb-brand" href="/__hyperbricks/dashboard" aria-label="HyperBricks dashboard"><img src="/assets/brandmark.svg" width="20" height="28" alt=""><span>HyperBricks</span></a>
-    <nav class="hb-nav" aria-label="Product"><a href="/__hyperbricks/dashboard" aria-current="page"><i data-lucide="layout-dashboard"></i>Dashboard</a>{{if .SpacesRoute}}<a href="{{.SpacesRoute}}"><i data-lucide="panels-top-left"></i>Spaces</a>{{end}}{{if .ErrorsRoute}}<a href="{{.ErrorsRoute}}"><i data-lucide="circle-alert"></i>Errors</a>{{end}}</nav>
+    <a class="hb-brand" href="/__hyperbricks/dashboard" aria-label="HyperBricks Dashboard home"><img src="/assets/brandmark.svg" width="20" height="28" alt=""><span>Dashboard</span></a>
+    <nav class="hb-nav" aria-label="Product"><a href="/__hyperbricks/dashboard" aria-current="page"><i data-lucide="layout-dashboard"></i>Overview</a>{{if .SpacesRoute}}<a href="{{.SpacesRoute}}"><i data-lucide="panels-top-left"></i>Spaces</a>{{end}}{{if .ErrorsRoute}}<a href="{{.ErrorsRoute}}"><i data-lucide="circle-alert"></i>Errors</a>{{end}}</nav>
     <div class="hb-header-actions"><span class="hb-header-context hb-muted">{{.Mode}}</span><button class="btn btn-sm btn-square btn-ghost" data-theme-toggle type="button" aria-label="Switch theme"><i data-lucide="sun-moon"></i></button></div>
   </header>
   <main id="main" class="hb-page">
-    <div class="hb-page-heading"><div><p class="hb-eyebrow">{{.Module}}</p><h1>Dashboard</h1></div><a class="btn btn-sm btn-ghost" href="/" target="_blank" rel="noopener"><i data-lucide="external-link"></i>Open site</a></div>
+    <div class="hb-page-heading"><div><p class="hb-eyebrow">{{.Module}}</p><h1>Overview</h1></div><a class="btn btn-sm btn-ghost" href="/" target="_blank" rel="noopener"><i data-lucide="external-link"></i>Open site</a></div>
     <section class="hb-metrics hb-surface" aria-label="System metrics">
       <div><span class="hb-muted">Requests</span><strong>{{.Counter}}</strong><small>Since startup</small></div>
       <div><span class="hb-muted">Memory</span><strong>{{.Mem}} <span>MiB</span></strong><small>System allocation</small></div>

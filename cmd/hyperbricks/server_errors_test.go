@@ -44,7 +44,7 @@ func TestErrorsViewReadOnlyAssetsAndNavigation(t *testing.T) {
 			}
 			if path == errorsViewPath {
 				body := response.Body.String()
-				for _, expected := range []string{`href="/__hyperbricks/custom-spaces"`, `href="` + developerDashboardPath + `"`, `aria-current="page"`, `id="issues"`, `/assets/hyperbricks-ui.css`, `data-theme-toggle`} {
+				for _, expected := range []string{`<title>Errors | HyperBricks Dashboard</title>`, `<span>Dashboard</span>`, `>Overview</a>`, `href="/__hyperbricks/custom-spaces"`, `href="` + developerDashboardPath + `"`, `aria-current="page"`, `id="issues"`, `/assets/hyperbricks-ui.css`, `data-theme-toggle`} {
 					if !strings.Contains(body, expected) {
 						t.Errorf("missing %s", expected)
 					}
