@@ -18,7 +18,7 @@ See [Docker Deploy Host](../docs/DOCKER.md) for release selection, alternate por
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `HB_BUILD_SOURCE` | `checkout` | Build local source, or use `release`. |
-| `HB_VERSION` | `v1.2.4-beta` | Published version installed in release mode. |
+| `HB_VERSION` | `v1.2.5-beta` | Published version installed in release mode. |
 | `HB_DEPLOY_REMOTE_USER` | Required | Basic Auth user for the remote interface and API. |
 | `HB_DEPLOY_REMOTE_PASSWORD` | Required | Basic Auth password for the remote interface and API. |
 | `HB_DEPLOY_REMOTE_HMAC_SECRET` | Required | HMAC secret for signed deployment operations. |
