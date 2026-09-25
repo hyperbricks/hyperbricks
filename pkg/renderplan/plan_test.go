@@ -303,6 +303,37 @@ func TestCompiledPlanPreservesNamedTemplates(t *testing.T) {
 	}
 }
 
+func TestCompiledAndLegacyTemplateErrorsPreserveSourceLocations(t *testing.T) {
+	manager := newTestRenderManager()
+	provider := func(name string) (string, bool) { return `<p>{{index .items 99}}</p>`, name == "broken.html" }
+	manager.GetRenderComponent(composite.TemplateConfigGetName()).(*composite.TemplateRenderer).TemplateProvider = provider
+	template := map[string]interface{}{
+		"template": "broken.html", "values": map[string]interface{}{"items": []string{"one"}},
+	}
+	source := &shared.SourceContext{File: "hyperbricks/imports/base.hyperbricks.yaml", Line: 10, Column: 3,
+		Path: "page.template", Key: "template",
+		Fields:    map[string]shared.SourceLocation{"template": {File: "hyperbricks/imports/base.hyperbricks.yaml", Line: 11, Column: 7}},
+		Resources: map[string]string{"template": "templates/broken.html"}}
+	source.Apply(template)
+	raw := map[string]interface{}{"@type": composite.HyperMediaConfigGetName(), "template": template}
+	plan, err := renderplan.Compile(manager, raw, provider)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, legacy := manager.Render(composite.HyperMediaConfigGetName(), raw, requestContext("legacy"))
+	_, compiled := plan.Render(requestContext("compiled"))
+	for name, diagnostics := range map[string][]error{"legacy": legacy, "compiled": compiled} {
+		if len(diagnostics) != 1 {
+			t.Fatalf("%s diagnostics = %v", name, diagnostics)
+		}
+		issue, ok := shared.AsComponentError(diagnostics[0])
+		if !ok || issue.File != source.File || issue.Line != 11 || issue.Path != source.Path ||
+			issue.Resource != "templates/broken.html" || issue.ResourceLine != 1 || issue.ResourceColumn != 5 || issue.Phase != "render" {
+			t.Fatalf("%s diagnostic context = %#v", name, issue)
+		}
+	}
+}
+
 func TestCompiledPlanPreservesHTMLTrimSpace(t *testing.T) {
 	manager := newTestRenderManager()
 	raw := headlessTemplateRoute(map[string]interface{}{
@@ -477,6 +508,8 @@ func assertComponentErrorParity(t *testing.T, gotError, wantError error) {
 	}
 	got.Hash = ""
 	want.Hash = ""
+	// The paths wrap independent executions; compare diagnostic data, not causes.
+	got.Cause, want.Cause = nil, nil
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("compiled error = %#v, want %#v", got, want)
 	}

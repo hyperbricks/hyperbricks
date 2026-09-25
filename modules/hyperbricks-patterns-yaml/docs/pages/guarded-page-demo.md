@@ -71,4 +71,6 @@ Keep responsibilities separate:
 - auth plugin handles login/logout/authorize request mechanics
 - forbidden is a real route, not just an inline message
 
-That matches the same ownership pattern used by Composer: page shells own route access, while auth endpoints own login/logout/authorize mechanics.
+A guard belongs on each route that needs protection, including fragments and API actions. Guarded routes bypass the internal response cache and use `Cache-Control: no-store`. See `docs/ROUTE_GUARD.md` in the repository root.
+
+The fixed credentials and cookie values are test data for this flow. They do not provide production authentication.

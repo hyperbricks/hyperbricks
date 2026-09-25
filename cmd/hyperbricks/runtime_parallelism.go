@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"runtime"
-	"strconv"
-	"strings"
+
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 // resolveGoMaxProcs returns zero for Go-managed automatic parallelism.
@@ -12,33 +11,7 @@ import (
 // values, and mapstructure's weak integer conversion would accept booleans or
 // truncate fractions. Keep the YAML value intact until this boundary.
 func resolveGoMaxProcs(value any, logicalCPUs int) (int, error) {
-	invalid := func() (int, error) {
-		return 0, fmt.Errorf("hyperbricks.server.gomaxprocs must be auto or an integer between 1 and %d; got %v", logicalCPUs, value)
-	}
-	if value == nil {
-		return 0, nil
-	}
-	var n int
-	switch v := value.(type) {
-	case int:
-		n = v
-	case string:
-		v = strings.TrimSpace(v)
-		if v == "auto" {
-			return 0, nil
-		}
-		parsed, err := strconv.Atoi(v)
-		if err != nil {
-			return invalid()
-		}
-		n = parsed
-	default:
-		return invalid()
-	}
-	if n < 1 || n > logicalCPUs {
-		return invalid()
-	}
-	return n, nil
+	return shared.ResolveGoMaxProcs(value, logicalCPUs)
 }
 
 func configureGoMaxProcs(value any) error {

@@ -3,7 +3,7 @@ FROM golang:1.26.1-alpine
 ARG HB_USER=deploy
 ARG HB_GROUP=deploy
 ARG HB_HOME=/opt/hyperbricks
-ARG HB_VERSION=v1.2.4-beta
+ARG HB_VERSION=v1.2.5-beta
 ARG HB_BUILD_SOURCE=checkout
 ARG TAILWIND_VERSION=
 
@@ -38,6 +38,8 @@ COPY assets /opt/hyperbricks-source/assets
 COPY cmd /opt/hyperbricks-source/cmd
 COPY pkg /opt/hyperbricks-source/pkg
 RUN chown -R "${HB_USER}:${HB_GROUP}" /opt/hyperbricks-source
+
+COPY LICENSE NOTICES.md /usr/share/doc/hyperbricks/
 
 COPY plugins "${HB_HOME}/plugins"
 RUN if [ -d "${HB_HOME}/plugins" ]; then \

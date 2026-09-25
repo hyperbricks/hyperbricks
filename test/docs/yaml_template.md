@@ -6,7 +6,7 @@
 
 # HyperBricks Component Reference
 
-This reference is generated from the runtime schema and YAML documentation fixtures. It is intentionally compact: field tables come from Go struct tags, while examples come from curated executable YAML fixtures.
+Use this reference to check component fields, types, and required values. HyperBricks generates the field tables from Go struct tags and the examples from executable YAML fixtures in the runtime documentation tests.
 
 Regenerate this reference and the root README with:
 

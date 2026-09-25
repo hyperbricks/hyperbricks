@@ -208,7 +208,9 @@ func (p *PreparedEsbuild) componentError(err error) error {
 	if p != nil {
 		config = p.component
 	}
-	return shared.ComponentError{Hash: shared.GenerateHash(), Type: EsbuildConfigGetName(), Rejected: true, Err: err.Error(), Path: config.HyperBricksPath, Key: config.HyperBricksKey}
+	diagnostic := shared.ResourceDiagnostic(err, config.Meta, "build", "entry")
+	diagnostic.Hash, diagnostic.Type, diagnostic.Rejected = shared.GenerateHash(), EsbuildConfigGetName(), true
+	return diagnostic
 }
 
 var esbuildTargetPattern = regexp.MustCompile(`^(chrome|edge|firefox|safari|ios|node|opera|ie)([0-9]+(?:\.[0-9]+){0,2})$`)

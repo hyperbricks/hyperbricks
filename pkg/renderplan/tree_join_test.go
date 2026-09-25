@@ -99,7 +99,7 @@ func TestCompiledTreeErrorsMatchCompositeSorter(t *testing.T) {
 			node := &treeNode{warnings: test.warnings, enclose: "  <section> | </section>  "}
 			var wantErrors []error
 			for _, warning := range test.warnings {
-				wantErrors = append(wantErrors, shared.ComponentError{Err: warning})
+				wantErrors = append(wantErrors, shared.ComponentError{Err: warning, Level: "WARNING"})
 			}
 			calls := make([]int, 0, len(test.children))
 			wantCalls := make([]int, len(test.children))

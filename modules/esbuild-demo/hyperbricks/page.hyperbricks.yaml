@@ -23,8 +23,6 @@ styles:
   - cache: true
   - fingerprint: true
   - target: [chrome110, safari16]
-  - loader:
-      .png: file
   - enclose: '<link rel="stylesheet" href="|">'
 
 estimate:

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
@@ -25,7 +24,6 @@ func live_mode_init() {
 
 	// Wait for the server to finish
 	wg.Wait()
-	fmt.Print("\033[H\033[2J")
-	logging.GetLogger().Info("Application exited")
+	logging.GetLogger().Named("server").Info("Stopped")
 
 }

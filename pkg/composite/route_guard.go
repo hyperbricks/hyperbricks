@@ -18,7 +18,7 @@ type RouteGuardAuthConfig struct {
 }
 
 type RouteGuardRequireConfig struct {
-	Authenticated bool                   `mapstructure:"authenticated" description:"Require an authenticated request before rendering"`
+	Authenticated bool                   `mapstructure:"authenticated" description:"Require a resolved token before rendering; presence alone does not validate its signature, expiry, or session."`
 	Query         map[string]interface{} `mapstructure:"query" description:"Required query keys, set each key to true to enforce presence"`
 }
 

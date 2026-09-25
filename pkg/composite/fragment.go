@@ -23,7 +23,7 @@ type FragmentConfig struct {
 	Enclose            string                 `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{fragment-enclose.hyperbricks.yaml}}"`
 	Template           *TemplateOptions       `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks.yaml}}"`
 	Static             string                 `mapstructure:"static" description:"Static file path associated with the fragment" example:"{!{fragment-static.hyperbricks.yaml}}"`
-	Cache              string                 `mapstructure:"cache" description:"Cache expire string" example:"{!{fragment-cache.hyperbricks.yaml}}"`
+	Cache              string                 `mapstructure:"cache" description:"Legacy field; does not override the process-wide hyperbricks.live.cache duration." example:"{!{fragment-cache.hyperbricks.yaml}}"`
 	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly disable cache" example:"{!{fragment-nocache.hyperbricks.yaml}}"`
 	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks.yaml}}"`
 	ContentType        string                 `mapstructure:"content_type" description:"content type header definition"`
@@ -104,6 +104,7 @@ func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (s
 		// TO-DO: INSERT HEAD to TEMPLATE VALUES....
 		templateConfig["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
 		templateConfig["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey + ".template"
+		config.Template.Source.Apply(templateConfig)
 
 		result, errr := pr.RenderManager.Render("<TEMPLATE>", templateConfig, ctx)
 		errors = append(errors, errr...)
@@ -118,7 +119,8 @@ func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (s
 		}
 		// TREE
 		config.Composite.Items["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
-		config.Composite.Items["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey
+		config.Composite.Items["hyperbrickspath"] = config.Composite.Meta.RenderPath()
+		config.Composite.Meta.Source.Apply(config.Composite.Items)
 
 		result, errr := pr.RenderManager.Render(TreeRendererConfigGetName(), config.Composite.Items, ctx)
 		errors = append(errors, errr...)

@@ -1,0 +1,27 @@
+==== hyperbricks yaml {!{introduction}} ====
+introduction:
+  - type: markdown
+  - content: |
+      ## Welcome
+
+      This is **Markdown**, rendered without a plugin.
+  - class: prose
+==== explainer ====
+Render Markdown text as sanitized HTML. Alternatively, use file with a clean resources-relative .md or .markdown reference to read a document at render time. Content and file are mutually exclusive. Fragments and hypermedia own routes, guards, caching, and page layout. The component never selects files from query parameters. See MARKDOWN.md for file limits and Spaces editing.
+==== expected json ====
+{
+  "ConfigCategory": "",
+  "ConfigType": "<MARKDOWN>",
+  "Enclose": "",
+  "ExtraAttributes": null,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "MetaDocDescription": "",
+  "Content": "## Welcome\n\nThis is **Markdown**, rendered without a plugin.\n",
+  "File": "",
+  "Class": "prose",
+  "MaxBytes": 0
+}
+==== expected output ====
+<div class="prose"><h2>Welcome</h2><p>This is <strong>Markdown</strong>, rendered without a plugin.</p></div>

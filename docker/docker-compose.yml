@@ -5,13 +5,15 @@ services:
       dockerfile: docker/Dockerfile
       args:
         HB_BUILD_SOURCE: "${HB_BUILD_SOURCE:-checkout}"
-        HB_VERSION: "${HB_VERSION:-v1.2.4-beta}"
+        HB_VERSION: "${HB_VERSION:-v1.2.5-beta}"
         TAILWIND_VERSION: "${TAILWIND_VERSION-}"
     ports:
       - "${HB_BIND_ADDRESS:-127.0.0.1}:${HB_API_PORT:-9090}:9090"
       - "${HB_BIND_ADDRESS:-127.0.0.1}:${HB_RUNTIME_PORTS:-8080-8100}:8080-8100"
     environment:
-      HB_DEPLOY_SECRET: "${HB_DEPLOY_SECRET:?Set HB_DEPLOY_SECRET before starting the deploy host}"
+      HB_DEPLOY_REMOTE_USER: "${HB_DEPLOY_REMOTE_USER:?Set HB_DEPLOY_REMOTE_USER before starting the deploy host}"
+      HB_DEPLOY_REMOTE_PASSWORD: "${HB_DEPLOY_REMOTE_PASSWORD:?Set HB_DEPLOY_REMOTE_PASSWORD before starting the deploy host}"
+      HB_DEPLOY_REMOTE_HMAC_SECRET: "${HB_DEPLOY_REMOTE_HMAC_SECRET:?Set HB_DEPLOY_REMOTE_HMAC_SECRET before starting the deploy host}"
     volumes:
       - ./data/deploy:/opt/hyperbricks/deploy
       - plugin-builds:/opt/hyperbricks/bin/plugins

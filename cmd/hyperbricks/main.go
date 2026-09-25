@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	run()
 	if commands.ExitCode != 0 {
 		os.Exit(commands.ExitCode)
 	}

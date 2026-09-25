@@ -1,10 +1,15 @@
 hyperbricks:
   mode: development
+  metadata:
+    module: static-paths-demo
+    moduleversion: "1.0.0"
+    hyperbricks: v1.2.5-beta
   development:
     watch: false
     reload: false
     frontend_errors: false
-    dashboard: false
+    dashboard:
+      enabled: false
   server:
     port: 8096
     beautify: false

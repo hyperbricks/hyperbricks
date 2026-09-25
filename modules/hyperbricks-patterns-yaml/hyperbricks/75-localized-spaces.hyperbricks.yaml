@@ -1,0 +1,66 @@
+imports:
+  - partials/site.hyperbricks.yaml
+  - spaces/localized_home_source/index.hyperbricks.yaml
+  - spaces/localized_about_source/index.hyperbricks.yaml
+localized_home_source:
+  - inherit: pattern_site_page
+  - title: Localized home source
+  - content:
+      - type: template
+      - template: {file: patterns/localized-spaces-page.html}
+      - values:
+          nav_label: Main navigation
+          back_url: /index
+          back_label: Pattern index
+          home_url: /localized-spaces
+          home_label: Home
+          about_url: /localized-spaces/about
+          about_label: About
+          alternate_url: /localized-spaces/de
+          alternate_language: de
+          alternate_label: Deutsch
+          kicker: Spaces / localization
+          heading: One layout, two languages.
+          intro: A small documentation site can use one page source per content type while each language gets its own route and editable copy.
+          section_heading: What stays shared?
+          section_copy: Templates, navigation structure, and editing rules live in source YAML. Each Space owns its URL and translated copy.
+          guide_label: Read the pattern guide
+          editor_label: Manage Spaces
+          runtime_mode: {config: hyperbricks.mode}
+          spaces_editor_url: {config: {path: hyperbricks.development.frontend_editing.spaces.route, default: /__hyperbricks/spaces}}
+      - editable:
+          heading: {type: text, label: Heading, required: true, max: 120}
+          intro: {type: textarea, label: Introduction, rows: 3, max: 400}
+          section_heading: {type: text, label: Section heading, max: 120}
+          section_copy: {type: textarea, label: Section copy, rows: 3, max: 500}
+localized_about_source:
+  - inherit: pattern_site_page
+  - title: Localized about source
+  - content:
+      - type: template
+      - template: {file: patterns/localized-spaces-page.html}
+      - values:
+          nav_label: Main navigation
+          back_url: /index
+          back_label: Pattern index
+          home_url: /localized-spaces
+          home_label: Home
+          about_url: /localized-spaces/about
+          about_label: About
+          alternate_url: /localized-spaces/de/ueber
+          alternate_language: de
+          alternate_label: Deutsch
+          kicker: Spaces / about
+          heading: About this pattern
+          intro: This page uses a second source with the same template. Its English and German Spaces keep their own content and page titles.
+          section_heading: Ownership is visible
+          section_copy: The source declares editable fields. The instances override text and metadata while preserving the shared layout.
+          guide_label: Read the pattern guide
+          editor_label: Manage Spaces
+          runtime_mode: {config: hyperbricks.mode}
+          spaces_editor_url: {config: {path: hyperbricks.development.frontend_editing.spaces.route, default: /__hyperbricks/spaces}}
+      - editable:
+          heading: {type: text, label: Heading, required: true, max: 120}
+          intro: {type: textarea, label: Introduction, rows: 3, max: 400}
+          section_heading: {type: text, label: Section heading, max: 120}
+          section_copy: {type: textarea, label: Section copy, rows: 3, max: 500}

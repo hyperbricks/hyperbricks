@@ -4,9 +4,10 @@ package shared
 type Meta struct {
 	ConfigType      string `mapstructure:"@type" exclude:"true" description:"Identification for renderer"`
 	ConfigCategory  string
-	HyperBricksKey  string `mapstructure:"hyperbrickskey" exclude:"true"`
-	HyperBricksPath string `mapstructure:"hyperbrickspath" exclude:"true"`
-	HyperBricksFile string `mapstructure:"hyperbricksfile" exclude:"true"`
+	HyperBricksKey  string         `mapstructure:"hyperbrickskey" exclude:"true"`
+	HyperBricksPath string         `mapstructure:"hyperbrickspath" exclude:"true"`
+	HyperBricksFile string         `mapstructure:"hyperbricksfile" exclude:"true"`
+	Source          *SourceContext `mapstructure:"@source" json:"-" exclude:"true"`
 }
 
 type CompositeRendererConfig struct {

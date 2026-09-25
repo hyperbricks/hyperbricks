@@ -1,0 +1,40 @@
+scaffold_navigation:
+  - type: menu
+  - section: scaffold_navigation
+  - sort: index
+  - order: asc
+  - item: |
+      <a href="{{if eq .Route "index"}}/{{else}}/{{.Route}}{{end}}"
+         hx-get="{{if eq .Route "index"}}/{{else}}/{{.Route}}{{end}}"
+         hx-select="#scaffold-content > *"
+         hx-select-oob="#scaffold-navigation:outerHTML"
+         hx-target="#scaffold-content"
+         hx-swap="innerHTML"
+         hx-push-url="true">{{.Title}}</a>
+  - active: |
+      <a href="{{if eq .Route "index"}}/{{else}}/{{.Route}}{{end}}" aria-current="page">{{.Title}}</a>
+  - enclose: '<nav id="scaffold-navigation" aria-label="Demo pages">|</nav>'
+
+scaffold_page:
+  - type: hypermedia
+  - head:
+      - type: head
+      - charset:
+          - type: html
+          - value: '<meta charset="UTF-8">'
+      - viewport:
+          - type: html
+          - value: '<meta name="viewport" content="width=device-width, initial-scale=1">'
+      - styles:
+          - inherit: scaffold_styles
+      - scripts:
+          - inherit: scaffold_scripts
+  - content:
+      - type: template
+      - template:
+          file: shell.html
+      - values:
+          navigation:
+            - inherit: scaffold_navigation
+          body:
+            - type: tree

@@ -8,10 +8,8 @@ RESULTS_FILE="${REPO_ROOT}/test/docs/yaml_documentation_test_results.txt"
 cd "${REPO_ROOT}"
 
 version="$(tr -d '\n' < ./assets/version.md)"
-buildtime="$(date -u '+%Y-%m-%d %H:%M UTC')"
-
 go test ./test/docs -run '^(TestYAMLDocumentationReference|TestYAMLDocumentationReadme)$' -v \
-  -args -update-docs -version="${version}" -buildtime="${buildtime}" \
+  -args -update-docs -version="${version}" -buildtime= \
   > "${RESULTS_FILE}"
 
 matches=$(grep -iF "PASS:" "${RESULTS_FILE}" || true)

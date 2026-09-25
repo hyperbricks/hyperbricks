@@ -1,8 +1,8 @@
 # HyperBricks CLI
 
-The `hyperbricks` command initializes modules, starts the runtime, renders static output, builds deploy archives, and manages plugins.
+Use the `hyperbricks` command to create modules, start the runtime, export static output, build deploy archives, and manage plugins.
 
-Run commands from the repository or project root: the directory that contains `modules/`.
+Run commands from the project or repository root, which normally contains `modules/`.
 
 ## Install
 
@@ -18,16 +18,20 @@ hyperbricks version
 
 ## Commands
 
-| Command | Purpose |
-| --- | --- |
-| `init` | Create `package.hyperbricks.yaml` and module directories |
-| `init-starter` | Install an official starter module |
-| `start` | Start the runtime server |
-| `static` | Render static output |
-| `build` | Build a deploy archive |
-| `plugin` | List, install, build, update, and remove plugins |
-| `select` | Select the active module |
-| `version` | Show version information |
+| Command        | Purpose                                                                    | Link                                           |
+| -------------- | -------------------------------------------------------------------------- | ---------------------------------------------- |
+| `init`         | Create the embedded module or maintain existing package metadata           | [↗](#init-and-init-starter)                     |
+| `init-starter` | Install an official starter module                                         | [↗](#init-starter-install-an-official-starter) |
+| `scaffold`     | Bubble Tea wizard for root composites and components                       | [↗](#scaffold)                                 |
+| `author`       | Create and extend configuration through JSON specs for agents and automation | [↗](#author)                                   |
+| `space`        | Create an inheriting hypermedia Space from an existing source              | [↗](#space)                                    |
+| `doctor`       | Diagnose a source module's static readiness before running or building      | [↗](#doctor)                                   |
+| `start`        | Start the runtime server                                                   | [↗](#start)                                    |
+| `static`       | Render static output                                                       | [↗](#static-rendering)                         |
+| `build`        | Build a deploy archive                                                     | [↗](#build-archives)                           |
+| `plugin`       | List, install, build, and remove plugins                                   | [↗](#plugins)                                  |
+| `select`       | Interactively choose and start a module                                    | [↗](#select)                                   |
+| `version`      | Show version information                                                   | [↗](#install)                                  |
 
 Use command help for the current flag list:
 
@@ -35,7 +39,28 @@ Use command help for the current flag list:
 hyperbricks <command> --help
 ```
 
-## Init
+## `init` and `init-starter`
+
+Both commands create a runnable module under `./modules/<module>`. `hyperbricks init -m demo` creates the more verbose, embedded three-page example. `hyperbricks init-starter get hello-world -m demo` downloads the minimal Hello World example. Choose one command for the module you want to create.
+
+Both creation paths write current source-owned package metadata automatically:
+
+```yaml
+hyperbricks:
+  metadata:
+    module: demo
+    moduleversion: "1.0.0"
+    hyperbricks: v1.2.5-beta
+```
+
+`module` is the new module directory's base name. New modules start at
+`moduleversion: "1.0.0"`, independently of an official starter's own release
+version. `hyperbricks` is read from the running binary, so it may differ from
+the example above. Build-specific provenance is added only to an archive; a
+source package does not own `format`, `format_version`, `commit`, or `built_at`.
+It also does not own `source_hash`, which belongs to the build index.
+
+### Init: create the three-page example
 
 Create a named module, or omit `--module` to use `default`:
 
@@ -44,27 +69,496 @@ hyperbricks init -m demo
 hyperbricks init
 ```
 
-This creates:
+Running `hyperbricks init -m demo` creates the following files and directories (verified with `v1.2.5-beta`):
 
 ```text
 modules/demo/
-  hyperbricks/
-  rendered/
-  resources/
-  static/
-  templates/
-  package.hyperbricks.yaml
+├── hyperbricks/
+│   ├── partials/
+│   │   ├── assets.hyperbricks.yaml
+│   │   ├── init-components.hyperbricks.yaml
+│   │   └── site.hyperbricks.yaml
+│   └── hello-world.hyperbricks.yaml
+├── logs/
+├── rendered/
+├── resources/
+│   ├── css/
+│   │   └── app.css
+│   ├── js/
+│   │   └── app.js
+│   ├── vendor/
+│   │   └── htmx-4.0.0.js
+│   └── init-copy.txt
+├── static/
+├── templates/
+│   ├── hello-card.html
+│   ├── hello-status.html
+│   ├── overview.html
+│   └── shell.html
+├── .gitignore
+├── README.md
+├── VENDOR.md
+└── package.hyperbricks.yaml
+```
+
+After logging each created file, the command prints:
+
+```text
+Module ready: modules/demo
+Start: hyperbricks start -m demo
 ```
 
 The embedded **HyperBricks Starter** generates three complete pages: Overview (`/`), Templates (`/templates`), and Fragments (`/fragments`). A section-based `menu` provides HTMX 4 navigation, and `/hello-status` demonstrates a targeted fragment response. The starter includes responsive CSS, templates, file/environment values, and locally bundled HTMX 4.0.0 with attribution. Native esbuild generates the browser bundles at runtime; no npm install or starter download is required.
 
 The generated configuration and README use the selected module name. The README includes run commands and static ZIP export/serving instructions. Generated bundles and rendered exports are excluded by the module's `.gitignore`.
 
-`init` creates missing scaffold directories and files and preserves existing files, including `package.hyperbricks.yaml`. `--module` accepts a bare name below `./modules`; use direct `start` when selecting a module by directory path.
+`init` creates missing scaffold directories and files and preserves existing files, including `package.hyperbricks.yaml`. `--module` accepts a bare name below `./modules` for normal scaffold creation. The metadata-only modes described below additionally accept the same module names and directory paths as `start -m` and `build -m`.
+
+### Init-starter: install an official starter
+
+`init-starter` downloads a starter from the official [starters repository](https://github.com/hyperbricks/hyperbricks-starters). Browse the [module starter index](../modules/README.md#starter-modules) for examples and their setup requirements. Use `init-starter` for the minimal Hello World example.
+
+List compatible starters:
+
+```bash
+hyperbricks init-starter list
+```
+
+Install the Hello World starter and start it:
+
+```bash
+hyperbricks init-starter get hello-world -m demo
+hyperbricks start -m demo
+```
+
+Running `hyperbricks init-starter get hello-world -m demo` installs `hello-world@1.0.0` with the following files and directories (verified with `v1.2.5-beta`):
+
+```text
+modules/demo/
+├── hyperbricks/
+│   └── hello-world.hyperbricks.yaml
+├── logs/
+│   └── .gitkeep
+├── rendered/
+│   └── .gitkeep
+├── resources/
+│   └── .gitkeep
+├── static/
+│   └── .gitkeep
+├── templates/
+│   └── .gitkeep
+└── package.hyperbricks.yaml
+```
+
+The command prints:
+
+```text
+Starter "hello-world@1.0.0" installed to modules/demo
+Next: hyperbricks start -m demo
+```
+
+The generated `hyperbricks/hello-world.hyperbricks.yaml` defines a single page titled **Hello World** at the `index` route, with a text component that renders `<p>HELLO WORLD!</p>`.
+
+Starters are installed into `./modules/<module>`. If `--module` (`-m`) is omitted, the module name defaults to the starter name. Installation requires an empty or absent destination directory.
+
+Install a specific starter version:
+
+```bash
+hyperbricks init-starter get hello-world@1.0.0 -m demo
+```
+
+Without `@version`, HyperBricks selects the highest starter version compatible with the running HyperBricks version. Compatibility is declared in the starter index through `compatible_hyperbricks`. An explicitly requested starter version must also pass this check; installation fails if it is incompatible. An omitted or empty compatibility list allows any HyperBricks version.
+
+The index and archive are downloaded from the starters repository's `main` branch. `@version` selects a versioned starter directory within that archive, not a Git tag or commit. Published starter version directories therefore need to remain unchanged for repeatable installations.
+
+Before an official starter is copied into its destination, HyperBricks
+normalizes the staged `package.hyperbricks.yaml`. It sets `module` to the
+destination directory's base name, starts `moduleversion` at `1.0.0`, records
+the running HyperBricks version, and removes stale artifact-only metadata. A
+normalization failure leaves the destination uninstalled.
+
+### Refresh or bump package metadata
+
+Refresh an existing module's source-owned metadata without creating or
+repairing scaffold files:
+
+```bash
+hyperbricks init -m demo --update-metadata
+hyperbricks init -m ./modules/demo --update-metadata
+```
+
+Metadata-only `init` uses the same module selection contract as `start -m` and
+`build -m`: a bare name selects `./modules/<name>`, while a value containing a
+path separator selects that relative or absolute directory. It:
+
+- sets `module` from the selected directory's base name
+- refreshes `hyperbricks` from the running binary
+- validates and canonicalizes `moduleversion`, including `1.0` to `1.0.0`
+- removes legacy source values for `format`, `format_version`, `commit`,
+  `built_at`, and `source_hash`
+- preserves unrelated package configuration
+- leaves an already-current file unchanged
+
+The selected module and `package.hyperbricks.yaml` must already exist. This
+mode never falls back to creating the embedded starter.
+
+Bump the module's semantic version while performing the same metadata refresh:
+
+```bash
+# Patch is the default bump.
+hyperbricks init -m demo --bump-version
+
+# Explicit bump levels.
+hyperbricks init -m demo --bump-version=patch
+hyperbricks init -m demo --bump-version=minor
+hyperbricks init -m demo --bump-version=major
+```
+
+`--bump-version` implies `--update-metadata`. Patch, minor, and major bumps
+change `1.2.3` to `1.2.4`, `1.3.0`, and `2.0.0`, respectively. Legacy `1.0`
+is interpreted as `1.0.0` before bumping. An invalid or empty module version
+fails without modifying the package file.
+
+## Scaffold
+
+`hyperbricks scaffold` is the fast interactive starter path. Its flow is deliberately
+short:
+
+1. Select a module.
+2. Select `Composite` or `Component`.
+3. Select a type starter.
+4. Select a top-level `*.hyperbricks.yaml` destination.
+5. Accept or edit the generated root name.
+6. Enter a route and title when the selected starter supports them.
+7. Review the planned YAML and any bundled source files.
+
+The wizard does not ask for every schema field. It creates a useful native example
+from the core template library, then leaves project-specific fields and composition
+to [Authoring](AUTHOR.md). Press `Enter` on the review screen to write the plan,
+`Esc` to return to editing, or `Ctrl+C` to cancel without writing.
+
+Each starter is native ordered HyperBricks YAML and is aligned with the commented
+[HyperBricks type examples](HYPERBRICKS_TYPE_EXAMPLES.md). `template` and `markdown`
+each offer explicit **inline** and **file** starters. File starters add a uniquely
+named generic source file to the same review. Other file-backed starters similarly
+stage their generic resource, such as an image, JSON document, stylesheet, or
+esbuild entry file. Existing files at those paths are preserved; replace the generic
+assets with project content after creation.
+
+The wizard writes only top-level configuration files. Use `hyperbricks author` for
+custom fields, external assets, inheritance, nested files, imports, route-aware
+changes, or additions that must adapt to existing project ownership. `author`
+discovers the loaded configuration and plans changes against its current revision;
+`scaffold` is optimized for quickly starting a standard root from a known template.
+
+### Non-interactive scaffold
+
+Supply the required choices as flags when a prompt is not appropriate. This mode
+still uses the same library, validation, asset staging, and source-write safeguards
+as the wizard:
+
+```bash
+hyperbricks scaffold \
+  --module demo \
+  --type hypermedia \
+  --file about.hyperbricks.yaml \
+  --name about_page \
+  --route about \
+  --title About \
+  --non-interactive
+```
+
+`--module`, `--type`, and `--file` are required. `--name` is optional and defaults
+to a unique starter name. `--route` is used by route-owning starters, and `--title`
+is used by `hypermedia`; a hypermedia title defaults to the generated root name.
+Use `--category composite` or `--category component` to constrain the selected type.
+
+Template and Markdown source variants use `--source`:
+
+```bash
+hyperbricks scaffold \
+  --module demo \
+  --type markdown \
+  --source file \
+  --file content.hyperbricks.yaml \
+  --name guide \
+  --non-interactive
+```
+
+Valid values are `inline` and `file`; the option applies only to `template` and
+`markdown`. A file source stages the corresponding generic asset if it does not
+already exist. Add `--dry-run` to inspect the planned YAML and files without
+writing. Add `--json` when another program needs structured output; this is a
+serialization of the same human-oriented scaffold plan, not the full `author`
+specification format.
+
+The scaffold library is source-oriented: preview validates the emitted YAML,
+inheritance, routes, and referenced staged files, but does not execute components.
+Runtime rendering, API calls, browser behavior, and HTMX behavior require a separate
+runtime check with `hyperbricks start` or an equivalent test.
+
+Read [Changing Existing Projects](AUTHOR.md) to decide when a change needs
+`author`. Its [command reference](AUTHOR_REFERENCE.md) documents the exact paths,
+output, and source-write safeguards. These commands require this development
+build; the published v1.2.4-beta binary does not include them.
+
+## Author
+
+`hyperbricks author` is for developers, agents, and automation that need to
+change an existing HyperBricks project non-interactively. It reads the loaded
+project, accepts structured JSON specs, and generates native ordered YAML.
+
+Read the project context, preview a spec, then apply it:
+
+```bash
+hyperbricks author context -m demo --json
+hyperbricks author apply -m demo --spec spec.json --dry-run --json
+hyperbricks author apply -m demo --spec spec.json --json
+```
+
+See [Changing Existing Projects](AUTHOR.md) for the task-oriented workflow and
+examples. See the [author command reference](AUTHOR_REFERENCE.md) for exact spec,
+output, validation, and write contracts.
+
+## Space
+
+`hyperbricks space` creates a page that inherits an existing Hypermedia source. Run it from the project root. The command writes the new Space configuration and adds the imports needed to load it; it does not start the server.
+
+Open the interactive wizard to choose a source, enter the Space name, route, and title, and review the changes before writing:
+
+```bash
+hyperbricks space -m demo
+```
+
+List available Hypermedia sources:
+
+```bash
+hyperbricks space -m demo --list
+```
+
+Preview a new Space using `scaffold_page`, a source included in the embedded three-page starter:
+
+```bash
+hyperbricks space -m demo \
+  --source scaffold_page \
+  --name about_space \
+  --title About \
+  --route about \
+  --dry-run
+```
+
+The preview shows the new Space YAML and the import changes. Remove `--dry-run` to create it:
+
+```bash
+hyperbricks space -m demo \
+  --source scaffold_page \
+  --name about_space \
+  --title About \
+  --route about
+```
+
+Use an actual source name from `--list` when working with another module. Add `--json` for structured output, or `--config <file>` to select a package configuration inside the module.
+
+See [Spaces](SPACES.md) for inheritance, editable content, and the development editor.
+
+## Doctor
+
+`hyperbricks doctor` performs a deterministic, read-only, offline health check
+of one source module. Use it before `start` or `build` to find package, source,
+resource, route, Space, plugin, and metadata problems without starting a server
+or creating an archive.
+
+Diagnose the default module, a named module, or a module directory:
+
+```bash
+hyperbricks doctor
+hyperbricks doctor -m demo
+hyperbricks doctor -m ./modules/demo
+```
+
+`doctor -m` uses the same module selection contract as `start -m` and
+`build -m`: an omitted value selects `./modules/default`, a bare name selects
+`./modules/<name>`, and a value containing a path separator selects that
+relative or absolute directory. Select an alternate package configuration
+inside the module with `--config`:
+
+```bash
+hyperbricks doctor -m demo --config profiles/live.hyperbricks.yaml
+```
+
+The configuration path is relative to the selected module and must stay inside
+it. Absolute paths and paths that escape through `..` are rejected.
+
+### Default checks
+
+The doctor uses the runtime's normal defaults and CLI override semantics, but
+returns YAML, materialization, typed-configuration, and unsupported-mode errors
+instead of converting them into runtime recovery behavior. Its checks cover:
+
+- module selection and package configuration parsing, materialization, and
+  typed validation
+- source metadata, including module identity, semantic version, recorded
+  HyperBricks version, and artifact-only fields left in a source package
+- configured module-owned source and asset directories and their containment
+- HyperBricks source loading, imports, inheritance, components, and duplicate
+  roots
+- route validity and uniqueness
+- referenced templates, Markdown, JSON, scripts, styles, images, and esbuild
+  entry points
+- Space-source and editable-field contracts for every effective Hypermedia
+  root, including routed sources
+- enabled plugin declarations and matching native or WASM artifacts
+- dashboard and frontend-editing configuration, including Space/plugin
+  conflicts, without exposing credential values
+- an in-memory deployment-metadata overlay as a final build-readiness check
+
+Each check has one of four statuses: `pass`, `warn`, `fail`, or `skip`. Invalid
+configuration, unresolved imports, missing required files, invalid semantic
+versions, duplicate routes, and missing enabled plugins fail the diagnosis.
+Advisory conditions, such as metadata that records a different HyperBricks
+version than the running CLI, produce a warning and a concrete prescription.
+Unknown component types are failures when no plugin is enabled. With an enabled
+plugin they are warnings: they may be plugin-owned, but the offline checker
+cannot prove ownership without loading plugin code. `--strict` rejects that
+unverified state in CI.
+A configured mode other than `live`, `development`, or `debug` is a failure,
+even though normal startup can warn and fall back to `live`.
+A dashboard without configured credentials remains valid but locked. The
+doctor warns when a locked developer interface is enabled and never invents
+default credentials.
+
+Passing checks collapse to one line per group. Warnings, failures, and skipped
+checks expand with their source location and a suggested repair when one is
+available:
+
+```text
+$ hyperbricks doctor -m demo
+
+HyperBricks Doctor · demo
+modules/demo/package.hyperbricks.yaml
+
+✓ Module       selected modules/demo
+✓ Package      configuration loaded
+! Metadata     records v1.2.4-beta; running v1.2.5-beta
+✓ Directories  4 configured source directories resolved safely
+✓ Sources      8 files · 21 roots · imports resolved
+✓ Components   47 native components validated · no unverified unknown types
+✓ Routes       6 unique routes
+✓ Resources    18 local references resolved
+✓ Spaces       3 eligible editable Space sources validated
+✓ Plugins      no external plugins enabled
+✓ Security     developer-interface credentials are configured
+✓ Build        archive provenance can be applied in memory
+
+DIAGNOSIS · HEALTHY WITH WARNINGS
+15 passed · 1 warning(s) · 0 failed · 0 skipped · 34 ms
+
+PRESCRIPTION
+hyperbricks init -m demo --update-metadata
+```
+
+### Structured output and exit status
+
+Use `--json` for CI or other automation:
+
+```bash
+hyperbricks doctor -m demo --json
+```
+
+The command writes one versioned JSON object to standard output. Diagnostics
+and other logs remain on standard error so stdout can be decoded directly. The
+abridged example below shows one check; actual output always contains all 16
+stable checks:
+
+```json
+{
+  "schema_version": 1,
+  "status": "warning",
+  "strict": false,
+  "module": {
+    "input": "demo",
+    "name": "demo",
+    "root": "modules/demo",
+    "config": "package.hyperbricks.yaml"
+  },
+  "summary": {
+    "passed": 15,
+    "warnings": 1,
+    "failed": 0,
+    "skipped": 0,
+    "duration_ms": 34
+  },
+  "checks": [
+    {
+      "id": "metadata.runtime_version",
+      "group": "metadata",
+      "status": "warn",
+      "message": "Package records HyperBricks v1.2.4-beta; the running CLI is v1.2.5-beta",
+      "file": "package.hyperbricks.yaml",
+      "path": "hyperbricks.metadata.hyperbricks",
+      "hint": "Run hyperbricks init -m demo --update-metadata"
+    }
+  ]
+}
+```
+
+The overall `status` is `healthy`, `warning`, or `unhealthy`. Individual check
+statuses are `pass`, `warn`, `fail`, or `skip`. The stable check IDs are:
+
+| Check ID | Scope |
+| --- | --- |
+| `module.selection` | Selected module and package path |
+| `package.configuration` | Package parsing, materialization, and typed configuration |
+| `metadata.identity` | Module metadata matches the selected directory |
+| `metadata.module_version` | Module version is valid SemVer |
+| `metadata.runtime_version` | Recorded and running HyperBricks versions |
+| `metadata.source_fields` | Artifact-only fields are absent from source metadata |
+| `directories.paths` | Configured directory resolution and containment |
+| `sources.graph` | HyperBricks sources, imports, inheritance, and roots |
+| `components.native_schema` | Native component types and required fields |
+| `components.plugin_owned` | Unknown types that may be owned by enabled plugins |
+| `routes.unique` | Route validity and uniqueness |
+| `resources.local` | Referenced local files |
+| `spaces.contract` | Eligible Space sources and editable fields |
+| `plugins.artifacts` | Enabled plugin artifacts |
+| `security.developer_credentials` | Developer-interface access configuration |
+| `build.provenance` | In-memory archive provenance overlay |
+
+Check IDs and `schema_version` are the machine-facing contract; wording may
+become more specific without changing those identifiers.
+
+By default, warnings do not fail the command. Exit status is `0` when no check
+failed and `1` when one or more checks failed. Add `--strict` to make warnings
+produce exit status `1` as well:
+
+```bash
+hyperbricks doctor -m demo --strict --json
+```
+
+`--strict` changes the acceptance policy only. It does not enable extra checks
+or change the evidence reported by those checks.
+
+### Safety and scope
+
+The default diagnosis never modifies package or source files, performs a build,
+starts a listener, renders or requests routes, loads plugin code, executes
+server-side JavaScript, or contacts configured APIs. It checks external API
+configuration syntactically and verifies plugin artifacts without running
+them. Output never includes dashboard usernames or passwords, values reached
+through source `env` or `config` resolvers, complete source bodies, or
+unnecessary absolute filesystem paths. Human output also escapes terminal
+control characters from user-authored names and diagnostics.
+
+`author` inspects or changes source ownership, `doctor` diagnoses source-module
+readiness, `start` runs the application, and `build` creates a deployment
+archive. A running local or remote deployment has different health concerns;
+use the deployment interface and API for those checks rather than `doctor`.
 
 ## Start
 
-Start a module by its name below `./modules`:
+Always run `hyperbricks start` from the project root, which contains the `modules/` directory.
+
+Start a module in `./modules` by its name:
 
 ```bash
 hyperbricks start -m demo
@@ -72,41 +566,17 @@ hyperbricks start -m demo
 
 See [Runtime request flow](INTRODUCTION.md#runtime-request-flow) for the request path through a running server.
 
-For direct startup, `--module` also accepts relative and absolute directory paths:
+### Start module argument
 
-```bash
-hyperbricks start -m ./modules/demo
-hyperbricks start -m ../other-site/modules/demo
-hyperbricks start -m /srv/sites/demo
-```
-
-### Module selection
-
-For these examples, assume the command is invoked from `/work/site`:
+`{pwd}` means the current working directory, which must be the project root.
 
 | `--module` value | Selection | Resolved directory |
 | --- | --- | --- |
-| `demo` | Bare module name | `/work/site/modules/demo` |
-| `modules/demo` | Relative directory path | `/work/site/modules/demo` |
-| `./modules/demo` | Explicit relative directory path | `/work/site/modules/demo` |
-| `../other/modules/demo` | Parent-relative directory path | `/work/other/modules/demo` |
-| `/srv/sites/demo` | Absolute directory path | `/srv/sites/demo` |
-| `.` | Current directory is the module | `/work/site` |
-| Flag omitted | Default module name | `/work/site/modules/default` |
+| `demo` | Bare module name | `{pwd}/modules/demo` |
+| `modules/demo` | Relative directory path | `{pwd}/modules/demo` |
+| Flag omitted | Default module name | `{pwd}/modules/default` |
 
-A value is treated as a path when it is absolute, contains a platform directory separator, or is exactly `.` or `..`. Classification happens before the value is cleaned, so `./demo` selects `/work/site/demo`, while the bare name `demo` selects `/work/site/modules/demo`.
-
-Bare names always retain the `modules/<name>` meaning. HyperBricks does not change the meaning by checking whether a same-named directory exists elsewhere. Quote paths containing spaces:
-
-```bash
-hyperbricks start -m "./modules/my module"
-```
-
-Relative paths are resolved once from the directory where the command is invoked. Selecting a module does not change the process working directory. In runtime path values, `root` remains the invocation directory, `module` is the selected module directory, and `module_root` is its parent.
-
-The selected directory must contain `package.hyperbricks.yaml`, unless `--config` selects another package configuration inside it. When the file is missing, HyperBricks reports the resolved path and exits with a non-zero status; it does not fall back to another module.
-
-Path selection applies only to direct `start`. Deploy startup, build, static, init, and plugin commands retain their existing module-selection contracts. Shell completion suggests bare names from `./modules` while retaining normal filesystem completion for paths.
+The selected module must contain `package.hyperbricks.yaml`, unless `--config` selects another package configuration inside it.
 
 Because the working directory does not change, bare package directory settings such as `plugins: ./bin/plugins` remain relative to the invocation directory. For module-owned directories, prefer an explicit module base:
 
@@ -148,7 +618,7 @@ hyperbricks start -m demo --config package.raw.hyperbricks.yaml
 hyperbricks start -m ./modules/demo --config profiles/development.hyperbricks.yaml
 ```
 
-`--config` is relative to the selected module directory, must stay inside that directory, and cannot be combined with `--deploy`. Absolute paths and paths that escape through `..` are rejected.
+`--config` is relative to the selected module directory and must stay inside that directory. Absolute paths and paths that escape through `..` are rejected.
 
 Enable debug logging:
 
@@ -167,19 +637,39 @@ hyperbricks start -m demo \
 
 ### Render diagnostics
 
-In development and debug mode, the `Render diagnostics recorded` log message includes a URL for that error. Open it in your browser to see the JSON details:
+In development and debug mode, a `Render failed`, `Render warning`, or `Render notice` log entry can include a `diagnostics_url`. Open that path on your running server to see the JSON details. For example:
 
 ```text
 http://localhost:8080/__hyperbricks/render-diagnostics?request_id=hb-12
 ```
 
-The details include the source file, component path, key, type, and error message where available. The link uses the host and port of the request. Errors found while loading configuration use `localhost` and your configured server port; open those links after the server has started. Fix the reported source and reload the page to check again.
+The details include the source file, component path, key, type, and error message
+where available. The endpoint requires the module's
+`hyperbricks.development.dashboard.credentials`; complete the browser's Basic
+Auth challenge with that account. Use your server's host and port, and open
+configuration-load links after startup. Fix the reported source and request the
+route again. With `hyperbricks.development.dashboard.enabled: true`, the
+developer interface's **Errors** section shows these diagnostics; on
+`http://localhost:<port>/__hyperbricks/errors` see
+[Troubleshooting](TROUBLESHOOTING.md#find-the-reported-error).
 
-You can also open `/__hyperbricks/render-diagnostics` on your running server to see the ten most recent diagnostic records. HyperBricks keeps the latest 200 records in memory, so older links expire and records are cleared when the process restarts.
+Without a request ID, `/__hyperbricks/render-diagnostics` lists up to ten current records containing diagnostics. The store retains the latest outcome for each request context, including healthy outcomes, up to 200 contexts. A successful retry clears that context's earlier error. Repeated requests replace earlier request IDs, and eviction, configuration reload, or restart can also expire links.
+
+Use `/__hyperbricks/render-diagnostics?view=current` to see all retained diagnostics and checked/unchecked route information. An empty error list does not prove that every route or input has been tested.
 
 The endpoint is disabled in live mode. Static exports omit the link because their temporary server stops after rendering.
 
 Server setup failures, such as unusable directories, listener, watcher, or gateway configuration, can still prevent startup. If the server cannot start, read the error in the terminal; the diagnostics endpoint is not available yet.
+
+## Select
+
+Run `hyperbricks select` from the project root to open the Bubble Tea module picker:
+
+```bash
+hyperbricks select
+```
+
+Choose a module from `./modules`. Confirming the choice starts that module with `start`. To choose the module directly, use `hyperbricks start -m demo`.
 
 ## Static Rendering
 
@@ -208,63 +698,24 @@ rebuilding them, use a standalone static file server as described under
 
 `static --serve` uses two consecutive HTTP servers for different jobs. The
 first is a temporary HyperBricks runtime used only to create the snapshot. The
-second uses a separate file-only handler to expose the completed render
-directory. Hover over or focus a step for details.
+second uses a separate file-only handler to expose the completed render directory.
 
 ```mermaid
----
-config:
-  flowchart:
-    htmlLabels: true
-  themeCSS: |
-    .label foreignObject { overflow: visible; }
-    .hb-tip { display: inline-block; position: relative; }
-    .hb-tip::after {
-      background: #ffffff !important;
-      border: 1px solid #111111;
-      border-radius: 6px;
-      bottom: calc(100% + 8px);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
-      box-sizing: border-box;
-      color: #000000 !important;
-      content: attr(aria-description);
-      font-family: Arial, sans-serif;
-      font-size: 12px;
-      font-weight: 400;
-      left: 50%;
-      line-height: 1.4;
-      max-width: calc(100vw - 32px);
-      opacity: 0;
-      overflow-wrap: anywhere;
-      padding: 8px 10px;
-      pointer-events: none;
-      position: absolute;
-      text-align: left;
-      transform: translateX(-50%);
-      visibility: hidden;
-      white-space: normal;
-      width: 240px;
-      z-index: 1000;
-    }
-    .hb-tip--below::after { bottom: auto; top: calc(100% + 8px); }
-    .node:hover .hb-tip::after,
-    .hb-tip:focus::after { opacity: 1; visibility: visible; }
----
 flowchart TB
-    CLI("<span class='hb-tip hb-tip--below' tabindex='0' aria-description='Run hyperbricks static -m demo --serve. The command completes a new snapshot before it starts the static file server.'>static --serve</span>")
+    CLI("A. static --serve")
 
     subgraph SNAPSHOT["1 · Render snapshot"]
         direction TB
-        RUNTIME("<span class='hb-tip' tabindex='0' aria-description='A temporary HyperBricks runtime discovers and renders the snapshot targets. Components, templates, guards, plugins, and configured API calls run during this phase.'>Render Runtime</span>")
-        OUTPUT[("<span class='hb-tip' tabindex='0' aria-description='Write the rendered HTML and copied module assets to the completed render directory.'>Static Output</span>")]
+        RUNTIME("B. Render Runtime")
+        OUTPUT[("C. Static Output")]
 
         RUNTIME -->|"render"| OUTPUT
     end
 
     subgraph SERVING["2 · Serve snapshot"]
         direction TB
-        FILESERVER("<span class='hb-tip' tabindex='0' aria-description='After rendering finishes, --serve starts a separate file-only server over the completed render directory. It does not run HyperBricks routes or components.'>File Server</span>")
-        BROWSER(["<span class='hb-tip' tabindex='0' aria-description='Receive HTML and assets already stored in the completed render directory.'>Browser</span>"])
+        FILESERVER("D. File Server")
+        BROWSER(["E. Browser"])
 
         FILESERVER -->|"files"| BROWSER
     end
@@ -272,18 +723,26 @@ flowchart TB
     CLI --> RUNTIME
     OUTPUT -->|"--serve"| FILESERVER
 
-    classDef node fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:2.5px;
-    classDef emphasis fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
-    classDef output fill:#ffffff00,stroke:#ffffff,color:#ffffff,stroke-width:1.5px;
+    classDef node fill:transparent,stroke:currentColor,color:currentColor,stroke-width:2.5px;
+    classDef emphasis fill:transparent,stroke:currentColor,color:currentColor,stroke-width:1.5px;
+    classDef output fill:transparent,stroke:currentColor,color:currentColor,stroke-width:1.5px;
 
     class CLI,BROWSER node;
     class RUNTIME,FILESERVER emphasis;
     class OUTPUT output;
 
-    linkStyle default stroke:#ffffff,stroke-width:1.5px;
-    style SNAPSHOT fill:transparent,stroke:#ffffff00,color:#ffffff,stroke-width:1px;
-    style SERVING fill:transparent,stroke:#ffffff00,color:#ffffff,stroke-width:1px;
+    linkStyle default stroke:currentColor,stroke-width:1.5px;
+    style SNAPSHOT fill:transparent,stroke:transparent,color:currentColor,stroke-width:1px;
+    style SERVING fill:transparent,stroke:transparent,color:currentColor,stroke-width:1px;
 ```
+
+| Letter | Caption |
+| --- | --- |
+| A | Run `hyperbricks static -m demo --serve`. The command renders a new snapshot before starting the file server. |
+| B | A temporary HyperBricks runtime discovers and renders the snapshot targets. Configured components, templates, guards, plugins, and API calls run during this phase. |
+| C | The rendered HTML and copied module assets are written to the completed render directory. |
+| D | After rendering finishes, `--serve` starts a separate file-only server for that directory. It does not run HyperBricks routes or components. |
+| E | The browser receives HTML and assets from the completed render directory. |
 
 Entries under `hyperbricks.static.routes` and `variants` add or customize
 snapshot targets; they are not an allowlist. Automatic discovery includes every
@@ -411,22 +870,64 @@ The `modules/sampleapis-coffee-static` module demonstrates a static snapshot tha
 
 ## Build Archives
 
-Build a deploy archive:
+`hyperbricks build` packages the module's configuration, templates, resources, and other included files into a runtime deployment archive. It does not render pages into a static website. The deployed application requires the HyperBricks runtime.
+
+Build a runtime deployment archive in HRA format:
 
 ```bash
 hyperbricks build --hra -m demo
+hyperbricks build --hra -m ./modules/demo
 ```
 
-Build a zip archive:
+`build -m` uses the same module selection contract as `start -m`: a bare name
+selects `./modules/<name>`, while a value containing a path separator selects
+that relative or absolute directory. The directory's base name remains the
+deployment module name, so both examples above write
+`deploy/demo/demo-<moduleversion>-<build_id>.hra` and store `demo` in the
+archive metadata.
+
+Build a runtime deployment archive in ZIP format:
 
 ```bash
 hyperbricks build --zip -m demo
 ```
 
+Both formats package the module for the HyperBricks runtime. HRA uses the `.hra` extension; ZIP uses `.zip`.
+
+The source `package.hyperbricks.yaml` contains stable module identity:
+
+| Source field | Meaning |
+| --- | --- |
+| `module` | Module identity, reconciled from the selected module directory |
+| `moduleversion` | Developer-controlled semantic release version |
+| `hyperbricks` | HyperBricks version last recorded by initialization or a metadata update |
+
+`build` requires a valid source `moduleversion`, derives the artifact module
+from the selected directory, and does not rewrite the source package. It
+creates an in-memory archive copy and overlays the truthful build provenance:
+
+| Archive field | Build-time value |
+| --- | --- |
+| `format` | The selected archive format, `hra` or `zip` |
+| `format_version` | The archive metadata schema version |
+| `commit` | The selected module worktree's Git commit, or `unknown` when unavailable |
+| `built_at` | The build time in UTC RFC 3339 form |
+| `hyperbricks` | The exact version of the binary performing the build |
+
+The resulting archive therefore records a particular build without making a
+normal build dirty the source tree. The build's `source_hash` is kept in the
+build index rather than the source or archived package metadata. Use
+`init --update-metadata` or
+`init --bump-version` when you intentionally want to change source metadata.
+
+To export rendered HTML and assets for a regular web server, use [Static Rendering](#static-rendering):
+
+
 Common build flags:
 
 | Flag | Purpose |
 | --- | --- |
+| `-m, --module <name-or-path>` | Module name below `./modules`, or a relative/absolute module directory |
 | `--out <dir>` | Output directory, default `deploy` |
 | `--force` | Build even when no source changes are detected |
 | `--replace` | Replace the current build |
@@ -436,66 +937,57 @@ Common build flags:
 
 ## Deploy Runtime Commands
 
-Start a module from the deploy folder:
+All deployment commands live below `hyperbricks deploy`. Running `deploy`
+without a subcommand prints its help and does not select a mode.
+
+Run the current archived build:
 
 ```bash
-hyperbricks start --deploy -m demo
+hyperbricks deploy run -m demo
 ```
 
 Start a specific build:
 
 ```bash
-hyperbricks start --deploy -m demo --build build-id
+hyperbricks deploy run -m demo --build build-id
 ```
 
 Use a custom deploy directory:
 
 ```bash
-hyperbricks start --deploy -m demo --deploy-dir deploy
+hyperbricks deploy run -m demo --deploy-dir deploy
 ```
 
-Start deploy services:
+Create one neutral configuration containing `local`, `client`, and `remote`
+roles:
 
 ```bash
-hyperbricks deploy-daemon
-hyperbricks start --deploy-remote
-hyperbricks start --deploy-local
+hyperbricks deploy init
+hyperbricks deploy init --config configs/deploy.hyperbricks.yaml
 ```
 
-`deploy-daemon` starts the remote deploy daemon. If `deploy.hyperbricks.yaml` does not exist, it writes a minimal remote config and prints the Composer deploy secret/env-var setup instructions.
-
-Create a deploy config:
+Initialization refuses to overwrite an existing file and does not invent
+credential or HMAC values. Start the local or remote deployment service with:
 
 ```bash
-hyperbricks start --deploy-init-config local
-hyperbricks start --deploy-init-config remote
+hyperbricks deploy local
+hyperbricks deploy remote
 ```
 
-## Starters
-
-`init` creates a module from the scaffold embedded in the installed HyperBricks binary. `init-starter` downloads a starter from the official [starters repository](https://github.com/hyperbricks/hyperbricks-starters).
-
-List compatible starters:
+Select a service configuration explicitly:
 
 ```bash
-hyperbricks init-starter list
+hyperbricks deploy local --config deploy.hyperbricks.yaml
+hyperbricks deploy remote --config /etc/hyperbricks/deploy.hyperbricks.yaml
 ```
 
-Install a starter:
+`--config` takes precedence over `HB_DEPLOY_CONFIG`; when neither is set,
+HyperBricks reads `deploy.hyperbricks.yaml` from the invocation directory. A
+missing or invalid selected file fails without fallback or implicit creation.
 
-```bash
-hyperbricks init-starter get hello-world -m demo
-```
-
-Install a specific starter version:
-
-```bash
-hyperbricks init-starter get hello-world@1.0.0 -m demo
-```
-
-Without `@version`, HyperBricks selects the highest starter version compatible with the running HyperBricks version. Compatibility is declared in the starter index through `compatible_hyperbricks`. An explicitly requested starter version must also pass this check; installation fails if it is incompatible. An omitted or empty compatibility list allows any HyperBricks version.
-
-The index and archive are downloaded from the starters repository's `main` branch. `@version` selects a versioned starter directory within that archive, not a Git tag or commit. Published starter version directories therefore need to remain unchanged for repeatable installations.
+The former `deploy-daemon` command and all `start --deploy*` flags are removed.
+See [Deploy](DEPLOY.md) for role ownership, Basic Auth, HMAC signing, uploads,
+and service configuration.
 
 ## Plugins
 

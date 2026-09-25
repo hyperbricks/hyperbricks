@@ -23,13 +23,16 @@ if [ ! -f "${HB_HOME}/deploy.hyperbricks.yaml" ] && [ -f "/etc/hyperbricks/deplo
   chown "${HB_USER}:${HB_GROUP}" "${HB_HOME}/deploy.hyperbricks.yaml" 2>/dev/null || true
 fi
 
-if [ -z "${HB_DEPLOY_SECRET:-}" ]; then
-  echo "warning: HB_DEPLOY_SECRET is not set" >&2
-fi
+for required_name in HB_DEPLOY_REMOTE_USER HB_DEPLOY_REMOTE_PASSWORD HB_DEPLOY_REMOTE_HMAC_SECRET; do
+  eval "required_value=\${${required_name}:-}"
+  if [ -z "${required_value}" ]; then
+    echo "warning: ${required_name} is not set; the deploy service will reject requests" >&2
+  fi
+done
 
 if [ "${HB_BUILD_SOURCE:-checkout}" = "checkout" ]; then
   export HYPERBRICKS_LOCAL_PATH=/opt/hyperbricks-source
 fi
 
 cd "${HB_HOME}"
-exec su-exec "${HB_USER}:${HB_GROUP}" "${HB_HOME}/bin/hyperbricks" deploy-daemon
+exec su-exec "${HB_USER}:${HB_GROUP}" "${HB_HOME}/bin/hyperbricks" deploy remote

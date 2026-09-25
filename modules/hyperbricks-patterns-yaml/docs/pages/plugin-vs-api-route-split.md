@@ -2,10 +2,10 @@
 
 ## Summary
 
-This pattern explains one of the first practical decisions a builder developer has to make:
+This pattern explains a decision developers must make:
 
 - use `<API_FRAGMENT_RENDER>` when the route mostly forwards user input to a backend and renders the returned data
-- use `<PLUGIN>` when the route has to think first: validate, normalize, branch, or build a small workflow result before rendering
+- use `<PLUGIN>` when the route must first validate, normalize, branch, or build a workflow result before rendering
 
 The point is not that plugins are “better.” The point is that they solve a different kind of problem.
 
@@ -13,7 +13,7 @@ The point is not that plugins are “better.” The point is that they solve a d
 
 - Config: `hyperbricks/80-plugin-vs-api-route-split.hyperbricks.yaml`
 - Page template: `templates/patterns/route-split-demo.html`
-- API result template: `templates/patterns/route-split-api-result.html`
+- API result templates: `templates/patterns/route-split-api-result.html` and `templates/patterns/route-split-api-conflict-result.html`
 - Plugin result template: `templates/patterns/route-split-plugin-result.html`
 - Plugin: `plugins/route-split-demo/1.0.0/route_split_demo_plugin.go`
 - Mock PostgREST responses: `templates/patterns/mock-postgrest-rename-success.json` `templates/patterns/mock-postgrest-rename-conflict.json`
@@ -56,23 +56,21 @@ Use `<PLUGIN>` when:
 
 The API branch still uses the real `endpoint`, `body`, `template`, and `response.headers.HX-Trigger` behavior, but the upstream JSON is served by local fragment routes. That keeps the demo easy to run and inspect without needing a live PostgREST service first.
 
-## What the page is trying to teach
+## What Each Branch Does
 
-The left side is intentionally boring:
+The API branch maps browser fields to a request and renders the mock response:
 
 - browser fields go in
 - HyperBricks remaps them
 - backend-style JSON comes back
 - a template shows the result
 
-The right side is intentionally not boring:
+The plugin branch validates inputs, normalizes tags, and renders a computed plan:
 
 - input must be checked
 - tags are normalized
 - a plan is created
 - the template shows that computed plan
-
-That difference is the boundary.
 
 ## Running the local mock API
 
@@ -87,3 +85,5 @@ Both mock outcomes return HTTP 200 with different JSON shapes. They do not save 
 The configured `HX-Trigger` refresh event is sent for both success and conflict actions. The probe demonstrates event delivery, not confirmation that a save succeeded. A real integration should decide whether to refresh from the actual upstream outcome; `.Status` is the upstream status and can differ from the status returned to the browser.
 
 The plugin branch computes a plan from submitted fields. It does not fetch the manifest or write imported files, including when the form selects **Apply import**.
+
+`api_fragment_render` bypasses the internal rendered-output cache and calls the upstream API on each request. `response.headers` configures the browser response; top-level `headers` configures the upstream request. See `docs/API_RENDER.md` and `docs/HTTP_RESPONSES.md` in the repository root.

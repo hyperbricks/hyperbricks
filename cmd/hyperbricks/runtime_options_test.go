@@ -15,6 +15,7 @@ func resetCommandRuntimeOptionsForTest(t *testing.T) {
 	previousModuleRoot := commands.ModuleRoot
 	previousPort := commands.Port
 	previousProduction := commands.Production
+	previousRuntimeMode := commands.DeployRuntimeMode
 	previousRuntimeGateway := commands.StartRuntimeGateway
 	previousRuntimeDomain := commands.StartRuntimeDomain
 	previousRuntimeHostSuffix := commands.StartRuntimeHostSuffix
@@ -25,6 +26,7 @@ func resetCommandRuntimeOptionsForTest(t *testing.T) {
 	commands.ModuleRoot = ""
 	commands.Port = 8080
 	commands.Production = false
+	commands.DeployRuntimeMode = ""
 	commands.StartRuntimeGateway = false
 	commands.StartRuntimeDomain = ""
 	commands.StartRuntimeHostSuffix = ""
@@ -36,6 +38,7 @@ func resetCommandRuntimeOptionsForTest(t *testing.T) {
 		commands.ModuleRoot = previousModuleRoot
 		commands.Port = previousPort
 		commands.Production = previousProduction
+		commands.DeployRuntimeMode = previousRuntimeMode
 		commands.StartRuntimeGateway = previousRuntimeGateway
 		commands.StartRuntimeDomain = previousRuntimeDomain
 		commands.StartRuntimeHostSuffix = previousRuntimeHostSuffix
@@ -49,6 +52,7 @@ func TestApplyCommandRuntimeOptionsCopiesCommandState(t *testing.T) {
 	commands.ModuleRoot = "deploy/demo/runtime/current"
 	commands.Port = 9099
 	commands.Production = true
+	commands.DeployRuntimeMode = "live"
 	commands.StartRuntimeGateway = true
 	commands.StartRuntimeDomain = "runtime.local"
 	commands.StartRuntimeHostSuffix = "-runtime.local"
@@ -65,6 +69,9 @@ func TestApplyCommandRuntimeOptionsCopiesCommandState(t *testing.T) {
 	}
 	if !options.Production {
 		t.Fatal("production = false, want true")
+	}
+	if options.ModeOverride != "live" {
+		t.Fatalf("mode override = %q, want live", options.ModeOverride)
 	}
 	if !options.RuntimeGatewayEnabled {
 		t.Fatal("runtime gateway enabled = false, want true")

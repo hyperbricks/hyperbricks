@@ -47,12 +47,12 @@ func newExcludePickerModel(root string) (excludePickerModel, error) {
 	const listHeight = 18
 
 	delegate := list.NewDefaultDelegate()
-	orange := lipgloss.Color("#FFA500")
-	gray := lipgloss.Color("#AAAAAA")
-	white := lipgloss.Color("#FFFFFF")
+	accent := terminalAccent
+	gray := lipgloss.AdaptiveColor{Light: "#666666", Dark: "#aaaaaa"}
+	white := lipgloss.AdaptiveColor{Light: "#171717", Dark: "#eeeeee"}
 
-	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(orange).Bold(true).BorderLeftForeground(orange)
-	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(orange).BorderLeftForeground(orange)
+	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(accent).Bold(true).BorderLeftForeground(accent)
+	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(accent).BorderLeftForeground(accent)
 	delegate.Styles.NormalTitle = delegate.Styles.NormalTitle.Foreground(white)
 	delegate.Styles.NormalDesc = delegate.Styles.NormalDesc.Foreground(gray)
 
@@ -64,7 +64,7 @@ func newExcludePickerModel(root string) (excludePickerModel, error) {
 	m.list.SetShowStatusBar(false)
 	m.list.SetFilteringEnabled(false)
 	m.list.SetShowHelp(true)
-	m.list.Styles.Title = m.list.Styles.Title.Background(orange)
+	m.list.Styles.Title = m.list.Styles.Title.UnsetBackground().Foreground(accent).Bold(true)
 	m.list.DisableQuitKeybindings()
 
 	if err := m.refreshList(); err != nil {
@@ -166,6 +166,9 @@ func (m *excludePickerModel) refreshList() error {
 }
 
 func RunStaticExcludePicker(renderDir string) (string, error) {
+	if err := requireTerminal(); err != nil {
+		return "", err
+	}
 	root := filepath.Clean(renderDir)
 	info, err := os.Stat(root)
 	if err != nil {
@@ -180,7 +183,7 @@ func RunStaticExcludePicker(renderDir string) (string, error) {
 		return "", err
 	}
 
-	program := tea.NewProgram(model)
+	program := tea.NewProgram(model, tea.WithOutput(os.Stderr))
 	finalModel, err := program.Run()
 	if err != nil {
 		return "", err

@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/hyperbricks/hyperbricks/pkg/component"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
 )
 
@@ -28,7 +29,7 @@ func prepareEsbuildRouteConfigs(routes map[string]map[string]interface{}, diagno
 				delete(raw, component.EsbuildPreparedKey)
 				response, err := rm.MakeInstance(typefactory.TypeRequest{TypeName: component.EsbuildConfigGetName(), Data: raw})
 				if err != nil {
-					addRouteSourceErrors(diagnostics, route, []error{err})
+					addRouteSourceErrors(diagnostics, route, []error{shared.Diagnostic(err, shared.MetaFromConfig(raw), "prepare")})
 					return
 				}
 				p := renderer.Prepare(response.Instance.(component.EsbuildConfig))
@@ -73,7 +74,8 @@ func prepareEsbuildRouteConfigs(routes map[string]map[string]interface{}, diagno
 	}
 	for _, item := range prepared {
 		if err := item.prepared.Err(); err != nil {
-			addRouteSourceErrors(diagnostics, item.route, []error{err})
+			_, errors := item.prepared.Render(nil)
+			addRouteSourceErrors(diagnostics, item.route, errors)
 		}
 	}
 }

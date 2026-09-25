@@ -1,5 +1,6 @@
 imports:
   - partials/site.hyperbricks.yaml
+  - spaces/night_owl_cafe_page/index.hyperbricks.yaml
 
 explore_page:
   - inherit: guide_page
@@ -47,6 +48,30 @@ night_owl_cafe_page:
                 note: "Walk in and find a table. The quieter seats are at the back."
                 next_route: "side-b-records"
                 next_title: "Side B Records"
+                language: en
+                language_label: Café language
+                all_places_label: All places
+                of_label: of
+                visit_label: Plan your visit
+                hours_label: Opening hours
+                address_label: Find it
+                next_label: Next stop
+            - editable:
+                title: {type: text, label: Café name, max: 120, required: true}
+                category: {type: text, label: Category, max: 120}
+                hours: {type: text, label: Opening hours, max: 120}
+                days: {type: text, label: Opening days, max: 120}
+                address: {type: text, label: Address, max: 120}
+                intro: {type: textarea, label: Introduction, max: 800, rows: 4}
+                description: {type: textarea, label: Description, max: 800, rows: 4}
+                highlight: {type: text, label: Menu heading, max: 120}
+                one: {type: text, label: First item, max: 120}
+                onebody: {type: textarea, label: First item description, max: 800, rows: 4}
+                two: {type: text, label: Second item, max: 120}
+                twobody: {type: textarea, label: Second item description, max: 800, rows: 4}
+                three: {type: text, label: Third item, max: 120}
+                threebody: {type: textarea, label: Third item description, max: 800, rows: 4}
+                note: {type: textarea, label: Visitor note, max: 800, rows: 4}
 
 side_b_records_page:
   - inherit: guide_page
@@ -162,3 +187,6 @@ how_it_works_page:
             - type: template
             - template:
                 file: how-it-works.html
+            - values:
+                runtime_mode: {config: hyperbricks.mode}
+                spaces_editor_url: {config: {path: hyperbricks.development.frontend_editing.spaces.route, default: /__hyperbricks/spaces}}

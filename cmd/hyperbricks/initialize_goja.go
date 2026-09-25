@@ -5,6 +5,7 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/typefactory"
 )
 
@@ -39,7 +40,7 @@ func prepareGojaNodes(node interface{}, errs *[]error) bool {
 			delete(raw, component.GojaPreparedKey)
 			response, err := rm.MakeInstance(typefactory.TypeRequest{TypeName: component.GojaRenderConfigGetName(), Data: raw})
 			if err != nil {
-				*errs = append(*errs, err)
+				*errs = append(*errs, shared.Diagnostic(err, shared.MetaFromConfig(raw), "prepare"))
 				return true
 			}
 			prepared := component.PrepareGojaRender(response.Instance.(component.GojaRenderConfig), parser.GetTemplate)

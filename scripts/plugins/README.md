@@ -15,14 +15,36 @@ The smoke test requires `curl` and a standalone `tailwindcss` executable on
 `PATH`. The root `tailwindcss` v4 package supplies library imports but does not
 include the separate Tailwind CLI.
 
+## Install the shared plugin sources
+
+The shared Markdown and Tailwind CSS plugins are installed through the CLI;
+their sources are not bundled in the HyperBricks repository. From a clean
+checkout, install the pinned versions before running the build wrapper:
+
+```sh
+GOWORK=off HYPERBRICKS_LOCAL_PATH="$PWD" go run ./cmd/hyperbricks plugin install markdown@2.0.0
+GOWORK=off HYPERBRICKS_LOCAL_PATH="$PWD" go run ./cmd/hyperbricks plugin install tailwindcss@2.0.0
+```
+
+These commands require Git, Go, and network access. Each install downloads its
+source into `plugins/<name>/<version>/` and compiles it against this local
+HyperBricks checkout. The module-specific custom plugin sources are included
+under `modules/<module>/plugins/` and do not need registry installation.
+
+Use the wrapper below for subsequent rebuilds of these existing sources,
+including after local edits. It does not download missing plugins. For an
+installed published HyperBricks release instead of this checkout, use
+`hyperbricks plugin install` with `HYPERBRICKS_LOCAL_PATH` unset, as described
+in the [plugin CLI guide](../../docs/PLUGINS.md#cli).
+
 ## Build the repository plugins
 
 ```sh
 scripts/plugins/build_hyperbricks_plugins.sh
 ```
 
-The default build includes the shared Markdown and Tailwind CSS plugins plus
-every versioned custom plugin in these modules:
+The default build rebuilds the installed shared Markdown and Tailwind CSS
+plugins plus every versioned custom plugin in these modules:
 
 - `hyperbricks-patterns-yaml`
 - `project-lifecycle-test`

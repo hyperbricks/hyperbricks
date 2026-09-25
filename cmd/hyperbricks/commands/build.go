@@ -2,7 +2,7 @@ package commands
 
 import (
 	"archive/zip"
-	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -10,7 +10,6 @@ import (
 	"io"
 	"io/fs"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -18,8 +17,8 @@ import (
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/assets"
+	"github.com/hyperbricks/hyperbricks/pkg/packagemetadata"
 	"github.com/spf13/cobra"
-	"go.yaml.in/yaml/v4"
 )
 
 var (
@@ -34,6 +33,14 @@ var (
 )
 
 var buildMu sync.Mutex
+
+// WithBuildIndexLock serializes deployment-index registration with a source
+// build in this process. It does not lock independent CLI processes.
+func WithBuildIndexLock(update func() error) error {
+	buildMu.Lock()
+	defer buildMu.Unlock()
+	return update()
+}
 
 const versionIndexFile = "hyperbricks.versions.json"
 
@@ -57,7 +64,10 @@ type buildIndexRow struct {
 	File          string `json:"file"`
 	BuiltAt       string `json:"built_at"`
 	Commit        string `json:"commit"`
+	OriginBuildID string `json:"origin_build_id,omitempty"`
 	SourceHash    string `json:"source_hash"`
+	HyperBricks   string `json:"hyperbricks,omitempty"`
+	RuntimeMode   string `json:"runtime_mode,omitempty"`
 	Production    bool   `json:"production,omitempty"`
 }
 
@@ -88,13 +98,13 @@ func NewBuildCommand() *cobra.Command {
 			}
 			result, err := runBuild()
 			if err != nil {
-				fmt.Printf("Error building archive: %v\n", err)
+				failf("Error building archive: %v\n", err)
 				Exit = true
 				return
 			}
 			if buildPush {
 				if err := runBuildPush(result); err != nil {
-					fmt.Printf("Error pushing build: %v\n", err)
+					failf("Error pushing build: %v\n", err)
 					Exit = true
 					return
 				}
@@ -108,7 +118,8 @@ func NewBuildCommand() *cobra.Command {
 	cmd.Flags().StringVar(&buildReplaceTarget, "replace", "", "Replace the current build or a specific build ID")
 	cmd.Flags().Lookup("replace").NoOptDefVal = "current"
 	cmd.Flags().StringVar(&buildOutDir, "out", "deploy", "output directory for build archives")
-	cmd.Flags().StringVarP(&buildModule, "module", "m", "default", "module in the ./modules directory")
+	cmd.Flags().StringVarP(&buildModule, "module", "m", "default", "module name or directory path")
+	_ = cmd.RegisterFlagCompletionFunc("module", completeModuleSelection)
 	cmd.Flags().BoolVar(&buildPush, "push", false, "Push build archive to a deploy target")
 	cmd.Flags().StringVar(&buildPushTarget, "target", "", "Deploy target name for --push")
 
@@ -164,9 +175,7 @@ func BuildModuleWithOptions(opts BuildOptions) (buildResult, error) {
 }
 
 func runBuild() (buildResult, error) {
-	result := buildResult{
-		Module: buildModule,
-	}
+	result := buildResult{}
 	format, ext, err := resolveBuildFormat()
 	if err != nil {
 		return result, err
@@ -176,7 +185,17 @@ func runBuild() (buildResult, error) {
 		return result, fmt.Errorf("module name cannot be empty")
 	}
 
-	moduleDir := filepath.Join("modules", buildModule)
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return result, fmt.Errorf("resolve current working directory: %w", err)
+	}
+	selection, err := resolveModuleSelection(buildModule, workingDirectory)
+	if err != nil {
+		return result, fmt.Errorf("resolve module %q: %w", buildModule, err)
+	}
+	moduleDir := selection.Root
+	moduleName := selection.Name
+	result.Module = moduleName
 	if _, err := os.Stat(moduleDir); err != nil {
 		return result, fmt.Errorf("module directory not found: %s", moduleDir)
 	}
@@ -197,42 +216,40 @@ func runBuild() (buildResult, error) {
 		return result, err
 	}
 
-	outDir := filepath.Join(buildOutDir, buildModule)
+	outDir := filepath.Join(buildOutDir, moduleName)
 	indexPath := filepath.Join(outDir, versionIndexFile)
 	index, err := loadBuildIndex(indexPath)
 	if err != nil {
 		return result, err
 	}
+	hbVersion := strings.TrimSpace(assets.VersionMD)
 	replaceTarget := strings.TrimSpace(buildReplaceTarget)
 	if !(buildForce || replaceTarget != "") {
 		if current, ok := findBuildIndex(index, index.Current); ok {
-			if current.SourceHash == sourceHash && current.SourceHash != "" {
-				fmt.Printf("No changes detected. Current build %s matches source hash. Use --force or --replace to rebuild.\n", index.Current)
+			if current.SourceHash == sourceHash && current.SourceHash != "" && current.Format == format && current.HyperBricks == hbVersion {
+				fmt.Printf("No changes detected. Current build %s matches the source, format, and HyperBricks version. Use --force or --replace to rebuild.\n", index.Current)
 				result.BuildID = index.Current
 				return result, nil
 			}
 		}
 	}
 
-	commit := gitShortCommit()
+	commit := packagemetadata.GitShortCommit(moduleDir)
 	builtAt := time.Now().UTC().Format(time.RFC3339)
-	hbVersion := strings.TrimSpace(assets.VersionMD)
-
-	updates := map[string]string{
-		"module":         buildModule,
-		"commit":         commit,
-		"built_at":       builtAt,
-		"hyperbricks":    hbVersion,
-		"format":         format,
-		"format_version": "1",
-	}
-
-	updatedConfig, moduleVersion, err := updatePackageMetadata(configPath, string(configContent), updates)
+	artifact, err := packagemetadata.RenderArtifact(configContent, packagemetadata.ArtifactOptions{
+		Module:        moduleName,
+		Format:        format,
+		FormatVersion: "1",
+		Commit:        commit,
+		BuiltAt:       builtAt,
+		HyperBricks:   hbVersion,
+	})
 	if err != nil {
-		return result, err
+		return result, fmt.Errorf("prepare artifact metadata for %s: %w", configPath, err)
 	}
+	moduleVersion := artifact.Metadata.ModuleVersion
 
-	buildID, err := computeBuildID(files, []byte(updatedConfig))
+	buildID, err := computeBuildID(files, artifact.Content)
 	if err != nil {
 		return result, err
 	}
@@ -241,14 +258,14 @@ func runBuild() (buildResult, error) {
 		return result, fmt.Errorf("failed to create output directory %s: %w", outDir, err)
 	}
 
-	filename := fmt.Sprintf("%s-%s-%s.%s", buildModule, moduleVersion, buildID, ext)
+	filename := fmt.Sprintf("%s-%s-%s.%s", moduleName, moduleVersion, buildID, ext)
 	outPath := filepath.Join(outDir, filename)
 
-	if err := writeArchive(outPath, files, []byte(updatedConfig)); err != nil {
+	if err := writeArchive(outPath, files, artifact.Content); err != nil {
 		return result, err
 	}
 
-	oldFile, err := updateBuildIndex(indexPath, buildID, moduleVersion, format, outPath, builtAt, commit, sourceHash, replaceTarget)
+	oldFile, err := updateBuildIndex(indexPath, buildID, moduleVersion, format, outPath, builtAt, commit, sourceHash, hbVersion, replaceTarget)
 	if err != nil {
 		return result, err
 	}
@@ -277,15 +294,6 @@ func resolveBuildFormat() (string, string, error) {
 		return "zip", "zip", nil
 	}
 	return "hra", "hra", nil
-}
-
-func gitShortCommit() string {
-	cmd := exec.Command("git", "rev-parse", "--short=7", "HEAD")
-	output, err := cmd.Output()
-	if err != nil {
-		return "unknown"
-	}
-	return strings.TrimSpace(string(output))
 }
 
 func collectModuleFiles(root string) ([]buildFile, error) {
@@ -445,13 +453,22 @@ func computeBuildID(files []buildFile, updatedConfig []byte) (string, error) {
 }
 
 func writeArchive(outPath string, files []buildFile, updatedConfig []byte) error {
+	return writeArchiveWithContext(context.Background(), outPath, files, updatedConfig)
+}
+
+func writeArchiveWithContext(ctx context.Context, outPath string, files []buildFile, updatedConfig []byte) error {
 	archiveFile, err := os.Create(outPath)
 	if err != nil {
 		return fmt.Errorf("failed to create archive %s: %w", outPath, err)
 	}
+	defer archiveFile.Close()
 	zipWriter := zip.NewWriter(archiveFile)
 
 	for _, fileEntry := range files {
+		if err := ctx.Err(); err != nil {
+			archiveFile.Close()
+			return err
+		}
 		header, err := zip.FileInfoHeader(fileEntry.info)
 		if err != nil {
 			return err
@@ -488,7 +505,7 @@ func writeArchive(outPath string, files []buildFile, updatedConfig []byte) error
 			return err
 		}
 
-		if _, err := io.Copy(writer, source); err != nil {
+		if _, err := io.Copy(writer, runtimeContextReader{ctx: ctx, reader: source}); err != nil {
 			source.Close()
 			archiveFile.Close()
 			return err
@@ -506,7 +523,7 @@ func writeArchive(outPath string, files []buildFile, updatedConfig []byte) error
 	return archiveFile.Close()
 }
 
-func updateBuildIndex(indexPath string, buildID string, moduleVersion string, format string, outPath string, builtAt string, commit string, sourceHash string, replaceTarget string) (string, error) {
+func updateBuildIndex(indexPath string, buildID string, moduleVersion string, format string, outPath string, builtAt string, commit string, sourceHash string, hyperBricks string, replaceTarget string) (string, error) {
 	index, err := loadBuildIndex(indexPath)
 	if err != nil {
 		return "", err
@@ -546,10 +563,21 @@ func updateBuildIndex(indexPath string, buildID string, moduleVersion string, fo
 		BuiltAt:       builtAt,
 		Commit:        commit,
 		SourceHash:    sourceHash,
+		HyperBricks:   hyperBricks,
+		RuntimeMode:   "development",
 	}
 	if existing, ok := findBuildIndex(index, buildID); ok {
+		entry.RuntimeMode = strings.ToLower(strings.TrimSpace(existing.RuntimeMode))
+		if entry.RuntimeMode != "development" && entry.RuntimeMode != "live" {
+			if existing.Production {
+				entry.RuntimeMode = "live"
+			} else {
+				entry.RuntimeMode = "development"
+			}
+		}
 		entry.Production = existing.Production
 	}
+	entry.Production = entry.RuntimeMode == "live"
 
 	updated := false
 	for i, row := range index.Versions {
@@ -601,90 +629,4 @@ func findBuildIndex(index buildIndex, buildID string) (buildIndexRow, bool) {
 		}
 	}
 	return buildIndexRow{}, false
-}
-
-func updatePackageMetadata(configPath string, content string, updates map[string]string) (string, string, error) {
-	var root yaml.Node
-	if err := yaml.Unmarshal([]byte(content), &root); err != nil {
-		return "", "", fmt.Errorf("parse package config %s: %w", configPath, err)
-	}
-	body := yamlDocumentBody(&root)
-	hyper := yamlMappingValue(body, "hyperbricks")
-	if hyper == nil || hyper.Kind != yaml.MappingNode {
-		return "", "", fmt.Errorf("missing required objects in %s: hyperbricks", configPath)
-	}
-	metadata := yamlMappingValue(hyper, "metadata")
-	if metadata == nil || metadata.Kind != yaml.MappingNode {
-		return "", "", fmt.Errorf("missing required objects in %s: hyperbricks.metadata", configPath)
-	}
-	moduleVersion := yamlScalarValue(yamlMappingValue(metadata, "moduleversion"))
-	if strings.TrimSpace(moduleVersion) == "" {
-		return "", "", fmt.Errorf("missing required field in %s: hyperbricks.metadata.moduleversion", configPath)
-	}
-
-	for key, value := range updates {
-		yamlSetMappingScalar(metadata, key, value)
-	}
-
-	var out bytes.Buffer
-	encoder := yaml.NewEncoder(&out)
-	encoder.SetIndent(2)
-	if err := encoder.Encode(&root); err != nil {
-		return "", "", fmt.Errorf("encode package config %s: %w", configPath, err)
-	}
-	if err := encoder.Close(); err != nil {
-		return "", "", fmt.Errorf("encode package config %s: %w", configPath, err)
-	}
-
-	return strings.TrimRight(out.String(), "\n"), strings.TrimSpace(moduleVersion), nil
-}
-
-func yamlDocumentBody(root *yaml.Node) *yaml.Node {
-	if root == nil {
-		return nil
-	}
-	if root.Kind == yaml.DocumentNode && len(root.Content) > 0 {
-		return root.Content[0]
-	}
-	return root
-}
-
-func yamlMappingValue(node *yaml.Node, key string) *yaml.Node {
-	if node == nil || node.Kind != yaml.MappingNode {
-		return nil
-	}
-	for i := 0; i < len(node.Content); i += 2 {
-		if node.Content[i].Value == key {
-			return node.Content[i+1]
-		}
-	}
-	return nil
-}
-
-func yamlScalarValue(node *yaml.Node) string {
-	if node == nil || node.Kind != yaml.ScalarNode {
-		return ""
-	}
-	return node.Value
-}
-
-func yamlSetMappingScalar(node *yaml.Node, key string, value string) {
-	if node == nil || node.Kind != yaml.MappingNode {
-		return
-	}
-	for i := 0; i < len(node.Content); i += 2 {
-		if node.Content[i].Value == key {
-			node.Content[i+1] = yamlScalarNode(value)
-			return
-		}
-	}
-	node.Content = append(node.Content, yamlScalarNode(key), yamlScalarNode(value))
-}
-
-func yamlScalarNode(value string) *yaml.Node {
-	return &yaml.Node{
-		Kind:  yaml.ScalarNode,
-		Tag:   "!!str",
-		Value: value,
-	}
 }

@@ -10,15 +10,29 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/hyperbricks/hyperbricks/assets"
+	"go.yaml.in/yaml/v4"
 )
 
 const testStarterPackageConfig = `hyperbricks:
+  metadata:
+    module: old-starter-name
+    moduleversion: "9.4"
+    format: zip
+    format_version: "0"
+    commit: stale
+    built_at: "1970-01-01T00:00:00Z"
+    hyperbricks: v0.0.0
+    source_hash: stale
   directories:
     hyperbricks:
       path:
         base: module
         path: hyperbricks
-	`
+  custom:
+    preserved: true
+`
 
 const testStarterYAMLSource = `page:
   - type: hypermedia
@@ -56,6 +70,13 @@ func TestResolveStarterVersionPrefersLatestCompatible(t *testing.T) {
 	}
 	if meta.Version != "1.1.0" {
 		t.Fatalf("expected latest compatible version 1.1.0, got %s", meta.Version)
+	}
+}
+
+func TestRunInitStarterGetRejectsModulePathBeforeNetwork(t *testing.T) {
+	_, _, err := runInitStarterGet("hello-world", "../outside")
+	if err == nil || !strings.Contains(err.Error(), "module must be a name below ./modules") {
+		t.Fatalf("invalid module override error = %v", err)
 	}
 }
 
@@ -151,6 +172,30 @@ func TestRunInitStarterGetDownloadsAndExtractsStarter(t *testing.T) {
 			t.Fatalf("expected %s to exist: %v", path, err)
 		}
 	}
+	packageData, err := os.ReadFile(filepath.Join("modules", "example-site", PackageConfigFileName))
+	if err != nil {
+		t.Fatalf("read installed package config: %v", err)
+	}
+	var packageConfig struct {
+		HyperBricks struct {
+			Metadata map[string]string `yaml:"metadata"`
+		} `yaml:"hyperbricks"`
+	}
+	if err := yaml.Unmarshal(packageData, &packageConfig); err != nil {
+		t.Fatalf("decode installed package config: %v", err)
+	}
+	metadata := packageConfig.HyperBricks.Metadata
+	if metadata["module"] != "example-site" || metadata["moduleversion"] != "1.0.0" || metadata["hyperbricks"] != strings.TrimSpace(assets.VersionMD) {
+		t.Fatalf("installed source metadata = %#v", metadata)
+	}
+	for _, artifactField := range []string{"format", "format_version", "commit", "built_at", "source_hash"} {
+		if _, present := metadata[artifactField]; present {
+			t.Fatalf("installed source package contains artifact-only metadata %q", artifactField)
+		}
+	}
+	if !strings.Contains(string(packageData), "preserved: true") {
+		t.Fatalf("installed source package lost unrelated starter configuration:\n%s", packageData)
+	}
 	if _, err := os.Stat(filepath.Join("modules", "example-site", "manifest.json")); !os.IsNotExist(err) {
 		t.Fatalf("expected starter manifest.json to be excluded from installed module")
 	}
@@ -227,6 +272,149 @@ func TestRunInitStarterGetRejectsNonEmptyModuleDir(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "not empty") {
 		t.Fatalf("expected non-empty directory error, got: %v", err)
+	}
+}
+
+func TestRunInitStarterGetInvalidStagedPackageLeavesMissingDestinationAbsent(t *testing.T) {
+	useTestStarterWorkingDirectory(t)
+	useInvalidPackageStarterServer(t)
+
+	const moduleName = "broken-site"
+	moduleDir := filepath.Join("modules", moduleName)
+	_, _, err := runInitStarterGet("hello-world", moduleName)
+	if err == nil {
+		t.Fatal("expected invalid staged package metadata to fail")
+	}
+	if !strings.Contains(err.Error(), "prepare starter package metadata") {
+		t.Fatalf("unexpected starter metadata error: %v", err)
+	}
+	if _, statErr := os.Stat(moduleDir); !os.IsNotExist(statErr) {
+		t.Fatalf("missing destination was created after staged metadata failure: %v", statErr)
+	}
+	assertNoStarterStagingDirectories(t, moduleName)
+}
+
+func TestRunInitStarterGetInvalidStagedPackageLeavesExistingDestinationEmpty(t *testing.T) {
+	useTestStarterWorkingDirectory(t)
+	useInvalidPackageStarterServer(t)
+
+	const moduleName = "broken-site"
+	moduleDir := filepath.Join("modules", moduleName)
+	if err := os.MkdirAll(moduleDir, 0711); err != nil {
+		t.Fatalf("create empty module destination: %v", err)
+	}
+	before, err := os.Stat(moduleDir)
+	if err != nil {
+		t.Fatalf("inspect empty module destination: %v", err)
+	}
+
+	_, _, err = runInitStarterGet("hello-world", moduleName)
+	if err == nil {
+		t.Fatal("expected invalid staged package metadata to fail")
+	}
+	if !strings.Contains(err.Error(), "prepare starter package metadata") {
+		t.Fatalf("unexpected starter metadata error: %v", err)
+	}
+	after, statErr := os.Stat(moduleDir)
+	if statErr != nil {
+		t.Fatalf("existing empty destination was removed after staged metadata failure: %v", statErr)
+	}
+	if !after.IsDir() {
+		t.Fatalf("existing destination is no longer a directory: %s", moduleDir)
+	}
+	if after.Mode().Perm() != before.Mode().Perm() {
+		t.Fatalf("existing destination mode = %s, want %s", after.Mode().Perm(), before.Mode().Perm())
+	}
+	entries, err := os.ReadDir(moduleDir)
+	if err != nil {
+		t.Fatalf("read existing module destination: %v", err)
+	}
+	if len(entries) != 0 {
+		t.Fatalf("existing destination contains %d entries after staged metadata failure", len(entries))
+	}
+	assertNoStarterStagingDirectories(t, moduleName)
+}
+
+func useTestStarterWorkingDirectory(t *testing.T) {
+	t.Helper()
+
+	tmpDir := t.TempDir()
+	previous, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("get working directory: %v", err)
+	}
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("change to test working directory: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(previous); err != nil {
+			t.Errorf("restore working directory: %v", err)
+		}
+	})
+}
+
+func useInvalidPackageStarterServer(t *testing.T) {
+	t.Helper()
+
+	indexPayload := map[string]map[string]StarterMeta{
+		"hello-world": {
+			"1.0.0": {
+				Name:                  "hello-world",
+				Version:               "1.0.0",
+				Path:                  "starters/hello-world/1.0.0",
+				Entrypoint:            "package.hyperbricks.yaml",
+				CompatibleHyperbricks: []string{">=0.8.0-alpha"},
+			},
+		},
+	}
+	indexBytes, err := json.Marshal(indexPayload)
+	if err != nil {
+		t.Fatalf("encode starter index fixture: %v", err)
+	}
+	archiveBytes := createTestStarterArchive(t, map[string]string{
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/package.hyperbricks.yaml": "hyperbricks:\n  metadata: [invalid\n",
+		"hyperbricks-starters-main/starters/hello-world/1.0.0/should-not-install.txt":   "staged only\n",
+	})
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/starters.index.json":
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write(indexBytes)
+		case "/archive.zip":
+			w.Header().Set("Content-Type", "application/zip")
+			_, _ = w.Write(archiveBytes)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+
+	previousIndexURL := starterIndexURL
+	previousArchiveURL := starterArchiveURL
+	previousArchiveRoot := starterArchiveRoot
+	starterIndexURL = server.URL + "/starters.index.json"
+	starterArchiveURL = server.URL + "/archive.zip"
+	starterArchiveRoot = "hyperbricks-starters-main"
+	t.Cleanup(func() {
+		starterIndexURL = previousIndexURL
+		starterArchiveURL = previousArchiveURL
+		starterArchiveRoot = previousArchiveRoot
+		server.Close()
+	})
+}
+
+func assertNoStarterStagingDirectories(t *testing.T, moduleName string) {
+	t.Helper()
+
+	entries, err := os.ReadDir("modules")
+	if err != nil {
+		t.Fatalf("read modules directory: %v", err)
+	}
+	prefix := "." + moduleName + "-starter-stage-"
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), prefix) {
+			t.Fatalf("starter staging directory was not removed: %s", entry.Name())
+		}
 	}
 }
 

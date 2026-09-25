@@ -1,0 +1,24 @@
+<main class="page-shell">
+  <nav class="page-topnav" aria-label="{{.nav_label}}">
+    <a class="page-link" href="{{.back_url}}">&larr; {{.back_label}}</a>
+    <a class="page-link" href="{{.home_url}}">{{.home_label}}</a>
+    <a class="page-link" href="{{.about_url}}">{{.about_label}}</a>
+    <a class="page-link" href="{{.alternate_url}}" hreflang="{{.alternate_language}}" lang="{{.alternate_language}}">{{.alternate_label}}</a>
+  </nav>
+
+  <header class="page-header">
+    <p class="page-kicker">{{.kicker}}</p>
+    <h1 class="page-title page-title-large">{{.heading}}</h1>
+    <p class="page-lead">{{.intro}}</p>
+  </header>
+
+  <section class="page-copy" aria-labelledby="localized-section-heading">
+    <h2 id="localized-section-heading" class="page-copy-title">{{.section_heading}}</h2>
+    <p class="page-copy-text">{{.section_copy}}</p>
+  </section>
+
+  <p class="page-topnav mt-8">
+    <a class="page-link" href="/docs/localized-spaces">{{.guide_label}}</a>
+    {{if eq .runtime_mode "development"}}<a class="page-link" href="{{.spaces_editor_url}}" data-spaces-editor-link hidden>{{.editor_label}}</a>{{end}}
+  </p>
+</main>

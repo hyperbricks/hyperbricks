@@ -71,7 +71,7 @@ func TestForwardChildRendersCustomChildOncePerRequest(t *testing.T) {
 		ctx := requestContext(id)
 		before := calls
 		legacy, legacyErrors := manager.Render(composite.HyperMediaConfigGetName(), raw, ctx)
-		if calls != before+1 || len(legacyErrors) != 1 || legacyErrors[0] != childError {
+		if calls != before+1 || len(legacyErrors) != 1 || !errors.Is(legacyErrors[0], childError) {
 			t.Fatalf("legacy child calls = %d, errors = %v", calls-before, legacyErrors)
 		}
 		before = calls
@@ -80,7 +80,7 @@ func TestForwardChildRendersCustomChildOncePerRequest(t *testing.T) {
 		if calls != before+1 || got != legacy || got != want {
 			t.Fatalf("compiled child calls = %d, output differs = %t", calls-before, got != want)
 		}
-		if len(renderErrors) != 1 || renderErrors[0] != childError {
+		if len(renderErrors) != 1 || !errors.Is(renderErrors[0], childError) {
 			t.Fatalf("errors = %v, want original child error", renderErrors)
 		}
 		retained = append(retained, got)
@@ -126,7 +126,7 @@ func TestForwardChildMultipleValuesStillRenderUnusedChildren(t *testing.T) {
 		if output != "<b>visible</b>" || !reflect.DeepEqual(calls, []string{"visible", "unused"}) {
 			t.Fatalf("compiled=%t: output=%q, child calls=%v", compiled, output, calls)
 		}
-		if len(renderErrors) != 1 || renderErrors[0] != unusedError {
+		if len(renderErrors) != 1 || !errors.Is(renderErrors[0], unusedError) {
 			t.Fatalf("compiled=%t: errors=%v, want unused child error", compiled, renderErrors)
 		}
 	}

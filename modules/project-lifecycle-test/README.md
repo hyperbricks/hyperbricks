@@ -1,118 +1,96 @@
 # Project lifecycle test fixture
 
-This module is repository-owned input for HyperBricks integration tests. It verifies that a representative project works through development, production rendering, API-backed routes, a native plugin, static export, and runtime archive deployment.
+This module tests HyperBricks rendering, API routes, native plugins, static export, and `.hra` deployment. It is an integration test fixture.
 
-This is not a starter or a recommended application structure. Create a new project with `hyperbricks init`; use the main documentation and focused pattern modules to learn individual features.
+## Run the tests
 
-## Test owner
-
-[`scripts/test_project_lifecycle.py`](../../scripts/test_project_lifecycle.py) stages the declared sources into temporary projects, starts local servers on free loopback ports, makes HTTP requests, and removes the temporary workspace after success. Pass `--keep` to retain its diagnostics.
-
-From the repository root, run the server and packaging checks with a source-matched binary:
+From the repository root:
 
 ```sh
-python3 scripts/test_project_lifecycle.py \
-  --binary "$(command -v hyperbricks)"
+python3 scripts/test_project_lifecycle.py
 ```
 
-Include the native Go plugin profile with:
+The script builds a temporary runtime from this checkout, copies the fixture into temporary projects, and checks their HTTP responses and exports. It requires Python 3.9+ and Go.
+
+Include the native plugin checks with:
 
 ```sh
-python3 scripts/test_project_lifecycle.py \
-  --binary "$(command -v hyperbricks)" \
-  --with-plugin
+python3 scripts/test_project_lifecycle.py --with-plugin
 ```
 
-The complete plugin-backed check is also part of:
+Native plugins require a compatible platform and Go toolchain. The plugin profile is also checked by `./tests.sh --with-plugins`.
 
-```sh
-./tests.sh --with-plugins
-```
+Use `--binary /path/to/hyperbricks` to test an existing runtime built from this checkout. Add `--keep` to retain the temporary projects and logs after a successful run.
 
-The repository-wide build and smoke workflow is documented in [Plugin build and smoke scripts](../../scripts/plugins/README.md). The fixture's authoritative staged plugin build remains `test_project_lifecycle.py --with-plugin`.
+## What is tested
 
-Python 3.9+, Go, and a HyperBricks runtime built from this checkout are required. Without `--binary`, the script builds a temporary HyperBricks binary from `./cmd/hyperbricks`.
+| Configuration | Checks |
+| --- | --- |
+| `package.hyperbricks.yaml` | Pages and fragments, native assets, request-specific `goja_render`, concurrent requests, development reload, production rendering, and `.hra` deployment |
+| `package.api.hyperbricks.yaml` | API reads and writes, validation errors, version conflicts, cookies, and route guards |
+| `package.plugin.hyperbricks.yaml` | Native plugin builds, configured actions, template rendering, and HTML escaping |
+| `package.static.hyperbricks.yaml` | An isolated static route, generated assets, and zip export |
 
-## Profiles
-
-| Configuration | Coverage | Additional dependency |
-| --- | --- | --- |
-| `package.hyperbricks.yaml` | Development and production rendering, pages, fragments, native assets, request-bound `goja_render`, concurrency, and source reload | None |
-| `package.api.hyperbricks.yaml` | `api_render`, `api_fragment_render`, validation and conflict results, cookies, and route guards | Local fixture API |
-| `package.plugin.hyperbricks.yaml` | Native plugin build, configured actions, template handoff, and escaped output | Compatible Go plugin platform and toolchain |
-| `package.static.hyperbricks.yaml` | An isolated static route, generated assets, and zip export | Selected by the staging helper |
-
-The detailed route and response contracts are recorded in [Fixture profiles](docs/profiles.md).
+See [Fixture profiles](docs/profiles.md) for the routes and expected responses. The API profile uses a local API that keeps its data in memory; restarting it resets the data.
 
 ## Source layout
 
-| Path | Test responsibility |
+| Path | Purpose |
 | --- | --- |
-| `hyperbricks/` | Default pages, fragments, shared components, and request-specific calculation |
-| `profiles/api/` | API and guard components loaded by `package.api.hyperbricks.yaml` |
-| `profiles/plugin/` | Plugin routes and templates loaded by `package.plugin.hyperbricks.yaml` |
-| `profiles/static/` | The only HyperBricks source loaded by the static profile |
-| `fixtures/` | Source files copied into a running temporary project to verify development reload |
-| `plugins/lifecycle-test/` | Native Go plugin source and unit tests |
-| `tools/fixture-api/` | Memory-only loopback API used by the API and guard profile |
-| `tools/stage_source.py` | Copies the declared fixture sources into a clean temporary project |
-| `SOURCE_FILES.txt` | Explicit source allowlist used by staging and archive checks |
+| `hyperbricks/` | Default pages, fragments, and shared components |
+| `profiles/` | Separate API, plugin, and static configurations and templates |
+| `fixtures/` | Files added during development reload checks |
+| `plugins/lifecycle-test/` | Native plugin source and unit tests |
+| `tools/fixture-api/` | Local API for the API and guard checks |
+| `tools/stage_source.py` | Copies the fixture into a temporary project |
+| `SOURCE_FILES.txt` | Lists the files copied by staging and checked during packaging |
 
-Generated CSS, JavaScript, rendered pages, archives, logs, credentials, and local caches are intentionally absent from `SOURCE_FILES.txt`. The test builds outputs from the source files and checks that runtime archives exclude local or generated material.
+Generated assets, rendered pages, archives, logs, credentials, and caches are excluded from `SOURCE_FILES.txt`. Tests build the outputs and check the archive contents.
 
-## Behaviors under test
+## Run a profile manually
 
-The lifecycle check verifies:
+Run these commands from the repository root using a runtime built from this checkout.
 
-- Complete HTML documents for application routes and shell-free fragment responses
-- Fingerprinted CSS and JavaScript built by the native `esbuild` component
-- Query allowlisting, invalid input, and `Cache-Control: no-store` for a request-specific calculation
-- Isolated results during concurrent `goja_render` requests
-- Development reload after changing YAML and after adding a page, fragment, and navigation entry
-- Fresh request-specific output through the production rendering path
-- Clean `.hra` creation and startup through `hyperbricks start --deploy`
-- A static profile that exports only its static-ready route and assets
-- API reads, writes, validation errors, stale-version conflicts, login cookies, and route guards
-- Native plugin compilation, configured action selection, template rendering, and HTML escaping
-
-The fixture deliberately uses several runtime profiles because the test owns those profiles. Public documentation should use small examples centered on one concern.
-
-## Run a profile while diagnosing it
-
-Start the default fixture:
+### Default rendering
 
 ```sh
-hyperbricks start -m project-lifecycle-test --port 8104
+go run ./cmd/hyperbricks start -m project-lifecycle-test --port 8104
 ```
 
-For the API profile, start the memory-only fixture API in one terminal:
+### API and guards
+
+Start the fixture API in one terminal:
 
 ```sh
 go run modules/project-lifecycle-test/tools/fixture-api/main.go -port 8099
 ```
 
-Then start HyperBricks in another terminal:
+Start HyperBricks in another:
 
 ```sh
 HYPERBRICKS_LIFECYCLE_API_URL=http://127.0.0.1:8099 \
-  hyperbricks start -m project-lifecycle-test \
+  go run ./cmd/hyperbricks start -m project-lifecycle-test \
   --config package.api.hyperbricks.yaml
 ```
 
-For local core development, build the native plugin against this checkout:
+### Native plugin
+
+Build the plugin and start its profile with the same local runtime:
 
 ```sh
 HYPERBRICKS_LOCAL_PATH="$PWD" \
   go run ./cmd/hyperbricks plugin build lifecycle-test@1.0.0 \
   --module project-lifecycle-test
 
-hyperbricks start -m project-lifecycle-test \
+go run ./cmd/hyperbricks start -m project-lifecycle-test \
   --config package.plugin.hyperbricks.yaml
 ```
 
-`HYPERBRICKS_LOCAL_PATH` is development-only and selects the local HyperBricks source used for the plugin build. Leave it unset when building against an installed published release. See [plugin build modes](../../docs/PLUGINS.md#local-runtime-development).
+`HYPERBRICKS_LOCAL_PATH` selects the local HyperBricks checkout for development builds. See [Local runtime development](../../docs/PLUGINS.md#local-runtime-development) and the [plugin build and smoke scripts](../../scripts/plugins/README.md).
 
-To inspect the isolated static profile in a disposable project:
+### Static export
+
+Stage the static profile in a disposable project, then export it with a runtime built from this checkout:
 
 ```sh
 python3 modules/project-lifecycle-test/tools/stage_source.py \

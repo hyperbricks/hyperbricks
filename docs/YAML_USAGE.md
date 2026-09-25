@@ -1,31 +1,33 @@
 # HyperBricks YAML Usage
 
-This document defines the supported HyperBricks YAML source format. It covers syntax, ordering, inheritance, imports, value resolvers, and recovery behavior.
+Use YAML to define HyperBricks components and module settings. This guide covers source syntax, render order, inheritance, imports, value resolvers, and error recovery.
 
-Component fields such as `route`, `response`, `guard`, `values`, `inline`, and `endpoint` are documented in [REFERENCE.md](REFERENCE.md).
+See [Component reference](REFERENCE.md) for fields such as `route`, `response`, `guard`, `values`, `inline`, and `endpoint`.
 
 ## Files
 
-Runtime source files use:
+Name component source files with this suffix:
 
 ```text
 *.hyperbricks.yaml
 ```
 
-Module runtime configuration uses:
+Store module runtime settings in:
 
 ```text
 package.hyperbricks.yaml
 ```
 
-Component source files and package configuration both use YAML, but they have different shapes:
+Component files and package configuration use different YAML structures:
 
 - `*.hyperbricks.yaml` files define ordered HyperBricks component trees.
 - `package.hyperbricks.yaml` is normal configuration data under keys such as `hyperbricks` and `myconf`.
 
+HyperBricks loads `*.hyperbricks.yaml` files directly inside the configured `hyperbricks/` directory. To load files in subdirectories, add file-level [imports](#imports) to a loaded source file. Import paths are relative to that file.
+
 ## Component Source Shape
 
-A component source file is a top-level YAML mapping. Most top-level keys define named HyperBricks objects.
+Start a component source file with a top-level YAML mapping. Most top-level keys name HyperBricks objects.
 
 ```yaml
 page:
@@ -40,11 +42,11 @@ page:
               <h1>Hello</h1>
 ```
 
-Each object is an ordered sequence of single-key entries. Source order matters.
+Write each object as an ordered sequence of single-key entries. Their order matters.
 
 ### Ordered objects and ordinary mappings
 
-HyperBricks component objects use a specific YAML shape: a name followed by an ordered sequence. Every leading `-` adds one entry to that object.
+A component object starts with a name, followed by an ordered sequence. Each leading `-` adds one entry to the object.
 
 ```yaml
 scripts:
@@ -64,17 +66,19 @@ page:
           - inherit: scripts
 ```
 
-In this example, `scripts` and `page` are named HyperBricks objects. The `type` entry selects the component, entries such as `entry`, `outfile`, `cache`, and `route` set fields, and `head` contains another component object. `application_script` is a named child of `head`; it inherits the complete `scripts` object at that position in the tree. The child name is chosen by the author and can describe the child's purpose.
+In this example `scripts` and `page` name HyperBricks objects. `type` selects the component. Entries such as `entry`, `outfile`, `cache`, and `route` set its fields. `head` contains a child component.
 
-The sequence form is part of HyperBricks notation. It preserves the order of fields, inherited overrides, and renderable children. A component object should therefore keep the dashes instead of being rewritten as an ordinary YAML mapping.
+The child `application_script` inherits the complete `scripts` object at that position in `head`. Choose a child name that describes its purpose.
 
-The value under `path` is different: it is ordinary data passed to a field. YAML allows that mapping to be written in compact **flow style**:
+Keep the dashes when writing a component object. The sequence preserves the order of fields, inherited overrides, and rendered children. An ordinary YAML mapping does not preserve this order contract.
+
+The mapping under `path` holds ordinary field data. You can write it in compact **flow style**:
 
 ```yaml
 path: {base: resources, path: js/main.js}
 ```
 
-or in the equivalent **block style**:
+Or use the equivalent **block style**:
 
 ```yaml
 path:
@@ -82,9 +86,9 @@ path:
   path: js/main.js
 ```
 
-Both forms produce the same path-resolver data. Flow style is convenient for a short mapping that fits on one line. Block style is easier to read when a mapping contains more fields or nested values. These data mappings do not control render order; the surrounding component sequence does.
+Both forms produce the same path-resolver data. Use flow style for short mappings on one line. Use block style for more fields or nested values. The surrounding component sequence controls render order. Data mappings do not.
 
-The reserved entries inside a component node are:
+Component nodes reserve two entries:
 
 | Entry | Meaning |
 | --- | --- |
@@ -119,7 +123,7 @@ page:
           - value: Welcome
 ```
 
-The runtime materializes ordered children into the current mapstructure-facing shape with `@type` and `@order`:
+At runtime, HyperBricks converts ordered children into maps for component decoding through mapstructure. It records the component type in `@type` and child order in `@order`:
 
 ```json
 {
@@ -147,35 +151,38 @@ Do not write `@type` or `@order` in source YAML. They are runtime keys.
 
 Use lowercase type names in YAML:
 
-```yaml
-- type: hypermedia
-- type: fragment
-- type: api_render
-- type: api_fragment_render
-- type: tree
-- type: head
-- type: template
-- type: html
-- type: text
-- type: css
-- type: javascript
-- type: js
-- type: image
-- type: images
-- type: json
-- type: json_render
-- type: menu
-- type: plugin
-- type: styles
-```
+| YAML type | Component reference |
+| --- | --- |
+| `hypermedia` | [HYPERMEDIA](REFERENCE.md#hypermedia) |
+| `fragment` | [FRAGMENT](REFERENCE.md#fragment) |
+| `api_render` | [API_RENDER](REFERENCE.md#api_render) |
+| `api_fragment_render` | [API_FRAGMENT_RENDER](REFERENCE.md#api_fragment_render) |
+| `tree` | [TREE](REFERENCE.md#tree) |
+| `head` | [HEAD](REFERENCE.md#head) |
+| `template` | [TEMPLATE](REFERENCE.md#template) |
+| `html` | [HTML](REFERENCE.md#html) |
+| `text` | [TEXT](REFERENCE.md#text) |
+| `css` | [CSS](REFERENCE.md#css) |
+| `javascript` | [JS](REFERENCE.md#js) |
+| `js` | [JS](REFERENCE.md#js) |
+| `image` | [IMAGE](REFERENCE.md#image) |
+| `images` | [IMAGES](REFERENCE.md#images) |
+| `json` | [JSON_RENDER](REFERENCE.md#json_render) |
+| `json_render` | [JSON_RENDER](REFERENCE.md#json_render) |
+| `menu` | [MENU](REFERENCE.md#menu) |
+| `plugin` | [PLUGIN](REFERENCE.md#plugin) |
+| `styles` | [STYLES](REFERENCE.md#styles) |
+| `markdown` | [MARKDOWN](REFERENCE.md#markdown) |
+| `goja_render` | [GOJA_RENDER](REFERENCE.md#goja_render) |
+| `esbuild` | [ESBUILD](REFERENCE.md#esbuild) |
 
-Known types are normalized to runtime tokens such as `<HYPERMEDIA>` and `<TEMPLATE>`.
+HyperBricks converts known types to runtime tokens such as `<HYPERMEDIA>` and `<TEMPLATE>`.
 
-Unknown types are preserved into the runtime map in normal runtime loading. The renderer/typefactory layer then reports that no renderer is registered for that type, while valid sibling components continue to render.
+During normal runtime loading, HyperBricks keeps unknown types in the runtime map. The renderer/typefactory layer reports that no renderer is registered for the type. Valid sibling components continue to render.
 
 ## Ordering
 
-Ordered renderable children come from YAML sequence order.
+HyperBricks combines ordered child output in YAML sequence order. Tree children can render concurrently; the sequence defines output order, not a guaranteed order for side effects.
 
 ```yaml
 main:
@@ -188,7 +195,7 @@ main:
       - value: <p>second</p>
 ```
 
-Maps are data, not render order:
+The `values` mapping supplies data to a template. Listing `title` before `body` does not make the title render first:
 
 ```yaml
 card:
@@ -198,11 +205,11 @@ card:
       body: Welcome
 ```
 
-Only component children in ordered node sequences participate in render order.
+The template decides where `title` and `body` appear in its output. For child components, such as `first` and `second` above, the YAML sequence determines their output order.
 
 ## Duplicate Child Names
 
-Duplicate child names are not recommended. Runtime loading recovers by assigning real runtime paths with `_2`, `_3`, and so on, and records diagnostics.
+Prefer unique child names. If names repeat, runtime loading assigns paths with `_2`, `_3`, and so on, and records diagnostics.
 
 ```yaml
 main:
@@ -215,14 +222,14 @@ main:
       - value: Summary
 ```
 
-Materialized paths become:
+The runtime creates these paths:
 
 ```text
 main.text_summary
 main.text_summary_2
 ```
 
-Those recovered names are real paths and can be referenced by inheritance after materialization. Authors should still prefer unique semantic names in source.
+You can reference the recovered paths through inheritance after HyperBricks creates them. Still use unique, descriptive names in source files.
 
 ## Inheritance
 
@@ -271,7 +278,57 @@ page:
       - inherit: shared_hero
 ```
 
-Relative import paths are resolved from the importing file's directory. Imported objects are loaded before the current file. Duplicate top-level object names across imported files are source errors for that file.
+HyperBricks resolves relative import paths from the importing file's directory. It loads imported objects before the current file. Duplicate top-level object names across imported files are source errors for that file.
+
+### Two-level imports
+
+Imports can load files that have their own imports. This example uses two import levels:
+
+```text
+modules/demo/hyperbricks/
+├── main.hyperbricks.yaml                  # imports partials/site.hyperbricks.yaml
+└── partials/
+    ├── site.hyperbricks.yaml              # imports cards/card.hyperbricks.yaml
+    └── cards/
+        └── card.hyperbricks.yaml
+```
+
+**`main.hyperbricks.yaml`** imports the shared layout:
+
+```yaml
+imports:
+  - partials/site.hyperbricks.yaml
+
+page:
+  - type: hypermedia
+  - route: index
+  - main:
+      - inherit: site_layout
+```
+
+**`partials/site.hyperbricks.yaml`** imports a card from its own directory:
+
+```yaml
+imports:
+  - cards/card.hyperbricks.yaml
+
+site_layout:
+  - type: tree
+  - featured_card:
+      - inherit: shared_card
+```
+
+**`partials/cards/card.hyperbricks.yaml`** defines the card:
+
+```yaml
+shared_card:
+  - type: html
+  - value: <article>Welcome</article>
+```
+
+HyperBricks loads `main.hyperbricks.yaml` automatically because it is directly inside `hyperbricks/`. Its imports load the nested files. Each import path starts from the directory of the file containing it: `cards/card.hyperbricks.yaml` resolves under `partials/`, not under `hyperbricks/`.
+
+HyperBricks loads the card, then the layout, then the page. The layout can inherit `shared_card`, and the page can inherit `site_layout`.
 
 ## Vars
 
@@ -296,7 +353,7 @@ page:
             - var: page.heading
 ```
 
-Runtime-provided variables are also available. Current standard variables are:
+You can also use runtime variables:
 
 | Variable | Meaning |
 | --- | --- |
@@ -311,7 +368,7 @@ Runtime-provided variables are also available. Current standard variables are:
 
 ## Value Resolvers
 
-Resolvers are YAML mappings that materialize into scalar or structured values before runtime rendering.
+A value resolver is a YAML mapping that HyperBricks converts to a scalar or structured value before rendering. Block and compact (flow) mappings are equivalent. Keep the ordered sequence (`-`) around component entries.
 
 ### `var`
 
@@ -322,7 +379,7 @@ title:
   var: page.title
 ```
 
-With default:
+To provide a default:
 
 ```yaml
 title:
@@ -331,67 +388,125 @@ title:
     default: Untitled
 ```
 
-Missing vars resolve to an empty string unless `default` is provided.
+Equivalent compact form:
+
+```yaml
+title:
+  var: {name: page.title, default: Untitled}
+```
+
+Missing variables resolve to an empty string unless you provide `default`.
 
 ### `env`
 
-Resolve an environment variable.
+Read an environment variable into a component field:
 
 ```yaml
-token:
-  env: API_TOKEN
+cta_label:
+  - type: text
+  - value:
+      env: CTA_LABEL
 ```
 
-With default:
+To provide a default:
 
 ```yaml
-label:
-  env:
-    name: CTA_LABEL
-    default: Start now
+cta_label:
+  - type: text
+  - value:
+      env:
+        name: CTA_LABEL
+        default: Start now
 ```
 
-With required diagnostic:
+Equivalent compact form:
 
 ```yaml
-token:
-  env:
-    name: API_TOKEN
-    required: true
+cta_label:
+  - type: text
+  - value:
+      env: {name: CTA_LABEL, default: Start now}
 ```
 
-Missing required env values produce an error-level diagnostic and resolve to an empty string so the runtime can keep rendering what it can.
+To report a missing required value:
+
+```yaml
+cta_label:
+  - type: text
+  - value:
+      env:
+        name: CTA_LABEL
+        required: true
+```
+
+Equivalent compact form:
+
+```yaml
+cta_label:
+  - type: text
+  - value:
+      env: {name: CTA_LABEL, required: true}
+```
+
+If a required environment value is missing, HyperBricks reports an error-level diagnostic and resolves it to an empty string. The runtime continues rendering what it can.
 
 ### `config`
 
-Resolve a dotted path from runtime configuration.
+Read a dotted path from runtime configuration into a component field:
 
 ```yaml
-title:
-  config: myconf.site.title
+page:
+  - type: hypermedia
+  - route: index
+  - title:
+      config: myconf.site.title
 ```
 
-With default:
+To provide a default:
 
 ```yaml
-title:
-  config:
-    path: myconf.site.title
-    default: Untitled
+page:
+  - type: hypermedia
+  - route: index
+  - title:
+      config:
+        path: myconf.site.title
+        default: Untitled
+```
+
+Equivalent compact form:
+
+```yaml
+page:
+  - type: hypermedia
+  - route: index
+  - title:
+      config: {path: myconf.site.title, default: Untitled}
 ```
 
 ### `path`
 
-Resolve a path from a base and a relative path.
+Resolve a path from a base and a relative path. In a component object, place the resolver under the field that needs the path:
 
 ```yaml
-asset:
-  path:
-    base: static
-    path: css/app.css
+stylesheet:
+  - type: css
+  - file:
+      path:
+        base: static
+        path: css/app.css
 ```
 
-Equivalent with parts:
+The resolver supplies the stylesheet path to `file`. You can also write the same path object in compact form:
+
+```yaml
+stylesheet:
+  - type: css
+  - file:
+      path: {base: static, path: css/app.css}
+```
+
+You can also provide path parts:
 
 ```yaml
 asset:
@@ -400,6 +515,13 @@ asset:
     parts:
       - images
       - logo.svg
+```
+
+Equivalent compact form:
+
+```yaml
+asset:
+  path: {base: resources, parts: [images, logo.svg]}
 ```
 
 Supported bases are:
@@ -415,7 +537,7 @@ hyperbricks
 render
 ```
 
-A plain string path is returned as-is:
+HyperBricks returns a plain string path unchanged:
 
 ```yaml
 href:
@@ -424,20 +546,31 @@ href:
 
 ### `file`
 
-Read a file and use its contents as the value.
+Read a file into a component field. This HTML component uses the file contents as its `value`:
 
 ```yaml
-body:
-  file:
-    base: resources
-    path: copy/intro.html
+intro:
+  - type: html
+  - value:
+      file:
+        base: resources
+        path: copy/intro.html
 ```
 
-Missing files produce a warning diagnostic and resolve to an empty string.
+Equivalent compact form:
+
+```yaml
+intro:
+  - type: html
+  - value:
+      file: {base: resources, path: copy/intro.html}
+```
+
+If a file is missing, HyperBricks reports a warning diagnostic and resolves the value to an empty string.
 
 ### `format`
 
-Format a string with resolved arguments. HyperBricks uses Go `fmt.Sprintf` semantics.
+Format a string with resolved arguments using Go `fmt.Sprintf` semantics.
 
 ```yaml
 value:
@@ -447,11 +580,17 @@ value:
     - config: myconf.navigation.home_label
 ```
 
+Equivalent compact form:
+
+```yaml
+value: {format: '<a href="%s">%s</a>', args: [{var: links.home}, {config: myconf.navigation.home_label}]}
+```
+
 Arguments can use other resolvers.
 
 ### `template.file`
 
-The `template` field has a special file resolver. It preloads the template file from the module templates directory and keeps the template name in the runtime config.
+The `template` field has a special file resolver. HyperBricks preloads the file from the module templates directory and keeps its name in the runtime config.
 
 ```yaml
 card:
@@ -462,9 +601,19 @@ card:
       title: Hello
 ```
 
-This replaces the old template marker style. Go template syntax inside template files or inline template strings is not interpreted by the YAML resolver.
+Equivalent compact form:
 
-`template.file` can be used anywhere a YAML value named `template` appears, not only on `<TEMPLATE>` components. This is useful for plugin configuration that passes a template key to plugin code while still preloading the template content:
+```yaml
+card:
+  - type: template
+  - template: {file: cards/card.html}
+  - values:
+      title: Hello
+```
+
+Use this resolver instead of the old template marker style. The YAML resolver leaves Go template syntax unchanged inside template files and inline strings.
+
+Use `template.file` anywhere a YAML value named `template` appears, including outside `<TEMPLATE>` components. For example, a plugin can receive a template key while HyperBricks preloads the content:
 
 ```yaml
 onboarding_starter_list:
@@ -482,11 +631,11 @@ data:
   template: app/partials/onboarding/starter-list.html
 ```
 
-and the template content is available through the runtime template provider under that same key.
+The runtime template provider makes the content available under the same key.
 
 ## String Values And Quoting
 
-YAML provides several ways to declare a string. HyperBricks receives the resulting string, so the best style depends on the characters in the value and whether line breaks must be preserved.
+Choose a string style based on its characters and whether you need to keep line breaks. HyperBricks receives the string that YAML produces.
 
 | Style | Example | Use it for |
 | --- | --- | --- |
@@ -496,7 +645,7 @@ YAML provides several ways to declare a string. HyperBricks receives the resulti
 | Literal block | `value: \|-` | Multiline content whose line breaks must remain intact. |
 | Folded block | `value: >-` | Multiline prose that should become a single wrapped line. |
 
-Plain strings are the most readable choice for simple values:
+Use plain strings for simple values:
 
 ```yaml
 title: Estimate calculator
@@ -504,7 +653,7 @@ route: estimate
 source: js/main.js
 ```
 
-Add quotes when YAML punctuation could change how the value is read. In a plain string, `#` can start a comment and a colon followed by a space can start a new mapping entry. Quotes are also useful when a value such as `true`, `null`, or `001` is intended to be text and that exact spelling should be obvious.
+Add quotes when punctuation could change how YAML reads a value. In a plain string, `#` can start a comment. A colon followed by a space can start a mapping entry. Quotes also make the intended spelling clear when values such as `true`, `null`, or `001` should be text.
 
 ```yaml
 selector: '#estimate-form'
@@ -513,7 +662,7 @@ enabled_text: 'true'
 release_code: '001'
 ```
 
-Single quotes treat backslashes and double quotes as ordinary characters, which makes them a good fit for HTML attributes and small template fragments. Write two single quotes to include one literal apostrophe:
+Single quotes keep backslashes and double quotes as ordinary characters. Use them for HTML attributes and small template fragments. Write two single quotes for one literal apostrophe:
 
 ```yaml
 enclose: '<script src="|" defer></script>'
@@ -529,7 +678,7 @@ quoted_word: "Say \"ready\""
 empty_value: ""
 ```
 
-If a value needs neither quoting nor escapes, plain, single-quoted, and double-quoted forms produce the same text. Quoting controls YAML parsing; it does not add quote characters to the value received by HyperBricks.
+If a value needs no quotes or escapes, plain, single-quoted, and double-quoted forms produce the same text. Quotes control YAML parsing. HyperBricks does not receive the surrounding quote characters.
 
 ### Multiline strings
 
@@ -545,7 +694,7 @@ inline:
       </section>
 ```
 
-The literal marker `|` preserves line breaks. The folded marker `>` replaces most line breaks with spaces, which is useful for long prose:
+Use `|` to preserve line breaks. Use `>` to replace most line breaks with spaces, for example in long prose:
 
 ```yaml
 summary: >-
@@ -553,7 +702,9 @@ summary: >-
   and receives it as one line of text.
 ```
 
-By default, a block scalar keeps one final newline. Add `-` to strip that final newline (`|-` or `>-`), or add `+` to preserve all trailing blank lines (`|+` or `>+`). For HTML, CSS, JavaScript, templates, and other code, prefer `|` or `|-` because folding can change the content. The indentation below the marker defines which lines belong to the string.
+A block scalar keeps one final newline by default. Add `-` to remove it (`|-` or `>-`). Add `+` to keep all trailing blank lines (`|+` or `>+`).
+
+Use `|` or `|-` for HTML, CSS, JavaScript, templates, and other code. Folding can change code content. Indentation below the marker determines which lines belong to the string.
 
 Comments inside block scalars are part of the string:
 
@@ -563,7 +714,7 @@ value: |
   <p>Hello</p>
 ```
 
-Comments outside block scalars are YAML comments and are ignored:
+Outside block scalars, YAML ignores comments:
 
 ```yaml
 # this is ignored by YAML
@@ -574,7 +725,7 @@ text:
 
 ## Scalars And Type Conversion
 
-HyperBricks keeps YAML scalar source values as strings during YAML parsing. Component decoding then converts strings into typed fields where the component expects `bool`, `int`, string slices, or maps.
+HyperBricks normally keeps YAML scalar source values as strings during parsing. Component decoding then converts them to the expected field type, such as `bool`, `int`, string slices, or maps.
 
 These are valid:
 
@@ -589,11 +740,15 @@ fragment:
   - nocache: true
 ```
 
-The string styles described above do not prevent component decoding. For example, a typed numeric or boolean component field can be converted from either a plain or quoted scalar when its value is valid for that field.
+Quoting does not prevent component decoding. A numeric or boolean component field can accept a plain or quoted scalar, provided the value is valid for that field.
+
+Some fields preserve and validate their original YAML types before decoding. For example, HTTP response headers require strings, `forwardtoken` requires a cookie-name string, and structured cookie flags require booleans. Follow the component's field contract.
 
 ## Template Syntax
 
-HyperBricks templates use Go `html/template`. The [template helper](../pkg/shared/helpers_templating.go) registers Sprig v3's `GenericFuncMap()` and adds the HyperBricks helpers `safe`, `random`, and `valueOrEmpty`. See the [Sprig function reference](https://masterminds.github.io/sprig/) for the complete function list. Template syntax stays literal in YAML values; the YAML pipeline does not resolve Go template expressions.
+HyperBricks templates use Go `html/template`. The [template helper](../pkg/shared/helpers_templating.go) registers Sprig v3's `GenericFuncMap()` and adds `safe`, `random`, and `valueOrEmpty`. See the [Sprig function reference](https://masterminds.github.io/sprig/) for the complete list.
+
+Go template expressions stay literal in YAML values. The YAML pipeline does not resolve them.
 
 ```yaml
 card:
@@ -605,9 +760,9 @@ card:
 
 ### Using Sprig functions
 
-You can call a function directly or build a pipeline with `|`. A pipeline reads from left to right and passes its result as the final argument to the next function. For example, `{{ .tags | join ", " }}` is equivalent to `{{ join ", " .tags }}`.
+Call functions directly or combine them in a pipeline with `|`. A pipeline reads from left to right. It passes each result as the final argument to the next function. For example, `{{ .tags | join ", " }}` is equivalent to `{{ join ", " .tags }}`.
 
-This example shows four common uses: cleaning text, providing a default, sorting and joining a list, and calculating a price:
+This example shows four uses: cleaning text, supplying a default, sorting and joining a list, and calculating a price:
 
 ```yaml
 product_summary:
@@ -630,11 +785,13 @@ product_summary:
       quantity: 3
 ```
 
-The rendered values are `Starter Kit`, the default description, `go, htmx, yaml`, and `€59.85`. Sprig's `default` function considers `0`, `false`, empty strings, empty lists and maps, and `null` to be empty. When zero or false is a meaningful value, check it explicitly instead of replacing it with `default`.
+The rendered values are `Starter Kit`, the default description, `go, htmx, yaml`, and `€59.85`. Sprig's `default` treats `0`, `false`, empty strings, empty lists and maps, and `null` as empty. If zero or false is meaningful, check it explicitly instead of using `default`.
 
-Sprig helpers format or transform values inside the template; they do not add new data to the template context. Keep application logic in components, `goja_render`, or plugins, and use template functions for presentation tasks. Function output is still escaped by Go's `html/template`. The HyperBricks `safe` helper bypasses that escaping, so use it only for HTML you already trust.
+Use Sprig helpers to format and transform values already in the template context. They do not add data. Keep application logic in components, `goja_render`, or plugins. Template functions handle presentation.
 
-Use YAML lists and maps directly when the data belongs to the template context:
+Go's `html/template` escapes function output. The HyperBricks `safe` helper bypasses escaping. Use it only for HTML you already trust.
+
+Use a keyed mapping for a template collection of objects. The current template renderer preserves lists of strings but drops object entries in a list passed directly through `values`. Go templates visit string map keys in sorted order, so prefixes can set the intended order:
 
 ```yaml
 card_list:
@@ -647,15 +804,17 @@ card_list:
       </ul>
   - values:
       cards:
-        - title: First
+        "01_first":
+          title: First
           body: Rendered from YAML data
-        - title: Second
+        "02_second":
+          title: Second
           body: Still ordinary template data
 ```
 
 Use YAML block scalars when the template itself spans multiple lines.
 
-Templates expose allowlisted request query parameters through `.Params` independently of `values`. Omit `querykeys` to use the default allowlist, use an empty list to expose none, or list the accepted keys explicitly. A key with one value is a string; repeated values are a list.
+Templates expose allowed request query parameters through `.Params`, independently of `values`. Omit `querykeys` to use the default allowlist. Use an empty list to expose none, or list accepted keys explicitly. A single value becomes a string. Repeated values become a list.
 
 ```yaml
 search_result:
@@ -664,11 +823,11 @@ search_result:
   - inline: '<p>Search: {{.Params.q}}</p>'
 ```
 
-For a request such as `?q=hypermedia`, this renders the query value without an otherwise unnecessary `values: {}` field. The separate `queryparams` field is reserved and does not currently add values to `.Params`.
+For `?q=hypermedia`, this renders the query value without a `values: {}` field. The separate `queryparams` field is reserved. It does not currently add values to `.Params`.
 
 ## Unsupported Source Features
 
-The HyperBricks YAML source profile does not support YAML anchors or aliases. Use `inherit` for component reuse.
+The HyperBricks YAML source profile does not support anchors or aliases. Use `inherit` to reuse components.
 
 ```yaml
 # unsupported
@@ -680,11 +839,11 @@ copy: *base
 
 The YAML source profile also does not support the old macro system.
 
-The old uppercase marker forms such as `{{VAR:...}}`, `{{ENV:...}}`, `{{FILE:...}}`, and `{{TEMPLATE:...}}` are not YAML resolvers. Use the resolver mappings documented above.
+Uppercase marker forms such as `{{VAR:...}}`, `{{ENV:...}}`, `{{FILE:...}}`, and `{{TEMPLATE:...}}` are not YAML resolvers. Use the resolver mappings above.
 
 ## YAML Errors And Recovery
 
-HyperBricks reports errors in YAML sources and continues loading files that can be parsed. The response depends on the kind of error:
+HyperBricks reports YAML source errors and continues loading files it can parse. Recovery depends on the error:
 
 | Situation | Runtime behavior |
 | --- | --- |
@@ -701,11 +860,11 @@ Executable YAML fixtures live in:
 test/docs/hyperbricks-yaml-test-files/
 ```
 
-Those fixtures document source input, materialized JSON, expected diagnostics where relevant, and rendered output.
+The fixtures show source input, materialized JSON, expected diagnostics where relevant, and rendered output.
 
 ## Package Configuration
 
-`package.hyperbricks.yaml` is normal YAML configuration, not an ordered component tree.
+Use ordinary YAML configuration in `package.hyperbricks.yaml`. It does not use ordered component trees.
 
 ```yaml
 vars:
@@ -721,6 +880,13 @@ hyperbricks:
     watch: true
     reload: true
     frontend_errors: false
+    dashboard:
+      enabled: false
+      credentials:
+        user:
+          env: HB_DEVELOPER_USER
+        password:
+          env: HB_DEVELOPER_PASSWORD
   live:
     cache: 10m
   server:
@@ -749,7 +915,7 @@ hyperbricks:
         path: hyperbricks
 ```
 
-The same resolver model is available for configuration values. `vars` is used for resolver input and is not copied into the materialized configuration.
+Configuration values support the same resolvers. HyperBricks uses `vars` as resolver input but does not copy it into the materialized configuration.
 
 Common `hyperbricks` package fields:
 
@@ -758,7 +924,11 @@ Common `hyperbricks` package fields:
 | `mode` | Runtime mode. Supported values are `development`, `live`, and `debug`. Invalid values fall back to live mode. |
 | `development.watch` | Watch source directories in development mode. |
 | `development.reload` | Enable development reload behavior. |
-| `development.frontend_errors` | Render frontend error panels when component `debugpanel` is enabled. |
+| `development.dashboard.enabled` | Enable the Dashboard's Overview and Errors views. The old Boolean `development.dashboard` form is invalid. |
+| `development.dashboard.credentials` | Required `user` and `password` for every enabled developer interface: Dashboard Overview, Errors, diagnostics, Spaces, contextual editing, editor plugins, and frontend error panels. Values may use environment resolvers. There is no default account. |
+| `development.frontend_editing.enabled` | Master switch for Spaces and configured frontend editors; defaults to `true`. |
+| `development.frontend_editing.spaces.enabled` | Independently show or hide Spaces without disabling other frontend editors; defaults to `true`. Both this and the master switch must be enabled to serve Spaces. |
+| `development.frontend_errors` | Permit frontend error panels when component `debugpanel` is enabled. The panel is emitted only for a request authenticated with `development.dashboard.credentials`. |
 | `live.cache` | Default live-mode cache duration. Uses Go duration strings such as `10s`, `5m`, or `2h`. |
 | `server.port` | HTTP server port, unless overridden by CLI flags. |
 | `server.gomaxprocs` | Process-wide Go execution parallelism: `auto` (default) or an integer from `1` through the machine’s logical CPU count. Invalid values fail startup. See [CPU parallelism](LIVE_MODE_HTTP.md#cpu-parallelism). |
@@ -770,7 +940,7 @@ Common `hyperbricks` package fields:
 | `server.runtime_gateway` | Runtime host gateway settings. See [Runtime Gateway](RUNTIME_GATEWAY.md). |
 | `rate_limit.enabled` | Enable the request rate limiter. Defaults to `true`; set it to `false` only when another layer owns rate limiting or for controlled measurements. |
 | `rate_limit.requests_per_second`, `rate_limit.burst` | Token-bucket request rate and burst settings used when the limiter is enabled. |
-| `plugins.enabled` | Plugin config names to preload, without `.so`. See [Plugins](PLUGINS.md). |
+| `plugins.enabled` | Plugin config names to preload, without `.so` or `.wasm`. See [Plugins](PLUGINS.md). |
 | `plugins.config` | Optional plugin-specific config map. |
 | `directories` | Module directory locations. Resolver path objects are supported here. |
 | `logger.level`, `logger.path` | File logging settings. |
@@ -801,4 +971,4 @@ Directory roles:
 > `hyperbricks.directories.static` directory, regardless of its name or `base`.
 > A custom path does not require an additional directory named `static`.
 
-Subdirectories below `hyperbricks/` are not loaded automatically. Add a root source file and load shared files with `imports`.
+HyperBricks does not load subdirectories below `hyperbricks/` automatically. Add a root source file and use `imports` to load shared files.

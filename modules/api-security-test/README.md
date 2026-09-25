@@ -4,10 +4,10 @@ This repository-owned module proves the credential boundary shared by
 `api_render` and `api_fragment_render`. It is an integration fixture, not a
 starter application. Every token is a fixed public test value.
 
-The complete [cookie-boundaries research article](docs/Cookie_Boundaries_and_Upstream_Token_Forwarding.md)
-explains the original problem, the browser/upstream distinction, and the implemented
-decision in section 23. Its earlier sections are clearly marked as historical
-analysis. See [API Render](../../docs/API_RENDER.md) for the current field contract.
+The [API credential boundaries and regression coverage](docs/Cookie_Boundaries_and_Upstream_Token_Forwarding.md)
+note explains the current forwarding policy, its limits, and the tests that
+enforce it. See [API Render](../../docs/API_RENDER.md) for the canonical field
+contract.
 
 The main scenario issues two browser cookies and then renders four API
 components in one response:
@@ -216,6 +216,7 @@ configured recipient rather than inherited redirect authority.
 | [api_response_cookies.go](../../pkg/composite/api_response_cookies.go) | Cookie value rendering and validation |
 | [server_api_cookie_commit_test.go](../../cmd/hyperbricks/server_api_cookie_commit_test.go) | Cookie suppression after late rendering errors and response-owner conflicts |
 
-For the complete repository regression suite, run `./tests.sh --with-docs` from
-the repository root. This fixture uses no plugins. The targeted test at the top
-of this README is sufficient to rerun its own security scenarios independently.
+For the complete repository regression suite, run `./tests.sh` from the repository
+root. Run `./scripts/sync_docs.sh` first when documentation sources have changed.
+This fixture uses no plugins. The targeted test at the top of this README is
+sufficient to rerun its own security scenarios independently.

@@ -1,6 +1,8 @@
 # Images
 
-Use `image` to resize a local JPEG, PNG, or GIF and render an HTML image element. Use `images` for files in a local directory. These components do not download remote URLs or process SVG. To display an existing public URL or SVG without processing, use an ordinary image element in a template.
+Use `image` to resize a local JPEG, PNG, or GIF and render an HTML image element. Use `images` to process files in a local directory.
+
+These components do not download remote images or process SVG files. To display a public image URL or an SVG without processing, add an image element to your template.
 
 ## Single image
 

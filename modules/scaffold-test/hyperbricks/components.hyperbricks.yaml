@@ -1,0 +1,64 @@
+html_test_001:
+  - type: html
+  - value: |
+      <p>
+        Add HTML content here.
+      </p>
+new_json_render:
+  - type: json_render
+  - file:
+      path: {base: resources, path: data/items_2sa5.json}
+  - values:
+      title: Latest guides
+  - inline: |
+      <h2>
+        {{.title}}
+      </h2>
+      <ul>
+        {{range .Data.items}}
+          <li>
+            {{.title}}
+          </li>
+        {{end}}
+      </ul>
+new_image:
+  - type: image
+  - src:
+      path: {base: resources, path: images/image_192a.png}
+  - alt: Describe this image.
+  - width: 640
+  - loading: lazy
+new_html:
+  - type: html
+  - value: |
+      <p>
+        Add HTML content here.
+      </p>
+new_template:
+  - type: template
+  - inline: |
+      <article>
+        <h2>
+          {{.title}}
+        </h2>
+        {{.body}}
+      </article>
+  - values:
+      title: Latest updates
+      body:
+        - type: markdown
+        - content: |
+            Add content for this template.
+new_css:
+  - type: css
+  - inline: |
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+      }
+markdown_3b7e:
+  - type: markdown
+  - file: content/markdown_3b7e.md
+new_markdown_2:
+  - type: markdown
+  - content: {file: {base: resources, path: content/markdown_3b7e.md}}

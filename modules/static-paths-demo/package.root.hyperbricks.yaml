@@ -4,7 +4,8 @@ hyperbricks:
     watch: false
     reload: false
     frontend_errors: false
-    dashboard: false
+    dashboard:
+      enabled: false
   server:
     port: 8096
     beautify: false

@@ -1,11 +1,11 @@
 # Ignore specific directories in the root folder
 
-/plugins/
 /bin/
 tmp/
 **/archive
 /archive/
 .cache/
+/.venv-compilations/
 # Ignore VSCode workspace settings directory globally
 **/.vscode/
 
@@ -18,7 +18,6 @@ tmp/
 
 TO_DO.md
 CHANGES.md
-
 
 docker/ssh/authorized_keys
 *.pdf
@@ -43,3 +42,5 @@ articles/**
 /modules/project-lifecycle-test/static/css/
 /modules/project-lifecycle-test/static/js/
 /modules/self-closing-tag/static/images/
+/docs/compilations/
+/codex-plugin/hyperbricks.zip

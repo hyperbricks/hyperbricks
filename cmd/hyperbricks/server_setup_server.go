@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -48,7 +46,7 @@ func StopServer(ctx context.Context) error {
 		return nil
 	}
 
-	logging.GetLogger().Infow("Shutting down the server gracefully...")
+	logging.GetLogger().Named("server").Info("Stopping")
 	if err := activeServer.Shutdown(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
@@ -59,7 +57,7 @@ func StopServer(ctx context.Context) error {
 func StartServer(ctx context.Context) {
 	hbConfig := getHyperBricksConfiguration()
 	if err := validateRuntimeGatewayConfig(hbConfig.Server.RuntimeGateway); err != nil {
-		log.Fatal("Invalid runtime gateway config:", err)
+		logging.GetLogger().Named("server").Fatalw("Invalid runtime gateway configuration", "error", err)
 	}
 
 	var listener net.Listener
@@ -68,7 +66,7 @@ func StartServer(ctx context.Context) {
 	// Configure a custom TCP listener for high concurrency
 	listener, err = net.Listen("tcp", fmt.Sprintf(":%d", hbConfig.Server.Port))
 	if err != nil {
-		log.Fatal("Failed to start listener:", err)
+		logging.GetLogger().Named("server").Fatalw("Failed to start listener", "port", hbConfig.Server.Port, "error", err)
 	}
 
 	activeServer := &http.Server{
@@ -95,18 +93,10 @@ func StartServer(ctx context.Context) {
 		}
 	}()
 
-	// ANSI escape code for green text
-	green := "\033[32m"
-	// ANSI escape code to reset the text color
-	reset := "\033[0m"
-
-	log.Printf("%s Server running in %s mode at http://%s", green+"●"+reset, hbConfig.Mode, shared.Location)
-	if os.Getenv("HB_NO_KEYBOARD") == "" {
-		log.Printf("Press 'q', ESC or Ctrl+C to stop the server...")
-	}
+	logging.GetLogger().Named("server").Infow("Listening", "url", "http://"+shared.Location, "mode", hbConfig.Mode)
 
 	if err := activeServer.Serve(listener); err != nil && err != http.ErrServerClosed {
-		log.Fatal("Server error:", err)
+		logging.GetLogger().Named("server").Fatalw("Server failed", "error", err)
 	}
 
 	clearServer(activeServer)

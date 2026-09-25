@@ -23,39 +23,11 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
-	"github.com/mitchellh/mapstructure"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
-type deployLocalConfig struct {
-	HMACSecret string                  `mapstructure:"hmac_secret"`
-	Remote     deployLocalRemoteConfig `mapstructure:"remote"`
-	Local      deployLocalSettings     `mapstructure:"local"`
-	Client     deployClientConfig      `mapstructure:"client"`
-}
-
-type deployLocalRemoteConfig struct {
-	Root        string `mapstructure:"root"`
-	APIPort     int    `mapstructure:"api_port"`
-	PortStart   int    `mapstructure:"port_start"`
-	LogsEnabled bool   `mapstructure:"logs_enabled"`
-}
-
-type deployLocalSettings struct {
-	Bind       string `mapstructure:"bind"`
-	Port       int    `mapstructure:"port"`
-	ModulesDir string `mapstructure:"modules_dir"`
-	BuildRoot  string `mapstructure:"build_root"`
-}
-
-type deployClientConfig struct {
-	Target  string                        `mapstructure:"target"`
-	Targets map[string]deployClientTarget `mapstructure:"targets"`
-}
-
-type deployClientTarget struct {
-	API   string `mapstructure:"api"`
-	KeyID string `mapstructure:"key_id"`
-}
+type deployLocalConfig = shared.DeployConfig
+type deployClientTarget = shared.DeployClientTarget
 
 type localBuildIndex struct {
 	Current  string          `json:"current"`
@@ -70,7 +42,10 @@ type localBuildRow struct {
 	File          string `json:"file"`
 	BuiltAt       string `json:"built_at"`
 	Commit        string `json:"commit"`
+	OriginBuildID string `json:"origin_build_id,omitempty"`
 	SourceHash    string `json:"source_hash"`
+	HyperBricks   string `json:"hyperbricks,omitempty"`
+	RuntimeMode   string `json:"runtime_mode,omitempty"`
 	Production    bool   `json:"production,omitempty"`
 	PushedAt      string `json:"pushed_at,omitempty"`
 	RemoteTarget  string `json:"remote_target,omitempty"`
@@ -100,6 +75,7 @@ type deployLocalServer struct {
 	workingDir  string
 	binaryPath  string
 	pluginTasks *pluginTaskStore
+	runtimeMu   sync.Mutex
 }
 
 type localSyncRequest struct {
@@ -111,16 +87,11 @@ type localPushRequest struct {
 	Target string `json:"target"`
 }
 
-func startDeployLocalServer() error {
-	configPath := deployLocalConfigPath()
+func startDeployLocalServer(configPath string) error {
 	cfg, err := loadDeployLocalConfig(configPath)
 	if err != nil {
 		return err
 	}
-	if len(cfg.Client.Targets) == 0 {
-		return fmt.Errorf("deploy.client.targets is required in %s", configPath)
-	}
-
 	bind := strings.TrimSpace(cfg.Local.Bind)
 	if bind == "" {
 		bind = "127.0.0.1"
@@ -128,6 +99,9 @@ func startDeployLocalServer() error {
 	port := cfg.Local.Port
 	if port == 0 {
 		port = 9091
+	}
+	if port < 1 || port > 65535 {
+		return fmt.Errorf("deploy.local.port must be between 1 and 65535")
 	}
 	modulesDir := strings.TrimSpace(cfg.Local.ModulesDir)
 	if modulesDir == "" {
@@ -137,11 +111,14 @@ func startDeployLocalServer() error {
 	if buildRoot == "" {
 		buildRoot = "deploy"
 	}
-	portStart := cfg.Remote.PortStart
+	portStart := cfg.Local.PortStart
 	if portStart == 0 {
 		portStart = 8080
 	}
-	logsEnabled := cfg.Remote.LogsEnabled
+	if portStart < 1 || portStart > 65535 {
+		return fmt.Errorf("deploy.local.port_start must be between 1 and 65535")
+	}
+	logsEnabled := cfg.Local.LogsEnabled
 
 	api := &deployLocalServer{
 		cfg:         cfg,
@@ -168,44 +145,20 @@ func startDeployLocalServer() error {
 	mux.HandleFunc("/local/remote/sync", api.handleRemoteSync)
 	mux.HandleFunc("/local/plugins", api.handlePluginRoutes)
 	mux.HandleFunc("/local/plugins/", api.handlePluginRoutes)
-	mux.HandleFunc("/assets/dashboard.css", serveDashboardCSS)
-	mux.HandleFunc("/assets/logo.png", serveDashboardLogo)
-	mux.HandleFunc("/assets/logo_blue.png", serveDashboardLogoBlue)
-	mux.HandleFunc("/assets/logo_black.png", serveDashboardLogoBlack)
+	registerDeployUIAssets(mux)
 	mux.HandleFunc("/", api.serveLocalDashboard)
 
 	addr := fmt.Sprintf("%s:%d", bind, port)
 	server := &http.Server{
 		Addr:    addr,
-		Handler: mux,
+		Handler: shared.BasicAuth(mux, cfg.Local.Credentials, "HyperBricks local deployment"),
 	}
 
-	fmt.Printf("Deploy local listening on http://%s\n", addr)
-	return server.ListenAndServe()
-}
-
-func deployLocalConfigPath() string {
-	if envPath := strings.TrimSpace(os.Getenv("HB_DEPLOY_CONFIG")); envPath != "" {
-		return envPath
-	}
-	return commands.DeployConfigFileName
+	return serveDeployHTTP(server, "local")
 }
 
 func loadDeployLocalConfig(path string) (deployLocalConfig, error) {
-	cfg := deployLocalConfig{
-		Local: deployLocalSettings{
-			Bind:       "127.0.0.1",
-			Port:       9091,
-			ModulesDir: "modules",
-			BuildRoot:  "deploy",
-		},
-		Remote: deployLocalRemoteConfig{
-			Root:        "deploy",
-			APIPort:     9090,
-			PortStart:   8080,
-			LogsEnabled: true,
-		},
-	}
+	cfg := shared.DefaultDeployConfig()
 
 	deployRaw, err := loadDeployYAMLRoot(path)
 	if err != nil {
@@ -214,23 +167,7 @@ func loadDeployLocalConfig(path string) (deployLocalConfig, error) {
 	if _, ok := deployRaw["local"].(map[string]interface{}); !ok {
 		return cfg, fmt.Errorf("missing deploy.local block in %s", path)
 	}
-	if _, ok := deployRaw["client"].(map[string]interface{}); !ok {
-		return cfg, fmt.Errorf("missing deploy.client block in %s", path)
-	}
-
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &cfg,
-		TagName:          "mapstructure",
-		WeaklyTypedInput: true,
-	})
-	if err != nil {
-		return cfg, err
-	}
-	if err := decoder.Decode(deployRaw); err != nil {
-		return cfg, err
-	}
-
-	return cfg, nil
+	return shared.DecodeDeployConfig(deployRaw)
 }
 
 func (api *deployLocalServer) serveLocalDashboard(w http.ResponseWriter, r *http.Request) {
@@ -346,8 +283,28 @@ func (api *deployLocalServer) handleModuleRoutes(w http.ResponseWriter, r *http.
 		api.handleBuildProduction(w, r, module, pathParts[3])
 		return
 	}
+	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "mode" && r.Method == http.MethodPut {
+		api.handleBuildMode(w, r, module, pathParts[3])
+		return
+	}
 	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "delete" && r.Method == http.MethodPost {
 		api.handleBuildDelete(w, module, pathParts[3])
+		return
+	}
+	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "package-config" && (r.Method == http.MethodGet || r.Method == http.MethodPut) {
+		api.handleBuildPackageConfig(w, r, module, pathParts[3])
+		return
+	}
+	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "credentials" && (r.Method == http.MethodGet || r.Method == http.MethodPut) {
+		api.handleBuildCredentials(w, r, module, pathParts[3])
+		return
+	}
+	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "archive" && r.Method == http.MethodGet {
+		api.handleBuildArchive(w, r, module, pathParts[3])
+		return
+	}
+	if len(pathParts) == 5 && pathParts[2] == "builds" && pathParts[4] == "duplicate" && r.Method == http.MethodPost {
+		api.handleBuildDuplicate(w, r, module, pathParts[3])
 		return
 	}
 
@@ -658,11 +615,15 @@ func (api *deployLocalServer) handleModuleStatus(w http.ResponseWriter, module s
 	port := 0
 	running := false
 	runningBuild := ""
+	runningMode := ""
+	dashboardPath := ""
 	if proc, ok := api.readProcess(module); ok {
 		if isProcessRunning(proc.PID) {
 			running = true
 			runningBuild = proc.BuildID
 			port = proc.Port
+			runningMode, _ = validateDeployRuntimeMode(proc.RuntimeMode)
+			dashboardPath = api.dashboardPath(module, proc)
 		} else {
 			api.clearProcess(module)
 		}
@@ -674,12 +635,14 @@ func (api *deployLocalServer) handleModuleStatus(w http.ResponseWriter, module s
 		}
 	}
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"module":        module,
-		"current":       index.Current,
-		"port":          port,
-		"versions":      len(index.Versions),
-		"running":       running,
-		"running_build": runningBuild,
+		"module":         module,
+		"current":        index.Current,
+		"port":           port,
+		"versions":       len(index.Versions),
+		"running":        running,
+		"running_build":  runningBuild,
+		"running_mode":   runningMode,
+		"dashboard_path": dashboardPath,
 	})
 }
 
@@ -736,10 +699,14 @@ func (api *deployLocalServer) handleBuildStatus(w http.ResponseWriter, module st
 	status := api.annotateBuildRow(module, row)
 	running := false
 	port := 0
+	runningMode := ""
+	dashboardPath := ""
 	if proc, ok := api.readBuildProcessFile(module, buildID); ok {
 		if isProcessRunning(proc.PID) {
 			running = true
 			port = proc.Port
+			runningMode, _ = validateDeployRuntimeMode(proc.RuntimeMode)
+			dashboardPath = api.dashboardPath(module, proc)
 		} else {
 			api.clearBuildProcess(module, buildID)
 		}
@@ -758,10 +725,15 @@ func (api *deployLocalServer) handleBuildStatus(w http.ResponseWriter, module st
 		"port":              port,
 		"moduleversion":     status.ModuleVersion,
 		"commit":            status.Commit,
+		"origin_build_id":   status.OriginBuildID,
 		"built_at":          status.BuiltAt,
 		"source_hash":       status.SourceHash,
+		"hyperbricks":       status.HyperBricks,
 		"format":            status.Format,
+		"runtime_mode":      normalizedDeployRuntimeMode(status.RuntimeMode, status.Production),
 		"production":        status.Production,
+		"running_mode":      runningMode,
+		"dashboard_path":    dashboardPath,
 		"pushed_at":         status.PushedAt,
 		"remote_target":     status.RemoteTarget,
 		"remote_status":     status.RemoteStatus,
@@ -789,6 +761,43 @@ func (api *deployLocalServer) handleBuildProduction(w http.ResponseWriter, r *ht
 			return
 		}
 	}
+	mode := shared.DEVELOPMENT_MODE
+	if payload.Production {
+		mode = shared.LIVE_MODE
+	}
+	api.updateBuildMode(w, module, buildID, mode)
+}
+
+func (api *deployLocalServer) handleBuildMode(w http.ResponseWriter, r *http.Request, module string, buildID string) {
+	if api.isDevBuildID(buildID) {
+		writeError(w, http.StatusBadRequest, errors.New("source modules always run in development mode"))
+		return
+	}
+	body, err := readJSONBody(r)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	var payload deployBuildModeRequest
+	if err := json.Unmarshal(body, &payload); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	mode, err := validateDeployRuntimeMode(payload.Mode)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	api.updateBuildMode(w, module, buildID, mode)
+}
+
+func (api *deployLocalServer) updateBuildMode(w http.ResponseWriter, module string, buildID string, mode string) {
+	api.runtimeMu.Lock()
+	defer api.runtimeMu.Unlock()
+	if !validDeployPathPart(module) || !validDeployPathPart(buildID) {
+		writeError(w, http.StatusBadRequest, errors.New("invalid module or build_id"))
+		return
+	}
 
 	indexPath := api.indexPath(module)
 	index, err := loadLocalBuildIndex(indexPath)
@@ -799,7 +808,8 @@ func (api *deployLocalServer) handleBuildProduction(w http.ResponseWriter, r *ht
 	updated := false
 	for i := range index.Versions {
 		if index.Versions[i].BuildID == buildID {
-			index.Versions[i].Production = payload.Production
+			index.Versions[i].RuntimeMode = mode
+			index.Versions[i].Production = mode == shared.LIVE_MODE
 			updated = true
 			break
 		}
@@ -812,15 +822,29 @@ func (api *deployLocalServer) handleBuildProduction(w http.ResponseWriter, r *ht
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
+	restarted := false
+	restartError := ""
+	if proc, ok := api.readProcess(module); ok && proc.BuildID == buildID {
+		if err := api.startLocalBuildLocked(module, buildID); err != nil {
+			restartError = err.Error()
+		} else {
+			restarted = true
+		}
+	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"module":     module,
-		"build_id":   buildID,
-		"production": payload.Production,
+		"module":        module,
+		"build_id":      buildID,
+		"runtime_mode":  mode,
+		"production":    mode == shared.LIVE_MODE,
+		"restarted":     restarted,
+		"restart_error": restartError,
 	})
 }
 
 func (api *deployLocalServer) handleBuildDelete(w http.ResponseWriter, module string, buildID string) {
+	api.runtimeMu.Lock()
+	defer api.runtimeMu.Unlock()
 	buildID = strings.TrimSpace(buildID)
 	if buildID == "" {
 		writeError(w, http.StatusBadRequest, errors.New("build_id is required"))
@@ -1115,12 +1139,12 @@ func (api *deployLocalServer) syncRemoteModule(module string, targetName string)
 	if err != nil {
 		return time.Time{}, err
 	}
-	secret := resolveLocalDeploySecret(api.cfg.HMACSecret, module, target.KeyID)
+	secret := resolveLocalDeploySecret(target)
 	if secret == "" {
-		return time.Time{}, errors.New("deploy.hmac_secret, HB_DEPLOY_SECRET, or module/key deploy secret is required for sync")
+		return time.Time{}, errors.New("deploy.client target hmac_secret is required for sync")
 	}
 
-	buildIDs, err := fetchRemoteBuildIDs(target.API, module, secret, target.KeyID)
+	buildIDs, err := fetchRemoteBuildIDs(target, module, secret)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -1148,28 +1172,35 @@ func (api *deployLocalServer) normalizeTarget(target deployClientTarget) (deploy
 	if target.API == "" {
 		return target, errors.New("deploy target api is required")
 	}
+	if err := target.Credentials.Validate("deploy target"); err != nil {
+		return target, err
+	}
 	return target, nil
 }
 
 func (api *deployLocalServer) markBuildPushed(module string, buildID string, targetName string, pushedAt string) error {
-	indexPath := api.indexPath(module)
-	index, err := loadLocalBuildIndex(indexPath)
-	if err != nil {
-		return err
-	}
-	updated := false
-	for i := range index.Versions {
-		if index.Versions[i].BuildID == buildID {
-			index.Versions[i].PushedAt = pushedAt
-			index.Versions[i].RemoteTarget = targetName
-			updated = true
-			break
+	return commands.WithBuildIndexLock(func() error {
+		api.runtimeMu.Lock()
+		defer api.runtimeMu.Unlock()
+		indexPath := api.indexPath(module)
+		index, err := loadLocalBuildIndex(indexPath)
+		if err != nil {
+			return err
 		}
-	}
-	if !updated {
-		return fmt.Errorf("build id not found: %s", buildID)
-	}
-	return saveLocalBuildIndex(indexPath, index)
+		updated := false
+		for i := range index.Versions {
+			if index.Versions[i].BuildID == buildID {
+				index.Versions[i].PushedAt = pushedAt
+				index.Versions[i].RemoteTarget = targetName
+				updated = true
+				break
+			}
+		}
+		if !updated {
+			return fmt.Errorf("build id not found: %s", buildID)
+		}
+		return saveLocalBuildIndex(indexPath, index)
+	})
 }
 
 func loadLocalBuildIndex(path string) (localBuildIndex, error) {
@@ -1187,6 +1218,11 @@ func loadLocalBuildIndex(path string) (localBuildIndex, error) {
 	if err := json.Unmarshal(data, &index); err != nil {
 		return index, err
 	}
+	for i := range index.Versions {
+		mode := normalizedDeployRuntimeMode(index.Versions[i].RuntimeMode, index.Versions[i].Production)
+		index.Versions[i].RuntimeMode = mode
+		index.Versions[i].Production = mode == shared.LIVE_MODE
+	}
 	return index, nil
 }
 
@@ -1198,7 +1234,8 @@ func saveLocalBuildIndex(path string, index localBuildIndex) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0644)
+	data = append(data, '\n')
+	return atomicWriteDeployFile(path, data, 0o644)
 }
 
 func findLocalRow(index localBuildIndex, buildID string) (localBuildRow, bool) {
@@ -1263,12 +1300,12 @@ func readJSONBody(r *http.Request) ([]byte, error) {
 	return body, nil
 }
 
-func fetchRemoteBuildIDs(apiBase string, module string, secret string, keyID string) ([]string, error) {
-	endpoint, err := buildRemoteURL(apiBase, module, "builds")
+func fetchRemoteBuildIDs(target deployClientTarget, module string, secret string) ([]string, error) {
+	endpoint, err := buildRemoteURL(target.API, module, "builds")
 	if err != nil {
 		return nil, err
 	}
-	headers, err := signLocalDeployHeaders(http.MethodGet, endpoint.Path, nil, secret, keyID, "")
+	headers, err := signLocalDeployHeaders(http.MethodGet, endpoint.Path, nil, secret, target.KeyID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -1278,6 +1315,9 @@ func fetchRemoteBuildIDs(apiBase string, module string, secret string, keyID str
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
+	if err := shared.ApplyBasicAuth(req, target.Credentials, "deploy target"); err != nil {
+		return nil, err
+	}
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
@@ -1377,42 +1417,8 @@ func signLocalDeployHeaders(method string, requestPath string, body []byte, secr
 	return headers, nil
 }
 
-func resolveLocalDeploySecret(configSecret string, module string, keyID string) string {
-	keyID = strings.TrimSpace(keyID)
-	if keyID != "" {
-		if secret := strings.TrimSpace(os.Getenv(deploySecretEnvNameLocal("HB_DEPLOY_SECRET_", module, keyID))); secret != "" {
-			return secret
-		}
-	}
-	secret := strings.TrimSpace(configSecret)
-	if secret == "" || strings.Contains(secret, "{{") {
-		secret = strings.TrimSpace(os.Getenv("HB_DEPLOY_SECRET"))
-	}
-	return secret
-}
-
-func deploySecretEnvNameLocal(prefix string, module string, keyID string) string {
-	return strings.TrimSpace(prefix) + deployEnvPartLocal(module) + "_" + deployEnvPartLocal(keyID)
-}
-
-func deployEnvPartLocal(value string) string {
-	value = strings.ToUpper(strings.TrimSpace(value))
-	var builder strings.Builder
-	lastUnderscore := false
-	for _, r := range value {
-		isAlpha := r >= 'A' && r <= 'Z'
-		isDigit := r >= '0' && r <= '9'
-		if isAlpha || isDigit {
-			builder.WriteRune(r)
-			lastUnderscore = false
-			continue
-		}
-		if !lastUnderscore {
-			builder.WriteByte('_')
-			lastUnderscore = true
-		}
-	}
-	return strings.Trim(builder.String(), "_")
+func resolveLocalDeploySecret(target deployClientTarget) string {
+	return strings.TrimSpace(target.HMACSecret)
 }
 
 func randomHexLocal(bytesLen int) (string, error) {

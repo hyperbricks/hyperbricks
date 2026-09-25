@@ -1,0 +1,7 @@
+reportlab==4.4.9
+markdown-it-py==3.0.0
+mdurl==0.1.2
+pypdf==6.10.0
+pillow==11.3.0
+charset-normalizer==3.4.4
+Pygments==2.19.2

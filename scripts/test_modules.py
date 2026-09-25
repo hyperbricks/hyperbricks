@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+"""Start documented modules and verify their public HTTP smoke contract.
+
+This deliberately checks only deterministic server behaviour. Browser-only
+interactions remain covered by the module README/manual walkthroughs.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import subprocess
+import sys
+import socket
+import time
+import urllib.error
+import urllib.request
+from dataclasses import dataclass
+
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+
+@dataclass(frozen=True)
+class ModuleCheck:
+    name: str
+    port: int
+    paths: tuple[tuple[str, tuple[str, ...]], ...]
+
+
+CHECKS = (
+    ModuleCheck("api-security-test", 8105, (("/dashboard", ("user", "admin", "public")),)),
+    ModuleCheck("esbuild-demo", 8097, (("/", ("VAT",)),)),
+    ModuleCheck("navigation-demo-swup", 8125, (("/", ("After Hours",)), ("/last-bite", ("Last Bite",)))),
+    ModuleCheck("sampleapis-coffee-static", 8080, (("/", ("Coffee",)),)),
+    ModuleCheck("todo-demo-htmx", 8121, (("/", ("Tasks",)), ("/fragments/tasks", ("task",)))),
+    ModuleCheck("todo-demo-swup", 8124, (("/", ("Tasks",)),)),
+    ModuleCheck("todo-demo-turbo", 8122, (("/", ("Tasks",)),)),
+    ModuleCheck("todo-demo-unpoly", 8123, (("/", ("Tasks",)),)),
+    ModuleCheck("unpoly-guard-demo", 8132, (("/", ("Sign in",)), ("/private", ())),),
+    ModuleCheck("streaming-demo", 18110, (("/", ("Streaming",)),)),
+)
+
+
+def fetch(url: str) -> tuple[int, str]:
+    with urllib.request.urlopen(url, timeout=8) as response:
+        return response.status, response.read().decode("utf-8", "replace")
+
+
+def free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+def check_module(check: ModuleCheck) -> list[str]:
+    runtime_port = check.port if check.name == "api-security-test" else free_port()
+    env = os.environ.copy()
+    env["HYPERBRICKS_LOCAL_PATH"] = ROOT
+    env["GOWORK"] = "off"
+    command = ["go", "run", "./cmd/hyperbricks", "start", "-m", check.name,
+               "--port", str(runtime_port), "--non-interactive"]
+    fixture = None
+    if check.name == "api-security-test":
+        fixture = subprocess.Popen(
+            ["go", "run", "./modules/api-security-test/tools/mock-api", "-port", "8098", "-redirect-port", "8099"],
+            cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        time.sleep(1)
+    process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT, text=True)
+    base = f"http://127.0.0.1:{runtime_port}"
+    errors: list[str] = []
+    try:
+        deadline = time.time() + 30
+        while time.time() < deadline:
+            try:
+                fetch(base + "/")
+                break
+            except urllib.error.HTTPError:
+                # A documented module may intentionally not expose `/`; an
+                # HTTP response still proves that the listener is ready.
+                break
+            except (urllib.error.URLError, ConnectionError):
+                if process.poll() is not None:
+                    break
+                time.sleep(0.25)
+        else:
+            errors.append("server did not become ready")
+        if process.poll() is not None and not errors:
+            output = (process.stdout.read() if process.stdout else "").strip()
+            errors.append(f"server exited during startup: {output[-500:]}")
+        for path, markers in check.paths:
+            try:
+                status, body = fetch(base + path)
+            except Exception as exc:  # noqa: BLE001 - report the module failure
+                errors.append(f"GET {path}: {exc}")
+                continue
+            if status != 200:
+                errors.append(f"GET {path}: expected 200, got {status}")
+            for marker in markers:
+                if marker.lower() not in body.lower():
+                    errors.append(f"GET {path}: missing marker {marker!r}")
+    finally:
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
+        if fixture is not None:
+            fixture.terminate()
+            try:
+                fixture.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                fixture.kill()
+                fixture.wait()
+    return errors
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--module", action="append", help="run only this module (repeatable)")
+    args = parser.parse_args()
+    selected = {item for item in args.module} if args.module else None
+    failures = 0
+    for check in CHECKS:
+        if selected is not None and check.name not in selected:
+            continue
+        errors = check_module(check)
+        if errors:
+            failures += 1
+            print(f"FAIL {check.name}")
+            for error in errors:
+                print(f"  - {error}")
+        else:
+            print(f"PASS {check.name}")
+    if failures:
+        print(f"{failures} module(s) failed")
+        return 1
+    print("All documented module smoke checks passed.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

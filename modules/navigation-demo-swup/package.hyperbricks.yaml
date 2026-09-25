@@ -3,12 +3,23 @@ hyperbricks:
   metadata:
     module: navigation-demo-swup
     moduleversion: "1.0.0"
+    hyperbricks: v1.2.5-beta
   development:
     watch: true
     watch_dirs: [hyperbricks, templates, resources]
     reload: false
     frontend_errors: false
-    dashboard: false
+    dashboard:
+      enabled: true
+      credentials:
+        user:
+          env: HB_DEVELOPER_USER
+        password:
+          env: HB_DEVELOPER_PASSWORD
+    frontend_editing:
+      enabled: true
+      spaces:
+        write: true
   server:
     port: 8125
     beautify: false

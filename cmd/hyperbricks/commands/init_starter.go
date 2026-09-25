@@ -13,6 +13,8 @@ import (
 	"text/tabwriter"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/hyperbricks/hyperbricks/assets"
+	"github.com/hyperbricks/hyperbricks/pkg/packagemetadata"
 	"github.com/spf13/cobra"
 )
 
@@ -52,13 +54,13 @@ func InitStarterListCommand() *cobra.Command {
 
 			hbVer, err := semver.NewVersion(getHyperbricksSemver())
 			if err != nil {
-				fmt.Println("Error: could not parse HyperBricks version:", err)
+				failf("Error: could not parse HyperBricks version:"+" %v", err)
 				return
 			}
 
 			starters, err := fetchStarterIndex()
 			if err != nil {
-				fmt.Println("Error fetching starter index:", err)
+				failf("Error fetching starter index:"+" %v", err)
 				return
 			}
 
@@ -155,7 +157,7 @@ func InitStarterGetCommand() *cobra.Command {
 
 			moduleName, starter, err := runInitStarterGet(args[0], initStarterModule)
 			if err != nil {
-				fmt.Printf("Error installing starter: %v\n", err)
+				failf("Error installing starter: %v\n", err)
 				return
 			}
 
@@ -172,6 +174,14 @@ func runInitStarterGet(nameArg string, moduleOverride string) (string, StarterMe
 	if strings.TrimSpace(starterName) == "" {
 		return "", StarterMeta{}, fmt.Errorf("starter name cannot be empty")
 	}
+	moduleName := strings.TrimSpace(moduleOverride)
+	if moduleName != "" {
+		var err error
+		moduleName, err = validateInitModuleName(moduleName)
+		if err != nil {
+			return "", StarterMeta{}, err
+		}
+	}
 
 	starters, err := fetchStarterIndex()
 	if err != nil {
@@ -183,12 +193,12 @@ func runInitStarterGet(nameArg string, moduleOverride string) (string, StarterMe
 		return "", StarterMeta{}, err
 	}
 
-	moduleName := strings.TrimSpace(moduleOverride)
 	if moduleName == "" {
 		moduleName = starter.Name
-	}
-	if moduleName == "" {
-		return "", StarterMeta{}, fmt.Errorf("module name cannot be empty")
+		moduleName, err = validateInitModuleName(moduleName)
+		if err != nil {
+			return "", StarterMeta{}, err
+		}
 	}
 
 	if err := installStarter(starter, moduleName); err != nil {
@@ -310,8 +320,12 @@ func starterCompatible(meta StarterMeta, hbVer *semver.Version) bool {
 
 func installStarter(meta StarterMeta, moduleName string) error {
 	moduleDir := filepath.Join("modules", moduleName)
-	if err := ensureEmptyOrMissingDir(moduleDir); err != nil {
+	destinationExisted, destinationMode, err := inspectEmptyOrMissingDir(moduleDir)
+	if err != nil {
 		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(moduleDir), 0755); err != nil {
+		return fmt.Errorf("failed to create modules directory: %w", err)
 	}
 
 	if filepath.ToSlash(filepath.Clean(meta.Entrypoint)) != "package.hyperbricks.yaml" {
@@ -324,11 +338,16 @@ func installStarter(meta StarterMeta, moduleName string) error {
 	}
 	defer os.Remove(archivePath)
 
-	stageDir, err := os.MkdirTemp("", "hyperbricks-starter-stage-*")
+	stageDir, err := os.MkdirTemp(filepath.Dir(moduleDir), "."+filepath.Base(moduleDir)+"-starter-stage-*")
 	if err != nil {
 		return fmt.Errorf("failed to create starter staging directory: %w", err)
 	}
-	defer os.RemoveAll(stageDir)
+	stageMoved := false
+	defer func() {
+		if !stageMoved {
+			_ = os.RemoveAll(stageDir)
+		}
+	}()
 
 	prefix := filepath.ToSlash(filepath.Join(starterArchiveRoot, meta.Path))
 	if err := extractZipSubdirArchive(archivePath, stageDir, prefix); err != nil {
@@ -339,38 +358,66 @@ func installStarter(meta StarterMeta, moduleName string) error {
 	if _, err := os.Stat(entrypoint); err != nil {
 		return fmt.Errorf("starter entrypoint not found after extraction: %s", meta.Entrypoint)
 	}
+	if _, err := packagemetadata.ReconcileSourceFile(entrypoint, packagemetadata.ReconcileOptions{
+		Module:             moduleName,
+		HyperBricks:        strings.TrimSpace(assets.VersionMD),
+		ResetModuleVersion: true,
+	}); err != nil {
+		return fmt.Errorf("prepare starter package metadata: %w", err)
+	}
 	if err := os.Remove(filepath.Join(stageDir, "manifest.json")); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to remove starter manifest from staging directory: %w", err)
 	}
-
-	if err := copyDir(stageDir, moduleDir); err != nil {
-		return fmt.Errorf("failed to copy starter into %s: %w", moduleDir, err)
+	for _, subdirectory := range standardModuleSubdirectories {
+		if err := ensureDir(filepath.Join(stageDir, subdirectory)); err != nil {
+			return fmt.Errorf("prepare starter module directory: %w", err)
+		}
+	}
+	if err := ensureDir(filepath.Join("bin", "plugins")); err != nil {
+		return fmt.Errorf("prepare global plugin directory: %w", err)
 	}
 
-	createModuleDirectories(moduleName)
+	if err := os.Chmod(stageDir, 0755); err != nil {
+		return fmt.Errorf("failed to set starter module permissions: %w", err)
+	}
+	if destinationExisted {
+		if err := os.Remove(moduleDir); err != nil {
+			return fmt.Errorf("failed to prepare empty module directory %s: %w", moduleDir, err)
+		}
+	}
+	if err := os.Rename(stageDir, moduleDir); err != nil {
+		if destinationExisted {
+			if restoreErr := os.Mkdir(moduleDir, destinationMode.Perm()); restoreErr != nil {
+				return fmt.Errorf("failed to install starter into %s: %w (also failed to restore the original empty directory: %v)", moduleDir, err, restoreErr)
+			}
+		}
+		return fmt.Errorf("failed to install starter into %s: %w", moduleDir, err)
+	}
+	stageMoved = true
+
 	return nil
 }
 
-func ensureEmptyOrMissingDir(path string) error {
+func inspectEmptyOrMissingDir(path string) (bool, os.FileMode, error) {
 	info, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		return nil
+		return false, 0, nil
 	}
 	if err != nil {
-		return fmt.Errorf("failed to inspect %s: %w", path, err)
+		return false, 0, fmt.Errorf("failed to inspect %s: %w", path, err)
 	}
 	if !info.IsDir() {
-		return fmt.Errorf("path already exists and is not a directory: %s", path)
+		return false, 0, fmt.Errorf("path already exists and is not a directory: %s", path)
 	}
 
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		return fmt.Errorf("failed to read %s: %w", path, err)
+		return false, 0, fmt.Errorf("failed to read %s: %w", path, err)
 	}
 	if len(entries) > 0 {
-		return fmt.Errorf("module directory already exists and is not empty: %s", path)
+		return false, 0, fmt.Errorf("module directory already exists and is not empty: %s", path)
 	}
-	return nil
+	return true, info.Mode(), nil
 }
 
 func downloadStarterArchive() (string, error) {

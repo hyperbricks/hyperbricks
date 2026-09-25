@@ -1,0 +1,11 @@
+@import "tailwindcss" source(none);
+@import "./layout.css";
+@source "../../assets/*.html";
+@source "../../assets/errors.js";
+@source "../spaces/web/index.html";
+@source "../spaces/web/app.js";
+@source "./web/theme.js";
+
+@plugin "daisyui" {
+  themes: lofi --default, night --prefersdark;
+}

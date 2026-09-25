@@ -3,27 +3,12 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
-
-	"go.uber.org/zap"
 )
 
 func debug_mode_init() {
-
-	logging.GetInstance()
-	logging.ChangeLevel(zap.InfoLevel)
-
-	// if log directory is given add file log...
-	hbConfig := getHyperBricksConfiguration()
-	if dir, exists := hbConfig.Directories["logs"]; exists && strings.TrimSpace(dir) != "" {
-		logging.AddFileOutput(fmt.Sprintf("./%s/hyperbricks.log", dir))
-	} else {
-		logging.GetLogger().Info("File logging disabled")
-	}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -59,7 +44,6 @@ func debug_mode() {
 
 	// Wait for the server to finish
 	wg.Wait()
-	fmt.Print("\033[H\033[2J")
-	logging.GetLogger().Info("Application exited")
+	logging.GetLogger().Named("server").Info("Stopped")
 
 }

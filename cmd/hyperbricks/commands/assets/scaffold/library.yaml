@@ -1,0 +1,211 @@
+# Native HyperBricks starter definitions for the interactive scaffold wizard.
+# Keep these concise and aligned with docs/HYPERBRICKS_TYPE_EXAMPLES.md.
+templates:
+  hypermedia:
+    - type: hypermedia
+    - route: __SCAFFOLD_ROUTE__
+    - title: __SCAFFOLD_TITLE__
+    - htmltag: <html lang="en">
+    - head:
+        - type: head
+        - title: __SCAFFOLD_TITLE__
+        - meta:
+            description: A short page description.
+            viewport: width=device-width, initial-scale=1
+    - content:
+        - type: template
+        - inline: |
+            <main>
+              <h1>{{.title}}</h1>
+              {{.body}}
+            </main>
+        - values:
+            title: __SCAFFOLD_TITLE__
+            body:
+              - type: markdown
+              - content: |
+                  ## Welcome
+
+                  Add your page content here.
+  fragment:
+    - type: fragment
+    - route: __SCAFFOLD_ROUTE__
+    - content:
+        - type: html
+        - value: |
+            <p id="status">
+              Content is ready.
+            </p>
+  tree:
+    - type: tree
+    - heading:
+        - type: html
+        - value: |
+            <h2>
+              Section heading
+            </h2>
+    - copy:
+        - type: text
+        - value: Add supporting copy here.
+  head:
+    - type: head
+    - title: Page title
+    - meta:
+        description: A short page description.
+        viewport: width=device-width, initial-scale=1
+  api_fragment_render:
+    - type: api_fragment_render
+    - route: __SCAFFOLD_ROUTE__
+    - endpoint: https://api.example.com/items
+    - method: GET
+    - headers:
+        Accept: application/json
+    - querykeys: []
+    - inline: |
+        <ul>
+          {{range .Data.items}}
+            <li>
+              {{.title}}
+            </li>
+          {{end}}
+        </ul>
+  template_inline:
+    - type: template
+    - inline: |
+        <article>
+          <h2>
+            {{.title}}
+          </h2>
+          {{.body}}
+        </article>
+    - values:
+        title: Latest updates
+        body:
+          - type: markdown
+          - content: |
+              Add content for this template.
+  text:
+    - type: text
+    - value: Add text content here.
+  html:
+    - type: html
+    - value: |
+        <p>
+          Add HTML content here.
+        </p>
+  template_file:
+    - type: template
+    - template:
+        file: template_2sa5.html
+    - values:
+        title: Latest updates
+        body:
+          - type: markdown
+          - content: |
+              Add content for this template.
+  markdown_inline:
+    - type: markdown
+    - content: |
+        # New document
+
+        Add Markdown content here.
+  markdown_file:
+    - type: markdown
+    - content: {file: {base: resources, path: content/markdown_3b7e.md}}
+  menu:
+    - type: menu
+    - section: pages
+    - sort: index
+    - order: asc
+    - item: |
+        <a href="{{if eq .Route "index"}}/{{else}}/{{.Route}}{{end}}">
+          {{.Title}}
+        </a>
+    - active: |
+        <a href="{{if eq .Route "index"}}/{{else}}/{{.Route}}{{end}}" aria-current="page">
+          {{.Title}}
+        </a>
+    - enclose: <nav aria-label="Main navigation">|</nav>
+  esbuild:
+    - type: esbuild
+    - entry:
+        path: {base: resources, path: js/scaffold_3f2k.js}
+    - outfile:
+        path: {base: static, path: js/scaffold_3f2k.js}
+    - cache: true
+    - minify: true
+    - fingerprint: true
+    - enclose: <script src="|" defer></script>
+  css:
+    - type: css
+    - inline: |
+        body {
+          margin: 0;
+          font-family: system-ui, sans-serif;
+        }
+  js:
+    - type: js
+    - inline: |
+        document.documentElement.dataset.assetsReady = "true";
+  styles:
+    - type: styles
+    - file:
+        path: {base: resources, path: css/scaffold_4d9m.css}
+  image:
+    - type: image
+    - src:
+        path: {base: resources, path: images/image_192a.png}
+    - alt: Describe this image.
+    - width: 640
+    - loading: lazy
+  images:
+    - type: images
+    - directory:
+        path: {base: resources, path: images}
+    - alt: Describe these images.
+    - width: 640
+    - loading: lazy
+  json_render:
+    - type: json_render
+    - file:
+        path: {base: resources, path: data/items_2sa5.json}
+    - values:
+        title: Latest guides
+    - inline: |
+        <h2>
+          {{.title}}
+        </h2>
+        <ul>
+          {{range .Data.items}}
+            <li>
+              {{.title}}
+            </li>
+          {{end}}
+        </ul>
+  goja_render:
+    - type: goja_render
+    - values:
+        message: Add a message here.
+    - script: |
+        function main(input) {
+          return {message: input.values.message};
+        }
+    - inline: |
+        <p>
+          {{.Data.message}}
+        </p>
+  api_render:
+    - type: api_render
+    - endpoint: https://api.example.com/items
+    - method: GET
+    - headers:
+        Accept: application/json
+    - querykeys: []
+    - inline: |
+        <ul>
+          {{range .Data.items}}
+            <li>
+              {{.title}}
+            </li>
+          {{end}}
+        </ul>

@@ -566,6 +566,7 @@ func newYAMLProfileRenderManager(t testing.TB) *render.RenderManager {
 		return content, exists
 	}
 	rm.RegisterComponent(component.TextConfigGetName(), &component.TextRenderer{}, reflect.TypeOf(component.TextConfig{}))
+	rm.RegisterComponent(component.MarkdownConfigGetName(), &component.MarkdownRenderer{}, reflect.TypeOf(component.MarkdownConfig{}))
 	rm.RegisterComponent(component.GojaRenderConfigGetName(), &component.GojaRenderer{}, reflect.TypeOf(component.GojaRenderConfig{}))
 	rm.RegisterComponent(component.HTMLConfigGetName(), &component.HTMLRenderer{}, reflect.TypeOf(component.HTMLConfig{}))
 	rm.RegisterComponent(component.CssConfigGetName(), &component.CssRenderer{}, reflect.TypeOf(component.CssConfig{}))

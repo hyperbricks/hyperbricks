@@ -1,49 +1,51 @@
 # MENU + HTMX Demo
 
-## Summary
+Generate a menu from `hypermedia` configuration and use HTMX to update the content panel and sidebar without reloading the whole document. Each destination keeps a full-page URL that users can open directly, bookmark, or reload.
 
-This pattern shows how to keep normal page links while making them feel faster with HTMX.
+## How it works
 
-- each item points to a canonical page route
-- the same route is used as the HTMX fetch source
-- HTMX selects only the content panel from the full page response
-- normal browser navigation still works through `href`
+The `menu` component generates navigation from the `section`, `index`, `route`, and `title` fields of configured `hypermedia` components. In this example, it selects components in `section: menu_htmx_demo_pages` and sorts them by `index`. Its `item` template adds HTMX attributes to links for other pages; its `active` template marks the current page with `aria-current="page"`.
 
-## Files
+See [HyperBricks Component Reference: menu](../../../../docs/REFERENCE.md#menu) for the component fields and options.
 
-- Config: `hyperbricks/50-menu-htmx-demo.hyperbricks.yaml`
-- Shell template: `templates/patterns/menu-htmx-shell.html`
-- Content templates: `templates/patterns/menu-htmx-intro.html` `templates/patterns/menu-htmx-doc1.html` `templates/patterns/menu-htmx-doc2.html` `templates/patterns/menu-htmx-doc3.html`
+When a user selects another page:
 
-## Routes
+1. HTMX requests the full page at the link's `hx-get` URL.
+2. `hx-select="#menu-demo-panel > *"` selects the children of the response's content panel.
+3. `hx-target="#menu-demo-panel"` and `hx-swap="innerHTML"` replace the current panel's contents, preserving the panel element.
+4. `hx-select-oob="#menu-demo-sidebar-shell:outerHTML"` also replaces the sidebar with the destination page's sidebar, including its active menu item.
+5. `hx-push-url` adds the destination URL to browser history.
 
-- `/menu-demo`
-- `/menu-demo/doc-1`
-- `/menu-demo/doc-2`
-- `/menu-demo/doc-3`
+The server returns a complete HTML document for every destination. HTMX selects the parts to update in the browser; this pattern does not reduce the response to a fragment.
 
-## Pattern rule
+## Link example
 
-Use this when:
+This illustrates the generated link to Document 1:
 
-- the menu items already have real page routes
-- you want HTMX-enhanced in-page transitions
-- you want `href` to remain the progressive-enhancement fallback
+```html
+<a href="/menu-demo/doc-1"
+   hx-get="/menu-demo/doc-1"
+   hx-select="#menu-demo-panel > *"
+   hx-select-oob="#menu-demo-sidebar-shell:outerHTML"
+   hx-target="#menu-demo-panel"
+   hx-swap="innerHTML"
+   hx-push-url="/menu-demo/doc-1">DOCUMENT 1</a>
+```
 
-The core trick is in the `<MENU>.item` template:
+Without JavaScript, `href` opens the complete page. Each request link declares its own selection, target, and swap attributes, so the update does not depend on inherited attributes.
 
-- `href` stays pointed at the canonical page
-- `hx-get` fetches that same canonical page
-- `hx-select="#menu-demo-panel > *"` extracts only the content panel
-- `hx-target="#menu-demo-panel"` swaps in place
-- `hx-push-url` updates the browser URL to the canonical destination
+## Files and routes
 
-The link explicitly uses `hx-swap="innerHTML"` to preserve the panel. Its `hx-select-oob` selection replaces the sibling sidebar after the main content swap, keeping the menu's active state in sync. Both selections are declared on each request link, so this flow does not rely on inherited attributes.
+- Configuration: `hyperbricks/50-menu-htmx-demo.hyperbricks.yaml`
+- Shared layout: `templates/patterns/menu-htmx-shell.html`
+- Content: `templates/patterns/menu-htmx-intro.html`, `templates/patterns/menu-htmx-doc1.html`, `templates/patterns/menu-htmx-doc2.html`, and `templates/patterns/menu-htmx-doc3.html`
 
-## Use a fragment instead when
+Open `/menu-demo`, `/menu-demo/doc-1`, `/menu-demo/doc-2`, or `/menu-demo/doc-3` in the running module.
 
-Use explicit fragment endpoints instead of this pattern when the menu needs:
+## When to use separate fragments
 
-- much smaller payloads than the page route returns
-- request-time behavior that is different from the full page route
-- a separate partial contract for authenticated or API-driven content
+Use this pattern when the same page response can serve both direct navigation and panel updates. Use separate fragment routes when you need smaller responses or different rendering or access rules for a partial update.
+
+## Check the behavior
+
+Select another menu item and check that the content, active menu item, and browser URL change together. Reload that URL to verify direct page access, then check Back and Forward. Disable JavaScript and confirm that the links still open complete pages.

@@ -14,6 +14,34 @@ hyperbricks start -m todo-demo-swup
 
 Open [localhost:8124](http://localhost:8124/). Native esbuild builds the JavaScript and CSS automatically. The browser library is included locally; no npm install, CDN connection, plugin build or extra server is needed.
 
+### Optional developer access
+
+The public demo works without developer credentials. To open [Spaces](http://localhost:8124/__hyperbricks/spaces), set both variables in the terminal before starting the module, replacing the password example with a long password of your own:
+
+```sh
+export HB_DEVELOPER_USER=developer
+export HB_DEVELOPER_PASSWORD='choose-a-long-password'
+hyperbricks start -m todo-demo-swup
+```
+
+Use those values in the browser login prompt. There is no built-in developer username or password; an empty resolved credential makes enabled developer routes return `503 Service Unavailable`. With the supplied environment-based configuration, both variables must be set. Restart the process after changing either variable or the package configuration.
+
+Developer credentials can also be set directly in `package.hyperbricks.yaml`.
+Replace only `credentials` under `hyperbricks.development.dashboard`, leaving
+`enabled` and the other settings unchanged:
+
+```yaml
+credentials:
+  user: developer
+  password: choose-a-long-password
+```
+
+With direct values, the environment exports above are not needed. Choose your
+own password, restart the server, and use these values to log in. The password
+is stored as plain text; do not commit real credentials to a shared repository.
+
+Spaces is read-only in this demo. The Dashboard is disabled; to inspect its Overview and Errors views, set `hyperbricks.development.dashboard.enabled: true` in [package.hyperbricks.yaml](package.hyperbricks.yaml), restart, and open the [Dashboard](http://localhost:8124/__hyperbricks/dashboard). The same developer login protects Overview, Errors, and Spaces, including Spaces when the Dashboard is disabled. See [Spaces configuration](../../docs/SPACES.md#development-configuration).
+
 ## Try it
 
 1. Add a task, mark it complete, switch between All / Active / Completed, and delete it or clear completed tasks.

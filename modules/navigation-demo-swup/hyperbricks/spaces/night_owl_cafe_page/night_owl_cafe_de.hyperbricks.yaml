@@ -1,0 +1,41 @@
+# German Space inheriting the English café page. Editing fields are declared on the source.
+night_owl_cafe_de:
+  - inherit: night_owl_cafe_page
+  - route: night-owl-cafe/de
+  - title: "Night Owl Café – Deutsch"
+  - htmltag: '<html lang="de">'
+  - section: cafe_translations
+  - head:
+      - meta:
+          description: "Ein später Kaffee, ein Stück Kuchen und ein gemütlicher Platz."
+  - body:
+      - type: template
+      - values:
+          page_language: de
+          content:
+            - type: template
+            - values:
+                title: "Night Owl Café"
+                hours: "18:00–02:00"
+                address: "12 Market Street"
+                language: "de"
+                route: "night-owl-cafe/de"
+                category: "Kaffee & Kuchen"
+                days: "Dienstag–Sonntag"
+                intro: "Ein später Kaffee, ein Stück Kuchen und ein gemütlicher Platz."
+                description: "Ein kleines Café in einer Seitenstraße. Komm nach dem Abendessen auf einen Espresso vorbei oder setz dich ans Fenster, wenn du etwas länger plaudern möchtest. Bis zum Schluss gibt es eine kleine Auswahl an warmen Gerichten."
+                highlight: "Auf der Karte"
+                one: "Kaffee nach deinem Geschmack"
+                onebody: "Espresso, Filterkaffee und entkoffeinierter Kaffee. Hafermilch ist ebenfalls erhältlich."
+                two: "Etwas Süßes"
+                twobody: "Zitronenkuchen und Schokoladenbrownies, jeden Nachmittag frisch gebacken."
+                three: "Ein kleiner Abendimbiss"
+                threebody: "Käsetoast und eine täglich wechselnde Suppe."
+                note: "Komm einfach vorbei und such dir einen Tisch. Hinten ist es etwas ruhiger."
+                language_label: "Sprache der Café-Seite"
+                all_places_label: "Alle Orte"
+                of_label: "von"
+                visit_label: "Plane deinen Besuch"
+                hours_label: "Öffnungszeiten"
+                address_label: "Adresse"
+                next_label: "Nächster Halt"

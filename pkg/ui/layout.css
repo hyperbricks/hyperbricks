@@ -1,0 +1,77 @@
+/* DaisyUI owns components and colors; product rules own layout only. */
+@layer base {
+  html { font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif; letter-spacing: 0; }
+  body { margin: 0; min-height: 100dvh; font-size: 14px; line-height: 1.5; background: var(--color-base-200); color: var(--color-base-content); }
+  h1, h2, h3, p { margin: 0; }
+  h1 { font-size: 26px; line-height: 1.25; font-weight: 600; }
+  h2 { font-size: 18px; line-height: 1.35; font-weight: 600; }
+  h3 { font-size: 15px; font-weight: 600; }
+  button, input, select, textarea { font: inherit; letter-spacing: 0; }
+  button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+  button, a { touch-action: manipulation; }
+  :focus-visible { outline-offset: 3px; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; }
+  [hidden] { display: none !important; }
+}
+.hb-header { min-height: 68px; padding: 0 32px; border-bottom: 1px solid var(--color-base-300); display: flex; align-items: center; gap: 44px; position: sticky; top: 0; background: var(--color-base-100); z-index: 30; }
+.hb-brand { display: inline-flex; align-items: center; gap: 10px; flex: none; color: var(--color-base-content); text-decoration: none; }
+.hb-brand img { width: 20px; height: 28px; flex: none; }
+.hb-brand span { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 700; font-size: 20px; }
+[data-theme="night"] .hb-brand img { filter: invert(1); }
+.hb-nav { display: flex; align-self: stretch; gap: 28px; }
+.hb-nav a { display: flex; align-items: center; gap: 8px; border-bottom: 2px solid transparent; color: color-mix(in oklab, var(--color-base-content) 65%, transparent); font-weight: 500; text-decoration: none; }
+.hb-nav a:hover { color: var(--color-base-content); }
+.hb-nav a[aria-current="page"] { color: var(--color-base-content); border-bottom-color: var(--color-primary); }
+.hb-header-actions { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+.lucide { width: 17px; height: 17px; flex-shrink: 0; stroke-width: 1.7; }
+.badge .lucide { width: 13px; height: 13px; }
+.hb-page { max-width: 1344px; margin: auto; padding: 32px 40px 48px; }
+.hb-page-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+.hb-eyebrow { font-size: 12px; color: color-mix(in oklab, var(--color-base-content) 60%, transparent); margin-bottom: 7px; overflow-wrap: anywhere; }
+.hb-muted { color: color-mix(in oklab, var(--color-base-content) 65%, transparent); }
+.hb-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.hb-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.hb-section-heading h2, .hb-section-heading h3 { display: flex; align-items: center; gap: 10px; }
+.hb-section { padding: 24px 0; border-top: 1px solid var(--color-base-300); min-width: 0; }
+/* Working surfaces sit one theme step above the page, without shadows. */
+.hb-surface { background: var(--color-base-100); border: 1px solid var(--color-base-300); border-radius: min(var(--radius-box), 8px); padding: 24px; min-width: 0; }
+.hb-properties { margin: 0; }
+.hb-properties>div { display: grid; grid-template-columns: 1fr 1.5fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--color-base-200); }
+.hb-properties dt { color: color-mix(in oklab,var(--color-base-content) 65%,transparent); }
+.hb-properties dd { margin: 0; overflow-wrap: anywhere; }
+.hb-table-scroll { overflow-x: auto; min-width: 0; }
+.hb-table-scroll .table { width: 100%; }
+.hb-table-scroll th { white-space: nowrap; }
+.hb-table-scroll td { overflow-wrap: anywhere; }
+.hb-table-scroll td:last-child { text-align: right; }
+.hb-terminal { background: var(--color-neutral); color: var(--color-neutral-content); white-space: pre-wrap; overflow-wrap: anywhere; padding: 20px; border-radius: var(--radius-box); line-height: 1.85; max-height: 400px; overflow: auto; }
+.hb-skip { position: fixed; top: -80px; left: 12px; z-index: 110; }
+.hb-skip:focus { top: 8px; }
+.hidden { display: none !important; }
+.hb-mobile-only { display: none; }
+.hb-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; font-weight: 500; font-size: 13px; min-width: 0; }
+.hb-field .input, .hb-field .textarea, .hb-field .select { width: 100%; font-weight: 400; font-size: 14px; }
+.hb-dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.hb-dialog-heading h2 { font-size: 20px; overflow-wrap: anywhere; }
+.hb-form-error { border-left: 3px solid var(--color-error); padding: 10px 12px; background: var(--color-base-200); color: var(--color-base-content); font-size: 13px; overflow-wrap: anywhere; }
+.hb-form-error:empty { display: none; }
+/* ARIA state is the source of truth for programmatic tabs and joined controls. */
+.tab[aria-selected="true"] { --tab-border-color: var(--color-base-content); --tab-font-weight: 600; color: var(--color-base-content); }
+.tabs-border>.tab[aria-selected="true"]::before { opacity: 1; }
+.join .btn[aria-pressed="true"] { background: var(--color-primary); color: var(--color-primary-content); border-color: var(--color-primary); }
+@media (max-width:1100px) {
+  .hb-header { gap: 28px; padding: 0 24px; }.hb-nav { gap: 20px; }.hb-page { padding: 28px; }
+}
+@media (max-width:850px) {
+  .hb-header { gap: 20px; flex-wrap: wrap; padding: 12px 20px 0; position: relative; }.hb-brand span { font-size: 18px; }
+  .hb-nav { order: 3; width: 100%; height: 44px; gap: 28px; }.hb-header-actions { gap: 12px; }.hb-mobile-only { display: inline-flex; }
+}
+@media (max-width:540px) {
+  .hb-header { padding: 10px 16px 0; gap: 8px; }.hb-brand { gap: 8px; }.hb-brand span { font-size: 17px; }.hb-header-actions { gap: 3px; }.hb-header-context { display: none; }
+  .hb-nav { gap: 24px; }.hb-nav a { font-size: 12px; gap: 6px; }.hb-nav .lucide { width: 15px; }
+  .hb-page { padding: 24px 16px 36px; }.hb-page-heading { gap: 12px; margin-bottom: 24px; }h1 { font-size: 24px; }
+  .hb-surface { padding: 16px; }
+  .hb-section-heading { gap: 12px; flex-wrap: wrap; }.hb-section-heading h2 { font-size: 16px; }.hb-terminal { padding: 14px; font-size: 11px; }
+  .hb-table-scroll .table { font-size: 12px; }.hb-table-scroll th,.hb-table-scroll td { padding: 10px 8px; }
+}
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
