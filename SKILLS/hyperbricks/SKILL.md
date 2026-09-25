@@ -104,10 +104,6 @@ supplements; do not load all of them automatically.
 Use the [Documentation Index](references/DOCUMENTATION_INDEX.md) when the task
 does not fit the table or another document points to material not listed here.
 
-[The documentation compilation](references/HyperBricks-Documentation.md) is a
-publication fallback, not the normal skill input. Prefer the separate source
-documents.
-
 ## Choose the task mode
 
 ### Review an existing project
@@ -200,9 +196,9 @@ was not observed.
 Inside the HyperBricks repository, the current source documents under `docs/`
 are authoritative for that revision.
 
-The files under `references/docs/`, the documentation index, manifest, and
-compilations are generated artifacts. Do not edit them directly. When product
-knowledge is missing, add it to the appropriate source document first.
+The files under `references/docs/`, the documentation index, and manifest are
+generated artifacts. Do not edit them directly. When product knowledge is
+missing, add it to the appropriate source document first.
 
 Use the repository's compilation tooling to regenerate the snapshots and run its
 documentation, link, skill, and plugin synchronization checks after changing the

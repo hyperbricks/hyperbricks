@@ -19,6 +19,7 @@ import build_markdown_compilations as assembly
 INDEX_FILENAME = "DOCUMENTATION_INDEX.md"
 MANIFEST_FILENAME = "documentation-manifest.json"
 DOCUMENTS_DIRECTORY = "docs"
+LEGACY_COMPILATION_FILENAME = "HyperBricks-Documentation.md"
 GENERATOR_PATH = "scripts/compilation-generation/build_skill_documentation.py"
 TRUSTED_OUTPUT_DIRECTORIES = (
     "SKILLS/hyperbricks/references",
@@ -316,6 +317,7 @@ def ensure_safe_output_directory(repository: Path, output_directory: Path) -> No
         output_directory / INDEX_FILENAME,
         output_directory / MANIFEST_FILENAME,
         output_directory / DOCUMENTS_DIRECTORY,
+        output_directory / LEGACY_COMPILATION_FILENAME,
     )
     for path in generated_paths:
         if path.is_symlink():
@@ -404,7 +406,9 @@ def build_skill_documentation(
 
 def existing_generated_paths(output_directory: Path) -> set[PurePosixPath]:
     paths: set[PurePosixPath] = set()
-    for filename in (INDEX_FILENAME, MANIFEST_FILENAME):
+    # Older bundles included the full compilation as well as the individual
+    # documents. Treat that redundant copy as stale managed output.
+    for filename in (INDEX_FILENAME, MANIFEST_FILENAME, LEGACY_COMPILATION_FILENAME):
         if (output_directory / filename).is_file():
             paths.add(PurePosixPath(filename))
     documents_directory = output_directory / DOCUMENTS_DIRECTORY

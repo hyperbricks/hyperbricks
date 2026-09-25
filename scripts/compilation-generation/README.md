@@ -28,10 +28,11 @@ The script creates `.venv-compilations/`, installs the Python packages pinned in
 and skills compilations as Markdown, PDF, and EPUB in `docs/compilations/`. The
 environment is ignored by Git; it is not part of the repository or a release
 commit.
-When Markdown is generated (`all` or `--format markdown`), the documentation
-compilation and a versioned, one-file-per-source documentation snapshot are also
-synchronized to the HyperBricks skill and packaged Codex plugin references. The
-skills compilation remains a publication artifact in `docs/compilations/`.
+When Markdown is generated (`all` or `--format markdown`), a versioned,
+one-file-per-source documentation snapshot is also synchronized to the
+HyperBricks skill and packaged Codex plugin references. Both compilations remain
+publication artifacts in `docs/compilations/`; they are not copied into either
+skill bundle.
 PDF-only and EPUB-only builds leave the skill references unchanged.
 
 ## Text and cover copy
@@ -83,6 +84,10 @@ date. The manifest records a digest of the canonical document inventory and
 content, the runtime version, and source/bundled hashes for every document.
 It does not depend on a commit ID that may become unreachable after an amend.
 
+Generation removes the obsolete `references/HyperBricks-Documentation.md`
+copy from older bundles. The individual documents, index and manifest provide
+the bundled documentation; unrelated reference files are preserved.
+
 Pass `--check` to verify an existing snapshot against the current working tree
 without writing it. The one-command workflow runs both mirror checks;
 manually:
@@ -94,8 +99,8 @@ bash scripts/check_codex_plugin_sync.sh
 ```
 
 With an explicit `--ref`, the check compares against that committed revision.
-Changed source text, version, document inventory, generated links, or bundled
-content fail. The tree-sync script checks
+Changed source text, version, document inventory, generated links, bundled
+content, or an obsolete bundled compilation fail. The tree-sync script checks
 that skill and plugin copies match each other; it does not replace the content
 checks against canonical documentation.
 

@@ -261,6 +261,35 @@ class SkillDocumentationStabilityTests(unittest.TestCase):
         self.assert_check_fails()
         self.assert_check_fails("--ref", "HEAD")
 
+    def test_obsolete_compilation_is_removed_without_changing_other_references(self):
+        for relative in skill_docs.TRUSTED_OUTPUT_DIRECTORIES:
+            with self.subTest(output=relative):
+                self.output = self.repository / relative
+                self.generate()
+                (self.output / "custom-notes.md").write_text(
+                    "# Maintained reference\n", encoding="utf-8"
+                )
+                expected = self.snapshot_bytes()
+                self.assertEqual(set(expected), {
+                    skill_docs.INDEX_FILENAME,
+                    skill_docs.MANIFEST_FILENAME,
+                    "docs/INTRODUCTION.md",
+                    "docs/HOWTOS.md",
+                    "docs/EXTRA.md",
+                    "custom-notes.md",
+                })
+                obsolete = self.output / "HyperBricks-Documentation.md"
+                obsolete.write_text("# Obsolete compilation\n", encoding="utf-8")
+
+                self.assert_check_fails()
+                self.assert_check_fails("--ref", "HEAD")
+                self.generate()
+                self.assertFalse(obsolete.exists())
+                self.assertEqual(self.snapshot_bytes(), expected)
+                self.assert_check_passes()
+                self.generate()
+                self.assertEqual(self.snapshot_bytes(), expected)
+
 
 if __name__ == "__main__":
     unittest.main()

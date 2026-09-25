@@ -111,10 +111,6 @@ if [[ "${FORMAT}" == "all" || "${FORMAT}" == "markdown" ]]; then
     done
 
     for destination in "${DESTINATIONS[@]}"; do
-        for compilation in "${COMPILATIONS[@]}"; do
-            cp "${OUTPUT_DIR}/${compilation}" "${destination}/${compilation}"
-            echo "Synchronized ${destination#"${ROOT}/"}/${compilation}"
-        done
         "${ENV_DIR}/bin/python" "${SCRIPT_DIR}/build_skill_documentation.py" \
             --ref "${SOURCE_REF}" \
             --output-dir "${destination}"
