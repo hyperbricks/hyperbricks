@@ -1209,6 +1209,10 @@ func mergeNodes(base *Node, overlay *Node) *Node {
 	}
 	for _, child := range overlay.Children {
 		if existingIndex, ok := indexByName[child.Name]; ok {
+			if strings.TrimSpace(child.Inherit) != "" {
+				out.Children[existingIndex] = cloneNode(child)
+				continue
+			}
 			out.Children[existingIndex] = mergeNodes(out.Children[existingIndex], child)
 			continue
 		}

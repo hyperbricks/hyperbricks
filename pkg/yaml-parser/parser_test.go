@@ -249,6 +249,95 @@ page:
 	}
 }
 
+func TestMaterializeDottedObjectContentInheritanceOverridesInheritedObjectContent(t *testing.T) {
+	doc, err := ParseBytes([]byte(`
+shell:
+  - type: hypermedia
+  - content:
+      - type: tree
+
+first_page:
+  - inherit: shell
+  - route: first
+  - content:
+      - type: template
+      - inline: '<p>{{.version}}</p>'
+      - values:
+          version: 1.0.0
+
+second_page:
+  - inherit: shell
+  - route: second
+  - content:
+      - inherit: first_page.content
+`))
+	if err != nil {
+		t.Fatalf("ParseBytes() error = %v", err)
+	}
+
+	got, err := doc.Materialize()
+	if err != nil {
+		t.Fatalf("Materialize() error = %v", err)
+	}
+	secondPage := got["second_page"].(map[string]interface{})
+	content := secondPage["content"].(map[string]interface{})
+	want := map[string]interface{}{
+		"@type":  "<TEMPLATE>",
+		"inline": "<p>{{.version}}</p>",
+		"values": map[string]interface{}{"version": "1.0.0"},
+	}
+	if !reflect.DeepEqual(content, want) {
+		t.Fatalf("second_page.content = %#v, want %#v", content, want)
+	}
+}
+
+func TestMaterializeDottedObjectContentInheritanceMergesLocalValues(t *testing.T) {
+	doc, err := ParseBytes([]byte(`
+shell:
+  - type: hypermedia
+  - content:
+      - type: tree
+
+first_page:
+  - inherit: shell
+  - route: first
+  - content:
+      - type: template
+      - inline: '<p>{{.version}} {{.test}}</p>'
+      - values:
+          version: 1.0.0
+
+second_page:
+  - inherit: shell
+  - route: second
+  - content:
+      - inherit: first_page.content
+      - values:
+          test: works
+`))
+	if err != nil {
+		t.Fatalf("ParseBytes() error = %v", err)
+	}
+
+	got, err := doc.Materialize()
+	if err != nil {
+		t.Fatalf("Materialize() error = %v", err)
+	}
+	secondPage := got["second_page"].(map[string]interface{})
+	content := secondPage["content"].(map[string]interface{})
+	want := map[string]interface{}{
+		"@type":  "<TEMPLATE>",
+		"inline": "<p>{{.version}} {{.test}}</p>",
+		"values": map[string]interface{}{
+			"version": "1.0.0",
+			"test":    "works",
+		},
+	}
+	if !reflect.DeepEqual(content, want) {
+		t.Fatalf("second_page.content = %#v, want %#v", content, want)
+	}
+}
+
 func TestProcessBytesValueResolversMaterializeRuntimeShape(t *testing.T) {
 	assetsDir := t.TempDir()
 	heroPath := filepath.Join(assetsDir, "hero.html")
