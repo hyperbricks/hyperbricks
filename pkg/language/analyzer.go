@@ -117,13 +117,45 @@ func (a *Analyzer) Diagnostics(uri, text string, documents map[string]string) []
 
 	path, readFile, confined := a.sourceReader(uri, text, documents)
 	options := analysis.SourceOptions{ParserOptions: a.sourceParserOptions()}
-	if confined {
-		options.Filename, options.ReadFile = path, readFile
-	}
 	if a.hasEnabledPlugins() {
 		options.UnknownTypeSeverity = analysis.SeverityWarning
 	}
-	issues := analysis.AnalyzeSource([]byte(text), options)
+	analysisRoots := []string{path}
+	visibleFiles := map[string]bool(nil)
+	if confined {
+		options.ReadFile = readFile
+		visibleFiles = a.reachableSourceFileSet(path, readFile)
+		if roots := a.owningSourceRoots(path, readFile); len(roots) > 0 {
+			analysisRoots = roots
+		}
+	}
+	issues := make([]analysis.Issue, 0)
+	seenIssues := make(map[string]bool)
+	for _, root := range analysisRoots {
+		rootText := text
+		rootOptions := options
+		if confined {
+			rootOptions.Filename = root
+			if canonicalPath(root) != canonicalPath(path) {
+				raw, err := readFile(root)
+				if err != nil {
+					continue
+				}
+				rootText = string(raw)
+			}
+		}
+		for _, issue := range analysis.AnalyzeSource([]byte(rootText), rootOptions) {
+			if visibleFiles != nil && issue.File != "" && !visibleFiles[canonicalPath(issue.File)] {
+				continue
+			}
+			key := fmt.Sprintf("%s\x00%s\x00%s\x00%d\x00%d\x00%s", issue.File, issue.Code, issue.Path, issue.Range.Start.Line, issue.Range.Start.Column, issue.Message)
+			if seenIssues[key] {
+				continue
+			}
+			seenIssues[key] = true
+			issues = append(issues, issue)
+		}
+	}
 	diagnostics := make([]Diagnostic, 0, len(issues))
 	for _, issue := range issues {
 		diagnosticRange := analysisRange(text, issue.Range)
@@ -686,6 +718,65 @@ func (a *Analyzer) sourceReader(uri, text string, documents map[string]string) (
 	return path, readFile, true
 }
 
+// owningSourceRoots returns the automatically loaded top-level source graphs
+// that contain a nested source. A nested file inherits in the context of those
+// graphs at runtime, so editor analysis must use the same entrypoints.
+func (a *Analyzer) owningSourceRoots(path string, readFile func(string) ([]byte, error)) []string {
+	sourceDir := a.directory("hyperbricks", "hyperbricks")
+	if canonicalPath(filepath.Dir(path)) == canonicalPath(sourceDir) {
+		return []string{path}
+	}
+	entries, err := os.ReadDir(sourceDir)
+	if err != nil {
+		return nil
+	}
+	target := canonicalPath(path)
+	roots := make([]string, 0)
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".hyperbricks.yaml") {
+			continue
+		}
+		candidate, err := a.confinedSourcePath(filepath.Join(sourceDir, entry.Name()))
+		if err != nil {
+			continue
+		}
+		if a.reachableSourceFileSet(candidate, readFile)[target] {
+			roots = append(roots, candidate)
+		}
+	}
+	sort.Strings(roots)
+	return roots
+}
+
+func (a *Analyzer) reachableSourceFileSet(path string, readFile func(string) ([]byte, error)) map[string]bool {
+	visited := make(map[string]bool)
+	var walk func(string)
+	walk = func(filename string) {
+		filename, err := a.confinedSourcePath(filename)
+		if err != nil {
+			return
+		}
+		canonical := canonicalPath(filename)
+		if visited[canonical] {
+			return
+		}
+		visited[canonical] = true
+		raw, err := readFile(filename)
+		if err != nil {
+			return
+		}
+		for _, imported := range sourceImports(string(raw)) {
+			importPath := filepath.FromSlash(imported)
+			if !filepath.IsAbs(importPath) {
+				importPath = filepath.Join(filepath.Dir(filename), importPath)
+			}
+			walk(importPath)
+		}
+	}
+	walk(path)
+	return visited
+}
+
 func (a *Analyzer) confinedPath(path string) (string, error) {
 	return confinedToRoot(a.moduleRoot(), path, "selected module root")
 }
@@ -747,34 +838,47 @@ func resolvePathWithExistingAncestor(path string) (string, error) {
 }
 
 func (a *Analyzer) reachableSources(uri, text string, documents map[string]string) []string {
-	sources := []string{text}
 	path, readFile, confined := a.sourceReader(uri, text, documents)
 	if !confined {
-		return sources
+		return []string{text}
 	}
-	visited := map[string]bool{canonicalPath(path): true}
-	var walk func(string, string)
-	walk = func(filename, source string) {
+	roots := a.owningSourceRoots(path, readFile)
+	if len(roots) == 0 {
+		roots = []string{path}
+	}
+	sources := make([]string, 0)
+	visited := make(map[string]bool)
+	var walk func(string)
+	walk = func(filename string) {
+		canonical := canonicalPath(filename)
+		if visited[canonical] {
+			return
+		}
+		visited[canonical] = true
+		raw, err := readFile(filename)
+		if err != nil {
+			return
+		}
+		source := string(raw)
+		sources = append(sources, source)
 		for _, imported := range sourceImports(source) {
 			importPath := filepath.FromSlash(imported)
 			if !filepath.IsAbs(importPath) {
 				importPath = filepath.Join(filepath.Dir(filename), importPath)
 			}
 			importPath, err := a.confinedSourcePath(importPath)
-			if err != nil || visited[canonicalPath(importPath)] {
-				continue
-			}
-			visited[canonicalPath(importPath)] = true
-			raw, err := readFile(importPath)
 			if err != nil {
 				continue
 			}
-			importSource := string(raw)
-			sources = append(sources, importSource)
-			walk(importPath, importSource)
+			walk(importPath)
 		}
 	}
-	walk(path, text)
+	for _, root := range roots {
+		walk(root)
+	}
+	if len(sources) == 0 {
+		return []string{text}
+	}
 	return sources
 }
 

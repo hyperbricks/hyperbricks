@@ -403,13 +403,14 @@ func appendPath(path []string, key string) []string {
 }
 
 // validateNestedSchemaFields checks only mappings whose ownership is explicit
-// in the native schema. Dynamic maps remain intentionally open, and resolver
-// expressions are values rather than nested component configuration.
+// in the native schema. Open map and interface values remain intentionally
+// open, and resolver expressions are values rather than nested component
+// configuration.
 func validateNestedSchemaFields(descriptor *componentType, componentPath, fieldPath string, node *yaml.Node) []Issue {
 	if descriptor == nil || node == nil || node.Kind != yaml.MappingNode || isComponentSequence(node) || isResolverExpression(node) {
 		return nil
 	}
-	if field, ok := descriptor.FieldByPath[fieldPath]; ok && (field.Kind == "map" || field.ValueDynamic) {
+	if field, ok := descriptor.FieldByPath[fieldPath]; ok && (field.Kind == "map" || field.Kind == "interface" || field.ValueDynamic) {
 		return nil
 	}
 	allowed := schemaChildSegments(descriptor, fieldPath)

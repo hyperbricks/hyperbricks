@@ -176,17 +176,29 @@ func (a *Analyzer) resolveDefinitionImport(ownerPath, imported string) (string, 
 
 func (a *Analyzer) resolveInheritanceDefinition(currentPath, targetPath string, readFile func(string) ([]byte, error)) (Location, bool) {
 	document := &yamlparser.Document{}
-	for _, source := range a.definitionSources(currentPath, readFile) {
-		options := yamlparser.ParseOptions{
-			AllowUnknownTypes:        true,
-			RecoverDuplicateChildren: true,
-			Source:                   source.path,
+	roots := a.owningSourceRoots(currentPath, readFile)
+	if len(roots) == 0 {
+		roots = []string{currentPath}
+	}
+	seen := make(map[string]bool)
+	for _, root := range roots {
+		for _, source := range a.definitionSources(root, readFile) {
+			canonical := canonicalPath(source.path)
+			if seen[canonical] {
+				continue
+			}
+			seen[canonical] = true
+			options := yamlparser.ParseOptions{
+				AllowUnknownTypes:        true,
+				RecoverDuplicateChildren: true,
+				Source:                   source.path,
+			}
+			sourceDocument, err := yamlparser.ParseBytesWithOptions([]byte(source.text), options)
+			if err != nil {
+				continue
+			}
+			document.Roots = append(document.Roots, sourceDocument.Roots...)
 		}
-		sourceDocument, err := yamlparser.ParseBytesWithOptions([]byte(source.text), options)
-		if err != nil {
-			continue
-		}
-		document.Roots = append(document.Roots, sourceDocument.Roots...)
 	}
 	for _, target := range document.InheritanceTargets() {
 		if target.Path != targetPath || target.Source == "" || target.Line <= 0 || target.Column <= 0 {

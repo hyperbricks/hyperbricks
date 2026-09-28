@@ -463,6 +463,64 @@ func TestAnalyzerAnchorsImportedIssuesAtImportReference(t *testing.T) {
 	}
 }
 
+func TestAnalyzerUsesOwningTopLevelGraphForNestedSourceDiagnostics(t *testing.T) {
+	root := t.TempDir()
+	sourceDir := filepath.Join(root, "hyperbricks")
+	spaceDir := filepath.Join(sourceDir, "spaces", "landing_source")
+	if err := os.MkdirAll(spaceDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	entryPath := filepath.Join(sourceDir, "02-landing.hyperbricks.yaml")
+	indexPath := filepath.Join(spaceDir, "index.hyperbricks.yaml")
+	spacePath := filepath.Join(spaceDir, "landing_en.hyperbricks.yaml")
+	entry := "imports: [spaces/landing_source/index.hyperbricks.yaml]\nlanding_source:\n  - type: hypermedia\n"
+	index := "imports: [landing_en.hyperbricks.yaml]\n"
+	space := "landing_en:\n  - inherit: landing_source\n  - route: index\n"
+	for path, content := range map[string]string{entryPath: entry, indexPath: index, spacePath: space} {
+		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: root})
+	for name, path := range map[string]string{"nested index": indexPath, "nested Space": spacePath} {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if diagnostics := analyzer.Diagnostics(pathToURI(path), string(raw), nil); len(diagnostics) != 0 {
+			t.Fatalf("%s diagnostics = %#v", name, diagnostics)
+		}
+	}
+
+	spaceURI := pathToURI(spacePath)
+	draft := space + "  - "
+	fields := analyzer.Completions(spaceURI, draft, Position{Line: 3, Character: 4}, map[string]string{spaceURI: draft})
+	if !hasCompletion(fields, "title") || hasCompletion(fields, "value") {
+		t.Fatalf("nested inherited field completions = %#v", fields)
+	}
+	if hover := analyzer.Hover(spaceURI, space, Position{Line: 2, Character: 5}); hover == nil || !strings.Contains(hover.Contents.Value, "**route**") {
+		t.Fatalf("nested inherited field hover = %#v", hover)
+	}
+	locations := analyzer.Definitions(spaceURI, space, Position{Line: 1, Character: 15})
+	if len(locations) != 1 || locations[0].URI != pathToURI(entryPath) {
+		t.Fatalf("nested inheritance definition = %#v", locations)
+	}
+
+	orphanPath := filepath.Join(sourceDir, "orphan", "landing_orphan.hyperbricks.yaml")
+	orphan := "landing_orphan:\n  - inherit: landing_source\n"
+	if err := os.MkdirAll(filepath.Dir(orphanPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(orphanPath, []byte(orphan), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	orphanDiagnostics := analyzer.Diagnostics(pathToURI(orphanPath), orphan, nil)
+	if len(orphanDiagnostics) != 1 || orphanDiagnostics[0].Code != "component.inheritance" {
+		t.Fatalf("orphan nested source diagnostics = %#v", orphanDiagnostics)
+	}
+}
+
 func TestAnalyzerCompletesResolversPathBasesAndTreeChildren(t *testing.T) {
 	root := t.TempDir()
 	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: root})

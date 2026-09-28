@@ -86,6 +86,26 @@ leaf:
 	}
 }
 
+func TestAnalyzeSourceLeavesEditableDefinitionsOpen(t *testing.T) {
+	issues := AnalyzeSource([]byte(`
+view:
+  - type: template
+  - inline: '{{.skip_link}}'
+  - values:
+      skip_link: Skip to content
+  - editable:
+      skip_link: {type: text, label: "Skip-to-content label", group: "01 Navigation", max: 2000, order: 1}
+document:
+  - type: markdown
+  - content: '# Welcome'
+  - editable:
+      content: {type: textarea, label: "Document", rows: 12, max: 2000}
+`), SourceOptions{})
+	if unsupported := issuesByCodeList(issues, "component.unsupported_field"); len(unsupported) != 0 {
+		t.Fatalf("editable definitions were treated as schema fields: %#v (all %#v)", unsupported, issues)
+	}
+}
+
 func TestAnalyzeSourceReportsUnknownTypeAndYAMLLocations(t *testing.T) {
 	issues := AnalyzeSource([]byte("page:\n  - type: made-up\n"), SourceOptions{})
 	if len(issues) != 1 || issues[0].Code != "component.unknown_type" || issues[0].Range.Start.Line != 2 || issues[0].Range.Start.Column != 11 {
