@@ -2,7 +2,7 @@
   "schema_version": 2,
   "hyperbricks_version": "v1.2.5-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_digest": "6f81e2e7ce7da7d337cf4de3cdb450450fe9bdfa79c6cae31e7422cfd46bb8a8",
+  "source_digest": "83476ea8aa65bb8b968eab680cf99357b200338d3e9bffd0d10161623f4d95a0",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
@@ -25,8 +25,8 @@
     {
       "source_path": "docs/VSCODE.md",
       "bundled_path": "docs/VSCODE.md",
-      "source_sha256": "b8d3a7c9615f80644b184e84dfba66fc0ea3a9291ece7ce408fbdd917160871f",
-      "bundled_sha256": "2479f84a81b8a99000777ad765408f5dbced3c93ab372a434ba708a006292f3d"
+      "source_sha256": "4a38b4c085b2c503ee0d603ce07875dc50d53eac23ce86ce0497704306635161",
+      "bundled_sha256": "778acf5422f38bde30c1d54fb1694c1b591f7259787aef28f3104f850bfcfea4"
     },
     {
       "source_path": "docs/TROUBLESHOOTING.md",

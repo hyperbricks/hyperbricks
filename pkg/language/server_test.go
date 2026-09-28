@@ -68,6 +68,64 @@ func TestServerInitializePublishesProtocolCapabilitiesAndStaticDiagnostics(t *te
 	}
 }
 
+func TestServerPublishesEmptyDiagnosticArrayAfterCorrection(t *testing.T) {
+	root := t.TempDir()
+	uri := pathToURI(filepath.Join(root, "page.hyperbricks.yaml"))
+	input := bytes.Join([][]byte{
+		framedRPC(t, map[string]interface{}{
+			"jsonrpc": "2.0", "id": 1, "method": "initialize",
+			"params": map[string]interface{}{
+				"rootUri":               pathToURI(root),
+				"initializationOptions": map[string]interface{}{"protocolVersion": ProtocolVersion, "runtimeDiagnostics": "off"},
+			},
+		}),
+		framedRPC(t, map[string]interface{}{
+			"jsonrpc": "2.0", "method": "textDocument/didOpen",
+			"params": map[string]interface{}{"textDocument": map[string]interface{}{
+				"uri": uri, "languageId": "hyperbricks", "version": 1,
+				"text": "page:\n  - type: html\n",
+			}},
+		}),
+		framedRPC(t, map[string]interface{}{
+			"jsonrpc": "2.0", "method": "textDocument/didChange",
+			"params": map[string]interface{}{
+				"textDocument":   map[string]interface{}{"uri": uri, "version": 2},
+				"contentChanges": []map[string]interface{}{{"text": "page:\n  - type: html\n  - value: corrected\n"}},
+			},
+		}),
+	}, nil)
+	var output bytes.Buffer
+	if err := NewServer(bytes.NewReader(input), &output, ServerOptions{}).Serve(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	messages := readFramedRPC(t, output.Bytes())
+	if len(messages) != 3 {
+		t.Fatalf("messages = %d: %#v", len(messages), messages)
+	}
+
+	var invalid struct {
+		Version     int          `json:"version"`
+		Diagnostics []Diagnostic `json:"diagnostics"`
+	}
+	if err := json.Unmarshal(messages[1].Params, &invalid); err != nil {
+		t.Fatal(err)
+	}
+	if invalid.Version != 1 || len(invalid.Diagnostics) != 1 {
+		t.Fatalf("invalid publication = %#v", invalid)
+	}
+
+	var corrected struct {
+		Version     int             `json:"version"`
+		Diagnostics json.RawMessage `json:"diagnostics"`
+	}
+	if err := json.Unmarshal(messages[2].Params, &corrected); err != nil {
+		t.Fatal(err)
+	}
+	if corrected.Version != 2 || string(corrected.Diagnostics) != "[]" {
+		t.Fatalf("corrected publication version/diagnostics = %d/%s, want 2/[]", corrected.Version, corrected.Diagnostics)
+	}
+}
+
 func TestServerRejectsIncompatibleProtocolVersion(t *testing.T) {
 	for _, version := range []int{0, ProtocolVersion + 1} {
 		t.Run(jsonNumber(version), func(t *testing.T) {

@@ -255,7 +255,7 @@ func analyzeComponent(registry map[string]*componentType, path string, sequence 
 		})
 	}
 	if descriptor != nil {
-		issues = append(issues, validateChildPlacements(descriptor, path, sequence)...)
+		issues = append(issues, validateChildPlacements(descriptor, path, sequence, effective)...)
 	}
 
 	for _, item := range sequence.Content {
@@ -267,8 +267,9 @@ func analyzeComponent(registry map[string]*componentType, path string, sequence 
 		if key == "type" || key == "inherit" {
 			continue
 		}
-		if isComponentSequence(valueNode) {
-			childEffective, _ := effective[key].(map[string]interface{})
+		childValue := mapValue(effective, key)
+		if isEffectiveComponentSequence(valueNode, childValue) {
+			childEffective, _ := childValue.(map[string]interface{})
 			issues = append(issues, analyzeComponent(registry, path+"."+key, valueNode, childEffective, unknownSeverity)...)
 			continue
 		}
@@ -308,14 +309,14 @@ func analyzeComponent(registry map[string]*componentType, path string, sequence 
 	return issues
 }
 
-func validateChildPlacements(descriptor *componentType, componentPath string, sequence *yaml.Node) []Issue {
+func validateChildPlacements(descriptor *componentType, componentPath string, sequence *yaml.Node, effective map[string]interface{}) []Issue {
 	issues := make([]Issue, 0)
-	var walk func([]string, *yaml.Node, *yaml.Node)
-	walk = func(relative []string, node, anchor *yaml.Node) {
+	var walk func([]string, *yaml.Node, *yaml.Node, interface{})
+	walk = func(relative []string, node, anchor *yaml.Node, effectiveValue interface{}) {
 		if node == nil {
 			return
 		}
-		if isComponentSequence(node) {
+		if isEffectiveComponentSequence(node, effectiveValue) {
 			if !childPlacementAllowed(descriptor.Schema, relative) {
 				placement := strings.Join(relative, ".")
 				issues = append(issues, Issue{
@@ -329,14 +330,20 @@ func validateChildPlacements(descriptor *componentType, componentPath string, se
 		}
 		switch node.Kind {
 		case yaml.MappingNode:
+			effectiveMap, _ := effectiveValue.(map[string]interface{})
 			for index := 0; index+1 < len(node.Content); index += 2 {
 				keyNode, valueNode := node.Content[index], node.Content[index+1]
 				key := strings.TrimSpace(keyNode.Value)
-				walk(appendPath(relative, key), valueNode, keyNode)
+				walk(appendPath(relative, key), valueNode, keyNode, effectiveMap[key])
 			}
 		case yaml.SequenceNode:
-			for _, item := range node.Content {
-				walk(relative, item, anchor)
+			effectiveList, _ := effectiveValue.([]interface{})
+			for index, item := range node.Content {
+				var itemValue interface{}
+				if index < len(effectiveList) {
+					itemValue = effectiveList[index]
+				}
+				walk(relative, item, anchor, itemValue)
 			}
 		}
 	}
@@ -349,7 +356,7 @@ func validateChildPlacements(descriptor *componentType, componentPath string, se
 		if key == "type" || key == "inherit" {
 			continue
 		}
-		walk([]string{key}, valueNode, keyNode)
+		walk([]string{key}, valueNode, keyNode, mapValue(effective, key))
 	}
 	return issues
 }
@@ -482,7 +489,7 @@ func analyzeMounted(registry map[string]*componentType, path string, node *yaml.
 	if node == nil {
 		return nil
 	}
-	if isComponentSequence(node) {
+	if isEffectiveComponentSequence(node, effective) {
 		mapping, _ := effective.(map[string]interface{})
 		return analyzeComponent(registry, path, node, mapping, unknownSeverity)
 	}
@@ -579,6 +586,26 @@ func isComponentSequence(node *yaml.Node) bool {
 		}
 	}
 	return false
+}
+
+// isEffectiveComponentSequence also recognizes a source overlay that omits its
+// inherited child's type. The YAML parser treats such single-key sequences as
+// child nodes and supplies the inherited @type after materialization, so source
+// validation must use that effective shape rather than reclassifying the child
+// as a field on its parent.
+func isEffectiveComponentSequence(node *yaml.Node, effective interface{}) bool {
+	if node == nil || node.Kind != yaml.SequenceNode {
+		return false
+	}
+	if isComponentSequence(node) {
+		return true
+	}
+	mapping, ok := effective.(map[string]interface{})
+	if !ok {
+		return false
+	}
+	typeName, ok := mapping["@type"].(string)
+	return ok && strings.TrimSpace(typeName) != ""
 }
 
 func normalizeType(value string) string {

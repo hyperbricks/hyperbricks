@@ -28,6 +28,16 @@ type Location struct {
 	Range Range  `json:"range"`
 }
 
+// LocationLink carries both the complete source relation under the cursor and
+// its destination. Definition clients use OriginSelectionRange for the
+// Cmd/Ctrl-click underline instead of guessing a punctuation-delimited word.
+type LocationLink struct {
+	OriginSelectionRange *Range `json:"originSelectionRange,omitempty"`
+	TargetURI            string `json:"targetUri"`
+	TargetRange          Range  `json:"targetRange"`
+	TargetSelectionRange Range  `json:"targetSelectionRange"`
+}
+
 type DiagnosticRelatedInformation struct {
 	Location Location `json:"location"`
 	Message  string   `json:"message"`

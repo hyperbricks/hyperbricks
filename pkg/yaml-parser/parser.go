@@ -54,6 +54,17 @@ type Document struct {
 	Diagnostics []Diagnostic
 }
 
+// InheritanceTarget is one object path accepted by inheritance resolution.
+// Paths traverse roots and Node.Children only; component-valued properties in
+// values or other ordinary mappings are deliberately not addressable.
+type InheritanceTarget struct {
+	Path   string
+	Type   string
+	Source string
+	Line   int
+	Column int
+}
+
 // Diagnostic describes a non-fatal YAML source normalization performed before
 // runtime materialization.
 type Diagnostic struct {
@@ -73,6 +84,7 @@ type Diagnostic struct {
 type ParseOptions struct {
 	RecoverDuplicateChildren bool
 	AllowUnknownTypes        bool
+	Source                   string
 }
 
 // Node is a named HyperBricks object or nested object extension.
@@ -245,6 +257,12 @@ func ParseBytesWithOptions(input []byte, opts ParseOptions) (*Document, error) {
 		return nil, err
 	}
 	doc.Diagnostics = append(doc.Diagnostics, ctx.diagnostics...)
+	if opts.Source != "" {
+		applyDiagnosticSource(doc.Diagnostics, opts.Source)
+		for _, root := range doc.Roots {
+			setNodeSource(root, opts.Source)
+		}
+	}
 	return doc, nil
 }
 
@@ -278,6 +296,52 @@ func (d *Document) MaterializeWithOptions(opts Options) (map[string]interface{},
 		out[root.Name] = materializeNodeToMap(node, ctx, root.Name)
 	}
 	return out, ctx.diagnostics, nil
+}
+
+// InheritanceTargets returns the effective root and child paths that can be
+// passed to inherit. Invalid roots are skipped so an editor can still offer
+// targets from the rest of a document while one reference is being typed.
+func (d *Document) InheritanceTargets() []InheritanceTarget {
+	if d == nil {
+		return nil
+	}
+	roots := make(map[string]*Node, len(d.Roots))
+	for _, root := range d.Roots {
+		if root == nil || strings.TrimSpace(root.Name) == "" {
+			continue
+		}
+		roots[root.Name] = root
+	}
+	resolved := make(map[string]*Node, len(roots))
+	resolving := make(map[string]bool, len(roots))
+	targets := make([]InheritanceTarget, 0, len(roots))
+	var collect func(string, *Node)
+	collect = func(path string, node *Node) {
+		if node == nil || path == "" {
+			return
+		}
+		targets = append(targets, InheritanceTarget{
+			Path:   path,
+			Type:   node.Type,
+			Source: node.Source,
+			Line:   node.Line,
+			Column: node.Column,
+		})
+		for _, child := range node.Children {
+			collect(joinPath(path, child.Name), child)
+		}
+	}
+	for _, root := range d.Roots {
+		if root == nil || strings.TrimSpace(root.Name) == "" {
+			continue
+		}
+		node, err := resolveRootNode(root, roots, resolved, resolving)
+		if err != nil {
+			continue
+		}
+		collect(root.Name, node)
+	}
+	return targets
 }
 
 // ToMap converts a resolved node into the runtime map shape.

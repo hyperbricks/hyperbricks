@@ -108,7 +108,7 @@ func TestAnalyzerCompletesOnlyReachableInheritanceTargetsAndInheritedFields(t *t
 	}
 }
 
-func TestAnalyzerPreservesMountedTargetPathsAndExcludesCycleTargets(t *testing.T) {
+func TestAnalyzerCompletesOnlyParserValidInheritanceObjectPaths(t *testing.T) {
 	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: t.TempDir()})
 	source := `card:
   - type: template
@@ -120,14 +120,26 @@ func TestAnalyzerPreservesMountedTargetPathsAndExcludesCycleTargets(t *testing.T
         - item:
             - type: text
             - value: row
+tree:
+  - type: tree
+  - branch:
+      - type: tree
+      - leaf:
+          - type: html
+          - value: nested
 page:
   - type: tree
   - child:
       - inherit:` + " \n"
-	items := analyzer.Completions("untitled:page", source, Position{Line: 13, Character: 17}, nil)
-	for _, target := range []string{"card", "card.values.button", "card.values.groups[0].item"} {
+	items := analyzer.Completions("untitled:page", source, Position{Line: 20, Character: 17}, nil)
+	for _, target := range []string{"card", "tree", "tree.branch", "tree.branch.leaf"} {
 		if !hasCompletion(items, target) {
-			t.Fatalf("mounted target %q missing from %#v", target, items)
+			t.Fatalf("inheritance target %q missing from %#v", target, items)
+		}
+	}
+	for _, invalid := range []string{"card.values.button", "card.values.groups[0].item"} {
+		if hasCompletion(items, invalid) {
+			t.Fatalf("non-child object path %q leaked into %#v", invalid, items)
 		}
 	}
 	for _, cycle := range []string{"page", "page.child"} {
@@ -137,17 +149,76 @@ page:
 	}
 
 	inherited := `card:
-  - type: template
-  - values:
-      button:
-        - type: html
-        - value: click
+  - type: tree
+  - button:
+      - type: html
+      - value: click
 page:
-  - inherit: card.values.button
+  - inherit: card.button
   - `
-	fields := analyzer.Completions("untitled:page", inherited, Position{Line: 8, Character: 4}, nil)
+	fields := analyzer.Completions("untitled:page", inherited, Position{Line: 7, Character: 4}, nil)
 	if !hasCompletion(fields, "trimspace") || hasCompletion(fields, "route") {
-		t.Fatalf("mounted inherited type fields = %#v", fields)
+		t.Fatalf("child-path inherited type fields = %#v", fields)
+	}
+}
+
+func TestAnalyzerCompletesInheritedChildPathSegmentsWithoutPrefixDuplication(t *testing.T) {
+	root := t.TempDir()
+	sourceDir := filepath.Join(root, "hyperbricks")
+	partialsDir := filepath.Join(sourceDir, "partials")
+	if err := os.MkdirAll(partialsDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: root})
+	currentURI := pathToURI(filepath.Join(sourceDir, "app.hyperbricks.yaml"))
+	siteURI := pathToURI(filepath.Join(partialsDir, "site.hyperbricks.yaml"))
+	viewsURI := pathToURI(filepath.Join(partialsDir, "views.hyperbricks.yaml"))
+	source := `imports:
+  - partials/site.hyperbricks.yaml
+  - partials/views.hyperbricks.yaml
+about_page:
+  - inherit: todo_page
+  - body:
+      - values:
+          content:
+            - inherit: todo_about
+probe:
+  - inherit: about_page.b
+`
+	documents := map[string]string{
+		currentURI: source,
+		siteURI: `todo_page:
+  - type: hypermedia
+  - body:
+      - type: template
+      - values:
+          content:
+            - type: tree
+`,
+		viewsURI: `todo_about:
+  - type: html
+  - value: About
+`,
+	}
+	items := analyzer.Completions(currentURI, source, Position{Line: 10, Character: utf16Length("  - inherit: about_page.b")}, documents)
+	body, ok := completionByLabel(items, "body")
+	if !ok || body.InsertText != "body" || !strings.Contains(body.Detail, "about_page.body") {
+		t.Fatalf("dotted child segment completion = %#v in %#v", body, items)
+	}
+	if hasCompletion(items, "about_page.body") {
+		t.Fatalf("full path would duplicate typed prefix: %#v", items)
+	}
+
+	invalid := strings.Replace(source, "inherit: about_page.b", "inherit: about_page.body.values.c", 1)
+	items = analyzer.Completions(currentURI, invalid, Position{Line: 10, Character: utf16Length("  - inherit: about_page.body.values.c")}, documents)
+	if len(items) != 0 {
+		t.Fatalf("template values leaked into inheritance object paths: %#v", items)
+	}
+
+	bare := source + "about_page.body.values.c\n"
+	items = analyzer.Completions(currentURI, bare, Position{Line: 11, Character: utf16Length("about_page.body.values.c")}, documents)
+	if len(items) != 0 {
+		t.Fatalf("bare YAML text received reference completions: %#v", items)
 	}
 }
 

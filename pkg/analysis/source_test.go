@@ -62,6 +62,10 @@ page:
   - template:
       values:
         heading: Welcome
+        payload:
+          cards:
+            - title: First
+            - title: Second
 view:
   - type: template
   - values:
@@ -76,6 +80,9 @@ leaf:
 `), SourceOptions{})
 	if unsupported := issuesByCodeList(issues, "component.unsupported_field"); len(unsupported) != 0 {
 		t.Fatalf("dynamic/resolver mappings were treated as schema fields: %#v (all %#v)", unsupported, issues)
+	}
+	if placements := issuesByCodeList(issues, "component.invalid_child_placement"); len(placements) != 0 {
+		t.Fatalf("dynamic list data was treated as component children: %#v (all %#v)", placements, issues)
 	}
 }
 
@@ -223,6 +230,97 @@ func TestAnalyzeSourceUsesUnsavedImportOverlayAndInheritedRequiredFields(t *test
 	issues := AnalyzeSource(main, SourceOptions{Filename: mainPath, ReadFile: read})
 	if len(issues) != 0 {
 		t.Fatalf("inherited source issues = %#v", issues)
+	}
+}
+
+func TestAnalyzeSourceAcceptsInheritedChildOverlaysAcrossImports(t *testing.T) {
+	root := t.TempDir()
+	mainPath := filepath.Join(root, "app.hyperbricks.yaml")
+	sitePath := filepath.Join(root, "partials", "site.hyperbricks.yaml")
+	viewsPath := filepath.Join(root, "partials", "views.hyperbricks.yaml")
+	main := []byte(`imports: [partials/site.hyperbricks.yaml]
+about_page:
+  - inherit: todo_page
+  - body:
+      - values:
+          content:
+            - inherit: todo_about
+broken_page:
+  - inherit: todo_page
+  - not_a_parent_field: true
+  - body:
+      - not_a_template_field: true
+`)
+	sources := map[string][]byte{
+		mainPath: main,
+		sitePath: []byte(`imports: [views.hyperbricks.yaml]
+todo_page:
+  - type: hypermedia
+  - body:
+      - type: template
+      - inline: '{{.content}}'
+      - values:
+          content:
+            - type: tree
+`),
+		viewsPath: []byte(`todo_about:
+  - type: html
+  - value: About
+`),
+	}
+	read := func(path string) ([]byte, error) {
+		content, ok := sources[filepath.Clean(path)]
+		if !ok {
+			return nil, os.ErrNotExist
+		}
+		return content, nil
+	}
+
+	issues := AnalyzeSource(main, SourceOptions{Filename: mainPath, ReadFile: read})
+	unsupported := issuesByCodeList(issues, "component.unsupported_field")
+	unsupportedPaths := make(map[string]bool, len(unsupported))
+	for _, issue := range unsupported {
+		unsupportedPaths[issue.Path] = true
+	}
+	wantUnsupported := []string{
+		"broken_page.not_a_parent_field",
+		"broken_page.body.not_a_template_field",
+	}
+	if len(unsupported) != len(wantUnsupported) {
+		t.Fatalf("unsupported fields = %#v (all %#v)", unsupported, issues)
+	}
+	for _, path := range wantUnsupported {
+		if !unsupportedPaths[path] {
+			t.Fatalf("unsupported fields missing %q: %#v (all %#v)", path, unsupported, issues)
+		}
+	}
+	if placements := issuesByCodeList(issues, "component.invalid_child_placement"); len(placements) != 0 {
+		t.Fatalf("inherited child overlay placements = %#v (all %#v)", placements, issues)
+	}
+	if len(issues) != len(wantUnsupported) {
+		t.Fatalf("inherited child overlay issues = %#v", issues)
+	}
+}
+
+func TestAnalyzeMountedUsesEffectiveTypeForInheritedChildOverlay(t *testing.T) {
+	root, err := decodeYAML([]byte(`overlay:
+  - made_up: true
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := documentBody(root)
+	if body == nil || len(body.Content) != 2 {
+		t.Fatalf("decoded overlay = %#v", body)
+	}
+
+	issues := analyzeMounted(sourceSchemaRegistry(), "page.body", body.Content[1], map[string]interface{}{
+		"@type": "<HTML>",
+		"value": "inherited",
+	}, SeverityError)
+	unsupported := issuesByCodeList(issues, "component.unsupported_field")
+	if len(issues) != 1 || len(unsupported) != 1 || unsupported[0].Path != "page.body.made_up" || unsupported[0].Message != `html does not support field "made_up"` {
+		t.Fatalf("effective inherited child issues = %#v", issues)
 	}
 }
 

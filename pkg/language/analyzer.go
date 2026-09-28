@@ -157,11 +157,7 @@ func (a *Analyzer) Completions(uri, text string, position Position, documents ma
 		return a.typeCompletions()
 	case "inherit":
 		targets := a.inheritTargets(uri, text, position, documents)
-		items := make([]CompletionItem, 0, len(targets))
-		for _, target := range targets {
-			items = append(items, CompletionItem{Label: target, Kind: CompletionItemKindReference, InsertText: target})
-		}
-		return items
+		return inheritCompletionItems(targets, inheritReferencePrefix(linePrefix))
 	}
 
 	context := componentContext(text, position.Line, indent)
@@ -377,13 +373,7 @@ func editorHoverExample(example string) string {
 }
 
 func (a *Analyzer) inheritTargets(uri, text string, position Position, documents map[string]string) []string {
-	targets := make(map[string]bool)
-	definitions := make(map[string]targetType)
-	sources := a.reachableSources(uri, text, documents)
-	for _, source := range sources {
-		collectTargets(source, targets)
-		collectTargetTypes(source, definitions)
-	}
+	targets, _, definitions := a.inheritanceReferenceIndex(uri, text, documents)
 	currentPath := componentPathAtPosition(text, position)
 	for target := range targets {
 		if inheritanceWouldCycle(currentPath, target, definitions) {
@@ -396,6 +386,69 @@ func (a *Analyzer) inheritTargets(uri, text string, position Position, documents
 	}
 	sort.Strings(out)
 	return out
+}
+
+func inheritReferencePrefix(linePrefix string) string {
+	colon := strings.Index(linePrefix, ":")
+	if colon < 0 {
+		return ""
+	}
+	value := strings.TrimSpace(linePrefix[colon+1:])
+	if len(value) > 0 && (value[0] == '\'' || value[0] == '"') {
+		value = value[1:]
+	}
+	return strings.TrimSpace(value)
+}
+
+// inheritCompletionItems keeps root completion compatible with the complete
+// target list while making dotted completion segment-aware. VS Code treats a
+// dot as a word boundary, so inserting the full target after a typed prefix
+// would otherwise duplicate that prefix (for example base.c -> base.base.card).
+func inheritCompletionItems(targets []string, prefix string) []CompletionItem {
+	lastDot := strings.LastIndex(prefix, ".")
+	if lastDot < 0 {
+		items := make([]CompletionItem, 0, len(targets))
+		for _, target := range targets {
+			items = append(items, CompletionItem{Label: target, Kind: CompletionItemKindReference, InsertText: target})
+		}
+		return items
+	}
+
+	parent := prefix[:lastDot]
+	partial := prefix[lastDot+1:]
+	if parent == "" {
+		return nil
+	}
+	parentPrefix := parent + "."
+	segments := make(map[string]string)
+	for _, target := range targets {
+		if !strings.HasPrefix(target, parentPrefix) {
+			continue
+		}
+		remainder := strings.TrimPrefix(target, parentPrefix)
+		segment := remainder
+		if dot := strings.Index(segment, "."); dot >= 0 {
+			segment = segment[:dot]
+		}
+		if segment == "" || !strings.HasPrefix(segment, partial) {
+			continue
+		}
+		fullPath := parentPrefix + segment
+		segments[segment] = fullPath
+	}
+	labels := make([]string, 0, len(segments))
+	for label := range segments {
+		labels = append(labels, label)
+	}
+	sort.Strings(labels)
+	items := make([]CompletionItem, 0, len(labels))
+	for _, label := range labels {
+		items = append(items, CompletionItem{
+			Label: label, Kind: CompletionItemKindReference,
+			Detail: "HyperBricks object " + segments[label], InsertText: label,
+		})
+	}
+	return items
 }
 
 type pathCompletionSpec struct {
@@ -898,56 +951,75 @@ func visitMountedYAML(node *yaml.Node, visit func(*yaml.Node)) {
 	}
 }
 
-func collectTargets(text string, targets map[string]bool) {
-	visitSourceComponents(text, func(path string, _ *yaml.Node) {
-		targets[path] = true
-	})
-}
-
 type targetType struct {
 	typeName string
 	inherit  string
 }
 
 func (a *Analyzer) inheritedType(uri, text, inherit string, documents map[string]string) string {
-	targets := make(map[string]targetType)
-	for _, source := range a.reachableSources(uri, text, documents) {
-		collectTargetTypes(source, targets)
-	}
-	visiting := make(map[string]bool)
-	var resolve func(string) string
-	resolve = func(target string) string {
-		target = strings.TrimSpace(target)
-		if target == "" || visiting[target] {
-			return ""
-		}
-		definition, ok := targets[target]
-		if !ok {
-			return ""
-		}
-		if definition.typeName != "" {
-			return definition.typeName
-		}
-		visiting[target] = true
-		resolved := resolve(definition.inherit)
-		delete(visiting, target)
-		return resolved
-	}
-	return resolve(inherit)
+	_, types, _ := a.inheritanceReferenceIndex(uri, text, documents)
+	return types[strings.TrimSpace(inherit)]
 }
 
-func collectTargetTypes(text string, targets map[string]targetType) {
-	visitSourceComponents(text, func(path string, sequence *yaml.Node) {
-		entries := sequenceEntries(sequence)
-		definition := targetType{}
-		if typeNode := entries["type"]; typeNode != nil && typeNode.Kind == yaml.ScalarNode {
-			definition.typeName = typeNode.Value
+func (a *Analyzer) inheritanceReferenceIndex(uri, text string, documents map[string]string) (map[string]bool, map[string]string, map[string]targetType) {
+	document := &yamlparser.Document{}
+	definitions := make(map[string]targetType)
+	for _, source := range a.reachableSources(uri, text, documents) {
+		sourceDocument, err := parseInheritanceReferenceSource(source)
+		if err != nil {
+			continue
 		}
-		if inheritNode := entries["inherit"]; inheritNode != nil && inheritNode.Kind == yaml.ScalarNode {
-			definition.inherit = inheritNode.Value
+		for _, root := range sourceDocument.Roots {
+			if root == nil || strings.TrimSpace(root.Name) == "" {
+				continue
+			}
+			document.Roots = append(document.Roots, root)
+			collectInheritanceDefinitions(root.Name, root, definitions)
 		}
-		targets[path] = definition
-	})
+	}
+
+	targets := make(map[string]bool)
+	types := make(map[string]string)
+	for _, target := range document.InheritanceTargets() {
+		targets[target.Path] = true
+		if strings.TrimSpace(target.Type) != "" {
+			types[target.Path] = target.Type
+		}
+	}
+	return targets, types, definitions
+}
+
+func parseInheritanceReferenceSource(source string) (*yamlparser.Document, error) {
+	options := yamlparser.ParseOptions{AllowUnknownTypes: true, RecoverDuplicateChildren: true}
+	document, err := yamlparser.ParseBytesWithOptions([]byte(source), options)
+	if err == nil {
+		return document, nil
+	}
+	// A bare dash is the normal transient state while requesting field
+	// completion. It is not a component entry yet, so omit it from the
+	// reference index while preserving all surrounding source and line breaks.
+	lines := splitLines(source)
+	changed := false
+	for index, line := range lines {
+		if strings.TrimSpace(line) == "-" {
+			lines[index] = ""
+			changed = true
+		}
+	}
+	if !changed {
+		return nil, err
+	}
+	return yamlparser.ParseBytesWithOptions([]byte(strings.Join(lines, "\n")), options)
+}
+
+func collectInheritanceDefinitions(path string, node *yamlparser.Node, definitions map[string]targetType) {
+	if node == nil || path == "" {
+		return
+	}
+	definitions[path] = targetType{typeName: node.Type, inherit: node.Inherit}
+	for _, child := range node.Children {
+		collectInheritanceDefinitions(joinTargetPath(path, child.Name), child, definitions)
+	}
 }
 
 func visitSourceComponents(text string, visit func(string, *yaml.Node)) {

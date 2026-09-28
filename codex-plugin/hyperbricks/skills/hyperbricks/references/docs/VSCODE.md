@@ -11,42 +11,65 @@ Use an extension build and `hyperbricks` executable from the same HyperBricks
 revision. The editor protocol is versioned separately from the public Language
 Server Protocol and rejects incompatible clients with an explicit message.
 
-## Features
+## Feature quick reference
 
-The extension provides:
-
-- HyperBricks-aware YAML highlighting;
-- static syntax and native-component diagnostics in the Problems panel;
-- completion for component types, fields, inheritance targets, and local
-  template/resource paths;
-- component and field hover information from the Go schema registry;
-- whole-document formatting that preserves ordered component entries, comments,
-  and scalar styles;
-- authenticated render diagnostics from a running local development or debug
-  runtime.
+| Feature | How to use it | Scope and result |
+| --- | --- | --- |
+| Syntax highlighting | Open a `*.hyperbricks.yaml` file and confirm the language mode is **HyperBricks YAML**. | Theme-driven TextMate scopes distinguish declarations, native type values, reserved fields, inheritance, resolvers, paths, and Go-template expressions. |
+| Static diagnostics | Edit an owned source file, an untitled HyperBricks buffer, or the selected package profile and open VS Code's **Problems** panel. | Unsaved buffers are checked for YAML shape, native component fields, imports, inheritance, and package configuration. Corrected findings clear immediately. |
+| Completion and snippets | Type normally or run **Trigger Suggest** in a `type`, component field, `inherit`, resolver, template, or recognized resource-path position. | Suggestions come from the executable's schema and effective import graph. Dotted object-path completion is limited to runtime-valid `inherit` references. |
+| Hover help | Hover a native `type` value or schema-owned field. | Shows the matching description from the Go schema registry and, for fields, an example when available. Inherited components use their effective native type. |
+| Go to Definition | Press F12 or Cmd/Ctrl-click an import, `inherit` value, `template.file`, or recognized local resource path. | Opens the effective declaration or existing file, including targets reached through transitive imports and unsaved buffers. |
+| Formatting | Run **Format Document**, or separately enable VS Code's format-on-save setting. | Formats the complete document with two-space indentation while preserving ordered entries, mapping order, comments, scalar styles, and parsed meaning. |
+| Module health check | Run **HyperBricks: Run Module Check**. | Runs `hyperbricks doctor` against the saved module and writes its complete report to the HyperBricks output channel. |
+| Runtime feedback | Start the selected module in development or debug mode and use automatic discovery or **Connect Runtime Diagnostics**. | Adds safely mapped render issues to **Problems**, route coverage to the status bar, and the browser Errors view when the runtime advertises it. |
 
 Component source and package configuration are different contracts even when a
-profile also ends in `.hyperbricks.yaml`. Syntax and native-schema feedback can
-still operate on an isolated component buffer, while import graphs and
-module-local path completion are confined to the selected module's configured
+profile also ends in `.hyperbricks.yaml`. Lexical highlighting works as soon as
+VS Code recognizes the language. An untitled component buffer can also receive
+isolated static language features, but a file-backed source must have a safely
+selected owning module before it is sent to the language server. Import graphs
+and module-local path completion remain confined to that module's configured
 HyperBricks source directory. The selected package profile is validated as
 package configuration rather than as a component tree.
 
-## Build the extension from this checkout
+## Install and first use
 
-The extension source lives under `editors/vscode/`. From that directory, install
-its pinned dependencies and build the extension:
+Use a VSIX and `hyperbricks` executable built from the same revision. The
+extension is not currently installed from a marketplace.
+
+If you do not already have a VSIX, build one from the checkout's
+`editors/vscode/` directory:
 
 ```bash
 npm ci
-npm run compile
+npm run package
 ```
 
-Open the directory in VS Code and run its extension-development launch target,
-or package a local VSIX with:
+The package command compiles the extension first and writes the versioned VSIX
+in that directory.
+
+1. Install the resulting VSIX with **Extensions: Install from VSIX...**, or run:
+
+   ```bash
+   code --install-extension path/to/hyperbricks-vscode-VERSION.vsix
+   ```
+
+2. Run **Developer: Reload Window**, open a trusted local HyperBricks workspace,
+   and open a `*.hyperbricks.yaml` file.
+3. Confirm that the language mode is **HyperBricks YAML**. If the status bar says
+   **select module**, configure the owning module explicitly. Use
+   **HyperBricks: Show Output** to verify the selected module and package profile.
+4. Leave `hyperbricks.module` empty for automatic module ownership. Set
+   `hyperbricks.executable` only when the matching executable is not available
+   as `hyperbricks` on `PATH`, or when the workspace must use a checkout-specific
+   build.
+
+For extension development, compile the source and launch the tracked Extension
+Development Host configuration:
 
 ```bash
-npm run package
+npm run compile
 ```
 
 The VSIX is a local build artifact and is not part of the HyperBricks runtime
@@ -65,20 +88,24 @@ send ordinary log output to its standard output; protocol diagnostics and trace
 messages belong on standard error or in the editor's HyperBricks output view.
 
 The extension supplies the selected module and package profile during
-initialization. The server keeps unsaved documents in an in-memory overlay, so
-fast diagnostics and completion reflect the editor buffer instead of lagging one
-save behind.
+initialization. When `hyperbricks.module` is empty, it selects the nearest
+ancestor of the active HyperBricks source that owns the configured package
+profile. This supports a repository workspace containing several modules; moving
+between modules restarts and scopes the client to the newly selected package.
+The server keeps unsaved documents in an in-memory overlay, so fast diagnostics,
+completion, and definition lookup reflect the editor buffer instead of lagging
+one save behind.
 
 ## Settings
 
-| Setting | Default | Purpose |
+| Setting | Default | Change it when |
 | --- | --- | --- |
-| `hyperbricks.executable` | `hyperbricks` | Executable that supplies `language-server` and `doctor`. |
-| `hyperbricks.module` | `default` | Module name or directory, using the normal HyperBricks module-selection contract. |
-| `hyperbricks.config` | `package.hyperbricks.yaml` | Package profile relative to the selected module. |
-| `hyperbricks.runtimeDiagnostics` | `auto` | `auto`, `on`, or `off` for runtime feedback. |
-| `hyperbricks.runtimeUrl` | empty | Explicit HTTP(S) runtime base URL; the extension sends only its origin, while empty allows local discovery. |
-| `hyperbricks.trace.server` | `off` | `off`, `messages`, or `verbose` protocol tracing. |
+| `hyperbricks.executable` | `hyperbricks` | The matching executable is not on `PATH`, or the workspace should use a checkout-specific build. |
+| `hyperbricks.module` | empty (automatic) | Automatic ownership cannot identify the intended module, or another module must be selected explicitly. |
+| `hyperbricks.config` | `package.hyperbricks.yaml` | The selected module uses a differently named package profile. |
+| `hyperbricks.runtimeDiagnostics` | `auto` | Runtime feedback must report unavailability (`on`) or must not connect automatically (`off`). |
+| `hyperbricks.runtimeUrl` | empty | The extension should use an explicit HTTP(S) runtime origin instead of local discovery. |
+| `hyperbricks.trace.server` | `off` | You need `messages` or `verbose` language-server protocol tracing. |
 
 `auto` connects automatically, using `runtimeUrl` when set or local discovery
 otherwise, and quietly skips profiles such as live mode where diagnostics are
@@ -108,17 +135,17 @@ language-server sessions without that handoff.
 
 Open the Command Palette and use:
 
-- **HyperBricks: Restart Language Server**;
-- **HyperBricks: Connect Runtime Diagnostics**;
-- **HyperBricks: Disconnect Runtime Diagnostics**;
-- **HyperBricks: Run Module Check**;
-- **HyperBricks: Open Runtime Errors** (when the development dashboard is
-  enabled);
-- **HyperBricks: Show Output**.
+| Command | Use it when | Result or availability |
+| --- | --- | --- |
+| **HyperBricks: Restart Language Server** | Recovering from a server failure or manually reloading source intelligence. | Restarts the client with the current executable, module, profile, and runtime settings. |
+| **HyperBricks: Connect Runtime Diagnostics** | Requesting a manual connection to a development or debug runtime. | Attempts the connection; the configured or discovered runtime must also be reachable, compatible, and authorized. |
+| **HyperBricks: Disconnect Runtime Diagnostics** | Temporarily stopping runtime feedback. | Leaves highlighting, static diagnostics, completion, navigation, hover, and formatting active. |
+| **HyperBricks: Run Module Check** | Checking the complete saved module and package profile. | Runs `hyperbricks doctor` and writes its full report to the HyperBricks output channel. |
+| **HyperBricks: Open Runtime Errors** | Inspecting rendered failures in the browser. | Opens the view when the connected runtime advertises it; otherwise explains why it is unavailable. |
+| **HyperBricks: Show Output** | Diagnosing executable, module, runtime, or protocol problems. | Opens the HyperBricks output channel. |
 
-**Run Module Check** uses the configured executable, module, and package profile
-with `hyperbricks doctor`. Doctor remains a saved-project health check; live
-typing diagnostics come directly from the language server.
+Doctor remains a saved-project health check; live typing diagnostics come
+directly from the language server.
 
 ## Static feedback
 
@@ -132,6 +159,50 @@ fatal structural error before treating the remaining Problems list as complete.
 Protocol version 1 does not ingest plugin-owned schemas. When the selected
 profile enables plugins, unknown types are warnings because their schema may be
 plugin-owned; their fields remain structurally editable and are not validated.
+
+## Completion and hover
+
+Use normal typing or VS Code's **Trigger Suggest** command for:
+
+- native component type values after `type:`;
+- schema-owned fields and child slots inside an ordered component;
+- resolver structures and path-base names;
+- existing local template and resource paths in recognized schema fields; and
+- reachable inheritance targets after `inherit:`.
+
+Inheritance completion follows transitive imports and unsaved open buffers. It
+also completes one dotted segment at a time. For example, after:
+
+```yaml
+probe:
+  - inherit: about_page.b
+```
+
+the editor can offer and insert `body` without duplicating the already typed
+`about_page.` prefix. These are inheritance paths, not arbitrary YAML object
+paths: the runtime traverses roots and component children, but it does not
+traverse ordinary mappings such as `about_page.body.values.content`.
+
+Hover a native `type` value or schema-owned field to see its description and a
+maintained example when one is available. Protocol version 1 does not provide
+plugin-owned schema completion or hover, AI-generated code, Quick Fixes, or
+general code actions.
+
+## Source navigation
+
+Use **Go to Definition**, F12, or Cmd/Ctrl-click on:
+
+- a file listed under `imports` to open that HyperBricks source;
+- an `inherit` value to open the matching component declaration, including a
+  declaration reached through transitive imports;
+- `template.file` to open the configured template file; or
+- a local file/path resolver value to open the existing resource it resolves.
+
+Navigation follows unsaved imported buffers and the selected package's
+configured directories. It returns no destination for a missing path,
+unreachable component, filesystem traversal, or symlink that resolves outside
+the selected module. This keeps editor navigation under the same ownership
+boundary as diagnostics and completion.
 
 ## Formatting
 
@@ -223,10 +294,21 @@ complete saved-project configuration report.
 
 ### Static feedback uses the wrong module
 
-Set `hyperbricks.module` to the module name or directory and
-`hyperbricks.config` to its active package profile, then restart the language
-server. Imports and local resource completion are resolved within that selected
-module.
+Leave `hyperbricks.module` empty to select the nearest ancestor of the active
+HyperBricks file that contains `hyperbricks.config`. If no safe owning package
+is found, the status bar asks you to select a module and the extension does not
+send that source to a fallback package. Set `hyperbricks.module` explicitly when
+the source and package profile do not share that directory ancestry, then restart
+the language server. Imports and local resource completion stay confined to the
+selected module.
+
+### A HyperBricks file has no highlighting
+
+Confirm the editor's language mode is **HyperBricks YAML**. The extension uses
+its own `hyperbricks-yaml` language identifier and `source.hyperbricks-yaml`
+grammar scope so an older extension cannot take ownership through the same
+identifier. After replacing a local VSIX build, run **Developer: Reload Window**
+so VS Code reloads the manifest and grammar.
 
 ### Runtime feedback is disconnected
 

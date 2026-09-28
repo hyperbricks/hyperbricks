@@ -159,6 +159,7 @@ func (server *Server) handle(ctx context.Context, message rpcMessage) (bool, err
 					"triggerCharacters": []string{":", ".", "/"},
 				},
 				"hoverProvider":              true,
+				"definitionProvider":         true,
 				"documentFormattingProvider": true,
 				"experimental": map[string]interface{}{
 					"hyperbricksProtocolVersion": ProtocolVersion,
@@ -266,6 +267,16 @@ func (server *Server) handle(ctx context.Context, message rpcMessage) (bool, err
 			return false, respond(nil, nil)
 		}
 		return false, respond(analyzer.Hover(params.TextDocument.URI, text, params.Position, documents), nil)
+	case "textDocument/definition":
+		var params TextDocumentPositionParams
+		if err := json.Unmarshal(message.Params, &params); err != nil {
+			return false, respond(nil, &rpcError{Code: -32602, Message: err.Error()})
+		}
+		analyzer, text, documents, ok := server.snapshotFor(params.TextDocument.URI)
+		if !ok {
+			return false, respond([]LocationLink{}, nil)
+		}
+		return false, respond(analyzer.DefinitionLinks(params.TextDocument.URI, text, params.Position, documents), nil)
 	case "textDocument/formatting":
 		var params FormattingParams
 		if err := json.Unmarshal(message.Params, &params); err != nil {
@@ -359,7 +370,12 @@ func (server *Server) publishMergedDiagnostics(uri string) error {
 		runtime = nil
 	}
 	server.stateMu.RUnlock()
-	diagnostics := append(static, runtime...)
+	// LSP requires an array here. A nil slice is encoded as JSON null, which
+	// clients do not treat as the replacement empty set needed to clear stale
+	// diagnostics after a document is corrected.
+	diagnostics := make([]Diagnostic, 0, len(static)+len(runtime))
+	diagnostics = append(diagnostics, static...)
+	diagnostics = append(diagnostics, runtime...)
 	params := map[string]interface{}{"uri": uri, "diagnostics": diagnostics}
 	if open {
 		params["version"] = document.Version
