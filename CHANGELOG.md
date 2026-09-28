@@ -1,5 +1,57 @@
 # Changelog
 
+## v1.2.6-beta
+
+Changes since `v1.2.5-beta`.
+
+### YAML inheritance
+
+- Preserve same-named nested children that declare their own `inherit` target,
+  so dotted inheritance paths resolve before local values are merged.
+- Recursively merge local nested overrides onto the resolved child while
+  preserving inherited values and unrelated siblings. Cover direct merges,
+  chained inheritance, deep dotted paths, and sibling preservation with parser
+  tests and the runnable `yaml-nested-inheritance-test` module.
+
+### Visual Studio Code
+
+- Add the protocol-v1 language server for editor clients working with
+  `*.hyperbricks.yaml` files. Clients and executables must support the same
+  HyperBricks editor protocol version.
+- Add YAML and schema-aware highlighting, static diagnostics, completion, hover,
+  Go to Definition, formatting, automatic module ownership, and configurable
+  Smart Enter behavior through the separately maintained
+  [HyperBricks VS Code extension](https://github.com/hyperbricks/hyperbricks-vscode).
+- Add development/debug runtime diagnostics with route coverage and status-bar
+  feedback, plus commands for language-server restart, Doctor, runtime Errors,
+  connection control, and extension output.
+- Move the extension source, npm dependency graph, user guide, contributor
+  workflow, tests, packaging, and detailed changelog into its own repository so
+  editor security alerts and releases are owned independently from the core.
+
+### Doctor and package metadata
+
+- Add `hyperbricks doctor --verbose` (`-v`) to show every check as an indented
+  row under its category. Keep verbose output human-readable and mutually
+  exclusive with `--json`.
+- Treat recorded HyperBricks metadata as source provenance: an equal or older
+  valid version passes, while a missing, invalid, or newer version warns with an
+  update prescription.
+- Add descriptions and examples to package-configuration and source/artifact
+  metadata fields for tooling consumers, and keep deployment-service types
+  separate from runtime package configuration.
+
+### Fixtures and test workflow
+
+- Add a documented module smoke fixture for nested YAML inheritance, including
+  exact copies, recursive overrides, direct same-name merges, multi-hop targets,
+  deep dotted lookups, and unrelated sibling preservation.
+- Add dedicated fixture initialization so package configuration is loaded from a
+  real file without directory-read warning noise.
+- Keep module smoke checks under `--with-modules`, clarify grouped test output
+  and skipped optional scopes, and leave extension checks to the standalone
+  extension repository.
+
 ## v1.2.5-beta
 
 Changes since `v1.2.4-beta`.

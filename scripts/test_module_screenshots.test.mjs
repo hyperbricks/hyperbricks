@@ -26,6 +26,9 @@ function fakeBrowser(attempts) {
       return {
         async innerText(options) {
           calls.body.push({ selector, ...options });
+          if (Array.isArray(currentAttempt.bodyText)) {
+            return currentAttempt.bodyText[Math.min(calls.body.length - 1, currentAttempt.bodyText.length - 1)] ?? '';
+          }
           return currentAttempt.bodyText ?? '';
         },
       };
@@ -125,5 +128,17 @@ test('a transient navigation failure is retried and leaves the successful page o
   assert.equal(calls.newPage.length, 1);
   assert.equal(calls.navigation.length, 2);
   assert.equal(calls.body.length, 1);
+  assert.equal(calls.close, 0);
+});
+
+test('an application readiness marker is polled without reloading the page', async () => {
+  const { browser, page, calls } = fakeBrowser([{
+    status: 200,
+    bodyText: ['Updating your list…', 'Your list is ready.'],
+  }]);
+
+  assert.equal(await waitForPage(browser, url, 'Your list is ready.', quickRetry), page);
+  assert.equal(calls.navigation.length, 1);
+  assert.equal(calls.body.length, 2);
   assert.equal(calls.close, 0);
 });

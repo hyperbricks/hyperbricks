@@ -204,12 +204,14 @@ func resolveTemplateField(value interface{}, ctx *valueResolverContext, path str
 	if ctx.opts.TemplateDir == "" {
 		return templateName, true
 	}
-	content, err := os.ReadFile(filepath.Join(ctx.opts.TemplateDir, templateName))
+	content, err := ctx.readResource(filepath.Join(ctx.opts.TemplateDir, templateName))
 	if err != nil {
 		ctx.addDiagnostic("warning", "template_file_missing", path, fmt.Sprintf("template.file %q could not be read: %v", templateName, err))
 		return templateName, true
 	}
-	parser.AddTemplate(templateName, string(content))
+	if !ctx.opts.SkipTemplateRegistration {
+		parser.AddTemplate(templateName, string(content))
+	}
 	return templateName, true
 }
 
@@ -324,12 +326,19 @@ func (ctx *valueResolverContext) resolveFile(raw interface{}, path string) inter
 		ctx.addDiagnostic("warning", "file_invalid", path, "file resolver must resolve to a file path")
 		return ""
 	}
-	content, err := os.ReadFile(filePath)
+	content, err := ctx.readResource(filePath)
 	if err != nil {
 		ctx.addDiagnostic("warning", "file_missing", path, fmt.Sprintf("file %q could not be read: %v", filePath, err))
 		return ""
 	}
 	return string(content)
+}
+
+func (ctx *valueResolverContext) readResource(path string) ([]byte, error) {
+	if ctx.opts.ResourceReadFile != nil {
+		return ctx.opts.ResourceReadFile(path)
+	}
+	return os.ReadFile(path)
 }
 
 func (ctx *valueResolverContext) resolvePathSpec(raw interface{}, path string) (string, bool) {
@@ -460,8 +469,20 @@ func (ctx *valueResolverContext) addDiagnostic(level string, code string, path s
 	}
 	if node := ctx.sourceNode; node != nil {
 		diagnostic.Source, diagnostic.Line, diagnostic.Column = node.Source, node.Line, node.Column
-		if location, ok := node.positions[strings.TrimPrefix(path, ctx.sourcePath+".")]; ok {
-			diagnostic.Source, diagnostic.Line, diagnostic.Column = location.file, location.line, location.column
+		// Resolver paths omit directive wrappers such as .file or .path.
+		// Retain the nearest known property's source location when the exact
+		// runtime value path has no source spelling, especially for inherited
+		// properties owned by another file.
+		for relative := strings.TrimPrefix(path, ctx.sourcePath+"."); relative != ""; {
+			if location, ok := node.positions[relative]; ok {
+				diagnostic.Source, diagnostic.Line, diagnostic.Column = location.file, location.line, location.column
+				break
+			}
+			separator := strings.LastIndexAny(relative, ".[")
+			if separator < 0 {
+				break
+			}
+			relative = relative[:separator]
 		}
 	}
 	ctx.diagnostics = append(ctx.diagnostics, diagnostic)

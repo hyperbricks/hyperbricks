@@ -16,4 +16,4 @@ echo "Building module plugins required by visual demos..."
 scripts/plugins/build_hyperbricks_plugins.sh
 
 echo "Running module screenshot checks..."
-npm run test:module-screenshots
+npm run test:module-screenshots -- --skip-plugin-build

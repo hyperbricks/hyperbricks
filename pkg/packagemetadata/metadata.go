@@ -64,19 +64,19 @@ var artifactFieldOrder = []string{
 
 // SourceMetadata is the stable metadata stored in a source package.
 type SourceMetadata struct {
-	Module        string
-	ModuleVersion string
-	HyperBricks   string
+	Module        string `mapstructure:"module" description:"Stable module identity under hyperbricks.metadata, reconciled from the selected module directory." example:"demo"`
+	ModuleVersion string `mapstructure:"moduleversion" description:"Developer-controlled semantic module release version. Build requires a valid version but does not bump or rewrite the source package." example:"1.0.0"`
+	HyperBricks   string `mapstructure:"hyperbricks" description:"HyperBricks version last recorded by source initialization or metadata update; in an archive, the exact version of the binary that built it." example:"v1.2.5-beta"`
 }
 
 // ArtifactMetadata is the immutable metadata rendered into an archive.
 type ArtifactMetadata struct {
-	SourceMetadata
-	Format        string
-	FormatVersion string
-	Commit        string
-	OriginBuildID string
-	BuiltAt       string
+	SourceMetadata `mapstructure:",squash"`
+	Format         string `mapstructure:"format" description:"Archive-only format identifier: hra or zip. Written into the build's in-memory package copy, not source configuration." example:"hra"`
+	FormatVersion  string `mapstructure:"format_version" description:"Archive-only metadata schema version supplied by the build pipeline. Not an application version or source setting." example:"1"`
+	Commit         string `mapstructure:"commit" description:"Archive-only Git revision of the selected module worktree, or unknown when unavailable." example:"unknown"`
+	OriginBuildID  string `mapstructure:"origin_build_id" description:"Archive-only provenance identifier for the originating build, supplied by the artifact workflow." example:"20260927-example"`
+	BuiltAt        string `mapstructure:"built_at" description:"Archive-only UTC build timestamp in RFC 3339 form. Normal builds do not write this into the source package." example:"2026-09-27T12:00:00Z"`
 }
 
 // ReconcileOptions controls a source metadata update.

@@ -39,6 +39,37 @@ CHECKS = (
     ModuleCheck("todo-demo-unpoly", 8123, (("/", ("Tasks",)),)),
     ModuleCheck("unpoly-guard-demo", 8132, (("/", ("Sign in",)), ("/private", ())),),
     ModuleCheck("streaming-demo", 18110, (("/", ("Streaming",)),)),
+    ModuleCheck(
+        "yaml-nested-inheritance-test",
+        8133,
+        (
+            ("/", ("Nested YAML inheritance regression fixture",)),
+            (
+                "/reference",
+                ("Reference content", "Version: 1.0.0", "Channel: stable", "Override: inherited default", "Shell sibling preserved"),
+            ),
+            (
+                "/copied",
+                ("Reference content", "Version: 1.0.0", "Channel: stable", "Override: inherited default", "Shell sibling preserved"),
+            ),
+            (
+                "/overridden",
+                ("Nested inheritance override", "Version: 1.0.0", "Channel: preview", "Override: works", "Shell sibling preserved"),
+            ),
+            (
+                "/direct-merge",
+                ("Direct same-name merge", "Version: 1.0.0", "Channel: candidate", "Override: normal merge works", "Shell sibling preserved"),
+            ),
+            (
+                "/chained",
+                ("Chained dotted inheritance", "Version: 2.0.0", "Channel: preview", "Override: works", "Shell sibling preserved"),
+            ),
+            (
+                "/deep-dotted",
+                ("Deep dotted lookup", "Owner: core", "Stage: customized", "Shell sibling preserved"),
+            ),
+        ),
+    ),
 )
 
 
@@ -135,6 +166,8 @@ def main() -> int:
                 print(f"  - {error}")
         else:
             print(f"PASS {check.name}")
+    print()
+    print("-" * 72)
     if failures:
         print(f"{failures} module(s) failed")
         return 1

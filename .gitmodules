@@ -1,0 +1,3 @@
+[submodule "editors/vscode"]
+	path = editors/vscode
+	url = https://github.com/hyperbricks/hyperbricks-vscode.git

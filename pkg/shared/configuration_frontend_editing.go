@@ -15,23 +15,23 @@ import (
 const DefaultSpacesRoute = "/__hyperbricks/spaces"
 
 type SpacesDirectory struct {
-	Base string `json:"base" mapstructure:"base"`
-	Path string `json:"path" mapstructure:"path"`
+	Base string `json:"base" mapstructure:"base" description:"Storage base for editor-managed assets: static or resources. Sharing images specifically require static storage." example:"static"`
+	Path string `json:"path" mapstructure:"path" description:"Contained relative subdirectory within the selected storage base, not an absolute path or public URL." example:"uploads/images"`
 }
 
 type SpacesUploadPolicy struct {
-	Accept    []string        `json:"accept" mapstructure:"accept"`
-	MaxBytes  int64           `json:"max_bytes" mapstructure:"max_bytes"`
-	Directory SpacesDirectory `json:"directory" mapstructure:"directory"`
+	Accept    []string        `json:"accept" mapstructure:"accept" description:"Allowed upload filename extensions, including their leading dots. Sharing-image policies accept image formats only." example:"[.jpg, .jpeg, .png, .webp]"`
+	MaxBytes  int64           `json:"max_bytes" mapstructure:"max_bytes" description:"Maximum upload size in bytes. Spaces upload-policy validation permits 1 through 20971520 bytes." example:"5242880"`
+	Directory SpacesDirectory `json:"directory" mapstructure:"directory" description:"Storage base and contained subdirectory for uploaded files. A sharing-image policy must use static storage." example:"{base: static, path: uploads/images}"`
 }
 
 type SpacesConfig struct {
-	Enabled      bool                `mapstructure:"enabled"`
-	Route        string              `mapstructure:"route"`
-	Write        bool                `mapstructure:"write"`
-	PublicOrigin string              `mapstructure:"public_origin"`
-	AllowedHosts []string            `mapstructure:"allowed_hosts"`
-	SharingImage *SpacesUploadPolicy `mapstructure:"sharing_image"`
+	Enabled      bool                `mapstructure:"enabled" description:"Enable the built-in Spaces mount in development mode, provided frontend_editing.enabled is also true. This switch does not grant writes." example:"true"`
+	Route        string              `mapstructure:"route" description:"Clean, non-reserved /__hyperbricks/ path for Spaces. Must not overlap another editor route." example:"/__hyperbricks/spaces"`
+	Write        bool                `mapstructure:"write" description:"Explicitly permit source edits and asset uploads through Spaces. Without this opt-in, the editor remains read-only." example:"false"`
+	PublicOrigin string              `mapstructure:"public_origin" description:"Public site origin used by Spaces when constructing public links, separate from the editor access host." example:"https://example.com"`
+	AllowedHosts []string            `mapstructure:"allowed_hosts" description:"Explicit trusted editor hosts for non-loopback access. Spaces checks the request host and browser origin, not forwarded host/origin headers; use encrypted transport for remote access." example:"[editor.example.test]"`
+	SharingImage *SpacesUploadPolicy `mapstructure:"sharing_image" description:"Optional image-only upload policy for sharing metadata, with an explicit size limit and static storage directory." example:"{accept: [.png, .webp], max_bytes: 5242880, directory: {base: static, path: uploads/images}}"`
 }
 
 func DefaultFrontendEditingConfig() FrontendEditingConfig {
