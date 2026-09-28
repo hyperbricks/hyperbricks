@@ -40,7 +40,7 @@ go test ./test/docs
 "${PYTHON}" scripts/compilation-generation/build_skill_documentation.py --check \
     --output-dir codex-plugin/hyperbricks/skills/hyperbricks/references
 bash "${SCRIPT_DIR}/check_codex_plugin_sync.sh"
-git diff --check
+git --no-pager diff --check
 
 echo "Documentation, skill references, and Codex plugin mirror are synchronized."
 echo "No files were committed, tagged, or pushed."
