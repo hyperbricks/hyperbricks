@@ -9,6 +9,7 @@ import net from 'node:net';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(new URL('..', import.meta.url).pathname);
+const skipPluginBuild = process.argv.includes('--skip-plugin-build');
 const modules = [
   ['esbuild-demo', 8097, '/', 'VAT'],
   ['navigation-demo-swup', 8125, '/', 'After Hours'],
@@ -83,9 +84,10 @@ async function main() {
   const browser = await chromium.launch({ headless: true });
   let failures = 0;
   try {
-    if (modules.some(([name]) => name === 'hyperbricks-patterns-yaml')) {
+    if (!skipPluginBuild && modules.some(([name]) => name === 'hyperbricks-patterns-yaml')) {
       await run('bash', ['scripts/plugins/build_hyperbricks_plugins.sh']);
     }
+    console.log(`Capturing ${modules.length} module screenshots...`);
     for (const [name, port, route, marker] of modules) {
       const runtimePort = await freePort();
       const env = { ...process.env, GOWORK: 'off', HYPERBRICKS_LOCAL_PATH: root };
@@ -116,6 +118,7 @@ async function main() {
   }
   if (failures) process.exit(1);
   console.log(`All ${modules.length} module screenshots captured successfully.`);
+  console.log(`Screenshots: ${path.join(root, 'modules', '<module>', 'docs', 'screenshots', '*.png')}`);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

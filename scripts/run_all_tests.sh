@@ -109,10 +109,14 @@ else
 fi
 
 if [[ "${WITH_SCREENSHOTS}" == "true" ]]; then
-  echo "Building plugins required by visual module checks..."
-  bash "${SCRIPT_DIR}/plugins/build_hyperbricks_plugins.sh"
+  if [[ "${WITH_PLUGINS}" == "true" ]]; then
+    echo "Reusing plugins built by the plugin test scope."
+  else
+    echo "Building plugins required by visual module checks..."
+    bash "${SCRIPT_DIR}/plugins/build_hyperbricks_plugins.sh"
+  fi
   announce "Running documented module screenshot checks..."
-  npm run test:module-screenshots
+  npm run test:module-screenshots -- --skip-plugin-build
 else
   echo "Skipping module screenshots. Pass --with-screenshots to run them."
 fi
