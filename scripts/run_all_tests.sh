@@ -78,6 +78,11 @@ else
   echo "Skipping plugin rebuild. Pass --with-plugins to rebuild plugins before tests."
 fi
 
+echo "Installing locked VS Code extension dependencies..."
+npm --prefix editors/vscode ci --ignore-scripts
+echo "Running VS Code extension contract, type, and bundle checks..."
+npm --prefix editors/vscode run check
+
 echo "Running go vet..."
 go vet ./...
 

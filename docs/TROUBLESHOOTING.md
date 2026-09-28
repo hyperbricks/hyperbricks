@@ -37,6 +37,24 @@ browser did not supply the configured login or supplied the wrong one. If the
 server cannot start, read the terminal error instead. See
 [HyperBricks CLI: Render diagnostics](HYPERBRICKS_CLI.md#render-diagnostics).
 
+## VS Code feedback is missing or stale
+
+Open **HyperBricks: Show Output** and confirm that the configured executable
+supports `hyperbricks language-server --stdio`. A protocol-version error means
+the extension and executable came from different HyperBricks revisions; update
+one side so they use the same editor protocol.
+
+Static diagnostics follow the unsaved editor buffer. Runtime diagnostics come
+from source loaded by the running process and are hidden for a dirty document;
+save the file, allow the development watcher to reload it, and request the
+affected route again. The status item reports runtime connectivity and route
+coverage. Unchecked routes do not appear as Problems entries.
+
+Automatic runtime authentication is restricted to a local loopback URL. Check
+the module, active package profile, development/debug mode, configured port,
+and developer-interface credentials when the status remains disconnected. See
+[Visual Studio Code](VSCODE.md) for all editor settings and security rules.
+
 ## A route returns 404
 
 Check that you selected the right module with `-m` and that the route belongs to `hypermedia`, `fragment`, or `api_fragment_render`. Other component types do not create URLs by themselves.

@@ -81,6 +81,7 @@ supplements; do not load all of them automatically.
 | Change an existing project | [Changing Existing Projects](references/docs/AUTHOR.md) |
 | Check the exact authoring contract | [Author Command Reference](references/docs/AUTHOR_REFERENCE.md) |
 | Work with YAML, imports, inheritance, or resolvers | [YAML Usage](references/docs/YAML_USAGE.md) |
+| Configure or troubleshoot VS Code language support | [Visual Studio Code](references/docs/VSCODE.md) |
 | Check component fields or supported values | [Component Reference](references/docs/REFERENCE.md) |
 | Find a complete native type example | [Type Examples](references/docs/HYPERBRICKS_TYPE_EXAMPLES.md) |
 | Work with routes | [Routing](references/docs/ROUTING.md) |

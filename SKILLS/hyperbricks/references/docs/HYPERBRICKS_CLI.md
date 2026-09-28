@@ -28,6 +28,7 @@ hyperbricks version
 | `author`       | Create and extend configuration through JSON specs for agents and automation | [↗](#author)                                   |
 | `space`        | Create an inheriting hypermedia Space from an existing source              | [↗](#space)                                    |
 | `doctor`       | Diagnose a source module's static readiness before running or building      | [↗](#doctor)                                   |
+| `language-server` | Provide editor diagnostics, completion, hover, and formatting over LSP   | [↗](#language-server)                          |
 | `start`        | Start the runtime server                                                   | [↗](#start)                                    |
 | `static`       | Render static output                                                       | [↗](#static-rendering)                         |
 | `build`        | Build a deploy archive                                                     | [↗](#build-archives)                           |
@@ -555,6 +556,32 @@ control characters from user-authored names and diagnostics.
 readiness, `start` runs the application, and `build` creates a deployment
 archive. A running local or remote deployment has different health concerns;
 use the deployment interface and API for those checks rather than `doctor`.
+
+## Language server
+
+`hyperbricks language-server --stdio` exposes HyperBricks source intelligence
+to editor clients using Language Server Protocol 3.17 framing. It is intended
+to be started and supervised by the matching Visual Studio Code extension, not
+run as an interactive terminal command.
+
+```bash
+hyperbricks language-server --stdio
+```
+
+The server uses the runtime parser and schema registry for unsaved-buffer
+diagnostics, completion, hover, and whole-document formatting. The editor sends
+the selected module and package profile during initialization, so module-local
+imports, inheritance targets, templates, and resources resolve against the same
+project contract as the CLI. Runtime render feedback is optional and remains
+separate from static source diagnostics.
+
+The HyperBricks editor protocol is versioned independently from LSP. A client
+and executable with incompatible editor-protocol versions reject the session
+with a clear initialization error instead of silently degrading. Standard
+output is reserved for JSON-RPC; process diagnostics must use standard error.
+
+See [Visual Studio Code](VSCODE.md) for extension build, settings, commands,
+runtime authentication, and troubleshooting details.
 
 ## Start
 

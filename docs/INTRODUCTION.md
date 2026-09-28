@@ -274,6 +274,8 @@ See [Spaces](SPACES.md) for source-owned editing and [Routing](ROUTING.md) for r
 - [Quickstart](QUICKSTART.md) creates a working YAML module.
 - [Routing](ROUTING.md) explains route owners and URL matching.
 - [YAML Usage](YAML_USAGE.md) documents the YAML syntax and resolvers.
+- [Visual Studio Code](VSCODE.md) configures diagnostics, completion,
+  formatting, highlighting, and local runtime feedback.
 - [Reference](REFERENCE.md) lists runtime component fields.
 - [Route Guard](ROUTE_GUARD.md) documents request-time authorization.
 - [Troubleshooting](TROUBLESHOOTING.md): find and resolve configuration and render errors.

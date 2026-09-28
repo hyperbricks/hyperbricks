@@ -322,6 +322,8 @@ Type `hyperbricks static --help` for all static options.
 ## Next Steps
 
 - [General HyperBricks skill](../SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
+- [Visual Studio Code](VSCODE.md): build and configure DSL diagnostics,
+  completion, formatting, highlighting, and local runtime feedback.
 - [YAML usage](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
 - [Component reference](REFERENCE.md): component fields and executable examples.
 - [ROUTING.md](ROUTING.md): route resolution and clean URLs.

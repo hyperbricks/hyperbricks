@@ -2,19 +2,19 @@
   "schema_version": 2,
   "hyperbricks_version": "v1.2.5-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_digest": "cbbb1d0e8d63538a3e8ce89907a300e009014889c12553a5d29d270000720e16",
+  "source_digest": "6f81e2e7ce7da7d337cf4de3cdb450450fe9bdfa79c6cae31e7422cfd46bb8a8",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
       "bundled_path": "docs/INTRODUCTION.md",
-      "source_sha256": "8b0ce48f9a4cbbd8f1961a32c32da3840a415ee47137010c7af5cb212f61a581",
-      "bundled_sha256": "5573f37189f21047466cb9721219c0ec570c074195305f4144a8039d952fac5b"
+      "source_sha256": "ed084c6c95a6116f0b8d6fbb2a30e08bd69e726e7eb90f8a49fd0c2850764e22",
+      "bundled_sha256": "ce4b355b3f134210f2fa25ae15e17fb85141c20e245ecbda10b440db03983546"
     },
     {
       "source_path": "docs/QUICKSTART.md",
       "bundled_path": "docs/QUICKSTART.md",
-      "source_sha256": "6f370055d0f189e76fdaca6bd5df5e2766ade5740ad9666f797c6059064acff9",
-      "bundled_sha256": "fe849757a59070839af8df500ed9f9115730b60cdf4fbecd432bd8644b85d779"
+      "source_sha256": "fdb61ca22ca3998fe0c5f385075bb9eed72973e95bcc216da925ebdf43189cf5",
+      "bundled_sha256": "7ef97dbe9100907a66861dc9b4487d56303359e3ea83dfbcdab38bafaa5af117"
     },
     {
       "source_path": "docs/HOWTOS.md",
@@ -23,10 +23,16 @@
       "bundled_sha256": "941ffe5e463149b97bb4d5212b4ec2b3042070634a9794ce06bc3e608f6dbdfd"
     },
     {
+      "source_path": "docs/VSCODE.md",
+      "bundled_path": "docs/VSCODE.md",
+      "source_sha256": "b8d3a7c9615f80644b184e84dfba66fc0ea3a9291ece7ce408fbdd917160871f",
+      "bundled_sha256": "2479f84a81b8a99000777ad765408f5dbced3c93ab372a434ba708a006292f3d"
+    },
+    {
       "source_path": "docs/TROUBLESHOOTING.md",
       "bundled_path": "docs/TROUBLESHOOTING.md",
-      "source_sha256": "30066fedff528c97e59a31eb969c92844b7f499099bc3b65b72d02ce417f307a",
-      "bundled_sha256": "b49e003854a577e8b58c0115cd95fe0bbe37887c5ff35a421a738efc3d1dc611"
+      "source_sha256": "d268fcb919cdc096a25417aca10911c622e8a0486760c5fb21000887ad49f968",
+      "bundled_sha256": "301016dbfa9b052b1931bdaee2c7b379d2dc784d682945412df56843d3ab20fc"
     },
     {
       "source_path": "docs/ROUTING.md",
@@ -121,8 +127,8 @@
     {
       "source_path": "docs/HYPERBRICKS_CLI.md",
       "bundled_path": "docs/HYPERBRICKS_CLI.md",
-      "source_sha256": "16b58ed52b4a7f9e49bc06778b959dcb1c706579858d390ac8b3a66cdac7e5ac",
-      "bundled_sha256": "5a82e6591362c80a767735c87ae7c85fe7b465caea8f0ef93dc81267abfc1457"
+      "source_sha256": "7386dfb0e3ad0838322d837e1ff66f3b5e3a3226e94e0ad4769c5e36b32d9c1f",
+      "bundled_sha256": "e93ce5cf357308e0b38bb977be02eaf60a4fbd9aa8c64adf47784f5e7121b9b9"
     },
     {
       "source_path": "docs/HYPERBRICKS_TYPE_EXAMPLES.md",

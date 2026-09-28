@@ -7,7 +7,7 @@ This is a versioned, generated mirror of the canonical documents in `docs/`. The
 - **HyperBricks version:** v1.2.5-beta
 - **Source version:** [`v1.2.5-beta`](https://github.com/hyperbricks/hyperbricks/tree/v1.2.5-beta)
 - **Snapshot provenance:** [Manifest](documentation-manifest.json)
-- **Included documents:** 26
+- **Included documents:** 27
 
 ## Contents
 
@@ -16,6 +16,7 @@ This is a versioned, generated mirror of the canonical documents in `docs/`. The
 - [Introduction](docs/INTRODUCTION.md) — `docs/INTRODUCTION.md`
 - [Quickstart](docs/QUICKSTART.md) — `docs/QUICKSTART.md`
 - [How-to guides](docs/HOWTOS.md) — `docs/HOWTOS.md`
+- [Visual Studio Code](docs/VSCODE.md) — `docs/VSCODE.md`
 - [Troubleshooting](docs/TROUBLESHOOTING.md) — `docs/TROUBLESHOOTING.md`
 
 ### Application model
