@@ -465,7 +465,7 @@ Run Spaces and native Markdown tests with `go test ./...` from the repository ro
 
 ## Run the Night Owl Café example
 
-The [Swup navigation demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/modules/navigation-demo-swup/README.md) includes an English café page and German and Dutch Spaces that inherit it.
+The [Swup navigation demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.7-beta/modules/navigation-demo-swup/README.md) includes an English café page and German and Dutch Spaces that inherit it.
 
 Always run the command from the HyperBricks project root:
 
@@ -534,4 +534,4 @@ Remove `--dry-run` to create the Space with English source defaults. Translate i
 Set `section: cafe_translations` to keep the page out of the main venue menu. Add its language link to `templates/place.html`. The CLI creates an inheriting page. It does not translate text automatically.
 
 For another example with two page sources and English/German instances, see the
-[localized Spaces pattern](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/modules/hyperbricks-patterns-yaml/docs/pages/localized-spaces.md).
+[localized Spaces pattern](https://github.com/hyperbricks/hyperbricks/blob/v1.2.7-beta/modules/hyperbricks-patterns-yaml/docs/pages/localized-spaces.md).
