@@ -166,6 +166,8 @@ def main() -> int:
                 print(f"  - {error}")
         else:
             print(f"PASS {check.name}")
+    print()
+    print("-" * 72)
     if failures:
         print(f"{failures} module(s) failed")
         return 1
