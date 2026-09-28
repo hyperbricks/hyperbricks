@@ -165,4 +165,4 @@ The first matching variant replaces the whole default response. Without a match,
 
 ## Another Browser Client
 
-The [Unpoly fragment example](https://github.com/hyperbricks/hyperbricks/blob/v1.2.5-beta/modules/hyperbricks-patterns-yaml/docs/pages/unpoly-fragment-demo.md) reuses one template in a full page and a fragment. Its page loads Unpoly explicitly and uses `up-follow` and `up-target` to replace that fragment. The route uses the same HTTP response contract, without an HTMX browser dependency or a core-specific adapter.
+The [Unpoly fragment example](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/modules/hyperbricks-patterns-yaml/docs/pages/unpoly-fragment-demo.md) reuses one template in a full page and a fragment. Its page loads Unpoly explicitly and uses `up-follow` and `up-target` to replace that fragment. The route uses the same HTTP response contract, without an HTMX browser dependency or a core-specific adapter.

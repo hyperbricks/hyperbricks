@@ -249,6 +249,174 @@ page:
 	}
 }
 
+func TestInheritanceTargetsFollowEffectiveChildrenButNotMappedValues(t *testing.T) {
+	doc, err := ParseBytes([]byte(`
+shell:
+  - type: hypermedia
+  - body:
+      - type: template
+      - values:
+          content:
+            - type: tree
+
+view:
+  - type: html
+  - value: About
+
+page:
+  - inherit: shell
+  - body:
+      - values:
+          content:
+            - inherit: view
+
+broken:
+  - inherit: missing
+`))
+	if err != nil {
+		t.Fatalf("ParseBytes() error = %v", err)
+	}
+	targets := make(map[string]string)
+	for _, target := range doc.InheritanceTargets() {
+		targets[target.Path] = target.Type
+	}
+	for path, wantType := range map[string]string{
+		"shell": "hypermedia", "shell.body": "template",
+		"page": "hypermedia", "page.body": "template", "view": "html",
+	} {
+		if got := targets[path]; got != wantType {
+			t.Fatalf("inheritance target %q type = %q, want %q (all %#v)", path, got, wantType, targets)
+		}
+	}
+	for _, invalid := range []string{"shell.body.values.content", "page.body.values.content", "broken"} {
+		if _, exists := targets[invalid]; exists {
+			t.Fatalf("invalid inheritance target %q present in %#v", invalid, targets)
+		}
+	}
+}
+
+func TestInheritanceTargetsRetainEffectiveDeclarationProvenance(t *testing.T) {
+	base, err := ParseBytesWithOptions([]byte(`shell:
+  - type: hypermedia
+  - body:
+      - type: template
+`), ParseOptions{Source: "/sources/base.hyperbricks.yaml"})
+	if err != nil {
+		t.Fatalf("parse base: %v", err)
+	}
+	overlay, err := ParseBytesWithOptions([]byte(`page:
+  - inherit: shell
+  - body:
+      - values:
+          title: Local
+fallback:
+  - inherit: shell
+`), ParseOptions{Source: "/sources/page.hyperbricks.yaml"})
+	if err != nil {
+		t.Fatalf("parse overlay: %v", err)
+	}
+	document := &Document{Roots: append(base.Roots, overlay.Roots...)}
+	targets := make(map[string]InheritanceTarget)
+	for _, target := range document.InheritanceTargets() {
+		targets[target.Path] = target
+	}
+	if target := targets["page.body"]; target.Source != "/sources/page.hyperbricks.yaml" || target.Line <= 0 || target.Column <= 0 {
+		t.Fatalf("local overlay provenance = %#v", target)
+	}
+	if target := targets["fallback.body"]; target.Source != "/sources/base.hyperbricks.yaml" || target.Line <= 0 || target.Column <= 0 {
+		t.Fatalf("inherited fallback provenance = %#v", target)
+	}
+}
+
+func TestMaterializeDottedObjectContentInheritanceOverridesInheritedObjectContent(t *testing.T) {
+	doc, err := ParseBytes([]byte(`
+shell:
+  - type: hypermedia
+  - content:
+      - type: tree
+
+first_page:
+  - inherit: shell
+  - route: first
+  - content:
+      - type: template
+      - inline: '<p>{{.version}}</p>'
+      - values:
+          version: 1.0.0
+
+second_page:
+  - inherit: shell
+  - route: second
+  - content:
+      - inherit: first_page.content
+`))
+	if err != nil {
+		t.Fatalf("ParseBytes() error = %v", err)
+	}
+
+	got, err := doc.Materialize()
+	if err != nil {
+		t.Fatalf("Materialize() error = %v", err)
+	}
+	secondPage := got["second_page"].(map[string]interface{})
+	content := secondPage["content"].(map[string]interface{})
+	want := map[string]interface{}{
+		"@type":  "<TEMPLATE>",
+		"inline": "<p>{{.version}}</p>",
+		"values": map[string]interface{}{"version": "1.0.0"},
+	}
+	if !reflect.DeepEqual(content, want) {
+		t.Fatalf("second_page.content = %#v, want %#v", content, want)
+	}
+}
+
+func TestMaterializeDottedObjectContentInheritanceMergesLocalValues(t *testing.T) {
+	doc, err := ParseBytes([]byte(`
+shell:
+  - type: hypermedia
+  - content:
+      - type: tree
+
+first_page:
+  - inherit: shell
+  - route: first
+  - content:
+      - type: template
+      - inline: '<p>{{.version}} {{.test}}</p>'
+      - values:
+          version: 1.0.0
+
+second_page:
+  - inherit: shell
+  - route: second
+  - content:
+      - inherit: first_page.content
+      - values:
+          test: works
+`))
+	if err != nil {
+		t.Fatalf("ParseBytes() error = %v", err)
+	}
+
+	got, err := doc.Materialize()
+	if err != nil {
+		t.Fatalf("Materialize() error = %v", err)
+	}
+	secondPage := got["second_page"].(map[string]interface{})
+	content := secondPage["content"].(map[string]interface{})
+	want := map[string]interface{}{
+		"@type":  "<TEMPLATE>",
+		"inline": "<p>{{.version}} {{.test}}</p>",
+		"values": map[string]interface{}{
+			"version": "1.0.0",
+			"test":    "works",
+		},
+	}
+	if !reflect.DeepEqual(content, want) {
+		t.Fatalf("second_page.content = %#v, want %#v", content, want)
+	}
+}
+
 func TestProcessBytesValueResolversMaterializeRuntimeShape(t *testing.T) {
 	assetsDir := t.TempDir()
 	heroPath := filepath.Join(assetsDir, "hero.html")

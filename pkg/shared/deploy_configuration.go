@@ -2,10 +2,55 @@ package shared
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/mitchellh/mapstructure"
 )
+
+// DeployConfig owns the separate deployment-service configuration, not the
+// hyperbricks mapping in a module's package configuration.
+type DeployConfig struct {
+	Remote DeployRemoteConfig `mapstructure:"remote"`
+	Local  DeployLocalConfig  `mapstructure:"local"`
+	Client DeployClientConfig `mapstructure:"client"`
+}
+
+type DeployRemoteConfig struct {
+	Bind        string                 `mapstructure:"bind"`
+	Port        int                    `mapstructure:"port"`
+	Root        string                 `mapstructure:"root"`
+	PortStart   int                    `mapstructure:"port_start"`
+	LogsEnabled bool                   `mapstructure:"logs_enabled"`
+	Binary      string                 `mapstructure:"binary"`
+	Credentials CredentialsConfig      `mapstructure:"credentials"`
+	HMACSecret  string                 `mapstructure:"hmac_secret"`
+	Auth        DeployRemoteAuthConfig `mapstructure:"auth"`
+}
+
+type DeployRemoteAuthConfig struct {
+	EnvPrefix string `mapstructure:"env_prefix"`
+}
+
+type DeployLocalConfig struct {
+	Bind        string            `mapstructure:"bind"`
+	Port        int               `mapstructure:"port"`
+	ModulesDir  string            `mapstructure:"modules_dir"`
+	BuildRoot   string            `mapstructure:"build_root"`
+	PortStart   int               `mapstructure:"port_start"`
+	LogsEnabled bool              `mapstructure:"logs_enabled"`
+	Credentials CredentialsConfig `mapstructure:"credentials"`
+}
+
+type DeployClientConfig struct {
+	Target  string                        `mapstructure:"target"`
+	Targets map[string]DeployClientTarget `mapstructure:"targets"`
+}
+
+type DeployClientTarget struct {
+	API         string            `mapstructure:"api"`
+	Credentials CredentialsConfig `mapstructure:"credentials"`
+	HMACSecret  string            `mapstructure:"hmac_secret"`
+	KeyID       string            `mapstructure:"key_id"`
+}
 
 // DefaultDeployConfig returns operational, non-secret defaults. Authentication
 // values intentionally remain empty so a deployment service starts locked
@@ -113,22 +158,4 @@ func validateCredentialPasswordField(raw interface{}, path string) error {
 		return fmt.Errorf("obsolete %s.pass; use %s.password", path, path)
 	}
 	return nil
-}
-
-func (credentials CredentialsConfig) Complete() bool {
-	return strings.TrimSpace(credentials.User) != "" && credentials.Password != ""
-}
-
-func (credentials CredentialsConfig) Empty() bool {
-	return strings.TrimSpace(credentials.User) == "" && credentials.Password == ""
-}
-
-func (credentials CredentialsConfig) Validate(label string) error {
-	if credentials.Complete() {
-		return nil
-	}
-	if credentials.Empty() {
-		return fmt.Errorf("%s credentials are not configured", label)
-	}
-	return fmt.Errorf("%s credentials require both user and password", label)
 }

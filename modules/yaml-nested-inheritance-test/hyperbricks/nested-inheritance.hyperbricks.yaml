@@ -1,0 +1,124 @@
+# Layer 1: every routed page starts from a shell whose content is a tree.
+page_shell:
+  - type: hypermedia
+  - content:
+      - type: tree
+  - shell_marker:
+      - type: html
+      - value: <footer data-shell-marker="preserved">Shell sibling preserved</footer>
+
+fixture_index:
+  - type: hypermedia
+  - route: index
+  - content:
+      - type: html
+      - value: |
+          <main>
+            <h1>Nested YAML inheritance regression fixture</h1>
+            <ul>
+              <li><a href="/reference">Reference page</a></li>
+              <li><a href="/copied">Dotted-path copy</a></li>
+              <li><a href="/overridden">Copy with local overrides</a></li>
+              <li><a href="/direct-merge">Same-name child without inherit</a></li>
+              <li><a href="/chained">Multi-hop dotted inheritance</a></li>
+              <li><a href="/deep-dotted">Deep dotted-path lookup</a></li>
+            </ul>
+          </main>
+
+# Layer 2: the reference page replaces the shell's content with a template.
+reference_page:
+  - inherit: page_shell
+  - route: reference
+  - content:
+      - type: template
+      - inline: |
+          <main>
+            <h1>{{.heading}}</h1>
+            <p data-version="preserved">Version: {{index .release "version"}}</p>
+            <p data-channel="merged">Channel: {{index .release "channel"}}</p>
+            <p data-override="merged">Override: {{.override}}</p>
+          </main>
+      - values:
+          heading: Reference content
+          release:
+            version: 1.0.0
+            channel: stable
+          override: inherited default
+
+# Layer 3a: this same-named content node must remain intact until its dotted
+# inheritance reference is resolved. It should become the reference template,
+# not remain the empty tree inherited from page_shell.
+copied_page:
+  - inherit: page_shell
+  - route: copied
+  - content:
+      - inherit: reference_page.content
+
+# Layer 3b: after resolving the dotted reference, local values merge into the
+# referenced template values. `release.version` is preserved while the nested
+# channel and top-level override change.
+overridden_page:
+  - inherit: page_shell
+  - route: overridden
+  - content:
+      - inherit: reference_page.content
+      - values:
+          heading: Nested inheritance override
+          release:
+            channel: preview
+          override: works
+
+# Edge case 1: a same-named local child without its own `inherit` must retain
+# the established deep-merge behavior. This directly inherits the reference
+# page, then changes fields inside its existing content template.
+direct_merge_page:
+  - inherit: reference_page
+  - route: direct-merge
+  - content:
+      - values:
+          heading: Direct same-name merge
+          release:
+            channel: candidate
+          override: normal merge works
+
+# Edge case 2: the dotted reference targets a child that was itself produced by
+# inheritance. Local nested values merge again without losing earlier values.
+chained_page:
+  - inherit: page_shell
+  - route: chained
+  - content:
+      - inherit: overridden_page.content
+      - values:
+          heading: Chained dotted inheritance
+          release:
+            version: 2.0.0
+
+# Edge case 3: resolve more than one child segment below a root before merging
+# the page-local nested values.
+component_library:
+  - type: tree
+  - panels:
+      - type: tree
+      - release_card:
+          - type: template
+          - inline: |
+              <main>
+                <h1>{{.heading}}</h1>
+                <p data-owner="preserved">Owner: {{index .metadata "owner"}}</p>
+                <p data-stage="merged">Stage: {{index .metadata "stage"}}</p>
+              </main>
+          - values:
+              heading: Library release card
+              metadata:
+                owner: core
+                stage: base
+
+deep_dotted_page:
+  - inherit: page_shell
+  - route: deep-dotted
+  - content:
+      - inherit: component_library.panels.release_card
+      - values:
+          heading: Deep dotted lookup
+          metadata:
+            stage: customized

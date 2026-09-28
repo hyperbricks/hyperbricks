@@ -389,8 +389,8 @@ After a partial failure, reload context before preparing another spec.
   caller must choose names, routes, composition, bindings, and content.
 
 The implementation sources for this contract are
-[`author.go`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.5-beta/cmd/hyperbricks/commands/author.go),
-[`author_workflow.go`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.5-beta/cmd/hyperbricks/commands/author_workflow.go),
-[`author_inspect.go`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.5-beta/cmd/hyperbricks/commands/author_inspect.go), and the
+[`author.go`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/cmd/hyperbricks/commands/author.go),
+[`author_workflow.go`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/cmd/hyperbricks/commands/author_workflow.go),
+[`author_inspect.go`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/cmd/hyperbricks/commands/author_inspect.go), and the
 shared planning/writing code in
-[`scaffold_source.go`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.5-beta/cmd/hyperbricks/commands/scaffold_source.go).
+[`scaffold_source.go`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/cmd/hyperbricks/commands/scaffold_source.go).

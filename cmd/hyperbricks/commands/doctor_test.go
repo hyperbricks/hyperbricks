@@ -184,7 +184,7 @@ func TestDoctorHealthyJSONIsCompleteReadOnlyAndRedacted(t *testing.T) {
 
 func TestDoctorWarningsAreNonFatalUnlessStrict(t *testing.T) {
 	projectRoot := t.TempDir()
-	writeDoctorFixture(t, projectRoot, "demo", "v0.0.0", "", "")
+	writeDoctorFixture(t, projectRoot, "demo", "v999.0.0", "", "")
 
 	report, _, code := executeDoctorJSON(t, projectRoot, "-m", "demo")
 	if code != 0 || report.Status != "warning" || report.Summary.Warnings == 0 {
@@ -197,6 +197,34 @@ func TestDoctorWarningsAreNonFatalUnlessStrict(t *testing.T) {
 	strictReport, _, strictCode := executeDoctorJSON(t, projectRoot, "-m", "demo", "--strict")
 	if strictCode != 1 || strictReport.Status != "warning" || !strictReport.Strict {
 		t.Fatalf("strict warning result code=%d report=%+v", strictCode, strictReport)
+	}
+}
+
+func TestDoctorTreatsOlderRecordedRuntimeAsProvenance(t *testing.T) {
+	projectRoot := t.TempDir()
+	writeDoctorFixture(t, projectRoot, "demo", "v0.0.0", "", "")
+
+	report, _, code := executeDoctorJSON(t, projectRoot, "-m", "demo", "--strict")
+	if code != 0 || report.Status != "healthy" || report.Summary.Warnings != 0 {
+		t.Fatalf("older provenance result code=%d report=%+v", code, report)
+	}
+	check := doctorCheckByID(t, report, "metadata.runtime_version")
+	if check.Status != doctorPass || !strings.Contains(check.Message, "running newer") || check.Hint != "" {
+		t.Fatalf("runtime metadata check=%+v", check)
+	}
+}
+
+func TestDoctorWarnsWhenRecordedRuntimeVersionCannotBeCompared(t *testing.T) {
+	projectRoot := t.TempDir()
+	writeDoctorFixture(t, projectRoot, "demo", "development-build", "", "")
+
+	report, _, code := executeDoctorJSON(t, projectRoot, "-m", "demo")
+	if code != 0 || report.Status != "warning" {
+		t.Fatalf("uncomparable provenance result code=%d report=%+v", code, report)
+	}
+	check := doctorCheckByID(t, report, "metadata.runtime_version")
+	if check.Status != doctorWarn || check.Hint == "" {
+		t.Fatalf("runtime metadata check=%+v", check)
 	}
 }
 
@@ -809,7 +837,7 @@ func TestDoctorRejectsMissingAndAmbiguousPluginArtifacts(t *testing.T) {
 
 func TestDoctorHumanReportIsCompactAndActionable(t *testing.T) {
 	projectRoot := t.TempDir()
-	writeDoctorFixture(t, projectRoot, "demo", "v0.0.0", "", "")
+	writeDoctorFixture(t, projectRoot, "demo", "v999.0.0", "", "")
 	t.Chdir(projectRoot)
 	previousExit, previousExitCode := Exit, ExitCode
 	Exit, ExitCode = false, 0
@@ -836,6 +864,51 @@ func TestDoctorHumanReportIsCompactAndActionable(t *testing.T) {
 	}
 }
 
+func TestDoctorVerboseHumanReportExpandsCategorizedChecks(t *testing.T) {
+	projectRoot := t.TempDir()
+	writeDoctorFixture(t, projectRoot, "demo", "v999.0.0", "", "")
+	t.Chdir(projectRoot)
+	previousExit, previousExitCode := Exit, ExitCode
+	Exit, ExitCode = false, 0
+	t.Cleanup(func() { Exit, ExitCode = previousExit, previousExitCode })
+
+	command := NewDoctorCommand()
+	var stdout bytes.Buffer
+	command.SetOut(&stdout)
+	command.SetArgs([]string{"-m", "demo", "--verbose"})
+	if err := command.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	output := stdout.String()
+	for _, value := range []string{
+		"! Metadata\n",
+		"  ✓ Identity           module identity is demo",
+		"  ✓ Module version     module version 1.0.0 is valid SemVer",
+		"  ! Runtime version    package was last updated with HyperBricks v999.0.0",
+		"      File: package.hyperbricks.yaml",
+		"      Path: hyperbricks.metadata.hyperbricks",
+		"  ✓ Source fields      source metadata contains stable fields only",
+		"✓ Components\n",
+		"  ✓ Native schema",
+		"  ✓ Plugin owned",
+	} {
+		if !strings.Contains(output, value) {
+			t.Fatalf("verbose output missing %q:\n%s", value, output)
+		}
+	}
+	if strings.Contains(output, "identity, version, runtime, and source metadata validated") {
+		t.Fatalf("verbose output retained collapsed metadata summary: %q", output)
+	}
+}
+
+func TestDoctorVerboseAndJSONAreMutuallyExclusive(t *testing.T) {
+	command := NewDoctorCommand()
+	command.SetArgs([]string{"--verbose", "--json"})
+	if err := command.Execute(); err == nil || !strings.Contains(err.Error(), "if any flags in the group") {
+		t.Fatalf("verbose and JSON error=%v", err)
+	}
+}
+
 func TestDoctorHumanReportEscapesTerminalControlCharacters(t *testing.T) {
 	report := doctorReport{
 		Status: "unhealthy",
@@ -857,7 +930,7 @@ func TestDoctorHumanReportEscapesTerminalControlCharacters(t *testing.T) {
 	command := NewDoctorCommand()
 	var output bytes.Buffer
 	command.SetOut(&output)
-	if err := writeDoctorReport(command, report); err != nil {
+	if err := writeDoctorReport(command, report, false); err != nil {
 		t.Fatal(err)
 	}
 

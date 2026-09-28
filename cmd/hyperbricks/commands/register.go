@@ -50,6 +50,7 @@ func RegisterSubcommands() {
 	RootCmd.AddCommand(NewAuthorCommand())
 	RootCmd.AddCommand(NewSpaceCommand())
 	RootCmd.AddCommand(NewDoctorCommand())
+	RootCmd.AddCommand(NewLanguageServerCommand())
 	RootCmd.AddCommand(NewStartCommand())
 	RootCmd.AddCommand(NewDeployCommand())
 	RootCmd.AddCommand(VersionCommand())

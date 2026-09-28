@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Regenerate all documentation outputs from the current source tree, then verify them.
+# Synchronize documentation compilations and skill mirrors, then verify them.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -25,7 +25,6 @@ if find "${CANONICAL}" \( -name '.DS_Store' -o -type l \) -print -quit | grep -q
     exit 1
 fi
 
-bash "${SCRIPT_DIR}/build_docs.sh"
 bash "${SCRIPT_DIR}/compilation-generation/build_compilations.sh" --ref WORKTREE
 
 # The packaged skill is an exact mirror, including the generated references.
@@ -40,7 +39,7 @@ go test ./test/docs
 "${PYTHON}" scripts/compilation-generation/build_skill_documentation.py --check \
     --output-dir codex-plugin/hyperbricks/skills/hyperbricks/references
 bash "${SCRIPT_DIR}/check_codex_plugin_sync.sh"
-git diff --check
+git --no-pager diff --check
 
-echo "Documentation, skill references, and Codex plugin mirror are synchronized."
+echo "Documentation compilations, skill references, and Codex plugin mirror are synchronized."
 echo "No files were committed, tagged, or pushed."

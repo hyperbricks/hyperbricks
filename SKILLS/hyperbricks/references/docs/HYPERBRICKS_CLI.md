@@ -28,6 +28,7 @@ hyperbricks version
 | `author`       | Create and extend configuration through JSON specs for agents and automation | [↗](#author)                                   |
 | `space`        | Create an inheriting hypermedia Space from an existing source              | [↗](#space)                                    |
 | `doctor`       | Diagnose a source module's static readiness before running or building      | [↗](#doctor)                                   |
+| `language-server` | Provide editor diagnostics, completion, hover, and formatting over LSP   | [↗](#language-server)                          |
 | `start`        | Start the runtime server                                                   | [↗](#start)                                    |
 | `static`       | Render static output                                                       | [↗](#static-rendering)                         |
 | `build`        | Build a deploy archive                                                     | [↗](#build-archives)                           |
@@ -118,7 +119,7 @@ The generated configuration and README use the selected module name. The README 
 
 ### Init-starter: install an official starter
 
-`init-starter` downloads a starter from the official [starters repository](https://github.com/hyperbricks/hyperbricks-starters). Browse the [module starter index](https://github.com/hyperbricks/hyperbricks/blob/v1.2.5-beta/modules/README.md#starter-modules) for examples and their setup requirements. Use `init-starter` for the minimal Hello World example.
+`init-starter` downloads a starter from the official [starters repository](https://github.com/hyperbricks/hyperbricks-starters). Browse the [module starter index](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/modules/README.md#starter-modules) for examples and their setup requirements. Use `init-starter` for the minimal Hello World example.
 
 List compatible starters:
 
@@ -417,8 +418,9 @@ instead of converting them into runtime recovery behavior. Its checks cover:
 Each check has one of four statuses: `pass`, `warn`, `fail`, or `skip`. Invalid
 configuration, unresolved imports, missing required files, invalid semantic
 versions, duplicate routes, and missing enabled plugins fail the diagnosis.
-Advisory conditions, such as metadata that records a different HyperBricks
-version than the running CLI, produce a warning and a concrete prescription.
+`metadata.runtime_version` treats the recorded HyperBricks version as source
+provenance. An equal or older version passes. A missing, invalid, or newer
+version warns and suggests updating the metadata.
 Unknown component types are failures when no plugin is enabled. With an enabled
 plugin they are warnings: they may be plugin-owned, but the offline checker
 cannot prove ownership without loading plugin code. `--strict` rejects that
@@ -441,7 +443,7 @@ modules/demo/package.hyperbricks.yaml
 
 ✓ Module       selected modules/demo
 ✓ Package      configuration loaded
-! Metadata     records v1.2.4-beta; running v1.2.5-beta
+! Metadata     last updated with v1.3.0-beta; running v1.2.5-beta
 ✓ Directories  4 configured source directories resolved safely
 ✓ Sources      8 files · 21 roots · imports resolved
 ✓ Components   47 native components validated · no unverified unknown types
@@ -458,6 +460,21 @@ DIAGNOSIS · HEALTHY WITH WARNINGS
 PRESCRIPTION
 hyperbricks init -m demo --update-metadata
 ```
+
+Add `--verbose` to show every check as an indented row under its category:
+
+```text
+$ hyperbricks doctor -m demo --verbose
+
+✓ Metadata
+  ✓ Identity           module identity is demo
+  ✓ Module version     module version 1.0.0 is valid SemVer
+  ✓ Runtime version    last updated with HyperBricks v1.2.4-beta; running newer v1.2.5-beta
+  ✓ Source fields      source metadata contains stable fields only
+```
+
+`--verbose` changes only human-readable presentation. It cannot be combined
+with `--json`.
 
 ### Structured output and exit status
 
@@ -495,7 +512,7 @@ stable checks:
       "id": "metadata.runtime_version",
       "group": "metadata",
       "status": "warn",
-      "message": "Package records HyperBricks v1.2.4-beta; the running CLI is v1.2.5-beta",
+      "message": "Package was last updated with HyperBricks v1.3.0-beta; running v1.2.6-beta",
       "file": "package.hyperbricks.yaml",
       "path": "hyperbricks.metadata.hyperbricks",
       "hint": "Run hyperbricks init -m demo --update-metadata"
@@ -513,7 +530,7 @@ statuses are `pass`, `warn`, `fail`, or `skip`. The stable check IDs are:
 | `package.configuration` | Package parsing, materialization, and typed configuration |
 | `metadata.identity` | Module metadata matches the selected directory |
 | `metadata.module_version` | Module version is valid SemVer |
-| `metadata.runtime_version` | Recorded and running HyperBricks versions |
+| `metadata.runtime_version` | Source and runtime version ordering |
 | `metadata.source_fields` | Artifact-only fields are absent from source metadata |
 | `directories.paths` | Configured directory resolution and containment |
 | `sources.graph` | HyperBricks sources, imports, inheritance, and roots |
@@ -555,6 +572,31 @@ control characters from user-authored names and diagnostics.
 readiness, `start` runs the application, and `build` creates a deployment
 archive. A running local or remote deployment has different health concerns;
 use the deployment interface and API for those checks rather than `doctor`.
+
+## Language server
+
+`hyperbricks language-server --stdio` exposes HyperBricks source intelligence
+to editor clients using Language Server Protocol 3.17 framing. It is intended
+to be started and supervised by a compatible editor client, such as the
+separately maintained
+[HyperBricks VS Code extension](https://github.com/hyperbricks/hyperbricks-vscode),
+not run as an interactive terminal command.
+
+```bash
+hyperbricks language-server --stdio
+```
+
+The server uses the runtime parser and schema registry for unsaved-buffer
+diagnostics, completion, hover, and whole-document formatting. The editor sends
+the selected module and package profile during initialization, so module-local
+imports, inheritance targets, templates, and resources resolve against the same
+project contract as the CLI. Runtime render feedback is optional and remains
+separate from static source diagnostics.
+
+The HyperBricks editor protocol is versioned independently from LSP. A client
+and executable with incompatible editor-protocol versions reject the session
+with a clear initialization error instead of silently degrading. Standard
+output is reserved for JSON-RPC; process diagnostics must use standard error.
 
 ## Start
 
