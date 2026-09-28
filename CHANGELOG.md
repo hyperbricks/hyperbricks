@@ -15,19 +15,19 @@ Changes since `v1.2.5-beta`.
 
 ### Visual Studio Code
 
-- Add the first preview of the HyperBricks VS Code extension and protocol-v1
-  language server for `*.hyperbricks.yaml` files. Extension and executable must
-  come from the same HyperBricks revision.
+- Add the protocol-v1 language server for editor clients working with
+  `*.hyperbricks.yaml` files. Clients and executables must support the same
+  HyperBricks editor protocol version.
 - Add YAML and schema-aware highlighting, static diagnostics, completion, hover,
   Go to Definition, formatting, automatic module ownership, and configurable
-  Smart Enter behavior.
+  Smart Enter behavior through the separately maintained
+  [HyperBricks VS Code extension](https://github.com/hyperbricks/hyperbricks-vscode).
 - Add development/debug runtime diagnostics with route coverage and status-bar
   feedback, plus commands for language-server restart, Doctor, runtime Errors,
   connection control, and extension output.
-- Keep editor installation and usage in the
-  [VS Code guide](editors/vscode/README.md), contributor workflows in
-  [DEVELOPMENT.md](editors/vscode/DEVELOPMENT.md), and detailed extension changes
-  in the [extension changelog](editors/vscode/CHANGELOG.md).
+- Move the extension source, npm dependency graph, user guide, contributor
+  workflow, tests, packaging, and detailed changelog into its own repository so
+  editor security alerts and releases are owned independently from the core.
 
 ### Doctor and package metadata
 
@@ -48,9 +48,9 @@ Changes since `v1.2.5-beta`.
   deep dotted lookups, and unrelated sibling preservation.
 - Add dedicated fixture initialization so package configuration is loaded from a
   real file without directory-read warning noise.
-- Make VS Code extension checks opt-in through `./tests.sh --with-vscode-ext`,
-  keep module smoke checks under `--with-modules`, and clarify grouped test
-  output and skipped optional scopes.
+- Keep module smoke checks under `--with-modules`, clarify grouped test output
+  and skipped optional scopes, and leave extension checks to the standalone
+  extension repository.
 
 ## v1.2.5-beta
 

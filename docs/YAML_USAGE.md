@@ -854,9 +854,11 @@ HyperBricks reports YAML source errors and continues loading files it can parse.
 
 ## Editor Feedback And Common Mistakes
 
-The VS Code extension understands ordered components, inherited types, imports,
-and block/flow resolvers. Type `- ` inside a component or `: ` before a value
-for context-specific suggestions. Press **Control+Space** to request suggestions
+The separately maintained
+[HyperBricks VS Code extension](https://github.com/hyperbricks/hyperbricks-vscode)
+understands ordered components, inherited types, imports, and block/flow
+resolvers. Type `- ` inside a component or `: ` before a value for
+context-specific suggestions. Press **Control+Space** to request suggestions
 explicitly. Hover fields and resolver keys for help; Cmd/Ctrl-click references
 or static file paths to open their source.
 
@@ -881,8 +883,9 @@ text. Syntax colors follow your VS Code theme.
 When a valid resolver produces a warning, check its target: `file` reads content,
 `path` constructs a path, and `template.file` preloads a template from the
 configured templates directory. These are different operations. Fix the first
-YAML structural error before interpreting later diagnostics, and rebuild both
-the extension and its configured executable when testing editor changes.
+YAML structural error before interpreting later diagnostics. When testing
+editor changes, use extension and executable builds that support the same
+HyperBricks editor protocol version.
 
 ## Test Corpus
 

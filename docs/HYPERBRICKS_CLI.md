@@ -575,8 +575,10 @@ use the deployment interface and API for those checks rather than `doctor`.
 
 `hyperbricks language-server --stdio` exposes HyperBricks source intelligence
 to editor clients using Language Server Protocol 3.17 framing. It is intended
-to be started and supervised by the matching Visual Studio Code extension, not
-run as an interactive terminal command.
+to be started and supervised by a compatible editor client, such as the
+separately maintained
+[HyperBricks VS Code extension](https://github.com/hyperbricks/hyperbricks-vscode),
+not run as an interactive terminal command.
 
 ```bash
 hyperbricks language-server --stdio

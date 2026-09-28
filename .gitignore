@@ -6,11 +6,8 @@ tmp/
 /archive/
 .cache/
 /.venv-compilations/
-# Ignore VSCode workspace settings directory globally
+# Ignore VSCode workspace settings directories globally
 **/.vscode/
-!/editors/vscode/.vscode/
-!/editors/vscode/.vscode/launch.json
-!/editors/vscode/.vscode/tasks.json
 
 # Ignore all node_modules directories recursively
 **/node_modules/
