@@ -148,5 +148,5 @@ remove other explicitly declared routes that reference them.
 
 See [Markdown type examples](HYPERBRICKS_TYPE_EXAMPLES.md#markdown) for inline and
 file-backed components, and [Spaces](SPACES.md) for document editing and uploads.
-The [Localized Spaces pattern](https://github.com/hyperbricks/hyperbricks/blob/v1.2.5-beta/modules/hyperbricks-patterns-yaml/docs/pages/localized-spaces.md)
+The [Localized Spaces pattern](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/modules/hyperbricks-patterns-yaml/docs/pages/localized-spaces.md)
 provides a runnable example of page sources and translated instances.

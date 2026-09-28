@@ -748,7 +748,7 @@ Some fields preserve and validate their original YAML types before decoding. For
 
 ## Template Syntax
 
-HyperBricks templates use Go `html/template`. The [template helper](https://github.com/hyperbricks/hyperbricks/blob/v1.2.5-beta/pkg/shared/helpers_templating.go) registers Sprig v3's `GenericFuncMap()` and adds `safe`, `random`, and `valueOrEmpty`. See the [Sprig function reference](https://masterminds.github.io/sprig/) for the complete list.
+HyperBricks templates use Go `html/template`. The [template helper](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/pkg/shared/helpers_templating.go) registers Sprig v3's `GenericFuncMap()` and adds `safe`, `random`, and `valueOrEmpty`. See the [Sprig function reference](https://masterminds.github.io/sprig/) for the complete list.
 
 Go template expressions stay literal in YAML values. The YAML pipeline does not resolve them.
 
@@ -856,11 +856,13 @@ HyperBricks reports YAML source errors and continues loading files it can parse.
 
 ## Editor Feedback And Common Mistakes
 
-The [VS Code extension](VSCODE.md) understands ordered components, inherited
-types, imports, and block/flow resolvers. Type `- ` inside a component or `: `
-before a value for context-specific suggestions. Press **Control+Space** to
-request suggestions explicitly. Hover fields and resolver keys for help;
-Cmd/Ctrl-click references or static file paths to open their source.
+The separately maintained
+[HyperBricks VS Code extension](https://github.com/hyperbricks/hyperbricks-vscode)
+understands ordered components, inherited types, imports, and block/flow
+resolvers. Type `- ` inside a component or `: ` before a value for
+context-specific suggestions. Press **Control+Space** to request suggestions
+explicitly. Hover fields and resolver keys for help; Cmd/Ctrl-click references
+or static file paths to open their source.
 
 A resolver still needs the field's colon and separating space:
 
@@ -883,8 +885,9 @@ text. Syntax colors follow your VS Code theme.
 When a valid resolver produces a warning, check its target: `file` reads content,
 `path` constructs a path, and `template.file` preloads a template from the
 configured templates directory. These are different operations. Fix the first
-YAML structural error before interpreting later diagnostics, and rebuild both
-the extension and its configured executable when testing editor changes.
+YAML structural error before interpreting later diagnostics. When testing
+editor changes, use extension and executable builds that support the same
+HyperBricks editor protocol version.
 
 ## Test Corpus
 

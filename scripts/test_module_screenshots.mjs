@@ -13,10 +13,10 @@ const skipPluginBuild = process.argv.includes('--skip-plugin-build');
 const modules = [
   ['esbuild-demo', 8097, '/', 'VAT'],
   ['navigation-demo-swup', 8125, '/', 'After Hours'],
-  ['todo-demo-htmx', 8121, '/', 'Tasks'],
-  ['todo-demo-swup', 8124, '/', 'Tasks'],
-  ['todo-demo-turbo', 8122, '/', 'Tasks'],
-  ['todo-demo-unpoly', 8123, '/', 'Tasks'],
+  ['todo-demo-htmx', 8121, '/', 'Your list is ready.'],
+  ['todo-demo-swup', 8124, '/', 'Your list is ready.'],
+  ['todo-demo-turbo', 8122, '/', 'Your list is ready.'],
+  ['todo-demo-unpoly', 8123, '/', 'Your list is ready.'],
   ['unpoly-guard-demo', 8132, '/', 'Sign in'],
   ['hyperbricks-patterns-yaml', 8080, '/docs', 'HyperBricks Patterns'],
   ['hyperbricks-patterns-yaml', 8080, '/docs/readme', 'HyperBricks Patterns'],
@@ -67,9 +67,13 @@ export async function waitForPage(browser, url, marker, { timeoutMs = 30000, ret
       if (!response || response.status() !== 200) {
         throw new Error(`expected HTTP 200, got ${response ? response.status() : 'no response'}`);
       }
-      const body = await page.locator('body').innerText({ timeout: Math.max(1, deadline - Date.now()) });
-      if (!marker || body.includes(marker)) return page;
-      lastError = `missing page text ${JSON.stringify(marker)}`;
+      while (Date.now() < deadline) {
+        const body = await page.locator('body').innerText({ timeout: Math.max(1, deadline - Date.now()) });
+        if (!marker || body.includes(marker)) return page;
+        lastError = `missing page text ${JSON.stringify(marker)}`;
+        const delay = Math.min(retryDelayMs, deadline - Date.now());
+        if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+      }
     } catch (error) {
       lastError = error.message;
     }
@@ -101,6 +105,11 @@ async function main() {
         const slug = route === '/' ? 'home' : route.replace(/^\//, '').replaceAll('/', '-');
         const output = path.join(root, 'modules', name, 'docs', 'screenshots', `${slug}.png`);
         await mkdir(path.dirname(output), { recursive: true });
+        // Chromium can paint sticky elements in the wrong position while it
+        // expands the viewport for a full-page screenshot. At the top of the
+        // page, static positioning is visually equivalent and avoids capturing
+        // a sidebar over the documentation panel.
+        await page.addStyleTag({ content: '.pattern-docs-sidebar { position: static !important; }' });
         await page.screenshot({ path: output, fullPage: true });
         await page.close();
         console.log(`PASS ${name}: ${output}`);
