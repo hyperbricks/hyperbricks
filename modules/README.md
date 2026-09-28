@@ -65,6 +65,7 @@ Follow each module’s README for plugin builds, external services, and startup 
 | [`markers-test`](markers-test/) | Test fixture | Resolver and directory-marker fixture for module, repository, resource, template, static, and HyperBricks paths. |
 | [`project-lifecycle-test`](project-lifecycle-test/) | Test fixture | End-to-end project lifecycle fixture covering development and production rendering, fragments, assets, Goja, APIs, guards, native plugins, static export, and runtime archives. |
 | [`static-paths-demo`](static-paths-demo/) | Test fixture | Demonstrates module-relative and repository-root static directories while proving that public asset URLs remain rooted at `/static/`. |
+| [`yaml-nested-inheritance-test`](yaml-nested-inheritance-test/) | Test fixture | Runnable regression for same-named nested children that inherit dotted paths, including local map overrides after reference resolution. |
 | [`yaml-invalid-source`](yaml-invalid-source/) | Test fixture | Deliberately malformed YAML beside valid routes, used to verify source diagnostics, partial initialization, and development error reporting. |
 | [`self-closing-tag`](self-closing-tag/) | Verification fixture | Small image-rendering fixture used for manually checking generated image markup and the `self_closing_tags` server option. |
 | [`wasm-plugin-test`](wasm-plugin-test/) | Verification fixture | Manual WebAssembly plugin compatibility fixture that renders Markdown and a card through two WASM components. |

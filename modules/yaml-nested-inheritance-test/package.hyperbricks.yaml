@@ -1,0 +1,47 @@
+hyperbricks:
+  mode: development
+  metadata:
+    module: yaml-nested-inheritance-test
+    moduleversion: "1.0.0"
+    hyperbricks: v1.2.5-beta
+  development:
+    watch: true
+    reload: false
+    frontend_errors: false
+    dashboard:
+      enabled: false
+    frontend_editing:
+      enabled: false
+      spaces:
+        enabled: false
+  live:
+    cache: 30s
+  server:
+    port: 8133
+    beautify: false
+    read_timeout: 10s
+    write_timeout: 10s
+    idle_timeout: 30s
+  plugins:
+    enabled: []
+  directories:
+    hyperbricks:
+      path:
+        base: module
+        path: hyperbricks
+    resources:
+      path:
+        base: module
+        path: resources
+    templates:
+      path:
+        base: module
+        path: templates
+    static:
+      path:
+        base: module
+        path: static
+    render:
+      path:
+        base: module
+        path: rendered
