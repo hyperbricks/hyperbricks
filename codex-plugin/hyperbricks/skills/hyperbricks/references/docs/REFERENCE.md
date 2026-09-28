@@ -1,7 +1,7 @@
 <!-- Generated from docs/REFERENCE.md. Do not edit directly. -->
 
 **Licence:** MIT
-**Version:** v1.2.6-beta
+**Version:** v1.2.7-beta
 
 
 # HyperBricks Component Reference

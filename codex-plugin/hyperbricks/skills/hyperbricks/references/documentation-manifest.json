@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "hyperbricks_version": "v1.2.6-beta",
+  "hyperbricks_version": "v1.2.7-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_digest": "2e1f6bcf3803a04b23b572a1837747984df8b711f5bcfdf607b829fcfe33d59f",
+  "source_digest": "d1243b5732accc2d7cf3bd50bd9715d7ab893dfcd55f921505ef4953ddae103a",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
@@ -14,13 +14,13 @@
       "source_path": "docs/QUICKSTART.md",
       "bundled_path": "docs/QUICKSTART.md",
       "source_sha256": "6f370055d0f189e76fdaca6bd5df5e2766ade5740ad9666f797c6059064acff9",
-      "bundled_sha256": "e1e32c072254538f0eaab9dcea691dabf446aabfbb5a8e12c466207087515ad4"
+      "bundled_sha256": "e047edbda651244acc362b2b5639a75426f4884e23af3a43a6815efb479dba3f"
     },
     {
       "source_path": "docs/HOWTOS.md",
       "bundled_path": "docs/HOWTOS.md",
       "source_sha256": "bee34577819c1ce2424877ce9410bb3a7f970b3bf46c88af96c6a654a5229851",
-      "bundled_sha256": "b7508f50fe5ad1421368c6353c3561bb340e67de1e1e7c2942cc44fe9bf88bb4"
+      "bundled_sha256": "ceefaaf6e6718c215a6f7495a5d7ba919aaa47a008e9a31a2a8f10ad046b8cb6"
     },
     {
       "source_path": "docs/TROUBLESHOOTING.md",
@@ -37,20 +37,20 @@
     {
       "source_path": "docs/REFERENCE.md",
       "bundled_path": "docs/REFERENCE.md",
-      "source_sha256": "86bcf6e228dcb4ca9085e8a7ca2e5acbad6697fad3f528372f0d6c05f0a851a8",
-      "bundled_sha256": "2be6995c9bb7d9b585089a846a627256ed661f304571d5e2cb312cca0b3532fa"
+      "source_sha256": "0e1a61d1eeab41edd2da00fa45373c02580f427a9b5bece45eaf2448393fefe4",
+      "bundled_sha256": "5622ea7e5f8d82578cb23812cc4e69a181b2ecc1a857e4e93e20840d92a167eb"
     },
     {
       "source_path": "docs/MARKDOWN.md",
       "bundled_path": "docs/MARKDOWN.md",
       "source_sha256": "4ae9e7b2ee95968051c0bf6a147f7db4d7266ffbc60b23d4509b0459423107fc",
-      "bundled_sha256": "96952a1fb27b84aece1c2992ec043da83208faa895db44bb959a220cd42fc60b"
+      "bundled_sha256": "a447363f9fec41918ae5406670edefc1a1675a9e95bc53550d8881bd4b1033fa"
     },
     {
       "source_path": "docs/SPACES.md",
       "bundled_path": "docs/SPACES.md",
       "source_sha256": "a732815285c869196ea34225ec0ed506f97af33ecad474ad40a454efb9f342ca",
-      "bundled_sha256": "4f4e94a3d948b31c9a97fb93d45d427caaa11f2dd3b0d8a6e08849e65f9a135c"
+      "bundled_sha256": "1ad4e7c8ff4aba2253eb9dcd67af9752659d95ec5e79c8679a99f0a7f1f131b9"
     },
     {
       "source_path": "docs/AUTHOR.md",
@@ -62,19 +62,19 @@
       "source_path": "docs/API_RENDER.md",
       "bundled_path": "docs/API_RENDER.md",
       "source_sha256": "9f5b9a2c93091ba8e72d55f9a4103518faeff0e1af892a212c8a06097be85a83",
-      "bundled_sha256": "f299dab98d3e650a54a0b90de6d5f4b140dd3452d35d134efa7751d39a0e476c"
+      "bundled_sha256": "d5994d3ae15cfb2393b78d1ca76bd8a18e467813847c095c8b41ec1b748934fe"
     },
     {
       "source_path": "docs/GOJA_RENDER.md",
       "bundled_path": "docs/GOJA_RENDER.md",
       "source_sha256": "c2869994a4b643095d0c40c873ef4dbe8a869456ef5da57e927c44683458249e",
-      "bundled_sha256": "b6c51b271e89fd2d523b5e3a5f4de3f0419a2bad1d4890c350f55c083171ddfe"
+      "bundled_sha256": "4770fe9d5fea043d881ec83f47bfa6332ec21530cdd248ddbf8e83d9afc5018d"
     },
     {
       "source_path": "docs/PLUGINS.md",
       "bundled_path": "docs/PLUGINS.md",
       "source_sha256": "6719b73dc733a1f4ce8196262dab6dde998861a16e046a46fe91f5502581b14e",
-      "bundled_sha256": "afa620c26244c0e0b2ba001ce6754ea3b14b7b4524e0470069a613efe57adcc7"
+      "bundled_sha256": "b9f34bf74cfffc40745c00c23c5a3e19c9089ed03e35c3e7aaf8ecd753bec0ec"
     },
     {
       "source_path": "docs/ESBUILD.md",
@@ -104,7 +104,7 @@
       "source_path": "docs/AUTHOR_REFERENCE.md",
       "bundled_path": "docs/AUTHOR_REFERENCE.md",
       "source_sha256": "60e3a1c5e6e1ec14b566598d2bd902427bbfb5571620f99e0f87b1219442dc94",
-      "bundled_sha256": "11a6381e627c8f958cde71044a98dc045dfeef00d31855d12c0b954a21ae34da"
+      "bundled_sha256": "978b3bca2463a1352878be911a171413cb1d7f96c8587b29db0db1312ac7b124"
     },
     {
       "source_path": "docs/HTMX_FRAGMENTS_AND_CANONICAL_URLS.md",
@@ -116,19 +116,19 @@
       "source_path": "docs/HTTP_RESPONSES.md",
       "bundled_path": "docs/HTTP_RESPONSES.md",
       "source_sha256": "565f074d413f796644d16a1ff9afec1a5e6bc42ef0b9ef0e79650d4906c008fd",
-      "bundled_sha256": "4a14a8e1337c065853e018fa2194beda0e5fe171cf2ee80b281d678163491132"
+      "bundled_sha256": "08f7cdd94195d3099aa7770f9c9b16842949c442d3778de41f2b4ec793dc8f9c"
     },
     {
       "source_path": "docs/HYPERBRICKS_CLI.md",
       "bundled_path": "docs/HYPERBRICKS_CLI.md",
       "source_sha256": "51bc521e7de0800ab4f8eda0f674e36661d97ec7f3a86553d243a943a37715d4",
-      "bundled_sha256": "fb48ae0531da7f7376e5e0785f56fe060cf9b77d1eb17cf59236f19904d2b7f7"
+      "bundled_sha256": "3d984efd660bfd5163e6e7f3a5fe88ef93938a445388573d1a897bde0e6cdf1d"
     },
     {
       "source_path": "docs/HYPERBRICKS_TYPE_EXAMPLES.md",
       "bundled_path": "docs/HYPERBRICKS_TYPE_EXAMPLES.md",
       "source_sha256": "2e3b65c982f1b12daff6976f7ce2ad3592cd084540df38cc2a7a72853a9573c3",
-      "bundled_sha256": "848284011941509f8b2553e54e9114ebafa07e62f1ff59b5d50cb17fa92465d0"
+      "bundled_sha256": "6ca440b73aa16f0422b71865b7def155d18464ef2fddd65c35b470293c23949a"
     },
     {
       "source_path": "docs/IMAGES.md",
@@ -140,7 +140,7 @@
       "source_path": "docs/LIVE_MODE_HTTP.md",
       "bundled_path": "docs/LIVE_MODE_HTTP.md",
       "source_sha256": "c0f03a74b7419ed5138d31a5e378085bdda60772317d2291be6e73b0c5bcee45",
-      "bundled_sha256": "f79d5f0d8b7d979a05c48fecc04486d903a0854eecdb9a741f8bb187bfcf5fa7"
+      "bundled_sha256": "1e8f184de23e0abe9b066ff1a351e8eb35292fef1414e7fdbcb2e42c6d7e061d"
     },
     {
       "source_path": "docs/ROUTE_GUARD.md",
@@ -158,7 +158,7 @@
       "source_path": "docs/YAML_USAGE.md",
       "bundled_path": "docs/YAML_USAGE.md",
       "source_sha256": "fed17a2ed7b206dc8ff8cbf23aa4a018406ddb51f6e1c0b3e2be78cd79f0479a",
-      "bundled_sha256": "e515b64dc27f9212da7e0077be9e13aeca7f22955e9030bad1b493f5a1258de2"
+      "bundled_sha256": "246a6d8221e2ad2f84c8f25417db5420680be9b2e8ad971219f943a1dbb86656"
     }
   ]
 }

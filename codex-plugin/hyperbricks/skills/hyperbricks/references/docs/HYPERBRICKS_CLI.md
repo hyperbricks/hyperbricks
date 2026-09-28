@@ -119,7 +119,7 @@ The generated configuration and README use the selected module name. The README 
 
 ### Init-starter: install an official starter
 
-`init-starter` downloads a starter from the official [starters repository](https://github.com/hyperbricks/hyperbricks-starters). Browse the [module starter index](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/modules/README.md#starter-modules) for examples and their setup requirements. Use `init-starter` for the minimal Hello World example.
+`init-starter` downloads a starter from the official [starters repository](https://github.com/hyperbricks/hyperbricks-starters). Browse the [module starter index](https://github.com/hyperbricks/hyperbricks/blob/v1.2.7-beta/modules/README.md#starter-modules) for examples and their setup requirements. Use `init-starter` for the minimal Hello World example.
 
 List compatible starters:
 
