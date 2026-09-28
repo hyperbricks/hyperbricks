@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/composite"
@@ -76,10 +77,11 @@ type doctorReport struct {
 }
 
 type doctorOptions struct {
-	Module string
-	Config string
-	JSON   bool
-	Strict bool
+	Module  string
+	Config  string
+	JSON    bool
+	Verbose bool
+	Strict  bool
 }
 
 type doctorCheckDefinition struct {
@@ -166,14 +168,16 @@ func NewDoctorCommand() *cobra.Command {
 				}
 				return nil
 			}
-			return writeDoctorReport(cmd, report)
+			return writeDoctorReport(cmd, report, opts.Verbose)
 		},
 	}
 	cmd.Flags().StringVarP(&opts.Module, "module", "m", "default", "module name or directory path")
 	_ = cmd.RegisterFlagCompletionFunc("module", completeModuleSelection)
 	cmd.Flags().StringVar(&opts.Config, "config", PackageConfigFileName, "package config path relative to the selected module")
 	cmd.Flags().BoolVar(&opts.JSON, "json", false, "machine-readable output")
+	cmd.Flags().BoolVarP(&opts.Verbose, "verbose", "v", false, "show every check in categorized human-readable output")
 	cmd.Flags().BoolVar(&opts.Strict, "strict", false, "treat warnings as an unhealthy result")
+	cmd.MarkFlagsMutuallyExclusive("json", "verbose")
 	return cmd
 }
 
@@ -387,13 +391,16 @@ func checkDoctorMetadata(collector *doctorCollector, content []byte, moduleName,
 		collector.simple("metadata.module_version", doctorPass, fmt.Sprintf("module version %s is valid SemVer", result.Metadata.ModuleVersion))
 	}
 
+	recordedVersion := strings.TrimSpace(result.Before.HyperBricks)
 	switch {
-	case result.Before.HyperBricks == runtimeVersion:
+	case recordedVersion == runtimeVersion:
 		collector.simple("metadata.runtime_version", doctorPass, fmt.Sprintf("records HyperBricks %s", runtimeVersion))
-	case result.Before.HyperBricks == "":
+	case recordedVersion == "":
 		collector.set(doctorCheck{ID: "metadata.runtime_version", Group: "metadata", Status: doctorWarn, Message: fmt.Sprintf("package does not record the running HyperBricks version %s", runtimeVersion), File: configFile, Path: "hyperbricks.metadata.hyperbricks", Hint: fmt.Sprintf("Run hyperbricks init -m %s --update-metadata", moduleName)})
+	case doctorRecordedRuntimeIsOlder(recordedVersion, runtimeVersion):
+		collector.simple("metadata.runtime_version", doctorPass, fmt.Sprintf("last updated with HyperBricks %s; running newer %s", recordedVersion, runtimeVersion))
 	default:
-		collector.set(doctorCheck{ID: "metadata.runtime_version", Group: "metadata", Status: doctorWarn, Message: fmt.Sprintf("package records HyperBricks %s; running %s", result.Before.HyperBricks, runtimeVersion), File: configFile, Path: "hyperbricks.metadata.hyperbricks", Hint: fmt.Sprintf("Run hyperbricks init -m %s --update-metadata", moduleName)})
+		collector.set(doctorCheck{ID: "metadata.runtime_version", Group: "metadata", Status: doctorWarn, Message: fmt.Sprintf("package was last updated with HyperBricks %s; running %s", recordedVersion, runtimeVersion), File: configFile, Path: "hyperbricks.metadata.hyperbricks", Hint: fmt.Sprintf("Run hyperbricks init -m %s --update-metadata", moduleName)})
 	}
 
 	var stale []string
@@ -417,6 +424,12 @@ func checkDoctorMetadata(collector *doctorCollector, content []byte, moduleName,
 	} else {
 		collector.simple("build.provenance", doctorPass, "archive provenance can be applied in memory")
 	}
+}
+
+func doctorRecordedRuntimeIsOlder(recordedVersion, runtimeVersion string) bool {
+	recorded, recordedErr := semver.NewVersion(strings.TrimPrefix(strings.TrimSpace(recordedVersion), "v"))
+	runtime, runtimeErr := semver.NewVersion(strings.TrimPrefix(strings.TrimSpace(runtimeVersion), "v"))
+	return recordedErr == nil && runtimeErr == nil && recorded.LessThan(runtime)
 }
 
 func checkDoctorDirectories(collector *doctorCollector, module *authoringModule) {
@@ -1070,7 +1083,7 @@ func doctorCleanMessage(message, root, cwd string) string {
 	return filepath.ToSlash(message)
 }
 
-func writeDoctorReport(cmd *cobra.Command, report doctorReport) error {
+func writeDoctorReport(cmd *cobra.Command, report doctorReport, verbose bool) error {
 	output := cmd.OutOrStdout()
 	name := report.Module.Name
 	if name == "" {
@@ -1087,6 +1100,11 @@ func writeDoctorReport(cmd *cobra.Command, report doctorReport) error {
 			end++
 		}
 		groupChecks := report.Checks[start:end]
+		if verbose {
+			writeDoctorVerboseGroup(output, groupChecks)
+			start = end
+			continue
+		}
 		nonPassing := make([]doctorCheck, 0, len(groupChecks))
 		for _, check := range groupChecks {
 			if check.Status != doctorPass {
@@ -1130,6 +1148,52 @@ func writeDoctorReport(cmd *cobra.Command, report doctorReport) error {
 	return nil
 }
 
+func writeDoctorVerboseGroup(output io.Writer, checks []doctorCheck) {
+	if len(checks) == 0 {
+		return
+	}
+	fmt.Fprintf(output, "%s %s\n", doctorStatusSymbol(doctorGroupStatus(checks)), doctorGroupTitle(checks[0].Group))
+	for _, check := range checks {
+		fmt.Fprintf(output, "  %s %-18s %s\n", doctorStatusSymbol(check.Status), doctorCheckTitle(check.ID), doctorTerminalText(check.Message))
+		if check.File != "" {
+			location := check.File
+			if check.Line > 0 {
+				location += fmt.Sprintf(":%d", check.Line)
+				if check.Column > 0 {
+					location += fmt.Sprintf(":%d", check.Column)
+				}
+			}
+			fmt.Fprintf(output, "      File: %s\n", doctorTerminalText(location))
+		}
+		if check.Path != "" {
+			fmt.Fprintf(output, "      Path: %s\n", doctorTerminalText(check.Path))
+		}
+	}
+}
+
+func doctorGroupStatus(checks []doctorCheck) doctorCheckStatus {
+	status := doctorPass
+	priority := map[doctorCheckStatus]int{doctorPass: 0, doctorSkip: 1, doctorWarn: 2, doctorFail: 3}
+	for _, check := range checks {
+		if priority[check.Status] > priority[status] {
+			status = check.Status
+		}
+	}
+	return status
+}
+
+func doctorCheckTitle(id string) string {
+	name := id
+	if separator := strings.IndexByte(name, '.'); separator >= 0 {
+		name = name[separator+1:]
+	}
+	name = strings.ReplaceAll(name, "_", " ")
+	if name == "" {
+		return "Check"
+	}
+	return strings.ToUpper(name[:1]) + name[1:]
+}
+
 func doctorPassingGroupMessage(checks []doctorCheck) string {
 	if len(checks) == 0 {
 		return "checks passed"
@@ -1145,8 +1209,7 @@ func doctorPassingGroupMessage(checks []doctorCheck) string {
 }
 
 func writeDoctorCheckLine(output io.Writer, check doctorCheck) {
-	symbol := map[doctorCheckStatus]string{doctorPass: "✓", doctorWarn: "!", doctorFail: "✗", doctorSkip: "–"}[check.Status]
-	fmt.Fprintf(output, "%s %-12s %s\n", symbol, doctorGroupTitle(check.Group), doctorTerminalText(check.Message))
+	fmt.Fprintf(output, "%s %-12s %s\n", doctorStatusSymbol(check.Status), doctorGroupTitle(check.Group), doctorTerminalText(check.Message))
 	if check.File == "" || check.Status == doctorPass {
 		return
 	}
@@ -1158,6 +1221,10 @@ func writeDoctorCheckLine(output io.Writer, check doctorCheck) {
 		}
 	}
 	fmt.Fprintf(output, "  %s\n", doctorTerminalText(location))
+}
+
+func doctorStatusSymbol(status doctorCheckStatus) string {
+	return map[doctorCheckStatus]string{doctorPass: "✓", doctorWarn: "!", doctorFail: "✗", doctorSkip: "–"}[status]
 }
 
 func doctorTerminalText(value string) string {
