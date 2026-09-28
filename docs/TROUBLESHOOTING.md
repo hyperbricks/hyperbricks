@@ -52,8 +52,7 @@ coverage. Unchecked routes do not appear as Problems entries.
 
 Automatic runtime authentication is restricted to a local loopback URL. Check
 the module, active package profile, development/debug mode, configured port,
-and developer-interface credentials when the status remains disconnected. See
-[Visual Studio Code](VSCODE.md) for all editor settings and security rules.
+and developer-interface credentials when the status remains disconnected.
 
 ## A route returns 404
 

@@ -43,7 +43,6 @@ DOCUMENTATION_SECTIONS = (
             ("Introduction", "docs/INTRODUCTION.md"),
             ("Quickstart", "docs/QUICKSTART.md"),
             ("How-to guides", "docs/HOWTOS.md"),
-            ("Visual Studio Code", "docs/VSCODE.md"),
             ("Troubleshooting", "docs/TROUBLESHOOTING.md"),
         ),
     ),

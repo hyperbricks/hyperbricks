@@ -854,11 +854,11 @@ HyperBricks reports YAML source errors and continues loading files it can parse.
 
 ## Editor Feedback And Common Mistakes
 
-The [VS Code extension](VSCODE.md) understands ordered components, inherited
-types, imports, and block/flow resolvers. Type `- ` inside a component or `: `
-before a value for context-specific suggestions. Press **Control+Space** to
-request suggestions explicitly. Hover fields and resolver keys for help;
-Cmd/Ctrl-click references or static file paths to open their source.
+The VS Code extension understands ordered components, inherited types, imports,
+and block/flow resolvers. Type `- ` inside a component or `: ` before a value
+for context-specific suggestions. Press **Control+Space** to request suggestions
+explicitly. Hover fields and resolver keys for help; Cmd/Ctrl-click references
+or static file paths to open their source.
 
 A resolver still needs the field's colon and separating space:
 

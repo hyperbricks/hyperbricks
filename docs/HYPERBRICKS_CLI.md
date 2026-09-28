@@ -594,9 +594,6 @@ and executable with incompatible editor-protocol versions reject the session
 with a clear initialization error instead of silently degrading. Standard
 output is reserved for JSON-RPC; process diagnostics must use standard error.
 
-See [Visual Studio Code](VSCODE.md) for extension build, settings, commands,
-runtime authentication, and troubleshooting details.
-
 ## Start
 
 Always run `hyperbricks start` from the project root, which contains the `modules/` directory.
