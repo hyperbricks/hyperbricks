@@ -23,6 +23,13 @@ type Options struct {
 	RecoverDuplicateChildren bool
 	AllowUnknownTypes        bool
 	IncludeSourceMetadata    bool
+	// ResourceReadFile overrides reads made by file and template.file resolvers.
+	// Editor and authoring callers can enforce their own filesystem boundary;
+	// nil preserves the runtime's ordinary os.ReadFile behavior.
+	ResourceReadFile func(string) ([]byte, error)
+	// SkipTemplateRegistration lets read-only analysis validate template files
+	// without replacing entries in the runtime's shared template registry.
+	SkipTemplateRegistration bool
 }
 
 // PathMarkers are the standard HyperBricks path bases available to YAML value

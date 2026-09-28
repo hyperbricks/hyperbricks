@@ -505,6 +505,124 @@ article:
 	}
 }
 
+func TestDefinitionsResolveVariableAndConfigDeclarationsWithoutEvaluatingValues(t *testing.T) {
+	root := t.TempDir()
+	sourceDir := filepath.Join(root, "hyperbricks")
+	if err := os.MkdirAll(sourceDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	uri := pathToURI(filepath.Join(sourceDir, "page.hyperbricks.yaml"))
+	sharedURI := pathToURI(filepath.Join(sourceDir, "shared.hyperbricks.yaml"))
+	configURI := pathToURI(filepath.Join(root, "package.hyperbricks.yaml"))
+	source := `imports: [shared.hyperbricks.yaml]
+vars:
+  local:
+    title: Local
+page:
+  - type: text
+  - value:
+      format: '%s %s %s'
+      args:
+        - var: local.title
+        - var: {name: 'shared.heading'}
+        - config: {path: myconf.site.title}
+`
+	shared := "vars:\n  shared:\n    heading: {env: PRIVATE_HEADING}\n"
+	config := "myconf:\n  site:\n    title: {env: PRIVATE_SITE_TITLE}\n"
+	documents := map[string]string{uri: source, sharedURI: shared, configURI: config}
+	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: root})
+	for _, test := range []struct{ needle, targetURI, targetSource, targetKey string }{
+		{"local.title", uri, source, "title:"},
+		{"'shared.heading'", sharedURI, shared, "heading:"},
+		{"myconf.site.title", configURI, config, "title:"},
+	} {
+		t.Run(test.needle, func(t *testing.T) {
+			origin := definitionTestRange(t, source, test.needle)
+			for character := origin.Start.Character; character < origin.End.Character; character++ {
+				position := Position{Line: origin.Start.Line, Character: character}
+				links := analyzer.DefinitionLinks(uri, source, position, documents)
+				assertDefinitionLink(t, links, test.targetURI, definitionTestPosition(t, test.targetSource, test.targetKey), origin)
+			}
+		})
+	}
+	// Unreachable open buffers and duplicate declarations do not win by chance.
+	delete(documents, sharedURI)
+	documents[pathToURI(filepath.Join(sourceDir, "unreachable.hyperbricks.yaml"))] = shared
+	if links := analyzer.DefinitionLinks(uri, source, definitionTestPosition(t, source, "shared.heading"), documents); len(links) != 0 {
+		t.Fatalf("unreachable var definition: %#v", links)
+	}
+	documents[sharedURI] = "vars:\n  local:\n    title: Duplicate\n"
+	if links := analyzer.DefinitionLinks(uri, source, definitionTestPosition(t, source, "local.title"), documents); len(links) != 0 {
+		t.Fatalf("duplicate var definition: %#v", links)
+	}
+}
+
+func TestResolverResourceDefinitionsFollowOnlyStaticRuntimePaths(t *testing.T) {
+	root := t.TempDir()
+	for _, directory := range []string{"hyperbricks", "resources/docs", "templates/cards"} {
+		if err := os.MkdirAll(filepath.Join(root, directory), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, path := range []string{"resources/docs/guide.md", "templates/cards/card.html"} {
+		if err := os.WriteFile(filepath.Join(root, path), []byte("fixture"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: root})
+	uri := pathToURI(filepath.Join(root, "hyperbricks", "page.hyperbricks.yaml"))
+	for _, test := range []struct{ name, value, needle, target string }{
+		{"flow file", "{file: {base: resources, path: docs/guide.md}}", "docs/guide.md", "resources/docs/guide.md"},
+		{"block file", "\n      file:\n        base: resources\n        path: docs/guide.md", "docs/guide.md", "resources/docs/guide.md"},
+		{"literal parts", "{file: {base: resources, parts: [docs, guide.md]}}", "guide.md", "resources/docs/guide.md"},
+		{"unresolved parts", "{file: {base: resources, parts: [docs, {var: subdir}, guide.md]}}", "guide.md", ""},
+		{"path wins", "{path: {base: resources, path: missing.md, parts: [docs, guide.md]}}", "guide.md", ""},
+		{"ordinary map", "{base: resources, path: docs/guide.md}", "docs/guide.md", ""},
+		{"file ordinary map", "{file: {base: resources, path: docs/guide.md}, caption: ordinary}", "docs/guide.md", ""},
+		{"template path", "{template: {file: {path: cards/card.html}}}", "cards/card.html", "templates/cards/card.html"},
+		{"template parts", "{template: {file: {parts: [cards, card.html]}}}", "card.html", "templates/cards/card.html"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			source := "page:\n  - type: plugin\n  - data: " + test.value + "\n"
+			links := analyzer.DefinitionLinks(uri, source, definitionTestPosition(t, source, test.needle))
+			if test.target == "" {
+				if len(links) != 0 {
+					t.Fatalf("unexpected definition: %#v", links)
+				}
+				return
+			}
+			assertDefinitionLink(t, links, pathToURI(filepath.Join(root, test.target)), Position{}, definitionTestRange(t, source, test.needle))
+		})
+	}
+}
+
+func TestDefinitionsResolveUnsavedPackageVariablesAndConfineConfigLinks(t *testing.T) {
+	parent := t.TempDir()
+	module := filepath.Join(parent, "module")
+	if err := os.MkdirAll(filepath.Join(module, "hyperbricks"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: module})
+	configURI := pathToURI(filepath.Join(module, "package.hyperbricks.yaml"))
+	config := "vars:\n  app:\n    label: Local\nmyconf:\n  label: {var: app.label}\n"
+	origin := definitionTestRange(t, config, "app.label")
+	assertDefinitionLink(t, analyzer.DefinitionLinks(configURI, config, origin.Start), configURI, definitionTestPosition(t, config, "label:"), origin)
+
+	outside := filepath.Join(parent, "outside.yaml")
+	if err := os.WriteFile(outside, []byte("myconf: {title: private}"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, filepath.Join(module, "package.hyperbricks.yaml")); err != nil {
+		t.Skipf("symlink unavailable: %v", err)
+	}
+	uri := pathToURI(filepath.Join(module, "hyperbricks", "page.hyperbricks.yaml"))
+	source := "page:\n  - type: text\n  - value: {config: myconf.title}\n"
+	documents := map[string]string{configURI: "myconf: {title: private}"}
+	if links := analyzer.DefinitionLinks(uri, source, definitionTestPosition(t, source, "myconf.title"), documents); len(links) != 0 {
+		t.Fatalf("symlink config escaped module: %#v", links)
+	}
+}
+
 func definitionTestPosition(t *testing.T, text, needle string) Position {
 	t.Helper()
 	index := strings.Index(text, needle)

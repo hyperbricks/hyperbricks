@@ -45,6 +45,149 @@ func TestAnalyzerCompletesTypesAndTypeScopedFields(t *testing.T) {
 	}
 }
 
+func TestAnalyzerValueCompletionsRequireYAMLSeparationSpace(t *testing.T) {
+	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: t.TempDir()})
+	for _, source := range []string{
+		"page:\n  - type:",
+		"page:\n  - type:hy",
+	} {
+		items := analyzer.Completions("untitled:page", source, Position{Line: 1, Character: utf16Length(strings.TrimPrefix(source, "page:\n"))}, nil)
+		if len(items) != 0 {
+			t.Fatalf("malformed no-space value %q received completions: %#v", source, items)
+		}
+	}
+
+	for _, source := range []string{
+		"page:\n  - type: ",
+		"page:\n  - type: hy",
+	} {
+		items := analyzer.Completions("untitled:page", source, Position{Line: 1, Character: utf16Length(strings.TrimPrefix(source, "page:\n"))}, nil)
+		if !hasCompletion(items, "hypermedia") {
+			t.Fatalf("space-separated value %q did not receive type completions: %#v", source, items)
+		}
+	}
+
+	inheritSource := "base:\n  - type: html\n  - value: base\npage:\n  - inherit:ba"
+	if items := analyzer.Completions("untitled:page", inheritSource, Position{Line: 4, Character: utf16Length("  - inherit:ba")}, nil); len(items) != 0 {
+		t.Fatalf("no-space inherit value received completions: %#v", items)
+	}
+	inheritSource = strings.Replace(inheritSource, "inherit:ba", "inherit: ba", 1)
+	if items := analyzer.Completions("untitled:page", inheritSource, Position{Line: 4, Character: utf16Length("  - inherit: ba")}, nil); !hasCompletion(items, "base") {
+		t.Fatalf("space-separated inherit value did not receive completions: %#v", items)
+	}
+}
+
+func TestAutomaticCompletionBoundaryRejectsUnrelatedSpaces(t *testing.T) {
+	for _, test := range []struct {
+		line string
+		want bool
+	}{
+		{line: "  - type: ", want: true},
+		{line: "  - type:   ", want: true},
+		{line: "  - type:\t ", want: true},
+		{line: "  - type:", want: false},
+		{line: "  - type:hy ", want: false},
+		{line: "  - type: html # note ", want: false},
+		{line: "      # note: ", want: false},
+		{line: "  - ", want: true},
+	} {
+		position := Position{Line: 0, Character: utf16Length(test.line)}
+		if got := automaticCompletionBoundary(test.line, position); got != test.want {
+			t.Errorf("automaticCompletionBoundary(%q) = %t, want %t", test.line, got, test.want)
+		}
+	}
+}
+
+func TestComponentEntryCompletionUsesYAMLOwner(t *testing.T) {
+	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: t.TempDir()})
+	for _, test := range []struct {
+		name   string
+		source string
+		line   int
+		want   bool
+	}{
+		{
+			name: "typed component",
+			source: "page:\n" +
+				"  - type: hypermedia\n" +
+				"  - ",
+			line: 2, want: true,
+		},
+		{
+			name: "inherited component",
+			source: "base:\n" +
+				"  - type: hypermedia\n" +
+				"page:\n" +
+				"  - inherit: base\n" +
+				"  - ",
+			line: 4, want: true,
+		},
+		{
+			name: "typed child component",
+			source: "page:\n" +
+				"  - type: hypermedia\n" +
+				"  - body:\n" +
+				"      - type: template\n" +
+				"      - ",
+			line: 4, want: true,
+		},
+		{
+			name: "comments and blanks within component",
+			source: "page:\n" +
+				"  - type: hypermedia\n" +
+				"\n" +
+				"  # next field\n" +
+				"  - ",
+			line: 4, want: true,
+		},
+		{
+			name: "ordinary list below dynamic values",
+			source: "view:\n" +
+				"  - type: template\n" +
+				"  - values:\n" +
+				"      items:\n" +
+				"        - ",
+			line: 4, want: false,
+		},
+		{
+			name: "new child without a declared type",
+			source: "page:\n" +
+				"  - type: hypermedia\n" +
+				"  - body:\n" +
+				"      - ",
+			line: 3, want: true,
+		},
+		{
+			name: "untyped sibling after typed child",
+			source: "page:\n" +
+				"  - type: hypermedia\n" +
+				"  - body:\n" +
+				"      - type: html\n" +
+				"      - value: Body\n" +
+				"  - head:\n" +
+				"      - ",
+			line: 6, want: true,
+		},
+		{
+			name: "separate root boundary",
+			source: "first:\n" +
+				"  - type: html\n" +
+				"  - value: First\n" +
+				"second:\n" +
+				"  - ",
+			line: 4, want: true,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			line := splitLines(test.source)[test.line]
+			position := Position{Line: test.line, Character: utf16Length(line)}
+			if got := len(analyzer.Completions("untitled:source", test.source, position, nil)) > 0; got != test.want {
+				t.Fatalf("component completion = %t, want %t\n%s", got, test.want, test.source)
+			}
+		})
+	}
+}
+
 func TestDocumentURIConversionSupportsWindowsDriveUNCAndEscapes(t *testing.T) {
 	driveURI := "file:///C:/Users/A%20B/100%25.hyperbricks.yaml"
 	drivePath := `C:\Users\A B\100%.hyperbricks.yaml`
@@ -536,8 +679,10 @@ func TestAnalyzerPathSuggestionsMaterializeForNativeFieldShapes(t *testing.T) {
 	// not be suggested as raw or absolute values for them.
 	for _, test := range []struct{ typeName, key string }{{"css", "link"}, {"hypermedia", "favicon"}} {
 		source := fmt.Sprintf("item:\n  - type: %s\n  - %s: ", test.typeName, test.key)
-		if items := analyzer.Completions(uri, source, Position{Line: 2, Character: utf16Length("  - " + test.key + ": ")}, nil); len(items) != 0 {
-			t.Fatalf("URL field %s.%s received filesystem completions: %#v", test.typeName, test.key, items)
+		for _, item := range analyzer.Completions(uri, source, Position{Line: 2, Character: utf16Length("  - " + test.key + ": ")}, nil) {
+			if item.Kind == CompletionItemKindFile {
+				t.Fatalf("URL field %s.%s received filesystem completion: %#v", test.typeName, test.key, item)
+			}
 		}
 	}
 }

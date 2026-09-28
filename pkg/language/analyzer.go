@@ -109,7 +109,7 @@ func NewAnalyzer(opts AnalyzerOptions) *Analyzer {
 // of URI to unsaved content used as an overlay while imports are loaded.
 func (a *Analyzer) Diagnostics(uri, text string, documents map[string]string) []Diagnostic {
 	if a.isPackageConfig(uri) {
-		if _, err := shared.ValidatePackageConfigBytes([]byte(text), a.moduleRoot()); err != nil {
+		if _, err := shared.ValidatePackageConfigBytesWithResourceReader([]byte(text), a.moduleRoot(), a.readResourceFile); err != nil {
 			return []Diagnostic{diagnosticFromError(text, err, "yaml.configuration")}
 		}
 		return nil
@@ -151,65 +151,7 @@ func (a *Analyzer) Diagnostics(uri, text string, documents map[string]string) []
 
 // Completions returns deterministic, schema-backed suggestions at position.
 func (a *Analyzer) Completions(uri, text string, position Position, documents map[string]string) []CompletionItem {
-	linePrefix, indent, key, valueContext := completionContext(text, position)
-	switch key {
-	case "type":
-		return a.typeCompletions()
-	case "inherit":
-		targets := a.inheritTargets(uri, text, position, documents)
-		return inheritCompletionItems(targets, inheritReferencePrefix(linePrefix))
-	}
-
-	context := componentContext(text, position.Line, indent)
-	typeName := context.typeName
-	if typeName == "" && context.inherit != "" {
-		typeName = a.inheritedType(uri, text, context.inherit, documents)
-	}
-	descriptor := a.types[normalizeTypeName(typeName)]
-	if valueContext {
-		if key == "base" && resolverPathContext(text, position.Line, indent) {
-			return pathBaseCompletions()
-		}
-		if spec, ok := pathCompletionFor(descriptor, key); ok {
-			return a.pathCompletions(spec)
-		}
-		return nil
-	}
-	if context.indent >= 0 && indent > context.indent && strings.TrimSpace(linePrefix) != "-" {
-		return resolverCompletions(indent)
-	}
-	if descriptor == nil {
-		return nil
-	}
-	keys := make([]string, 0, len(descriptor.topFields))
-	for fieldKey := range descriptor.topFields {
-		if !context.existing[fieldKey] && !authoringSlotOwnsCompletion(descriptor, fieldKey) {
-			keys = append(keys, fieldKey)
-		}
-	}
-	sort.Strings(keys)
-	items := make([]CompletionItem, 0, len(keys))
-	for _, fieldKey := range keys {
-		fields := descriptor.topFields[fieldKey]
-		detail := fields[0].Kind
-		description := fields[0].Description
-		if len(fields) > 1 {
-			detail = "object"
-			if description == "" {
-				description = "Structured HyperBricks field."
-			}
-		}
-		items = append(items, CompletionItem{
-			Label:            fieldKey,
-			Kind:             CompletionItemKindField,
-			Detail:           detail,
-			Documentation:    MarkupContent{Kind: "markdown", Value: description},
-			InsertText:       fieldSnippet(fieldKey, fields, indent),
-			InsertTextFormat: InsertTextFormatSnippet,
-		})
-	}
-	items = append(items, childCompletions(descriptor, context.existing, indent)...)
-	return items
+	return a.yamlCompletions(uri, text, position, documents)
 }
 
 func (a *Analyzer) typeCompletions() []CompletionItem {
@@ -253,6 +195,9 @@ func (a *Analyzer) typeCompletions() []CompletionItem {
 // documents supplies the same unsaved import overlays used by diagnostics and
 // completion; callers without an index may omit it.
 func (a *Analyzer) Hover(uri string, text string, position Position, documentOverlays ...map[string]string) *Hover {
+	if hover := a.resolverHover(uri, text, position); hover != nil {
+		return hover
+	}
 	var documents map[string]string
 	if len(documentOverlays) > 0 {
 		documents = documentOverlays[0]
@@ -386,18 +331,6 @@ func (a *Analyzer) inheritTargets(uri, text string, position Position, documents
 	}
 	sort.Strings(out)
 	return out
-}
-
-func inheritReferencePrefix(linePrefix string) string {
-	colon := strings.Index(linePrefix, ":")
-	if colon < 0 {
-		return ""
-	}
-	value := strings.TrimSpace(linePrefix[colon+1:])
-	if len(value) > 0 && (value[0] == '\'' || value[0] == '"') {
-		value = value[1:]
-	}
-	return strings.TrimSpace(value)
 }
 
 // inheritCompletionItems keeps root completion compatible with the complete
@@ -602,9 +535,11 @@ func (a *Analyzer) packageConfig() map[string]interface{} {
 	}
 	paths := a.basePathMarkers()
 	result, err := yamlparser.ProcessConfigBytes(raw, yamlparser.Options{
-		Variables:   map[string]string{"module": root},
-		TemplateDir: paths.Templates,
-		Paths:       paths,
+		Variables:                map[string]string{"module": root},
+		TemplateDir:              paths.Templates,
+		Paths:                    paths,
+		ResourceReadFile:         a.readResourceFile,
+		SkipTemplateRegistration: true,
 	})
 	if err != nil {
 		return nil
@@ -635,10 +570,31 @@ func (a *Analyzer) sourceParserOptions() yamlparser.Options {
 	paths.Static = a.directoryFromConfig(config, "static", paths.Static)
 	paths.Render = a.directoryFromConfig(config, "render", paths.Render)
 	return yamlparser.Options{
-		Variables:   map[string]string{"module": a.moduleRoot()},
-		Config:      config,
-		TemplateDir: paths.Templates,
-		Paths:       paths,
+		Variables:                editorPathVariables(paths),
+		Config:                   config,
+		TemplateDir:              paths.Templates,
+		Paths:                    paths,
+		ResourceReadFile:         a.readResourceFile,
+		SkipTemplateRegistration: true,
+	}
+}
+
+// Editor analysis may inspect local resources but must not follow a resolver
+// outside the selected module, including through a symlink. The runtime keeps
+// its existing reader; this boundary belongs specifically to source tooling.
+func (a *Analyzer) readResourceFile(filename string) ([]byte, error) {
+	path, err := a.confinedPath(filename)
+	if err != nil {
+		return nil, err
+	}
+	return os.ReadFile(path)
+}
+
+func editorPathVariables(paths yamlparser.PathMarkers) map[string]string {
+	return map[string]string{
+		"module_root": paths.ModuleRoot, "root": paths.Root, "module": paths.Module,
+		"resources": paths.Resources, "templates": paths.Templates, "static": paths.Static,
+		"hyperbricks": paths.HyperBricks, "render": paths.Render,
 	}
 }
 
@@ -1132,103 +1088,6 @@ func relatedTargetPaths(left, right string) bool {
 		strings.HasPrefix(left, right+"[") || strings.HasPrefix(right, left+"[")
 }
 
-func completionContext(text string, position Position) (prefix string, indent int, key string, valueContext bool) {
-	lines := splitLines(text)
-	if position.Line < 0 || position.Line >= len(lines) {
-		return "", 0, "", false
-	}
-	line := lines[position.Line]
-	byteColumn := byteIndexForUTF16(line, position.Character)
-	if byteColumn > len(line) {
-		byteColumn = len(line)
-	}
-	prefix = line[:byteColumn]
-	indent = leadingSpaces(prefix)
-	trimmed := strings.TrimSpace(prefix)
-	if strings.HasPrefix(trimmed, "-") {
-		trimmed = strings.TrimSpace(strings.TrimPrefix(trimmed, "-"))
-	}
-	if colon := strings.Index(trimmed, ":"); colon >= 0 {
-		key = strings.TrimSpace(trimmed[:colon])
-		valueContext = true
-	}
-	return prefix, indent, key, valueContext
-}
-
-var componentTypeLine = regexp.MustCompile(`^\s*-\s*type\s*:\s*([^#\s]+)`)
-var componentInheritLine = regexp.MustCompile(`^\s*-\s*inherit\s*:\s*([^#\s]+)`)
-var componentEntryLine = regexp.MustCompile(`^\s*-\s*([A-Za-z_@][A-Za-z0-9_@-]*)\s*:`)
-
-type componentCompletionContext struct {
-	typeName string
-	inherit  string
-	existing map[string]bool
-	indent   int
-}
-
-func componentContext(text string, line, requestedIndent int) componentCompletionContext {
-	result := componentCompletionContext{existing: make(map[string]bool), indent: -1}
-	lines := splitLines(text)
-	if line >= len(lines) {
-		line = len(lines) - 1
-	}
-	searchIndent := requestedIndent
-	if line >= 0 && strings.HasPrefix(strings.TrimSpace(lines[line]), "-") && searchIndent >= 2 {
-		// Entry indentation is the indentation before the dash.
-	} else if searchIndent >= 2 {
-		searchIndent -= 2
-	}
-	componentIndent := -1
-	for index := line; index >= 0; index-- {
-		candidate := lines[index]
-		if strings.TrimSpace(candidate) == "" || strings.HasPrefix(strings.TrimSpace(candidate), "#") {
-			continue
-		}
-		candidateIndent := leadingSpaces(candidate)
-		if candidateIndent <= searchIndent && (componentTypeLine.MatchString(candidate) || componentInheritLine.MatchString(candidate)) {
-			componentIndent = candidateIndent
-			break
-		}
-		if candidateIndent == 0 {
-			break
-		}
-	}
-	if componentIndent < 0 {
-		return result
-	}
-	result.indent = componentIndent
-	start := line
-	for start > 0 {
-		candidate := lines[start-1]
-		if strings.TrimSpace(candidate) != "" && leadingSpaces(candidate) < componentIndent {
-			break
-		}
-		start--
-	}
-	for index := start; index < len(lines); index++ {
-		candidate := lines[index]
-		if strings.TrimSpace(candidate) == "" || strings.HasPrefix(strings.TrimSpace(candidate), "#") {
-			continue
-		}
-		candidateIndent := leadingSpaces(candidate)
-		if index > start && candidateIndent < componentIndent {
-			break
-		}
-		if candidateIndent == componentIndent {
-			if match := componentTypeLine.FindStringSubmatch(candidate); len(match) == 2 {
-				result.typeName = unquoteYAMLScalar(match[1])
-			}
-			if match := componentInheritLine.FindStringSubmatch(candidate); len(match) == 2 {
-				result.inherit = unquoteYAMLScalar(match[1])
-			}
-			if match := componentEntryLine.FindStringSubmatch(candidate); len(match) == 2 {
-				result.existing[match[1]] = true
-			}
-		}
-	}
-	return result
-}
-
 func fieldSnippet(key string, fields []schema.Field, indent int) string {
 	if snippet, ok := nestedFieldSnippet(key, fields, indent); ok {
 		return snippet
@@ -1377,31 +1236,6 @@ func authoringSlotOwnsCompletion(descriptor *typeDescriptor, key string) bool {
 		if slot.Key == key && !slot.PathKeyRequired {
 			return true
 		}
-	}
-	return false
-}
-
-func resolverPathContext(text string, line, indent int) bool {
-	lines := splitLines(text)
-	if line >= len(lines) {
-		line = len(lines) - 1
-	}
-	for index := line - 1; index >= 0; index-- {
-		candidate := lines[index]
-		if strings.TrimSpace(candidate) == "" || strings.HasPrefix(strings.TrimSpace(candidate), "#") {
-			continue
-		}
-		candidateIndent := leadingSpaces(candidate)
-		if candidateIndent >= indent {
-			continue
-		}
-		trimmed := strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(candidate), "-"))
-		colon := strings.Index(trimmed, ":")
-		if colon < 0 {
-			return false
-		}
-		key := strings.TrimSpace(trimmed[:colon])
-		return key == "path" || key == "file"
 	}
 	return false
 }

@@ -2,7 +2,7 @@
   "schema_version": 2,
   "hyperbricks_version": "v1.2.5-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_digest": "83476ea8aa65bb8b968eab680cf99357b200338d3e9bffd0d10161623f4d95a0",
+  "source_digest": "5d02324ebc9119d069314fca83e88cefd003b8e62c68349805a5b814645b1884",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
@@ -25,8 +25,8 @@
     {
       "source_path": "docs/VSCODE.md",
       "bundled_path": "docs/VSCODE.md",
-      "source_sha256": "4a38b4c085b2c503ee0d603ce07875dc50d53eac23ce86ce0497704306635161",
-      "bundled_sha256": "778acf5422f38bde30c1d54fb1694c1b591f7259787aef28f3104f850bfcfea4"
+      "source_sha256": "a475651df29c9b0e5d634d98faba8020613e4a962d552de1eff0bb9e31c52b21",
+      "bundled_sha256": "32fa30262ed758b49587fc9677fa0197988fb60ccc73e54b9ec5a8a7015bf608"
     },
     {
       "source_path": "docs/TROUBLESHOOTING.md",
@@ -163,8 +163,8 @@
     {
       "source_path": "docs/YAML_USAGE.md",
       "bundled_path": "docs/YAML_USAGE.md",
-      "source_sha256": "1d5c4ec2a17f492d2de9f938ecde4f12b9701de385d6768b7ff2551e0fe99a52",
-      "bundled_sha256": "5b342e1c2c262c49681505077124e1fc0244a71aa305fd59ea69cce26870b6e4"
+      "source_sha256": "60fafdb0a6b005de0369db3d0570837709d05e663666454fd2d2b216db311615",
+      "bundled_sha256": "9a91ce38234e5ae184a907c3c6f26878022656646e27f088fd6490d892ea8ad4"
     }
   ]
 }

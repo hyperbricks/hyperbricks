@@ -46,14 +46,24 @@ func (a *Analyzer) DefinitionLinks(uri, text string, position Position, document
 	}
 	currentPath, readFile, confined := a.sourceReader(uri, text, documents)
 	if !confined {
-		return []LocationLink{}
+		if !a.isPackageConfig(uri) {
+			return []LocationLink{}
+		}
+		path, pathErr := uriToPath(uri)
+		if pathErr != nil {
+			return []LocationLink{}
+		}
+		currentPath, pathErr = a.confinedPath(path)
+		if pathErr != nil {
+			return []LocationLink{}
+		}
 	}
 	document, err := decodeYAMLDocument(text)
 	if err != nil {
 		return []LocationLink{}
 	}
 
-	if imported, ok := importDefinitionReference(text, document, position); ok {
+	if imported, ok := importDefinitionReference(text, document, position); ok && readFile != nil {
 		importPath, resolveErr := a.resolveDefinitionImport(currentPath, imported.value)
 		if resolveErr != nil {
 			return []LocationLink{}
@@ -64,9 +74,26 @@ func (a *Analyzer) DefinitionLinks(uri, text string, position Position, document
 		return []LocationLink{definitionLocationLink(imported.originRange, Location{URI: pathToURI(importPath), Range: Range{}})}
 	}
 
-	if inherited, ok := inheritDefinitionReference(text, position); ok {
+	if inherited, ok := inheritDefinitionReference(text, position); ok && readFile != nil {
 		if location, resolved := a.resolveInheritanceDefinition(currentPath, inherited.value, readFile); resolved {
 			return []LocationLink{definitionLocationLink(inherited.originRange, location)}
+		}
+		return []LocationLink{}
+	}
+	if reference, kind, ok := resolverNameReference(text, document, position, a.isPackageConfig(uri)); ok {
+		var location Location
+		var resolved bool
+		if kind == "var" {
+			sources := []definitionSource{{path: currentPath, text: text}}
+			if readFile != nil {
+				sources = a.definitionSources(currentPath, readFile)
+			}
+			location, resolved = resolveVariableDefinition(sources, reference.value)
+		} else if source, found := a.configurationDefinitionSource(uri, text, documents); found {
+			location, resolved = resolveMappingDefinition(source, reference.value, false)
+		}
+		if resolved {
+			return []LocationLink{definitionLocationLink(reference.originRange, location)}
 		}
 		return []LocationLink{}
 	}
@@ -249,6 +276,14 @@ func (a *Analyzer) resourceDefinitionAtPosition(uri, text string, document *yaml
 	}
 	var found resourceDefinitionReference
 	var resolved bool
+	visitSourceResolvers(text, document, a.isPackageConfig(uri), func(resolver sourceResolver) {
+		if resolved {
+			return
+		}
+		if resolver.kind == "path" || resolver.kind == "file" || resolver.kind == "template.file" {
+			found, resolved = staticResourceReference(text, resolver, position)
+		}
+	})
 	var walk func(*yaml.Node, string)
 	walk = func(node *yaml.Node, parentKey string) {
 		if node == nil || resolved {
@@ -261,52 +296,6 @@ func (a *Analyzer) resourceDefinitionAtPosition(uri, text string, document *yaml
 			}
 		}
 		if node.Kind == yaml.MappingNode {
-			baseNode := definitionMappingValue(node, "base")
-			pathNode := definitionMappingValue(node, "path")
-			partsNode := definitionMappingValue(node, "parts")
-			if baseNode != nil && baseNode.Kind == yaml.ScalarNode {
-				if pathNode != nil && pathNode.Kind == yaml.ScalarNode && definitionContainsPosition(text, pathNode, position) {
-					found = resourceDefinitionReference{
-						base:        strings.TrimSpace(baseNode.Value),
-						path:        strings.TrimSpace(pathNode.Value),
-						originRange: definitionSourceRange(text, pathNode),
-					}
-					resolved = found.path != ""
-					return
-				}
-				if partsNode != nil && partsNode.Kind == yaml.SequenceNode {
-					parts := make([]string, 0, len(partsNode.Content))
-					clicked := false
-					clickedRange := Range{}
-					for _, item := range partsNode.Content {
-						if item.Kind != yaml.ScalarNode {
-							continue
-						}
-						parts = append(parts, filepath.FromSlash(strings.TrimSpace(item.Value)))
-						if definitionContainsPosition(text, item, position) {
-							clicked = true
-							clickedRange = definitionSourceRange(text, item)
-						}
-					}
-					if clicked && len(parts) > 0 {
-						found = resourceDefinitionReference{base: strings.TrimSpace(baseNode.Value), path: filepath.Join(parts...), originRange: clickedRange}
-						resolved = true
-						return
-					}
-				}
-			}
-			if parentKey == "template" {
-				fileNode := definitionMappingValue(node, "file")
-				if fileNode != nil && fileNode.Kind == yaml.ScalarNode && definitionContainsPosition(text, fileNode, position) {
-					found = resourceDefinitionReference{
-						base:        "templates",
-						path:        strings.TrimSpace(fileNode.Value),
-						originRange: definitionSourceRange(text, fileNode),
-					}
-					resolved = found.path != ""
-					return
-				}
-			}
 			for index := 0; index+1 < len(node.Content); index += 2 {
 				key := strings.TrimSpace(node.Content[index].Value)
 				walk(node.Content[index+1], key)
@@ -319,6 +308,164 @@ func (a *Analyzer) resourceDefinitionAtPosition(uri, text string, document *yaml
 	}
 	walk(body, "")
 	return found, resolved
+}
+
+func staticResourceReference(text string, resolver sourceResolver, position Position) (resourceDefinitionReference, bool) {
+	base := ""
+	if resolver.kind == "template.file" {
+		base = "templates"
+	}
+	value := resolver.value
+	if value.Kind == yaml.ScalarNode {
+		// A scalar path is unchanged by the runtime. Only absolute paths have a
+		// stable location without guessing the runtime's working directory.
+		if base == "" && !filepath.IsAbs(value.Value) {
+			return resourceDefinitionReference{}, false
+		}
+		if definitionContainsPosition(text, value, position) {
+			return resourceDefinitionReference{base: base, path: value.Value, originRange: definitionSourceRange(text, value)}, true
+		}
+		return resourceDefinitionReference{}, false
+	}
+	if value.Kind != yaml.MappingNode {
+		return resourceDefinitionReference{}, false
+	}
+	if base == "" {
+		if baseNode := definitionMappingValue(value, "base"); baseNode != nil && baseNode.Kind == yaml.ScalarNode {
+			base = strings.TrimSpace(baseNode.Value)
+		}
+	}
+	if pathNode := definitionMappingValue(value, "path"); pathNode != nil {
+		if pathNode.Kind == yaml.ScalarNode && definitionContainsPosition(text, pathNode, position) {
+			return resourceDefinitionReference{base: base, path: pathNode.Value, originRange: definitionSourceRange(text, pathNode)}, true
+		}
+		// Runtime path takes precedence even when parts are also present.
+		return resourceDefinitionReference{}, false
+	}
+	partsNode := definitionMappingValue(value, "parts")
+	if partsNode == nil || partsNode.Kind != yaml.SequenceNode {
+		return resourceDefinitionReference{}, false
+	}
+	parts := make([]string, 0, len(partsNode.Content))
+	var origin *Range
+	for _, item := range partsNode.Content {
+		if item.Kind != yaml.ScalarNode {
+			// Never drop a dynamic segment and navigate to a different file.
+			return resourceDefinitionReference{}, false
+		}
+		parts = append(parts, filepath.FromSlash(item.Value))
+		if definitionContainsPosition(text, item, position) {
+			origin = rangePointer(definitionSourceRange(text, item))
+		}
+	}
+	if origin == nil || len(parts) == 0 {
+		return resourceDefinitionReference{}, false
+	}
+	return resourceDefinitionReference{base: base, path: filepath.Join(parts...), originRange: *origin}, true
+}
+
+func resolverNameReference(text string, document *yaml.Node, position Position, configuration bool) (definitionReference, string, bool) {
+	var reference definitionReference
+	kind := ""
+	visitSourceResolvers(text, document, configuration, func(resolver sourceResolver) {
+		if kind != "" || (resolver.kind != "var" && resolver.kind != "config") {
+			return
+		}
+		node := resolver.value
+		if node.Kind == yaml.MappingNode {
+			key := "name"
+			if resolver.kind == "config" {
+				key = "path"
+			}
+			node = definitionMappingValue(node, key)
+		}
+		if node != nil && node.Kind == yaml.ScalarNode && definitionContainsPosition(text, node, position) {
+			reference = definitionReference{value: strings.TrimSpace(node.Value), originRange: definitionSourceRange(text, node)}
+			kind = resolver.kind
+		}
+	})
+	return reference, kind, kind != ""
+}
+
+func resolveVariableDefinition(sources []definitionSource, name string) (Location, bool) {
+	var owner *definitionSource
+	rootName := strings.Split(name, ".")[0]
+	for i := range sources {
+		document, err := decodeYAMLDocument(sources[i].text)
+		if err != nil {
+			continue
+		}
+		variables := definitionMappingValue(yamlDocumentBody(document), "vars")
+		if definitionMappingValue(variables, rootName) == nil {
+			continue
+		}
+		if owner != nil {
+			// Duplicate declarations are an error, not an override order.
+			return Location{}, false
+		}
+		owner = &sources[i]
+	}
+	if owner == nil {
+		return Location{}, false
+	}
+	return resolveMappingDefinition(*owner, name, true)
+}
+
+func resolveMappingDefinition(source definitionSource, name string, variables bool) (Location, bool) {
+	document, err := decodeYAMLDocument(source.text)
+	if err != nil || name == "" {
+		return Location{}, false
+	}
+	node := yamlDocumentBody(document)
+	if variables {
+		node = definitionMappingValue(node, "vars")
+	}
+	var keyNode *yaml.Node
+	for _, segment := range strings.Split(name, ".") {
+		if node == nil || node.Kind != yaml.MappingNode || segment == "" {
+			return Location{}, false
+		}
+		keyNode = nil
+		var next *yaml.Node
+		for i := 0; i+1 < len(node.Content); i += 2 {
+			if node.Content[i].Value == segment {
+				if keyNode != nil {
+					return Location{}, false
+				}
+				keyNode, next = node.Content[i], node.Content[i+1]
+			}
+		}
+		if keyNode == nil {
+			return Location{}, false
+		}
+		node = next
+	}
+	return Location{URI: pathToURI(source.path), Range: definitionSourceRange(source.text, keyNode)}, true
+}
+
+func (a *Analyzer) configurationDefinitionSource(uri, text string, documents map[string]string) (definitionSource, bool) {
+	path := a.config
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(a.moduleRoot(), filepath.FromSlash(path))
+	}
+	path, err := a.confinedPath(path)
+	if err != nil {
+		return definitionSource{}, false
+	}
+	if a.isPackageConfig(uri) {
+		return definitionSource{path: path, text: text}, true
+	}
+	for documentURI, documentText := range documents {
+		documentPath, pathErr := uriToPath(documentURI)
+		if pathErr == nil && canonicalPath(documentPath) == canonicalPath(path) {
+			return definitionSource{path: path, text: documentText}, true
+		}
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return definitionSource{}, false
+	}
+	return definitionSource{path: path, text: string(raw)}, true
 }
 
 func (a *Analyzer) directResourceDefinition(uri, text string, sequence *yaml.Node, position Position, documents map[string]string) (resourceDefinitionReference, bool) {
@@ -461,7 +608,7 @@ func quotedScalarSourceRange(text string, node *yaml.Node, style yaml.Style) (Ra
 
 func (a *Analyzer) resolveResourceDefinition(reference resourceDefinitionReference) (Location, bool) {
 	base, ok := a.resourceDefinitionBase(reference.base)
-	if !ok || strings.TrimSpace(reference.path) == "" {
+	if (!ok && !(reference.base == "" && filepath.IsAbs(reference.path))) || strings.TrimSpace(reference.path) == "" {
 		return Location{}, false
 	}
 	path := filepath.FromSlash(strings.TrimSpace(reference.path))

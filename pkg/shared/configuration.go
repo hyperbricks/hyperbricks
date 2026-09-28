@@ -304,6 +304,24 @@ func ValidatePackageConfigBytes(input []byte, moduleDir string) (*Config, error)
 	return validatePackageConfigResult(result, moduleDir, RuntimeOptions{}, false)
 }
 
+// ValidatePackageConfigBytesWithResourceReader applies the same configuration
+// contract as ValidatePackageConfigBytes, with resource access controlled by
+// the caller. Editor checks must not bypass their filesystem boundary through
+// a file resolver or update the runtime's shared template registry.
+func ValidatePackageConfigBytesWithResourceReader(input []byte, moduleDir string, readFile func(string) ([]byte, error)) (*Config, error) {
+	if readFile == nil {
+		return nil, fmt.Errorf("resource reader is required")
+	}
+	options := packageConfigYAMLOptions(moduleDir)
+	options.ResourceReadFile = readFile
+	options.SkipTemplateRegistration = true
+	result, err := yamlparser.ProcessConfigBytes(input, options)
+	if err != nil {
+		return nil, fmt.Errorf("load package configuration: %w", err)
+	}
+	return validatePackageConfigResult(result, moduleDir, RuntimeOptions{}, false)
+}
+
 func validatePackageConfigResult(result *yamlparser.ConfigResult, moduleDir string, runtimeOptions RuntimeOptions, applyOverrides bool) (*Config, error) {
 	for _, diagnostic := range result.Diagnostics {
 		if strings.EqualFold(diagnostic.Level, "error") {

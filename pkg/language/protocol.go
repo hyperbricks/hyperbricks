@@ -13,6 +13,28 @@ const (
 	MethodRuntimeStatus     = "hyperbricks/runtime/status"
 )
 
+const (
+	SemanticTokenTypeKeyword  = "keyword"
+	SemanticTokenTypeClass    = "class"
+	SemanticTokenTypeProperty = "property"
+	SemanticTokenTypeType     = "type"
+
+	SemanticTokenModifierDeclaration = "declaration"
+)
+
+// SemanticTokenTypes and SemanticTokenModifiers are deliberately composed of
+// standard LSP token names. Themes can therefore distinguish HyperBricks
+// declarations and fields without an extension-specific color configuration.
+var (
+	SemanticTokenTypes = []string{
+		SemanticTokenTypeKeyword,
+		SemanticTokenTypeClass,
+		SemanticTokenTypeProperty,
+		SemanticTokenTypeType,
+	}
+	SemanticTokenModifiers = []string{SemanticTokenModifierDeclaration}
+)
+
 type Position struct {
 	Line      int `json:"line"`
 	Character int `json:"character"`
@@ -67,6 +89,7 @@ type CompletionItem struct {
 	InsertText       string      `json:"insertText,omitempty"`
 	InsertTextFormat int         `json:"insertTextFormat,omitempty"`
 	SortText         string      `json:"sortText,omitempty"`
+	TextEdit         *TextEdit   `json:"textEdit,omitempty"`
 }
 
 const (
@@ -92,6 +115,23 @@ type TextEdit struct {
 	NewText string `json:"newText"`
 }
 
+type SemanticTokensParams struct {
+	TextDocument TextDocumentIdentifier `json:"textDocument"`
+}
+
+type SemanticTokens struct {
+	Data []uint32 `json:"data"`
+}
+
+// SemanticHighlight is the analyzer-facing representation. The server turns
+// these absolute UTF-16 ranges into the delta-encoded integer stream required
+// by textDocument/semanticTokens/full.
+type SemanticHighlight struct {
+	Range     Range
+	TokenType string
+	Modifiers []string
+}
+
 type InitializeOptions struct {
 	ProtocolVersion    int      `json:"protocolVersion"`
 	Module             string   `json:"module,omitempty"`
@@ -102,11 +142,20 @@ type InitializeOptions struct {
 }
 
 type InitializeParams struct {
-	ProcessID             *int              `json:"processId,omitempty"`
-	RootPath              string            `json:"rootPath,omitempty"`
-	RootURI               string            `json:"rootUri,omitempty"`
-	WorkspaceFolders      []WorkspaceFolder `json:"workspaceFolders,omitempty"`
-	InitializationOptions InitializeOptions `json:"initializationOptions,omitempty"`
+	ProcessID             *int               `json:"processId,omitempty"`
+	RootPath              string             `json:"rootPath,omitempty"`
+	RootURI               string             `json:"rootUri,omitempty"`
+	WorkspaceFolders      []WorkspaceFolder  `json:"workspaceFolders,omitempty"`
+	Capabilities          ClientCapabilities `json:"capabilities,omitempty"`
+	InitializationOptions InitializeOptions  `json:"initializationOptions,omitempty"`
+}
+
+type ClientCapabilities struct {
+	Workspace struct {
+		SemanticTokens struct {
+			RefreshSupport bool `json:"refreshSupport,omitempty"`
+		} `json:"semanticTokens,omitempty"`
+	} `json:"workspace,omitempty"`
 }
 
 type WorkspaceFolder struct {
@@ -133,6 +182,17 @@ type TextDocumentItem struct {
 type TextDocumentPositionParams struct {
 	TextDocument TextDocumentIdentifier `json:"textDocument"`
 	Position     Position               `json:"position"`
+}
+
+type CompletionParams struct {
+	TextDocument TextDocumentIdentifier `json:"textDocument"`
+	Position     Position               `json:"position"`
+	Context      *CompletionContext     `json:"context,omitempty"`
+}
+
+type CompletionContext struct {
+	TriggerKind      int    `json:"triggerKind"`
+	TriggerCharacter string `json:"triggerCharacter,omitempty"`
 }
 
 type FormattingParams struct {

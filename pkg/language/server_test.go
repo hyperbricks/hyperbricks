@@ -53,6 +53,10 @@ func TestServerInitializePublishesProtocolCapabilitiesAndStaticDiagnostics(t *te
 	if experimental["hyperbricksProtocolVersion"] != float64(ProtocolVersion) || capabilities["hoverProvider"] != true || capabilities["documentFormattingProvider"] != true {
 		t.Fatalf("initialize result = %#v", initialize)
 	}
+	completion := capabilities["completionProvider"].(map[string]interface{})
+	if got := completion["triggerCharacters"]; !reflect.DeepEqual(got, []interface{}{":", " ", ".", "/"}) {
+		t.Fatalf("completion trigger characters = %#v", got)
+	}
 	if messages[1].Method != "textDocument/publishDiagnostics" {
 		t.Fatalf("second message = %#v", messages[1])
 	}
@@ -123,6 +127,75 @@ func TestServerPublishesEmptyDiagnosticArrayAfterCorrection(t *testing.T) {
 	}
 	if corrected.Version != 2 || string(corrected.Diagnostics) != "[]" {
 		t.Fatalf("corrected publication version/diagnostics = %d/%s, want 2/[]", corrected.Version, corrected.Diagnostics)
+	}
+}
+
+func TestServerSpaceTriggerCompletesValuesAndDirectComponentEntriesOnly(t *testing.T) {
+	root := t.TempDir()
+	uri := pathToURI(filepath.Join(root, "hyperbricks", "page.hyperbricks.yaml"))
+	var output bytes.Buffer
+	server := NewServer(bytes.NewReader(nil), &output, ServerOptions{})
+	server.analyzer = NewAnalyzer(AnalyzerOptions{WorkspaceRoot: root})
+
+	for _, test := range []struct {
+		name       string
+		source     string
+		line       int
+		completion string
+	}{
+		{
+			name:       "type value",
+			source:     "page:\n  - type: ",
+			line:       1,
+			completion: "hypermedia",
+		},
+		{
+			name:       "direct component entry",
+			source:     "page:\n  - type: hypermedia\n  - ",
+			line:       2,
+			completion: "route",
+		},
+		{
+			name: "ordinary nested list",
+			source: "view:\n" +
+				"  - type: template\n" +
+				"  - values:\n" +
+				"      items:\n" +
+				"        - ",
+			line: 4,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			server.documents[uri] = documentState{Text: test.source, Version: 1}
+			line := splitLines(test.source)[test.line]
+			params, err := json.Marshal(CompletionParams{
+				TextDocument: TextDocumentIdentifier{URI: uri},
+				Position:     Position{Line: test.line, Character: utf16Length(line)},
+				Context:      &CompletionContext{TriggerKind: 2, TriggerCharacter: " "},
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			output.Reset()
+			if _, err := server.handle(context.Background(), rpcMessage{ID: json.RawMessage("1"), Method: "textDocument/completion", Params: params}); err != nil {
+				t.Fatal(err)
+			}
+			messages := readFramedRPC(t, output.Bytes())
+			if len(messages) != 1 {
+				t.Fatalf("completion messages = %#v", messages)
+			}
+			var items []CompletionItem
+			if err := json.Unmarshal(messages[0].Result, &items); err != nil {
+				t.Fatal(err)
+			}
+			if test.completion == "" {
+				if len(items) != 0 {
+					t.Fatalf("ordinary nested list received completions: %#v", items)
+				}
+			} else if !hasCompletion(items, test.completion) {
+				t.Fatalf("missing completion %q in %#v", test.completion, items)
+			}
+		})
 	}
 }
 

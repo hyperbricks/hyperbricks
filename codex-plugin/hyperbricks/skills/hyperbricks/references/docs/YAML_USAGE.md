@@ -355,7 +355,7 @@ page:
             - var: page.heading
 ```
 
-You can also use runtime variables:
+In component source, you can also use these runtime variables:
 
 | Variable | Meaning |
 | --- | --- |
@@ -854,6 +854,38 @@ HyperBricks reports YAML source errors and continues loading files it can parse.
 | Duplicate child names | Runtime recovers with `_2`, `_3`, etc. and reports diagnostics. |
 | Missing var/env/config/file resolver | Value resolves to empty string or default and reports diagnostics. |
 
+## Editor Feedback And Common Mistakes
+
+The [VS Code extension](VSCODE.md) understands ordered components, inherited
+types, imports, and block/flow resolvers. Type `- ` inside a component or `: `
+before a value for context-specific suggestions. Press **Control+Space** to
+request suggestions explicitly. Hover fields and resolver keys for help;
+Cmd/Ctrl-click references or static file paths to open their source.
+
+A resolver still needs the field's colon and separating space:
+
+```yaml
+mydoc:
+  - type: text
+  - value: {file: {base: resources, path: docs/llms.md}} # read this file
+```
+
+Use that `value` entry in place of a literal such as `- value: ok`. Writing
+`- value {file: ...}` leaves out the assignment separator; adding braces does
+not supply it. The editor reports the missing colon at `value`. The example
+requires `docs/llms.md` to exist under the configured resources directory.
+
+Use `#` for comments outside quoted strings and block scalars. In plain text,
+separate a trailing comment with whitespace: `value: ok # comment`.
+`value: 'ok # literal'` and indented content under `value: |` retain the hash as
+text. Syntax colors follow your VS Code theme.
+
+When a valid resolver produces a warning, check its target: `file` reads content,
+`path` constructs a path, and `template.file` preloads a template from the
+configured templates directory. These are different operations. Fix the first
+YAML structural error before interpreting later diagnostics, and rebuild both
+the extension and its configured executable when testing editor changes.
+
 ## Test Corpus
 
 Executable YAML fixtures live in:
@@ -918,6 +950,12 @@ hyperbricks:
 ```
 
 Configuration values support the same resolvers. HyperBricks uses `vars` as resolver input but does not copy it into the materialized configuration.
+
+Package configuration seeds the `module` runtime variable for `var`; other
+variable names must come from its `vars` mapping. Path resolver bases are a
+separate mechanism: names such as `resources`, `templates`, and `static` remain
+available as `base` values. Component source receives the full runtime-variable
+set listed under [Vars](#vars) after package directories have been configured.
 
 Common `hyperbricks` package fields:
 

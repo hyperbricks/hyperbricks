@@ -70,6 +70,9 @@ type componentType struct {
 func AnalyzeSource(input []byte, opts SourceOptions) []Issue {
 	root, err := decodeYAML(input)
 	if err != nil {
+		if issue, ok := missingResolverSeparator(input); ok {
+			return []Issue{issue}
+		}
 		return []Issue{issueFromError(err, "yaml.syntax")}
 	}
 
@@ -102,7 +105,7 @@ func AnalyzeSource(input []byte, opts SourceOptions) []Issue {
 		})
 	}
 
-	materialized, _, err := document.MaterializeWithOptions(parserOptions)
+	materialized, resolverDiagnostics, err := document.MaterializeWithOptions(parserOptions)
 	if err != nil {
 		issues = append(issues, issueFromError(err, parserIssueCode(err)))
 		return issues
@@ -117,6 +120,7 @@ func AnalyzeSource(input []byte, opts SourceOptions) []Issue {
 		issues = append(issues, issueFromError(sourceErr, parserIssueCode(sourceErr)))
 		return issues
 	}
+	issues = append(issues, resolverIssues(resolverDiagnostics, sources)...)
 	for _, source := range sources {
 		body := documentBody(source.root)
 		if body == nil || body.Kind != yaml.MappingNode {
@@ -296,14 +300,7 @@ func analyzeComponent(registry map[string]*componentType, path string, sequence 
 			if present && !isZero(value) {
 				continue
 			}
-			anchor := typeNode
-			if anchor == nil && len(sequence.Content) > 0 {
-				anchor = sequence.Content[0]
-			}
-			issues = append(issues, Issue{
-				Code: "component.missing_required_field", Severity: SeverityError,
-				Message: fmt.Sprintf("%s requires field %q", descriptor.Name, field.Path), Path: path + "." + field.Path, Range: nodeRange(anchor),
-			})
+			issues = append(issues, requiredFieldIssue(descriptor.Name, path, field.Path, sequence, value, present))
 		}
 	}
 	return issues
@@ -643,7 +640,9 @@ func isZero(value interface{}) bool {
 		return true
 	}
 	if text, ok := value.(string); ok {
-		return strings.TrimSpace(text) == ""
+		// A required string rejects the empty string, not authored whitespace.
+		// In particular TEXT emits its content unchanged and accepts whitespace.
+		return text == ""
 	}
 	reflected := reflect.ValueOf(value)
 	return reflected.IsValid() && reflected.IsZero()
@@ -677,7 +676,7 @@ func issueFromError(err error, code string) Issue {
 func parserIssueCode(err error) string {
 	message := err.Error()
 	switch {
-	case strings.Contains(message, "duplicate child") || strings.Contains(message, "duplicate property") || strings.Contains(message, "duplicate top-level"):
+	case strings.Contains(message, "duplicate child") || strings.Contains(message, "duplicate property") || strings.Contains(message, "duplicate top-level") || strings.Contains(message, "duplicate reserved entry") || strings.Contains(message, "duplicate map key"):
 		return "component.duplicate"
 	case strings.Contains(message, "inherit reference") || strings.Contains(message, "inheritance cycle"):
 		return "component.inheritance"

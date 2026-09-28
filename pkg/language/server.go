@@ -51,6 +51,9 @@ type Server struct {
 	runtimeCancel     context.CancelFunc
 	runtimeDone       chan struct{}
 	runtimeStatus     RuntimeDiagnosticsStatus
+
+	semanticRefreshSupported bool
+	nextServerRequestID      uint64
 }
 
 func NewServer(input io.Reader, output io.Writer, opts ServerOptions) *Server {
@@ -98,6 +101,11 @@ func (server *Server) Serve(ctx context.Context) error {
 }
 
 func (server *Server) handle(ctx context.Context, message rpcMessage) (bool, error) {
+	// Responses to server-initiated requests, currently semantic-token refresh,
+	// do not have a method and require no further action.
+	if message.Method == "" && len(message.ID) > 0 {
+		return false, nil
+	}
 	isRequest := len(message.ID) > 0
 	respond := func(result interface{}, rpcErr *rpcError) error {
 		if !isRequest {
@@ -137,6 +145,7 @@ func (server *Server) handle(ctx context.Context, message rpcMessage) (bool, err
 				server.initialDirty[documentURI] = true
 			}
 		}
+		server.semanticRefreshSupported = params.Capabilities.Workspace.SemanticTokens.RefreshSupport
 		server.stateMu.Unlock()
 		server.runtimeMu.Lock()
 		server.initialization = runtimeInitialization{
@@ -156,11 +165,19 @@ func (server *Server) handle(ctx context.Context, message rpcMessage) (bool, err
 				},
 				"completionProvider": map[string]interface{}{
 					"resolveProvider":   false,
-					"triggerCharacters": []string{":", ".", "/"},
+					"triggerCharacters": []string{":", " ", ".", "/"},
 				},
 				"hoverProvider":              true,
 				"definitionProvider":         true,
 				"documentFormattingProvider": true,
+				"semanticTokensProvider": map[string]interface{}{
+					"legend": map[string]interface{}{
+						"tokenTypes":     append([]string(nil), SemanticTokenTypes...),
+						"tokenModifiers": append([]string(nil), SemanticTokenModifiers...),
+					},
+					"full":  true,
+					"range": false,
+				},
 				"experimental": map[string]interface{}{
 					"hyperbricksProtocolVersion": ProtocolVersion,
 				},
@@ -248,12 +265,16 @@ func (server *Server) handle(ctx context.Context, message rpcMessage) (bool, err
 		// saved file again instead of keeping diagnostics from stale text.
 		return false, server.reanalyzeOpenDocuments(ctx)
 	case "textDocument/completion":
-		var params TextDocumentPositionParams
+		var params CompletionParams
 		if err := json.Unmarshal(message.Params, &params); err != nil {
 			return false, respond(nil, &rpcError{Code: -32602, Message: err.Error()})
 		}
 		analyzer, text, documents, ok := server.snapshotFor(params.TextDocument.URI)
 		if !ok {
+			return false, respond([]CompletionItem{}, nil)
+		}
+		if params.Context != nil && params.Context.TriggerCharacter == " " &&
+			!automaticCompletionBoundary(text, params.Position) {
 			return false, respond([]CompletionItem{}, nil)
 		}
 		return false, respond(analyzer.Completions(params.TextDocument.URI, text, params.Position, documents), nil)
@@ -277,6 +298,16 @@ func (server *Server) handle(ctx context.Context, message rpcMessage) (bool, err
 			return false, respond([]LocationLink{}, nil)
 		}
 		return false, respond(analyzer.DefinitionLinks(params.TextDocument.URI, text, params.Position, documents), nil)
+	case "textDocument/semanticTokens/full":
+		var params SemanticTokensParams
+		if err := json.Unmarshal(message.Params, &params); err != nil {
+			return false, respond(nil, &rpcError{Code: -32602, Message: err.Error()})
+		}
+		analyzer, text, documents, ok := server.snapshotFor(params.TextDocument.URI)
+		if !ok {
+			return false, respond(SemanticTokens{Data: []uint32{}}, nil)
+		}
+		return false, respond(encodeSemanticHighlights(analyzer.SemanticHighlights(params.TextDocument.URI, text, documents)), nil)
 	case "textDocument/formatting":
 		var params FormattingParams
 		if err := json.Unmarshal(message.Params, &params); err != nil {
@@ -352,7 +383,16 @@ func (server *Server) reanalyzeOpenDocuments(_ context.Context) error {
 			return err
 		}
 	}
+	if len(URIs) > 0 && server.supportsSemanticRefresh() {
+		return server.writeServerRequest("workspace/semanticTokens/refresh", nil)
+	}
 	return nil
+}
+
+func (server *Server) supportsSemanticRefresh() bool {
+	server.stateMu.RLock()
+	defer server.stateMu.RUnlock()
+	return server.semanticRefreshSupported
 }
 
 func (server *Server) publishMergedDiagnostics(uri string) error {
@@ -479,6 +519,14 @@ func (server *Server) writeResponse(id json.RawMessage, result interface{}, rpcE
 
 func (server *Server) writeNotification(method string, params interface{}) error {
 	return server.writeMessage(map[string]interface{}{"jsonrpc": "2.0", "method": method, "params": params})
+}
+
+func (server *Server) writeServerRequest(method string, params interface{}) error {
+	server.stateMu.Lock()
+	server.nextServerRequestID++
+	id := server.nextServerRequestID
+	server.stateMu.Unlock()
+	return server.writeMessage(map[string]interface{}{"jsonrpc": "2.0", "id": id, "method": method, "params": params})
 }
 
 func (server *Server) writeMessage(message interface{}) error {
