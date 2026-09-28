@@ -1,5 +1,57 @@
 # Changelog
 
+## v1.2.6-beta
+
+Changes since `v1.2.5-beta`.
+
+### YAML inheritance
+
+- Preserve same-named nested children that declare their own `inherit` target,
+  so dotted inheritance paths resolve before local values are merged.
+- Recursively merge local nested overrides onto the resolved child while
+  preserving inherited values and unrelated siblings. Cover direct merges,
+  chained inheritance, deep dotted paths, and sibling preservation with parser
+  tests and the runnable `yaml-nested-inheritance-test` module.
+
+### Visual Studio Code
+
+- Add the first preview of the HyperBricks VS Code extension and protocol-v1
+  language server for `*.hyperbricks.yaml` files. Extension and executable must
+  come from the same HyperBricks revision.
+- Add YAML and schema-aware highlighting, static diagnostics, completion, hover,
+  Go to Definition, formatting, automatic module ownership, and configurable
+  Smart Enter behavior.
+- Add development/debug runtime diagnostics with route coverage and status-bar
+  feedback, plus commands for language-server restart, Doctor, runtime Errors,
+  connection control, and extension output.
+- Keep editor installation and usage in the
+  [VS Code guide](editors/vscode/README.md), contributor workflows in
+  [DEVELOPMENT.md](editors/vscode/DEVELOPMENT.md), and detailed extension changes
+  in the [extension changelog](editors/vscode/CHANGELOG.md).
+
+### Doctor and package metadata
+
+- Add `hyperbricks doctor --verbose` (`-v`) to show every check as an indented
+  row under its category. Keep verbose output human-readable and mutually
+  exclusive with `--json`.
+- Treat recorded HyperBricks metadata as source provenance: an equal or older
+  valid version passes, while a missing, invalid, or newer version warns with an
+  update prescription.
+- Add descriptions and examples to package-configuration and source/artifact
+  metadata fields for tooling consumers, and keep deployment-service types
+  separate from runtime package configuration.
+
+### Fixtures and test workflow
+
+- Add a documented module smoke fixture for nested YAML inheritance, including
+  exact copies, recursive overrides, direct same-name merges, multi-hop targets,
+  deep dotted lookups, and unrelated sibling preservation.
+- Add dedicated fixture initialization so package configuration is loaded from a
+  real file without directory-read warning noise.
+- Make VS Code extension checks opt-in through `./tests.sh --with-vscode-ext`,
+  keep module smoke checks under `--with-modules`, and clarify grouped test
+  output and skipped optional scopes.
+
 ## v1.2.5-beta
 
 Changes since `v1.2.4-beta`.
