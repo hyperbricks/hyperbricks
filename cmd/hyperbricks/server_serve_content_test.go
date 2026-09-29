@@ -957,6 +957,42 @@ func TestServeContent_LiveMode_DoesNotAppendHTMLCacheCommentsToJSON(t *testing.T
 	}
 }
 
+func TestServeContent_XMLTemplatePreservesDeclaration(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+
+	setTestRouteConfig("sitemap.xml", map[string]interface{}{
+		"@type":        composite.FragmentConfigGetName(),
+		"route":        "sitemap.xml",
+		"content_type": "application/xml; charset=utf-8",
+		"beautify":     false,
+		"nocache":      true,
+		"content": map[string]interface{}{
+			"@type": composite.TemplateConfigGetName(),
+			"inline": `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{{range .paths}}<url><loc>{{.}}</loc></url>{{end}}</urlset>`,
+			"values": map[string]interface{}{
+				"paths": []interface{}{"https://hyperbricks.eu/?one=1&two=2"},
+			},
+		},
+	})
+
+	writer := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/sitemap.xml", nil)
+	ServeContent(writer, request)
+
+	want := `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://hyperbricks.eu/?one=1&amp;two=2</loc></url></urlset>`
+	if writer.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", writer.Code, http.StatusOK)
+	}
+	if got := writer.Header().Get("Content-Type"); got != "application/xml; charset=utf-8" {
+		t.Fatalf("content type = %q", got)
+	}
+	if got := writer.Body.String(); got != want {
+		t.Fatalf("body = %q, want %q", got, want)
+	}
+}
+
 func TestServeContent_HyperMediaGuardRedirectsUnauthenticated(t *testing.T) {
 	setupLiveModeServeContentTest(t)
 

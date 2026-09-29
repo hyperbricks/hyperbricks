@@ -25,13 +25,28 @@ if find "${CANONICAL}" \( -name '.DS_Store' -o -type l \) -print -quit | grep -q
     exit 1
 fi
 
+PACKAGED_BEFORE="$(mktemp -d "${TMPDIR:-/tmp}/hyperbricks-plugin-before.XXXXXX")"
+trap 'rm -rf "${PACKAGED_BEFORE}"' EXIT
+if [[ -d "${PACKAGED}" ]]; then
+    cp -R "${PACKAGED}/." "${PACKAGED_BEFORE}/"
+fi
+
 bash "${SCRIPT_DIR}/compilation-generation/build_compilations.sh" --ref WORKTREE
 
 # The packaged skill is an exact mirror, including the generated references.
 mkdir -p "${PACKAGED}"
 rsync -a --delete "${CANONICAL}/" "${PACKAGED}/"
 
+# A changed mirror changes the distributed Codex plugin. Compare with the
+# pre-generation snapshot because the compilation builder writes generated
+# references directly into both the canonical and packaged skill trees.
+python3 "${SCRIPT_DIR}/update_codex_plugin_version.py" \
+    --manifest "${ROOT}/codex-plugin/hyperbricks/.codex-plugin/plugin.json" \
+    --before-skill "${PACKAGED_BEFORE}" \
+    --after-skill "${PACKAGED}"
+
 PYTHON="${COMPILATION_VENV:-${ROOT}/.venv-compilations}/bin/python"
+python3 -m unittest "${SCRIPT_DIR}/test_update_codex_plugin_version.py"
 "${PYTHON}" -m unittest discover -s scripts/compilation-generation -p 'test_build*.py'
 go test ./test/docs
 "${PYTHON}" scripts/compilation-generation/build_markdown_compilations.py --check --ref WORKTREE

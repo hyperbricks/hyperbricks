@@ -152,16 +152,16 @@ The template reads these values as `.Data.title`, `.Data.total`, and `.Data.avai
 
 HyperBricks prepares the script and template when the module loads. Each render creates a fresh [Goja JavaScript runtime](https://github.com/dop251/goja).
 
-Globals, modified prototypes, and other JavaScript state disappear after the render. Concurrent requests do not share JavaScript variables or objects. See the [runtime implementation](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/pkg/gojaruntime/program.go).
+Globals, modified prototypes, and other JavaScript state disappear after the render. Concurrent requests do not share JavaScript variables or objects. See the [runtime implementation](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/pkg/gojaruntime/program.go).
 
-Before calling `main(input)`, the [component](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/pkg/component/goja_render.go) converts configured `values` and allowed request query parameters to JSON. The script receives its own data, with no references to shared Go objects. It returns plain JSON-compatible data. HyperBricks then discards the temporary runtime.
+Before calling `main(input)`, the [component](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/pkg/component/goja_render.go) converts configured `values` and allowed request query parameters to JSON. The script receives its own data, with no references to shared Go objects. It returns plain JSON-compatible data. HyperBricks then discards the temporary runtime.
 
 HyperBricks loads and checks scripts when the module loads. Changes take effect after the normal development reload or a restart. Keep request-specific work inside `main(input)`. For information that must survive a request, such as a session, cart, or counter, use persistent storage through a Go component or plugin.
 
 ### Rendered-output caching and HTTP caching
 
 Routes containing `goja_render` automatically bypass HyperBricks' internal
-rendered-output cache. During module loading, [Goja preparation](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/cmd/hyperbricks/initialize_goja.go)
+rendered-output cache. During module loading, [Goja preparation](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/cmd/hyperbricks/initialize_goja.go)
 sets the owning route's `nocache` to `true`, even if the configuration specified
 `false`. Each request reaching that route renders again. The compiled script
 and parsed template are still reused; execution state and results are not.
@@ -214,7 +214,7 @@ In the repository's focused benchmark on an Apple M3, a small calculation and te
 | Native Go and template | 0.73 µs | 1 KB |
 | Isolated Goja and template | 14.5 µs | 27 KB |
 
-The Goja version is around 20 times slower than the very small native Go baseline, but its total measured time is about `0.015 ms` per render. This [benchmark](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/pkg/component/goja_render_benchmark_test.go) measures one component in isolation; it does not represent complete HTTP latency or maximum server capacity.
+The Goja version is around 20 times slower than the very small native Go baseline, but its total measured time is about `0.015 ms` per render. This [benchmark](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/pkg/component/goja_render_benchmark_test.go) measures one component in isolation; it does not represent complete HTTP latency or maximum server capacity.
 
 This cost is reasonable for small calculations and formatting logic. Complex scripts, several `goja_render` components on one page, or very high request volume increase the cost. For those workloads, use a Go plugin and measure the complete route under realistic traffic.
 

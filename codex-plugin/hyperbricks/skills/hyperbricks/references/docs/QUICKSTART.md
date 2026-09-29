@@ -12,10 +12,10 @@ Requires Go 1.26.1 or newer and internet access to install HyperBricks, download
 
 **1. Install HyperBricks**
 
-Install `v1.2.5-beta`:
+Install the latest release:
 
 ```bash
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@v1.2.5-beta
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
 ```
 
 Make sure your Go binary directory (`GOBIN`, or `$(go env GOPATH)/bin` by default) is on your `PATH`.
@@ -40,12 +40,12 @@ hyperbricks:
   metadata:
     module: demo
     moduleversion: "1.0.0"
-    hyperbricks: v1.2.5-beta
+    hyperbricks: <exact installed version>
 ```
 
-The exact `hyperbricks` value follows the binary you run. Later, refresh the
-identity and runtime version without changing the scaffold, or bump the module
-version at the same time:
+The `<exact installed version>` placeholder represents the exact version written
+by the binary you run. Later, refresh the identity and runtime version without
+changing the scaffold, or bump the module version at the same time:
 
 ```bash
 hyperbricks init -m demo --update-metadata
@@ -323,7 +323,7 @@ Type `hyperbricks static --help` for all static options.
 
 ## Next Steps
 
-- [General HyperBricks skill](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
+- [General HyperBricks skill](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
 - [YAML usage](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
 - [Component reference](REFERENCE.md): component fields and executable examples.
 - [ROUTING.md](ROUTING.md): route resolution and clean URLs.

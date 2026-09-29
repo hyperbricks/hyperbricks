@@ -674,11 +674,7 @@ func (a *Analyzer) isPackageConfig(uri string) bool {
 	if err != nil {
 		return false
 	}
-	configured := a.config
-	if !filepath.IsAbs(configured) {
-		configured = filepath.Join(a.moduleRoot(), filepath.FromSlash(configured))
-	}
-	return canonicalPath(path) == canonicalPath(configured)
+	return strings.Contains(filepath.Base(path), "package.")
 }
 
 // sourceReader builds the only reader used by source-graph analysis. Both

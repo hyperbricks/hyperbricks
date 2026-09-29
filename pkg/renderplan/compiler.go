@@ -2,7 +2,6 @@ package renderplan
 
 import (
 	"fmt"
-	htmltemplate "html/template"
 	"slices"
 	"strings"
 	texttemplate "text/template"
@@ -94,6 +93,7 @@ func (c *compiler) compileHyperMedia(raw map[string]interface{}) (renderNode, er
 	// legacy HYPERMEDIA renderer. This preserves weak decoding and the legacy
 	// normalization of a missing or typed-nil values map.
 	templateRaw := config.Template.ToRenderMap()
+	templateRaw["@output_content_type"] = config.ContentType
 	templateRaw["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
 	templateRaw["hyperbrickspath"] = config.Composite.Meta.HyperBricksKey + ".template"
 	config.Template.Source.Apply(templateRaw)
@@ -159,7 +159,7 @@ func (c *compiler) compileTemplate(raw map[string]interface{}) (renderNode, erro
 	if err != nil {
 		return nil, err
 	}
-	parsed, err := shared.ParsedNamedTemplate(config.Composite.Meta.TemplateName(config.Template), templateContent)
+	parsed, err := shared.ParsedNamedTemplateForContentType(config.Composite.Meta.TemplateName(config.Template), templateContent, config.OutputContentType)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing template: %w", err)
 	}
@@ -189,7 +189,7 @@ func (c *compiler) compileTemplate(raw map[string]interface{}) (renderNode, erro
 	if len(values) == 0 && isLiteralTemplate(templateContent, parsed.Name()) {
 		// html/template still owns comment removal, escaping and invalid-context
 		// errors. Use a private tree so preparation cannot mutate the shared cache.
-		literal, err := htmltemplate.New(parsed.Name()).Parse(templateContent)
+		literal, err := shared.ParseNamedTemplateForContentType(parsed.Name(), templateContent, config.OutputContentType)
 		if err == nil {
 			var output strings.Builder
 			if err := literal.Execute(&output, nil); err == nil {

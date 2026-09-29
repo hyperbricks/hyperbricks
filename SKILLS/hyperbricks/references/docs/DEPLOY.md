@@ -206,13 +206,14 @@ hyperbricks:
   metadata:
     module: demo
     moduleversion: "1.0.0"
-    hyperbricks: v1.2.5-beta
+    hyperbricks: <exact installed version>
 ```
 
 `hyperbricks init` and `hyperbricks init-starter get` fill those fields for a
 new module. The module is the destination directory's base name, a new module
 starts at version `1.0.0`, and the HyperBricks version comes from the running
-binary. Existing packages can be reconciled without changing scaffold files:
+binary; the placeholder above represents that exact value. Existing packages
+can be reconciled without changing scaffold files:
 
 ```bash
 hyperbricks init -m demo --update-metadata

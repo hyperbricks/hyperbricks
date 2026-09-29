@@ -2,7 +2,7 @@
 
 # HyperBricks Type Examples
 
-Use these examples to configure all 20 native component types. They draw on the [patterns module](https://github.com/hyperbricks/hyperbricks/tree/v1.2.6-beta/modules/hyperbricks-patterns-yaml) and [Component reference](REFERENCE.md).
+Use these examples to configure all 20 native component types. They draw on the [patterns module](https://github.com/hyperbricks/hyperbricks/tree/v1.2.8-beta/modules/hyperbricks-patterns-yaml) and [Component reference](REFERENCE.md).
 
 Each example shows selected fields and links to the full reference for defaults, constraints, and other options. A field missing from an example may still be supported or required.
 
@@ -93,7 +93,7 @@ and must be pointed at a real service before use. Plugin configuration is intent
 project-specific and is authored with [Authoring](AUTHOR.md) after the plugin is
 known and enabled.
 
-The library is checked in as [the scaffold template library](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/cmd/hyperbricks/commands/assets/scaffold/library.yaml).
+The library is checked in as [the scaffold template library](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/cmd/hyperbricks/commands/assets/scaffold/library.yaml).
 Its generated assets live beside it under the same scaffold asset directory. This
 keeps starter maintenance separate from the runtime component registry while still
 making the examples native YAML. A preview confirms the exact YAML and files that

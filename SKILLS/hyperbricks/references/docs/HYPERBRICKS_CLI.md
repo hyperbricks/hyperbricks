@@ -53,13 +53,13 @@ hyperbricks:
   metadata:
     module: demo
     moduleversion: "1.0.0"
-    hyperbricks: v1.2.5-beta
+    hyperbricks: <exact installed version>
 ```
 
-`module` is the new module directory's base name. New modules start at
-`moduleversion: "1.0.0"`, independently of an official starter's own release
-version. `hyperbricks` is read from the running binary, so it may differ from
-the example above. Build-specific provenance is added only to an archive; a
+`<exact installed version>` represents the version reported by the binary that
+created the module. `module` is the new module directory's base name. New
+modules start at `moduleversion: "1.0.0"`, independently of an official
+starter's own release version. Build-specific provenance is added only to an archive; a
 source package does not own `format`, `format_version`, `commit`, or `built_at`.
 It also does not own `source_hash`, which belongs to the build index.
 
@@ -72,7 +72,7 @@ hyperbricks init -m demo
 hyperbricks init
 ```
 
-Running `hyperbricks init -m demo` creates the following files and directories (verified with `v1.2.5-beta`):
+Running `hyperbricks init -m demo` creates the following files and directories (verified with `v1.2.8-beta`):
 
 ```text
 modules/demo/
@@ -119,7 +119,7 @@ The generated configuration and README use the selected module name. The README 
 
 ### Init-starter: install an official starter
 
-`init-starter` downloads a starter from the official [starters repository](https://github.com/hyperbricks/hyperbricks-starters). Browse the [module starter index](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/modules/README.md#starter-modules) for examples and their setup requirements. Use `init-starter` for the minimal Hello World example.
+`init-starter` downloads a starter from the official [starters repository](https://github.com/hyperbricks/hyperbricks-starters). Browse the [module starter index](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/modules/README.md#starter-modules) for examples and their setup requirements. Use `init-starter` for the minimal Hello World example.
 
 List compatible starters:
 
@@ -134,7 +134,7 @@ hyperbricks init-starter get hello-world -m demo
 hyperbricks start -m demo
 ```
 
-Running `hyperbricks init-starter get hello-world -m demo` installs `hello-world@1.0.0` with the following files and directories (verified with `v1.2.5-beta`):
+Running `hyperbricks init-starter get hello-world -m demo` installs `hello-world@1.0.0` with the following files and directories (verified with `v1.2.8-beta`):
 
 ```text
 modules/demo/
@@ -302,8 +302,8 @@ runtime check with `hyperbricks start` or an equivalent test.
 
 Read [Changing Existing Projects](AUTHOR.md) to decide when a change needs
 `author`. Its [command reference](AUTHOR_REFERENCE.md) documents the exact paths,
-output, and source-write safeguards. These commands require this development
-build; the published v1.2.4-beta binary does not include them.
+output, and source-write safeguards. These commands are available in
+`v1.2.5-beta` and newer releases.
 
 ## Author
 

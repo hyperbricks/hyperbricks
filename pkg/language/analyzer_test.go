@@ -368,10 +368,41 @@ probe:
 func TestAnalyzerValidatesPackageConfigWithRuntimeRules(t *testing.T) {
 	module := t.TempDir()
 	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: module})
-	uri := pathToURI(filepath.Join(module, "package.hyperbricks.yaml"))
-	diagnostics := analyzer.Diagnostics(uri, "hyperbricks:\n  mode: live\n  live:\n    cache: -1s\n", nil)
-	if len(diagnostics) != 1 || diagnostics[0].Code != "yaml.configuration" || !strings.Contains(diagnostics[0].Message, "live.cache") {
-		t.Fatalf("strict package diagnostics = %#v", diagnostics)
+	for _, filename := range []string{"package.hyperbricks.yaml", "package.development.hyperbricks.yaml"} {
+		t.Run(filename, func(t *testing.T) {
+			uri := pathToURI(filepath.Join(module, filename))
+			diagnostics := analyzer.Diagnostics(uri, "hyperbricks:\n  mode: live\n  live:\n    cache: -1s\n", nil)
+			if len(diagnostics) != 1 || diagnostics[0].Code != "yaml.configuration" || !strings.Contains(diagnostics[0].Message, "live.cache") {
+				t.Fatalf("strict package diagnostics = %#v", diagnostics)
+			}
+		})
+	}
+}
+
+func TestAnalyzerRecognizesPackageConfigFilenameMarker(t *testing.T) {
+	module := t.TempDir()
+	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: module})
+
+	tests := []struct {
+		name     string
+		filename string
+		want     bool
+	}{
+		{name: "default package", filename: "package.hyperbricks.yaml", want: true},
+		{name: "named package profile", filename: "package.development.hyperbricks.yaml", want: true},
+		{name: "embedded marker", filename: "local.package.development.hyperbricks.yaml", want: true},
+		{name: "package without dot", filename: "package-development.hyperbricks.yaml", want: false},
+		{name: "package directory only", filename: filepath.Join("package.profiles", "development.hyperbricks.yaml"), want: false},
+		{name: "component source", filename: "development.hyperbricks.yaml", want: false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			uri := pathToURI(filepath.Join(module, test.filename))
+			if got := analyzer.isPackageConfig(uri); got != test.want {
+				t.Fatalf("isPackageConfig(%q) = %t, want %t", test.filename, got, test.want)
+			}
+		})
 	}
 }
 
