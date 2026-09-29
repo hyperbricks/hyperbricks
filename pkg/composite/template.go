@@ -69,6 +69,7 @@ func (opts *TemplateOptions) ToRenderMap() map[string]interface{} {
 type TemplateConfig struct {
 	shared.Composite   `mapstructure:",squash"`
 	MetaDocDescription string      `mapstructure:"@doc" description:"Template-backed component that binds scalar values and value-mounted bricks into generated HTML." example:"{!{template-@doc.hyperbricks.yaml}}"`
+	OutputContentType  string      `mapstructure:"@output_content_type" json:"-" exclude:"true"`
 	Editable           interface{} `mapstructure:"editable" json:"-" description:"Source-owned Spaces editing metadata for this template's values. Not rendered as content."`
 	TemplateOptions    `mapstructure:",squash"`
 }
@@ -147,6 +148,9 @@ func (tr *TemplateRenderer) Render(instance interface{}, ctx context.Context) (s
 	}
 	// appending validation errors
 	errors = append(errors, config.Validate()...)
+	if config.OutputContentType == "" && ctx != nil {
+		config.OutputContentType, _ = ctx.Value(shared.OutputContentType).(string)
+	}
 
 	var templateContent string
 
@@ -259,7 +263,7 @@ func applyTemplate(templateStr string, data map[string]interface{}, config Templ
 	var errors []error
 
 	// Parse the template string
-	tmpl, err := shared.ParsedNamedTemplate(config.Composite.Meta.TemplateName(config.Template), templateStr)
+	tmpl, err := shared.ParsedNamedTemplateForContentType(config.Composite.Meta.TemplateName(config.Template), templateStr, config.OutputContentType)
 	if err != nil {
 		errors = append(errors, shared.ResourceDiagnostic(fmt.Errorf("error parsing template: %w", err), config.Composite.Meta, "prepare", "template"))
 		return "", errors

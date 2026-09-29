@@ -71,7 +71,7 @@ The returned map uses runtime metadata such as `"@type": "<TEMPLATE>"`; YAML
 source continues to use declarations such as `type: template`. A `<TREE>` wrapper
 is optional when the plugin needs to compose several returned components.
 
-The [template configuration plugin pattern](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/modules/hyperbricks-patterns-yaml/docs/pages/template-config-plugin.md)
+The [template configuration plugin pattern](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/modules/hyperbricks-patterns-yaml/docs/pages/template-config-plugin.md)
 contains a complete input, output, template, and safety example.
 
 ## Native Streaming Responses
@@ -122,7 +122,7 @@ The writer sends the bytes supplied by the plugin; it does not HTML-escape them.
 
 Stream responses bypass the rendered-output cache. The server enforces `Cache-Control: no-store` and removes `Content-Length`, `ETag` and HyperBricks cache metadata, including values supplied by the plugin. Set `nocache: true` on dynamic plugin routes, especially ones that sometimes return ordinary HTML: route cache lookup happens before plugin rendering, so an earlier cached HTML response could otherwise hide a later stream. Flushing publishes each completed chunk without waiting for the rest of the stream. The configured `hyperbricks.server.write_timeout` continues to apply; streaming does not silently extend it. Set an appropriate server timeout and an application deadline for the stream. Once the response has started, a callback error ends it and is recorded by the server; it cannot be replaced with a new error status or an HTML error page. Intermediary proxies may need their own buffering settings for early delivery.
 
-The [native streaming demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/modules/streaming-demo/README.md) uses HTMX in the browser to display the streamed HTML updates. It provides a complete module, build instructions and cancellation tests. Its `fragment` route contains one `plugin` component. The streaming response contract is independent of HTMX; no additional streaming YAML component is required.
+The [native streaming demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/modules/streaming-demo/README.md) uses HTMX in the browser to display the streamed HTML updates. It provides a complete module, build instructions and cancellation tests. Its `fragment` route contains one `plugin` component. The streaming response contract is independent of HTMX; no additional streaming YAML component is required.
 
 ## WASM Plugins
 
@@ -336,13 +336,13 @@ The override works with both `plugin build` and `plugin install`. It points at t
 
 The native plugin builder uses two paths. With a local override, it adds a Go module `replace` directive pointing to the HyperBricks checkout. Without one, it selects the CLI's embedded HyperBricks version and removes the unversioned local replacement. The embedded version is not an exact Git revision, so a development runtime can contain newer code than its version label suggests. Installing that checkout with `go install ./cmd/hyperbricks` does not turn it into a published-release build.
 
-See the [native plugin builder](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/cmd/hyperbricks/commands/plugin-commands.go), Go's [module replacement contract](https://go.dev/ref/mod#go-mod-file-replace), and the official [native plugin compatibility requirements](https://pkg.go.dev/plugin#hdr-Warnings). The local override selects source; it does not by itself guarantee matching toolchains, build settings, or shared dependencies.
+See the [native plugin builder](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/cmd/hyperbricks/commands/plugin-commands.go), Go's [module replacement contract](https://go.dev/ref/mod#go-mod-file-replace), and the official [native plugin compatibility requirements](https://pkg.go.dev/plugin#hdr-Warnings). The local override selects source; it does not by itself guarantee matching toolchains, build settings, or shared dependencies.
 
 ## Repository Maintainer Workflow
 
-The CLI commands above are the application-developer workflow for individual plugins. HyperBricks contributors can use the aggregate [plugin build and smoke scripts](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/scripts/plugins/README.md) to rebuild the repository's plugin-backed demos and fixtures against this checkout. `./tests.sh --with-plugins` invokes that workflow as part of the full test suite.
+The CLI commands above are the application-developer workflow for individual plugins. HyperBricks contributors can use the aggregate [plugin build and smoke scripts](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/scripts/plugins/README.md) to rebuild the repository's plugin-backed demos and fixtures against this checkout. `./tests.sh --with-plugins` invokes that workflow as part of the full test suite.
 
-On a clean checkout, first install the pinned shared Markdown and Tailwind CSS plugins through the local CLI with `HYPERBRICKS_LOCAL_PATH` pointing at the checkout, as shown in the [shared plugin setup](https://github.com/hyperbricks/hyperbricks/blob/v1.2.6-beta/scripts/plugins/README.md#install-the-shared-plugin-sources). Their sources are downloaded into `./plugins`; they are not bundled in the HyperBricks repository. Module-specific custom plugin sources are bundled under `modules/<module>/plugins`. The aggregate build wrapper rebuilds these existing sources and does not install missing shared plugins.
+On a clean checkout, first install the pinned shared Markdown and Tailwind CSS plugins through the local CLI with `HYPERBRICKS_LOCAL_PATH` pointing at the checkout, as shown in the [shared plugin setup](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/scripts/plugins/README.md#install-the-shared-plugin-sources). Their sources are downloaded into `./plugins`; they are not bundled in the HyperBricks repository. Module-specific custom plugin sources are bundled under `modules/<module>/plugins`. The aggregate build wrapper rebuilds these existing sources and does not install missing shared plugins.
 
 ## Rules
 
