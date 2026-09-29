@@ -1,6 +1,7 @@
 package shared
 
 import (
+	"bytes"
 	"net/http/httptest"
 	"net/url"
 	"reflect"
@@ -128,5 +129,40 @@ func TestApplyTemplateUsesGenericFunctions(t *testing.T) {
 	}
 	if got != "Hello <strong>world</strong>" {
 		t.Fatalf("unexpected template output: %q", got)
+	}
+}
+
+func TestParsedNamedTemplateForContentTypePreservesLeadingXMLDeclaration(t *testing.T) {
+	source := `<?xml version="1.0" encoding="UTF-8"?>
+<urlset>{{range .Paths}}<url><loc>{{.}}</loc></url>{{end}}</urlset>`
+	want := `<?xml version="1.0" encoding="UTF-8"?>
+<urlset><url><loc>https://example.com/?a=1&amp;b=2</loc></url></urlset>`
+
+	for _, contentType := range []string{"application/xml; charset=utf-8", "text/xml", "application/rss+xml"} {
+		t.Run(contentType, func(t *testing.T) {
+			tmpl, err := ParsedNamedTemplateForContentType("xml-response", source, contentType)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var output bytes.Buffer
+			if err := tmpl.Execute(&output, map[string]interface{}{"Paths": []string{"https://example.com/?a=1&b=2"}}); err != nil {
+				t.Fatal(err)
+			}
+			if got := output.String(); got != want {
+				t.Fatalf("output = %q, want %q", got, want)
+			}
+		})
+	}
+
+	htmlTemplate, err := ParsedNamedTemplateForContentType("html-response", source, "text/html; charset=utf-8")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var htmlOutput bytes.Buffer
+	if err := htmlTemplate.Execute(&htmlOutput, map[string]interface{}{"Paths": []string{"/"}}); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(htmlOutput.String(), `&lt;?xml version="1.0" encoding="UTF-8"?>`) {
+		t.Fatalf("HTML output unexpectedly changed: %q", htmlOutput.String())
 	}
 }

@@ -67,6 +67,31 @@ func TestLiteralTemplateLegacyParity(t *testing.T) {
 	}
 }
 
+func TestCompiledXMLTemplatePreservesDeclarationAndEscapesValues(t *testing.T) {
+	manager := newTestRenderManager()
+	raw := headlessTemplateRoute(map[string]interface{}{
+		"paths": []interface{}{"https://hyperbricks.eu/?one=1&two=2"},
+	})
+	raw["content_type"] = "application/xml; charset=utf-8"
+	raw["template"].(map[string]interface{})["inline"] = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{{range .paths}}<url><loc>{{.}}</loc></url>{{end}}</urlset>`
+
+	plan, err := renderplan.Compile(manager, raw, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacy, legacyErrors := manager.Render(composite.HyperMediaConfigGetName(), raw, context.Background())
+	compiled, compiledErrors := plan.Render(context.Background())
+	want := `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://hyperbricks.eu/?one=1&amp;two=2</loc></url></urlset>`
+	if len(legacyErrors) != 0 || len(compiledErrors) != 0 {
+		t.Fatalf("legacy errors=%v, compiled errors=%v", legacyErrors, compiledErrors)
+	}
+	if legacy != want || compiled != want {
+		t.Fatalf("legacy=%q, compiled=%q, want=%q", legacy, compiled, want)
+	}
+}
+
 func TestLiteralFoldPreservesDynamicTemplates(t *testing.T) {
 	manager := newTestRenderManager()
 	for _, tc := range []struct {

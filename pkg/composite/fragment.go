@@ -94,6 +94,12 @@ func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (s
 
 	// appending validation errors
 	errors = append(errors, config.Validate()...)
+	if config.ContentType != "" {
+		if ctx == nil {
+			ctx = context.Background()
+		}
+		ctx = context.WithValue(ctx, shared.OutputContentType, config.ContentType)
+	}
 
 	// HEAD?
 
@@ -101,6 +107,7 @@ func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (s
 	// TEMPLATE?
 	if config.Template != nil {
 		templateConfig := config.Template.ToRenderMap()
+		templateConfig["@output_content_type"] = config.ContentType
 		// TO-DO: INSERT HEAD to TEMPLATE VALUES....
 		templateConfig["hyperbricksfile"] = config.Composite.Meta.HyperBricksFile
 		templateConfig["hyperbrickspath"] = config.Composite.Meta.HyperBricksPath + config.Composite.Meta.HyperBricksKey + ".template"

@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"html/template"
 	"math/rand"
+	"mime"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -144,6 +146,23 @@ func ParsedGenericTemplate(templateStr string) (*template.Template, error) {
 }
 
 func ParsedNamedTemplate(name, templateStr string) (*template.Template, error) {
+	return parsedNamedTemplate(name, templateStr)
+}
+
+// ParsedNamedTemplateForContentType parses and caches an HTML template while
+// preserving a leading XML declaration for XML response media types.
+func ParsedNamedTemplateForContentType(name, templateStr, contentType string) (*template.Template, error) {
+	return parsedNamedTemplate(name, templateSourceForContentType(templateStr, contentType))
+}
+
+// ParseNamedTemplateForContentType parses an uncached template. Render-plan
+// preparation uses this when it executes a literal template once without
+// mutating the shared cached template tree.
+func ParseNamedTemplateForContentType(name, templateStr, contentType string) (*template.Template, error) {
+	return parseNamedTemplate(name, templateSourceForContentType(templateStr, contentType))
+}
+
+func parsedNamedTemplate(name, templateStr string) (*template.Template, error) {
 	if name == "" {
 		name = "hyperbricks-generic-template"
 	}
@@ -152,6 +171,18 @@ func ParsedNamedTemplate(name, templateStr string) (*template.Template, error) {
 		return value.(*template.Template), nil
 	}
 
+	tmpl, err := parseNamedTemplate(name, templateStr)
+	if err != nil {
+		return nil, err
+	}
+	value, _ := genericTemplateCache.LoadOrStore(key, tmpl)
+	return value.(*template.Template), nil
+}
+
+func parseNamedTemplate(name, templateStr string) (*template.Template, error) {
+	if name == "" {
+		name = "hyperbricks-generic-template"
+	}
 	base := GenericTemplate()
 	if name != base.Name() {
 		base = base.New(name)
@@ -165,7 +196,39 @@ func ParsedNamedTemplate(name, templateStr string) (*template.Template, error) {
 			tmpl = declared
 		}
 	}
+	return tmpl, nil
+}
 
-	value, _ := genericTemplateCache.LoadOrStore(key, tmpl)
-	return value.(*template.Template), nil
+func templateSourceForContentType(source, contentType string) string {
+	mediaType, _, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		return source
+	}
+	mediaType = strings.ToLower(mediaType)
+	if mediaType != "application/xml" && mediaType != "text/xml" && !strings.HasSuffix(mediaType, "+xml") {
+		return source
+	}
+
+	start := 0
+	if strings.HasPrefix(source, "\ufeff") {
+		start = len("\ufeff")
+	}
+	remainder := source[start:]
+	if !strings.HasPrefix(remainder, "<?xml") || len(remainder) <= len("<?xml") || !isTemplateXMLSpace(remainder[len("<?xml")]) {
+		return source
+	}
+	end := strings.Index(remainder, "?>")
+	if end < 0 {
+		return source
+	}
+	declaration := remainder[:end+len("?>")]
+	if strings.Contains(declaration, "{{") || strings.Contains(declaration, "}}") {
+		return source
+	}
+
+	return source[:start] + "{{safe " + strconv.Quote(declaration) + "}}" + remainder[end+len("?>"):]
+}
+
+func isTemplateXMLSpace(value byte) bool {
+	return value == ' ' || value == '\t' || value == '\r' || value == '\n'
 }

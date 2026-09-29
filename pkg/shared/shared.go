@@ -17,6 +17,7 @@ const FormData contextKey = "formData"
 const ResponseWriter contextKey = "ResponseWriter"
 const CurrentRoute contextKey = "currentRoute"
 const HandledResponseCaptureKey contextKey = "handledResponseCapture"
+const OutputContentType contextKey = "outputContentType"
 
 // PluginConfig is a generic configuration map for plugins.
 type PluginConfig map[string]interface{}
