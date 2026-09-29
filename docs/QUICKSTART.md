@@ -10,10 +10,10 @@ Requires Go 1.26.1 or newer and internet access to install HyperBricks, download
 
 **1. Install HyperBricks**
 
-Install `v1.2.5-beta`:
+Install the latest release:
 
 ```bash
-go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@v1.2.5-beta
+go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
 ```
 
 Make sure your Go binary directory (`GOBIN`, or `$(go env GOPATH)/bin` by default) is on your `PATH`.
@@ -38,12 +38,12 @@ hyperbricks:
   metadata:
     module: demo
     moduleversion: "1.0.0"
-    hyperbricks: v1.2.5-beta
+    hyperbricks: "<exact installed version>"
 ```
 
-The exact `hyperbricks` value follows the binary you run. Later, refresh the
-identity and runtime version without changing the scaffold, or bump the module
-version at the same time:
+The `<exact installed version>` placeholder represents the exact version written
+by the binary you run. Later, refresh the identity and runtime version without
+changing the scaffold, or bump the module version at the same time:
 
 ```bash
 hyperbricks init -m demo --update-metadata
