@@ -8,7 +8,7 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "HyperBricks",
-    "shortDescription": "Develop and maintain HyperBricks applications.",
+    "shortDescription": "Develop with HyperBricks",
     "longDescription": "Develop and maintain HyperBricks applications across their full lifecycle: configure components and routes, change existing projects, troubleshoot runtime behavior, and package applications for delivery.",
     "developerName": "Robbert Streng",
     "category": "Productivity",
