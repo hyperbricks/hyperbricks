@@ -1,5 +1,39 @@
 # Changelog
 
+## v1.2.8-beta
+
+Changes since `v1.2.7-beta`.
+
+### XML templates
+
+- Preserve a leading XML declaration when a template renders an
+  `application/xml`, `text/xml`, or `+xml` response, while retaining normal
+  template escaping for the XML content.
+- Apply the same XML behavior to legacy rendering, compiled render plans, and
+  literal templates, with server-level regression coverage.
+
+### Editor analysis and installation
+
+- Recognize `package.*` files as package profiles in language-server analysis,
+  so alternate package configurations receive the correct diagnostics and
+  source handling.
+- Install the latest published HyperBricks release in the Quickstart and make
+  the runtime-recorded package version explicit instead of pinning stale setup
+  examples to an older beta.
+
+## v1.2.7-beta
+
+Changes since `v1.2.6-beta`.
+
+### Release distribution
+
+- Add one reproducible download-preparation workflow for the committed Codex
+  plugin and VS Code extension, including SHA-256 sidecars and the landing-page
+  filename map.
+- Refresh the Codex plugin build version only when its packaged skill changes,
+  and verify that canonical skill documentation and the packaged mirror remain
+  synchronized.
+
 ## v1.2.6-beta
 
 Changes since `v1.2.5-beta`.

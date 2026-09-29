@@ -2,7 +2,9 @@
 
 Use the native `markdown` component to render inline Markdown or a resource file as HTML. It does not produce a complete page. Place it inside `hypermedia` or `fragment` to define a route, response settings, guards, and caching. Use templates and CSS for layout.
 
-The component is available in this development checkout and needs no plugin installation, build, or activation. The published `v1.2.4-beta` binary does not include it. Use documentation that matches your runtime version and, for a development build, its source revision.
+The component is built into `v1.2.5-beta` and newer releases and needs no plugin
+installation, build, or activation. Use documentation that matches your runtime
+version and, for a development build, its source revision.
 
 ## Inline Content
 

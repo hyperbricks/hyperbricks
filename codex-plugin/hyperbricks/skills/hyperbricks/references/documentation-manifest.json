@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "hyperbricks_version": "v1.2.7-beta",
+  "hyperbricks_version": "v1.2.8-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_digest": "d1243b5732accc2d7cf3bd50bd9715d7ab893dfcd55f921505ef4953ddae103a",
+  "source_digest": "2ac9c99a82e23d90477f22ec95316a13e538c5578be0024185e11d05ae5cb923",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
@@ -13,14 +13,14 @@
     {
       "source_path": "docs/QUICKSTART.md",
       "bundled_path": "docs/QUICKSTART.md",
-      "source_sha256": "6f370055d0f189e76fdaca6bd5df5e2766ade5740ad9666f797c6059064acff9",
-      "bundled_sha256": "e047edbda651244acc362b2b5639a75426f4884e23af3a43a6815efb479dba3f"
+      "source_sha256": "d344f2e0a74535a70a5e35616ea76fc2b83b217702e8972c94946d2764f955ec",
+      "bundled_sha256": "7212d6a7938e522343545220fe180f2b75c569a2f1883ba6cd948007e21fc597"
     },
     {
       "source_path": "docs/HOWTOS.md",
       "bundled_path": "docs/HOWTOS.md",
       "source_sha256": "bee34577819c1ce2424877ce9410bb3a7f970b3bf46c88af96c6a654a5229851",
-      "bundled_sha256": "ceefaaf6e6718c215a6f7495a5d7ba919aaa47a008e9a31a2a8f10ad046b8cb6"
+      "bundled_sha256": "0ffd2f7d284269827a28a8ed383e5ea1e1e43f3a027e7fbefdc0a8cde28db10e"
     },
     {
       "source_path": "docs/TROUBLESHOOTING.md",
@@ -37,20 +37,20 @@
     {
       "source_path": "docs/REFERENCE.md",
       "bundled_path": "docs/REFERENCE.md",
-      "source_sha256": "0e1a61d1eeab41edd2da00fa45373c02580f427a9b5bece45eaf2448393fefe4",
-      "bundled_sha256": "5622ea7e5f8d82578cb23812cc4e69a181b2ecc1a857e4e93e20840d92a167eb"
+      "source_sha256": "9d2bc8177f7c08c53fd405edcfba6918d3dfcddba8b291eac9db8042549bd0a6",
+      "bundled_sha256": "51804e735286887c528ebf0cb588a3fccc10ee9d5c314d2d209b11089aaf93bc"
     },
     {
       "source_path": "docs/MARKDOWN.md",
       "bundled_path": "docs/MARKDOWN.md",
-      "source_sha256": "4ae9e7b2ee95968051c0bf6a147f7db4d7266ffbc60b23d4509b0459423107fc",
-      "bundled_sha256": "a447363f9fec41918ae5406670edefc1a1675a9e95bc53550d8881bd4b1033fa"
+      "source_sha256": "72e9064e34e2e865b89ec149e29f10fdf2558cdad48f1bb4454bf763b5ab7f6f",
+      "bundled_sha256": "204074efce3fe134c8450410f3d73d157f9feb5c91827168125984e547ea81b9"
     },
     {
       "source_path": "docs/SPACES.md",
       "bundled_path": "docs/SPACES.md",
       "source_sha256": "a732815285c869196ea34225ec0ed506f97af33ecad474ad40a454efb9f342ca",
-      "bundled_sha256": "1ad4e7c8ff4aba2253eb9dcd67af9752659d95ec5e79c8679a99f0a7f1f131b9"
+      "bundled_sha256": "7b1d15d9e93100836cdc4b0a9374f8ac9c60ffed514fd2ddecb9066ac94d3dda"
     },
     {
       "source_path": "docs/AUTHOR.md",
@@ -62,19 +62,19 @@
       "source_path": "docs/API_RENDER.md",
       "bundled_path": "docs/API_RENDER.md",
       "source_sha256": "9f5b9a2c93091ba8e72d55f9a4103518faeff0e1af892a212c8a06097be85a83",
-      "bundled_sha256": "d5994d3ae15cfb2393b78d1ca76bd8a18e467813847c095c8b41ec1b748934fe"
+      "bundled_sha256": "24a66b136baaeca577dfdda5fb6fc9c7688be6d8c9b31f6b87230389d588bca4"
     },
     {
       "source_path": "docs/GOJA_RENDER.md",
       "bundled_path": "docs/GOJA_RENDER.md",
       "source_sha256": "c2869994a4b643095d0c40c873ef4dbe8a869456ef5da57e927c44683458249e",
-      "bundled_sha256": "4770fe9d5fea043d881ec83f47bfa6332ec21530cdd248ddbf8e83d9afc5018d"
+      "bundled_sha256": "ba56add8d962bab458a2504a4a62515b3806cfb5fc91357544f925cbcb915e9c"
     },
     {
       "source_path": "docs/PLUGINS.md",
       "bundled_path": "docs/PLUGINS.md",
       "source_sha256": "6719b73dc733a1f4ce8196262dab6dde998861a16e046a46fe91f5502581b14e",
-      "bundled_sha256": "b9f34bf74cfffc40745c00c23c5a3e19c9089ed03e35c3e7aaf8ecd753bec0ec"
+      "bundled_sha256": "b25059abaf35eb9bbdc0469ed6ec9abaaca43ae1fee97b0161b360b848854d0a"
     },
     {
       "source_path": "docs/ESBUILD.md",
@@ -85,14 +85,14 @@
     {
       "source_path": "docs/DEPLOY.md",
       "bundled_path": "docs/DEPLOY.md",
-      "source_sha256": "ec2d02b29afb87a8237d1849253c84bca61c749a1c432c28e432b625cd60ce5d",
-      "bundled_sha256": "248ecfd2ed38f5161996893843a4ab9beb3be7370169d844c141990269ce5078"
+      "source_sha256": "3ef1d1c41aa18fee8bab9a2a8a4642ed7382cc21664e5c757b6eb12ca07e30d3",
+      "bundled_sha256": "c27e9dd81a40d967f2b001159e0f2a76daa5030f543c3fb0306120d2d3b06d9c"
     },
     {
       "source_path": "docs/DOCKER.md",
       "bundled_path": "docs/DOCKER.md",
-      "source_sha256": "773ce2407f18c2c475756f973de1be425c71731c823a78ad2991c2dbd432c3d3",
-      "bundled_sha256": "6602972e545dd023b2c09c1c050481216c998d0b11302ed74de3f55ad6e8bb7f"
+      "source_sha256": "213b47560193b37cfaaf837662398c16a5d691f76375152074ba4bc5ee8bc270",
+      "bundled_sha256": "2237da8b6dbfe9a87a442678a26ae2dcd336a0cc765bd96eac74c46f3c72a16c"
     },
     {
       "source_path": "docs/MIGRATION.md",
@@ -104,7 +104,7 @@
       "source_path": "docs/AUTHOR_REFERENCE.md",
       "bundled_path": "docs/AUTHOR_REFERENCE.md",
       "source_sha256": "60e3a1c5e6e1ec14b566598d2bd902427bbfb5571620f99e0f87b1219442dc94",
-      "bundled_sha256": "978b3bca2463a1352878be911a171413cb1d7f96c8587b29db0db1312ac7b124"
+      "bundled_sha256": "092752079e536a5b9a2399e3a838b39387250e1d9b030a7c87427eb45dd8ebcf"
     },
     {
       "source_path": "docs/HTMX_FRAGMENTS_AND_CANONICAL_URLS.md",
@@ -116,19 +116,19 @@
       "source_path": "docs/HTTP_RESPONSES.md",
       "bundled_path": "docs/HTTP_RESPONSES.md",
       "source_sha256": "565f074d413f796644d16a1ff9afec1a5e6bc42ef0b9ef0e79650d4906c008fd",
-      "bundled_sha256": "08f7cdd94195d3099aa7770f9c9b16842949c442d3778de41f2b4ec793dc8f9c"
+      "bundled_sha256": "fcc65b61ac5180aaea9a13ae22553b4c9dd7acb738ca3ebea976d683234adc36"
     },
     {
       "source_path": "docs/HYPERBRICKS_CLI.md",
       "bundled_path": "docs/HYPERBRICKS_CLI.md",
-      "source_sha256": "51bc521e7de0800ab4f8eda0f674e36661d97ec7f3a86553d243a943a37715d4",
-      "bundled_sha256": "3d984efd660bfd5163e6e7f3a5fe88ef93938a445388573d1a897bde0e6cdf1d"
+      "source_sha256": "26a9f0482c127ee4a97eb4caf86a06a626835930d98d4689b80196328ca5c47f",
+      "bundled_sha256": "a209496a4b985074ebca1c8f52c57b5dd058e1516cce3b47050c25296ada784f"
     },
     {
       "source_path": "docs/HYPERBRICKS_TYPE_EXAMPLES.md",
       "bundled_path": "docs/HYPERBRICKS_TYPE_EXAMPLES.md",
       "source_sha256": "2e3b65c982f1b12daff6976f7ce2ad3592cd084540df38cc2a7a72853a9573c3",
-      "bundled_sha256": "6ca440b73aa16f0422b71865b7def155d18464ef2fddd65c35b470293c23949a"
+      "bundled_sha256": "6b6b28b58fc5ea036bd9fd185c34b824d0b2ef00b5cb1526136bb30641dc0337"
     },
     {
       "source_path": "docs/IMAGES.md",
@@ -140,7 +140,7 @@
       "source_path": "docs/LIVE_MODE_HTTP.md",
       "bundled_path": "docs/LIVE_MODE_HTTP.md",
       "source_sha256": "c0f03a74b7419ed5138d31a5e378085bdda60772317d2291be6e73b0c5bcee45",
-      "bundled_sha256": "1e8f184de23e0abe9b066ff1a351e8eb35292fef1414e7fdbcb2e42c6d7e061d"
+      "bundled_sha256": "db45b57b2c3bb987a4510346a654f502089f56f44aa5fc7a5ad1a84cd83cba59"
     },
     {
       "source_path": "docs/ROUTE_GUARD.md",
@@ -158,7 +158,7 @@
       "source_path": "docs/YAML_USAGE.md",
       "bundled_path": "docs/YAML_USAGE.md",
       "source_sha256": "fed17a2ed7b206dc8ff8cbf23aa4a018406ddb51f6e1c0b3e2be78cd79f0479a",
-      "bundled_sha256": "246a6d8221e2ad2f84c8f25417db5420680be9b2e8ad971219f943a1dbb86656"
+      "bundled_sha256": "cfa112fb11e4483b6ca3ee77477c2ded7d6ea56fb12bcfe64fc047ede891b8a8"
     }
   ]
 }

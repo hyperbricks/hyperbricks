@@ -38,7 +38,7 @@ hyperbricks:
   metadata:
     module: demo
     moduleversion: "1.0.0"
-    hyperbricks: "<exact installed version>"
+    hyperbricks: <exact installed version>
 ```
 
 The `<exact installed version>` placeholder represents the exact version written

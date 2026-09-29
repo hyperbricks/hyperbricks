@@ -4,8 +4,8 @@
 
 This is a versioned, generated mirror of the canonical documents in `docs/`. The HyperBricks skill uses the separate files below for targeted reading. Product behavior remains owned by the source documents.
 
-- **HyperBricks version:** v1.2.7-beta
-- **Source version:** [`v1.2.7-beta`](https://github.com/hyperbricks/hyperbricks/tree/v1.2.7-beta)
+- **HyperBricks version:** v1.2.8-beta
+- **Source version:** [`v1.2.8-beta`](https://github.com/hyperbricks/hyperbricks/tree/v1.2.8-beta)
 - **Snapshot provenance:** [Manifest](documentation-manifest.json)
 - **Included documents:** 26
 
