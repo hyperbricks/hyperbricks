@@ -4,7 +4,17 @@ import json
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from socketserver import TCPServer
 from urllib.parse import urlsplit
+
+
+class LoopbackHTTPServer(ThreadingHTTPServer):
+    def server_bind(self):
+        # HTTPServer normally resolves the bound address with getfqdn(). A
+        # loopback-only demo needs no reverse DNS, which can stall on CI hosts.
+        TCPServer.server_bind(self)
+        self.server_name = "127.0.0.1"
+        self.server_port = self.server_address[1]
 
 
 def main():
@@ -40,7 +50,8 @@ def main():
             self.wfile.write(body)
 
     # Binding errors fail the foreground process; do not adopt an existing API.
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    print(f"Demo API binding 127.0.0.1:{args.port}", flush=True)
+    server = LoopbackHTTPServer(("127.0.0.1", args.port), Handler)
     print(f"Demo API listening on http://127.0.0.1:{args.port}", flush=True)
     try:
         server.serve_forever()
