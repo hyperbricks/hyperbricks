@@ -23,7 +23,8 @@ Options:
   --with-docs     Regenerate README, reference docs, and documentation test results.
   --with-plugins  Install root npm dependencies, rebuild local HyperBricks
                   plugins, and run plugin-backed runtime smoke tests.
-  --with-modules  Start documented modules and run their HTTP smoke checks.
+  --with-modules  Start documented modules, run their HTTP smoke checks, and
+                  exercise the development-process lifecycle demo.
   --with-screenshots
                   Run the Playwright module screenshot checks (implies
                   --with-modules; requires npm dependencies and Chromium).
@@ -104,6 +105,9 @@ bash "${SCRIPT_DIR}/test_headers_module.sh"
 if [[ "${WITH_MODULES}" == "true" ]]; then
   announce "Running documented module HTTP smoke tests..."
   python3 "${SCRIPT_DIR}/test_modules.py"
+
+  announce "Running development-process lifecycle smoke scenarios..."
+  bash "${SCRIPT_DIR}/test_development_process_lifecycle.sh"
 else
   echo "Skipping documented module checks. Pass --with-modules to run them."
 fi
