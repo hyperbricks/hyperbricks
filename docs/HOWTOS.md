@@ -14,6 +14,7 @@
 - [9. Use one plugin for different actions](#9-use-one-plugin-for-different-actions)
 - [10. Protect a route with an access check](#10-protect-a-route-with-an-access-check)
 - [11. Export a static site](#11-export-a-static-site)
+- [12. Start a local API with the module](#12-start-a-local-api-with-the-module)
 
 ## HTMX How-to
 
@@ -51,6 +52,12 @@ Run HyperBricks commands from the project root and select the module with `-m`.
 See the [module catalog](../modules/README.md) for an overview of the available modules, including learning applications, examples, integrations, and test fixtures. The patterns module has Go integration tests and an optional plugin smoke suite; the generated starter has CLI tests. Check this coverage when choosing an example: finding source code alone does not confirm that the complete application still runs.
 
 The [YAML patterns module](../modules/hyperbricks-patterns-yaml/README.md) contains runnable examples of composition, navigation, fragments, access checks, API routes, and plugins. For a new application, `hyperbricks init` generates the maintained starting structure. You can extend that structure with your own database, services, and deployment setup.
+
+The [development hooks demo](../modules/development-hooks-demo/README.md) starts
+a local Python API with the application, waits for readiness, verifies the
+running page, and stops the API with the session. Its separate
+[plugin fixture](../modules/development-hooks-plugin-demo/README.md) demonstrates
+building a native plugin before the runtime loads it.
 
 ## 1. Start from a module
 
@@ -434,6 +441,25 @@ The output is written to `modules/demo/rendered/`. Upload those files to a stati
 Browser JavaScript still works, and HTMX can load exported fragments. Server-side calculations, access checks, and API actions need a running HyperBricks server; a static export only contains the results produced during the export. See [Static output](HYPERBRICKS_CLI.md#static-rendering) for export options.
 
 For more complete examples, see the [patterns module source guide](../modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md).
+
+## 12. Start a local API with the module
+
+Declare finite preparation tasks under `development.hooks.before_start`, local
+foreground servers under `development.services`, and optional application checks
+under `development.hooks.after_start`. Opt in for this invocation:
+
+```sh
+hyperbricks start -m development-hooks-demo --with-processes
+```
+
+HyperBricks waits for each service's HTTP readiness endpoint before initializing
+the application. It runs the after-start checks when HTTP is listening and stops
+its APIs after HTTP shutdown. Ordinary `start` keeps the manual service workflow.
+
+Use the [beginner module](../modules/development-hooks-demo/README.md) for complete
+Python scripts and a rendered page, or the [configuration reference](DEVELOPMENT_HOOKS.md)
+for command arguments, environment values, timeouts, failure handling, and the
+development-only execution boundary.
 
 ## 1. Enhance ordinary links with HTMX
 

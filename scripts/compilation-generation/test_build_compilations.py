@@ -139,6 +139,7 @@ class CompilationTests(unittest.TestCase):
             ("Start", (("Introduction", "docs/INTRODUCTION.md"), ("Quickstart", "docs/QUICKSTART.md"), ("How-to guides", "docs/HOWTOS.md"), ("Troubleshooting", "docs/TROUBLESHOOTING.md"))),
             ("Application model", (("Routing", "docs/ROUTING.md"), ("Component reference", "docs/REFERENCE.md"), ("Markdown", "docs/MARKDOWN.md"), ("Spaces CMS", "docs/SPACES.md"), ("Authoring", "docs/AUTHOR.md"))),
             ("Logic and assets", (("API Render", "docs/API_RENDER.md"), ("Server Scripts", "docs/GOJA_RENDER.md"), ("Plugins", "docs/PLUGINS.md"), ("JavaScript and CSS", "docs/ESBUILD.md"))),
+            ("Development services", (("Hooks and managed services", "docs/DEVELOPMENT_HOOKS.md"),)),
             ("Delivery", (("Deploy Guide", "docs/DEPLOY.md"), ("Docker Deploy", "docs/DOCKER.md"), ("Migration Guide", "docs/MIGRATION.md"))),
         ))
 
@@ -146,12 +147,14 @@ class CompilationTests(unittest.TestCase):
         sources = (
             SourceDocument("docs/INTRODUCTION.md", "Introduction", "# Introduction\n", "intro", "Start", "Introduction"),
             SourceDocument("docs/GOJA_RENDER.md", "Goja Render", "# Goja Render\n", "goja", "Logic and assets", "Server Scripts"),
+            SourceDocument("docs/DEVELOPMENT_HOOKS.md", "Development hooks and managed services", "# Development hooks and managed services\n", "development-hooks", "Development services", "Hooks and managed services"),
             SourceDocument("docs/OTHER.md", "Other Reference", "# Other Reference\n", "other", "Additional documents"),
         )
         compilation = Compilation("test.md", "HyperBricks Documentation Compilation v1", "Source documents", "Separate documents.", "Topics", sources, "v1")
         markdown = render_compilation(compilation, "a" * 40, date(2026, 9, 22))
         self.assertIn("### Start\n\n- [Introduction](#intro)", markdown)
         self.assertIn("### Logic and assets\n\n- [Server Scripts](#goja)", markdown)
+        self.assertIn("### Development services\n\n- [Hooks and managed services](#development-hooks)", markdown)
         self.assertIn("### Additional documents\n\n- [Other Reference](#other)", markdown)
         self.assertNotRegex(markdown, r"(?m)^\d+\. \[")
         self.assertIn("## Goja Render", markdown)

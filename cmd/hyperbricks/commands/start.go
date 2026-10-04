@@ -13,6 +13,7 @@ type Config struct {
 
 var (
 	StartMode              bool
+	StartWithProcesses     bool
 	StartModule            string
 	StartConfigPath        string
 	StartRuntimeGateway    bool
@@ -90,6 +91,7 @@ func NewStartCommand() *cobra.Command {
 	cmd.Flags().Int32VarP(&Port, "port", "p", 8080, "port")
 	cmd.Flags().BoolVarP(&Production, "production", "P", false, "set production mode")
 	cmd.Flags().BoolVarP(&Debug, "debug", "d", false, "debug")
+	cmd.Flags().BoolVar(&StartWithProcesses, "with-processes", false, "Run module development hooks and managed services (direct development/debug starts only)")
 	return cmd
 }
 

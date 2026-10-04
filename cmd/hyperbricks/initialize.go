@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 
@@ -66,6 +65,10 @@ func run() {
 		commands.ReportError(err)
 		return
 	}
+	if err := hbConfig.ValidateDevelopmentProcesses(); err != nil {
+		commands.ReportError(err)
+		return
+	}
 	if err := configureGoMaxProcs(hbConfig.Server.GoMaxProcs); err != nil {
 		commands.ReportError(err)
 		return
@@ -73,7 +76,10 @@ func run() {
 	logRuntimeSummary(hbConfig)
 
 	if commands.RenderStatic {
-		basic_initialisation()
+		if err := basic_initialisation(); err != nil {
+			commands.ReportError(err)
+			return
+		}
 
 		// serve
 		if commands.ServeStatic {
@@ -87,14 +93,7 @@ func run() {
 		return
 	}
 
-	switch hbConfig.Mode {
-	case shared.DEBUG_MODE:
-		debug_mode_init()
-	case shared.LIVE_MODE:
-		live_mode_init()
-	case shared.DEVELOPMENT_MODE:
-		development_mode_init()
-	}
+	runRuntimeMode(hbConfig)
 
 }
 
@@ -145,20 +144,6 @@ func configureRuntimeLogging(config *shared.Config) error {
 	return nil
 }
 
-func initialisation(ctx context.Context) {
-	basic_initialisation()
-
-	hbConfig := getHyperBricksConfiguration()
-	limiter := newRequestRateLimiter(hbConfig.RateLimit)
-
-	// Initialize Static File Server with Rate Limiting
-	initStaticFileServer(limiter)
-
-	// Now everything is ready, start the server
-	StartServer(ctx)
-
-}
-
 func newRequestRateLimiter(config shared.RateLimitConfig) *rate.Limiter {
 	if !config.Enabled {
 		return nil
@@ -167,13 +152,18 @@ func newRequestRateLimiter(config shared.RateLimitConfig) *rate.Limiter {
 }
 
 // minimal initialisation (also for static rendering)
-func basic_initialisation() {
-	setWorkingDirectory()
-	applyHyperBricksConfigurations()
+func basic_initialisation() error {
+	if err := setWorkingDirectory(); err != nil {
+		return err
+	}
+	if err := applyHyperBricksConfigurations(); err != nil {
+		return err
+	}
 
 	// First initialize all render components, because they have to be registered before parsing.
 	initializeComponents()
 
 	// Now configure and populate the registered renderers with acquired configurations
 	PreProcessAndPopulateHyperbricksConfigurations()
+	return nil
 }

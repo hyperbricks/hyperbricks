@@ -10,6 +10,7 @@ func resetStartCommandState(t *testing.T) {
 	t.Helper()
 
 	previousStartMode := StartMode
+	previousStartWithProcesses := StartWithProcesses
 	previousStartModule := StartModule
 	previousStartConfigPath := StartConfigPath
 	previousStartRuntimeGateway := StartRuntimeGateway
@@ -25,6 +26,7 @@ func resetStartCommandState(t *testing.T) {
 	previousExitCode := ExitCode
 
 	StartMode = false
+	StartWithProcesses = false
 	StartModule = ""
 	StartConfigPath = ""
 	StartRuntimeGateway = false
@@ -41,6 +43,7 @@ func resetStartCommandState(t *testing.T) {
 
 	t.Cleanup(func() {
 		StartMode = previousStartMode
+		StartWithProcesses = previousStartWithProcesses
 		StartModule = previousStartModule
 		StartConfigPath = previousStartConfigPath
 		StartRuntimeGateway = previousStartRuntimeGateway

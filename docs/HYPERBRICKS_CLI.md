@@ -668,6 +668,30 @@ Enable debug logging:
 hyperbricks start -m demo --debug
 ```
 
+### Development hooks and services
+
+Opt in to the module's preparation/verification hooks and managed local APIs:
+
+```bash
+hyperbricks start -m development-hooks-demo --with-processes
+```
+
+This flag enables `hyperbricks.development.hooks.before_start`,
+`hooks.after_start`, and `development.services` for a direct development/debug
+session. HyperBricks waits for readiness and stops its child services during
+shutdown. The flag is rejected in live mode and deployment-managed launches.
+Without it, configured commands do not execute. Build, static export, authoring,
+and inspection do not run these commands either.
+
+See [Development hooks and managed services](DEVELOPMENT_HOOKS.md) for the complete
+configuration, readiness, process ownership, and exit-code contract. The
+[beginner demo](../modules/development-hooks-demo/README.md) includes instructions
+to build a checkout that supports this new flag; the
+[plugin fixture](../modules/development-hooks-plugin-demo/README.md) demonstrates
+building a plugin before initialization.
+
+### Runtime gateway
+
 Runtime gateway flags are available on `start`, but the full contract lives in [Runtime Gateway](RUNTIME_GATEWAY.md).
 
 ```bash

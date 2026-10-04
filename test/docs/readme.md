@@ -74,6 +74,7 @@ The [general HyperBricks skill](SKILLS/hyperbricks/SKILL.md) helps agents apply 
 - **Start:** [Introduction](docs/INTRODUCTION.md), [Quickstart](docs/QUICKSTART.md), [How-to guides](docs/HOWTOS.md), and [Troubleshooting](docs/TROUBLESHOOTING.md)
 - **Application model:** [Routing](docs/ROUTING.md), [Component reference](docs/REFERENCE.md), [Markdown](docs/MARKDOWN.md), [Spaces CMS](docs/SPACES.md), and [Authoring](docs/AUTHOR.md)
 - **Logic and assets:** [API Render](docs/API_RENDER.md), [Server Scripts](docs/GOJA_RENDER.md), [Plugins](docs/PLUGINS.md), and [JavaScript and CSS](docs/ESBUILD.md)
+- **Development services:** [Hooks and managed services](docs/DEVELOPMENT_HOOKS.md), [runnable API demo](modules/development-hooks-demo/README.md), and [build-before-load plugin demo](modules/development-hooks-plugin-demo/README.md)
 - **Delivery:** [Deploy Guide](docs/DEPLOY.md), [Docker Deploy](docs/DOCKER.md), and [Migration Guide](docs/MIGRATION.md)
 
 ---
