@@ -6,344 +6,465 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/hyperbricks/hyperbricks/assets"
-	"go.yaml.in/yaml/v4"
 )
 
-const testStarterPackageConfig = `hyperbricks:
-  metadata:
-    module: old-starter-name
-    moduleversion: "9.4"
-    format: zip
-    format_version: "0"
-    commit: stale
-    built_at: "1970-01-01T00:00:00Z"
-    hyperbricks: v0.0.0
-    source_hash: stale
-  directories:
-    hyperbricks:
-      path:
-        base: module
-        path: hyperbricks
-  custom:
-    preserved: true
-`
+const testStarterPackageConfig = "hyperbricks:\n  metadata:\n    module: old-starter-name\n    moduleversion: \"9.4\"\n    format: zip\n    format_version: \"0\"\n    commit: stale\n    built_at: \"1970-01-01T00:00:00Z\"\n    hyperbricks: v0.0.0\n    source_hash: stale\n  custom:\n    preserved: true\n"
+const testStarterYAMLSource = "page:\n  - type: hypermedia\n  - route: index\n  - body:\n      - type: text\n      - value: HELLO WORLD!\n"
 
-const testStarterYAMLSource = `page:
-  - type: hypermedia
-  - route: index
-  - body:
-      - type: text
-      - value: HELLO WORLD!
-      - enclose: <p>|</p>
-`
-
-func TestResolveStarterVersionPrefersLatestCompatible(t *testing.T) {
-	starters := map[string]map[string]StarterMeta{
-		"hello-world": {
-			"1.0.0": {
-				Name:                  "hello-world",
-				Version:               "1.0.0",
-				CompatibleHyperbricks: []string{">=0.1.0-alpha"},
-			},
-			"1.1.0": {
-				Name:                  "hello-world",
-				Version:               "1.1.0",
-				CompatibleHyperbricks: []string{">=0.1.0-alpha"},
-			},
-			"2.0.0": {
-				Name:                  "hello-world",
-				Version:               "2.0.0",
-				CompatibleHyperbricks: []string{">=999.0.0-alpha"},
-			},
-		},
-	}
-
-	meta, err := resolveStarterVersion(starters, "hello-world", "")
-	if err != nil {
-		t.Fatalf("resolveStarterVersion returned error: %v", err)
-	}
-	if meta.Version != "1.1.0" {
-		t.Fatalf("expected latest compatible version 1.1.0, got %s", meta.Version)
+func TestNormalizeStarterRef(t *testing.T) {
+	for _, test := range []struct {
+		input, want string
+		valid       bool
+	}{
+		{"", "main", true},
+		{"latest", "main", true},
+		{"v1.2.9-beta", "v1.2.9-beta", true},
+		{"release/v1.2.9-beta", "release/v1.2.9-beta", true},
+		{"a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4", "a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4", true},
+		{"../main", "", false},
+		{"release//v1", "", false},
+		{"release/../v1", "", false},
+		{"tag..bad", "", false},
+		{"tag.lock", "", false},
+		{"@{main}", "", false},
+		{"main?raw=1", "", false},
+	} {
+		got, err := normalizeStarterRef(test.input)
+		if (err == nil) != test.valid || got != test.want {
+			t.Errorf("normalizeStarterRef(%q) = %q, %v; want %q, valid=%v", test.input, got, err, test.want, test.valid)
+		}
 	}
 }
 
-func TestRunInitStarterGetRejectsModulePathBeforeNetwork(t *testing.T) {
+func TestStarterArchiveRefPathUsesDocumentedGitHubRoutes(t *testing.T) {
+	for _, test := range []struct {
+		ref, want string
+	}{
+		{"main", "refs/heads/main"},
+		{"v1.2.9-beta", "refs/tags/v1.2.9-beta"},
+		{"release/v1.2.9-beta", "refs/tags/release/v1.2.9-beta"},
+		{"deadbeef", "refs/tags/deadbeef"},
+		{"a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4", "a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4"},
+		{"ABCDEF0123456789ABCDEF0123456789ABCDEF01", "ABCDEF0123456789ABCDEF0123456789ABCDEF01"},
+	} {
+		if got := starterArchiveRefPath(test.ref); got != test.want {
+			t.Errorf("archive path for %q = %q, want %q", test.ref, got, test.want)
+		}
+	}
+}
+
+func TestParseStarterArg(t *testing.T) {
+	for _, raw := range []string{"", "hello-world@", "../hello-world", "hello-world@latest@main"} {
+		if _, _, err := parseStarterArg(raw); err == nil {
+			t.Errorf("parseStarterArg(%q) accepted invalid argument", raw)
+		}
+	}
+	name, ref, err := parseStarterArg("hello-world@v1.2.9-beta")
+	if err != nil || name != "hello-world" || ref != "v1.2.9-beta" {
+		t.Fatalf("parsed starter = %q, %q, %v", name, ref, err)
+	}
+}
+
+func TestDecodeStarterIndexRequiresCurrentModulePaths(t *testing.T) {
+	for _, test := range []struct {
+		name, index string
+	}{
+		{"fixture module", "{\"hello-world\":{\"path\":\"modules/api-security-test\"}}"},
+		{"old repository path", "{\"hello-world\":{\"path\":\"starters/hello-world/1.0.0\"}}"},
+		{"traversal", "{\"hello-world\":{\"path\":\"modules/../api-security-test\"}}"},
+		{"old versioned index", "{\"hello-world\":{\"1.0.0\":{\"path\":\"modules/hello-world\"}}}"},
+		{"old version field", "{\"hello-world\":{\"version\":\"1.0.0\",\"path\":\"modules/hello-world\"}}"},
+		{"invalid compatibility", "{\"hello-world\":{\"path\":\"modules/hello-world\",\"compatible_hyperbricks\":[\">=broken\"]}}"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if _, err := decodeStarterIndex(strings.NewReader(test.index)); err == nil {
+				t.Fatal("expected index validation error")
+			}
+		})
+	}
+	starters, err := decodeStarterIndex(strings.NewReader("{\"hello-world\":{\"description\":\"Minimal\"}}"))
+	if err != nil {
+		t.Fatalf("decode defaulted starter: %v", err)
+	}
+	meta := starters["hello-world"]
+	if meta.Path != "modules/hello-world" || meta.Entrypoint != "package.hyperbricks.yaml" {
+		t.Fatalf("incorrect defaults: %+v", meta)
+	}
+}
+
+func TestRepositoryStarterIndexContainsOnlyRunnableCatalogModules(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..", "..")
+	indexFile, err := os.Open(filepath.Join(repositoryRoot, "starters.index.json"))
+	if err != nil {
+		t.Fatalf("open repository starter index: %v", err)
+	}
+	defer indexFile.Close()
+	starters, err := decodeStarterIndex(indexFile)
+	if err != nil {
+		t.Fatalf("decode repository starter index: %v", err)
+	}
+	if len(starters) == 0 {
+		t.Fatal("repository starter index is empty")
+	}
+	for name, meta := range starters {
+		packagePath := filepath.Join(repositoryRoot, filepath.FromSlash(meta.Path), meta.Entrypoint)
+		if info, err := os.Stat(packagePath); err != nil || !info.Mode().IsRegular() {
+			t.Errorf("starter %s has no package at %s: %v", name, packagePath, err)
+		}
+	}
+	readme, err := os.ReadFile(filepath.Join(repositoryRoot, "modules", "README.md"))
+	if err != nil {
+		t.Fatalf("read module index: %v", err)
+	}
+	starterSection := strings.SplitN(string(readme), "### Starter modules", 2)
+	if len(starterSection) != 2 {
+		t.Fatal("module index has no Starter modules section")
+	}
+	starterRows := strings.SplitN(starterSection[1], "\n## ", 2)[0]
+	catalogNames := namesFromModuleTable(starterRows)
+	for name := range catalogNames {
+		if _, found := starters[name]; !found {
+			t.Errorf("catalog starter %s is missing from starters.index.json", name)
+		}
+	}
+	for name := range starters {
+		if _, found := catalogNames[name]; !found {
+			t.Errorf("indexed starter %s is absent from Starter modules table", name)
+		}
+	}
+	fixtureSection := strings.SplitN(string(readme), "### Fixture modules", 2)
+	if len(fixtureSection) != 2 {
+		t.Fatal("module index has no Fixture modules section")
+	}
+	fixtureRows := strings.SplitN(fixtureSection[1], "\n## ", 2)[0]
+	for name := range namesFromModuleTable(fixtureRows) {
+		if _, found := starters[name]; found {
+			t.Errorf("test fixture %s is offered by init-starter", name)
+		}
+	}
+}
+
+func namesFromModuleTable(table string) map[string]struct{} {
+	names := make(map[string]struct{})
+	for _, line := range strings.Split(table, "\n") {
+		if !strings.HasPrefix(line, "| [") {
+			continue
+		}
+		fields := strings.Split(line, "\x60")
+		if len(fields) < 2 {
+			continue
+		}
+		names[fields[1]] = struct{}{}
+	}
+	return names
+}
+
+func TestRunInitStarterGetRejectsInvalidInputBeforeNetwork(t *testing.T) {
 	_, _, err := runInitStarterGet("hello-world", "../outside")
 	if err == nil || !strings.Contains(err.Error(), "module must be a name below ./modules") {
 		t.Fatalf("invalid module override error = %v", err)
 	}
+	_, _, err = runInitStarterGet("hello-world@../main", "")
+	if err == nil || !strings.Contains(err.Error(), "invalid starter Git ref") {
+		t.Fatalf("invalid Git ref error = %v", err)
+	}
 }
 
-func TestRunInitStarterGetDownloadsAndExtractsStarter(t *testing.T) {
-	tmpDir := t.TempDir()
-	prevWD, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("getwd: %v", err)
-	}
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("chdir temp dir: %v", err)
-	}
-	defer os.Chdir(prevWD)
-
-	indexPayload := map[string]map[string]StarterMeta{
-		"hello-world": {
-			"1.0.0": {
-				Name:                  "hello-world",
-				Version:               "1.0.0",
-				Path:                  "starters/hello-world/1.0.0",
-				Entrypoint:            "package.hyperbricks.yaml",
-				Description:           "Minimal starter",
-				CompatibleHyperbricks: []string{">=0.8.0-alpha"},
-			},
-		},
-	}
-
-	archiveBytes := createTestStarterArchive(t, map[string]string{
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/package.hyperbricks.yaml":                 testStarterPackageConfig,
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/hyperbricks/hello-world.hyperbricks.yaml": testStarterYAMLSource,
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/templates/.gitkeep":                       "",
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/static/.gitkeep":                          "",
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/resources/.gitkeep":                       "",
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/rendered/.gitkeep":                        "",
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/logs/.gitkeep":                            "",
-		"hyperbricks-starters-main/starters/other-starter/1.0.0/package.hyperbricks.yaml":               "ignored: true\n",
-		"hyperbricks-starters-main/README.md":                                                           "ignored\n",
-	})
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/starters.index.json":
-			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(indexPayload); err != nil {
-				t.Fatalf("encode index payload: %v", err)
-			}
-		case "/archive.zip":
-			w.Header().Set("Content-Type", "application/zip")
-			if _, err := w.Write(archiveBytes); err != nil {
-				t.Fatalf("write archive: %v", err)
-			}
-		default:
-			http.NotFound(w, r)
-		}
-	}))
-	defer server.Close()
-
-	prevIndexURL := starterIndexURL
-	prevArchiveURL := starterArchiveURL
-	prevArchiveRoot := starterArchiveRoot
-	starterIndexURL = server.URL + "/starters.index.json"
-	starterArchiveURL = server.URL + "/archive.zip"
-	starterArchiveRoot = "hyperbricks-starters-main"
-	defer func() {
-		starterIndexURL = prevIndexURL
-		starterArchiveURL = prevArchiveURL
-		starterArchiveRoot = prevArchiveRoot
-	}()
-
+func TestRunInitStarterGetReadsIndexAndModuleFromSameArchive(t *testing.T) {
+	useStarterWorkingDirectory(t)
+	archive := starterArchiveFixture(t, "hyperbricks-main", starterIndexFixture(), testStarterPackageConfig)
+	requests := useStarterServer(t, map[string][]byte{"main": archive}, nil)
 	moduleName, meta, err := runInitStarterGet("hello-world", "example-site")
 	if err != nil {
 		t.Fatalf("runInitStarterGet returned error: %v", err)
 	}
-	if moduleName != "example-site" {
-		t.Fatalf("expected module name example-site, got %s", moduleName)
+	if moduleName != "example-site" || meta.Name != "hello-world" || meta.Path != "modules/hello-world" {
+		t.Fatalf("installed starter = %q, %+v", moduleName, meta)
 	}
-	if meta.Version != "1.0.0" {
-		t.Fatalf("expected starter version 1.0.0, got %s", meta.Version)
+	if got := requests(); !reflect.DeepEqual(got, []string{"/archive/refs/heads/main.zip"}) {
+		t.Fatalf("get requests = %v; index should come from the downloaded archive", got)
 	}
-
-	expectedFiles := []string{
-		filepath.Join("modules", "example-site", "package.hyperbricks.yaml"),
-		filepath.Join("modules", "example-site", "hyperbricks", "hello-world.hyperbricks.yaml"),
-		filepath.Join("modules", "example-site", "templates"),
-		filepath.Join("modules", "example-site", "static"),
-		filepath.Join("modules", "example-site", "resources"),
-		filepath.Join("modules", "example-site", "rendered"),
-		filepath.Join("modules", "example-site", "logs"),
-		filepath.Join("bin", "plugins"),
-	}
-	for _, path := range expectedFiles {
+	for _, path := range []string{
+		"modules/example-site/package.hyperbricks.yaml",
+		"modules/example-site/hyperbricks/hello-world.hyperbricks.yaml",
+		"modules/example-site/templates",
+		"modules/example-site/static",
+		"modules/example-site/resources",
+		"modules/example-site/rendered",
+		"modules/example-site/logs",
+		"bin/plugins",
+	} {
 		if _, err := os.Stat(path); err != nil {
-			t.Fatalf("expected %s to exist: %v", path, err)
+			t.Fatalf("expected %s: %v", path, err)
 		}
 	}
-	packageData, err := os.ReadFile(filepath.Join("modules", "example-site", PackageConfigFileName))
+	data, err := os.ReadFile("modules/example-site/package.hyperbricks.yaml")
 	if err != nil {
-		t.Fatalf("read installed package config: %v", err)
+		t.Fatalf("read installed package: %v", err)
 	}
-	var packageConfig struct {
-		HyperBricks struct {
-			Metadata map[string]string `yaml:"metadata"`
-		} `yaml:"hyperbricks"`
-	}
-	if err := yaml.Unmarshal(packageData, &packageConfig); err != nil {
-		t.Fatalf("decode installed package config: %v", err)
-	}
-	metadata := packageConfig.HyperBricks.Metadata
-	if metadata["module"] != "example-site" || metadata["moduleversion"] != "1.0.0" || metadata["hyperbricks"] != strings.TrimSpace(assets.VersionMD) {
-		t.Fatalf("installed source metadata = %#v", metadata)
-	}
-	for _, artifactField := range []string{"format", "format_version", "commit", "built_at", "source_hash"} {
-		if _, present := metadata[artifactField]; present {
-			t.Fatalf("installed source package contains artifact-only metadata %q", artifactField)
+	for _, want := range []string{"module: example-site", "moduleversion: \"1.0.0\"", "hyperbricks: " + strings.TrimSpace(assets.VersionMD), "preserved: true"} {
+		if !strings.Contains(string(data), want) {
+			t.Fatalf("installed package lacks %q:\n%s", want, data)
 		}
 	}
-	if !strings.Contains(string(packageData), "preserved: true") {
-		t.Fatalf("installed source package lost unrelated starter configuration:\n%s", packageData)
+	for _, unwanted := range []string{"format:", "commit:", "built_at:", "source_hash:"} {
+		if strings.Contains(string(data), unwanted) {
+			t.Fatalf("installed source package contains artifact metadata %q", unwanted)
+		}
 	}
-	if _, err := os.Stat(filepath.Join("modules", "example-site", "manifest.json")); !os.IsNotExist(err) {
-		t.Fatalf("expected starter manifest.json to be excluded from installed module")
+	if _, err := os.Stat("modules/example-site/manifest.json"); !os.IsNotExist(err) {
+		t.Fatalf("starter manifest should not be installed: %v", err)
+	}
+}
+
+func TestRunInitStarterGetUsesRequestedTagOrCommit(t *testing.T) {
+	for _, ref := range []string{"v1.2.9-beta", "release/v1.2.9-beta", "a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4"} {
+		t.Run(ref, func(t *testing.T) {
+			useStarterWorkingDirectory(t)
+			archive := starterArchiveFixture(t, "hyperbricks-"+strings.ReplaceAll(ref, "/", "-"), starterIndexFixture(), testStarterPackageConfig)
+			requests := useStarterServer(t, map[string][]byte{ref: archive}, nil)
+			name, _, err := runInitStarterGet("hello-world@"+ref, "")
+			if err != nil || name != "hello-world" {
+				t.Fatalf("install from %s = %q, %v", ref, name, err)
+			}
+			if got := requests(); !reflect.DeepEqual(got, []string{"/archive/" + starterArchiveRefPath(ref) + ".zip"}) {
+				t.Fatalf("archive requests = %v", got)
+			}
+		})
+	}
+}
+
+func TestFetchStarterIndexUsesSelectedRefForList(t *testing.T) {
+	index, err := json.Marshal(starterIndexFixture())
+	if err != nil {
+		t.Fatalf("encode index: %v", err)
+	}
+	for _, ref := range []string{
+		"main",
+		"v1.2.9-beta",
+		"release/v1.2.9-beta",
+		"a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4",
+	} {
+		t.Run(ref, func(t *testing.T) {
+			requests := useStarterServer(t, nil, map[string][]byte{ref: index})
+			starters, err := fetchStarterIndex(ref)
+			if err != nil || starters["hello-world"].Path != "modules/hello-world" {
+				t.Fatalf("fetch selected index = %+v, %v", starters, err)
+			}
+			expected := "/contents/starters.index.json?ref=" + url.QueryEscape(starterArchiveRefPath(ref))
+			if got := requests(); !reflect.DeepEqual(got, []string{expected}) {
+				t.Fatalf("index requests = %v; want %s", got, expected)
+			}
+		})
+	}
+	if InitStarterListCommand().Flags().Lookup("ref") == nil {
+		t.Fatal("list command lacks --ref")
+	}
+}
+
+func TestRunInitStarterGetRejectsIncompatibleStarter(t *testing.T) {
+	useStarterWorkingDirectory(t)
+	index := starterIndexFixture()
+	meta := index["hello-world"]
+	meta.CompatibleHyperbricks = []string{">=999.0.0"}
+	index["hello-world"] = meta
+	useStarterServer(t, map[string][]byte{"main": starterArchiveFixture(t, "hyperbricks-main", index, testStarterPackageConfig)}, nil)
+	_, _, err := runInitStarterGet("hello-world", "demo")
+	if err == nil || !strings.Contains(err.Error(), "not compatible") {
+		t.Fatalf("incompatible starter error = %v", err)
+	}
+	if _, statErr := os.Stat("modules/demo"); !os.IsNotExist(statErr) {
+		t.Fatalf("incompatible starter installed: %v", statErr)
+	}
+}
+
+func TestRunInitStarterGetKeepsPluginModuleName(t *testing.T) {
+	useStarterWorkingDirectory(t)
+	index := starterIndexFixture()
+	meta := index["hello-world"]
+	meta.FixedModuleName = true
+	index["hello-world"] = meta
+	useStarterServer(t, map[string][]byte{"main": starterArchiveFixture(t, "hyperbricks-main", index, testStarterPackageConfig)}, nil)
+	_, _, err := runInitStarterGet("hello-world", "renamed-site")
+	if err == nil || !strings.Contains(err.Error(), "requires module name") {
+		t.Fatalf("plugin module rename error = %v", err)
+	}
+	if _, statErr := os.Stat("modules/renamed-site"); !os.IsNotExist(statErr) {
+		t.Fatalf("renamed module was extracted: %v", statErr)
+	}
+	name, _, err := runInitStarterGet("hello-world", "")
+	if err != nil || name != "hello-world" {
+		t.Fatalf("install under required module name = %q, %v", name, err)
 	}
 }
 
 func TestRunInitStarterGetRejectsNonEmptyModuleDir(t *testing.T) {
-	tmpDir := t.TempDir()
-	prevWD, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("getwd: %v", err)
+	useStarterWorkingDirectory(t)
+	useStarterServer(t, map[string][]byte{"main": starterArchiveFixture(t, "hyperbricks-main", starterIndexFixture(), testStarterPackageConfig)}, nil)
+	if err := os.MkdirAll("modules/hello-world", 0755); err != nil {
+		t.Fatalf("create module: %v", err)
 	}
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("chdir temp dir: %v", err)
-	}
-	defer os.Chdir(prevWD)
-
-	indexPayload := map[string]map[string]StarterMeta{
-		"hello-world": {
-			"1.0.0": {
-				Name:                  "hello-world",
-				Version:               "1.0.0",
-				Path:                  "starters/hello-world/1.0.0",
-				Entrypoint:            "package.hyperbricks.yaml",
-				CompatibleHyperbricks: []string{">=0.8.0-alpha"},
-			},
-		},
-	}
-
-	archiveBytes := createTestStarterArchive(t, map[string]string{
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/package.hyperbricks.yaml": testStarterPackageConfig,
-	})
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/starters.index.json":
-			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(indexPayload); err != nil {
-				t.Fatalf("encode index payload: %v", err)
-			}
-		case "/archive.zip":
-			w.Header().Set("Content-Type", "application/zip")
-			if _, err := w.Write(archiveBytes); err != nil {
-				t.Fatalf("write archive: %v", err)
-			}
-		default:
-			http.NotFound(w, r)
-		}
-	}))
-	defer server.Close()
-
-	prevIndexURL := starterIndexURL
-	prevArchiveURL := starterArchiveURL
-	prevArchiveRoot := starterArchiveRoot
-	starterIndexURL = server.URL + "/starters.index.json"
-	starterArchiveURL = server.URL + "/archive.zip"
-	starterArchiveRoot = "hyperbricks-starters-main"
-	defer func() {
-		starterIndexURL = prevIndexURL
-		starterArchiveURL = prevArchiveURL
-		starterArchiveRoot = prevArchiveRoot
-	}()
-
-	moduleDir := filepath.Join("modules", "hello-world")
-	if err := os.MkdirAll(moduleDir, 0755); err != nil {
-		t.Fatalf("mkdir module dir: %v", err)
-	}
-	if err := os.WriteFile(filepath.Join(moduleDir, "existing.txt"), []byte("occupied"), 0644); err != nil {
+	if err := os.WriteFile("modules/hello-world/existing.txt", []byte("occupied"), 0644); err != nil {
 		t.Fatalf("write existing file: %v", err)
 	}
-
-	_, _, err = runInitStarterGet("hello-world", "")
-	if err == nil {
-		t.Fatalf("expected error for non-empty module dir")
-	}
-	if !strings.Contains(err.Error(), "not empty") {
-		t.Fatalf("expected non-empty directory error, got: %v", err)
+	_, _, err := runInitStarterGet("hello-world", "")
+	if err == nil || !strings.Contains(err.Error(), "not empty") {
+		t.Fatalf("non-empty destination error = %v", err)
 	}
 }
 
-func TestRunInitStarterGetInvalidStagedPackageLeavesMissingDestinationAbsent(t *testing.T) {
-	useTestStarterWorkingDirectory(t)
-	useInvalidPackageStarterServer(t)
-
-	const moduleName = "broken-site"
-	moduleDir := filepath.Join("modules", moduleName)
-	_, _, err := runInitStarterGet("hello-world", moduleName)
-	if err == nil {
-		t.Fatal("expected invalid staged package metadata to fail")
+func TestRunInitStarterGetInvalidPackageKeepsDestination(t *testing.T) {
+	for _, existing := range []bool{false, true} {
+		t.Run(map[bool]string{false: "missing", true: "empty"}[existing], func(t *testing.T) {
+			useStarterWorkingDirectory(t)
+			archive := starterArchiveFixture(t, "hyperbricks-main", starterIndexFixture(), "hyperbricks:\n  metadata: [invalid\n")
+			useStarterServer(t, map[string][]byte{"main": archive}, nil)
+			moduleDir := "modules/broken-site"
+			if existing {
+				if err := os.MkdirAll(moduleDir, 0711); err != nil {
+					t.Fatalf("create empty destination: %v", err)
+				}
+			}
+			_, _, err := runInitStarterGet("hello-world", "broken-site")
+			if err == nil || !strings.Contains(err.Error(), "prepare starter package metadata") {
+				t.Fatalf("staged metadata error = %v", err)
+			}
+			info, statErr := os.Stat(moduleDir)
+			if existing {
+				if statErr != nil || !info.IsDir() || info.Mode().Perm() != 0711 {
+					t.Fatalf("empty destination changed: %+v, %v", info, statErr)
+				}
+				entries, err := os.ReadDir(moduleDir)
+				if err != nil || len(entries) != 0 {
+					t.Fatalf("empty destination contents = %v, %v", entries, err)
+				}
+			} else if !os.IsNotExist(statErr) {
+				t.Fatalf("missing destination was created: %v", statErr)
+			}
+			assertNoStarterStagingDirectories(t, "broken-site")
+		})
 	}
-	if !strings.Contains(err.Error(), "prepare starter package metadata") {
-		t.Fatalf("unexpected starter metadata error: %v", err)
-	}
-	if _, statErr := os.Stat(moduleDir); !os.IsNotExist(statErr) {
-		t.Fatalf("missing destination was created after staged metadata failure: %v", statErr)
-	}
-	assertNoStarterStagingDirectories(t, moduleName)
 }
 
-func TestRunInitStarterGetInvalidStagedPackageLeavesExistingDestinationEmpty(t *testing.T) {
-	useTestStarterWorkingDirectory(t)
-	useInvalidPackageStarterServer(t)
-
-	const moduleName = "broken-site"
-	moduleDir := filepath.Join("modules", moduleName)
-	if err := os.MkdirAll(moduleDir, 0711); err != nil {
-		t.Fatalf("create empty module destination: %v", err)
+func TestRunInitStarterGetRequiresIndexInArchive(t *testing.T) {
+	useStarterWorkingDirectory(t)
+	archive := makeStarterZip(t, map[string]string{"hyperbricks-main/modules/hello-world/package.hyperbricks.yaml": testStarterPackageConfig})
+	useStarterServer(t, map[string][]byte{"main": archive}, nil)
+	_, _, err := runInitStarterGet("hello-world", "demo")
+	if err == nil || !strings.Contains(err.Error(), "starter index not found") {
+		t.Fatalf("missing index error = %v", err)
 	}
-	before, err := os.Stat(moduleDir)
-	if err != nil {
-		t.Fatalf("inspect empty module destination: %v", err)
-	}
-
-	_, _, err = runInitStarterGet("hello-world", moduleName)
-	if err == nil {
-		t.Fatal("expected invalid staged package metadata to fail")
-	}
-	if !strings.Contains(err.Error(), "prepare starter package metadata") {
-		t.Fatalf("unexpected starter metadata error: %v", err)
-	}
-	after, statErr := os.Stat(moduleDir)
-	if statErr != nil {
-		t.Fatalf("existing empty destination was removed after staged metadata failure: %v", statErr)
-	}
-	if !after.IsDir() {
-		t.Fatalf("existing destination is no longer a directory: %s", moduleDir)
-	}
-	if after.Mode().Perm() != before.Mode().Perm() {
-		t.Fatalf("existing destination mode = %s, want %s", after.Mode().Perm(), before.Mode().Perm())
-	}
-	entries, err := os.ReadDir(moduleDir)
-	if err != nil {
-		t.Fatalf("read existing module destination: %v", err)
-	}
-	if len(entries) != 0 {
-		t.Fatalf("existing destination contains %d entries after staged metadata failure", len(entries))
-	}
-	assertNoStarterStagingDirectories(t, moduleName)
 }
 
-func useTestStarterWorkingDirectory(t *testing.T) {
+func TestDownloadStarterArchiveRejectsOversizeAndRemovesTempFile(t *testing.T) {
+	temporary := t.TempDir()
+	t.Setenv("TMPDIR", temporary)
+	previousLimit := starterMaxArchiveBytes
+	starterMaxArchiveBytes = 64
+	t.Cleanup(func() { starterMaxArchiveBytes = previousLimit })
+	useStarterServer(t, map[string][]byte{"main": bytes.Repeat([]byte("x"), 65)}, nil)
+	_, err := downloadStarterArchive("main")
+	if err == nil || !strings.Contains(err.Error(), "exceeds") {
+		t.Fatalf("oversized archive error = %v", err)
+	}
+	entries, err := os.ReadDir(temporary)
+	if err != nil || len(entries) != 0 {
+		t.Fatalf("temporary archive was left behind: %v, %v", entries, err)
+	}
+}
+
+func TestExtractStarterModuleEnforcesUncompressedLimits(t *testing.T) {
+	for _, test := range []struct {
+		name       string
+		files      map[string]string
+		byteLimit  int64
+		entryLimit int
+		want       string
+	}{
+		{
+			name:       "bytes",
+			files:      map[string]string{"hyperbricks-main/modules/hello-world/large.txt": "12345"},
+			byteLimit:  4,
+			entryLimit: 10000,
+			want:       "extracted bytes",
+		},
+		{
+			name: "entries",
+			files: map[string]string{
+				"hyperbricks-main/modules/hello-world/a.txt": "a",
+				"hyperbricks-main/modules/hello-world/b.txt": "b",
+			},
+			byteLimit:  128 << 20,
+			entryLimit: 1,
+			want:       "archive entries",
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			previousBytes, previousEntries := starterMaxModuleBytes, starterMaxModuleEntries
+			starterMaxModuleBytes, starterMaxModuleEntries = test.byteLimit, test.entryLimit
+			t.Cleanup(func() {
+				starterMaxModuleBytes, starterMaxModuleEntries = previousBytes, previousEntries
+			})
+			archivePath := filepath.Join(t.TempDir(), "source.zip")
+			if err := os.WriteFile(archivePath, makeStarterZip(t, test.files), 0644); err != nil {
+				t.Fatalf("write starter archive: %v", err)
+			}
+			err := extractZipSubdirArchive(archivePath, t.TempDir(), "hyperbricks-main/modules/hello-world")
+			if err == nil || !strings.Contains(err.Error(), test.want) {
+				t.Fatalf("extraction limit error = %v", err)
+			}
+		})
+	}
+}
+
+func starterIndexFixture() map[string]StarterMeta {
+	return map[string]StarterMeta{
+		"hello-world": {
+			Name:                  "hello-world",
+			Path:                  "modules/hello-world",
+			Entrypoint:            "package.hyperbricks.yaml",
+			Description:           "Minimal starter",
+			CompatibleHyperbricks: []string{">=0.8.0-alpha"},
+		},
+	}
+}
+
+func starterArchiveFixture(t *testing.T, root string, index map[string]StarterMeta, packageConfig string) []byte {
 	t.Helper()
+	indexData, err := json.Marshal(index)
+	if err != nil {
+		t.Fatalf("encode index: %v", err)
+	}
+	return makeStarterZip(t, map[string]string{
+		root + "/starters.index.json":                                          string(indexData),
+		root + "/modules/hello-world/package.hyperbricks.yaml":                 packageConfig,
+		root + "/modules/hello-world/hyperbricks/hello-world.hyperbricks.yaml": testStarterYAMLSource,
+		root + "/modules/hello-world/templates/.gitkeep":                       "",
+		root + "/modules/hello-world/static/.gitkeep":                          "",
+		root + "/modules/hello-world/resources/.gitkeep":                       "",
+		root + "/modules/hello-world/rendered/.gitkeep":                        "",
+		root + "/modules/hello-world/logs/.gitkeep":                            "",
+		root + "/modules/other-starter/package.hyperbricks.yaml":               "ignored: true\n",
+		root + "/README.md": "ignored\n",
+	})
+}
 
-	tmpDir := t.TempDir()
+func useStarterWorkingDirectory(t *testing.T) {
+	t.Helper()
 	previous, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("get working directory: %v", err)
 	}
-	if err := os.Chdir(tmpDir); err != nil {
+	if err := os.Chdir(t.TempDir()); err != nil {
 		t.Fatalf("change to test working directory: %v", err)
 	}
 	t.Cleanup(func() {
@@ -353,90 +474,76 @@ func useTestStarterWorkingDirectory(t *testing.T) {
 	})
 }
 
-func useInvalidPackageStarterServer(t *testing.T) {
+func useStarterServer(t *testing.T, archives map[string][]byte, indexes map[string][]byte) func() []string {
 	t.Helper()
-
-	indexPayload := map[string]map[string]StarterMeta{
-		"hello-world": {
-			"1.0.0": {
-				Name:                  "hello-world",
-				Version:               "1.0.0",
-				Path:                  "starters/hello-world/1.0.0",
-				Entrypoint:            "package.hyperbricks.yaml",
-				CompatibleHyperbricks: []string{">=0.8.0-alpha"},
-			},
-		},
-	}
-	indexBytes, err := json.Marshal(indexPayload)
-	if err != nil {
-		t.Fatalf("encode starter index fixture: %v", err)
-	}
-	archiveBytes := createTestStarterArchive(t, map[string]string{
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/package.hyperbricks.yaml": "hyperbricks:\n  metadata: [invalid\n",
-		"hyperbricks-starters-main/starters/hello-world/1.0.0/should-not-install.txt":   "staged only\n",
-	})
-
+	var mu sync.Mutex
+	var requests []string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/starters.index.json":
-			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write(indexBytes)
-		case "/archive.zip":
-			w.Header().Set("Content-Type", "application/zip")
-			_, _ = w.Write(archiveBytes)
-		default:
-			http.NotFound(w, r)
+		mu.Lock()
+		requests = append(requests, r.URL.RequestURI())
+		mu.Unlock()
+		for ref, body := range archives {
+			if r.URL.Path == "/archive/"+starterArchiveRefPath(ref)+".zip" {
+				w.Header().Set("Content-Type", "application/zip")
+				_, _ = w.Write(body)
+				return
+			}
 		}
+		for ref, body := range indexes {
+			if r.URL.Path == "/contents/starters.index.json" && r.URL.Query().Get("ref") == starterArchiveRefPath(ref) {
+				if r.Header.Get("Accept") != "application/vnd.github.raw+json" {
+					http.Error(w, "missing raw content Accept header", http.StatusNotAcceptable)
+					return
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write(body)
+				return
+			}
+		}
+		http.NotFound(w, r)
 	}))
-
-	previousIndexURL := starterIndexURL
-	previousArchiveURL := starterArchiveURL
-	previousArchiveRoot := starterArchiveRoot
-	starterIndexURL = server.URL + "/starters.index.json"
-	starterArchiveURL = server.URL + "/archive.zip"
-	starterArchiveRoot = "hyperbricks-starters-main"
+	previousIndexURL, previousArchiveURL := starterIndexURL, starterArchiveURL
+	starterIndexURL = server.URL + "/contents/starters.index.json"
+	starterArchiveURL = server.URL + "/archive/%s.zip"
 	t.Cleanup(func() {
-		starterIndexURL = previousIndexURL
-		starterArchiveURL = previousArchiveURL
-		starterArchiveRoot = previousArchiveRoot
+		starterIndexURL, starterArchiveURL = previousIndexURL, previousArchiveURL
 		server.Close()
 	})
+	return func() []string {
+		mu.Lock()
+		defer mu.Unlock()
+		return append([]string(nil), requests...)
+	}
 }
 
 func assertNoStarterStagingDirectories(t *testing.T, moduleName string) {
 	t.Helper()
-
 	entries, err := os.ReadDir("modules")
 	if err != nil {
 		t.Fatalf("read modules directory: %v", err)
 	}
-	prefix := "." + moduleName + "-starter-stage-"
 	for _, entry := range entries {
-		if strings.HasPrefix(entry.Name(), prefix) {
+		if strings.HasPrefix(entry.Name(), "."+moduleName+"-starter-stage-") {
 			t.Fatalf("starter staging directory was not removed: %s", entry.Name())
 		}
 	}
 }
 
-func createTestStarterArchive(t *testing.T, files map[string]string) []byte {
+func makeStarterZip(t *testing.T, files map[string]string) []byte {
 	t.Helper()
-
-	var buf bytes.Buffer
-	zipWriter := zip.NewWriter(&buf)
-
+	var buffer bytes.Buffer
+	writer := zip.NewWriter(&buffer)
 	for name, contents := range files {
-		fileWriter, err := zipWriter.Create(name)
+		file, err := writer.Create(name)
 		if err != nil {
 			t.Fatalf("create zip entry %s: %v", name, err)
 		}
-		if _, err := fileWriter.Write([]byte(contents)); err != nil {
+		if _, err := file.Write([]byte(contents)); err != nil {
 			t.Fatalf("write zip entry %s: %v", name, err)
 		}
 	}
-
-	if err := zipWriter.Close(); err != nil {
+	if err := writer.Close(); err != nil {
 		t.Fatalf("close zip writer: %v", err)
 	}
-
-	return buf.Bytes()
+	return buffer.Bytes()
 }

@@ -1,0 +1,7 @@
+/static/css/
+/static/js/
+/static/images/
+/rendered/*
+!/rendered/.gitkeep
+__pycache__/
+*.pyc

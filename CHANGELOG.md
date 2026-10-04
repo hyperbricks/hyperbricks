@@ -1,5 +1,32 @@
 # Changelog
 
+## v1.2.9-beta
+
+Changes since `v1.2.8-beta`.
+
+### Runtime and development
+
+- Add an opt-in `response_status` policy for `api_render` and
+  `api_fragment_render`, so selected upstream errors and required API failures
+  can set the browser response status while retaining the rendered page or
+  fragment.
+- Add `start --with-processes` to run preparation and verification hooks and
+  manage local services with readiness checks and shutdown cleanup.
+
+### Starters and examples
+
+- Source `init-starter` from versioned HyperBricks repository snapshots and a
+  curated module index. Pin a starter with `@<tag-or-commit>`; the former
+  starter-specific `@<version>` format no longer applies.
+- Add runnable Hello World, development-hook, Catalog Store, and Neon Pong
+  modules, including examples of managed APIs and browser asset builds.
+
+### Codex plugin
+
+- Use incrementing numeric patch versions for plugin updates so the Codex app
+  can upload and install them; packaging checks also enforce its public
+  short-description limit.
+
 ## v1.2.8-beta
 
 Changes since `v1.2.7-beta`.

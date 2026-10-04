@@ -1,0 +1,49 @@
+page_shell:
+  - type: hypermedia
+  - nocache: true
+  - response:
+      headers:
+        Cache-Control: no-store
+        Content-Type: text/html; charset=utf-8
+  - htmltag: <html lang="en">
+  - title: FORM — Everyday essentials
+  - head:
+      - type: head
+      - assets:
+          - type: html
+          - value: |
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <meta name="description" content="Discover thoughtfully chosen essentials for home, office and the outdoors.">
+              <link rel="preload" href="/static/fonts/fraunces-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
+              <link rel="preload" href="/static/fonts/dm-sans-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
+              <style>
+                @font-face{font-family:"Fraunces";font-style:normal;font-weight:400 700;font-display:swap;src:url("/static/fonts/fraunces-latin-variable.woff2") format("woff2")}
+                @font-face{font-family:"DM Sans";font-style:normal;font-weight:400 700;font-display:swap;src:url("/static/fonts/dm-sans-latin-variable.woff2") format("woff2")}
+              </style>
+      - styles:
+          - type: esbuild
+          - entry:
+              path: {base: resources, path: css/catalog.css}
+          - outfile:
+              path: {base: static, path: css/catalog.css}
+          - minify: true
+          - cache: true
+          - fingerprint: true
+          - enclose: '<link rel="stylesheet" href="|">'
+      - scripts:
+          - type: esbuild
+          - entry:
+              path: {base: resources, path: js/catalog.js}
+          - outfile:
+              path: {base: static, path: js/catalog.js}
+          - minify: true
+          - minify_identifiers: true
+          - cache: true
+          - fingerprint: true
+          - enclose: '<script src="|" defer></script>'
+  - header:
+      - type: html
+      - value: |
+          <a class="skip-link" href="#main">Skip to content</a>
+          <header class="site-header"><a class="wordmark" href="/catalog" aria-label="FORM catalog">form<span class="brand-dot">.</span></a><span class="header-note">Objects for everyday living</span><nav class="site-nav" aria-label="Main navigation"><a class="nav-link" href="/catalog">The catalog <span aria-hidden="true">↗</span></a><a class="nav-link" href="/cart">Cart <span id="header-cart-count" hx-get="/cart-count" hx-trigger="load, cart-changed from:body" hx-target="this" hx-swap="outerHTML">0</span></a></nav></header><div id="cart-feedback" class="cart-feedback" aria-live="polite"></div>

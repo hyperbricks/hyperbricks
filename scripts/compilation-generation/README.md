@@ -17,6 +17,15 @@ current working tree. It runs the focused checks and never commits, tags, or
 pushes. Repeating it without source changes leaves tracked output bytes
 unchanged.
 
+When the packaged skill changes, synchronization increments the Codex plugin's
+plain `MAJOR.MINOR.PATCH` version in `.codex-plugin/plugin.json`. For example,
+an older `0.1.1+codex.<timestamp>` version becomes `0.1.2`; the timestamp suffix
+is no longer generated because the Codex app could not upload or install that
+format. The package preflight rejects suffixes so this fails locally before an
+upload. To choose a new major or minor plugin version, synchronize first and
+then set the desired plain version in the manifest. A repeat sync with no skill
+change keeps that version.
+
 To build compilations alone, run:
 
 ```sh

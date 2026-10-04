@@ -1,0 +1,53 @@
+hyperbricks:
+  metadata:
+    module: development-hooks-demo
+    moduleversion: "1.0.0"
+    hyperbricks: v1.2.9-beta
+  mode: development
+  development:
+    watch: true
+    watch_dirs: [hyperbricks, templates]
+    reload: false
+    dashboard:
+      enabled: false
+      credentials:
+        user: {env: HB_DEVELOPER_USER}
+        password: {env: HB_DEVELOPER_PASSWORD}
+    frontend_editing:
+      enabled: false
+    hooks:
+      before_start:
+        - name: prepare-demo
+          command: [python3, prepare.py]
+          cwd: {path: {base: module, path: demo-api}}
+          timeout: 10s
+      after_start:
+        - name: verify-demo
+          command: [python3, verify.py]
+          cwd: {path: {base: module, path: demo-api}}
+          timeout: 10s
+    services:
+      - name: demo-api
+        command: [sh, server.sh]
+        cwd: {path: {base: module, path: demo-api}}
+        env:
+          PYTHONUNBUFFERED: "1"
+          HOOKS_DEMO_API_PORT: {env: {name: HOOKS_DEMO_API_PORT, default: "4331"}}
+        ready:
+          http:
+            format: "http://127.0.0.1:%s/health"
+            args:
+              - env: {name: HOOKS_DEMO_API_PORT, default: "4331"}
+          timeout: 10s
+        stop_timeout: 5s
+  server:
+    port: 4330
+  rate_limit:
+    enabled: false
+  directories:
+    hyperbricks: {path: {base: module, path: hyperbricks}}
+    templates: {path: {base: module, path: templates}}
+    resources: {path: {base: module, path: resources}}
+    static: {path: {base: module, path: static}}
+    render: {path: {base: module, path: rendered}}
+    plugins: {path: {base: module, path: plugins}}

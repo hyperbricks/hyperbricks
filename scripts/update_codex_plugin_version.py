@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Refresh Codex plugin build metadata after its packaged skill changes."""
+"""Advance the Codex plugin patch version after its packaged skill changes."""
 
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
 from pathlib import Path
 import re
@@ -13,13 +12,12 @@ import sys
 
 DEFAULT_MANIFEST = Path("codex-plugin/hyperbricks/.codex-plugin/plugin.json")
 SEMVER = re.compile(
-    r"^(?P<base>(?:0|[1-9]\d*)\."
-    r"(?:0|[1-9]\d*)\."
-    r"(?:0|[1-9]\d*)"
-    r"(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)"
+    r"^(?P<major>0|[1-9]\d*)\."
+    r"(?P<minor>0|[1-9]\d*)\."
+    r"(?P<patch>0|[1-9]\d*)"
+    r"(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
     r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
 )
-TIMESTAMP = re.compile(r"^\d{14}$")
 
 
 class VersionError(RuntimeError):
@@ -45,18 +43,17 @@ def skill_changed(before: Path, after: Path) -> bool:
     return skill_tree(before) != skill_tree(after)
 
 
-def refreshed_version(current: str, timestamp: str) -> str:
+def refreshed_version(current: str) -> str:
     match = SEMVER.fullmatch(current)
     if not match:
         raise VersionError(f"invalid semantic version: {current!r}")
-    if not TIMESTAMP.fullmatch(timestamp):
-        raise VersionError(
-            f"timestamp must use UTC YYYYMMDDHHMMSS format: {timestamp!r}"
-        )
-    return f"{match.group('base')}+codex.{timestamp}"
+    return (
+        f"{match.group('major')}.{match.group('minor')}."
+        f"{int(match.group('patch')) + 1}"
+    )
 
 
-def update_manifest(path: Path, timestamp: str) -> tuple[str, str]:
+def update_manifest(path: Path) -> tuple[str, str]:
     try:
         manifest = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
@@ -67,7 +64,7 @@ def update_manifest(path: Path, timestamp: str) -> tuple[str, str]:
     current = manifest.get("version")
     if not isinstance(current, str):
         raise VersionError(f"{path} must contain a string version")
-    updated = refreshed_version(current, timestamp)
+    updated = refreshed_version(current)
     manifest["version"] = updated
 
     try:
@@ -83,8 +80,8 @@ def update_manifest(path: Path, timestamp: str) -> tuple[str, str]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Replace a Codex plugin version's build metadata with a UTC "
-            "codex timestamp while preserving its semantic-version base."
+            "Increment the Codex plugin patch version after a packaged skill "
+            "change and emit a plain MAJOR.MINOR.PATCH version."
         )
     )
     parser.add_argument(
@@ -92,10 +89,6 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=DEFAULT_MANIFEST,
         help=f"plugin manifest to update (default: {DEFAULT_MANIFEST})",
-    )
-    parser.add_argument(
-        "--timestamp",
-        help="UTC timestamp in YYYYMMDDHHMMSS form (default: current UTC time)",
     )
     parser.add_argument(
         "--before-skill",
@@ -112,7 +105,6 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    timestamp = args.timestamp or datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     try:
         if (args.before_skill is None) != (args.after_skill is None):
             raise VersionError(
@@ -123,7 +115,7 @@ def main() -> int:
         ):
             print("Codex plugin skill unchanged; version preserved.")
             return 0
-        previous, updated = update_manifest(args.manifest, timestamp)
+        previous, updated = update_manifest(args.manifest)
     except VersionError as error:
         print(f"error: {error}", file=sys.stderr)
         return 1

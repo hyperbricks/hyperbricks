@@ -4,10 +4,10 @@
 
 This is a versioned, generated mirror of the canonical documents in `docs/`. The HyperBricks skill uses the separate files below for targeted reading. Product behavior remains owned by the source documents.
 
-- **HyperBricks version:** v1.2.8-beta
-- **Source version:** [`v1.2.8-beta`](https://github.com/hyperbricks/hyperbricks/tree/v1.2.8-beta)
+- **HyperBricks version:** v1.2.9-beta
+- **Source version:** [`v1.2.9-beta`](https://github.com/hyperbricks/hyperbricks/tree/v1.2.9-beta)
 - **Snapshot provenance:** [Manifest](documentation-manifest.json)
-- **Included documents:** 26
+- **Included documents:** 27
 
 ## Contents
 
@@ -32,6 +32,10 @@ This is a versioned, generated mirror of the canonical documents in `docs/`. The
 - [Server Scripts](docs/GOJA_RENDER.md) — `docs/GOJA_RENDER.md`
 - [Plugins](docs/PLUGINS.md) — `docs/PLUGINS.md`
 - [JavaScript and CSS](docs/ESBUILD.md) — `docs/ESBUILD.md`
+
+### Development services
+
+- [Hooks and managed services](docs/DEVELOPMENT_HOOKS.md) — `docs/DEVELOPMENT_HOOKS.md`
 
 ### Delivery
 

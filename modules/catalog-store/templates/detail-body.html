@@ -1,0 +1,9 @@
+{{if eq .Status 200}}{{with .Data}}
+<article class="detail-layout" data-item-id="{{.id}}">
+  <div class="detail-art"><img src="{{.image}}" alt="{{.name}}" width="640" height="640" loading="eager" decoding="async"></div>
+  <div class="detail-content"><p class="eyebrow">THE EVERYDAY COLLECTION</p><span class="category-badge category-{{.category}}">{{.category}}</span><h1>{{.name}}</h1><p class="detail-description">{{.description}}</p><dl class="detail-facts"><div><dt>Category</dt><dd>{{.category}}</dd></div><div><dt>Price</dt><dd class="detail-price">${{printf "%.2f" .price}}</dd></div></dl><button class="add-to-cart" type="button" hx-post="/cart-add?id={{.id}}" hx-target="#cart-feedback" hx-swap="innerHTML">Add to cart</button><a class="back-button" href="/catalog"><span aria-hidden="true">←</span> Back to the collection</a></div>
+</article>
+{{end}}
+{{else if eq .Status 404}}
+<section class="empty-state" data-item-not-found><h1>Item not found</h1><p>This item is no longer in the collection.</p><a class="back-button" href="/catalog">Back to the collection</a></section>
+{{end}}

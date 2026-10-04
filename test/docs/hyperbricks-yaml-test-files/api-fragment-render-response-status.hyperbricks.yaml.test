@@ -1,0 +1,27 @@
+==== hyperbricks yaml {!{detail_fragment}} ====
+detail_fragment:
+  - type: api_fragment_render
+  - route: fragments/detail
+  - endpoint: https://example.com/catalog
+  - method: GET
+  - querykeys: [id]
+  - response_status:
+      required: true
+      map: {"404": 404, "503": 503, "409": ignore}
+  - inline: '{{if eq .Status 404}}Item not found{{else}}{{.Data.name}}{{end}}'
+==== explainer ====
+An API fragment can opt into response status mapping on its own route or when embedded in an enclosing page. Enabled defaults to true and priority defaults to zero. Without a proposal the root route's ordinary response status remains the fallback. Mapping preserves diagnostic behavior and dynamically selected errors are no-store.
+==== expected json ====
+{
+  "@type": "<API_FRAGMENT_RENDER>",
+  "route": "fragments/detail",
+  "endpoint": "https://example.com/catalog",
+  "method": "GET",
+  "querykeys": ["id"],
+  "response_status": {
+    "required": true,
+    "map": {"404": 404, "503": 503, "409": "ignore"}
+  },
+  "inline": "{{if eq .Status 404}}Item not found{{else}}{{.Data.name}}{{end}}"
+}
+==== expected output ====

@@ -13,22 +13,6 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
-func waitForShutdown(ctx context.Context, cancel context.CancelFunc) {
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-	defer signal.Stop(signals)
-
-	go keyboardActions(cancel)
-
-	select {
-	case <-ctx.Done():
-	case sig := <-signals:
-		logging.GetLogger().Infof("Shutdown signal received (%s)", sig.String())
-		cancel()
-		<-ctx.Done()
-	}
-}
-
 // Deploy servers share the CLI shutdown boundary so file logs are closed on exit.
 func serveDeployHTTP(server *http.Server, mode string) error {
 	listener, err := net.Listen("tcp", server.Addr)

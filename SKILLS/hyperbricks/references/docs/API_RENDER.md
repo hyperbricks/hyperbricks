@@ -114,7 +114,7 @@ hyperbricks:
         output: products/shoes.html
 ```
 
-The [Coffee static example](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/modules/sampleapis-coffee-static/README.md) fetches the SampleAPIs Coffee endpoint with `api_render` and saves the rendered result in `rendered/index.html`.
+The [Coffee static example](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/sampleapis-coffee-static/README.md) fetches the SampleAPIs Coffee endpoint with `api_render` and saves the rendered result in `rendered/index.html`.
 
 See [static package configuration](HYPERBRICKS_CLI.md#package-configuration) for target matching and export boundaries.
 
@@ -144,7 +144,7 @@ profile_fragment:
 
 `response.headers` contains literal HTTP headers returned to the browser. HTMX uses the `HX-*` headers in this example; HyperBricks does not add or interpret them. Any valid HTTP header name can be configured here.
 
-`response.status` optionally sets the browser HTTP status, which defaults to `200`. It is independent of the upstream `.Status` available to the template. For example, an upstream `409` may render feedback inside a browser response with status `200`. A fixed `response.headers.HX-Trigger` is sent for every rendered response, so it does not indicate whether the upstream write succeeded.
+`response.status` optionally sets the browser HTTP status, which defaults to `200`. It is independent of the upstream `.Status` available to the template unless the component explicitly opts into [`response_status`](#browser-status-from-api-results). For example, an upstream `409` may render feedback inside a browser response with status `200`. A fixed `response.headers.HX-Trigger` is sent for every rendered response, so it does not indicate whether the upstream write succeeded.
 
 Top-level `headers` still configures the **upstream request**. It is separate from `response.headers`, which configures the **browser response**. See [HTTP responses](HTTP_RESPONSES.md) for header precedence, status behavior, and the migration from `response.hx_*` fields.
 
@@ -159,6 +159,138 @@ A typical HTMX flow is:
 7. HTMX processes the response and updates the target in the page.
 
 If the rendered body contains `hx-swap-oob` elements, HTMX applies those out-of-band swaps after the normal target swap.
+
+## Browser Status From API Results
+
+Set `response_status` on an `api_render` or `api_fragment_render` instance when
+its result should affect the HTTP status of the enclosing response. A nested
+component contributes to its enclosing page or fragment; a route-owning API
+fragment contributes to its own response. The server decides the final status
+after all components finish rendering. The complete rendered body is retained.
+
+```yaml
+detail_api:
+  - type: api_render
+  - endpoint: https://api.example.test/catalog
+  - method: GET
+  - querykeys: [id]
+  - inline: '{{if eq .Status 404}}Item not found{{else}}{{.Data.name}}{{end}}'
+
+detail_page:
+  - type: hypermedia
+  - route: catalog/detail
+  - nocache: true
+  - response: {status: 200}
+  - content:
+      - inherit: detail_api
+      - response_status:
+          required: true
+          priority: 100
+          map: {"404": 404, "503": 503}
+
+detail_fragment:
+  - type: api_fragment_render
+  - route: fragments/detail
+  - endpoint: https://api.example.test/catalog
+  - method: GET
+  - querykeys: [id]
+  - response_status:
+      required: true
+      map: {"404": 404, "503": 503, "409": ignore}
+  - inline: '{{if eq .Status 404}}Item not found{{else}}{{.Data.name}}{{end}}'
+```
+
+`/catalog/detail?id=unknown` can now return HTTP 404 with the complete page.
+An upstream 200 makes no proposal, so the route's `response.status` remains the
+fallback. Configure a retry fragment separately: a browser client may require
+explicit handling before it displays the body of a non-2xx response.
+The [response status fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/api-response-status-test/README.md)
+runs both components and an embedded API fragment against a local mock API.
+
+| Field | Contract |
+| --- | --- |
+| `enabled` | Boolean; defaults to `true` when the block is present. `false` disables contributions from this instance. Omitting the whole block leaves the existing behavior unchanged. |
+| `required` | Boolean; defaults to `false`. When `true`, unhandled failures from this executing instance also contribute an error status. It does not require an absent or skipped component to execute. |
+| `priority` | Nonnegative integer; defaults to `0`. A larger value wins among valid mapped proposals. |
+| `map` | Mapping from quoted upstream status keys `"400"` through `"599"` to `404`, `410`, `502`, `503`, `504`, or the literal `ignore`. |
+
+A map entry applies only to an actual received HTTP response whose body decodes
+and whose component template renders successfully. A transport failure is not
+an upstream HTTP 502 response, even if the template's `.Status` represents that
+failure with 502. Mapping does not change `.Status`, the rendered body, or
+whether the API operation succeeded. It does not forward upstream headers or
+cookies; API cookie handling is described below. Mapping to `ignore`
+makes no status proposal and treats that upstream status as handled for
+`required`; it does not suppress diagnostics.
+
+For `required: true`, failures that are not handled by a valid map entry have
+these response statuses:
+
+| Failure | Browser status proposal |
+| --- | ---: |
+| Received upstream non-2xx without a matching map entry | 502 |
+| Transport failure or response decoding failure | 502 |
+| Upstream timeout | 504 |
+| Local configuration, request preparation, template, or response-cookie preparation failure | 500 |
+
+Client cancellation contributes no failure status. An earlier transport or
+decode failure keeps its classification if rendering its fallback data also
+causes a template error.
+
+Required failures outrank all valid mapped proposals, regardless of priority.
+When several required failures occur, precedence is **500, then 504, then 502**.
+Among valid mapped proposals, the highest priority wins. Equal highest
+priorities proposing the same status agree; conflicting statuses produce HTTP
+500 and a diagnostic. Completion order and YAML ordering do not choose a winner.
+When no instance contributes, the enclosing route's ordinary `response.status`
+or default remains in effect. An optional instance retains its existing
+diagnostics and makes no failure proposal when it cannot produce a valid mapped
+result.
+
+### Instance Placement And Inheritance
+
+Put the policy where an API is mounted into its response. Directly inheriting
+a reusable API component copies its API configuration but **does not copy its
+`response_status` policy**. Declare the policy explicitly on the new instance
+when it should participate. An entire page that inherits a base page retains
+the policies already mounted on nested children. This distinguishes reusing an
+API definition from reusing a configured page composition.
+
+These rules also apply to `api_fragment_render`: its own route can opt in, and
+an embedded instance can opt in to the response that contains it. An embedded
+fragment's ordinary `response.status` and `response.headers` still do not
+override its enclosing route.
+
+`required` governs an instance that executes. A genuinely skipped instance has
+no outcome and contributes nothing. A template `if` currently hides output
+after its component values have rendered; it does not prevent their API calls
+or status contributions.
+
+### Caching, Diagnostics, And Cookies
+
+Every dynamically selected error response bypasses the internal rendered-output
+cache and sends `Cache-Control: no-store`. Successful parent responses can still
+be cached; a cache hit skips every nested API call. Use parent `nocache: true`
+when a successful response must also fetch fresh API data on each request.
+`api_fragment_render` already bypasses the internal route cache.
+
+Mapping preserves the existing diagnostic behavior: `api_render` reports a
+non-2xx upstream status as a render diagnostic; `api_fragment_render` can render
+a decoded non-2xx response without that status-only diagnostic. Transport,
+decoding and template errors remain errors in both components. A mapped or
+ignored status does not make an existing diagnostic disappear.
+
+API-cookie eligibility still requires an actual upstream 2xx and successful
+component processing. A dynamically selected error response discards staged
+API cookies from the whole render. A map entry cannot issue credentials or
+forward upstream `Set-Cookie` headers. Guard denials and explicitly handled
+plugin responses retain ownership; component proposals do not override them.
+
+Static snapshot targets still reject non-2xx responses and render diagnostics.
+Giving a not-found page the correct 404 does not turn it into a successful
+static export. Redirects, bodyless statuses such as 204/205/304, and dynamic
+response-header mapping are outside this field's contract. See
+[HTTP responses](HTTP_RESPONSES.md#dynamic-api-status-precedence).
 
 ## Request Mapping
 
@@ -178,6 +310,7 @@ Both API components support the same core API request fields. `api_render` uses 
 | `template` | Template file resolver or template name |
 | `inline` | Inline Go template source |
 | `values` | Extra template data |
+| `response_status` | Explicit instance-local policy for mapping API outcomes to the enclosing browser response status |
 | `debug` | Log request/response metadata without header values, URL paths/queries, or payloads |
 | `debugpanel` | Enable the frontend error panel when configured globally |
 
@@ -543,7 +676,7 @@ See [Route Guard](ROUTE_GUARD.md) for the full guard contract.
 - Token issuers and receiving services enforce token audience, expiry, scope,
   signature verification, and revocation.
 
-The runnable [API security test module](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/modules/api-security-test/README.md)
+The runnable [API security test module](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/api-security-test/README.md)
 contains a controlled upstream service, configuration examples, the research
 article, and automated HTTP assertions for both allowed and rejected behavior.
 For all available component fields, see [Reference](REFERENCE.md).

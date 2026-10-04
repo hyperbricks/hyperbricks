@@ -24,12 +24,11 @@ MAX_ARCHIVE_BYTES = 100 * 1024 * 1024
 MAX_UNCOMPRESSED_BYTES = 512 * 1024 * 1024
 MAX_ENTRIES = 5_000
 MAX_PATH_SEGMENTS = 20
-SEMVER = re.compile(
+MAX_PUBLIC_SHORT_DESCRIPTION_LENGTH = 30
+CODEX_UPLOAD_VERSION = re.compile(
     r"^(0|[1-9]\d*)\."
     r"(0|[1-9]\d*)\."
-    r"(0|[1-9]\d*)"
-    r"(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
-    r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
+    r"(0|[1-9]\d*)$"
 )
 
 
@@ -118,11 +117,31 @@ def validate_manifest(data: bytes) -> dict[str, object]:
             f"{MANIFEST_PATH} name must be {ARCHIVE_PREFIX.name!r}"
         )
     version = manifest.get("version")
-    if not isinstance(version, str) or not SEMVER.fullmatch(version):
-        raise PackageError(f"{MANIFEST_PATH} version must be valid semantic versioning")
+    if not isinstance(version, str) or not CODEX_UPLOAD_VERSION.fullmatch(version):
+        raise PackageError(
+            f"{MANIFEST_PATH} version must be plain MAJOR.MINOR.PATCH "
+            "for Codex app upload compatibility"
+        )
     description = manifest.get("description")
     if not isinstance(description, str) or not description.strip():
         raise PackageError(f"{MANIFEST_PATH} description must not be empty")
+    interface = manifest.get("interface")
+    if not isinstance(interface, dict):
+        raise PackageError(f"{MANIFEST_PATH} interface must be an object")
+    short_description = interface.get("shortDescription")
+    if not isinstance(short_description, str) or not short_description.strip():
+        raise PackageError(
+            f"{MANIFEST_PATH} interface.shortDescription must not be empty"
+        )
+    if "\n" in short_description or "\r" in short_description:
+        raise PackageError(
+            f"{MANIFEST_PATH} interface.shortDescription must fit on one line"
+        )
+    if len(short_description) > MAX_PUBLIC_SHORT_DESCRIPTION_LENGTH:
+        raise PackageError(
+            f"{MANIFEST_PATH} interface.shortDescription must be at most "
+            f"{MAX_PUBLIC_SHORT_DESCRIPTION_LENGTH} characters for public submission"
+        )
     return manifest
 
 

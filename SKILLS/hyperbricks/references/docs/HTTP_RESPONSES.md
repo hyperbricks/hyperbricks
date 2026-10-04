@@ -34,11 +34,11 @@ HyperBricks renders the HTML and applies the configured HTTP response. The appli
 | `api_render.headers` or `api_fragment_render.headers` | Headers sent to the upstream API. |
 | `guard.authorize.headers` | Headers sent to the authorization endpoint. |
 
-In an API template, `.Status` remains the upstream API status. It is independent of `response.status`. A configured response header does not establish that an upstream write succeeded. For example, in an HTMX integration, a static `HX-Trigger` header is sent whenever the route produces its response. Let the template or application logic inspect the upstream result before triggering a success-only refresh. See [API Render](API_RENDER.md).
+In an API template, `.Status` remains the upstream API status. It is independent of `response.status` unless the API instance explicitly opts into `response_status`. A configured response header does not establish that an upstream write succeeded. For example, in an HTMX integration, a static `HX-Trigger` header is sent whenever the route produces its response. Let the template or application logic inspect the upstream result before triggering a success-only refresh. See [API Render](API_RENDER.md).
 
 ## Ownership And Precedence
 
-Only the root route owner supplies configured browser response metadata. Embedding a fragment in a full page reuses its rendered content; that fragment's `response` block does not change the page's status or headers. This applies to both rendering paths.
+Only the root route owner supplies ordinary configured browser response metadata. Embedding a fragment in a full page reuses its rendered content; that fragment's `response` block does not change the page's status or headers. This applies to both rendering paths. An API instance's explicit `response_status` policy can contribute a dynamic status to its enclosing response as described below.
 
 For ordinary rendered responses:
 
@@ -52,6 +52,47 @@ HyperBricks caches the configured headers and status with the rendered content. 
 Use `nocache: true` to disable the internal route cache. Setting `Cache-Control` alone does not replace it. Routes with an enabled guard and API fragment routes bypass the internal cache.
 
 Guard responses use `Cache-Control: no-store`. Their `Vary` includes configured authentication inputs and request-header selectors. HyperBricks adds `HX-Request` variation only when configuration uses that header.
+
+## Dynamic API Status Precedence
+
+Both `api_render` and `api_fragment_render` support an optional
+[`response_status` policy](API_RENDER.md#browser-status-from-api-results).
+An instance can map received upstream errors to `404`, `410`, `502`, `503` or
+`504`, or explicitly `ignore` a received status. This changes the status of the
+complete enclosing response while preserving its rendered body. It does not
+copy upstream headers, replace the body, or change template `.Status`.
+
+Response ownership and resolution follow this order:
+
+1. A guard denial finishes before component rendering and makes no API call.
+2. An explicitly handled plugin response owns its body, status and metadata;
+   API status proposals do not override it. Streaming retains that ownership.
+3. For an ordinary rendered response, a required API instance's unhandled
+   failure outranks all valid status mappings. Competing required failures
+   resolve in the order 500, 504, 502.
+4. Otherwise the highest-priority valid API proposal wins. Equal highest
+   priorities must agree on status; a conflict returns 500 with a diagnostic.
+5. With no proposal, use the root route's `response.status` or the existing
+   route default.
+
+The server resolves ordinary dynamic status after rendering and before page
+editing decorations, cookies, caching, or headers are committed. Outcomes stay
+request-local; concurrent component completion order cannot choose a status.
+The `required` option governs failures when a component executes, rather than
+requiring a skipped component to appear.
+
+Dynamically selected error responses bypass the internal cache, send
+`Cache-Control: no-store`, and discard staged API cookies. A previously cached
+successful page can still be served until its normal expiry without executing
+APIs; set `nocache: true` on the parent when fresh status is required on every
+request. Dynamic status does not clear render diagnostics. Static exports
+continue to require a successful HTTP response with no render diagnostics.
+
+The policy is instance-local. Direct API inheritance does not copy it; declare
+it again at the mount that needs response control. Whole-page inheritance
+preserves already mounted child policies. Full pages and retry fragments may
+need different policies, especially when a browser client requires extra
+handling to display non-2xx fragment bodies.
 
 ## Migrate Existing Configuration
 
@@ -165,4 +206,4 @@ The first matching variant replaces the whole default response. Without a match,
 
 ## Another Browser Client
 
-The [Unpoly fragment example](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/modules/hyperbricks-patterns-yaml/docs/pages/unpoly-fragment-demo.md) reuses one template in a full page and a fragment. Its page loads Unpoly explicitly and uses `up-follow` and `up-target` to replace that fragment. The route uses the same HTTP response contract, without an HTMX browser dependency or a core-specific adapter.
+The [Unpoly fragment example](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/docs/pages/unpoly-fragment-demo.md) reuses one template in a full page and a fragment. Its page loads Unpoly explicitly and uses `up-follow` and `up-target` to replace that fragment. The route uses the same HTTP response contract, without an HTMX browser dependency or a core-specific adapter.

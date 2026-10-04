@@ -2,15 +2,19 @@ package commands
 
 import (
 	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/hyperbricks/hyperbricks/assets"
@@ -20,19 +24,28 @@ import (
 
 type StarterMeta struct {
 	Name                  string   `json:"name"`
-	Version               string   `json:"version"`
 	Path                  string   `json:"path"`
 	Entrypoint            string   `json:"entrypoint"`
 	Description           string   `json:"description"`
 	CompatibleHyperbricks []string `json:"compatible_hyperbricks"`
 	Tags                  []string `json:"tags,omitempty"`
+	FixedModuleName       bool     `json:"fixed_module_name,omitempty"`
 }
 
+const starterDefaultRef = "main"
+
 var (
-	initStarterModule  string
-	starterIndexURL    = "https://raw.githubusercontent.com/hyperbricks/hyperbricks-starters/main/starters.index.json"
-	starterArchiveURL  = "https://github.com/hyperbricks/hyperbricks-starters/archive/refs/heads/main.zip"
-	starterArchiveRoot = "hyperbricks-starters-main"
+	initStarterModule       string
+	starterIndexURL               = "https://api.github.com/repos/hyperbricks/hyperbricks/contents/starters.index.json"
+	starterArchiveURL             = "https://github.com/hyperbricks/hyperbricks/archive/%s.zip"
+	starterCommitRE               = regexp.MustCompile("^[a-fA-F0-9]{40}$")
+	starterIndexClient            = &http.Client{Timeout: 15 * time.Second}
+	starterArchiveClient          = &http.Client{Timeout: 2 * time.Minute}
+	starterMaxArchiveBytes  int64 = 256 << 20
+	starterMaxModuleBytes   int64 = 128 << 20
+	starterMaxModuleEntries       = 10000
+	starterModuleNameRE           = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_-]*$`)
+	starterRefRE                  = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`)
 )
 
 func InitStarterCommand() *cobra.Command {
@@ -46,19 +59,25 @@ func InitStarterCommand() *cobra.Command {
 }
 
 func InitStarterListCommand() *cobra.Command {
+	var requestedRef string
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "List available starters compatible with this HyperBricks version",
+		Short: "List compatible starter modules from the HyperBricks repository",
 		Run: func(cmd *cobra.Command, args []string) {
 			Exit = true
 
+			ref, err := normalizeStarterRef(requestedRef)
+			if err != nil {
+				failf("Error: %v", err)
+				return
+			}
 			hbVer, err := semver.NewVersion(getHyperbricksSemver())
 			if err != nil {
 				failf("Error: could not parse HyperBricks version:"+" %v", err)
 				return
 			}
 
-			starters, err := fetchStarterIndex()
+			starters, err := fetchStarterIndex(ref)
 			if err != nil {
 				failf("Error fetching starter index:"+" %v", err)
 				return
@@ -66,53 +85,24 @@ func InitStarterListCommand() *cobra.Command {
 
 			type StarterView struct {
 				Name        string
-				Version     string
-				AllVersions []string
 				Compat      []string
 				Description string
 			}
 
 			var list []StarterView
-
-			for name, versions := range starters {
-				var compatible *StarterMeta
-				var compatibleVer *semver.Version
-				allVersions := make([]string, 0, len(versions))
-				compatConstraints := make(map[string]struct{})
-
-				for ver, meta := range versions {
-					allVersions = append(allVersions, ver)
-					for _, compat := range meta.CompatibleHyperbricks {
-						compatConstraints[compat] = struct{}{}
-						constraints, err := semver.NewConstraint(compat)
-						if err == nil && constraints.Check(hbVer) {
-							sv, _ := semver.NewVersion(ver)
-							if compatible == nil || sv.GreaterThan(compatibleVer) {
-								metaCopy := meta
-								compatible = &metaCopy
-								compatibleVer = sv
-							}
-						}
-					}
-				}
-
-				if compatible == nil {
+			for name, meta := range starters {
+				if !starterCompatible(meta, hbVer) {
 					continue
 				}
-
-				compatList := make([]string, 0, len(compatConstraints))
-				for k := range compatConstraints {
-					compatList = append(compatList, k)
+				compat := append([]string(nil), meta.CompatibleHyperbricks...)
+				if len(compat) == 0 {
+					compat = []string{"any"}
 				}
-				sort.Strings(compatList)
-				sort.Strings(allVersions)
-
+				sort.Strings(compat)
 				list = append(list, StarterView{
 					Name:        name,
-					Version:     compatible.Version,
-					AllVersions: allVersions,
-					Compat:      compatList,
-					Description: compatible.Description,
+					Compat:      compat,
+					Description: meta.Description,
 				})
 			}
 
@@ -127,13 +117,11 @@ func InitStarterListCommand() *cobra.Command {
 
 			fmt.Println("")
 			w := tabwriter.NewWriter(os.Stdout, 2, 4, 2, ' ', 0)
-			fmt.Fprintln(w, "Name\tStarter Version\tAvailable Versions\tCompatible HyperBricks\tDescription")
-			fmt.Fprintln(w, "----\t---------------\t------------------\t----------------------\t-----------")
+			fmt.Fprintln(w, "Name\tCompatible HyperBricks\tDescription")
+			fmt.Fprintln(w, "----\t----------------------\t-----------")
 			for _, starter := range list {
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+				fmt.Fprintf(w, "%s\t%s\t%s\n",
 					starter.Name,
-					starter.Version,
-					strings.Join(starter.AllVersions, ", "),
 					strings.Join(starter.Compat, ", "),
 					starter.Description,
 				)
@@ -141,15 +129,16 @@ func InitStarterListCommand() *cobra.Command {
 			w.Flush()
 			fmt.Println("")
 			fmt.Println("Install with:")
-			fmt.Println("  hyperbricks init-starter get <name>[@version] -m <module>")
+			fmt.Println("  hyperbricks init-starter get <name>[@tag-or-commit] -m <module>")
 		},
 	}
+	cmd.Flags().StringVar(&requestedRef, "ref", "latest", "Git tag or commit to list (default: latest main branch)")
 	return cmd
 }
 
 func InitStarterGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get <name>[@<version>]",
+		Use:   "get <name>[@<tag-or-commit>]",
 		Short: "Download an official HyperBricks starter into ./modules/<module>",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -161,7 +150,11 @@ func InitStarterGetCommand() *cobra.Command {
 				return
 			}
 
-			fmt.Printf("Starter \"%s@%s\" installed to modules/%s\n", starter.Name, starter.Version, moduleName)
+			_, requestedRef, _ := parseStarterArg(args[0])
+			if requestedRef == "" {
+				requestedRef = "latest"
+			}
+			fmt.Printf("Starter \"%s\" from ref \"%s\" installed to modules/%s\n", starter.Name, requestedRef, moduleName)
 			fmt.Printf("Next: hyperbricks start -m %s\n", moduleName)
 		},
 	}
@@ -170,9 +163,13 @@ func InitStarterGetCommand() *cobra.Command {
 }
 
 func runInitStarterGet(nameArg string, moduleOverride string) (string, StarterMeta, error) {
-	starterName, requestedVersion := parseNameVersionArg(nameArg)
-	if strings.TrimSpace(starterName) == "" {
-		return "", StarterMeta{}, fmt.Errorf("starter name cannot be empty")
+	starterName, requestedRef, err := parseStarterArg(nameArg)
+	if err != nil {
+		return "", StarterMeta{}, err
+	}
+	ref, err := normalizeStarterRef(requestedRef)
+	if err != nil {
+		return "", StarterMeta{}, err
 	}
 	moduleName := strings.TrimSpace(moduleOverride)
 	if moduleName != "" {
@@ -183,12 +180,17 @@ func runInitStarterGet(nameArg string, moduleOverride string) (string, StarterMe
 		}
 	}
 
-	starters, err := fetchStarterIndex()
+	archivePath, err := downloadStarterArchive(ref)
+	if err != nil {
+		return "", StarterMeta{}, err
+	}
+	defer os.Remove(archivePath)
+	starters, archiveRoot, err := readStarterIndexFromArchive(archivePath)
 	if err != nil {
 		return "", StarterMeta{}, err
 	}
 
-	starter, err := resolveStarterVersion(starters, starterName, requestedVersion)
+	starter, err := resolveStarter(starters, starterName)
 	if err != nil {
 		return "", StarterMeta{}, err
 	}
@@ -200,18 +202,33 @@ func runInitStarterGet(nameArg string, moduleOverride string) (string, StarterMe
 			return "", StarterMeta{}, err
 		}
 	}
+	if starter.FixedModuleName && moduleName != starter.Name {
+		return "", StarterMeta{}, fmt.Errorf("starter %s requires module name %q because its plugin names refer to that module", starter.Name, starter.Name)
+	}
 
-	if err := installStarter(starter, moduleName); err != nil {
+	if err := installStarter(starter, moduleName, archivePath, archiveRoot); err != nil {
 		return "", StarterMeta{}, err
 	}
 
 	return moduleName, starter, nil
 }
 
-func fetchStarterIndex() (map[string]map[string]StarterMeta, error) {
-	resp, err := http.Get(starterIndexURL)
+func fetchStarterIndex(ref string) (map[string]StarterMeta, error) {
+	indexURL, err := url.Parse(starterIndexURL)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch starter index: %v", err)
+		return nil, fmt.Errorf("invalid starter index URL: %w", err)
+	}
+	query := indexURL.Query()
+	query.Set("ref", starterArchiveRefPath(ref))
+	indexURL.RawQuery = query.Encode()
+	request, err := http.NewRequest(http.MethodGet, indexURL.String(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create starter index request: %w", err)
+	}
+	request.Header.Set("Accept", "application/vnd.github.raw+json")
+	resp, err := starterIndexClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch starter index: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -219,46 +236,174 @@ func fetchStarterIndex() (map[string]map[string]StarterMeta, error) {
 		return nil, fmt.Errorf("failed to fetch starter index, status code: %d", resp.StatusCode)
 	}
 
-	var starters map[string]map[string]StarterMeta
-	if err := json.NewDecoder(resp.Body).Decode(&starters); err != nil {
-		return nil, fmt.Errorf("failed to decode starter index JSON: %v", err)
-	}
+	return decodeStarterIndex(resp.Body)
+}
 
-	for name, versions := range starters {
-		for version, meta := range versions {
-			starters[name][version] = normalizeStarterMeta(name, version, meta)
+func decodeStarterIndex(source io.Reader) (map[string]StarterMeta, error) {
+	const maxIndexBytes = 2 << 20
+	data, err := io.ReadAll(io.LimitReader(source, maxIndexBytes+1))
+	if err != nil {
+		return nil, fmt.Errorf("failed to read starter index JSON: %w", err)
+	}
+	if len(data) > maxIndexBytes {
+		return nil, fmt.Errorf("starter index exceeds %d bytes", maxIndexBytes)
+	}
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	var starters map[string]StarterMeta
+	if err := decoder.Decode(&starters); err != nil {
+		return nil, fmt.Errorf("failed to decode starter index JSON: %w", err)
+	}
+	var extra any
+	if err := decoder.Decode(&extra); err != io.EOF {
+		return nil, fmt.Errorf("starter index must contain one JSON object")
+	}
+	if starters == nil {
+		return nil, fmt.Errorf("starter index must be a JSON object")
+	}
+	for name, meta := range starters {
+		if !starterModuleNameRE.MatchString(name) {
+			return nil, fmt.Errorf("invalid starter name in index: %q", name)
 		}
+		if meta.Name == "" {
+			meta.Name = name
+		} else if meta.Name != name {
+			return nil, fmt.Errorf("starter %q has a different metadata name %q", name, meta.Name)
+		}
+		if meta.Path == "" {
+			meta.Path = "modules/" + name
+		}
+		if meta.Path != "modules/"+name {
+			return nil, fmt.Errorf("starter %q must point to modules/%s", name, name)
+		}
+		if meta.Entrypoint == "" {
+			meta.Entrypoint = "package.hyperbricks.yaml"
+		} else if meta.Entrypoint != "package.hyperbricks.yaml" {
+			return nil, fmt.Errorf("starter %q uses unsupported entrypoint %q", name, meta.Entrypoint)
+		}
+		for _, constraint := range meta.CompatibleHyperbricks {
+			if _, err := semver.NewConstraint(constraint); err != nil {
+				return nil, fmt.Errorf("starter %q has invalid HyperBricks compatibility %q: %w", name, constraint, err)
+			}
+		}
+		starters[name] = meta
 	}
-
 	return starters, nil
 }
 
-func normalizeStarterMeta(name string, version string, meta StarterMeta) StarterMeta {
-	if strings.TrimSpace(meta.Name) == "" {
-		meta.Name = name
+func readStarterIndexFromArchive(archivePath string) (map[string]StarterMeta, string, error) {
+	reader, err := zip.OpenReader(archivePath)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to open starter archive: %w", err)
 	}
-	if strings.TrimSpace(meta.Version) == "" {
-		meta.Version = version
+	defer reader.Close()
+	root, err := starterArchiveRoot(reader.File)
+	if err != nil {
+		return nil, "", err
 	}
-	if strings.TrimSpace(meta.Path) == "" {
-		meta.Path = filepath.ToSlash(filepath.Join("starters", name, version))
+	indexPath := root + "/starters.index.json"
+	for _, file := range reader.File {
+		if file.Name != indexPath {
+			continue
+		}
+		indexFile, err := file.Open()
+		if err != nil {
+			return nil, "", fmt.Errorf("failed to open starter index in archive: %w", err)
+		}
+		starters, decodeErr := decodeStarterIndex(indexFile)
+		closeErr := indexFile.Close()
+		if decodeErr != nil {
+			return nil, "", decodeErr
+		}
+		if closeErr != nil {
+			return nil, "", fmt.Errorf("failed to close starter index in archive: %w", closeErr)
+		}
+		return starters, root, nil
 	}
-	if strings.TrimSpace(meta.Entrypoint) == "" {
-		meta.Entrypoint = "package.hyperbricks.yaml"
-	}
-	return meta
+	return nil, "", fmt.Errorf("starter index not found in archive at %s", indexPath)
 }
 
-func parseNameVersionArg(raw string) (string, string) {
+func starterArchiveRoot(files []*zip.File) (string, error) {
+	var root string
+	for _, file := range files {
+		name := file.Name
+		sep := strings.IndexByte(name, '/')
+		if sep < 1 || strings.Contains(name, "\\") {
+			return "", fmt.Errorf("starter archive has an invalid root entry: %q", name)
+		}
+		entryRoot := name[:sep]
+		if entryRoot == "." || entryRoot == ".." {
+			return "", fmt.Errorf("starter archive has an invalid root entry: %q", name)
+		}
+		if root == "" {
+			root = entryRoot
+		} else if root != entryRoot {
+			return "", fmt.Errorf("starter archive has multiple root directories")
+		}
+	}
+	if root == "" {
+		return "", fmt.Errorf("starter archive is empty")
+	}
+	return root, nil
+}
+
+func parseStarterArg(raw string) (string, string, error) {
 	raw = strings.TrimSpace(raw)
-	if idx := strings.LastIndex(raw, "@"); idx != -1 {
-		return strings.TrimSpace(raw[:idx]), strings.TrimSpace(raw[idx+1:])
+	if raw == "" {
+		return "", "", fmt.Errorf("starter name cannot be empty")
 	}
-	return raw, ""
+	if idx := strings.LastIndex(raw, "@"); idx != -1 {
+		name, ref := strings.TrimSpace(raw[:idx]), strings.TrimSpace(raw[idx+1:])
+		if ref == "" {
+			return "", "", fmt.Errorf("starter Git ref cannot be empty")
+		}
+		if !starterModuleNameRE.MatchString(name) {
+			return "", "", fmt.Errorf("invalid starter name: %q", name)
+		}
+		return name, ref, nil
+	}
+	if !starterModuleNameRE.MatchString(raw) {
+		return "", "", fmt.Errorf("invalid starter name: %q", raw)
+	}
+	return raw, "", nil
 }
 
-func resolveStarterVersion(starters map[string]map[string]StarterMeta, starterName string, requestedVersion string) (StarterMeta, error) {
-	versions, ok := starters[starterName]
+func normalizeStarterRef(ref string) (string, error) {
+	ref = strings.TrimSpace(ref)
+	if ref == "" || ref == "latest" {
+		return starterDefaultRef, nil
+	}
+	if len(ref) > 255 {
+		return "", fmt.Errorf("invalid starter Git ref: %q", ref)
+	}
+	for _, segment := range strings.Split(ref, "/") {
+		if !starterRefRE.MatchString(segment) || strings.Contains(segment, "..") || strings.HasSuffix(segment, ".") || strings.HasSuffix(segment, ".lock") {
+			return "", fmt.Errorf("invalid starter Git ref: %q", ref)
+		}
+	}
+	return ref, nil
+}
+
+func starterEscapedRefPath(ref string) string {
+	segments := strings.Split(ref, "/")
+	for i, segment := range segments {
+		segments[i] = url.PathEscape(segment)
+	}
+	return strings.Join(segments, "/")
+}
+
+func starterArchiveRefPath(ref string) string {
+	if ref == starterDefaultRef {
+		return "refs/heads/main"
+	}
+	if starterCommitRE.MatchString(ref) {
+		return ref
+	}
+	return "refs/tags/" + starterEscapedRefPath(ref)
+}
+
+func resolveStarter(starters map[string]StarterMeta, starterName string) (StarterMeta, error) {
+	meta, ok := starters[starterName]
 	if !ok {
 		return StarterMeta{}, fmt.Errorf("starter not found: %s", starterName)
 	}
@@ -268,38 +413,10 @@ func resolveStarterVersion(starters map[string]map[string]StarterMeta, starterNa
 		return StarterMeta{}, fmt.Errorf("could not parse HyperBricks version: %w", err)
 	}
 
-	if strings.TrimSpace(requestedVersion) != "" {
-		meta, ok := versions[requestedVersion]
-		if !ok {
-			return StarterMeta{}, fmt.Errorf("starter version not found: %s@%s", starterName, requestedVersion)
-		}
-		if !starterCompatible(meta, hbVer) {
-			return StarterMeta{}, fmt.Errorf("starter %s@%s is not compatible with HyperBricks %s", starterName, requestedVersion, hbVer.String())
-		}
-		return meta, nil
+	if !starterCompatible(meta, hbVer) {
+		return StarterMeta{}, fmt.Errorf("starter %s is not compatible with HyperBricks %s", starterName, hbVer.String())
 	}
-
-	var latest StarterMeta
-	var latestVer *semver.Version
-	for version, meta := range versions {
-		if !starterCompatible(meta, hbVer) {
-			continue
-		}
-		sv, err := semver.NewVersion(version)
-		if err != nil {
-			continue
-		}
-		if latestVer == nil || sv.GreaterThan(latestVer) {
-			latest = meta
-			latestVer = sv
-		}
-	}
-
-	if latestVer == nil {
-		return StarterMeta{}, fmt.Errorf("no compatible versions found for starter %s", starterName)
-	}
-
-	return latest, nil
+	return meta, nil
 }
 
 func starterCompatible(meta StarterMeta, hbVer *semver.Version) bool {
@@ -318,7 +435,7 @@ func starterCompatible(meta StarterMeta, hbVer *semver.Version) bool {
 	return false
 }
 
-func installStarter(meta StarterMeta, moduleName string) error {
+func installStarter(meta StarterMeta, moduleName string, archivePath string, archiveRoot string) error {
 	moduleDir := filepath.Join("modules", moduleName)
 	destinationExisted, destinationMode, err := inspectEmptyOrMissingDir(moduleDir)
 	if err != nil {
@@ -327,16 +444,6 @@ func installStarter(meta StarterMeta, moduleName string) error {
 	if err := os.MkdirAll(filepath.Dir(moduleDir), 0755); err != nil {
 		return fmt.Errorf("failed to create modules directory: %w", err)
 	}
-
-	if filepath.ToSlash(filepath.Clean(meta.Entrypoint)) != "package.hyperbricks.yaml" {
-		return fmt.Errorf("starter %s@%s uses unsupported entrypoint %s; starters must use package.hyperbricks.yaml", meta.Name, meta.Version, meta.Entrypoint)
-	}
-
-	archivePath, err := downloadStarterArchive()
-	if err != nil {
-		return err
-	}
-	defer os.Remove(archivePath)
 
 	stageDir, err := os.MkdirTemp(filepath.Dir(moduleDir), "."+filepath.Base(moduleDir)+"-starter-stage-*")
 	if err != nil {
@@ -349,7 +456,7 @@ func installStarter(meta StarterMeta, moduleName string) error {
 		}
 	}()
 
-	prefix := filepath.ToSlash(filepath.Join(starterArchiveRoot, meta.Path))
+	prefix := filepath.ToSlash(filepath.Join(archiveRoot, meta.Path))
 	if err := extractZipSubdirArchive(archivePath, stageDir, prefix); err != nil {
 		return err
 	}
@@ -420,10 +527,10 @@ func inspectEmptyOrMissingDir(path string) (bool, os.FileMode, error) {
 	return true, info.Mode(), nil
 }
 
-func downloadStarterArchive() (string, error) {
-	resp, err := http.Get(starterArchiveURL)
+func downloadStarterArchive(ref string) (string, error) {
+	resp, err := starterArchiveClient.Get(fmt.Sprintf(starterArchiveURL, starterArchiveRefPath(ref)))
 	if err != nil {
-		return "", fmt.Errorf("failed to download starter archive: %v", err)
+		return "", fmt.Errorf("failed to download starter archive: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -435,16 +542,27 @@ func downloadStarterArchive() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp archive file: %w", err)
 	}
+	complete := false
+	defer func() {
+		if !complete {
+			_ = archiveFile.Close()
+			_ = os.Remove(archiveFile.Name())
+		}
+	}()
 
-	if _, err := io.Copy(archiveFile, resp.Body); err != nil {
-		archiveFile.Close()
+	written, err := io.Copy(archiveFile, io.LimitReader(resp.Body, starterMaxArchiveBytes+1))
+	if err != nil {
 		return "", fmt.Errorf("failed to write starter archive: %w", err)
+	}
+	if written > starterMaxArchiveBytes {
+		return "", fmt.Errorf("starter archive exceeds %d bytes", starterMaxArchiveBytes)
 	}
 
 	if err := archiveFile.Close(); err != nil {
 		return "", fmt.Errorf("failed to close starter archive: %w", err)
 	}
 
+	complete = true
 	return archiveFile.Name(), nil
 }
 
@@ -462,6 +580,7 @@ func extractZipSubdirArchive(archivePath string, dest string, prefix string) err
 	destClean := filepath.Clean(dest)
 	normalizedPrefix := normalizeArchivePrefix(prefix)
 	matched := 0
+	var extractedBytes int64
 
 	for _, file := range reader.File {
 		entryName := filepath.ToSlash(file.Name)
@@ -482,12 +601,22 @@ func extractZipSubdirArchive(archivePath string, dest string, prefix string) err
 			return err
 		}
 		matched++
+		if matched > starterMaxModuleEntries {
+			return fmt.Errorf("starter module has more than %d archive entries", starterMaxModuleEntries)
+		}
+		if file.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("starter module contains unsupported symlink: %s", file.Name)
+		}
 
 		if file.FileInfo().IsDir() {
 			if err := os.MkdirAll(targetPath, file.Mode()); err != nil {
 				return fmt.Errorf("failed to create directory %s: %w", targetPath, err)
 			}
 			continue
+		}
+		remaining := starterMaxModuleBytes - extractedBytes
+		if file.UncompressedSize64 > uint64(remaining) {
+			return fmt.Errorf("starter module exceeds %d extracted bytes", starterMaxModuleBytes)
 		}
 
 		if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
@@ -505,11 +634,18 @@ func extractZipSubdirArchive(archivePath string, dest string, prefix string) err
 			return fmt.Errorf("failed to create file %s: %w", targetPath, err)
 		}
 
-		if _, err := io.Copy(out, source); err != nil {
+		copied, err := io.Copy(out, io.LimitReader(source, remaining+1))
+		if err != nil {
 			out.Close()
 			source.Close()
 			return fmt.Errorf("failed to write file %s: %w", targetPath, err)
 		}
+		if copied > remaining {
+			out.Close()
+			source.Close()
+			return fmt.Errorf("starter module exceeds %d extracted bytes", starterMaxModuleBytes)
+		}
+		extractedBytes += copied
 		if err := out.Close(); err != nil {
 			source.Close()
 			return fmt.Errorf("failed to close file %s: %w", targetPath, err)

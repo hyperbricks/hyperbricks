@@ -1,0 +1,76 @@
+vars:
+  status_fixture_upstream:
+    env:
+      name: HYPERBRICKS_STATUS_UPSTREAM
+      default: http://127.0.0.1:8114
+
+detail_api:
+  - type: api_render
+  - endpoint:
+      format: '%s/catalog'
+      args:
+        - var: status_fixture_upstream
+  - method: GET
+  - querykeys: [id]
+  - inline: 'upstream={{.Status}}; {{.Data.message}}'
+
+detail_page:
+  - type: hypermedia
+  - route: catalog/detail
+  - nocache: true
+  - content_type: text/plain; charset=utf-8
+  - response: {status: 200}
+  - template:
+      inline: 'Page before | {{.detail}} | Page after'
+      values:
+        detail:
+          - inherit: detail_api
+          - response_status:
+              required: true
+              priority: 100
+              map: {"404": 404, "503": 503, "409": ignore}
+
+detail_fragment:
+  - type: api_fragment_render
+  - route: fragments/detail
+  - endpoint:
+      format: '%s/catalog'
+      args:
+        - var: status_fixture_upstream
+  - method: GET
+  - querykeys: [id]
+  - response:
+      headers:
+        Content-Type: text/plain; charset=utf-8
+  - response_status:
+      required: true
+      map: {"404": 404, "503": 503, "409": ignore}
+  - inline: 'upstream={{.Status}}; {{.Data.message}}'
+
+detail_optional:
+  - type: api_fragment_render
+  - route: fragments/optional
+  - endpoint:
+      format: '%s/catalog'
+      args:
+        - var: status_fixture_upstream
+  - method: GET
+  - querykeys: [id]
+  - response:
+      headers:
+        Content-Type: text/plain; charset=utf-8
+  - inline: 'upstream={{.Status}}; {{.Data.message}}'
+
+embedded_fragment_page:
+  - type: hypermedia
+  - route: catalog/embedded-fragment
+  - nocache: true
+  - content_type: text/plain; charset=utf-8
+  - template:
+      inline: 'Page before | {{.detail}} | Page after'
+      values:
+        detail:
+          - inherit: detail_fragment
+          - response_status:
+              required: true
+              map: {"404": 404, "503": 503, "409": ignore}

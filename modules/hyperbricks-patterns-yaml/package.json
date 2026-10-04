@@ -1,0 +1,11 @@
+{
+  "name": "hyperbricks-patterns-yaml",
+  "private": true,
+  "dependencies": {
+    "htmx.org": "4.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.2.2",
+    "tailwindcss": "4.2.2"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "plugin": "github.com/hyperbricks/hyperbricks/modules/development-hooks-plugin-demo/plugins/hook-greeting",
+  "source": "hooks_greeting_plugin.go",
+  "binary": "HooksGreetingPlugin",
+  "version": "1.0.0",
+  "compatible_hyperbricks": [">=1.2.9-beta"],
+  "description": "Proves that an opted-in before_start hook builds the native plugin actually loaded by the runtime."
+}

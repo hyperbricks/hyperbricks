@@ -20,5 +20,5 @@ tailwind:
       minify: "true"
       debug: "true"
       cache: "true"
-      binary: tailwindcss
+      binary: {path: {base: module, path: node_modules/.bin/tailwindcss}}
       enclose: "<link rel=\"stylesheet\" href=\"/|\">"

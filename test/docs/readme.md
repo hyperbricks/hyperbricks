@@ -61,7 +61,7 @@ hyperbricks start -m demo
 
 ## New to HyperBricks?
 
-Start with the [Introduction](docs/INTRODUCTION.md) to understand the component model. Follow the [Quickstart](docs/QUICKSTART.md) to create a working module. Continue with [How-to guides](docs/HOWTOS.md) or the focused [YAML pattern examples](modules/hyperbricks-patterns-yaml/README.md). For component fields, see [Component reference](docs/REFERENCE.md).
+Start with the [Introduction](docs/INTRODUCTION.md) to understand the component model. Follow the [Quickstart](docs/QUICKSTART.md) to create a working module. Browse the [starter modules](modules/README.md#starter-modules) to install a curated module with `hyperbricks init-starter`, or continue with [How-to guides](docs/HOWTOS.md) and the focused [YAML pattern examples](modules/hyperbricks-patterns-yaml/README.md). For component fields, see [Component reference](docs/REFERENCE.md).
 
 **Windows limitation:** Native Go plugins (`.so`) cannot be built or loaded when HyperBricks runs directly on Windows. This restriction comes from Go's plugin system and does not apply to the separate WebAssembly (`.wasm`) plugin format. See [plugin platform support](docs/PLUGINS.md#platform-support) for details and the upstream Go reference.
 
@@ -74,6 +74,7 @@ The [general HyperBricks skill](SKILLS/hyperbricks/SKILL.md) helps agents apply 
 - **Start:** [Introduction](docs/INTRODUCTION.md), [Quickstart](docs/QUICKSTART.md), [How-to guides](docs/HOWTOS.md), and [Troubleshooting](docs/TROUBLESHOOTING.md)
 - **Application model:** [Routing](docs/ROUTING.md), [Component reference](docs/REFERENCE.md), [Markdown](docs/MARKDOWN.md), [Spaces CMS](docs/SPACES.md), and [Authoring](docs/AUTHOR.md)
 - **Logic and assets:** [API Render](docs/API_RENDER.md), [Server Scripts](docs/GOJA_RENDER.md), [Plugins](docs/PLUGINS.md), and [JavaScript and CSS](docs/ESBUILD.md)
+- **Development services:** [Hooks and managed services](docs/DEVELOPMENT_HOOKS.md), [runnable API demo](modules/development-hooks-demo/README.md), and [build-before-load plugin demo](modules/development-hooks-plugin-demo/README.md)
 - **Delivery:** [Deploy Guide](docs/DEPLOY.md), [Docker Deploy](docs/DOCKER.md), and [Migration Guide](docs/MIGRATION.md)
 
 ---

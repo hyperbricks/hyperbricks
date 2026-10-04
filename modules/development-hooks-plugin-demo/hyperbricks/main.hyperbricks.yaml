@@ -1,0 +1,11 @@
+plugin_build_proof:
+  - type: fragment
+  - route: index
+  - nocache: true
+  - response:
+      headers:
+        Content-Type: text/plain; charset=utf-8
+        Cache-Control: no-store
+  - proof:
+      - type: plugin
+      - plugin: HooksGreetingPlugin__development-hooks-plugin-demo@1.0.0
