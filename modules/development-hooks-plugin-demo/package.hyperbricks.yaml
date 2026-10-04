@@ -1,0 +1,33 @@
+hyperbricks:
+  metadata:
+    module: development-hooks-plugin-demo
+    moduleversion: "1.0.0"
+    hyperbricks: v1.2.9-beta
+  mode: development
+  development:
+    watch: false
+    reload: false
+    dashboard:
+      enabled: false
+    frontend_editing:
+      enabled: false
+    hooks:
+      before_start:
+        - name: build-plugin
+          command: [sh, scripts/build-plugin.sh]
+          timeout: 2m
+      after_start:
+        - name: verify-plugin
+          command: [python3, scripts/verify-plugin.py]
+          timeout: 10s
+  server:
+    port: 4332
+  plugins:
+    enabled: [HooksGreetingPlugin__development-hooks-plugin-demo@1.0.0]
+  directories:
+    hyperbricks: {path: {base: module, path: hyperbricks}}
+    templates: {path: {base: module, path: templates}}
+    resources: {path: {base: module, path: resources}}
+    static: {path: {base: module, path: static}}
+    render: {path: {base: module, path: rendered}}
+    plugins: ./bin/plugins

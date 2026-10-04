@@ -1,0 +1,35 @@
+<section id="cart-panel" aria-label="Cart contents">
+  {{if .Data.items}}
+  <div class="commerce-layout">
+    <div class="cart-lines">
+      {{range .Data.items}}
+      <article class="cart-line" data-cart-item="{{.id}}">
+        <img src="{{.image}}" alt="{{.name}}" width="640" height="640" loading="lazy">
+        <div class="cart-line-info">
+          <span class="category-badge category-{{.category}}">{{.category}}</span>
+          <h2><a href="/catalog/detail?id={{.id}}">{{.name}}</a></h2>
+          <p>{{.price_label}} each</p>
+          <div class="quantity-control" aria-label="Quantity for {{.name}}">
+            <button type="button" aria-label="Decrease {{.name}} quantity" hx-post="/cart-update?id={{.id}}&quantity={{.decrement}}" hx-target="#cart-panel" hx-swap="outerHTML">−</button>
+            <span>{{.quantity}}</span>
+            <button type="button" aria-label="Increase {{.name}} quantity" hx-post="/cart-update?id={{.id}}&quantity={{.increment}}" hx-target="#cart-panel" hx-swap="outerHTML" {{if .at_max}}disabled{{end}}>+</button>
+          </div>
+          <button class="remove-item" type="button" hx-post="/cart-update?id={{.id}}&quantity=0" hx-target="#cart-panel" hx-swap="outerHTML">Remove</button>
+        </div>
+        <strong class="line-total">{{.line_total_label}}</strong>
+      </article>
+      {{end}}
+    </div>
+    <aside class="order-summary">
+      <h2>Order summary</h2>
+      <p><span>Items ({{.Data.count}})</span><strong>{{.Data.subtotal_label}}</strong></p>
+      <p><span>Shipping</span><span>Calculated at checkout</span></p>
+      <p class="summary-total"><span>Subtotal</span><strong>{{.Data.subtotal_label}}</strong></p>
+      <a class="checkout-button" href="/checkout">Continue to checkout</a>
+      <a class="continue-link" href="/catalog">Continue shopping</a>
+    </aside>
+  </div>
+  {{else}}
+  <div class="empty-state cart-empty"><h2>Your cart is empty</h2><p>Explore the collection and add something you like.</p><a class="back-button" href="/catalog">Browse the catalog</a></div>
+  {{end}}
+</section>

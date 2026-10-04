@@ -1,0 +1,17 @@
+{{if eq .Status 200}}
+<section class="card card-border" aria-labelledby="session-heading">
+  <div class="card-body">
+    <h2 id="session-heading" class="card-title">{{.Data.message}}</h2>
+    <dl class="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-[auto_1fr]">
+      <dt>Session</dt><dd class="break-all font-mono">{{.Data.session_id}}</dd>
+      <dt>API process</dt><dd>{{.Data.pid}}</dd>
+      <dt>Prepared at</dt><dd>{{.Data.prepared_at}}</dd>
+      <dt>HyperBricks URL</dt><dd>{{.Data.site_url}}</dd>
+    </dl>
+  </div>
+</section>
+{{else}}
+<div role="alert" class="alert">
+  <span>The demo API is unavailable. Start this module with <code>--with-processes</code>, or follow its README to run the API yourself.</span>
+</div>
+{{end}}

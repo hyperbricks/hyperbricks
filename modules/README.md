@@ -19,6 +19,23 @@ against the current checkout.
 
 ## Module index
 
+### Learning applications
+
+| Module | Category | Description |
+| --- | --- | --- |
+| [`catalog-store`](catalog-store/) | Learning application | Searchable store with generated product images, HTMX fragments, an in-memory cart, mock checkout, and an API that `start --with-processes` can start and stop with the site. |
+
+### Development lifecycle examples
+
+These examples use the optional `start --with-processes` workflow. Build the
+current checkout as described in their READMEs; older globally installed binaries
+may not expose the flag. See the [feature reference](../docs/DEVELOPMENT_HOOKS.md).
+
+| Module | Category | Description |
+| --- | --- | --- |
+| [`development-hooks-demo`](development-hooks-demo/) | Feature demo | One command prepares data, starts a Python API, waits for readiness, serves a page, verifies its API data, and stops the API on exit. |
+| [`development-hooks-plugin-demo`](development-hooks-plugin-demo/) | Test fixture | A before-start hook compiles a native plugin; an after-start check proves the freshly embedded build ID is the one loaded by the runtime. |
+
 
 ### Starter modules
 
@@ -43,6 +60,7 @@ Follow each module’s README for plugin builds, external services, and startup 
 ## Screenshots
 
 <p>
+  <a href="catalog-store/docs/screenshots/catalog.png"><img src="catalog-store/docs/screenshots/catalog.png" alt="Catalog Store" style="height:300px;width:auto"></a>
   <a href="esbuild-demo/docs/screenshots/home.png"><img src="esbuild-demo/docs/screenshots/home.png" alt="esbuild demo" style="height:300px;width:auto"></a>
   <a href="navigation-demo-swup/docs/screenshots/home.png"><img src="navigation-demo-swup/docs/screenshots/home.png" alt="Swup navigation demo" style="height:300px;width:auto"></a>
   <a href="todo-demo-htmx/docs/screenshots/home.png"><img src="todo-demo-htmx/docs/screenshots/home.png" alt="HTMX todo demo" style="height:300px;width:auto"></a>

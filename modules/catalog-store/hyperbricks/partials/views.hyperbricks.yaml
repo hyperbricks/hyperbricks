@@ -1,0 +1,9 @@
+catalog_data:
+  - type: template
+  - template: {file: catalog.html}
+  - values:
+      feed:
+        - inherit: catalog_api
+detail_data:
+  - type: template
+  - template: {file: detail.html}

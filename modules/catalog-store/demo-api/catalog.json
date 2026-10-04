@@ -1,0 +1,170 @@
+[
+  {
+    "id": "item-01",
+    "name": "Desk lamp",
+    "category": "Home",
+    "description": "Desk lamp for everyday use.",
+    "price": 12.75
+  },
+  {
+    "id": "item-02",
+    "name": "Reading lamp",
+    "category": "Office",
+    "description": "Reading lamp for everyday use.",
+    "price": 15.5
+  },
+  {
+    "id": "item-03",
+    "name": "Table lamp",
+    "category": "Outdoor",
+    "description": "Table lamp for everyday use.",
+    "price": 18.25
+  },
+  {
+    "id": "item-04",
+    "name": "Garden lamp",
+    "category": "Home",
+    "description": "Garden lamp for everyday use.",
+    "price": 21.0
+  },
+  {
+    "id": "item-05",
+    "name": "Travel lamp",
+    "category": "Office",
+    "description": "Travel lamp for everyday use.",
+    "price": 23.75
+  },
+  {
+    "id": "item-06",
+    "name": "Floor lamp",
+    "category": "Outdoor",
+    "description": "Floor lamp for everyday use.",
+    "price": 26.5
+  },
+  {
+    "id": "item-07",
+    "name": "Notebook",
+    "category": "Home",
+    "description": "Notebook for everyday use.",
+    "price": 29.25
+  },
+  {
+    "id": "item-08",
+    "name": "Pen holder",
+    "category": "Office",
+    "description": "Pen holder for everyday use.",
+    "price": 32.0
+  },
+  {
+    "id": "item-09",
+    "name": "Desk mat",
+    "category": "Outdoor",
+    "description": "Desk mat for everyday use.",
+    "price": 34.75
+  },
+  {
+    "id": "item-10",
+    "name": "Office chair",
+    "category": "Home",
+    "description": "Office chair for everyday use.",
+    "price": 37.5
+  },
+  {
+    "id": "item-11",
+    "name": "Storage box",
+    "category": "Office",
+    "description": "Storage box for everyday use.",
+    "price": 40.25
+  },
+  {
+    "id": "item-12",
+    "name": "Wall clock",
+    "category": "Outdoor",
+    "description": "Wall clock for everyday use.",
+    "price": 43.0
+  },
+  {
+    "id": "item-13",
+    "name": "Garden shovel",
+    "category": "Home",
+    "description": "Garden shovel for everyday use.",
+    "price": 45.75
+  },
+  {
+    "id": "item-14",
+    "name": "Water bottle",
+    "category": "Office",
+    "description": "Water bottle for everyday use.",
+    "price": 48.5
+  },
+  {
+    "id": "item-15",
+    "name": "Picnic blanket",
+    "category": "Outdoor",
+    "description": "Picnic blanket for everyday use.",
+    "price": 51.25
+  },
+  {
+    "id": "item-16",
+    "name": "Plant pot",
+    "category": "Home",
+    "description": "Plant pot for everyday use.",
+    "price": 54.0
+  },
+  {
+    "id": "item-17",
+    "name": "Cushion",
+    "category": "Office",
+    "description": "Cushion for everyday use.",
+    "price": 56.75
+  },
+  {
+    "id": "item-18",
+    "name": "Kitchen towel",
+    "category": "Outdoor",
+    "description": "Kitchen towel for everyday use.",
+    "price": 59.5
+  },
+  {
+    "id": "item-19",
+    "name": "Trail backpack",
+    "category": "Home",
+    "description": "Trail backpack for everyday use.",
+    "price": 62.25
+  },
+  {
+    "id": "item-20",
+    "name": "Camping mug",
+    "category": "Office",
+    "description": "Camping mug for everyday use.",
+    "price": 65.0
+  },
+  {
+    "id": "item-21",
+    "name": "Serving tray",
+    "category": "Outdoor",
+    "description": "Serving tray for everyday use.",
+    "price": 67.75
+  },
+  {
+    "id": "item-22",
+    "name": "Book stand",
+    "category": "Home",
+    "description": "Book stand for everyday use.",
+    "price": 70.5
+  },
+  {
+    "id": "item-23",
+    "name": "Lantern",
+    "category": "Office",
+    "description": "Lantern for everyday use.",
+    "price": 73.25
+  },
+  {
+    "id": "item-24",
+    "name": "Cable organizer",
+    "category": "Outdoor",
+    "description": "Cable organizer for everyday use.",
+    "price": 76.0
+  }
+]

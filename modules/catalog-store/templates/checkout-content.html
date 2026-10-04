@@ -1,0 +1,36 @@
+<section id="checkout-content" aria-label="Checkout details">
+  {{if .Data.confirmed}}
+  <div class="order-confirmation" role="status">
+    <span class="confirmation-mark" aria-hidden="true">✓</span>
+    <h2>Demo order placed</h2>
+    <p>Thanks, {{.Data.name}}. Your mock order number is <strong>{{.Data.order_id}}</strong>.</p>
+    <p>No payment was taken and no order was sent.</p>
+    <a class="checkout-button" href="/catalog">Back to the catalog</a>
+  </div>
+  {{else if .Data.items}}
+  <div class="commerce-layout">
+    <form class="checkout-form" hx-post="/checkout-submit" hx-target="#checkout-content" hx-swap="outerHTML">
+      <h2>Delivery details</h2>
+      <label for="checkout-name">Full name</label>
+      <input id="checkout-name" name="name" autocomplete="name" required minlength="2" value="{{with .Data.entered}}{{.name}}{{end}}">
+      {{with .Data.errors.name}}<p class="field-error" role="alert">{{.}}</p>{{end}}
+      <label for="checkout-email">Email</label>
+      <input id="checkout-email" name="email" type="email" autocomplete="email" required value="{{with .Data.entered}}{{.email}}{{end}}">
+      {{with .Data.errors.email}}<p class="field-error" role="alert">{{.}}</p>{{end}}
+      <label for="checkout-address">Delivery address</label>
+      <textarea id="checkout-address" name="address" autocomplete="street-address" required minlength="5">{{with .Data.entered}}{{.address}}{{end}}</textarea>
+      {{with .Data.errors.address}}<p class="field-error" role="alert">{{.}}</p>{{end}}
+      <button class="checkout-button" type="submit">Place mock order</button>
+      <p class="checkout-note">No payment details are requested or stored.</p>
+    </form>
+    <aside class="order-summary">
+      <h2>Your order</h2>
+      {{range .Data.items}}<p><span>{{.name}} × {{.quantity}}</span><strong>{{.line_total_label}}</strong></p>{{end}}
+      <p class="summary-total"><span>Demo total</span><strong>{{.Data.total_label}}</strong></p>
+      <a class="continue-link" href="/cart">Edit cart</a>
+    </aside>
+  </div>
+  {{else}}
+  <div class="empty-state cart-empty" role="status"><h2>Nothing to check out yet</h2><p>{{if .Data.error}}{{.Data.error}}{{else}}Add an item to your cart first.{{end}}</p><a class="back-button" href="/catalog">Browse the catalog</a></div>
+  {{end}}
+</section>

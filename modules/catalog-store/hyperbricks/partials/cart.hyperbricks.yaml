@@ -1,0 +1,14 @@
+cart_api:
+  - type: api_render
+  - endpoint:
+      format: "%s/cart"
+      args:
+        - env: {name: CATALOG_API_URL, default: "http://127.0.0.1:4319"}
+  - method: GET
+  - forwardtoken: catalog_cart
+  - querykeys: []
+  - template: {file: cart-panel.html}
+
+checkout_api:
+  - inherit: cart_api
+  - template: {file: checkout-content.html}

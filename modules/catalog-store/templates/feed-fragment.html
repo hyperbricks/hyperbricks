@@ -1,0 +1,23 @@
+{{define "item-card"}}
+<article class="item-card" data-item-id="{{.id}}" data-category="{{.category}}">
+  <div class="item-media"><img src="{{.image}}" alt="{{.name}}" width="640" height="640" loading="lazy" decoding="async"></div>
+  <div class="card-top"><span class="category-badge category-{{.category}}">{{.category}}</span></div>
+  <h3><a href="/catalog/detail?id={{.id}}"><span class="item-name">{{.name}}</span><span class="card-arrow" aria-hidden="true">↗</span></a></h3>
+  <p class="item-description">{{.description}}</p>
+  <div class="card-bottom"><span class="price">${{printf "%.2f" .price}}</span><span class="card-caption">Everyday essentials</span></div>
+  <button class="add-to-cart" type="button" aria-label="Add {{.name}} to cart" hx-post="/cart-add?id={{.id}}" hx-target="#cart-feedback" hx-swap="innerHTML">Add to cart</button>
+</article>
+{{end}}
+<div id="catalog-panel">
+  <div class="results-heading"><h2>Explore the collection</h2><div class="result-tools"><button id="clear-filters" type="button" {{if eq .Status 200}}{{if not .Data.filtered}}hidden{{end}}{{else}}hidden{{end}}>Clear filters</button><p id="result-count" role="status" aria-live="polite">{{if eq .Status 200}}{{.Data.count_label}}{{else}}Unavailable{{end}}</p></div></div>
+  {{if eq .Status 200}}
+  {{if .Data.items}}<div class="card-grid" id="results">{{range .Data.items}}{{template "item-card" .}}{{end}}</div>{{else}}<div class="empty-state" id="empty-state"><span aria-hidden="true">⌕</span><h3>No results</h3><p>Try a different search or choose another category.</p><button type="button" id="reset-search">Reset</button></div>{{end}}
+  <nav class="pagination" aria-label="Catalog pagination">
+    <button id="previous-page" type="button" aria-controls="results" {{if .Data.has_previous}}hx-get="{{.Data.previous_url}}" hx-target="#catalog-panel" hx-swap="outerHTML"{{else}}disabled{{end}}>Previous</button>
+    <p id="page-status" role="status" aria-live="polite">{{.Data.page_label}}</p>
+    <button id="next-page" type="button" aria-controls="results" {{if .Data.has_next}}hx-get="{{.Data.next_url}}" hx-target="#catalog-panel" hx-swap="outerHTML"{{else}}disabled{{end}}>Next</button>
+  </nav>
+  {{else}}
+  <div class="load-error" id="load-error" role="alert"><p>We couldn’t load the collection. Please try again.</p><button type="button" id="retry-load" hx-get="/catalog-feed" hx-target="#catalog-panel" hx-swap="outerHTML">Retry</button></div>
+  {{end}}
+</div>

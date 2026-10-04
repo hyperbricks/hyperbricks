@@ -1,0 +1,6 @@
+<main id="main" class="page detail-page">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/catalog">Catalog</a><span aria-hidden="true">/</span><span>Item details</span></nav>
+  <div id="detail-data">{{.feed}}</div>
+  <div class="load-error" id="load-error" role="alert" hidden><p>We couldn’t load this item. Please try again.</p><button type="button" id="retry-load" hx-get="/catalog-detail-feed" hx-target="#detail-data" hx-swap="innerHTML">Retry</button></div>
+</main>
+<footer class="site-footer"><span class="footer-brand">form.</span><p>Good things, for every day.</p><span class="footer-note">HOME &nbsp; / &nbsp; OFFICE &nbsp; / &nbsp; OUTDOOR</span></footer>

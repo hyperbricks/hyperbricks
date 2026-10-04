@@ -1,0 +1,13 @@
+<main id="main" class="page">
+  <section class="intro" aria-labelledby="catalog-heading">
+    <div><p class="eyebrow">THE EVERYDAY COLLECTION</p><h1 id="catalog-heading">Everyday, considered.</h1><p class="intro-copy">Simple essentials. A little more thoughtful.<br>Find something for your home, work, or time outside.</p></div>
+  </section>
+  <section class="catalog-section" aria-label="Catalog items">
+    <form class="filters" id="filters" role="search" action="/catalog" method="get">
+      <div class="search-field"><label for="search">Search</label><div class="input-wrap"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="search" name="search" type="text" placeholder="Find an everyday essential…" autocomplete="off" hx-get="/catalog-feed" hx-trigger="input changed delay:150ms" hx-include="#search, #category" hx-vals='{"page":"0"}' hx-target="#catalog-panel" hx-swap="outerHTML"></div></div>
+      <div class="category-field"><label for="category">Category</label><select id="category" name="category" hx-get="/catalog-feed" hx-trigger="change" hx-include="#search, #category" hx-vals='{"page":"0"}' hx-target="#catalog-panel" hx-swap="outerHTML"><option value="">All categories</option><option value="Home">Home</option><option value="Office">Office</option><option value="Outdoor">Outdoor</option></select></div>
+    </form>
+    {{.feed}}
+  </section>
+</main>
+<footer class="site-footer"><span class="footer-brand">form.</span><p>Good things, for every day.</p><span class="footer-note">HOME &nbsp; / &nbsp; OFFICE &nbsp; / &nbsp; OUTDOOR</span></footer>

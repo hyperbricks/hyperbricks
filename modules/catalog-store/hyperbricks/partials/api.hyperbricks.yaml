@@ -1,0 +1,20 @@
+catalog_api:
+  - type: api_render
+  - endpoint:
+      format: "%s/catalog"
+      args:
+        - env: {name: CATALOG_API_URL, default: "http://127.0.0.1:4319"}
+  - method: GET
+  - queryparams: {view: list}
+  - querykeys: [search, category, page]
+  - headers:
+      Cache-Control: no-cache
+  - template: {file: feed-fragment.html}
+detail_api:
+  - type: api_render
+  - queryparams: {view: detail}
+  - inherit: catalog_api
+  - template:
+      file: detail-body.html
+  - querykeys:
+      - id
