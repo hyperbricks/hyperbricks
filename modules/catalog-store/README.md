@@ -13,9 +13,9 @@ swaps. There is no npm install, database, Docker container, or Go plugin build.
 
 ## Run it
 
-You need a `hyperbricks` binary built from this checkout with
-`start --with-processes`, and Python 3.9 or newer. From the HyperBricks
-repository root, start both the API and site with one command:
+You need a `hyperbricks` binary with `start --with-processes`, and Python 3.9
+or newer. From the project root (the directory containing `modules/`), start
+both the API and site with one command:
 
 ```sh
 hyperbricks start -m catalog-store --with-processes
@@ -29,9 +29,18 @@ The managed API starts first and must answer `/health` before HyperBricks begins
 serving. Ctrl+C or `q` stops the site and its API. The two empty runtime
 directories are included, so `hyperbricks init` is not needed.
 
-If you are developing HyperBricks from this repository and have not installed
-the binary, run `go install ./cmd/hyperbricks` first. Run `hyperbricks version`
-to check which version is on your path.
+If you are developing HyperBricks from its source checkout and have not
+installed the binary, run `go install ./cmd/hyperbricks` there first. Run
+`hyperbricks version` to check which version is on your path.
+
+The public store runs without a developer login. Its dashboard is disabled by
+default. If you enable the developer interface in `package.hyperbricks.yaml`,
+set credentials before startup; there is no built-in account:
+
+```sh
+export HB_DEVELOPER_USER=developer
+export HB_DEVELOPER_PASSWORD='choose-a-long-password'
+```
 
 If the default ports are occupied, set both the API's listening port and the
 URL used by `api_render`. The site port can be overridden independently:
@@ -47,7 +56,7 @@ image generation uses the correct address. `CATALOG_API_PORT` also configures
 the managed service readiness check. Both API variables must describe the same
 port.
 
-You can still run the processes separately. From the repository root, open two
+You can still run the processes separately. From the project root, open two
 terminals:
 
 ```sh

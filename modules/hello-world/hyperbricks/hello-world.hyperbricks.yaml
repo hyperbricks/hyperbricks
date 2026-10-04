@@ -1,0 +1,8 @@
+page:
+  - type: hypermedia
+  - route: index
+  - title: Hello World
+  - body:
+      - type: text
+      - value: HELLO WORLD!
+      - enclose: <p>|</p>

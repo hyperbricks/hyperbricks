@@ -1,39 +1,29 @@
-myconf:
-  some: value
-  patterns:
-    mock_api_base:
-      env:
-        name: PATTERNS_API_BASE_URL
-        default: http://127.0.0.1:8080
 hyperbricks:
   mode: development
+
   metadata:
-    module: hyperbricks-patterns-yaml
+    module: hello-world
     moduleversion: "1.0.0"
     hyperbricks: v1.2.9-beta
+
   debug:
     level: debugging
+
   development:
     watch: true
     reload: true
-    hooks:
-      before_start:
-        - name: install-frontend-dependencies
-          command: [npm, ci, --include=dev, --ignore-scripts, --no-audit, --no-fund]
-          timeout: 2m
+    frontend_errors: false
     dashboard:
-      enabled: true
+      enabled: false
       credentials:
-        user:
-          env: HB_DEVELOPER_USER
-        password:
-          env: HB_DEVELOPER_PASSWORD
+        user: {env: HB_DEVELOPER_USER}
+        password: {env: HB_DEVELOPER_PASSWORD}
     frontend_editing:
-      spaces:
-        route: /__hyperbricks/spaces
-        write: true
+      enabled: false
+
   live:
     cache: 30s
+
   server:
     port: 8080
     beautify: true
@@ -50,19 +40,17 @@ hyperbricks:
     write_timeout: 10s
     idle_timeout: 20s
     keep_alives_enabled: true
+
   system:
     metrics_watch_interval: 10s
+
   rate_limit:
     requests_per_second: 100
     burst: 500
+
   plugins:
-    enabled:
-      - MarkdownPlugin@2.0.0
-      - TailwindcssPlugin@2.0.0
-      - TemplateConfigDemoPlugin__hyperbricks-patterns-yaml@2.0.0
-      - GuardedDemoAuthPlugin__hyperbricks-patterns-yaml@1.0.0
-      - WorkflowActionsDemoPlugin__hyperbricks-patterns-yaml@1.0.0
-      - RouteSplitDemoPlugin__hyperbricks-patterns-yaml@1.0.0
+    enabled: []
+
   directories:
     render:
       path:

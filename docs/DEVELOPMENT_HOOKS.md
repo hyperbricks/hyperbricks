@@ -11,14 +11,35 @@ hyperbricks start -m my-module --with-processes
 ```
 
 The flag enables both hooks and services. Ordinary `start` executes neither.
-This feature is available in checkouts that expose `start --with-processes`;
-build the current checkout when trying the new examples rather than assuming a
-globally installed binary has it. No release version has been assigned yet.
+This feature belongs to the HyperBricks v1.2.9-beta source. Until a binary
+containing it is published, build the current checkout when trying the examples;
+the version label alone does not prove an older installed binary has the flag.
 
 Try the runnable [`development-hooks-demo`](../modules/development-hooks-demo/README.md)
 or the separate [`development-hooks-plugin-demo`](../modules/development-hooks-plugin-demo/README.md).
 The [`catalog-store`](../modules/catalog-store/README.md) also uses a managed
 service to start its demo API with the storefront in one command.
+
+The [patterns module](../modules/hyperbricks-patterns-yaml/README.md#install-the-browser-dependencies)
+uses a finite `before_start` hook to install its pinned browser dependencies:
+
+```yaml
+hyperbricks:
+  development:
+    hooks:
+      before_start:
+        - name: install-frontend-dependencies
+          command: [npm, ci, --include=dev, --ignore-scripts, --no-audit, --no-fund]
+          timeout: 2m
+```
+
+After building its separate native plugins, run it with
+`hyperbricks start -m hyperbricks-patterns-yaml --with-processes`.
+The hook runs `npm ci` in the module directory on each opt-in start;
+`--include=dev` installs its Tailwind CLI even when npm would otherwise omit
+development dependencies. The Tailwind component uses a module path to
+`node_modules/.bin/tailwindcss`, so no `PATH` export is needed. Ordinary
+`start` and build workflows skip this hook and need a manual `npm ci` first.
 
 ## Choose a hook or a service
 

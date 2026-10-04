@@ -10,6 +10,9 @@ hyperbricks:
     reload: false
     dashboard:
       enabled: false
+      credentials:
+        user: {env: HB_DEVELOPER_USER}
+        password: {env: HB_DEVELOPER_PASSWORD}
     frontend_editing:
       enabled: false
     hooks:
