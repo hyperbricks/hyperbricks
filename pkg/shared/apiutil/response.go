@@ -19,7 +19,7 @@ func DecodeAPIResponse(resp *http.Response) (interface{}, error) {
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read upstream response")
+		return nil, &responseReadError{cause: err}
 	}
 	probe := bytes.TrimSpace(body)
 	mediaType, _, _ := mime.ParseMediaType(resp.Header.Get("Content-Type"))
@@ -47,3 +47,10 @@ func DecodeAPIResponse(resp *http.Response) (interface{}, error) {
 	}
 	return value, nil
 }
+
+// responseReadError keeps potentially sensitive cause text out of diagnostics
+// while preserving timeout and cancellation classification for status policies.
+type responseReadError struct{ cause error }
+
+func (err *responseReadError) Error() string { return "failed to read upstream response" }
+func (err *responseReadError) Unwrap() error { return err.cause }

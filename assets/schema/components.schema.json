@@ -58,6 +58,18 @@
             ]
           },
           {
+            "key": "response_status",
+            "label": "Response status",
+            "description": "Optional status policy for this API instance; direct API inheritance does not copy it. The request's route owner resolves competing proposals after rendering.",
+            "collapsed": true,
+            "fields": [
+              "response_status.enabled",
+              "response_status.required",
+              "response_status.priority",
+              "response_status.map"
+            ]
+          },
+          {
             "key": "guard",
             "label": "Guard",
             "collapsed": true,
@@ -667,6 +679,71 @@
           }
         },
         {
+          "path": "response_status.enabled",
+          "key": "enabled",
+          "go_name": "Enabled",
+          "go_type": "*bool",
+          "kind": "bool",
+          "description": "Enable this component's response status policy; omitted means enabled when the block is present",
+          "authoring": {
+            "label": "Enabled",
+            "control": "checkbox",
+            "group": "response_status",
+            "publish": {}
+          }
+        },
+        {
+          "path": "response_status.map",
+          "key": "map",
+          "go_name": "Map",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Received upstream error status (400–599) to browser 404, 410, 502, 503, 504, or ignore; does not match network failures",
+          "authoring": {
+            "label": "Map",
+            "control": "key-value",
+            "group": "response_status",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response_status.priority",
+          "key": "priority",
+          "go_name": "Priority",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Nonnegative priority among mapped status proposals; higher wins, defaults to zero",
+          "authoring": {
+            "label": "Priority",
+            "control": "number",
+            "group": "response_status",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response_status.required",
+          "key": "required",
+          "go_name": "Required",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Make an executing component's unhandled upstream or render failure determine the HTTP status; defaults to false",
+          "authoring": {
+            "label": "Required",
+            "control": "checkbox",
+            "group": "response_status",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
           "path": "route",
           "key": "route",
           "go_name": "Route",
@@ -845,6 +922,18 @@
               "querykeys",
               "queryparams",
               "values"
+            ]
+          },
+          {
+            "key": "response_status",
+            "label": "Response status",
+            "description": "Optional status policy for this API instance; direct API inheritance does not copy it. The request's route owner resolves competing proposals after rendering.",
+            "collapsed": true,
+            "fields": [
+              "response_status.enabled",
+              "response_status.required",
+              "response_status.priority",
+              "response_status.map"
             ]
           }
         ]
@@ -1115,6 +1204,71 @@
             "label": "Query params",
             "control": "key-value",
             "group": "template",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response_status.enabled",
+          "key": "enabled",
+          "go_name": "Enabled",
+          "go_type": "*bool",
+          "kind": "bool",
+          "description": "Enable this component's response status policy; omitted means enabled when the block is present",
+          "authoring": {
+            "label": "Enabled",
+            "control": "checkbox",
+            "group": "response_status",
+            "publish": {}
+          }
+        },
+        {
+          "path": "response_status.map",
+          "key": "map",
+          "go_name": "Map",
+          "go_type": "map[string]interface {}",
+          "kind": "map",
+          "description": "Received upstream error status (400–599) to browser 404, 410, 502, 503, 504, or ignore; does not match network failures",
+          "authoring": {
+            "label": "Map",
+            "control": "key-value",
+            "group": "response_status",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response_status.priority",
+          "key": "priority",
+          "go_name": "Priority",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Nonnegative priority among mapped status proposals; higher wins, defaults to zero",
+          "authoring": {
+            "label": "Priority",
+            "control": "number",
+            "group": "response_status",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "response_status.required",
+          "key": "required",
+          "go_name": "Required",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Make an executing component's unhandled upstream or render failure determine the HTTP status; defaults to false",
+          "authoring": {
+            "label": "Required",
+            "control": "checkbox",
+            "group": "response_status",
             "publish": {
               "omit_empty": true,
               "omit_false": true

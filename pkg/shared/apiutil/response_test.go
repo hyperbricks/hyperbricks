@@ -1,6 +1,8 @@
 package apiutil
 
 import (
+	"context"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -38,3 +40,21 @@ func TestDecodeAPIResponseKeepsFailures(t *testing.T) {
 		})
 	}
 }
+
+func TestDecodeAPIResponsePreservesReadFailureCause(t *testing.T) {
+	for _, cause := range []error{context.DeadlineExceeded, context.Canceled, errors.New("private-read-error")} {
+		response := &http.Response{StatusCode: http.StatusOK, Body: failingResponseBody{cause: cause}}
+		_, err := DecodeAPIResponse(response)
+		if !errors.Is(err, cause) {
+			t.Fatalf("read error %v did not preserve cause", err)
+		}
+		if err.Error() != "failed to read upstream response" {
+			t.Fatalf("read error diagnostic exposes cause: %v", err)
+		}
+	}
+}
+
+type failingResponseBody struct{ cause error }
+
+func (body failingResponseBody) Read([]byte) (int, error) { return 0, body.cause }
+func (body failingResponseBody) Close() error             { return nil }

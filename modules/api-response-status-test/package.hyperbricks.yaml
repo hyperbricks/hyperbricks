@@ -1,0 +1,30 @@
+hyperbricks:
+  mode: development
+  metadata:
+    module: api-response-status-test
+    moduleversion: "1.0.0"
+  development:
+    watch: false
+    reload: false
+    frontend_errors: false
+    dashboard:
+      enabled: false
+  server:
+    port: 8115
+    beautify: false
+  rate_limit:
+    enabled: false
+  plugins:
+    enabled: []
+  directories:
+    hyperbricks:
+      path: {base: module, path: hyperbricks}
+    templates:
+      path: {base: module, path: templates}
+    resources:
+      path: {base: module, path: resources}
+    static:
+      path: {base: module, path: static}
+    render:
+      path: {base: module, path: rendered}
+    plugins: ./bin/plugins

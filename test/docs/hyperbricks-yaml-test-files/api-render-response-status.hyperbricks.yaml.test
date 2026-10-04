@@ -1,0 +1,29 @@
+==== hyperbricks yaml {!{detail_api}} ====
+detail_api:
+  - type: api_render
+  - endpoint: https://example.com/catalog
+  - method: GET
+  - querykeys: [id]
+  - response_status:
+      enabled: true
+      required: true
+      priority: 100
+      map: {"404": 404, "503": 503, "409": ignore}
+  - inline: '{{if eq .Status 404}}Item not found{{else}}{{.Data.name}}{{end}}'
+==== explainer ====
+This API instance explicitly participates in the enclosing response status. Actual decoded upstream 404 and 503 responses propose mapped statuses; 409 proposes nothing. Required failures outrank valid mappings. Declare the policy explicitly again when directly inheriting this API definition.
+==== expected json ====
+{
+  "@type": "<API_RENDER>",
+  "endpoint": "https://example.com/catalog",
+  "method": "GET",
+  "querykeys": ["id"],
+  "response_status": {
+    "enabled": true,
+    "required": true,
+    "priority": 100,
+    "map": {"404": 404, "503": 503, "409": "ignore"}
+  },
+  "inline": "{{if eq .Status 404}}Item not found{{else}}{{.Data.name}}{{end}}"
+}
+==== expected output ====

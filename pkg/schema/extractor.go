@@ -302,6 +302,10 @@ func inferPublishRules(field Field, token string) *PublishRules {
 	rules := PublishRules{
 		OmitEmpty: true,
 	}
+	if field.Path == "response_status.enabled" {
+		// Explicit false is the policy off switch; omitting it enables the block.
+		return &PublishRules{}
+	}
 
 	if shouldOmitFalseOnPublish(field.Path, field.Kind, field.Required, field.ValueDynamic) {
 		rules.OmitFalse = true

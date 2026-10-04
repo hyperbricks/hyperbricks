@@ -104,6 +104,30 @@ Since `v1.2.0-beta`, HyperBricks uses YAML source files. Earlier internal config
 
 Write component definitions as ordered sequences and keep package settings as ordinary mappings. See [YAML Usage: Component Source Shape](YAML_USAGE.md#component-source-shape).
 
+## Opt Into Dynamic API Response Status
+
+Existing API configurations keep their current browser-status behavior. To let
+an API result change the enclosing page or fragment status, explicitly add
+`response_status` to that `api_render` or `api_fragment_render` instance:
+
+```yaml
+- response_status:
+    required: true
+    map: {"404": 404, "503": 503}
+```
+
+Use `required: true` only when unhandled failures from that executing API should
+make the response fail. Map an expected upstream status to `ignore` when it
+should make no contribution. Directly inheriting an API definition does not
+copy this policy; add it at each mount that should participate. Existing
+policies on children survive inheritance of their whole page composition.
+
+Dynamic error responses are automatically no-store and discard staged API
+cookies. Existing render diagnostics remain. Retry clients must explicitly
+support the chosen non-2xx statuses, and static snapshot targets still reject
+them. See [API result status mapping](API_RENDER.md#browser-status-from-api-results)
+for the complete failure, priority, inheritance and caching rules.
+
 ## Replace HTMX-specific response fields
 
 Move removed `response.hx_*` fields to literal HTTP headers under `response.headers`.

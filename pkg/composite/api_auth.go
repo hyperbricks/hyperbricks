@@ -13,6 +13,9 @@ func (config *ApiFragmentRenderConfig) ValidateRawConfig(raw map[string]interfac
 	if err := apiutil.ValidateForwardTokenRaw(raw); err != nil {
 		return err
 	}
+	if err := shared.ValidateResponseStatusFieldRaw(raw); err != nil {
+		return err
+	}
 	if err := ValidateAPIResponseCookiesRaw(raw); err != nil {
 		return err
 	}

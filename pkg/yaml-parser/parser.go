@@ -755,14 +755,14 @@ var runtimeFieldsByType = map[string]map[string]bool{
 		"beautify", "body", "cache", "content_type", "debug", "debugpanel",
 		"endpoint", "forwardtoken", "guard", "headers", "index", "inline",
 		"jwtclaims", "jwtsecret", "method", "nocache", "password",
-		"querykeys", "queryparams", "response", "route", "section",
+		"querykeys", "queryparams", "response", "response_status", "route", "section",
 		"setcookie", "setcookies", "static", "status", "template", "title",
 		"username", "values",
 	),
 	"<API_RENDER>": fieldSet(
 		"body", "debug", "debugpanel", "endpoint", "forwardtoken", "headers", "inline",
 		"jwtclaims", "jwtsecret", "method", "password", "querykeys",
-		"queryparams", "setcookie", "setcookies", "status", "template",
+		"queryparams", "response_status", "setcookie", "setcookies", "status", "template",
 		"username", "values",
 	),
 	"<CSS>": fieldSet("file", "inline", "link"),
@@ -897,7 +897,7 @@ func isAPIComponentType(componentType string) bool {
 
 func isNativeAPIProperty(name string) bool {
 	switch name {
-	case "forwardtoken", "setcookie", "setcookies":
+	case "forwardtoken", "setcookie", "setcookies", "response_status":
 		return true
 	default:
 		return false
@@ -1124,6 +1124,18 @@ func resolveNode(node *Node, roots map[string]*Node, resolved map[string]*Node, 
 			return nil, nodeErrorFromNode(node, err.Error())
 		}
 		override := nodeWithoutInherit(node)
+		// Response policy belongs to the receiving API instance. Reusing an API
+		// definition does not reuse its policy; inheriting a complete page keeps
+		// the policies already mounted on its nested instances.
+		if isAPIComponentType(base.Type) || isAPIComponentType(override.Type) {
+			delete(base.Props, "response_status")
+			delete(base.nativeAPIProps, "response_status")
+			for key := range base.positions {
+				if key == "response_status" || strings.HasPrefix(key, "response_status.") {
+					delete(base.positions, key)
+				}
+			}
+		}
 		if err := normalizeEsbuildAlias(override, base.Type); err != nil {
 			return nil, err
 		}
