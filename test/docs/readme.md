@@ -61,7 +61,7 @@ hyperbricks start -m demo
 
 ## New to HyperBricks?
 
-Start with the [Introduction](docs/INTRODUCTION.md) to understand the component model. Follow the [Quickstart](docs/QUICKSTART.md) to create a working module. Continue with [How-to guides](docs/HOWTOS.md) or the focused [YAML pattern examples](modules/hyperbricks-patterns-yaml/README.md). For component fields, see [Component reference](docs/REFERENCE.md).
+Start with the [Introduction](docs/INTRODUCTION.md) to understand the component model. Follow the [Quickstart](docs/QUICKSTART.md) to create a working module. Browse the [starter modules](modules/README.md#starter-modules) to install a curated module with `hyperbricks init-starter`, or continue with [How-to guides](docs/HOWTOS.md) and the focused [YAML pattern examples](modules/hyperbricks-patterns-yaml/README.md). For component fields, see [Component reference](docs/REFERENCE.md).
 
 **Windows limitation:** Native Go plugins (`.so`) cannot be built or loaded when HyperBricks runs directly on Windows. This restriction comes from Go's plugin system and does not apply to the separate WebAssembly (`.wasm`) plugin format. See [plugin platform support](docs/PLUGINS.md#platform-support) for details and the upstream Go reference.
 

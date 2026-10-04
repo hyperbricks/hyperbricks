@@ -26,7 +26,7 @@ From your project root, the directory that will contain `modules/`:
 hyperbricks init-starter get hello-world -m demo
 ```
 
-The downloaded `hello-world` starter already runs with `hyperbricks start -m demo` and displays a simple Hello World page. Continue below to replace it with a page that uses templates, bundled assets, and an HTML fragment.
+The command copies the published `modules/hello-world` starter from the HyperBricks repository. It already runs with `hyperbricks start -m demo` and displays a simple Hello World page. Continue below to replace it with a page that uses templates, bundled assets, and an HTML fragment. To install a pinned Git snapshot, see [`init-starter` in the CLI guide](HYPERBRICKS_CLI.md#init-starter-install-an-official-starter).
 
 Initialization also reconciles the new module's source metadata. Its
 `package.hyperbricks.yaml` identifies the destination module, starts its module

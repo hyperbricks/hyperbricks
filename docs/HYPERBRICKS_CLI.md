@@ -56,8 +56,8 @@ hyperbricks:
 
 `<exact installed version>` represents the version reported by the binary that
 created the module. `module` is the new module directory's base name. New
-modules start at `moduleversion: "1.0.0"`, independently of an official
-starter's own release version. Build-specific provenance is added only to an archive; a
+modules start at `moduleversion: "1.0.0"`, independently of the Git revision
+used to download an official starter. Build-specific provenance is added only to an archive; a
 source package does not own `format`, `format_version`, `commit`, or `built_at`.
 It also does not own `source_hash`, which belongs to the build index.
 
@@ -82,6 +82,7 @@ modules/demo/
 │   └── hello-world.hyperbricks.yaml
 ├── logs/
 ├── rendered/
+│   └── .gitkeep
 ├── resources/
 │   ├── css/
 │   │   └── app.css
@@ -117,13 +118,17 @@ The generated configuration and README use the selected module name. The README 
 
 ### Init-starter: install an official starter
 
-`init-starter` downloads a starter from the official [starters repository](https://github.com/hyperbricks/hyperbricks-starters). Browse the [module starter index](../modules/README.md#starter-modules) for examples and their setup requirements. Use `init-starter` for the minimal Hello World example.
+`init-starter` downloads a published module from the [HyperBricks repository](https://github.com/hyperbricks/hyperbricks/tree/main/modules). The repository's [`starters.index.json`](../starters.index.json) selects eligible starter modules and omits test fixtures. Browse the [starter modules](../modules/README.md#starter-modules) for their setup requirements. Use `hello-world` for the minimal example.
 
-List compatible starters:
+List compatible starters published on the current `main` branch:
 
 ```bash
 hyperbricks init-starter list
 ```
+
+To see the starters available at a published tag or commit, use
+`hyperbricks init-starter list --ref '<tag-or-commit-sha>'` and replace the
+placeholder with the revision you want.
 
 Install the Hello World starter and start it:
 
@@ -132,14 +137,13 @@ hyperbricks init-starter get hello-world -m demo
 hyperbricks start -m demo
 ```
 
-Running `hyperbricks init-starter get hello-world -m demo` installs `hello-world@1.0.0` with the following files and directories (verified with `v1.2.8-beta`):
+Running `hyperbricks init-starter get hello-world -m demo` installs the published `modules/hello-world` starter into your project as `modules/demo`. The installed result contains:
 
 ```text
 modules/demo/
 ├── hyperbricks/
 │   └── hello-world.hyperbricks.yaml
 ├── logs/
-│   └── .gitkeep
 ├── rendered/
 │   └── .gitkeep
 ├── resources/
@@ -148,13 +152,17 @@ modules/demo/
 │   └── .gitkeep
 ├── templates/
 │   └── .gitkeep
+├── .gitignore
+├── README.md
 └── package.hyperbricks.yaml
 ```
+
+The empty `logs/` directory is created during installation; it is not part of the published module source.
 
 The command prints:
 
 ```text
-Starter "hello-world@1.0.0" installed to modules/demo
+Starter "hello-world" from ref "latest" installed to modules/demo
 Next: hyperbricks start -m demo
 ```
 
@@ -162,15 +170,24 @@ The generated `hyperbricks/hello-world.hyperbricks.yaml` defines a single page t
 
 Starters are installed into `./modules/<module>`. If `--module` (`-m`) is omitted, the module name defaults to the starter name. Installation requires an empty or absent destination directory.
 
-Install a specific starter version:
+Some starters contain native plugins whose compiled names include the module
+name. The starter index marks these with `fixed_module_name: true`. Install
+those under their original name; `init-starter` rejects a different `-m` name
+instead of creating a module with broken plugin references.
+
+Install from a specific HyperBricks Git tag or commit:
 
 ```bash
-hyperbricks init-starter get hello-world@1.0.0 -m demo
+hyperbricks init-starter get 'hello-world@<tag>' -m demo
+hyperbricks init-starter get 'hello-world@<commit-sha>' -m demo
 ```
 
-Without `@version`, HyperBricks selects the highest starter version compatible with the running HyperBricks version. Compatibility is declared in the starter index through `compatible_hyperbricks`. An explicitly requested starter version must also pass this check; installation fails if it is incompatible. An omitted or empty compatibility list allows any HyperBricks version.
+Replace the placeholders with a Git tag or full 40-character commit SHA that
+includes the starter. Tags may contain `/`, for example `release/v1.2.9-beta`.
 
-The index and archive are downloaded from the starters repository's `main` branch. `@version` selects a versioned starter directory within that archive, not a Git tag or commit. Published starter version directories therefore need to remain unchanged for repeatable installations.
+Without `@revision`, or with `@latest`, HyperBricks uses the current `main` branch. A tag or commit selects a snapshot of the whole HyperBricks repository: the starter index and the module files must both exist at that revision. Older tags and commits made before the root `starters.index.json` was added cannot be used with `init-starter`. The requested starter must satisfy the index's `compatible_hyperbricks` constraint for the running binary. An omitted or empty compatibility list allows any HyperBricks version.
+
+Starters live once under `modules/<name>` in each Git snapshot; there are no nested per-starter version directories. Pin a commit SHA for the most reproducible install. A published tag can also select a release, while `latest` tracks the moving `main` branch.
 
 Before an official starter is copied into its destination, HyperBricks
 normalizes the staged `package.hyperbricks.yaml`. It sets `module` to the
