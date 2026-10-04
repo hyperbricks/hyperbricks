@@ -6,6 +6,8 @@ recorded and cleanup is bounded, including when an assertion fails.
 """
 import argparse
 import contextlib
+from http.server import BaseHTTPRequestHandler
+from importlib.util import module_from_spec, spec_from_file_location
 import json
 import os
 from pathlib import Path
@@ -16,11 +18,22 @@ import subprocess
 import sys
 import tempfile
 import time
+from unittest.mock import patch
 from urllib.request import ProxyHandler, build_opener
 
 
 OPENER = build_opener(ProxyHandler({}))
 MODULE = Path(__file__).resolve().parents[1]
+
+
+def loopback_bind_without_reverse_dns():
+    spec = spec_from_file_location("hooks_demo_server", MODULE / "demo-api/server.py")
+    server_module = module_from_spec(spec)
+    spec.loader.exec_module(server_module)
+    with patch("socket.getfqdn", side_effect=AssertionError("reverse DNS during loopback bind")):
+        with server_module.LoopbackHTTPServer(("127.0.0.1", 0), BaseHTTPRequestHandler) as server:
+            require(server.server_name == "127.0.0.1", "Loopback server name changed")
+    print("PASS: demo API binds without reverse DNS")
 
 
 def require(condition, message):
@@ -249,6 +262,7 @@ def main():
     binary = args.binary.expanduser().resolve()
     if not binary.is_file() or not os.access(binary, os.X_OK):
         parser.error("--binary must be an executable file")
+    loopback_bind_without_reverse_dns()
     for scenario in (successful_session, preparation_failure, verification_failure, service_exit):
         scenario(binary)
     print("All development-hooks smoke scenarios passed; no owned servers remain.")
