@@ -5,10 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/eiannone/keyboard"
-	"github.com/fsnotify/fsnotify"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
@@ -82,40 +80,17 @@ func confirmDeletion(dir string) bool {
 	}
 }
 
-func ensureDirectoriesExist(directories map[string]string) {
-	count := 0
-	for _, dir := range directories {
-
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			logging.GetLogger().Errorw("Required directory missing", "directory", runtimeLogPath(dir))
-			count++
-
-		} else {
+func ensureDirectoriesExist(directories map[string]string) error {
+	for name, dir := range directories {
+		info, err := os.Stat(dir)
+		if err != nil {
+			return fmt.Errorf("required directory %s (%s): %w; run hyperbricks init to create missing directories", name, runtimeLogPath(dir), err)
 		}
-
-	}
-
-	if count > 0 {
-		logging.GetLogger().Fatal("Run hyperbricks init to create the required directories")
-	}
-
-	logger := logging.GetLogger()
-	for key, dir := range directories {
-		logger.Debugw("Checking directory", "key", key, "directory", runtimeLogPath(dir))
-
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			err := os.MkdirAll(dir, 0755)
-			if err != nil {
-				logger.Fatalw("Failed to create directory", "directory", dir, "error", err)
-			}
-			logging.GetLogger().Debugw("Directory created", "directory", runtimeLogPath(dir))
-		} else if err != nil {
-			logger.Fatalw("Error checking directory", "directory", dir, "error", err)
-		} else {
-			logger.Debugw("Directory already exists", "directory", runtimeLogPath(dir))
+		if !info.IsDir() {
+			return fmt.Errorf("required directory %s (%s) is not a directory", name, runtimeLogPath(dir))
 		}
 	}
-
+	return nil
 }
 
 func makeStatic(config map[string]map[string]interface{}, renderDir string) error {
@@ -153,105 +128,6 @@ func makeStatic(config map[string]map[string]interface{}, renderDir string) erro
 		}
 	}
 	return nil
-}
-
-func watchDirectories(directories []string, reloadFunc func()) error {
-	logger := logging.GetLogger()
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		return fmt.Errorf("failed to create file watcher: %w", err)
-	}
-	defer watcher.Close()
-
-	// Function to add directories recursively
-	addRecursive := func(dir string) error {
-		return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				logger.Errorw("Error accessing path during recursion", "path", path, "error", err)
-				return nil
-			}
-			if info.IsDir() {
-				err = watcher.Add(path)
-				if err != nil {
-					logger.Errorw("Error watching directory", "directory", path, "error", err)
-					return nil
-				}
-				logger.Debugw("Watching directory", "directory", runtimeLogPath(path))
-			}
-			return nil
-		})
-	}
-
-	for _, dir := range directories {
-		err = addRecursive(dir)
-		if err != nil {
-			return fmt.Errorf("failed to recursively watch directory %s: %w", dir, err)
-		}
-	}
-
-	var debounceTimer *time.Timer
-	debounceDuration := 500 * time.Millisecond
-	debounceChan := make(chan struct{})
-
-	go func() {
-		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					return
-				}
-				logger.Debugw("File system event detected", "file", runtimeLogPath(event.Name), "operation", event.Op.String())
-				if strings.HasPrefix(filepath.Base(event.Name), ".hb-esbuild-") || isEsbuildOutput(event.Name) {
-					continue
-				}
-				// If a new directory is created, add it to the watcher
-				if event.Op&fsnotify.Create == fsnotify.Create {
-					fileInfo, err := os.Stat(event.Name)
-					if err == nil && fileInfo.IsDir() {
-						err = addRecursive(event.Name)
-						if err != nil {
-							logger.Errorw("Error adding new directory to watcher", "directory", event.Name, "error", err)
-						}
-					}
-				}
-
-				// Debounce configuration reload
-				if event.Op&(fsnotify.Write|fsnotify.Create|fsnotify.Remove|fsnotify.Rename) != 0 {
-					if debounceTimer != nil {
-						debounceTimer.Stop()
-					}
-					debounceTimer = time.AfterFunc(debounceDuration, func() {
-						debounceChan <- struct{}{}
-					})
-				}
-			case <-debounceChan:
-				logger.Infow("Debounced changes detected. Reloading configurations...")
-				reloadFunc()
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					return
-				}
-				logger.Errorw("File watcher error", "error", err)
-			}
-		}
-	}()
-
-	<-make(chan struct{}) // Keep the function running
-	return nil
-}
-
-func watchSourceDirectories() {
-	logger := logging.GetLogger()
-	hbConfig := getHyperBricksConfiguration()
-	if hbConfig.Development.Watch {
-		directoriesToWatch := resolveDevelopmentWatchDirectories(hbConfig)
-		go func() {
-			err := watchDirectories(directoriesToWatch, PreProcessAndPopulateHyperbricksConfigurations)
-			if err != nil {
-				logger.Fatalw("Error setting up directory watcher", "error", err)
-			}
-		}()
-	}
 }
 
 func resolveDevelopmentWatchDirectories(hbConfig *shared.Config) []string {
@@ -299,17 +175,17 @@ func getHyperBricksConfiguration() *shared.Config {
 	return shared.GetHyperBricksConfiguration()
 }
 
-func applyHyperBricksConfigurations() {
-	hbConfig := getHyperBricksConfiguration()
-	ensureDirectoriesExist(hbConfig.Directories)
+func applyHyperBricksConfigurations() error {
+	return ensureDirectoriesExist(getHyperBricksConfiguration().Directories)
 }
-func setWorkingDirectory() {
+func setWorkingDirectory() error {
 	logger := logging.GetLogger()
 	exeDir, err := os.Getwd()
 	if err != nil {
-		logger.Fatalw("Failed to evaluate os.Getwd", "error", err)
+		return fmt.Errorf("read working directory: %w", err)
 	}
 	logger.Debugw("Working directory set", "directory", runtimeLogPath(exeDir))
+	return nil
 }
 func PreProcessAndPopulateHyperbricksConfigurations() {
 	renderDiagnosticsMutex.RLock()

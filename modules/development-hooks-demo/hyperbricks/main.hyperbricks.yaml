@@ -1,0 +1,31 @@
+session_page:
+  - type: hypermedia
+  - route: index
+  - title: One development session · HyperBricks
+  - htmltag: <html lang="en" data-theme="light">
+  - nocache: true
+  - response:
+      headers:
+        Cache-Control: no-store
+  - head:
+      - type: head
+      - assets:
+          - type: html
+          - value: |
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css">
+              <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  - content:
+      - type: template
+      - template: {file: page.html}
+      - values:
+          session:
+            - type: api_render
+            - endpoint:
+                format: "http://127.0.0.1:%s/message"
+                args:
+                  - env: {name: HOOKS_DEMO_API_PORT, default: "4331"}
+            - method: GET
+            - querykeys: []
+            - template: {file: session.html}

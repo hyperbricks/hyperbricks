@@ -53,6 +53,8 @@ type APIConfig struct {
 	JwtClaims        map[string]string `mapstructure:"jwtclaims" description:"JWT claims to include when signing the bearer token" example:"{!{api-render-fragment-jwt-claims.hyperbricks.yaml}}"`
 	Debug            bool              `mapstructure:"debug" description:"Log request and response metadata only; never header values, URL paths or queries, or payloads" example:"{!{api-render-fragment-debug.hyperbricks.yaml}}"`
 	DebugPanel       bool              `mapstructure:"debugpanel" description:"Render a frontend debug panel when frontend_errors is enabled in modules package.hyperbricks.yaml" example:"{!{api-render-fragment-debug.hyperbricks.yaml}}"`
+
+	ResponseStatus *shared.ResponseStatusConfig `mapstructure:"response_status" json:",omitempty" description:"Optional component policy that maps upstream responses and failures to the current browser HTTP status. Omitted or disabled preserves the route fallback status." example:"{!{api-fragment-render-response-status.hyperbricks.yaml}}"`
 }
 
 // FragmentConfigGetName returns the HyperBricks type associated with the FragmentConfig.
@@ -112,6 +114,13 @@ func (conf *ApiFragmentRenderConfig) Validate() []error {
 			File: conf.Composite.Meta.HyperBricksFile,
 		})
 	}
+	if err := conf.ResponseStatus.Validate(); err != nil {
+		errors = append(errors, shared.ComponentError{
+			Type: ApiFragmentRenderConfigGetName(), Err: err.Error(), Rejected: true,
+			Key: conf.Composite.Meta.HyperBricksKey, Path: conf.Composite.Meta.HyperBricksPath,
+			File: conf.Composite.Meta.HyperBricksFile,
+		})
+	}
 	for key := range conf.Values {
 		if key == "Data" || key == "Status" {
 			errors = append(errors, shared.ComponentError{Type: ApiFragmentRenderConfigGetName(), Err: "API values cannot override reserved Data or Status", Rejected: true})
@@ -157,18 +166,27 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 		})
 	}
 
+	// Record only the final result, after templates and response cookies have
+	// completed. Generic diagnostics do not identify the source of a failure.
+	outcome := shared.APIResponseOutcome{Failure: shared.APIFailureLocal}
+	defer func() {
+		shared.CaptureResponseStatus(ctx, config.ResponseStatus, config.Composite.Meta, outcome)
+	}()
+
 	config.NoCache = true
 
 	validateErrors := config.Validate()
 	errors = append(errors, validateErrors...)
 
 	if len(validateErrors) > 0 {
+		outcome.Err = validateErrors[0]
 		return "[validation errors]", errors
 	}
 
 	// Call function to process the request body
 	body, requestErr := processRequest(ctx, config)
 	if requestErr != nil {
+		outcome.Err = requestErr
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
 			Key:      config.Composite.Meta.HyperBricksKey,
@@ -182,7 +200,9 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 	}
 	config.Body = body
 
-	responseData, status, err := fetchDataFromAPI(config, ctx)
+	responseData, fetchedOutcome, err := fetchDataFromAPIOutcome(config, ctx)
+	outcome = fetchedOutcome
+	status := outcome.Status
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
@@ -210,6 +230,9 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 			// Attempt to load the file from disk and cache it.
 			fileContent, err := GetTemplateFileContent(config.Template)
 			if err != nil {
+				if outcome.Failure == shared.APIFailureNone {
+					outcome.Failure, outcome.Err = shared.APIFailureTemplate, err
+				}
 				errors = append(errors, shared.ComponentError{
 					Hash: shared.GenerateHash(),
 					Key:  config.Composite.Meta.HyperBricksKey,
@@ -226,7 +249,10 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 	config.Status = status
 	renderedOutput, _errors := applyApiFragmentTemplate(templateContent, responseData, config)
 
-	if _errors != nil {
+	if len(_errors) > 0 {
+		if outcome.Failure == shared.APIFailureNone {
+			outcome.Failure, outcome.Err = shared.APIFailureTemplate, _errors[0]
+		}
 		errors = append(errors, _errors...)
 	}
 
@@ -240,10 +266,12 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 		incoming, _ := ctx.Value(shared.Request).(*http.Request)
 		cookies, cookieErr := RenderAPIResponseCookies(config.SetCookie, config.responseCookieEntries(), responseData, status, config.Values, incoming)
 		if cookieErr != nil {
+			outcome.Failure, outcome.Err = shared.APIFailureLocal, cookieErr
 			errors = append(errors, shared.ComponentError{Type: ApiFragmentRenderConfigGetName(), Err: cookieErr.Error(), Rejected: true})
 		} else if len(cookies) > 0 {
 			if capture, _ := ctx.Value(shared.APIResponseCookieCaptureKey).(*shared.APIResponseCookieCapture); capture != nil {
 				if err := capture.Store(cookies); err != nil {
+					outcome.Failure, outcome.Err = shared.APIFailureLocal, err
 					errors = append(errors, shared.ComponentError{Type: ApiFragmentRenderConfigGetName(), Err: err.Error(), Rejected: true})
 				}
 			} else {
@@ -252,6 +280,7 @@ func (pr *ApiFragmentRenderer) Render(instance interface{}, ctx context.Context)
 				// so that compatibility path retains component-level atomicity.
 				writer, _ := ctx.Value(shared.ResponseWriter).(http.ResponseWriter)
 				if writer == nil {
+					outcome.Failure, outcome.Err = shared.APIFailureLocal, fmt.Errorf("missing response writer or API cookie capture")
 					errors = append(errors, shared.ComponentError{Type: ApiFragmentRenderConfigGetName(), Err: "missing response writer or API cookie capture", Rejected: true})
 				} else {
 					for _, cookie := range cookies {
@@ -336,21 +365,33 @@ func processRequest(ctx context.Context, config ApiFragmentRenderConfig) (string
 	return apiutil.MapRequestBody(config.Body, mergedData)
 }
 
-// fetchDataFromAPI applies the API component's explicit credential policy.
+// fetchDataFromAPI retains the template status and diagnostic contract for callers.
 func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (interface{}, int, error) {
+	data, outcome, err := fetchDataFromAPIOutcome(config, ctx)
+	return data, outcome.Status, err
+}
+
+// fetchDataFromAPIOutcome separates actual upstream responses from synthetic
+// template statuses and identifies failures before rendering the response body.
+func fetchDataFromAPIOutcome(config ApiFragmentRenderConfig, ctx context.Context) (interface{}, shared.APIResponseOutcome, error) {
+	outcome := shared.APIResponseOutcome{Status: http.StatusBadRequest, Failure: shared.APIFailureLocal}
+	fail := func(err error) (interface{}, shared.APIResponseOutcome, error) {
+		outcome.Err = err
+		return nil, outcome, err
+	}
 	endpoint, err := url.Parse(config.Endpoint)
 	if err != nil {
-		return nil, 400, fmt.Errorf("invalid API endpoint URL")
+		return fail(fmt.Errorf("invalid API endpoint URL"))
 	}
 	if err := apiutil.ValidateAuthSettings(endpoint, shared.GetHyperBricksConfiguration().Mode, config.authSettings()); err != nil {
-		return nil, 400, err
+		return fail(err)
 	}
 	if ctx == nil {
-		return nil, 400, fmt.Errorf("missing API request context")
+		return fail(fmt.Errorf("missing API request context"))
 	}
 	incoming, ok := ctx.Value(shared.Request).(*http.Request)
 	if !ok || incoming == nil {
-		return nil, 400, fmt.Errorf("missing API request context")
+		return fail(fmt.Errorf("missing API request context"))
 	}
 	allowed := apiutil.DefaultQueryKeys
 	if config.AllowedQueryKeys != nil {
@@ -368,27 +409,30 @@ func fetchDataFromAPI(config ApiFragmentRenderConfig, ctx context.Context) (inte
 	endpoint.RawQuery = params.Encode()
 	req, err := http.NewRequestWithContext(ctx, config.Method, endpoint.String(), strings.NewReader(config.Body))
 	if err != nil {
-		return nil, 400, fmt.Errorf("invalid upstream request")
+		return fail(fmt.Errorf("invalid upstream request"))
 	}
 	if err := apiutil.ApplyAuth(req, incoming, config.authSettings()); err != nil {
-		return nil, 400, err
+		return fail(err)
 	}
 	if config.Debug {
 		logging.GetLogger().Named("api").Debugw("Upstream request", "request", apiutil.DescribeRequest(req))
 	}
 	resp, err := apiutil.NewAPIHTTPClient().Do(req)
 	if err != nil {
-		return nil, 502, apiutil.SafeRequestError("upstream request", req, err)
+		outcome.Status, outcome.Failure = http.StatusBadGateway, shared.APIFailureTransport
+		return fail(apiutil.SafeRequestError("upstream request", req, err))
 	}
+	outcome = shared.APIResponseOutcome{Status: resp.StatusCode, Received: true}
 	defer resp.Body.Close()
 	if config.Debug {
 		logging.GetLogger().Named("api").Debugw("Upstream response", "response", apiutil.DescribeResponse(resp))
 	}
 	result, err := apiutil.DecodeAPIResponse(resp)
 	if err != nil {
-		return nil, resp.StatusCode, err
+		outcome.Failure = shared.APIFailureDecode
+		return fail(err)
 	}
-	return result, resp.StatusCode, nil
+	return result, outcome, nil
 }
 
 func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFragmentRenderConfig) (string, []error) {

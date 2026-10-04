@@ -1,0 +1,12 @@
+  <main class="mx-auto max-w-3xl px-6 py-16">
+    <p class="mb-3 text-sm font-semibold uppercase tracking-widest">HyperBricks / Development hooks</p>
+    <h1 class="mb-6 text-4xl font-semibold leading-tight">One command. One application.<br>One clean exit.</h1>
+    <p class="mb-8 text-lg leading-relaxed">A preparation hook created this session. HyperBricks started its API, waited for readiness, then rendered the data below on the server.</p>
+    {{.session}}
+    <section class="mt-10 space-y-4 leading-relaxed" aria-labelledby="try-it">
+      <h2 id="try-it" class="text-2xl font-semibold">Try the lifecycle</h2>
+      <p>Refresh this page: the session and API process stay the same. Edit this template and refresh: source watching updates the page without rerunning preparation.</p>
+      <p>In the terminal, the <code>verify-demo</code> hook checks this rendered page before HyperBricks reports that startup completed.</p>
+      <p>Press <kbd>Ctrl+C</kbd> in that terminal. HyperBricks stops serving and closes its API process too.</p>
+    </section>
+  </main>

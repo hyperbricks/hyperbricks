@@ -53,7 +53,17 @@ func (rm *RenderManager) Render(rendererType string, data map[string]interface{}
 	// Create the instance using TypeFactory
 	response, err := rm.typeFactory.CreateInstance(request)
 	if err != nil {
-
+		// A required API may fail before its renderer can report an outcome.
+		// Keep that failure inside the same request-local response policy.
+		if rendererType == "<API_RENDER>" || rendererType == "<API_FRAGMENT_RENDER>" {
+			if raw, exists := data["response_status"]; exists {
+				if policy, policyErr := shared.DecodeResponseStatus(raw); policyErr == nil {
+					meta := shared.MetaFromConfig(data)
+					meta.ConfigType = rendererType
+					shared.CaptureResponseStatus(ctx, policy, meta, shared.APIResponseOutcome{Failure: shared.APIFailureLocal, Err: err})
+				}
+			}
+		}
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
 			File:     renderMetadataValue(data, "hyperbricksfile"),

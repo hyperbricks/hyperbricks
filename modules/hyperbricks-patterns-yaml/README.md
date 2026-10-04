@@ -10,18 +10,31 @@ without a full reload. The Unpoly example uses its own frontend integration.
 
 ### Install the browser dependencies
 
-From the HyperBricks repository root, install the versions recorded in the
-repository’s `package-lock.json`:
+After building the native plugins described below, start this module with
+HyperBricks v1.2.9-beta from the project root:
 
 ```sh
-npm ci
-export PATH="$PWD/node_modules/.bin:$PATH"
+hyperbricks start -m hyperbricks-patterns-yaml --with-processes
 ```
 
-The module’s Tailwind plugin runs the `tailwindcss` CLI. `npm ci` installs it
-locally; the `PATH` setting above makes it available when starting HyperBricks
-from this terminal. Repeat that setting in a new terminal, or use a compatible
-standalone `tailwindcss` executable already on your `PATH`.
+Its `before_start` hook runs `npm ci --include=dev --ignore-scripts --no-audit --no-fund`
+in the module directory before HyperBricks loads the application.
+It installs the versions pinned in `package-lock.json` and runs on **every**
+start that opts in with `--with-processes`. The `--include=dev` option includes
+the Tailwind CLI even when npm would otherwise omit development dependencies.
+The Tailwind plugin points to the module-local `node_modules/.bin/tailwindcss`
+through a HyperBricks module path, so no `PATH` export is needed. The hook
+requires npm and access to the packages in the lockfile.
+
+Ordinary `start`, `build`, and static workflows do not run development hooks.
+For those workflows, install the pinned browser dependencies yourself before
+starting or building:
+
+```sh
+cd modules/hyperbricks-patterns-yaml
+npm ci --include=dev --ignore-scripts --no-audit --no-fund
+cd ../..
+```
 
 The entry file, `resources/js/main.js`, imports HTMX and the module’s browser
 helpers. HyperBricks uses the configured `esbuild` component to bundle these files

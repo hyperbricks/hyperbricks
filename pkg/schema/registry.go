@@ -82,6 +82,7 @@ func Definitions() []Definition {
 				apiGroup("endpoint", "method", "headers", "body", "username", "password", "jwtsecret", "jwtclaims"),
 				templateGroup("template", "inline", "querykeys", "queryparams", "values"),
 				responseGroup(),
+				responseStatusGroup(),
 				guardGroup(),
 			},
 		},
@@ -257,6 +258,7 @@ func Definitions() []Definition {
 			FormGroups: []FormGroup{
 				apiGroup("endpoint", "method", "headers", "body", "username", "password", "jwtsecret", "jwtclaims"),
 				templateGroup("template", "inline", "querykeys", "queryparams", "values"),
+				responseStatusGroup(),
 			},
 		},
 		{
@@ -336,6 +338,14 @@ func apiGroup(fields ...string) FormGroup {
 		Key:    "api",
 		Label:  "API",
 		Fields: fields,
+	}
+}
+
+func responseStatusGroup() FormGroup {
+	return FormGroup{
+		Key: "response_status", Label: "Response status", Collapsed: true,
+		Description: "Optional status policy for this API instance; direct API inheritance does not copy it. The request's route owner resolves competing proposals after rendering.",
+		Fields:      []string{"response_status.enabled", "response_status.required", "response_status.priority", "response_status.map"},
 	}
 }
 

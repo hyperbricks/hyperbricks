@@ -203,7 +203,7 @@ Request each route twice with the same inputs. With a positive cache duration, a
 
 For a guarded route, verify that revoking access is enforced on the next request with the same token. For an API action or stream, verify fresh upstream work or a new producer on every request. Browser refresh alone is not proof of a server-side render when the route remains cacheable.
 
-The runtime regression matrix is in [`server_live_cache_matrix_test.go`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/cmd/hyperbricks/server_live_cache_matrix_test.go). Run it from the repository root:
+The runtime regression matrix is in [`server_live_cache_matrix_test.go`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/cmd/hyperbricks/server_live_cache_matrix_test.go). Run it from the repository root:
 
 ```sh
 go test ./cmd/hyperbricks -run 'TestServeContent_LiveCache' -count=1

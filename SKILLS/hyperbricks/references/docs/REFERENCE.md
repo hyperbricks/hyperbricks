@@ -1,7 +1,7 @@
 <!-- Generated from docs/REFERENCE.md. Do not edit directly. -->
 
 **Licence:** MIT
-**Version:** v1.2.8-beta
+**Version:** v1.2.9-beta
 
 
 # HyperBricks Component Reference
@@ -261,6 +261,10 @@ Route-owning API fragment that always bypasses rendered-output caching and makes
 | `queryparams` | `map` | no | Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders. |
 | `response.headers` | `map` | no | HTTP response headers sent to the browser |
 | `response.status` | `int` | no | Browser HTTP status (200–599); omit to retain the route or guard default |
+| `response_status.enabled` | `bool` | no | Enable this component's response status policy; omitted means enabled when the block is present |
+| `response_status.map` | `map` | no | Received upstream error status (400–599) to browser 404, 410, 502, 503, 504, or ignore; does not match network failures |
+| `response_status.priority` | `int` | no | Nonnegative priority among mapped status proposals; higher wins, defaults to zero |
+| `response_status.required` | `bool` | no | Make an executing component's unhandled upstream or render failure determine the HTTP status; defaults to false |
 | `route` | `string` | no | The route (URL-friendly identifier) for the fragment |
 | `section` | `string` | no | The section the fragment belongs to |
 | `setcookie` | `string` | no | Legacy Set-Cookie shorthand. Only the value may be templated; validated and emitted atomically after successful upstream and fragment rendering. |
@@ -623,6 +627,10 @@ Nested API fetcher with no upstream-response cache or nocache field. It makes a 
 | `password` | `string` | no | Basic Auth password; both username and password are required |
 | `querykeys` | `list` | no | Incoming URL query keys to append to the upstream URL. Omitted: id, name, order; empty list: none. Does not filter body placeholders. |
 | `queryparams` | `map` | no | Static upstream URL query values, appended after endpoint and allowed browser query values. Does not supply body placeholders. |
+| `response_status.enabled` | `bool` | no | Enable this component's response status policy; omitted means enabled when the block is present |
+| `response_status.map` | `map` | no | Received upstream error status (400–599) to browser 404, 410, 502, 503, 504, or ignore; does not match network failures |
+| `response_status.priority` | `int` | no | Nonnegative priority among mapped status proposals; higher wins, defaults to zero |
+| `response_status.required` | `bool` | no | Make an executing component's unhandled upstream or render failure determine the HTTP status; defaults to false |
 | `template` | `string` | no | Loads contents of a template file in the modules template directory |
 | `username` | `string` | no | Basic Auth username; both username and password are required |
 | `values` | `map` | no | Key-value pairs for template rendering |

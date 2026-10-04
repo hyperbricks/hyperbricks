@@ -1,0 +1,200 @@
+{
+  "catalog-store": {
+    "name": "catalog-store",
+    "path": "modules/catalog-store",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "Searchable store with generated product images, HTMX fragments, an in-memory cart, mock checkout, and an API that start --with-processes can start and stop with the site.",
+    "compatible_hyperbricks": [
+      ">=1.2.9-beta"
+    ],
+    "tags": [
+      "example",
+      "learning-application"
+    ]
+  },
+  "development-hooks-demo": {
+    "name": "development-hooks-demo",
+    "path": "modules/development-hooks-demo",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "One command prepares data, starts a Python API, waits for readiness, serves a page, verifies its API data, and stops the API on exit.",
+    "compatible_hyperbricks": [
+      ">=1.2.9-beta"
+    ],
+    "tags": [
+      "example",
+      "feature-demo"
+    ]
+  },
+  "esbuild-demo": {
+    "name": "esbuild-demo",
+    "path": "modules/esbuild-demo",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "Native esbuild example with TypeScript and CSS imports, copied assets, source maps, fingerprinted output, caching, and development watching.",
+    "compatible_hyperbricks": [
+      ">=1.2.5-beta"
+    ],
+    "tags": [
+      "example",
+      "feature-demo"
+    ]
+  },
+  "goja-render-demo": {
+    "name": "goja-render-demo",
+    "path": "modules/goja-render-demo",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "Server-side calculations with goja_render, including query validation, resource scripts, request isolation, and development reload behavior.",
+    "compatible_hyperbricks": [
+      ">=1.2.5-beta"
+    ],
+    "tags": [
+      "example",
+      "feature-demo"
+    ]
+  },
+  "hello-world": {
+    "name": "hello-world",
+    "path": "modules/hello-world",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "Minimal YAML starter with one Hello World route and no external dependencies.",
+    "compatible_hyperbricks": [
+      ">=1.2.9-beta"
+    ],
+    "tags": [
+      "example",
+      "feature-demo"
+    ]
+  },
+  "hyperbricks-patterns-yaml": {
+    "name": "hyperbricks-patterns-yaml",
+    "path": "modules/hyperbricks-patterns-yaml",
+    "entrypoint": "package.hyperbricks.yaml",
+    "fixed_module_name": true,
+    "description": "Runnable patterns for page and fragment composition, menus, section rails, guards, API actions, plugins, HTMX, Unpoly, and rendered Markdown documentation.",
+    "compatible_hyperbricks": [
+      ">=1.2.9-beta"
+    ],
+    "tags": [
+      "example",
+      "pattern-reference"
+    ]
+  },
+  "navigation-demo-swup": {
+    "name": "navigation-demo-swup",
+    "path": "modules/navigation-demo-swup",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "Text-only neighbourhood guide whose complete server-rendered pages use Swup for animated navigation and browser-history transitions.",
+    "compatible_hyperbricks": [
+      ">=1.2.5-beta"
+    ],
+    "tags": [
+      "example",
+      "frontend-integration"
+    ]
+  },
+  "neon-pong": {
+    "name": "neon-pong",
+    "path": "modules/neon-pong",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "Self-contained arcade Pong game with solo and two-player modes, drone bonuses, synthesized sound, and native esbuild assets.",
+    "compatible_hyperbricks": [
+      ">=1.2.8-beta"
+    ],
+    "tags": [
+      "example",
+      "learning-application"
+    ]
+  },
+  "sampleapis-coffee-static": {
+    "name": "sampleapis-coffee-static",
+    "path": "modules/sampleapis-coffee-static",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "Static snapshot example that fetches the public SampleAPIs coffee endpoint through nested api_render and exports the rendered result.",
+    "compatible_hyperbricks": [
+      ">=1.2.5-beta"
+    ],
+    "tags": [
+      "example",
+      "feature-demo"
+    ]
+  },
+  "streaming-demo": {
+    "name": "streaming-demo",
+    "path": "modules/streaming-demo",
+    "entrypoint": "package.hyperbricks.yaml",
+    "fixed_module_name": true,
+    "description": "Native Go plugin example that streams several HTML progress updates over one response while HTMX swaps the target as chunks arrive.",
+    "compatible_hyperbricks": [
+      ">=1.2.5-beta"
+    ],
+    "tags": [
+      "example",
+      "feature-demo"
+    ]
+  },
+  "todo-demo-htmx": {
+    "name": "todo-demo-htmx",
+    "path": "modules/todo-demo-htmx",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "The Little List todo application using HTMX 4 fragment updates and browser localStorage.",
+    "compatible_hyperbricks": [
+      ">=1.2.5-beta"
+    ],
+    "tags": [
+      "example",
+      "frontend-integration"
+    ]
+  },
+  "todo-demo-swup": {
+    "name": "todo-demo-swup",
+    "path": "modules/todo-demo-swup",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "The same Little List application adapted to Swup, making its navigation and update model directly comparable with the other todo demos.",
+    "compatible_hyperbricks": [
+      ">=1.2.5-beta"
+    ],
+    "tags": [
+      "example",
+      "frontend-integration"
+    ]
+  },
+  "todo-demo-turbo": {
+    "name": "todo-demo-turbo",
+    "path": "modules/todo-demo-turbo",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "The same Little List application adapted to Hotwire Turbo.",
+    "compatible_hyperbricks": [
+      ">=1.2.5-beta"
+    ],
+    "tags": [
+      "example",
+      "frontend-integration"
+    ]
+  },
+  "todo-demo-unpoly": {
+    "name": "todo-demo-unpoly",
+    "path": "modules/todo-demo-unpoly",
+    "entrypoint": "package.hyperbricks.yaml",
+    "description": "The same Little List application adapted to Unpoly.",
+    "compatible_hyperbricks": [
+      ">=1.2.5-beta"
+    ],
+    "tags": [
+      "example",
+      "frontend-integration"
+    ]
+  },
+  "unpoly-guard-demo": {
+    "name": "unpoly-guard-demo",
+    "path": "modules/unpoly-guard-demo",
+    "entrypoint": "package.hyperbricks.yaml",
+    "fixed_module_name": true,
+    "description": "Protected full-page and fragment routes with an application-owned authentication plugin and Unpoly-enhanced navigation.",
+    "compatible_hyperbricks": [
+      ">=1.2.5-beta"
+    ],
+    "tags": [
+      "example",
+      "frontend-integration"
+    ]
+  }
+}

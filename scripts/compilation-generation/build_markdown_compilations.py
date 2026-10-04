@@ -66,6 +66,12 @@ DOCUMENTATION_SECTIONS = (
         ),
     ),
     (
+        "Development services",
+        (
+            ("Hooks and managed services", "docs/DEVELOPMENT_HOOKS.md"),
+        ),
+    ),
+    (
         "Delivery",
         (
             ("Deploy Guide", "docs/DEPLOY.md"),

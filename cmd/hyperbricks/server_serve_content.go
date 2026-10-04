@@ -1058,6 +1058,9 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	if responseErr != nil {
 		return configurationErrorResponse(responseErr)
 	}
+	if err := validateResponseStatusPolicies(_config); err != nil {
+		return configurationErrorResponse(err)
+	}
 	nocache = resolveConfiguredNoCache(_config)
 	if response.Status != 0 {
 		status = response.Status
@@ -1126,6 +1129,8 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	ctx = context.WithValue(ctx, shared.HandledResponseCaptureKey, handledCapture)
 	apiResponseCookieCapture := &shared.APIResponseCookieCapture{}
 	ctx = context.WithValue(ctx, shared.APIResponseCookieCaptureKey, apiResponseCookieCapture)
+	responseStatusCapture := &shared.ResponseStatusCapture{}
+	ctx = context.WithValue(ctx, shared.ResponseStatusCaptureKey, responseStatusCapture)
 	// ============ END OF API CONTEXT AND TOKEN CAPTURE ============
 
 	var renderOutput string
@@ -1142,6 +1147,20 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	apiResponseCookies := apiResponseCookieCapture.Result()
 	if captureErr != nil {
 		renderErrors = append(renderErrors, captureErr)
+	}
+	// A handled plugin response keeps the literal/default status as its fallback.
+	// Ordinary responses resolve component proposals before decoration or commit.
+	dynamicStatus := 0
+	if handledResponse == nil && captureErr == nil {
+		var statusDiagnostics []error
+		dynamicStatus, statusDiagnostics = responseStatusCapture.Result()
+		renderErrors = append(renderErrors, statusDiagnostics...)
+		if dynamicStatus != 0 {
+			status = dynamicStatus
+			nocache = true
+			headers["Cache-Control"] = "no-store"
+			delete(headers, http.CanonicalHeaderKey("ETag"))
+		}
 	}
 
 	// Contextual editing is a native development response enhancement. It never
@@ -1179,7 +1198,7 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	if handledResponse != nil {
 		return renderHandledContent(requestID, status, contentType, headers, cookies, nocache, len(renderErrors), handledResponse)
 	}
-	if len(renderErrors) == 0 {
+	if len(renderErrors) == 0 && dynamicStatus == 0 {
 		// The server commits API response cookies with the rest of RenderContent.
 		// A later route/source error or handled plugin response discards them.
 		cookies = append(cookies, apiResponseCookies...)

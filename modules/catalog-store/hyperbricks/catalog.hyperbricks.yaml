@@ -1,0 +1,145 @@
+imports:
+  - partials/site.hyperbricks.yaml
+  - partials/api.hyperbricks.yaml
+  - partials/views.hyperbricks.yaml
+  - partials/media.hyperbricks.yaml
+  - partials/cart.hyperbricks.yaml
+
+index_page:
+  - type: hypermedia
+  - route: index
+  - response:
+      status: 302
+      headers:
+        Location: /catalog
+catalog_page:
+  - inherit: page_shell
+  - route: catalog
+  - content:
+      - inherit: catalog_data
+catalog_feed:
+  - inherit: catalog_api
+  - type: api_fragment_render
+  - route: catalog-feed
+  - response_status:
+      required: true
+      map: {"503": 503}
+  - response:
+      headers:
+        Cache-Control: no-store
+detail_page:
+  - type: hypermedia
+  - inherit: page_shell
+  - route: catalog/detail
+  - title: Item details — FORM
+  - content:
+      - type: template
+      - inherit: detail_data
+      - values:
+          feed:
+            - inherit: detail_api
+            - response_status:
+                required: true
+                map: {"404": 404, "503": 503}
+detail_feed:
+  - type: api_fragment_render
+  - inherit: detail_api
+  - route: catalog-detail-feed
+  - response_status:
+      required: true
+      map: {"404": 404, "503": 503}
+  - response:
+      headers:
+        Cache-Control: no-store
+        Content-Type: text/html; charset=utf-8
+
+catalog_images:
+  - type: fragment
+  - route: catalog-images
+  - content:
+      - inherit: catalog_image_bank
+
+cart_page:
+  - inherit: page_shell
+  - route: cart
+  - title: Your cart — FORM
+  - content:
+      - type: template
+      - template: {file: cart.html}
+      - values:
+          cart:
+            - inherit: cart_api
+
+checkout_page:
+  - inherit: page_shell
+  - route: checkout
+  - title: Checkout — FORM
+  - content:
+      - type: template
+      - template: {file: checkout.html}
+      - values:
+          checkout:
+            - inherit: checkout_api
+
+cart_count:
+  - inherit: cart_api
+  - type: api_fragment_render
+  - route: cart-count
+  - template: {file: cart-count.html}
+  - response:
+      headers:
+        Cache-Control: no-store
+
+cart_add:
+  - inherit: cart_api
+  - type: api_fragment_render
+  - route: cart-add
+  - endpoint:
+      format: "%s/cart/add"
+      args:
+        - env: {name: CATALOG_API_URL, default: "http://127.0.0.1:4319"}
+  - method: POST
+  - querykeys: [id]
+  - template: {file: cart-feedback.html}
+  - setcookies:
+      - name: catalog_cart
+        value: '{{.Data.session}}'
+        path: /
+        http_only: true
+        same_site: lax
+  - response:
+      headers:
+        Cache-Control: no-store
+        HX-Trigger: cart-changed
+
+cart_update:
+  - inherit: cart_api
+  - type: api_fragment_render
+  - route: cart-update
+  - endpoint:
+      format: "%s/cart/update"
+      args:
+        - env: {name: CATALOG_API_URL, default: "http://127.0.0.1:4319"}
+  - method: POST
+  - querykeys: [id, quantity]
+  - response:
+      headers:
+        Cache-Control: no-store
+        HX-Trigger: cart-changed
+
+checkout_submit:
+  - inherit: checkout_api
+  - type: api_fragment_render
+  - route: checkout-submit
+  - endpoint:
+      format: "%s/checkout"
+      args:
+        - env: {name: CATALOG_API_URL, default: "http://127.0.0.1:4319"}
+  - method: POST
+  - headers:
+      Content-Type: application/json
+  - body: '{"name":"$name","email":"$email","address":"$address"}'
+  - response:
+      headers:
+        Cache-Control: no-store
+        HX-Trigger: cart-changed

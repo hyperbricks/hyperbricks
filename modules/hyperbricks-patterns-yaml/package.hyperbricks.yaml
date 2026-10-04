@@ -10,12 +10,17 @@ hyperbricks:
   metadata:
     module: hyperbricks-patterns-yaml
     moduleversion: "1.0.0"
-    hyperbricks: v1.2.5-beta
+    hyperbricks: v1.2.9-beta
   debug:
     level: debugging
   development:
     watch: true
     reload: true
+    hooks:
+      before_start:
+        - name: install-frontend-dependencies
+          command: [npm, ci, --include=dev, --ignore-scripts, --no-audit, --no-fund]
+          timeout: 2m
     dashboard:
       enabled: true
       credentials:

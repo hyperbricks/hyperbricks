@@ -1,0 +1,5 @@
+demo-api/.runtime/
+**/__pycache__/
+!rendered/
+rendered/*
+!rendered/.gitkeep

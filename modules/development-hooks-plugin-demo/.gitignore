@@ -1,0 +1,5 @@
+plugins/hook-greeting/1.0.0/build-id.txt
+**/__pycache__/
+!rendered/
+rendered/*
+!rendered/.gitkeep

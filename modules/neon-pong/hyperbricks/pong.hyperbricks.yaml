@@ -1,0 +1,20 @@
+imports:
+  - partials/assets.hyperbricks.yaml
+
+pong:
+  - type: hypermedia
+  - route: index
+  - title: Neon Rally · HyperBricks Arcade
+  - head:
+      - type: head
+      - metadata:
+          - type: html
+          - value: '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#090d18">'
+      - styles:
+          - inherit: scaffold_styles
+      - scripts:
+          - inherit: scaffold_scripts
+  - body:
+      - type: template
+      - template:
+          file: pong.html

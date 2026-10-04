@@ -101,6 +101,7 @@ type Config struct {
 	System               SystemConfig      `mapstructure:"system" description:"Internal runtime service settings, including the developer metrics sampling interval." example:"{metrics_watch_interval: 10s}"`
 	frontendEditingError error
 	dashboardConfigError error
+	processesConfigError error
 }
 
 // Frontend editors are development-only; Spaces is built in, other editors are plugins.
@@ -133,6 +134,8 @@ type PluginsConfig struct {
 }
 
 type DevelopmentConfig struct {
+	Hooks           DevelopmentHooksConfig     `mapstructure:"hooks" description:"Optional finite before_start and after_start tasks. Executed only by a direct development/debug start with --with-processes; each task must finish successfully." example:"{before_start: [{name: prepare, command: [sh, prepare.sh]}]}"`
+	Services        []DevelopmentServiceConfig `mapstructure:"services" description:"Optional foreground local HTTP services owned by an opted-in development session. Services start in order, must become ready, and stop with HyperBricks in reverse order." example:"[{name: demo-api, command: [python3, server.py], ready: {http: 'http://127.0.0.1:4319/health'}}]"`
 	FrontendEditing FrontendEditingConfig      `mapstructure:"frontend_editing" description:"Development-only Spaces and frontend-editor mounts, including independent write controls. Uses the shared dashboard credentials even when the dashboard is disabled." example:"{enabled: true, spaces: {enabled: true, write: false}}"`
 	Dashboard       DevelopmentDashboardConfig `mapstructure:"dashboard" description:"Dashboard Overview and Errors enablement plus shared developer-interface credentials. Must be a mapping; the former Boolean form is invalid." example:"{enabled: false}"`
 	FrontendErrors  bool                       `mapstructure:"frontend_errors" description:"Permit frontend error panels when the component enables debugpanel. Panels are restricted to requests authenticated with the shared developer credentials." example:"false"`
@@ -218,6 +221,10 @@ func loadHyperBricksConfiguration() *Config {
 	runtimeOptions := GetRuntimeOptions()
 	moduleDir := runtimeModuleRoot(runtimeOptions)
 	parsedConfig, err := LoadPackageConfigMap(configFilePath, moduleDir)
+	var processesSourceError error
+	if _, ok := err.(*developmentProcessesSourceError); ok {
+		processesSourceError = err
+	}
 	if err != nil {
 		GetLogger().Warnw("Failed to load package configuration; using defaults", "file", logging.ModulePath(moduleDir, configFilePath), "error", logging.ModuleText(moduleDir, err.Error()))
 		parsedConfig = map[string]interface{}{}
@@ -225,6 +232,9 @@ func loadHyperBricksConfiguration() *Config {
 	parser.HbConfig = parsedConfig
 
 	config, decodeErr := decodePackageConfig(parsedConfig, moduleDir)
+	if processesSourceError != nil {
+		config.processesConfigError = processesSourceError
+	}
 	if decodeErr != nil {
 		GetLogger().Errorw("Failed to decode configuration", "file", logging.ModulePath(moduleDir, configFilePath), "error", logging.ModuleText(moduleDir, decodeErr.Error()))
 	}
@@ -282,6 +292,9 @@ func validatePackageConfigResult(result *yamlparser.ConfigResult, moduleDir stri
 			return nil, fmt.Errorf("load package configuration: %s at %s: %s", diagnostic.Code, diagnostic.Path, diagnostic.Message)
 		}
 	}
+	if err := validateDevelopmentProcessSourceTypes(result.Preprocessed); err != nil {
+		return nil, err
+	}
 
 	config, decodeErr := decodePackageConfigStrict(result.Materialized, moduleDir)
 	if decodeErr != nil {
@@ -295,6 +308,9 @@ func validatePackageConfigResult(result *yamlparser.ConfigResult, moduleDir stri
 	}
 	if err := config.ValidateFrontendEditing(); err != nil {
 		return nil, fmt.Errorf("validate frontend editing: %w", err)
+	}
+	if err := config.ValidateDevelopmentProcesses(); err != nil {
+		return nil, err
 	}
 	if applyOverrides {
 		applyRuntimeOptions(config, runtimeOptions)
@@ -442,6 +458,12 @@ func LoadPackageConfigMap(configFilePath string, moduleDir string) (map[string]i
 	if err != nil {
 		return nil, err
 	}
+	if err := validateDevelopmentProcessSourceTypes(result.Preprocessed); err != nil {
+		return nil, err
+	}
+	if err := validateDevelopmentProcessResolverDiagnostics(result); err != nil {
+		return nil, err
+	}
 	return result.Materialized, nil
 }
 
@@ -471,6 +493,16 @@ func decodeConfig(input interface{}, output interface{}) error {
 
 func decodeConfigWithPolicy(input interface{}, output interface{}, strict bool) error {
 	if config, ok := output.(*Config); ok {
+		hooks, services, err := decodeDevelopmentProcesses(input)
+		config.processesConfigError = err
+		config.Development.Hooks, config.Development.Services = hooks, services
+		if err != nil {
+			return err
+		}
+		// These sections deliberately bypass the legacy weakly typed decoder.
+		// Restore their validated defaults even when decoding a reused config.
+		defer func() { config.Development.Hooks, config.Development.Services = hooks, services }()
+
 		dashboard, err := decodeDevelopmentDashboard(input)
 		config.dashboardConfigError = err
 		config.Development.Dashboard = dashboard
