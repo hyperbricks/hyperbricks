@@ -28,7 +28,7 @@ From your project root, the directory that will contain `modules/`:
 hyperbricks init-starter get hello-world -m demo
 ```
 
-The downloaded `hello-world` starter already runs with `hyperbricks start -m demo` and displays a simple Hello World page. Continue below to replace it with a page that uses templates, bundled assets, and an HTML fragment.
+The command copies the published `modules/hello-world` starter from the HyperBricks repository. It already runs with `hyperbricks start -m demo` and displays a simple Hello World page. Continue below to replace it with a page that uses templates, bundled assets, and an HTML fragment. To install a pinned Git snapshot, see [`init-starter` in the CLI guide](HYPERBRICKS_CLI.md#init-starter-install-an-official-starter).
 
 Initialization also reconciles the new module's source metadata. Its
 `package.hyperbricks.yaml` identifies the destination module, starts its module
@@ -323,7 +323,8 @@ Type `hyperbricks static --help` for all static options.
 
 ## Next Steps
 
-- [General HyperBricks skill](https://github.com/hyperbricks/hyperbricks/blob/v1.2.8-beta/SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
+- [Development hooks and managed services](DEVELOPMENT_HOOKS.md): start a local API with your module, wait for readiness, and stop both with one command. Try the [beginner demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-demo/README.md).
+- [General HyperBricks skill](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
 - [YAML usage](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
 - [Component reference](REFERENCE.md): component fields and executable examples.
 - [ROUTING.md](ROUTING.md): route resolution and clean URLs.

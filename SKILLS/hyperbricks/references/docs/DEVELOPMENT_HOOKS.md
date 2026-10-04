@@ -1,3 +1,5 @@
+<!-- Generated from docs/DEVELOPMENT_HOOKS.md. Do not edit directly. -->
+
 # Development hooks and managed services
 
 Use development hooks to prepare a module and check the running application.
@@ -15,12 +17,12 @@ This feature requires HyperBricks v1.2.9-beta or newer. Check
 `hyperbricks start --help` for `--with-processes` before trying the examples;
 build the current checkout if your installed binary does not have the flag.
 
-Try the runnable [`development-hooks-demo`](../modules/development-hooks-demo/README.md)
-or the separate [`development-hooks-plugin-demo`](../modules/development-hooks-plugin-demo/README.md).
-The [`catalog-store`](../modules/catalog-store/README.md) also uses a managed
+Try the runnable [`development-hooks-demo`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-demo/README.md)
+or the separate [`development-hooks-plugin-demo`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-plugin-demo/README.md).
+The [`catalog-store`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/catalog-store/README.md) also uses a managed
 service to start its demo API with the storefront in one command.
 
-The [patterns module](../modules/hyperbricks-patterns-yaml/README.md#install-the-browser-dependencies)
+The [patterns module](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/README.md#install-the-browser-dependencies)
 uses a finite `before_start` hook to install its pinned browser dependencies:
 
 ```yaml
@@ -106,7 +108,7 @@ exec python3 server.py --port "${API_PORT:-4331}" \
 ```
 
 The Python server must implement these arguments. The complete example does so
-in [`demo-api/server.py`](../modules/development-hooks-demo/demo-api/server.py).
+in [`demo-api/server.py`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-demo/demo-api/server.py).
 
 ## Configuration reference
 
@@ -228,7 +230,7 @@ Align the command working directory, source module, output directory, and
 `hyperbricks.directories.plugins` deliberately: the plugin CLI writes to
 `./bin/plugins` relative to its own working directory.
 
-The executable [plugin fixture](../modules/development-hooks-plugin-demo/README.md)
+The executable [plugin fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-plugin-demo/README.md)
 embeds a fresh build ID, builds the native artifact, then verifies that exact ID
 through the running route. It also demonstrates failure with an old artifact
 still present: a failed preparation hook stops startup before that artifact can

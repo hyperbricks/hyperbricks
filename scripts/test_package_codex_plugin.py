@@ -27,7 +27,29 @@ def manifest_with_short_description(short_description: str) -> bytes:
     ).encode("utf-8")
 
 
+def manifest_with_version(version: str) -> bytes:
+    manifest = json.loads(manifest_with_short_description("HyperBricks"))
+    manifest["version"] = version
+    return json.dumps(manifest).encode("utf-8")
+
+
 class ValidateManifestTests(unittest.TestCase):
+    def test_accepts_plain_numeric_plugin_version(self) -> None:
+        manifest = PACKAGE_CODEX_PLUGIN.validate_manifest(
+            manifest_with_version("0.1.2")
+        )
+        self.assertEqual(manifest["version"], "0.1.2")
+
+    def test_rejects_build_metadata_and_prerelease_versions(self) -> None:
+        for version in ("0.1.1+codex.20261004160647", "0.1.2-beta.1"):
+            with self.subTest(version=version), self.assertRaisesRegex(
+                PACKAGE_CODEX_PLUGIN.PackageError,
+                "plain MAJOR.MINOR.PATCH",
+            ):
+                PACKAGE_CODEX_PLUGIN.validate_manifest(
+                    manifest_with_version(version)
+                )
+
     def test_accepts_public_short_description_limit(self) -> None:
         manifest = PACKAGE_CODEX_PLUGIN.validate_manifest(
             manifest_with_short_description("x" * 30)

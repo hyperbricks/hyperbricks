@@ -15,27 +15,28 @@ SPEC.loader.exec_module(MODULE)
 
 
 class RefreshVersionTests(unittest.TestCase):
-    def test_replaces_existing_codex_build_metadata(self):
+    def test_advances_legacy_codex_build_version(self):
         self.assertEqual(
-            MODULE.refreshed_version(
-                "0.1.1+codex.20260923164609", "20260928221530"
-            ),
-            "0.1.1+codex.20260928221530",
+            MODULE.refreshed_version("0.1.1+codex.20260923164609"),
+            "0.1.2",
         )
 
-    def test_preserves_prerelease_and_replaces_other_build_metadata(self):
+    def test_advances_plain_patch_version(self):
+        self.assertEqual(MODULE.refreshed_version("0.1.2"), "0.1.3")
+
+    def test_removes_prerelease_and_build_metadata(self):
         self.assertEqual(
-            MODULE.refreshed_version("1.2.0-beta.2+local.7", "20260928221530"),
-            "1.2.0-beta.2+codex.20260928221530",
+            MODULE.refreshed_version("1.2.0-beta.2+local.7"),
+            "1.2.1",
         )
 
     def test_rejects_invalid_version(self):
         with self.assertRaises(MODULE.VersionError):
-            MODULE.refreshed_version("release-1", "20260928221530")
+            MODULE.refreshed_version("release-1")
 
-    def test_rejects_non_utc_timestamp_shape(self):
+    def test_rejects_noncanonical_numeric_version(self):
         with self.assertRaises(MODULE.VersionError):
-            MODULE.refreshed_version("0.1.1", "2026-09-28T22:15:30Z")
+            MODULE.refreshed_version("0.01.1")
 
     def test_updates_only_version_and_is_deterministic(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -53,17 +54,15 @@ class RefreshVersionTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            previous, updated = MODULE.update_manifest(
-                manifest, "20260928221530"
-            )
+            previous, updated = MODULE.update_manifest(manifest)
 
             self.assertEqual(previous, "0.1.1+codex.20260923164609")
-            self.assertEqual(updated, "0.1.1+codex.20260928221530")
+            self.assertEqual(updated, "0.1.2")
             self.assertEqual(
                 json.loads(manifest.read_text(encoding="utf-8")),
                 {
                     "name": "hyperbricks",
-                    "version": "0.1.1+codex.20260928221530",
+                    "version": "0.1.2",
                     "description": "Test plugin",
                 },
             )

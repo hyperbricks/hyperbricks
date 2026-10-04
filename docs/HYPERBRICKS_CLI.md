@@ -70,7 +70,7 @@ hyperbricks init -m demo
 hyperbricks init
 ```
 
-Running `hyperbricks init -m demo` creates the following files and directories (verified with `v1.2.8-beta`):
+Running `hyperbricks init -m demo` creates the following files and directories:
 
 ```text
 modules/demo/

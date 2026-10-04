@@ -104,6 +104,40 @@ Read the first render error. Check that APIs and asset dependencies are availabl
 
 Export route discovery also includes routes found in the loaded source. `static.routes` adds targets; it does not restrict discovery to those targets. Use a source directory containing only static-ready routes when isolating an export. See [HyperBricks CLI: Static Rendering](HYPERBRICKS_CLI.md#static-rendering) and [API Render: Static Snapshots](API_RENDER.md#static-snapshots).
 
+## Development hooks or managed services do not start
+
+Check `hyperbricks start --help` for `--with-processes`, and opt in explicitly.
+Without that flag, hooks and services are skipped. A globally installed binary
+may predate the feature even when its version label matches a development
+checkout. The [demo README](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-demo/README.md) shows how
+to build and use the current checkout without replacing the global installation.
+
+Process execution supports direct development/debug starts on macOS and Linux.
+Live mode and deployment-managed runtimes reject it. Inspect the diagnostic's
+full package field path for invalid names, durations, or command structure.
+
+- **Executable or directory missing:** `cwd` defaults to the module; explicit
+  module paths use `cwd: {path: {base: module, path: demo-api}}`. Install the
+  required tool or choose its absolute executable path. Host checks apply only
+  to enabled execution.
+- **Readiness address occupied:** stop your own earlier API or choose a new port.
+  HyperBricks leaves the existing listener untouched. Align the child's API port,
+  readiness URL, and the parent's `api_render` endpoint.
+- **Readiness timeout:** `/health` must return 2xx without calling HyperBricks or
+  another service that has not started yet. Read the named child's output tail.
+- **Service exited unexpectedly:** keep the server in the foreground. Shell
+  wrappers should end in `exec`; a successful daemon launcher still counts as a
+  service exit.
+- **After-start check failed:** HTTP has already begun serving; cleanup closes
+  the session. Use `HB_SERVER_PORT` in verification scripts so `--port` overrides
+  are respected.
+- **Changes did not restart the API:** source watching deliberately keeps the
+  same services and does not rerun hooks. Restart the CLI for process or package
+  changes.
+
+See [Development hooks and managed services](DEVELOPMENT_HOOKS.md) for readiness,
+shutdown ordering, environment boundaries, and exit codes.
+
 ## An older configuration is rejected
 
 Check [Migration Guide](MIGRATION.md) for removed response fields and changed API authentication settings. Update reusable definitions as well as the routes that inherit them.
