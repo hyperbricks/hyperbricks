@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
@@ -14,6 +15,10 @@ import (
 
 var spacesEditor spaces.Handler
 
+func spacesEditorAvailable() bool {
+	return !commands.RenderStatic && shared.SpacesAvailable(getHyperBricksConfiguration(), shared.GetRuntimeOptions())
+}
+
 func validEditorRoute(route string) bool {
 	return shared.ValidFrontendEditorRoute(route)
 }
@@ -21,18 +26,21 @@ func validEditorRoute(route string) bool {
 func handleFrontendEditor(w http.ResponseWriter, r *http.Request) bool {
 	cfg := getHyperBricksConfiguration()
 	editing := cfg.Development.FrontendEditing
-	if cfg.Mode != shared.DEVELOPMENT_MODE || shared.GetRuntimeOptions().Production || !editing.Enabled || cfg.ValidateFrontendEditing() != nil {
+	if commands.RenderStatic || shared.GetRuntimeOptions().Production || !editing.Enabled || cfg.ValidateFrontendEditing() != nil {
 		return false
 	}
 	if r.URL.Path == editing.Spaces.Route || strings.HasPrefix(r.URL.Path, editing.Spaces.Route+"/") {
-		if !editing.Spaces.Enabled {
+		if !spacesEditorAvailable() {
 			return false
 		}
-		if !requireDeveloperInterfaceAuth(w, r) {
+		if !shared.RequireSpacesAuth(w, r, cfg.Development.Dashboard.Credentials) {
 			return true
 		}
 		spacesEditor.ServeHTTP(w, r)
 		return true
+	}
+	if cfg.Mode != shared.DEVELOPMENT_MODE {
+		return false
 	}
 	keys := make([]string, 0, len(editing.Editors))
 	for name := range editing.Editors {

@@ -533,9 +533,22 @@ to enabled for compatibility. The parent
 `hyperbricks.development.frontend_editing.enabled` still controls all frontend
 editors. If that parent is disabled, switching Spaces on alone does not make it
 visible. Neither tool is available in Live mode. With both developer credential
-values absent, the enabled Dashboard opens without login and warns at startup;
-Spaces remains locked with `503` until credentials are configured and the module
-is restarted. A partial account locks both tools.
+values absent, the enabled Dashboard and Spaces open without login and warn at
+startup. A complete account requires login; a partial account locks both tools
+with `503`. Spaces enforces `allowed_hosts` on all editor requests and checks
+browser origins on writes. For a LAN URL, add the server hostname or IP without a scheme or port to
+`hyperbricks.development.frontend_editing.spaces.allowed_hosts` and restart. This setting controls the
+server address, not which clients can connect.
+
+Spaces writes default to enabled. Set `hyperbricks.development.frontend_editing.spaces.write: false` in
+the module configuration to retain read-only access. For direct CLI starts,
+Spaces and contextual editing also support debug mode. Live/production and
+static output exclude developer interfaces. See
+[Spaces configuration](SPACES.md#development-configuration) for all access and
+write settings; `public_origin` supplies sharing-image URLs and does not grant
+editor access. A TLS-terminating proxy forwarding HTTP to HyperBricks rejects
+browser saves because of the origin mismatch; see [LAN access](SPACES.md#lan-access-and-allowed-hosts)
+for the current connection requirements.
 
 Environment-backed values are displayed as their configured YAML reference,
 never as resolved server environment secrets. Unchanged references are

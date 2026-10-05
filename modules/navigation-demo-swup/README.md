@@ -9,16 +9,32 @@ First, [install the HyperBricks CLI](../../docs/HYPERBRICKS_CLI.md#install).
 From the repository root:
 
 ```sh
+hyperbricks start -m navigation-demo-swup
+```
+
+Open http://localhost:8125/. The library is vendored locally and native esbuild bundles JavaScript and CSS. No npm install or separate server is required.
+
+With both `HB_DEVELOPER_USER` and `HB_DEVELOPER_PASSWORD` absent, Dashboard,
+Errors, Spaces, and contextual editing open without login in development and
+debug mode. Startup warns about this access. Spaces writes are enabled; set
+`hyperbricks.development.frontend_editing.spaces.write: false` for read-only access,
+or `hyperbricks.development.frontend_editing.spaces.enabled: false` to disable
+Spaces and contextual editing.
+
+### Optional developer login
+
+To require login, set both variables in the terminal that starts HyperBricks:
+
+```sh
 export HB_DEVELOPER_USER=developer
 export HB_DEVELOPER_PASSWORD='choose-a-long-password'
 hyperbricks start -m navigation-demo-swup
 ```
 
-Replace the password placeholder with your own password. The package configuration
-reads these variables for the shared developer login; there is no default account.
-Set them in the terminal that starts HyperBricks, and restart the server after
-changing them. Credentials are required for Dashboard, Spaces and contextual editing,
-not for browsing the public guide or exporting static pages.
+Replace the password placeholder with your own password. The package reads these
+variables for the shared developer login; there is no default account. If only
+one resolves, developer access is blocked with `503`. Restart after changing the
+variables. Public pages and static exports do not require this login.
 
 Developer credentials can also be set directly in `package.hyperbricks.yaml`.
 Replace only `credentials` under `hyperbricks.development.dashboard`, leaving
@@ -34,7 +50,33 @@ With direct values, the environment exports above are not needed. Choose your
 own password, restart the server, and use these values to log in. The password
 is stored as plain text; do not commit real credentials to a shared repository.
 
-Open http://localhost:8125/. The library is vendored locally and native esbuild bundles JavaScript and CSS. No npm install or separate server is required.
+### LAN access to Spaces
+
+Localhost and loopback addresses work by default. For another server hostname or
+IP, add an entry under the existing `hyperbricks.development.frontend_editing.spaces`
+configuration and restart:
+
+```yaml
+allowed_hosts:
+  - editor.example.test
+  - 192.0.2.10
+```
+
+List the server address from the browser URL without a scheme, port, or path.
+This checks the server address, not which client computers may connect, and is
+enforced with or without login. Without credentials and with writes enabled,
+anyone who can reach an allowed address can edit. A rejected host returns `403`;
+write requests also need an origin matching the backend connection's scheme,
+host, and port. An HTTPS proxy forwarding to HTTP HyperBricks rejects saves with
+`403`; forwarded headers do not change this check. Configure both credentials
+when access needs to be restricted, and use a private encrypted tunnel or network
+that preserves the browser origin to protect Basic Auth over a network. See
+[LAN access and allowed hosts](../../docs/SPACES.md#lan-access-and-allowed-hosts).
+
+`hyperbricks.development.frontend_editing.spaces.public_origin` is optional for
+ordinary editing. It supplies the public
+website origin for absolute sharing-image URLs; it does not grant access. See
+[Spaces configuration](../../docs/SPACES.md#development-configuration).
 
 ## Export a static ZIP
 
@@ -116,14 +158,15 @@ Night Owl Café is also an editable Spaces example:
 
 The café page links all three languages. The neighbourhood guide remains English. The German and Dutch instances share the English source's template, styles, JavaScript, and editing rules; they override translated text, document language, title, and description metadata. They use a separate section to keep the main guide menu at four venues.
 
-Open [Manage Spaces](http://localhost:8125/__hyperbricks/spaces) to edit either translation. The How it works page links to each Space’s editing form and its contextual `?edit=true` page. Editor links and contextual edit mode use full-page navigation so the editor loads and exits cleanly. The development dashboard is at `/__hyperbricks/dashboard`. Local development writes are enabled in the package configuration. Save, then refresh the public page; the existing watcher reloads the source. The editor is not included in static exports.
+Open [Manage Spaces](http://localhost:8125/__hyperbricks/spaces) to edit either translation. The How it works page links to each Space’s editing form and its contextual `?edit=true` page. Editor links and contextual edit mode use full-page navigation so the editor loads and exits cleanly. The development dashboard is at `/__hyperbricks/dashboard`. Local development writes are enabled in the package configuration. In development mode, save, wait for the source watcher to reload, then refresh the public page. In debug mode or with watching disabled, reload or restart the runtime after saving, then refresh the page. The editor is not included in static exports.
 
-Log in with the configured username and password, whether supplied through
-environment variables or directly in YAML. The same login protects the Dashboard's Overview and Errors views,
-Spaces and contextual editing. If you see **Developer interface unavailable:
-credentials are not configured**, one or both resolved values were empty when the
-server started: configure both and restart. A browser login prompt after that is
-expected. Enabling Spaces writes does not configure its login.
+If both developer credentials are configured, use the same login for the
+Dashboard's Overview and Errors views, Spaces, and contextual editing. A missing
+or incorrect browser login receives `401`; a partial configured account receives
+`503`. With both credentials absent these sections open without login. Spaces
+still enforces the [LAN host settings](#lan-access-to-spaces). The editor also
+works in debug mode and is unavailable in live mode, production, and static
+output.
 
 Editable fields live on the café source in `hyperbricks/app.hyperbricks.yaml`, under `body.values.content.editable`. The instances and their managed import index live in `hyperbricks/spaces/night_owl_cafe_page/`. See the [Spaces walkthrough](../../docs/SPACES.md#run-the-night-owl-cafe-example) for the runnable example and creation commands.
 

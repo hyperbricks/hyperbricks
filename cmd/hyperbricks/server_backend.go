@@ -211,8 +211,7 @@ func registerDashboardHandlers(mux *http.ServeMux) bool {
 		if errorsViewEnabled() {
 			data.ErrorsRoute = errorsViewPath
 		}
-		if data.HbConfig.Mode == shared.DEVELOPMENT_MODE && !shared.GetRuntimeOptions().Production && data.HbConfig.Development.FrontendEditing.Enabled &&
-			data.HbConfig.Development.FrontendEditing.Spaces.Enabled && data.HbConfig.ValidateFrontendEditing() == nil {
+		if spacesEditorAvailable() {
 			data.SpacesRoute = data.HbConfig.Development.FrontendEditing.Spaces.Route
 		}
 		data.CacheExpire = data.HbConfig.Live.CacheTime.String()

@@ -34,13 +34,20 @@ installed the binary, run `go install ./cmd/hyperbricks` there first. Run
 `hyperbricks version` to check which version is on your path.
 
 The public store runs without a developer login. Its dashboard is disabled by
-default. If you enable the developer interface in `package.hyperbricks.yaml`,
-set credentials before startup; there is no built-in account:
+default. If you enable Dashboard in `package.hyperbricks.yaml`, it opens without
+login when both developer credentials are absent, with a startup warning. To
+require login, set both values before startup; there is no built-in account:
 
 ```sh
 export HB_DEVELOPER_USER=developer
 export HB_DEVELOPER_PASSWORD='choose-a-long-password'
 ```
+
+A partial account blocks access with `503`. Restart after changing package
+settings or these variables. Dashboard is available in development and debug
+mode, and excluded from live mode, production runtimes, and static output.
+Frontend editing is explicitly disabled in this module. See
+[developer access settings](../../docs/SPACES.md#development-configuration).
 
 If the default ports are occupied, set both the API's listening port and the
 URL used by `api_render`. The site port can be overridden independently:

@@ -42,6 +42,7 @@ DOCUMENTATION_SECTIONS = (
         (
             ("Introduction", "docs/INTRODUCTION.md"),
             ("Quickstart", "docs/QUICKSTART.md"),
+            ("Package Configuration", "docs/PACKAGE_CONFIGURATION.md"),
             ("How-to guides", "docs/HOWTOS.md"),
             ("Troubleshooting", "docs/TROUBLESHOOTING.md"),
         ),

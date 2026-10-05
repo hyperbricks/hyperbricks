@@ -12,13 +12,13 @@ A **source** is a named configuration that resolves to `hypermedia`. It defines 
 
 Use the browser editor to create Spaces, edit declared fields, manage metadata and assets, or move a Space to recoverable **Trash**. Use `hyperbricks space` to create instances through a wizard or explicit flags. Agents and automation can use `hyperbricks author` to define sources and extend their configuration.
 
-Spaces is built into HyperBricks v1.2.5-beta and requires no plugin. The editor runs only in development. Public pages also work with the editor disabled. You can deploy or export them through the normal HyperBricks workflows. Saving writes source files. It does not publish the site or translate content automatically.
+Spaces is built into HyperBricks and requires no plugin. The editor runs in development and debug mode. Public pages also work with the editor disabled. You can deploy or export them through the normal HyperBricks workflows. Saving writes source files. It does not publish the site or translate content automatically.
 
 Start with [Development Configuration](#development-configuration), declare the [Source Schema](#source-schema), then [create and edit a Space](#source-files-and-crud). The [Night Owl Café example](#run-the-night-owl-cafe-example) at the end is a complete runnable demonstration.
 
 ## Development Configuration
 
-Enable the dashboard, file watching, and editor writes in the module's `package.hyperbricks.yaml`:
+Spaces and writes are enabled by default in development and debug mode. Enable the dashboard and file watching in the module's `package.hyperbricks.yaml`:
 
 ```yaml
 hyperbricks:
@@ -26,25 +26,13 @@ hyperbricks:
   development:
     dashboard:
       enabled: true
-      credentials:
-        user:
-          env: HB_DEVELOPER_USER
-        password:
-          env: HB_DEVELOPER_PASSWORD
     watch: true
     watch_dirs: [hyperbricks, templates, resources]
-    frontend_editing:
-      enabled: true
-      spaces:
-        enabled: true
-        write: true
 ```
 
 Always run the command from the project root, which contains `modules/`:
 
 ```sh
-export HB_DEVELOPER_USER=developer
-export HB_DEVELOPER_PASSWORD='choose-a-long-password'
 hyperbricks start -m demo --port 8080
 ```
 
@@ -53,7 +41,9 @@ editor](http://localhost:8080/__hyperbricks/spaces) or the [Dashboard
 Overview](http://localhost:8080/__hyperbricks/dashboard). Restart the module
 after changing package settings.
 
-Without an explicit `write: true`, the editor is read-only. File watching reloads saved YAML; refresh the public page separately to see the result.
+With both developer credentials absent, the enabled Dashboard and Spaces open without login and startup warns about access. Set `development.frontend_editing.spaces.write: false` for a read-only editor.
+
+Automatic file watching runs only in development mode. In debug mode, saving still persists the source, but you must reload or restart the runtime to update public rendering. Refresh the public page after the runtime updates in either mode.
 
 ### Optional settings
 
@@ -85,42 +75,71 @@ hyperbricks:
           directory: {base: static, path: uploads/images}
 ```
 
-Restart after changing package configuration. Set `hyperbricks.development.frontend_editing.spaces.enabled: false` to hide only Spaces, while leaving other configured frontend editors available. This setting defaults to `true` for existing modules. The parent `hyperbricks.development.frontend_editing.enabled: false` still disables all frontend editors, including Spaces, regardless of the Spaces switch. Omitted settings enable the development mount but never writes. With `write: false`, you can read the catalog and forms, but cannot change files or upload assets.
+Restart after changing package configuration or credential environment variables. `frontend_editing.enabled`, `spaces.enabled`, and `spaces.write` all default to `true`. Set `hyperbricks.development.frontend_editing.spaces.enabled: false` to hide Spaces and contextual editing while leaving other configured frontend editors available. The parent `hyperbricks.development.frontend_editing.enabled: false` disables all frontend editors, including Spaces. With `spaces.write: false`, you can read the catalog and forms, but cannot change files or upload assets.
 
 `development.dashboard.credentials` is the module's one developer-interface
-login. It protects the Dashboard's Overview and Errors views, render
+login. When configured, it protects the Dashboard's Overview and Errors views, render
 diagnostics, Spaces, configured frontend-editor plugins, contextual editing
 through `?edit=true`, and frontend error panels. `dashboard.enabled` controls
 only the Dashboard's Overview and Errors views; independently enabled tools
 such as Spaces still use the same credentials
-when the Dashboard is disabled. Public application routes remain accessible
+when the Dashboard is disabled. Ordinary public-page requests remain accessible
 without this login and do not receive developer-only panels or edit controls.
 
-There is no default developer username or password. Spaces and editing require
-both resolved values; otherwise they return `503 Service Unavailable`. Missing
-or incorrect browser credentials return `401 Unauthorized` with a Basic Auth
-challenge when an account is configured. Environment changes require a process restart.
+There is no default developer username or password. Spaces and contextual editing use this policy in development and debug mode, including when the Dashboard is disabled:
 
-Dashboard Overview, Errors, and their diagnostics have a development/debug
-exception: with `dashboard.enabled: true` and both credential values absent,
-they open without login and startup warns about network access. Anyone who can
-reach the server can view them. A partial account remains locked. This
-exception does not enable Spaces, editing, or frontend error panels without a
-login; diagnostics still require credentials when the Dashboard is disabled.
+| Resolved developer credentials | Access to enabled Spaces and contextual editing |
+| --- | --- |
+| Both absent | Open without login; startup warns. Host, origin, and write checks still apply. |
+| Both configured | Require HTTP Basic Auth. An absent or incorrect browser login returns `401 Unauthorized`. |
+| Only one configured | Block access with `503 Service Unavailable`; complete or remove the account and restart. |
 
-The editor rejects access outside development, including production, even when explicitly enabled. Spaces checks the configured host and browser origin. It ignores forwarded-host/origin headers. Opening the CMS creates no module files.
+For the environment-backed example above, set both `HB_DEVELOPER_USER` and `HB_DEVELOPER_PASSWORD` in the terminal that starts HyperBricks to require login. If both resolve empty, login is optional; if only one resolves, access is blocked.
+
+Dashboard Overview, Errors, and diagnostics also open without login when `dashboard.enabled: true` and both credentials are absent. Anyone who can reach the server can view them. Configured frontend-editor plugins and frontend error panels still require a complete login and remain development-only. Diagnostics still require credentials when the Dashboard is disabled.
+
+Spaces and contextual editing are unavailable in live mode, production runtimes, and static output, even when explicitly enabled. Opening Spaces creates no module files.
 
 The route must be a clean `/__hyperbricks/` path. It cannot overlap diagnostics or another editor. Configure Spaces under `hyperbricks.development.frontend_editing.spaces`.
 
 Configure external frontend-editor plugins under `development.frontend_editing.editors.<name>` with `plugin`, `route`, and `data`. These plugins still require explicit `plugins.enabled` entries. Spaces does not.
 
 HTTP Basic Auth does not encrypt credentials. Loopback HTTP is suitable for
-local development; LAN access needs HTTPS, a TLS reverse proxy, or a private
-encrypted network. Browser-managed Basic Auth has no reliable application-level
+local development; use a private encrypted tunnel or network for remote editing.
+See [LAN access](#lan-access-and-allowed-hosts) for the current proxy limitation.
+Browser-managed Basic Auth has no reliable application-level
 logout, so closing the browser session or clearing its stored credentials may
 be necessary. Spaces is not a native-code sandbox: native plugins remain
 trusted application code and must not be treated as untrusted multi-tenant
 extensions.
+
+### LAN access and allowed hosts
+
+Spaces accepts `localhost` and loopback IP addresses by default. To open it using another server hostname or IP address, add that address to the existing package configuration:
+
+```yaml
+hyperbricks:
+  development:
+    frontend_editing:
+      spaces:
+        allowed_hosts:
+          - editor.example.test
+          - 192.0.2.10
+```
+
+Use the hostname or IP from the browser URL, without `http://`, `https://`, a path, or a port. For `http://editor.example.test:8080/__hyperbricks/spaces`, list `editor.example.test`. Restart after changing the setting. A host that is not allowed receives `403 Forbidden`.
+
+`allowed_hosts` checks the server address in the request, not the client computer's address. It applies with and without login. Without credentials, anyone who can reach an allowed server address can open Spaces and, unless `write: false`, edit files. Configure both credentials when access needs to be restricted.
+
+Write requests must also pass the browser-origin check; adding a host does not permit cross-origin writes. The browser's origin scheme, hostname, and port must match the request received by HyperBricks. Spaces ignores forwarded-host/protocol headers.
+
+A reverse proxy that terminates HTTPS and forwards HTTP to HyperBricks can open the editor, but browser saves return `403`: the browser sends an HTTPS origin while HyperBricks receives an HTTP connection. Neither `allowed_hosts` nor `public_origin` overrides this check. For remote editing with the current server, use HTTP through a private encrypted tunnel or network. With SSH port forwarding, open the forwarded localhost URL so the browser and backend origins match.
+
+### Public origin for sharing images
+
+`public_origin` is the public website's HTTP(S) origin, such as `https://www.example.com`, without a path. Spaces uses it to turn a selected or uploaded sharing-image path into an absolute `og:image` URL. For example, `/static/uploads/images/cafe.jpg` becomes `https://www.example.com/static/uploads/images/cafe.jpg`.
+
+It is optional for ordinary editing. Sharing-image upload and selection require both `public_origin` and a `sharing_image` policy. It does not grant access, change `allowed_hosts`, or supply a browser origin for write requests.
 
 ## Source Schema
 
@@ -176,7 +195,7 @@ The source schema defines which fields you can save. An instance's local `editab
 
 ### Create and edit
 
-Choose **Create Space** in the browser editor. Select a source and enter a unique name, title, and route. The new Space inherits the source's layout and editable defaults. Select it in the list, change its content or metadata, and choose **Save Changes**. After the watcher reloads the configuration, refresh the public page.
+Choose **Create Space** in the browser editor. Select a source and enter a unique name, title, and route. The new Space inherits the source's layout and editable defaults. Select it in the list, change its content or metadata, and choose **Save Changes**. In development mode with watching enabled, wait for the watcher to reload the configuration, then refresh the public page. In debug mode or with watching disabled, reload or restart the runtime first. See [Persistence And Watching](#persistence-and-watching).
 
 To create a Space from the CLI, open the wizard or list the available sources:
 
@@ -228,12 +247,9 @@ Whole-module deployment archives include trashed sources. Spaces has no expiry, 
 
 ## Edit From The Page
 
-Select a Space and choose **Edit page**, or open its development page with `?edit=true`. HyperBricks matches the served route to an active managed Space. It adds edit controls to content with explicit field mappings. Ordinary requests, live/production responses, and static exports do not include these controls.
+Select a Space and choose **Edit page**, or open its development/debug page with `?edit=true`. HyperBricks matches the served route to an active managed Space. It adds edit controls to content with explicit field mappings. Ordinary requests, live/production responses, and static exports do not include these controls.
 
-The query parameter does not grant access or enable writes. A valid
-`development.dashboard.credentials` login is required before contextual editing
-is activated. The development, host/origin, and Spaces write settings still
-apply after authentication.
+The query parameter does not grant access or enable writes. Contextual editing follows the same Spaces enablement, optional-login, host/origin, and write settings described in [Development Configuration](#development-configuration). Both credentials absent permits access; a complete account requires login; a partial account blocks access.
 
 Use `data-hb-space-field` in the application template to map an element to a source-owned field. Copy the exact canonical field ID from the Space's editor catalog. Do not use a label or guess a key:
 
@@ -302,7 +318,7 @@ Creation writes the instance first, then the index, then the parent import. An i
 
 Uploads and their reference saves share validation. Replacing or clearing a reference does not delete the old asset. If Spaces saves an asset but the YAML write fails, the old reference remains. You can recover the new, unreferenced asset manually. Spaces saves multiple selected uploads sequentially, without a cross-file transaction. Optimistic revisions do not provide multi-process locking.
 
-Spaces does not publish, reload the runtime, or start a watcher. **Saved** means it persisted the source file. `development.watch` and `watch_dirs` control asynchronous configuration refresh. With watching disabled, reload or restart manually. Refresh the browser page separately. Package changes always require a restart.
+Spaces does not publish, reload the runtime, or start a watcher. **Saved** means it persisted the source file. `development.watch` and `watch_dirs` control automatic configuration refresh only in development mode. In debug mode, or with watching disabled, reload or restart the runtime to update public rendering after a save. Then refresh the browser page. Package changes always require a restart.
 
 ## Markdown Example
 
@@ -369,8 +385,9 @@ The count shows **known references**. It does not prove that a file is globally 
   selected Space's asset reference. Other references and the original file remain.
 - Both operations validate the current source editing permission, YAML/catalog
   revision, and the Markdown file's own SHA-256 revision. Sharing membership
-  changes invalidate old confirmations. Trash/read-only/non-development writes,
-  path escapes, symlinks, oversized or invalid text are rejected.
+  changes invalidate old confirmations. Writes to trashed Spaces, read-only
+  writes, writes outside development/debug mode, path escapes, symlinks,
+  and oversized or invalid text are rejected.
 - A document conflict preserves the draft and shows previously loaded/currently
   saved content. Keeping the draft adopts the current revision for a subsequent
   explicit Save; it does not immediately overwrite the file.
@@ -399,13 +416,12 @@ For local development automation, use the configured editor route as the API pre
 | `POST <route>/api/upload` | Multipart fields `mutation` (JSON save mutation), `field` (catalog field ID), and exactly one `file`. Validates the upload and saves its reference together. |
 | `GET/POST <route>/api/document` | Document read/preview/save/copy; see the document protocol in [Editorial Workflow](#editorial-workflow). |
 
-Every editor API request requires HTTP Basic Auth with the module's
-`development.dashboard.credentials`. Write requests additionally require
+Editor API requests require HTTP Basic Auth when both module
+`development.dashboard.credentials` values are configured. Both absent permits access without login; a partial account blocks access. Write requests additionally require
 `X-Spaces-Request: 1` and cannot be cross-origin. For local automation, send
 the actual server origin in `Origin`. Use `Content-Type: application/json` for
 JSON mutations. For uploads, let the HTTP client set the multipart boundary.
-Development mode, allowed host, and explicit write policy still apply after
-authentication.
+Development/debug mode, an allowed host, and the Spaces write policy still apply.
 
 Creation example, using a source name from the catalog:
 
@@ -437,7 +453,7 @@ For the simple source in [Source Schema](#source-schema), a text save looks like
 
 Field IDs depend on component nesting. Check the catalog before using the example ID. `meta` maps keys to string overrides or null for removal. `reset_meta` lists keys to reset to inherited values. For `trash` or `restore`, send `action`, `revision`, and `name`.
 
-Successful instance/upload mutations return `{"saved":true,"name":"..."}`. Fetch a fresh catalog before the next mutation. On HTTP 409, reread the data and resolve the conflict. Do not retry blindly with a new revision. Document writes also require their file revision and shared-save confirmation. Runtime refresh is asynchronous. Check the public response separately from file persistence.
+Successful instance/upload mutations return `{"saved":true,"name":"..."}`. Fetch a fresh catalog before the next mutation. On HTTP 409, reread the data and resolve the conflict. Do not retry blindly with a new revision. Document writes also require their file revision and shared-save confirmation. Runtime refresh is asynchronous when development watching is enabled; debug mode requires a reload or restart. Check the public response separately from file persistence. See [Persistence And Watching](#persistence-and-watching).
 
 ## Verification
 
@@ -447,6 +463,10 @@ For translations, check each language route, document language, title, metadata,
 
 | Symptom | Check |
 | --- | --- |
+| Spaces returns `401` | Both developer credentials are configured; supply the correct browser login. |
+| Spaces returns `503` | Only one developer credential resolved. Configure both or remove both, then restart. |
+| Spaces returns `403` | Check `allowed_hosts` against the server hostname or IP in the URL. For writes, also check `spaces.write`, the same-origin requirement, and `X-Spaces-Request: 1`. |
+| Spaces is unavailable | Use development or debug mode, and confirm both `frontend_editing.enabled` and `spaces.enabled` are enabled. Live/production and static output exclude the editor. |
 | A source or Space is absent from the catalog | The loaded import graph: top-level source files load automatically, nested files need explicit imports, and the managed `spaces/<source>/index.hyperbricks.yaml` must import active instances. |
 | A translated field is missing from the editor | The `editable` declaration on the owning source component. For a nested template, `editable.heading` targets that template's `values.heading`, not a similarly named outer value. |
 | A saved translation is not visible on its route | `development.watch` and `watch_dirs`, server reload or restart, route cache, and a separate browser refresh. Package changes always need a restart. |
@@ -502,12 +522,11 @@ Change the introduction, description, opening hours, or menu text in the editing
 Open a café page with `?edit=true` to use contextual editing. Hover over mapped content or choose a field. Follow **Edit … in Spaces** to open that field in the editing form. Choose **Exit** to return to the public page. The café template uses `data-hb-space-field` with catalog IDs such as `/body/values/content/values/intro`.
 
 The module enables `dashboard.enabled` and Spaces writes for local development.
-Set `HB_DEVELOPER_USER` and `HB_DEVELOPER_PASSWORD` before starting it, then use
-that browser login for both Spaces and the
-[Dashboard](http://localhost:8096/__hyperbricks/dashboard). The existing file watcher reloads
-saved YAML; saving does not publish the site.
+With both `HB_DEVELOPER_USER` and `HB_DEVELOPER_PASSWORD` absent, Spaces and the
+[Dashboard](http://localhost:8096/__hyperbricks/dashboard) open without login.
+Set both variables before starting the server to require the same login for both tools. A partial account blocks access. For a LAN URL, also configure [allowed hosts](#lan-access-and-allowed-hosts). The existing file watcher reloads saved YAML; saving does not publish the site.
 
-Editor links and contextual edit mode use full-page navigation. This lets the editor load and exit cleanly. Ordinary café language links use Swup to update content, title, and document language. Editing controls work only in development. Static exports contain the public pages.
+Editor links and contextual edit mode use full-page navigation. This lets the editor load and exit cleanly. Ordinary café language links use Swup to update content, title, and document language. Editing controls work in development and debug mode. Static exports contain the public pages.
 
 ### How the example is stored
 

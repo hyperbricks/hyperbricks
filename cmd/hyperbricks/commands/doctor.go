@@ -836,21 +836,25 @@ func checkDoctorPlugins(collector *doctorCollector, config *shared.Config, cwd, 
 func checkDoctorCredentials(collector *doctorCollector, config *shared.Config) {
 	credentials := config.Development.Dashboard.Credentials
 	dashboardEnabled := (config.Mode == shared.DEVELOPMENT_MODE || config.Mode == shared.DEBUG_MODE) && config.Development.Dashboard.Enabled
+	spacesEnabled := shared.SpacesAvailable(config, shared.RuntimeOptions{})
 	frontendEditorsEnabled := config.Mode == shared.DEVELOPMENT_MODE && config.Development.FrontendEditing.Enabled &&
-		(config.Development.FrontendEditing.Spaces.Enabled || len(config.Development.FrontendEditing.Editors) > 0)
-	surfaceEnabled := dashboardEnabled || frontendEditorsEnabled
+		len(config.Development.FrontendEditing.Editors) > 0
+	surfaceEnabled := dashboardEnabled || spacesEnabled || frontendEditorsEnabled
 	switch {
 	case credentials.Complete():
 		collector.simple("security.developer_credentials", doctorPass, "developer-interface credentials are configured")
 	case credentials.Empty() && surfaceEnabled:
-		message := "enabled Spaces and frontend editors are locked because credentials are not configured"
+		messages := []string{}
 		if dashboardEnabled {
-			message = "Dashboard, Errors and diagnostics are accessible without login to anyone who can reach the server"
-			if frontendEditorsEnabled {
-				message += "; Spaces and frontend editors remain locked"
-			}
+			messages = append(messages, "Dashboard, Errors and diagnostics are accessible without login to anyone who can reach the server")
 		}
-		collector.set(doctorCheck{ID: "security.developer_credentials", Group: "security", Status: doctorWarn, Message: message, Path: "hyperbricks.development.dashboard.credentials", Hint: "Configure both development.dashboard.credentials.user and development.dashboard.credentials.password"})
+		if spacesEnabled {
+			messages = append(messages, fmt.Sprintf("Spaces and contextual editing are accessible without login through allowed hosts (write=%t)", config.Development.FrontendEditing.Spaces.Write))
+		}
+		if frontendEditorsEnabled {
+			messages = append(messages, "frontend editor plugins remain locked because credentials are not configured")
+		}
+		collector.set(doctorCheck{ID: "security.developer_credentials", Group: "security", Status: doctorWarn, Message: strings.Join(messages, "; "), Path: "hyperbricks.development.dashboard.credentials", Hint: "Configure both development.dashboard.credentials.user and development.dashboard.credentials.password to require login"})
 	case credentials.Empty():
 		collector.simple("security.developer_credentials", doctorPass, "developer interfaces are disabled and credentials are not configured")
 	default:

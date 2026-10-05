@@ -6,7 +6,7 @@ Start with the developer interface or server log and check the affected route. A
 
 ## Find the reported error
 
-In development mode, use the developer interface's **Errors** section:
+In development or debug mode, use the developer interface's **Errors** section:
 
 1. Set `hyperbricks.development.dashboard.enabled: true` in
    `package.hyperbricks.yaml` and restart the server.
@@ -41,6 +41,29 @@ Dashboard is disabled; a `401` response means the
 browser did not supply the configured login or supplied the wrong one. If the
 server cannot start, read the terminal error instead. See
 [HyperBricks CLI: Render diagnostics](HYPERBRICKS_CLI.md#render-diagnostics).
+
+## Spaces will not open or save
+
+Spaces and contextual editing work in development and debug mode when both
+`development.frontend_editing.enabled` and `.spaces.enabled` are enabled. Both
+switches default to `true`. Live mode, production runtimes, and static output
+exclude the editor.
+
+| Response or symptom | Cause and next step |
+| --- | --- |
+| No login prompt | Both credentials may be absent, or the browser may be reusing a saved Basic Auth login. Check the configured values and startup warning. Configure both values and restart to require login. |
+| `401 Unauthorized` | A complete developer account is configured. Enter its username and password; there is no default account. |
+| `503 Service Unavailable` | Only one credential resolved. Configure both values or remove both, then restart. Check the environment of the process that starts HyperBricks. |
+| `403` when opening Spaces over the LAN | Add the server hostname or IP from the browser URL to `development.frontend_editing.spaces.allowed_hosts`, without a scheme or port, then restart. Localhost and loopback work by default. |
+| `403` when saving | Check `spaces.write` and the browser-origin check. API writes also require `X-Spaces-Request: 1`. Setting `write: false` makes the editor read-only; omitted `write` defaults to `true`. |
+| Editor opens through an HTTPS proxy, but saves return `403` | If the proxy forwards HTTP to HyperBricks, the browser's HTTPS origin does not match the backend connection. Forwarded headers and `public_origin` do not override this check. Use a private encrypted tunnel or network that preserves the HTTP origin; see [LAN access](SPACES.md#lan-access-and-allowed-hosts). |
+| Sharing-image selection/upload is unavailable | Configure `spaces.public_origin` and a `sharing_image` policy. The public origin produces absolute image URLs; it does not grant editor access. |
+
+The host list applies whether or not login is configured. It checks the server
+address, not the connecting client's IP. With no credentials and writes enabled,
+anyone who can reach an allowed address can edit. Contextual `?edit=true` uses
+the same rules. See [Spaces configuration](SPACES.md#development-configuration)
+for complete examples.
 
 ## VS Code feedback is missing or stale
 
@@ -79,7 +102,7 @@ Query input must be allowed by `querykeys`. Check resolver diagnostics if the va
 
 ## An edit does not appear
 
-Check that the file is loaded and development watching is enabled for its directory. Changes to `package.hyperbricks.yaml` require a server restart.
+Check that the file is loaded. Automatic watching operates only in development mode and must include the file's directory. In debug mode or with watching disabled, reload or restart the runtime after saving, then refresh the browser. A Spaces save persists source files; it does not reload the runtime itself. Changes to `package.hyperbricks.yaml` always require a server restart.
 
 In live mode, the containing route may reuse cached output. Use `nocache: true` on that route when each request needs current data. Static output is a snapshot: rebuild it after source changes. See [Live Mode HTTP Settings](LIVE_MODE_HTTP.md) and [HyperBricks CLI: Static Rendering](HYPERBRICKS_CLI.md#static-rendering).
 

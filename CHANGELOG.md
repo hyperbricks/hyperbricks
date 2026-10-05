@@ -23,12 +23,20 @@ Changes since `v1.2.9-beta`.
 
 - Open an enabled Dashboard, Errors, and their diagnostics in development/debug
   mode when both credentials are absent, with a startup warning. Partial
-  credentials remain blocked; Spaces and editors still require authentication.
+  credentials remain blocked.
+- Enable Spaces and contextual editing in development/debug mode with optional
+  login and writes enabled by default. Host and origin checks still apply;
+  configured credentials require login, and partial accounts remain blocked.
+  Set `spaces.write: false` to retain read-only access. External editor plugins
+  and frontend error panels still require authentication.
 - Add language-server completion, hover, and configuration diagnostics for route
   cache storage and expiry without changing the editor protocol.
 
 ### Guides and benchmarks
 
+- Add a dedicated [Package Configuration guide](docs/PACKAGE_CONFIGURATION.md)
+  covering module settings, defaults, and alternate configuration files selected
+  with `--config`.
 - Add a [practical caching guide](docs/CACHING.md) and runnable test module
   covering memory, disk, expiry, purge, runtime modes, and deployment exclusions.
 - Add local HTTP [benchmarks](benchmarks/README.md) for fresh rendering and

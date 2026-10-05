@@ -13,7 +13,7 @@ The equivalent expanded form is `cache: {storage: mem, expire: 30s}`. Use `stora
 `.cache` is now a built-in exclusion for module deployment archives and runtime snapshots. Configured cache directories inside the module are excluded too. Keep application source and required assets outside cache directories. See [output caching](LIVE_MODE_HTTP.md#output-cache) and [deployment exclusions](DEPLOY.md#response-cache-files-and-deployment).
 
 
-### Open an enabled development dashboard without credentials
+### Developer access and Spaces defaults
 
 With `development.dashboard.enabled: true` in development or debug mode,
 Dashboard Overview, Errors, and their diagnostic data now open without login
@@ -25,10 +25,35 @@ exposing these views on a network where access needs to be restricted.
 A configured account still requires Basic Auth. A partial account remains
 locked with `503`; an unresolved environment variable can produce this state.
 If both environment values resolve empty, the dashboard opens without login and
-warns. Spaces, contextual editing, frontend-editor plugins, and frontend error
-panels still require credentials. Diagnostics still require credentials when
-the Dashboard is disabled. Live mode, production runtimes, and static rendering
-do not expose these dashboard routes. Restart after changing configuration.
+warns. Diagnostics still require credentials when the Dashboard is disabled.
+
+Spaces and contextual editing now follow the same optional-login policy in
+development **and debug** mode, even with the Dashboard disabled. Their existing
+host and write-origin checks still apply. Localhost and loopback work by default;
+add a server hostname or IP to `spaces.allowed_hosts` for LAN access. This list
+controls the server address, not the clients allowed to connect.
+
+**Spaces writes now default to `true`.** If a module relied on an omitted `write`
+setting for read-only access, add an explicit `false` before upgrading:
+
+```yaml
+hyperbricks:
+  development:
+    frontend_editing:
+      spaces:
+        write: false
+```
+
+Existing explicit `write: false` settings keep their behavior. Spaces enablement
+and its parent switch still default to `true`; setting either
+`frontend_editing.enabled: false` or `spaces.enabled: false` disables Spaces and
+contextual editing. Set both developer credentials to require login.
+
+Frontend-editor plugins and frontend error panels still require credentials
+and remain development-only. Live mode, production runtimes, and static output
+do not expose developer interfaces. Restart after changing configuration or
+credential environment variables. See [Spaces configuration](SPACES.md#development-configuration)
+for the access table, LAN setup, and `public_origin`.
 
 ## Upgrade from v1.2.4-beta to v1.2.5-beta
 

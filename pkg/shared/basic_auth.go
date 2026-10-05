@@ -11,6 +11,7 @@ import (
 const (
 	DeveloperInterfaceRealm              = "HyperBricks Developer"
 	DeveloperInterfaceUnavailableMessage = "Developer interface unavailable: credentials are not configured"
+	SpacesIncompleteCredentialsMessage   = "Spaces unavailable: set both development.dashboard.credentials.user and password, or leave both empty"
 )
 
 func ApplyBasicAuth(request *http.Request, credentials CredentialsConfig, label string) error {
@@ -74,6 +75,22 @@ func BasicAuthAuthorized(r *http.Request, credentials CredentialsConfig) bool {
 	expectedUser := sha256.Sum256([]byte(credentials.User))
 	expectedPassword := sha256.Sum256([]byte(credentials.Password))
 	return basicAuthMatches(r, expectedUser, expectedPassword)
+}
+
+// RequireSpacesAuth permits an unconfigured account for Spaces. Partial
+// accounts remain unavailable, and complete accounts require Basic Auth.
+// Callers must also enforce Spaces availability, host and write policies.
+func RequireSpacesAuth(w http.ResponseWriter, r *http.Request, credentials CredentialsConfig) bool {
+	if credentials.Empty() {
+		return true
+	}
+	return RequireBasicAuth(w, r, credentials, DeveloperInterfaceRealm, SpacesIncompleteCredentialsMessage)
+}
+
+// SpacesAuthAuthorized checks the same optional account policy without writing
+// a response, for contextual controls added to an existing page.
+func SpacesAuthAuthorized(r *http.Request, credentials CredentialsConfig) bool {
+	return r != nil && (credentials.Empty() || BasicAuthAuthorized(r, credentials))
 }
 
 // DeveloperInterfaceAuthorized reports whether the request stored in a render

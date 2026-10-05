@@ -141,7 +141,8 @@ For a component inside template `values`, use a named reusable definition with
 `inherit`. Repeat that `inherit` reference in instance overrides;
 inheritance references cannot traverse through nested template `values` mappings.
 
-Spaces remains development-only with writes explicitly enabled. The Markdown
+Spaces runs in development and debug mode, with writes enabled by default. Set
+`development.frontend_editing.spaces.write: false` for read-only access. The Markdown
 renderer is independent of the CMS. Uploading an unreferenced file creates no
 route. Trashing a Space removes its route but does not delete shared files or
 remove other explicitly declared routes that reference them.
