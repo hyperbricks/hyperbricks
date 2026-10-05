@@ -59,7 +59,7 @@ Set `enabled: false` when a trusted reverse proxy owns rate limiting, or for a c
 
 ## Output Cache
 
-`live.cache` controls how long rendered output may be reused in live mode. It is one process-wide duration, shared by cacheable routes; there is no per-route duration override. The default is `10m`.
+`live.cache` supplies the default lifetime for reusable rendered output in live mode. The default is `10m`. Pages (`hypermedia`) and ordinary `fragment` routes can override that lifetime and choose memory or disk storage. Development and debug modes always render fresh, while still validating route cache configuration.
 
 ```yaml
 hyperbricks:
@@ -70,6 +70,49 @@ hyperbricks:
 
 When a route is cacheable, HyperBricks can add live cache metadata headers and serve repeated requests from the cache until the entry expires.
 
+A scalar route duration selects memory storage and overrides the package lifetime:
+
+```yaml
+products:
+  - type: hypermedia
+  - route: products
+  - cache: 30s
+```
+
+The expanded form selects either backend:
+
+```yaml
+products:
+  - type: hypermedia
+  - route: products
+  - cache:
+      storage: disk
+      expire: 1h
+
+stock:
+  - type: fragment
+  - route: stock
+  - cache:
+      storage: mem
+      expire: 30s
+```
+
+These snippets show route policy only; add the page or fragment's content alongside it.
+
+| Route setting | Result |
+| --- | --- |
+| `cache` omitted | Memory storage with the package lifetime. |
+| `cache: 30s` | Memory storage for 30 seconds. |
+| `cache: 0s` or `cache: {expire: 0s}` | No output caching for this route. |
+| `cache: {storage: disk}` | Disk storage with the package lifetime. |
+| `cache: {storage: disk, expire: 1h}` | Disk storage for one hour. |
+| `nocache: true` | No output caching, regardless of `cache`. |
+
+Normal mapping inheritance applies. A child overriding only `expire` keeps its parent's storage. A scalar duration replaces an inherited mapping and selects memory. An empty mapping does not erase inherited values. Unknown fields, invalid storage values, empty/null values and invalid or negative route durations are configuration errors. The mapping accepts only `storage` and `expire`; the separate Boolean `esbuild.cache` retains its build-cache meaning.
+
+Before v1.3.0-beta, scalar route durations were accepted but ignored. They now take effect. Remove the route field to keep using the package lifetime; see [Migration](MIGRATION.md#route-cache-durations-now-take-effect).
+
+
 Set the duration to exactly `0s` to disable the internal HyperBricks rendered-output cache for the complete live process:
 
 ```yaml
@@ -79,7 +122,7 @@ hyperbricks:
     cache: 0s
 ```
 
-With `0s`, every route passes through rendering instead of looking up or storing an internal cache entry. The response consequently has no HyperBricks cache metadata. This is a process-wide switch; use route-level `nocache: true` when only selected routes must bypass the internal cache.
+With `0s`, every route passes through rendering instead of looking up or storing an internal cache entry. The response consequently has no HyperBricks cache metadata. This is a process-wide switch and wins over positive route lifetimes for both storage backends. Use route-level `nocache: true` or `cache: 0s` when only selected routes must bypass the internal cache.
 
 Use zero or a positive duration such as `15s`, `10m`, or `1h`. A negative duration such as `-1s` is invalid and runtime validation stops startup; the deployment package editor rejects it before saving. An invalid duration string currently logs a parse error and falls back to `24h` during ordinary startup, while the deployment package editor's strict validation rejects it. Check startup logs after changing this value.
 
@@ -185,15 +228,53 @@ This separation prevents one variant from reusing another variant's stored outpu
 
 Internal query/authentication/cookie separation does not automatically declare the corresponding HTTP caching policy. Configure the appropriate `Vary` and `Cache-Control` headers for clients and proxies. See [HTTP responses](HTTP_RESPONSES.md).
 
-### Expiry, Updates, and Memory
+### Storage, Expiry, and Cleanup
 
-With a positive `live.cache` duration, entries live in memory in each HyperBricks process. On a request for an expired entry, HyperBricks renders fresh content and replaces that entry. It does not refresh entries in the background. The cache currently has no size limit or periodic removal of expired entries; an unused expired variant can remain in memory until the cache is cleared or the process stops. With `live.cache: 0s`, no internal entries are looked up or stored.
+Both backends use the same request variants, response status, headers, cookies and ETags. Memory storage keeps response bodies in the process. Disk storage keeps bodies in private files and retains a small metadata index in memory. Disk hits verify the file and stream it without loading the full body into a string. Rendering a cache miss still needs normal rendering memory. Disk trades filesystem work for lower retained body memory; it is not expected to beat memory-cache latency.
 
-Choose `live.cache` according to how long public content may remain stale. After a data change, an already cached page can continue serving its previous output until expiry. A full configuration reinitialization clears the internal cache; restarting or deploying a new process also starts with an empty cache. There is no public per-route invalidation API. With multiple processes, each has its own cache and expiry timing.
+Expiry is fixed from the start of rendering. A hit does not extend it, and the next request after expiry renders fresh output. There is no background refresh or stale-while-revalidate behavior. A periodic sweep removes expired entries from both backends, including variants nobody requests again. Removing memory entries makes their storage eligible for Go garbage collection; it does not guarantee an immediate reduction in operating-system memory figures.
 
-Use `nocache: true` for routes with many distinct search queries, session cookies, large request bodies, or rapidly changing data when storing all those variants offers little reuse. Monitor process memory for applications with many cacheable variants. Expiry limits reuse time, not memory usage.
+Configure the disk directory and maintenance limits in the package:
+
+```yaml
+hyperbricks:
+  mode: live
+  directories:
+    cache: '{{MODULE}}/.cache'
+  live:
+    cache: 10m
+    disk_cache:
+      max_bytes: 268435456
+      max_entries: 10000
+      cleanup_interval: 1m
+```
+
+These are the defaults: **256 MiB of disk response bodies**, **10,000 disk entries**, and cleanup every **minute**. The cleanup interval applies to expired memory entries too. All three values must be positive. A size or entry limit first evicts expired disk entries, then the oldest entries; entries larger than the byte limit are served fresh. The body-byte limit applies per runtime, not to filesystem overhead, the small metadata index, already-open files held by in-flight responses, memory-cache bodies or all processes combined. Memory caching has no byte limit; avoid caching routes with many distinct, rarely reused variants.
+
+The default layout is `<module>/.cache/responses/<runtime-id>/`. The directory is created on the first disk write. A custom `directories.cache` must be dedicated to private runtime data, outside source, resources, templates, plugins, static and rendered-output directories. Use `{{MODULE}}` for module-relative paths; bare relative paths follow the existing invocation-directory convention. A dedicated absolute path can be used for a writable container volume. Do not expose it through Caddy or another file server.
+
+`.cache` directories are excluded by default from deployment packages and runtime snapshots. A configured cache directory inside the module is excluded too. These are built-in packaging rules, independent of `.gitignore`; see [Deployment cache exclusions](DEPLOY.md#response-cache-files-and-deployment). Cache directories are also excluded from source watching. Archive directory settings come from the module’s default `package.hyperbricks.yaml`. When starting with a different configuration profile, keep its cache under `.cache`, outside the module, or at the same cache location declared in the default package.
+
+Each runtime starts with an empty response cache. Disk entries are disposable and are not reused across restarts. A configuration reload invalidates both backends. Normal shutdown removes owned files; startup on first disk use and periodic maintenance reclaim abandoned runtime directories only when their recorded local process is demonstrably absent. Files belonging to active or unknown owners are left alone. Multiple processes maintain independent caches and limits.
+
+Missing, damaged or unwritable disk entries cause fresh rendering with a diagnostic, without retaining the body in a fallback memory cache. Invalidation rejects cache writes from renders started before a purge or reload, so older work cannot repopulate the new cache. An already-running response may finish.
 
 Invalid HTTP/guard configuration and handled responses bypass caching. Render failures, rejected diagnostics, and HTTP statuses of `500` or higher also bypass caching and receive `Cache-Control: no-store`, so the next request can retry. Warnings and notices alone do not disable caching. Other non-200 statuses can still be cached; set the route policy explicitly and check `X-Hyperbricks-Render-Error-Count` during verification.
+
+### Purging Memory and Disk
+
+Run cache administration on the same host and as the same operating-system user as the running module:
+
+```sh
+hyperbricks cache purge --module my-site --all
+hyperbricks cache purge --module my-site --route products
+```
+
+`--all` invalidates every cached response in that instance. `--route` invalidates all request variants for the selected route, in either backend. The next request renders fresh and caches according to the existing policy. Purge does not change configuration or eagerly render pages. Exactly one of `--all` or `--route` is required; unknown routes produce an error.
+
+The command communicates with the running live instance through a private local Unix socket on macOS/Linux. It has no public HTTP endpoint and does not depend on the development dashboard. With several instances using the same module directory, the command lists their identifiers and requires `--instance <id>`; purge each intended instance separately. For deployed builds, pass the running build's extracted module directory with `--module`, rather than the source directory. A stopped process has no memory cache to purge; the command reports that no running instance was found.
+
+The private connection lives in the operating-system user's cache directory. If local control cannot start, the server logs that purge control is unavailable and continues serving. Review startup logs before relying on automated purge commands. This operation affects HyperBricks' internal cache only; browser, proxy and CDN caches remain independent.
 
 ### Verifying a Mixed Configuration
 

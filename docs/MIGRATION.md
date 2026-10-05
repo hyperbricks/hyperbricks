@@ -4,6 +4,15 @@ Use this guide when updating an older configuration to the current component con
 
 ## Upgrade to v1.3.0-beta
 
+### Route cache durations now take effect
+
+A page or ordinary fragment's scalar `cache: 30s` now means memory storage with a 30-second route lifetime. Earlier versions accepted that field but used the package's `hyperbricks.live.cache` duration instead. Existing routes with explicit durations can therefore refresh more often or retain output longer after upgrading. Remove the route field to retain the package lifetime. `cache: 0s` now disables output caching for that route.
+
+The equivalent expanded form is `cache: {storage: mem, expire: 30s}`. Use `storage: disk` to store response bodies on disk. Package `live.cache: 0s`, route `nocache: true`, and the development/debug mode bypass still take priority. Invalid scalar values now produce configuration errors; replace unused placeholder strings with a duration or remove the field.
+
+`.cache` is now a built-in exclusion for module deployment archives and runtime snapshots. Configured cache directories inside the module are excluded too. Keep application source and required assets outside cache directories. See [output caching](LIVE_MODE_HTTP.md#output-cache) and [deployment exclusions](DEPLOY.md#response-cache-files-and-deployment).
+
+
 ### Open an enabled development dashboard without credentials
 
 With `development.dashboard.enabled: true` in development or debug mode,

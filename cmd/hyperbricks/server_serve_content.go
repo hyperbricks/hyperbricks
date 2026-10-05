@@ -1053,6 +1053,9 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 	if guardResponse != nil {
 		return *guardResponse
 	}
+	if _, err := composite.ResolveRouteCache(_config, hbConfig.Live.CacheTime.Duration); err != nil {
+		return configurationErrorResponse(err)
+	}
 
 	response, responseErr := resolveHTTPResponse(_config)
 	if responseErr != nil {
@@ -1531,6 +1534,9 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 	logging.GetLogger().Debugw("Received request for route", "route", route)
 	if hbConfig.Mode == shared.LIVE_MODE {
 		cacheEntry := handleLiveMode(w, route, r, requestID)
+		if cacheEntry.Body != nil {
+			defer cacheEntry.Body.Close()
+		}
 		if cacheEntry.Handled != nil && cacheEntry.Handled.Stream != nil {
 			content := RenderContent{
 				Handled:     cacheEntry.Handled,
@@ -1547,6 +1553,10 @@ func ServeContent(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if writeNotModifiedResponse(w, route, requestID, r, cacheEntry) {
+			return
+		}
+		if cacheEntry.Body != nil {
+			_ = writeRenderResponseReaderError(w, route, requestID, cacheEntry.Body, cacheEntry.ContentLength, cacheEntry.Headers, cacheEntry.Cookies, cacheEntry.ContentType, cacheEntry.Status, cacheEntry.ErrorCount)
 			return
 		}
 		if !writeRenderResponse(w, route, requestID, cacheEntry.Content, cacheEntry.ContentLength, cacheEntry.Handled, cacheEntry.Headers, cacheEntry.Cookies, cacheEntry.ContentType, cacheEntry.Status, cacheEntry.ErrorCount) {
@@ -1615,6 +1625,39 @@ func writeRenderResponse(w http.ResponseWriter, route string, requestID string, 
 }
 
 func writeRenderResponseError(w http.ResponseWriter, route string, requestID string, content string, contentLength string, handled *shared.HandledResponse, headers map[string]string, cookies []string, contentType string, status int, errorCount int) error {
+	if handled != nil {
+		contentLength = strconv.Itoa(len(handled.Body))
+	} else if contentLength == "" {
+		contentLength = strconv.Itoa(len(content))
+	}
+	if !commitRenderResponseHeaders(w, requestID, contentLength, headers, cookies, contentType, status, errorCount) {
+		return nil
+	}
+	var err error
+	if handled != nil {
+		if len(handled.Body) > 0 {
+			_, err = w.Write(handled.Body)
+		}
+	} else if content != "" {
+		_, err = io.WriteString(w, content)
+	}
+	return finishRenderResponse(route, requestID, err)
+}
+
+// Disk-backed responses use the buffered response's HTTP contract without
+// introducing file-server redirects, modification dates or ranges.
+func writeRenderResponseReaderError(w http.ResponseWriter, route string, requestID string, body io.Reader, contentLength string, headers map[string]string, cookies []string, contentType string, status int, errorCount int) error {
+	if !commitRenderResponseHeaders(w, requestID, contentLength, headers, cookies, contentType, status, errorCount) {
+		return nil
+	}
+	var err error
+	if body != nil && contentLength != "0" {
+		_, err = copyResponseCacheBody(w, body)
+	}
+	return finishRenderResponse(route, requestID, err)
+}
+
+func commitRenderResponseHeaders(w http.ResponseWriter, requestID string, contentLength string, headers map[string]string, cookies []string, contentType string, status int, errorCount int) bool {
 	applyResponseHeaders(headers, w)
 	applyResponseCookies(cookies, w)
 	if contentType != "" {
@@ -1627,43 +1670,18 @@ func writeRenderResponseError(w http.ResponseWriter, route string, requestID str
 	if status == 0 {
 		status = http.StatusOK
 	}
-
 	if !responseAllowsBody(status) {
 		w.Header().Del("Content-Length")
 		w.WriteHeader(status)
-		return nil
+		return false
 	}
-
-	if handled != nil {
-		if responseAllowsBody(status) {
-			w.Header().Set("Content-Length", strconv.Itoa(len(handled.Body)))
-		}
-		body := handled.Body
-		w.WriteHeader(status)
-		if len(body) == 0 {
-			logging.GetLogger().Debugw("Served request", "route", route)
-			return nil
-		}
-		if _, err := w.Write(body); err != nil {
-			logging.GetLogger().Named("serve").Errorw("Response write failed", "route", route, "request_id", requestID, "error", err)
-			return err
-		}
-		logging.GetLogger().Debugw("Served request", "route", route)
-		return nil
-	}
-
-	if responseAllowsBody(status) {
-		if contentLength == "" {
-			contentLength = strconv.Itoa(len(content))
-		}
-		w.Header().Set("Content-Length", contentLength)
-	}
+	w.Header().Set("Content-Length", contentLength)
 	w.WriteHeader(status)
-	if content == "" {
-		logging.GetLogger().Debugw("Served request", "route", route)
-		return nil
-	}
-	if _, err := io.WriteString(w, content); err != nil {
+	return true
+}
+
+func finishRenderResponse(route, requestID string, err error) error {
+	if err != nil {
 		logging.GetLogger().Named("serve").Errorw("Response write failed", "route", route, "request_id", requestID, "error", err)
 		return err
 	}
@@ -1683,83 +1701,64 @@ func handleDeveloperMode(w http.ResponseWriter, route string, r *http.Request, r
 
 // RENDER WITH CACHE
 func handleLiveMode(w http.ResponseWriter, route string, r *http.Request, requestID string) CacheEntry {
-
 	hbConfig := getHyperBricksConfiguration()
-	cacheDuration := hbConfig.Live.CacheTime
-
-	if cacheDuration.Duration <= 0 {
-		logging.GetLogger().Debugw("Skipping disabled live cache", "route", route)
+	cacheDuration := hbConfig.Live.CacheTime.Duration
+	if cacheDuration <= 0 {
 		return renderFreshLiveEntry(w, route, r, requestID)
 	}
-	if routeConfiguredNoCache(route) {
-		logging.GetLogger().Debugw("Skipping live cache for nocache route", "route", route)
-		return renderFreshLiveEntry(w, route, r, requestID)
-	}
-
-	cacheKey, cacheable := resolveLiveCacheKey(route, r)
-
-	var (
-		cacheEntry CacheEntry
-		found      bool
-	)
-	if cacheable {
-		htmlCacheMutex.RLock()
-		cacheEntry, found = htmlCache[cacheKey]
-		htmlCacheMutex.RUnlock()
-	}
-
-	if found && time.Since(cacheEntry.Timestamp) <= cacheDuration.Duration {
-		logging.GetLogger().Debugw("Cache hit for route", "route", route)
-		return cacheEntry
-	}
-
-	if found {
-		logging.GetLogger().Debugw("Route cache expired", "route", route)
-	} else {
-		logging.GetLogger().Debugf("Cache missing for route %s. Rendering content.", route)
-	}
-
-	//Calculate expiration time
-	var now = time.Now()
-	expirationTime := now.Add(cacheDuration.Duration).Format("2006-01-02 15:04:05 (-07:00)")
-	renderTime := time.Now().Format("2006-01-02 15:04:05 (-07:00)")
-
-	renderContent := renderContent(w, route, r, requestID)
-	etag := ""
-	contentLength := ""
-	if !renderContent.NoCache {
-		if cacheable && renderContent.Content != "" {
-			etag = liveCacheETag(renderContent.Content)
-			contentLength = strconv.Itoa(len(renderContent.Content))
-			renderContent.Headers = applyLiveCacheMetadataHeaders(renderContent.Headers, renderTime, expirationTime, etag)
-			htmlCacheMutex.Lock()
-			htmlCache[cacheKey] = CacheEntry{
-				Content:       renderContent.Content,
-				ContentLength: contentLength,
-				ETag:          etag,
-				Timestamp:     now,
-				ContentType:   renderContent.ContentType,
-				Status:        renderContent.Status,
-				Headers:       renderContent.Headers,
-				Cookies:       renderContent.Cookies,
-				ErrorCount:    renderContent.ErrorCount,
-			}
-			htmlCacheMutex.Unlock()
-			logging.GetLogger().Debugw("Updated cache for route", "route", route)
+	// Read the policy owner and capture its cache generation together with the
+	// source snapshot. A 404 route owns the outputs rendered for missing URLs,
+	// while each requested URL keeps its own request-variant key.
+	configMutex.RLock()
+	owner := route
+	config, found := configs[route]
+	if !found {
+		if fallback, exists := configs["404"]; exists {
+			owner, config = "404", fallback
 		}
 	}
-	return CacheEntry{
-		Content:       renderContent.Content,
-		ContentLength: contentLength,
-		ETag:          etag,
-		Timestamp:     now,
-		ContentType:   renderContent.ContentType,
-		Status:        renderContent.Status,
-		Headers:       renderContent.Headers,
-		Cookies:       renderContent.Cookies,
-		ErrorCount:    renderContent.ErrorCount,
-		Handled:       cloneHandledResponseData(renderContent.Handled),
+	token := beginResponseCache(owner)
+	configMutex.RUnlock()
+	if resolveConfiguredNoCache(config) {
+		return renderFreshLiveEntry(w, route, r, requestID)
 	}
+	policy, err := composite.ResolveRouteCache(config, cacheDuration)
+	if err != nil || policy.Expire <= 0 {
+		return renderFreshLiveEntry(w, route, r, requestID)
+	}
+	cacheDuration = policy.Expire
+	cacheKey, cacheable := resolveLiveCacheKey(route, r)
+	if cacheable {
+		if entry, hit := lookupResponseCache(owner, cacheKey, cacheDuration); hit {
+			logging.GetLogger().Debugw("Cache hit for route", "route", route)
+			return entry
+		}
+	}
+
+	// Preserve fixed expiry measured from the start of rendering.
+	now := time.Now()
+	rendered := renderContent(w, route, r, requestID)
+	entry := CacheEntry{
+		Content: rendered.Content, Timestamp: now, ContentType: rendered.ContentType,
+		Status: rendered.Status, Headers: rendered.Headers, Cookies: rendered.Cookies,
+		ErrorCount: rendered.ErrorCount, Handled: cloneHandledResponseData(rendered.Handled),
+	}
+	if rendered.NoCache || !cacheable || rendered.Content == "" {
+		return entry
+	}
+	entry.ETag = liveCacheETag(rendered.Content)
+	entry.ContentLength = strconv.Itoa(len(rendered.Content))
+	entry.Headers = applyLiveCacheMetadataHeaders(entry.Headers,
+		now.Format("2006-01-02 15:04:05 (-07:00)"),
+		now.Add(cacheDuration).Format("2006-01-02 15:04:05 (-07:00)"), entry.ETag)
+	if err := storeResponseCache(owner, cacheKey, policy.Storage, entry, cacheDuration, token); err != nil {
+		logging.GetLogger().Warnw("Response cache unavailable; serving fresh output", "route", route, "storage", policy.Storage, "error", err)
+		delete(entry.Headers, liveCacheRenderedAtHeader)
+		delete(entry.Headers, liveCacheExpiresAtHeader)
+		delete(entry.Headers, http.CanonicalHeaderKey("ETag"))
+		entry.ETag = ""
+	}
+	return entry
 }
 
 func renderFreshLiveEntry(w http.ResponseWriter, route string, r *http.Request, requestID string) CacheEntry {

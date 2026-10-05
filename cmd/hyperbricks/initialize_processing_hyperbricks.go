@@ -61,9 +61,6 @@ func PreProcessAndPopulateConfigs() error {
 	generation := publishRouteSnapshot(tempConfigs, tempRoutePlans, tempRouteSourceErrors)
 	recordConfigDiagnosticsAtGeneration(sourceErrors, generation)
 
-	// clear cache
-	clearHTMLCache()
-
 	logger.Infof("Configurations loaded  count=%d", len(tempConfigs))
 	printFilenameToRoutesMapping(filenameToRoutes, tempConfigs)
 
@@ -507,6 +504,9 @@ type routeMetadataConfig struct {
 
 func decodeHyperMediaConfig(v map[string]interface{}) (composite.HyperMediaConfig, error) {
 	var hypermediaInfo composite.HyperMediaConfig
+	if err := hypermediaInfo.ValidateRawConfig(v); err != nil {
+		return hypermediaInfo, err
+	}
 	decoder, err := createDecoder(&hypermediaInfo)
 	if err != nil {
 		return hypermediaInfo, err
@@ -517,6 +517,9 @@ func decodeHyperMediaConfig(v map[string]interface{}) (composite.HyperMediaConfi
 
 func decodeFragmentConfig(v map[string]interface{}) (composite.FragmentConfig, error) {
 	var fragmentConfig composite.FragmentConfig
+	if err := fragmentConfig.ValidateRawConfig(v); err != nil {
+		return fragmentConfig, err
+	}
 	decoder, err := createDecoder(&fragmentConfig)
 	if err != nil {
 		return fragmentConfig, err
@@ -538,6 +541,7 @@ func decodeRouteMetadataConfig(v map[string]interface{}) (routeMetadataConfig, e
 // createDecoder creates a mapstructure decoder with the necessary hooks.
 func createDecoder(result interface{}) (*mapstructure.Decoder, error) {
 	combinedHook := mapstructure.ComposeDecodeHookFunc(
+		typefactory.ConfigValueDecodeHookFunc(),
 		typefactory.StringToSliceHookFunc(),
 		typefactory.StringToIntHookFunc(),
 		typefactory.StringToMapStringHookFunc(),
@@ -635,6 +639,9 @@ func publishRouteSnapshot(tempConfigs map[string]map[string]interface{}, tempRou
 		updateGlobalRouteSourceErrors(sourceErrors)
 	}
 	routeGeneration++
+	// Invalidate while publishing the matching configuration generation. Old
+	// renders may finish, but their cache write tokens are no longer accepted.
+	clearHTMLCache()
 	resetRenderDiagnostics(routeGeneration, tempConfigs)
 	return routeGeneration
 }
@@ -686,7 +693,5 @@ func cloneErrorsByRoute(source map[string][]error) map[string][]error {
 
 // resetHTMLCache clears the HTML cache.
 func clearHTMLCache() {
-	htmlCacheMutex.Lock()
-	defer htmlCacheMutex.Unlock()
-	htmlCache = make(map[string]CacheEntry)
+	purgeResponseCache("")
 }

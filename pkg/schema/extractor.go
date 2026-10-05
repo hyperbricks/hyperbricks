@@ -41,6 +41,21 @@ type Field struct {
 	Authoring    *FieldAuthoring `json:"authoring,omitempty"`
 }
 
+// AllowedValues exposes literal choices already declared by a field's native
+// validation tag. Quoted values and alternate validation rules are left to the
+// validator rather than presented as an incomplete set of editor choices.
+func (field Field) AllowedValues() []string {
+	for _, rule := range strings.Split(field.Validate, ",") {
+		values, ok := strings.CutPrefix(rule, "oneof=")
+		if ok && !strings.ContainsAny(values, "'\"|") {
+			if choices := strings.Fields(values); len(choices) > 0 {
+				return choices
+			}
+		}
+	}
+	return nil
+}
+
 type TypeAuthoring struct {
 	Groups []FormGroup        `json:"groups,omitempty"`
 	Slots  []AuthoringSlot    `json:"slots,omitempty"`
@@ -148,7 +163,11 @@ func walkType(rt reflect.Type, prefix string, fields []Field) []Field {
 		ft := indirectType(sf.Type)
 		if ft.Kind() == reflect.Struct && !isScalarStruct(ft) {
 			fields = walkType(ft, path, fields)
-			continue
+			// A few typed fields accept a scalar shorthand as well as their
+			// structured form. Retain their parent description and completion.
+			if sf.Tag.Get("scalar_or_object") != "true" {
+				continue
+			}
 		}
 
 		validate := sf.Tag.Get("validate")

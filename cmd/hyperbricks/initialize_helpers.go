@@ -82,6 +82,11 @@ func confirmDeletion(dir string) bool {
 
 func ensureDirectoriesExist(directories map[string]string) error {
 	for name, dir := range directories {
+		// Response caching creates private runtime directories lazily. A missing
+		// cache path must not prevent development, static export or memory use.
+		if name == "cache" {
+			continue
+		}
 		info, err := os.Stat(dir)
 		if err != nil {
 			return fmt.Errorf("required directory %s (%s): %w; run hyperbricks init to create missing directories", name, runtimeLogPath(dir), err)

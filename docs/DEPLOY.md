@@ -399,6 +399,16 @@ Before activation, the host reads `hyperbricks.metadata` from the archive's
 `hyperbricks` value must exactly match the host runtime version. Mismatches are
 rejected before the archive can run.
 
+## Response Cache Files and Deployment
+
+HyperBricks automatically excludes `.cache` directories from module deployment packages and runtime snapshots, alongside the existing `.git` and `node_modules` exclusions. If `hyperbricks.directories.cache` selects another directory inside the module, that configured directory is excluded as well. These are built-in archive rules: `.gitignore` is not used to determine package contents, and users do not need to add a separate exclusion for the response cache. Archive directory settings come from the module’s default `package.hyperbricks.yaml`. When starting with a different configuration profile, keep its cache under `.cache`, outside the module, or at the same cache location declared in the default package.
+
+Keep required source files and assets outside cache directories. The default disk response cache lives under `<module>/.cache/responses/<runtime-id>/` and contains disposable runtime data. The destination runtime creates its own files; response entries are not shipped, restored or reused across process restarts. A new deployment starts with an empty response cache. Configure a dedicated writable `directories.cache` location for read-only deployments, outside public static and rendered-output directories.
+
+Per-route `cache` chooses memory/disk storage and expiry; package `live.cache: 0s` remains the global off switch. Development/debug modes render fresh. See [Output Cache](LIVE_MODE_HTTP.md#output-cache) for configuration, disk limits and cleanup.
+
+To invalidate a running live build without restarting, run `hyperbricks cache purge --module /path/to/extracted/runtime --all` on that host as the runtime's operating-system user. Use `--route products` instead of `--all` for one route. The private local control connection supports macOS/Linux; when several instances share that module directory, select the instance reported by the command with `--instance`. This clears internal memory and disk entries in the selected process, not browser or proxy caches. See [purge controls](LIVE_MODE_HTTP.md#purging-memory-and-disk).
+
 ## Build Controls In The Local And Remote Interfaces
 
 The local and remote deployment interfaces store runtime mode per archived

@@ -297,14 +297,18 @@ func resolveBuildFormat() (string, string, error) {
 }
 
 func collectModuleFiles(root string) ([]buildFile, error) {
+	excludeCache, err := moduleCacheExclusion(root)
+	if err != nil {
+		return nil, err
+	}
 	var files []buildFile
-	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		name := d.Name()
 		if d.IsDir() {
-			if isExcludedDir(name) {
+			if isExcludedDir(name) || excludeCache(path) {
 				return fs.SkipDir
 			}
 			if path == root {
@@ -329,7 +333,7 @@ func collectModuleFiles(root string) ([]buildFile, error) {
 			})
 			return nil
 		}
-		if isExcludedFile(name) {
+		if isExcludedFile(name) || excludeCache(path) {
 			return nil
 		}
 		if d.Type()&os.ModeSymlink != 0 {
@@ -364,7 +368,7 @@ func collectModuleFiles(root string) ([]buildFile, error) {
 
 func isExcludedDir(name string) bool {
 	switch name {
-	case ".git", "node_modules":
+	case ".git", "node_modules", ".cache":
 		return true
 	default:
 		return false

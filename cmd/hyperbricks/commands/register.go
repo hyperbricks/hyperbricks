@@ -59,6 +59,7 @@ func RegisterSubcommands() {
 	RootCmd.AddCommand(PluginCommand())
 	RootCmd.AddCommand(InitStarterCommand())
 	RootCmd.AddCommand(NewBuildCommand())
+	RootCmd.AddCommand(NewCacheCommand())
 
 }
 

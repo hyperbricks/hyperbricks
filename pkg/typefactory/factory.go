@@ -32,6 +32,7 @@ func NewTypeFactory() *TypeFactory {
 	return &TypeFactory{
 		types: make(map[string]reflect.Type),
 		decodeHook: mapstructure.ComposeDecodeHookFunc(
+			ConfigValueDecodeHookFunc(),
 			StringToSliceHookFunc(),
 			StringToIntHookFunc(),
 			StringToMapStringHookFunc(),
@@ -54,8 +55,8 @@ func (tf *TypeFactory) CreateInstance(request TypeRequest) (*TypeResponse, error
 
 	instancePtr := reflect.New(typ)
 	instance := instancePtr.Interface()
-	// Components with security-sensitive fields validate their original values
-	// before weak decoding loses type information. Other components keep the
+	// Components with strict fields validate their original values before weak
+	// decoding loses type information. Other components keep the
 	// existing conversion rules; this is not a YAML-wide validation policy.
 	if validator, ok := instance.(interface {
 		ValidateRawConfig(map[string]interface{}) error

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"sync"
 	"time"
 
@@ -20,6 +21,15 @@ type CacheEntry struct {
 	Cookies       []string
 	ErrorCount    int
 	Handled       *shared.HandledResponse
+	// Body is opened only for a disk hit. The response writer must close it,
+	// including when serving HEAD or a conditional response without a body.
+	Body io.ReadCloser
+
+	cacheRoute      string
+	cacheTTL        time.Duration
+	cacheDiskPath   string
+	cacheDiskSize   int64
+	cacheDiskDigest [32]byte
 }
 
 const configDiagnosticsRoute = "__config"

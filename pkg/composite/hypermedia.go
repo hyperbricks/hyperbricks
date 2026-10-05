@@ -7,7 +7,6 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
-	"github.com/mitchellh/mapstructure"
 )
 
 // HyperMediaConfig represents configuration hypermedia.
@@ -23,7 +22,7 @@ type HyperMediaConfig struct {
 	Enclose            string                 `mapstructure:"enclose" description:"Enclosure of the property for the hypermedia" example:"{!{hypermedia-enclose.hyperbricks.yaml}}"`
 	Favicon            string                 `mapstructure:"favicon" description:"Path to the favicon for the hypermedia" example:"{!{hypermedia-favicon.hyperbricks.yaml}}"`
 	Template           *TemplateOptions       `mapstructure:"template" description:"Template configurations for rendering the hypermedia. See <TEMPLATE> for field descriptions." example:"{!{hypermedia-template.hyperbricks.yaml}}"`
-	Cache              string                 `mapstructure:"cache" description:"Legacy field; does not override the process-wide hyperbricks.live.cache duration." example:"{!{hypermedia-cache.hyperbricks.yaml}}"`
+	Cache              RouteCacheConfig       `mapstructure:"cache" scalar_or_object:"true" description:"Rendered-output cache: a duration such as 30s selects memory caching; a mapping selects storage (mem or disk) and optional expire. Package live.cache: 0s and nocache: true disable caching." example:"{!{hypermedia-cache.hyperbricks.yaml}}"`
 	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly disable cache" example:"{!{hypermedia-nocache.hyperbricks.yaml}}"`
 	Static             string                 `mapstructure:"static" description:"Static file path associated with the hypermedia, for rendering out the hypermedia to static files." example:"{!{hypermedia-static.hyperbricks.yaml}}"`
 	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the hypermedia defined in the section field. See <MENU> for further explanation and field options" example:"{!{hypermedia-index.hyperbricks.yaml}}"`
@@ -201,7 +200,7 @@ func (pr *HyperMediaRenderer) Render(instance interface{}, ctx context.Context) 
 			config = *typed
 		}
 	default:
-		err := mapstructure.Decode(instance, &config)
+		err := decodeRouteRenderConfig(instance, &config)
 		if err != nil {
 			return "", append(errors, shared.ComponentError{
 				Hash: shared.GenerateHash(),

@@ -64,7 +64,7 @@ func Definitions() []Definition {
 			ConfigType:  reflect.TypeOf(composite.FragmentConfig{}),
 			Description: "A <FRAGMENT> dynamically renders part of an HTML page, allowing updates without a full page reload.",
 			FormGroups: []FormGroup{
-				routeGroup("title", "route", "section", "static", "cache", "nocache", "index", "content_type", "enclose"),
+				routeGroup("title", "route", "section", "static", "cache", "cache.storage", "cache.expire", "nocache", "index", "content_type", "enclose"),
 				templateGroup("template.template", "template.inline", "template.querykeys", "template.queryparams", "template.values", "template.enclose"),
 				responseGroup(),
 				guardGroup(),
@@ -98,7 +98,7 @@ func Definitions() []Definition {
 				bodyAuthoringSlot(true),
 			},
 			FormGroups: []FormGroup{
-				routeGroup("title", "route", "section", "static", "cache", "nocache", "index", "content_type"),
+				routeGroup("title", "route", "section", "static", "cache", "cache.storage", "cache.expire", "nocache", "index", "content_type"),
 				documentGroup("doctype", "htmltag", "bodytag", "enclose", "favicon", "head", "headers", "cookies"),
 				templateGroup("template.template", "template.inline", "template.querykeys", "template.queryparams", "template.values", "template.enclose"),
 				responseGroup(),

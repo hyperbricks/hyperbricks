@@ -72,6 +72,10 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 	logger := logging.GetLogger().Named("server")
 	var processes *developmentProcesses
 	var running *runtimeHTTPServer
+	var stopCacheControl func(context.Context) error
+	var stopCacheCleanup context.CancelFunc
+	var cacheCleanupDone chan struct{}
+	cacheConfigured := false
 	watchCtx, stopWatch := context.WithCancel(context.Background())
 	var watchDone <-chan error
 	defer func() {
@@ -92,6 +96,18 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 			shutdownCtx, stopHTTP := context.WithTimeout(context.Background(), 5*time.Second)
 			cleanupErr = errors.Join(cleanupErr, running.shutdown(shutdownCtx))
 			stopHTTP()
+		}
+		if stopCacheControl != nil {
+			controlCtx, stopControl := context.WithTimeout(context.Background(), 5*time.Second)
+			cleanupErr = errors.Join(cleanupErr, stopCacheControl(controlCtx))
+			stopControl()
+		}
+		if stopCacheCleanup != nil {
+			stopCacheCleanup()
+			<-cacheCleanupDone
+		}
+		if cacheConfigured {
+			cleanupErr = errors.Join(cleanupErr, closeResponseCache())
 		}
 		if processes != nil {
 			cleanupErr = errors.Join(cleanupErr, processes.Stop())
@@ -148,6 +164,28 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 	if config.Mode != shared.LIVE_MODE {
 		statusServer()
 	}
+	if config.Mode == shared.LIVE_MODE {
+		cacheRoot, cacheErr := responseCacheDirectory(commands.GetModuleRoot(), config)
+		if cacheErr != nil {
+			logger.Warnw("Disk response cache unavailable; disk routes will render fresh", "error", cacheErr)
+			_ = closeResponseCache()
+		} else if err := configureResponseCache(commands.GetModuleRoot(), cacheRoot, config.Live.DiskCache.MaxBytes, config.Live.DiskCache.MaxEntries); err != nil {
+			logger.Warnw("Disk response cache unavailable; disk routes will render fresh", "error", err)
+		}
+		cacheConfigured = true
+		cleanupCtx, stopCleanup := context.WithCancel(context.Background())
+		stopCacheCleanup = stopCleanup
+		cacheCleanupDone = make(chan struct{})
+		go func() {
+			defer close(cacheCleanupDone)
+			runResponseCacheCleanup(cleanupCtx, config.Live.DiskCache.CleanupInterval)
+		}()
+		var err error
+		stopCacheControl, err = startCacheControl(commands.GetModuleRoot())
+		if err != nil {
+			logger.Warnw("Local cache purge control unavailable", "error", err)
+		}
+	}
 	initStaticFileServer(newRequestRateLimiter(config.RateLimit))
 	var err error
 	running, err = startRuntimeHTTPServer()
@@ -177,7 +215,7 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 		reloads.Enable()
 	}
 	if config.Mode == shared.DEVELOPMENT_MODE && config.Development.Watch {
-		watchDone, err = startRuntimeWatcher(watchCtx, resolveDevelopmentWatchDirectories(config), reloads.Request)
+		watchDone, err = startRuntimeWatcher(watchCtx, resolveDevelopmentWatchDirectories(config), reloads.Request, config.Directories["cache"])
 		if err != nil {
 			return err
 		}
