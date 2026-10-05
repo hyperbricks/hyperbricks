@@ -49,6 +49,24 @@ def change_fingerprint(run, field):
 
 
 class ComparisonTests(unittest.TestCase):
+    def test_go_rfc3339_nano_fractional_widths_and_nanosecond_order(self):
+        for width in range(1, 10):
+            fraction = "123456789"[:width]
+            with self.subTest(width=width):
+                value = COMPARE.parse_timestamp("2026-10-05T12:00:00."+fraction+"Z")
+                self.assertEqual(value[1], int(fraction.ljust(9, "0")))
+                run = valid_run()
+                run["started_at_utc"] = "2026-10-05T12:00:00."+fraction+"Z"
+                self.assertTrue(COMPARE.compare(run, run)["comparable"])
+        self.assertEqual(COMPARE.parse_timestamp("2026-10-05T12:00:00Z")[1], 0)
+        self.assertEqual(COMPARE.parse_timestamp("2026-10-05T14:00:00.1+02:00"),
+                         COMPARE.parse_timestamp("2026-10-05T12:00:00.100000000Z"))
+        self.assertLess(COMPARE.parse_timestamp("2026-10-05T12:00:00.000000001Z"),
+                        COMPARE.parse_timestamp("2026-10-05T12:00:00.000000002Z"))
+        for invalid in ("2026-10-05T12:00:00", "2026-10-05T12:00:00.1234567890Z"):
+            with self.assertRaises(COMPARE.InvalidRun):
+                COMPARE.parse_timestamp(invalid)
+
     def test_server_identity_differs_from_runner_checkout(self):
         before, after = valid_run(), valid_run()
         after["provenance"]["server_binary"]["build_settings"].update({"vcs.revision": "3"*40, "vcs.modified": "true", "vcs.time": "later"})

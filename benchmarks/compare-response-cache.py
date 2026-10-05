@@ -39,6 +39,17 @@ def digest(value):
     return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
 
 
+def parse_timestamp(value):
+    """Read Go's RFC3339Nano output on Python 3.9 without losing nanoseconds."""
+    require(isinstance(value, str), "timestamp must be an RFC3339 string")
+    match = re.fullmatch(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,9}))?(Z|[+-]\d{2}:\d{2})", value)
+    require(match is not None, "timestamp must include an RFC3339 timezone and at most nine fractional digits")
+    # Python 3.9 accepts only some fractional widths. Parse whole seconds with
+    # the standard library, then compare the independent nanosecond remainder.
+    seconds = datetime.fromisoformat(match[1] + ("+00:00" if match[3] == "Z" else match[3]))
+    return seconds, int((match[2] or "0").ljust(9, "0"))
+
+
 def fingerprint(manifest, name):
     require(isinstance(manifest, dict) and digest(manifest.get("sha256")), f"{name}: missing SHA-256 fingerprint")
     files = manifest.get("files")
@@ -75,9 +86,9 @@ def validate_run(run):
     require(isinstance(run, dict) and run.get("format_version") == 1, "unsupported or missing format_version (expected 1)")
     require(run.get("valid") is True and not run.get("error"), "run is invalid or records an error")
     try:
-        started = datetime.fromisoformat(run["started_at_utc"].replace("Z", "+00:00"))
-        completed = datetime.fromisoformat(run["completed_at_utc"].replace("Z", "+00:00"))
-        require(started.utcoffset() is not None and completed.utcoffset() is not None and completed > started, "run has no valid completion interval")
+        started = parse_timestamp(run["started_at_utc"])
+        completed = parse_timestamp(run["completed_at_utc"])
+        require(completed > started, "run has no valid completion interval")
         options, environment, provenance, server = (run[key] for key in ("options", "environment", "provenance", "server"))
         option_names = ("requests_per_trial", "warmup_requests_per_trial", "repeats", "client_gomaxprocs", "server_gomaxprocs", "request_timeout_ns", "startup_timeout_ns")
         contract = {f"options.{key}": options[key] for key in option_names}
