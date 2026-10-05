@@ -105,10 +105,10 @@ type Config struct {
 	diskCacheConfigError error
 }
 
-// Frontend editors are development-only; Spaces is built in, other editors are plugins.
+// Spaces supports development/debug; external editor plugins are development-only.
 type FrontendEditingConfig struct {
-	Enabled bool                            `mapstructure:"enabled" description:"Development-only master switch for Spaces and configured frontend editors. Disabling it hides all frontend editors; enabling it does not grant write access." example:"true"`
-	Spaces  SpacesConfig                    `mapstructure:"spaces" description:"Built-in Spaces editor settings. Its enabled switch and the parent frontend_editing.enabled switch must both be enabled." example:"{enabled: true, write: false}"`
+	Enabled bool                            `mapstructure:"enabled" description:"Master switch for Spaces in development/debug and configured frontend-editor plugins in development. Defaults to true. Disabling it hides all frontend editors; Spaces write controls edits independently." example:"true"`
+	Spaces  SpacesConfig                    `mapstructure:"spaces" description:"Built-in Spaces editor settings. Enabled and writable by default. Its enabled switch and the parent frontend_editing.enabled switch must both be enabled." example:"{enabled: true, write: true}"`
 	Editors map[string]FrontendEditorConfig `mapstructure:"editors" description:"Named frontend-editor plugin mounts. Each entry supplies plugin, route, and optional plugin-owned data; use spaces for the built-in editor." example:"{custom: {plugin: CustomEditor@1.0.0, route: /__hyperbricks/custom}}"`
 }
 
@@ -138,7 +138,7 @@ type PluginsConfig struct {
 type DevelopmentConfig struct {
 	Hooks           DevelopmentHooksConfig     `mapstructure:"hooks" description:"Optional finite before_start and after_start tasks. Executed only by a direct development/debug start with --with-processes; each task must finish successfully." example:"{before_start: [{name: prepare, command: [sh, prepare.sh]}]}"`
 	Services        []DevelopmentServiceConfig `mapstructure:"services" description:"Optional foreground local HTTP services owned by an opted-in development session. Services start in order, must become ready, and stop with HyperBricks in reverse order." example:"[{name: demo-api, command: [python3, server.py], ready: {http: 'http://127.0.0.1:4319/health'}}]"`
-	FrontendEditing FrontendEditingConfig      `mapstructure:"frontend_editing" description:"Development-only Spaces and frontend-editor mounts, including independent write controls. Uses the shared dashboard credentials even when the dashboard is disabled." example:"{enabled: true, spaces: {enabled: true, write: false}}"`
+	FrontendEditing FrontendEditingConfig      `mapstructure:"frontend_editing" description:"Spaces in development/debug and frontend-editor plugin mounts in development, with independent write controls. Uses shared dashboard credentials even when the dashboard is disabled; Spaces permits an empty account, while external editors require a complete account." example:"{enabled: true, spaces: {enabled: true, write: true}}"`
 	Dashboard       DevelopmentDashboardConfig `mapstructure:"dashboard" description:"Dashboard Overview and Errors enablement plus shared developer-interface credentials. Must be a mapping; the former Boolean form is invalid." example:"{enabled: false}"`
 	FrontendErrors  bool                       `mapstructure:"frontend_errors" description:"Permit frontend error panels when the component enables debugpanel. Panels are restricted to requests authenticated with the shared developer credentials." example:"false"`
 	Watch           bool                       `mapstructure:"watch" description:"Enable source-directory watching in development mode. Package configuration changes still require a process restart." example:"true"`
@@ -148,7 +148,7 @@ type DevelopmentConfig struct {
 
 type DevelopmentDashboardConfig struct {
 	Enabled     bool              `mapstructure:"enabled" description:"Enable Dashboard Overview and Errors. This switch does not disable independently enabled Spaces or other developer interfaces." example:"false"`
-	Credentials CredentialsConfig `mapstructure:"credentials" description:"Shared developer-interface username and password, separate from deployment-service credentials. With both values absent, an enabled development/debug dashboard, Errors and diagnostics open without login and emit a startup warning. Spaces, editing and frontend error panels still require credentials. A partial account stays locked with HTTP 503. Use environment resolvers and encrypted transport for non-loopback access." example:"{user: {env: HB_DEVELOPER_USER}, password: {env: HB_DEVELOPER_PASSWORD}}"`
+	Credentials CredentialsConfig `mapstructure:"credentials" description:"Shared developer-interface username and password, separate from deployment-service credentials. With both values absent, enabled Dashboard, Errors, diagnostics and Spaces open without login in development/debug and emit a startup warning. Spaces host and write policies still apply. Configured accounts require login; partial accounts stay locked with HTTP 503. External editor plugins and frontend error panels require credentials. Use environment resolvers and encrypted transport for non-loopback access." example:"{user: {env: HB_DEVELOPER_USER}, password: {env: HB_DEVELOPER_PASSWORD}}"`
 }
 
 // LoggerConfig with defaults.

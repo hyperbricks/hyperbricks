@@ -96,7 +96,7 @@ func TestContextualPageEnforcesDevelopmentHostAndRequestBoundaries(t *testing.T)
 		{name: "Spaces disabled", mode: shared.DEVELOPMENT_MODE, method: "GET", host: "localhost", query: "edit=true", spacesDisabled: true},
 		{name: "production", mode: shared.DEVELOPMENT_MODE, method: "GET", host: "localhost", query: "edit=true", production: true},
 		{name: "live", mode: shared.LIVE_MODE, method: "GET", host: "localhost", query: "edit=true"},
-		{name: "debug", mode: shared.DEBUG_MODE, method: "GET", host: "localhost", query: "edit=true"},
+		{name: "debug", mode: shared.DEBUG_MODE, method: "GET", host: "localhost", query: "edit=true", want: true},
 		{name: "post", mode: shared.DEVELOPMENT_MODE, method: "POST", host: "localhost", query: "edit=true"},
 	}
 	for _, tc := range cases {
@@ -109,6 +109,7 @@ func TestContextualPageEnforcesDevelopmentHostAndRequestBoundaries(t *testing.T)
 			cfg.Development.FrontendEditing.Enabled = !tc.disabled
 			cfg.Development.FrontendEditing.Spaces.Enabled = !tc.spacesDisabled
 			cfg.Development.FrontendEditing.Spaces.AllowedHosts = []string{"editor.test"}
+			cfg.Development.FrontendEditing.Spaces.Write = false
 			shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: s.module, Production: tc.production})
 			request := httptest.NewRequest(tc.method, "http://"+tc.host+"/portfolio/english?"+tc.query, nil)
 			request.SetBasicAuth(credentials.User, credentials.Password)

@@ -29,12 +29,16 @@ func TestContextualEditingResponseBoundaries(t *testing.T) {
 	cfg.Development.Dashboard.Credentials = developerTestCredentials
 	shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: module})
 	cases := []struct {
-		name, kind, contentType string
-		status                  int
-		static, spacesDisabled  bool
-		want                    bool
+		name, kind, contentType, mode string
+		status                        int
+		static, spacesDisabled        bool
+		noCredentials, readOnly       bool
+		want                          bool
 	}{
 		{name: "HTML development", kind: "<HYPERMEDIA>", want: true},
+		{name: "HTML debug without login", kind: "<HYPERMEDIA>", mode: shared.DEBUG_MODE, noCredentials: true, want: true},
+		{name: "read-only without login", kind: "<HYPERMEDIA>", noCredentials: true, readOnly: true, want: true},
+		{name: "live", kind: "<HYPERMEDIA>", mode: shared.LIVE_MODE},
 		{name: "Spaces disabled", kind: "<HYPERMEDIA>", spacesDisabled: true},
 		{name: "explicit HTML", kind: "<HYPERMEDIA>", contentType: "text/html; charset=utf-8", want: true},
 		{name: "fragment", kind: "<FRAGMENT>"},
@@ -52,16 +56,32 @@ func TestContextualEditingResponseBoundaries(t *testing.T) {
 				config["response"] = map[string]interface{}{"status": tc.status}
 			}
 			setTestRouteConfig("index", config)
+			cfg.Mode = shared.DEVELOPMENT_MODE
+			if tc.mode != "" {
+				cfg.Mode = tc.mode
+			}
+			cfg.Development.Dashboard.Credentials = developerTestCredentials
+			if tc.noCredentials {
+				cfg.Development.Dashboard.Credentials = shared.CredentialsConfig{}
+			}
 			commands.RenderStatic = tc.static
 			cfg.Development.FrontendEditing.Spaces.Enabled = !tc.spacesDisabled
+			cfg.Development.FrontendEditing.Spaces.Write = !tc.readOnly
 			response := httptest.NewRecorder()
-			ServeContent(response, developerTestRequest("GET", "http://localhost/?edit=true", nil))
+			request := httptest.NewRequest("GET", "http://localhost/?edit=true", nil)
+			if !tc.noCredentials {
+				request.SetBasicAuth(developerTestCredentials.User, developerTestCredentials.Password)
+			}
+			ServeContent(response, request)
 			got := strings.Contains(response.Body.String(), `id="hb-spaces-context"`)
 			if got != tc.want {
 				t.Fatalf("editing=%v status=%d body=%s", got, response.Code, response.Body.String())
 			}
 			if tc.want && response.Header().Get("Cache-Control") != "no-store" {
 				t.Fatal("editing preview can be cached")
+			}
+			if tc.want && tc.readOnly && !strings.Contains(response.Body.String(), `"write":false`) {
+				t.Fatal("read-only contextual payload did not preserve the write restriction")
 			}
 			if response.Header().Get(renderErrorCountHeader) != "0" {
 				t.Fatalf("render errors: %s", response.Body.String())

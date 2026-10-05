@@ -8,8 +8,8 @@ import (
 )
 
 // ValidateDevelopmentDashboard reports schema errors retained by the package
-// configuration loader. Missing credentials are valid configuration: they
-// deliberately leave enabled developer surfaces in their locked state.
+// configuration loader. Missing credentials are valid configuration; each
+// developer interface applies its own policy for an unconfigured account.
 func (c *Config) ValidateDevelopmentDashboard() error {
 	return c.dashboardConfigError
 }

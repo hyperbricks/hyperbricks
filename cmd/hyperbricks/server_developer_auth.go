@@ -19,7 +19,7 @@ func dashboardHandler(next http.Handler) http.Handler {
 }
 
 // An explicitly enabled development dashboard may run without an account.
-// Keep partial accounts locked, and keep editing interfaces on the strict policy.
+// Keep partial accounts locked. Spaces uses its own optional-login policy.
 // Diagnostics also use this policy, but still require an account when the
 // dashboard is disabled.
 func requireDashboardAuth(w http.ResponseWriter, r *http.Request) bool {
@@ -44,9 +44,7 @@ func contextualEditingRequested(r *http.Request) bool {
 	if r == nil || r.URL == nil || (r.Method != http.MethodGet && r.Method != http.MethodHead) {
 		return false
 	}
-	cfg := getHyperBricksConfiguration()
-	if cfg.Mode != shared.DEVELOPMENT_MODE || shared.GetRuntimeOptions().Production ||
-		!cfg.Development.FrontendEditing.Enabled || !cfg.Development.FrontendEditing.Spaces.Enabled || cfg.ValidateFrontendEditing() != nil {
+	if !spacesEditorAvailable() {
 		return false
 	}
 	values := r.URL.Query()["edit"]

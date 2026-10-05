@@ -13,21 +13,20 @@ import (
 )
 
 // ContextualPage adds native editorial controls to an explicitly requested
-// development preview. The caller owns response type, status and static-export
+// development/debug preview. The caller owns response type, status and static-export
 // boundaries. This method independently enforces the editor's access policy.
 func (h *Handler) ContextualPage(r *http.Request, route, content string) (string, bool, error) {
 	cfg := shared.GetHyperBricksConfiguration()
 	runtime := shared.GetRuntimeOptions()
 	if r == nil || r.URL == nil || (r.Method != http.MethodGet && r.Method != http.MethodHead) ||
-		cfg.Mode != shared.DEVELOPMENT_MODE || runtime.Production || !cfg.Development.FrontendEditing.Enabled ||
-		!cfg.Development.FrontendEditing.Spaces.Enabled || cfg.ValidateFrontendEditing() != nil {
+		!shared.SpacesAvailable(cfg, runtime) {
 		return content, false, nil
 	}
 	query := r.URL.Query()["edit"]
 	if len(query) != 1 || query[0] != "true" {
 		return content, false, nil
 	}
-	if !shared.BasicAuthAuthorized(r, cfg.Development.Dashboard.Credentials) {
+	if !shared.SpacesAuthAuthorized(r, cfg.Development.Dashboard.Credentials) {
 		return content, false, nil
 	}
 	options := cfg.Development.FrontendEditing.Spaces
@@ -36,7 +35,7 @@ func (h *Handler) ContextualPage(r *http.Request, route, content string) (string
 		return content, false, nil
 	}
 	payload := contextualPayload{Editor: options.Route, Write: options.Write, Fields: []contextualField{}}
-	s, err := newService(runtime.ModuleRoot, options.Route, cfg.Directories, options, cfg.Development.Watch)
+	s, err := newService(runtime.ModuleRoot, options.Route, cfg.Directories, options, cfg.Mode == shared.DEVELOPMENT_MODE && cfg.Development.Watch)
 	if err == nil {
 		s.config = parser.HbConfig
 		h.mu.Lock()

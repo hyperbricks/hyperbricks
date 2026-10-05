@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -105,10 +106,16 @@ func TestContextualEditingRequiresLoginButPublicRouteDoesNot(t *testing.T) {
 	}
 
 	cfg.Development.Dashboard.Credentials = shared.CredentialsConfig{}
-	lockedResponse := httptest.NewRecorder()
-	handler(lockedResponse, httptest.NewRequest(http.MethodGet, "http://localhost/?edit=true", nil))
-	if lockedResponse.Code != http.StatusServiceUnavailable {
-		t.Fatalf("locked edit response = %d", lockedResponse.Code)
+	openResponse := httptest.NewRecorder()
+	handler(openResponse, httptest.NewRequest(http.MethodGet, "http://localhost/?edit=true", nil))
+	if openResponse.Code != http.StatusOK || openResponse.Header().Get("WWW-Authenticate") != "" {
+		t.Fatalf("open edit response = %d", openResponse.Code)
+	}
+	cfg.Development.Dashboard.Credentials = shared.CredentialsConfig{User: "developer"}
+	partialResponse := httptest.NewRecorder()
+	handler(partialResponse, httptest.NewRequest(http.MethodGet, "http://localhost/?edit=true", nil))
+	if partialResponse.Code != http.StatusServiceUnavailable {
+		t.Fatalf("partial account edit response = %d", partialResponse.Code)
 	}
 
 	cfg.Development.FrontendEditing.Spaces.Enabled = false
@@ -145,7 +152,7 @@ func TestFrontendErrorPanelRequiresDeveloperLogin(t *testing.T) {
 	}
 }
 
-func TestOpenDashboardDoesNotOpenEditingOrFrontendPanels(t *testing.T) {
+func TestOpenSpacesDoesNotOpenExternalEditorsOrFrontendPanels(t *testing.T) {
 	setupErrorsViewTest(t)
 	cfg := getHyperBricksConfiguration()
 	cfg.Development.Dashboard.Credentials = shared.CredentialsConfig{}
@@ -153,7 +160,7 @@ func TestOpenDashboardDoesNotOpenEditingOrFrontendPanels(t *testing.T) {
 	cfg.Development.FrontendEditing.Editors = map[string]shared.FrontendEditorConfig{
 		"external": {Plugin: "Editor@1.0.0", Route: "/__hyperbricks/external"},
 	}
-	for _, path := range []string{cfg.Development.FrontendEditing.Spaces.Route, "/__hyperbricks/external", "/?edit=true"} {
+	for _, path := range []string{"/__hyperbricks/external"} {
 		response := httptest.NewRecorder()
 		request := httptest.NewRequest(http.MethodGet, path, nil)
 		if !handleFrontendEditor(response, request) {
@@ -163,14 +170,63 @@ func TestOpenDashboardDoesNotOpenEditingOrFrontendPanels(t *testing.T) {
 			t.Errorf("GET %s = %d, want locked editor", path, response.Code)
 		}
 	}
-	response := httptest.NewRecorder()
-	spacesEditor.ServeHTTP(response, httptest.NewRequest(http.MethodGet, cfg.Development.FrontendEditing.Spaces.Route, nil))
-	if response.Code != http.StatusServiceUnavailable {
-		t.Fatalf("direct Spaces handler = %d, want locked editor", response.Code)
-	}
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	ctx := context.WithValue(context.Background(), shared.Request, request)
 	if shared.DeveloperInterfaceAuthorized(ctx) {
 		t.Fatal("open dashboard authorized frontend error panels")
+	}
+}
+
+func TestSpacesMountOptionalLoginInDevelopmentAndDebug(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	cfg := getHyperBricksConfiguration()
+	old, runtime, static := *cfg, shared.GetRuntimeOptions(), commands.RenderStatic
+	t.Cleanup(func() { *cfg = old; shared.SetRuntimeOptions(runtime); commands.RenderStatic = static })
+	cfg.Directories = nil
+	cfg.Plugins.Enabled = nil
+	cfg.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
+	cfg.Development.FrontendEditing.Spaces.AllowedHosts = []string{"editor.example.test"}
+	shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: t.TempDir()})
+	commands.RenderStatic = false
+	for _, mode := range []string{shared.DEVELOPMENT_MODE, shared.DEBUG_MODE} {
+		for _, dashboard := range []bool{false, true} {
+			for _, tc := range []struct {
+				name, host, password string
+				credentials          shared.CredentialsConfig
+				want                 int
+			}{
+				{name: "open localhost", host: "localhost", want: http.StatusOK},
+				{name: "open allowed host", host: "editor.example.test:8125", want: http.StatusOK},
+				{name: "untrusted host", host: "untrusted.example.test", want: http.StatusForbidden},
+				{name: "user only", host: "localhost", credentials: shared.CredentialsConfig{User: "developer"}, want: http.StatusServiceUnavailable},
+				{name: "password only", host: "localhost", credentials: shared.CredentialsConfig{Password: "secret"}, want: http.StatusServiceUnavailable},
+				{name: "login required", host: "localhost", credentials: developerTestCredentials, want: http.StatusUnauthorized},
+				{name: "wrong login", host: "localhost", credentials: developerTestCredentials, password: "wrong", want: http.StatusUnauthorized},
+				{name: "valid login", host: "localhost", credentials: developerTestCredentials, password: developerTestCredentials.Password, want: http.StatusOK},
+			} {
+				t.Run(mode+"/"+tc.name+"/dashboard="+strconv.FormatBool(dashboard), func(t *testing.T) {
+					cfg.Mode, cfg.Development.Dashboard.Enabled = mode, dashboard
+					cfg.Development.Dashboard.Credentials = tc.credentials
+					request := httptest.NewRequest(http.MethodGet, "http://"+tc.host+shared.DefaultSpacesRoute, nil)
+					if tc.password != "" {
+						request.SetBasicAuth(developerTestCredentials.User, tc.password)
+					}
+					response := httptest.NewRecorder()
+					if !handleFrontendEditor(response, request) || response.Code != tc.want {
+						t.Fatalf("Spaces status=%d, want %d; body=%s", response.Code, tc.want, response.Body.String())
+					}
+					if (response.Header().Get("WWW-Authenticate") != "") != (tc.want == http.StatusUnauthorized) {
+						t.Fatalf("unexpected login challenge: %v", response.Header())
+					}
+					if response.Header().Get("Cache-Control") != "no-store" {
+						t.Fatal("Spaces response may be cached")
+					}
+				})
+			}
+		}
+	}
+	commands.RenderStatic = true
+	if handleFrontendEditor(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "http://localhost"+shared.DefaultSpacesRoute, nil)) {
+		t.Fatal("Spaces mounted during static output")
 	}
 }

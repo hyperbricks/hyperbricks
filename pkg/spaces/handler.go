@@ -96,8 +96,7 @@ func (s *service) parserOptions() yamlparser.Options {
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	cfg := shared.GetHyperBricksConfiguration()
 	runtime := shared.GetRuntimeOptions()
-	if cfg.Mode != shared.DEVELOPMENT_MODE || runtime.Production || !cfg.Development.FrontendEditing.Enabled ||
-		!cfg.Development.FrontendEditing.Spaces.Enabled || cfg.ValidateFrontendEditing() != nil {
+	if !shared.SpacesAvailable(cfg, runtime) {
 		http.NotFound(w, r)
 		return
 	}
@@ -106,10 +105,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	if !shared.RequireBasicAuth(w, r, cfg.Development.Dashboard.Credentials, shared.DeveloperInterfaceRealm, shared.DeveloperInterfaceUnavailableMessage) {
+	if !shared.RequireSpacesAuth(w, r, cfg.Development.Dashboard.Credentials) {
 		return
 	}
-	s, err := newService(runtime.ModuleRoot, options.Route, cfg.Directories, options, cfg.Development.Watch)
+	s, err := newService(runtime.ModuleRoot, options.Route, cfg.Directories, options, cfg.Mode == shared.DEVELOPMENT_MODE && cfg.Development.Watch)
 	if err != nil {
 		logging.GetLogger().Errorw("Spaces initialization failed", "error", err)
 		http.Error(w, "Spaces initialization failed; see server diagnostics", http.StatusInternalServerError)
@@ -128,7 +127,7 @@ func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Referrer-Policy", "same-origin")
 	w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: http: blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")
 	if !s.allowedHost(r.Host) {
-		replyError(w, &statusError{403, "Host is not allowed; configure allowed_hosts for a trusted development LAN"})
+		replyError(w, &statusError{403, "Host is not allowed; add the server hostname or IP without scheme or port to development.frontend_editing.spaces.allowed_hosts"})
 		return
 	}
 	sub := strings.TrimPrefix(r.URL.Path, s.route)

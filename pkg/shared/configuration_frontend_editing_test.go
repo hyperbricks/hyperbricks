@@ -1,10 +1,46 @@
 package shared
 
 import (
+	"errors"
 	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func TestSpacesAvailability(t *testing.T) {
+	for _, tc := range []struct {
+		name, mode                                          string
+		production, disabled, spacesDisabled, invalid, want bool
+	}{
+		{name: "development", mode: DEVELOPMENT_MODE, want: true},
+		{name: "debug", mode: DEBUG_MODE, want: true},
+		{name: "live", mode: LIVE_MODE},
+		{name: "unknown mode", mode: "unknown"},
+		{name: "production development", mode: DEVELOPMENT_MODE, production: true},
+		{name: "production debug", mode: DEBUG_MODE, production: true},
+		{name: "parent disabled", mode: DEVELOPMENT_MODE, disabled: true},
+		{name: "Spaces disabled", mode: DEBUG_MODE, spacesDisabled: true},
+		{name: "invalid frontend configuration", mode: DEVELOPMENT_MODE, invalid: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			config := Config{Mode: tc.mode}
+			config.Development.FrontendEditing = DefaultFrontendEditingConfig()
+			config.Development.FrontendEditing.Enabled = !tc.disabled
+			config.Development.FrontendEditing.Spaces.Enabled = !tc.spacesDisabled
+			if tc.invalid {
+				config.frontendEditingError = errors.New("invalid frontend configuration")
+			}
+			if got := SpacesAvailable(&config, RuntimeOptions{Production: tc.production}); got != tc.want {
+				t.Fatalf("available = %v, want %v", got, tc.want)
+			}
+		})
+	}
+	config := Config{Mode: DEVELOPMENT_MODE, dashboardConfigError: errors.New("invalid dashboard configuration")}
+	config.Development.FrontendEditing = DefaultFrontendEditingConfig()
+	if SpacesAvailable(&config, RuntimeOptions{}) || SpacesAvailable(nil, RuntimeOptions{}) {
+		t.Fatal("invalid configuration exposed Spaces")
+	}
+}
 
 func frontendConfig(t *testing.T, body string, config *Config) error {
 	t.Helper()
@@ -28,12 +64,13 @@ func TestFrontendEditingDefaultsAndSequentialDecode(t *testing.T) {
 		enabled, spacesEnabled, write bool
 		route                         string
 	}{
-		{"hyperbricks: {mode: development}", true, true, false, DefaultSpacesRoute},
+		{"hyperbricks: {mode: development}", true, true, true, DefaultSpacesRoute},
 		{"hyperbricks: {development: {frontend_editing: {spaces: {write: true, route: /__hyperbricks/content, allowed_hosts: [192.168.2.55]}}}}", true, true, true, "/__hyperbricks/content"},
 		{"hyperbricks: {development: {frontend_editing: {spaces: {enabled: false, write: true}}}}", true, false, true, DefaultSpacesRoute},
-		{"hyperbricks: {development: {frontend_editing: {enabled: false}}}", false, true, false, DefaultSpacesRoute},
-		{"hyperbricks: {mode: development}", true, true, false, DefaultSpacesRoute},
+		{"hyperbricks: {development: {frontend_editing: {enabled: false}}}", false, true, true, DefaultSpacesRoute},
+		{"hyperbricks: {mode: development}", true, true, true, DefaultSpacesRoute},
 		{"hyperbricks: {development: {frontend_editing: {spaces: {write: false}}}}", true, true, false, DefaultSpacesRoute},
+		{"hyperbricks: {mode: debug}", true, true, true, DefaultSpacesRoute},
 	} {
 		if err := frontendConfig(t, tc.yaml, &config); err != nil {
 			t.Fatal(err)

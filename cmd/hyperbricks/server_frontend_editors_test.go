@@ -74,9 +74,13 @@ func TestBuiltinSpacesMountDefaultsAndSafety(t *testing.T) {
 	if err := json.Unmarshal(w.Body.Bytes(), &snapshot); err != nil {
 		t.Fatal(err)
 	}
-	if w.Code != 200 || snapshot.Write || len(snapshot.Spaces) != 0 || len(snapshot.Sources) != 0 {
+	if w.Code != 200 || !snapshot.Write || len(snapshot.Spaces) != 0 || len(snapshot.Sources) != 0 {
 		t.Fatalf("default snapshot: %d %+v", w.Code, snapshot)
 	}
+	if w := request("POST", shared.DefaultSpacesRoute+"/api", `{"action":"create"}`); w.Code != 409 {
+		t.Fatalf("default write should reach revision validation: %d %s", w.Code, w.Body.String())
+	}
+	cfg.Development.FrontendEditing.Spaces.Write = false
 	for _, action := range []string{"create", "save", "trash", "restore"} {
 		if w := request("POST", shared.DefaultSpacesRoute+"/api", `{"action":"`+action+`"}`); w.Code != 403 {
 			t.Fatalf("read-only %s: %d", action, w.Code)
@@ -101,7 +105,7 @@ func TestBuiltinSpacesMountDefaultsAndSafety(t *testing.T) {
 				cfg.Mode = mode
 				cfg.Development.FrontendEditing.Enabled = !disabled
 				shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: module, Production: production})
-				if mode == shared.DEVELOPMENT_MODE && !disabled && !production {
+				if (mode == shared.DEVELOPMENT_MODE || mode == shared.DEBUG_MODE) && !disabled && !production {
 					continue
 				}
 				for _, path := range []string{"", "/web/app.js", "/web/navigation.mjs", "/web/contextual.js", "/web/contextual.css", "/api", "/api/assets", "/api/document", "/api/upload"} {

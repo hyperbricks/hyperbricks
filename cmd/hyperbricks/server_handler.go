@@ -14,7 +14,7 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	if contextualEditingRequested(r) && !requireDeveloperInterfaceAuth(w, r) {
+	if contextualEditingRequested(r) && !shared.RequireSpacesAuth(w, r, getHyperBricksConfiguration().Development.Dashboard.Credentials) {
 		return
 	}
 
