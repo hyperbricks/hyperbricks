@@ -120,7 +120,7 @@ The generated configuration and README use the selected module name. The README 
 
 ### Init-starter: install an official starter
 
-`init-starter` downloads a published module from the [HyperBricks repository](https://github.com/hyperbricks/hyperbricks/tree/main/modules). The repository's [`starters.index.json`](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/starters.index.json) selects eligible starter modules and omits test fixtures. Browse the [starter modules](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/README.md#starter-modules) for their setup requirements. Use `hello-world` for the minimal example.
+`init-starter` downloads a published module from the [HyperBricks repository](https://github.com/hyperbricks/hyperbricks/tree/main/modules). The repository's [`starters.index.json`](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/starters.index.json) selects eligible starter modules and omits test fixtures. Browse the [starter modules](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/README.md#starter-modules) for their setup requirements. Use `hello-world` for the minimal example.
 
 List compatible starters published on the current `main` branch:
 
@@ -444,9 +444,11 @@ cannot prove ownership without loading plugin code. `--strict` rejects that
 unverified state in CI.
 A configured mode other than `live`, `development`, or `debug` is a failure,
 even though normal startup can warn and fall back to `live`.
-A dashboard without configured credentials remains valid but locked. The
-doctor warns when a locked developer interface is enabled and never invents
-default credentials.
+A development/debug dashboard with both credential values absent opens without
+login. The doctor warns that anyone who can reach the server can view Dashboard,
+Errors, and diagnostics. Spaces and editing remain locked without credentials;
+the doctor reports that separately in the warning. A partial account is a
+configuration failure and stays locked. There are no default credentials.
 
 Passing checks collapse to one line per group. Warnings, failures, and skipped
 checks expand with their source location and a suggested repair when one is
@@ -704,9 +706,9 @@ and inspection do not run these commands either.
 
 See [Development hooks and managed services](DEVELOPMENT_HOOKS.md) for the complete
 configuration, readiness, process ownership, and exit-code contract. The
-[beginner demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-demo/README.md) includes instructions
+[beginner demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/development-hooks-demo/README.md) includes instructions
 to build a checkout that supports this new flag; the
-[plugin fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-plugin-demo/README.md) demonstrates
+[plugin fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/development-hooks-plugin-demo/README.md) demonstrates
 building a plugin before initialization.
 
 ### Runtime gateway
@@ -729,9 +731,13 @@ http://localhost:8080/__hyperbricks/render-diagnostics?request_id=hb-12
 ```
 
 The details include the source file, component path, key, type, and error message
-where available. The endpoint requires the module's
+where available. The endpoint uses the module's
 `hyperbricks.development.dashboard.credentials`; complete the browser's Basic
-Auth challenge with that account. Use your server's host and port, and open
+Auth challenge when that account is configured. With the Dashboard explicitly
+enabled and both credential values absent, diagnostics open without login and
+startup warns about network access. With the Dashboard disabled, credentials
+remain required. A partial account stays locked with HTTP 503.
+Use your server's host and port, and open
 configuration-load links after startup. Fix the reported source and request the
 route again. With `hyperbricks.development.dashboard.enabled: true`, the
 developer interface's **Errors** section shows these diagnostics; on
@@ -742,7 +748,7 @@ Without a request ID, `/__hyperbricks/render-diagnostics` lists up to ten curren
 
 Use `/__hyperbricks/render-diagnostics?view=current` to see all retained diagnostics and checked/unchecked route information. An empty error list does not prove that every route or input has been tested.
 
-The endpoint is disabled in live mode. Static exports omit the link because their temporary server stops after rendering.
+The endpoint is disabled in live mode, production runtimes, and static rendering. Static exports omit the link because their temporary server stops after rendering.
 
 Server setup failures, such as unusable directories, listener, watcher, or gateway configuration, can still prevent startup. If the server cannot start, read the error in the terminal; the diagnostics endpoint is not available yet.
 

@@ -15,6 +15,9 @@ func (config *Config) ValidateRuntimeSettings() error {
 	if config == nil {
 		return fmt.Errorf("runtime configuration is required")
 	}
+	if config.diskCacheConfigError != nil {
+		return config.diskCacheConfigError
+	}
 	if config.System.MetricsWatchInterval <= 0 {
 		return fmt.Errorf("hyperbricks.system.metrics_watch_interval must be greater than zero")
 	}

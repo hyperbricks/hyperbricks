@@ -7,7 +7,6 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/pkg/renderer"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
-	"github.com/mitchellh/mapstructure"
 )
 
 // FragmentConfig represents configuration for a single fragment.
@@ -23,7 +22,7 @@ type FragmentConfig struct {
 	Enclose            string                 `mapstructure:"enclose" description:"Wrapping property for the fragment rendered output" example:"{!{fragment-enclose.hyperbricks.yaml}}"`
 	Template           *TemplateOptions       `mapstructure:"template" description:"Template configurations for rendering the fragment" example:"{!{fragment-template.hyperbricks.yaml}}"`
 	Static             string                 `mapstructure:"static" description:"Static file path associated with the fragment" example:"{!{fragment-static.hyperbricks.yaml}}"`
-	Cache              string                 `mapstructure:"cache" description:"Legacy field; does not override the process-wide hyperbricks.live.cache duration." example:"{!{fragment-cache.hyperbricks.yaml}}"`
+	Cache              RouteCacheConfig       `mapstructure:"cache" scalar_or_object:"true" description:"Rendered-output cache: a duration such as 30s selects memory caching; a mapping selects storage (mem or disk) and optional expire. Package live.cache: 0s and nocache: true disable caching." example:"{!{fragment-cache.hyperbricks.yaml}}"`
 	NoCache            bool                   `mapstructure:"nocache" description:"Explicitly disable cache" example:"{!{fragment-nocache.hyperbricks.yaml}}"`
 	Index              int                    `mapstructure:"index" description:"Index number is a sort order option for the fragment menu section. See MENU and MENU_TEMPLATE for further explanation" example:"{!{fragment-index.hyperbricks.yaml}}"`
 	ContentType        string                 `mapstructure:"content_type" description:"content type header definition"`
@@ -72,7 +71,7 @@ func (pr *FragmentRenderer) Render(instance interface{}, ctx context.Context) (s
 			config = *typed
 		}
 	default:
-		err := mapstructure.Decode(instance, &config)
+		err := decodeRouteRenderConfig(instance, &config)
 		if err != nil {
 			return "", append(errors, shared.ComponentError{
 				Hash: shared.GenerateHash(),

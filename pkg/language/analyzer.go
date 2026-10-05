@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf16"
 	"unicode/utf8"
 
@@ -323,7 +324,7 @@ func hoverForSchemaFields(text, label string, fields []schema.Field, node *yaml.
 	if len(fields) == 0 {
 		return nil
 	}
-	field := fields[0]
+	field := schemaFieldForPath(fields, label)
 	kind := field.Kind
 	if len(fields) > 1 {
 		kind = "object"
@@ -339,6 +340,15 @@ func hoverForSchemaFields(text, label string, fields []schema.Field, node *yaml.
 		value += "\n\nExample: `" + strings.ReplaceAll(example, "`", "\\`") + "`"
 	}
 	return &Hover{Contents: MarkupContent{Kind: "markdown", Value: value}, Range: rangePointer(yamlNodeRange(text, node))}
+}
+
+func schemaFieldForPath(fields []schema.Field, path string) schema.Field {
+	for _, field := range fields {
+		if field.Path == path {
+			return field
+		}
+	}
+	return fields[0]
 }
 
 func editorHoverExample(example string) string {
@@ -1188,8 +1198,8 @@ func relatedTargetPaths(left, right string) bool {
 		strings.HasPrefix(left, right+"[") || strings.HasPrefix(right, left+"[")
 }
 
-func fieldSnippet(key string, fields []schema.Field, indent int) string {
-	if snippet, ok := nestedFieldSnippet(key, fields, indent); ok {
+func fieldSnippet(key string, fields []schema.Field, indent int, prefix string) string {
+	if snippet, ok := nestedFieldSnippet(key, fields, indent, prefix); ok {
 		return snippet
 	}
 	if len(fields) == 0 {
@@ -1197,6 +1207,9 @@ func fieldSnippet(key string, fields []schema.Field, indent int) string {
 	}
 	if fields[0].Kind == "map" {
 		return key + ":\n" + strings.Repeat(" ", indent+4) + "${1:key}: ${2:value}"
+	}
+	if snippet, ok := schemaScalarSnippet(fields[0], 1); ok {
+		return key + ": " + snippet
 	}
 	switch fields[0].Kind {
 	case "bool":
@@ -1210,6 +1223,27 @@ func fieldSnippet(key string, fields []schema.Field, indent int) string {
 	}
 }
 
+// Keep schema leaf paths intact while building nested completions. Cache
+// duration examples are useful executable defaults; unrelated schema examples
+// may contain external files, multiline source, or application-specific data.
+func schemaScalarSnippet(field schema.Field, placeholder int) (string, bool) {
+	if values := field.AllowedValues(); len(values) > 0 {
+		escape := strings.NewReplacer("\\", "\\\\", ",", "\\,", "|", "\\|")
+		choices := make([]string, len(values))
+		for index, value := range values {
+			choices[index] = escape.Replace(value)
+		}
+		return fmt.Sprintf("${%d|%s|}", placeholder, strings.Join(choices, ",")), true
+	}
+	if field.Path == "cache.expire" {
+		example := strings.TrimSpace(field.Example)
+		if duration, err := time.ParseDuration(example); err == nil && duration >= 0 {
+			return fmt.Sprintf("${%d:%s}", placeholder, example), true
+		}
+	}
+	return "", false
+}
+
 type snippetFieldNode struct {
 	field    *schema.Field
 	children map[string]*snippetFieldNode
@@ -1219,11 +1253,15 @@ type snippetFieldNode struct {
 // response.headers into an insertable YAML object. It deliberately emits only
 // paths present in the schema; generic placeholder keys belong only inside
 // schema-declared dynamic maps.
-func nestedFieldSnippet(key string, fields []schema.Field, indent int) (string, bool) {
+func nestedFieldSnippet(key string, fields []schema.Field, indent int, prefix string) (string, bool) {
 	root := &snippetFieldNode{children: make(map[string]*snippetFieldNode)}
 	leafCount := 0
 	for index := range fields {
-		parts := strings.Split(fields[index].Path, ".")
+		path := fields[index].Path
+		if prefix != "" {
+			path = strings.TrimPrefix(path, prefix+".")
+		}
+		parts := strings.Split(path, ".")
 		if len(parts) < 2 || parts[0] != key {
 			continue
 		}
@@ -1265,6 +1303,11 @@ func renderSnippetFields(node *snippetFieldNode, indent int, placeholder *int) [
 			continue
 		}
 		if child.field == nil {
+			continue
+		}
+		if snippet, ok := schemaScalarSnippet(*child.field, *placeholder); ok {
+			lines = append(lines, padding+key+": "+snippet)
+			*placeholder++
 			continue
 		}
 		switch child.field.Kind {

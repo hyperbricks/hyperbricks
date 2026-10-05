@@ -69,6 +69,7 @@ The patterns module can install its pinned npm dependencies through the optional
 | Module | Category | Description |
 | --- | --- | --- |
 | [`ssr-proof-hyperbricks`](ssr-proof-hyperbricks/) | Benchmark fixture | Minimal nested SSR workload with request-specific data, health endpoints, cached and raw server profiles, and stable output for throughput and allocation measurements. |
+| [`response-cache-test`](response-cache-test/) | Test and benchmark fixture | Memory/disk route policies, expiry, mode bypass, purge, cleanup and packaging checks, plus identical response workloads for the [cache baseline](../benchmarks/response-cache/README.md). |
 | [`api-security-test`](api-security-test/) | Test fixture | Explicit upstream credential selection, composed private/public APIs, redirect boundaries, and validated browser-cookie issuance, with a controlled mock API and the security research article. |
 | [`development-hooks-plugin-demo`](development-hooks-plugin-demo/) | Test fixture | A before-start hook compiles a native plugin; an after-start check proves the freshly embedded build ID is the one loaded by the runtime. |
 | [`headers-test`](headers-test/) | Test fixture | Development-mode half of the header regression fixture, covering configured response headers, cookies, routes, and generated output. |

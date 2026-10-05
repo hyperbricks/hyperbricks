@@ -30,7 +30,7 @@ func handleErrorsView(w http.ResponseWriter, r *http.Request) bool {
 		http.NotFound(w, r)
 		return true
 	}
-	if !requireDeveloperInterfaceAuth(w, r) {
+	if !requireDashboardAuth(w, r) {
 		return true
 	}
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {

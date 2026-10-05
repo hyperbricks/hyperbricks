@@ -10,6 +10,23 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// ConfigValueDecodeHookFunc lets a typed configuration own its scalar/mapping
+// syntax before the general weak conversion hooks discard source types.
+func ConfigValueDecodeHookFunc() mapstructure.DecodeHookFunc {
+	decoderType := reflect.TypeOf((*interface{ DecodeConfigValue(interface{}) error })(nil)).Elem()
+	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
+		if to.Kind() != reflect.Struct || from == to || !reflect.PointerTo(to).Implements(decoderType) {
+			return data, nil
+		}
+		target := reflect.New(to)
+		decoder := target.Interface().(interface{ DecodeConfigValue(interface{}) error })
+		if err := decoder.DecodeConfigValue(data); err != nil {
+			return nil, err
+		}
+		return target.Elem().Interface(), nil
+	}
+}
+
 // StringToIntHook converts string values to integers during decoding.
 func StringToIntHook(
 	from reflect.Kind,

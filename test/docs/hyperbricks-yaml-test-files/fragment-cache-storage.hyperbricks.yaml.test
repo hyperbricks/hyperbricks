@@ -1,0 +1,35 @@
+==== hyperbricks yaml {!{fragment}} ====
+fragment:
+  - type: fragment
+  - route: cached-output
+  - cache:
+      storage: disk
+      expire: 30s
+  - text_10:
+      - type: text
+      - value: Cached fragment
+==== explainer ====
+In live mode, keep this fragment's rendered response on disk for 30 seconds. The package cache setting must be positive, and nocache must not be enabled. Development and debug render fresh. Omit expire to inherit the package lifetime; use cache: 30s as shorthand for memory storage with the same route lifetime.
+==== expected json ====
+{
+  "Cache": {"storage": "disk", "expire": "30s"},
+  "ConfigCategory": "",
+  "ConfigType": "<FRAGMENT>",
+  "ContentType": "",
+  "Enclose": "",
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Index": 0,
+  "Items": null,
+  "MetaDocDescription": "",
+  "NoCache": false,
+  "Response": {"Headers": null, "Status": 0},
+  "Route": "cached-output",
+  "Section": "",
+  "Static": "",
+  "Template": null,
+  "Title": ""
+}
+==== expected output ====
+Cached fragment

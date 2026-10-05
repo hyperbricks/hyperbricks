@@ -34,7 +34,7 @@ To build a published release instead:
 
 ```bash
 export HB_BUILD_SOURCE=release
-export HB_VERSION=v1.2.9-beta
+export HB_VERSION=v1.3.0-beta
 docker compose -f docker/docker-compose.yml up --build -d
 ```
 

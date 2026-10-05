@@ -1,0 +1,117 @@
+{
+  "command": "go test ./cmd/hyperbricks -run '^$' -bench '^BenchmarkResponseCacheBackendHit$' -benchmem -benchtime=1s -count=3 -cpu=4",
+  "revision": "4c6e9256b27b19e6244655d632240418ef00aee4",
+  "go": "go1.26.1",
+  "os": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M3",
+  "scope": "16KiB warm handler hits with discard response writer; no TCP; retained body bytes exclude metadata and are not RSS",
+  "trials": {
+    "default-memory": [
+      {
+        "ns_per_op": 971.6,
+        "retained_body_bytes": 16384,
+        "bytes_per_op": 383,
+        "allocs_per_op": 20
+      },
+      {
+        "ns_per_op": 974.0,
+        "retained_body_bytes": 16384,
+        "bytes_per_op": 384,
+        "allocs_per_op": 20
+      },
+      {
+        "ns_per_op": 962.0,
+        "retained_body_bytes": 16384,
+        "bytes_per_op": 384,
+        "allocs_per_op": 20
+      }
+    ],
+    "scalar-memory": [
+      {
+        "ns_per_op": 998.8,
+        "retained_body_bytes": 16384,
+        "bytes_per_op": 384,
+        "allocs_per_op": 20
+      },
+      {
+        "ns_per_op": 1003.0,
+        "retained_body_bytes": 16384,
+        "bytes_per_op": 384,
+        "allocs_per_op": 20
+      },
+      {
+        "ns_per_op": 1020.0,
+        "retained_body_bytes": 16384,
+        "bytes_per_op": 384,
+        "allocs_per_op": 20
+      }
+    ],
+    "mapping-memory": [
+      {
+        "ns_per_op": 1063.0,
+        "retained_body_bytes": 16384,
+        "bytes_per_op": 384,
+        "allocs_per_op": 20
+      },
+      {
+        "ns_per_op": 1088.0,
+        "retained_body_bytes": 16384,
+        "bytes_per_op": 384,
+        "allocs_per_op": 20
+      },
+      {
+        "ns_per_op": 1048.0,
+        "retained_body_bytes": 16384,
+        "bytes_per_op": 384,
+        "allocs_per_op": 20
+      }
+    ],
+    "disk": [
+      {
+        "ns_per_op": 21581.0,
+        "retained_body_bytes": 0,
+        "bytes_per_op": 1121,
+        "allocs_per_op": 28
+      },
+      {
+        "ns_per_op": 21641.0,
+        "retained_body_bytes": 0,
+        "bytes_per_op": 1121,
+        "allocs_per_op": 28
+      },
+      {
+        "ns_per_op": 21705.0,
+        "retained_body_bytes": 0,
+        "bytes_per_op": 1122,
+        "allocs_per_op": 28
+      }
+    ]
+  },
+  "medians": {
+    "default-memory": {
+      "ns_per_op": 971.6,
+      "retained_body_bytes": 16384,
+      "bytes_per_op": 384,
+      "allocs_per_op": 20
+    },
+    "scalar-memory": {
+      "ns_per_op": 1003.0,
+      "retained_body_bytes": 16384,
+      "bytes_per_op": 384,
+      "allocs_per_op": 20
+    },
+    "mapping-memory": {
+      "ns_per_op": 1063.0,
+      "retained_body_bytes": 16384,
+      "bytes_per_op": 384,
+      "allocs_per_op": 20
+    },
+    "disk": {
+      "ns_per_op": 21641.0,
+      "retained_body_bytes": 0,
+      "bytes_per_op": 1121,
+      "allocs_per_op": 28
+    }
+  }
+}

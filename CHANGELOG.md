@@ -1,5 +1,39 @@
 # Changelog
 
+## v1.3.0-beta
+
+Changes since `v1.2.9-beta`.
+
+### Rendering and caching
+
+- Reduce repeated rendering work by combining eligible nested templates into a
+  prepared render plan and reusing parsed API templates, while preserving
+  escaping, request isolation, and diagnostics.
+- Choose memory or disk response caching per page or fragment with
+  `cache.storage` (`mem` or `disk`) and `cache.expire`. Add bounded disk storage, expiry
+  cleanup, and `hyperbricks cache purge` for individual routes or all cached
+  responses in a running instance.
+- **Migration:** scalar route settings such as `cache: 30s` now override the
+  package lifetime; `cache: 0s` disables caching for that route. Remove the route
+  setting to keep the package lifetime. Deployment archives and runtime
+  snapshots now exclude `.cache` and configured module-local cache directories.
+  See the [migration guide](docs/MIGRATION.md#upgrade-to-v130-beta).
+
+### Development tools
+
+- Open an enabled Dashboard, Errors, and their diagnostics in development/debug
+  mode when both credentials are absent, with a startup warning. Partial
+  credentials remain blocked; Spaces and editors still require authentication.
+- Add language-server completion, hover, and configuration diagnostics for route
+  cache storage and expiry without changing the editor protocol.
+
+### Guides and benchmarks
+
+- Add a [practical caching guide](docs/CACHING.md) and runnable test module
+  covering memory, disk, expiry, purge, runtime modes, and deployment exclusions.
+- Add local HTTP [benchmarks](benchmarks/README.md) for fresh rendering and
+  response caching, with recorded baselines and validated comparison commands.
+
 ## v1.2.9-beta
 
 Changes since `v1.2.8-beta`.

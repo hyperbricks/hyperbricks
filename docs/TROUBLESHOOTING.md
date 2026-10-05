@@ -6,14 +6,16 @@ Start with the developer interface or server log and check the affected route. A
 
 In development mode, use the developer interface's **Errors** section:
 
-1. Set `hyperbricks.development.dashboard.enabled: true` and configure
-   `hyperbricks.development.dashboard.credentials.user` and `.password` in
-   `package.hyperbricks.yaml`, preferably through environment resolvers.
-2. Set the referenced environment variables and restart the server. There is no
-   default developer account.
-3. Open `/__hyperbricks/dashboard` on your running server, complete the browser's Basic Auth
-   challenge, and select **Errors**. You can also open
-   `/__hyperbricks/errors` directly with the same login.
+1. Set `hyperbricks.development.dashboard.enabled: true` in
+   `package.hyperbricks.yaml` and restart the server.
+2. With both credential values absent, Dashboard, Errors, and diagnostics open
+   without login. Startup warns that anyone who can reach this server can view
+   them. To require login, configure both
+   `hyperbricks.development.dashboard.credentials.user` and `.password`,
+   preferably through environment resolvers, and restart.
+3. Open `/__hyperbricks/dashboard` and select **Errors**, or open
+   `/__hyperbricks/errors` directly. Complete the browser's Basic Auth challenge
+   if credentials are configured. There is no default developer account.
 4. Select the affected route or request and read its diagnostics. Filter by
    severity when you need to separate errors from warnings.
 
@@ -32,7 +34,8 @@ The response header `X-Hyperbricks-Render-Error-Count` reports the number of col
 The Errors view also shows unchecked routes. An empty error list does not prove that every route or input has been tested.
 
 The endpoint is disabled in live mode. A `503` response means the module's
-developer credentials are absent or did not resolve; a `401` response means the
+developer credentials are only partially configured, or are absent while the
+Dashboard is disabled; a `401` response means the
 browser did not supply the configured login or supplied the wrong one. If the
 server cannot start, read the terminal error instead. See
 [HyperBricks CLI: Render diagnostics](HYPERBRICKS_CLI.md#render-diagnostics).

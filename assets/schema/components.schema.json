@@ -1760,6 +1760,8 @@
               "section",
               "static",
               "cache",
+              "cache.storage",
+              "cache.expire",
               "nocache",
               "index",
               "content_type",
@@ -1849,12 +1851,49 @@
           "path": "cache",
           "key": "cache",
           "go_name": "Cache",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Legacy field; does not override the process-wide hyperbricks.live.cache duration.",
+          "go_type": "composite.RouteCacheConfig",
+          "kind": "object",
+          "description": "Rendered-output cache: a duration such as 30s selects memory caching; a mapping selects storage (mem or disk) and optional expire. Package live.cache: 0s and nocache: true disable caching.",
           "example": "{!{fragment-cache.hyperbricks.yaml}}",
           "authoring": {
             "label": "Cache",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache.expire",
+          "key": "expire",
+          "go_name": "Expire",
+          "go_type": "*string",
+          "kind": "string",
+          "description": "Route lifetime as a Go duration; omitted inherits hyperbricks.live.cache. Use 0s to disable caching for this route.",
+          "example": "30s",
+          "authoring": {
+            "label": "Expire",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache.storage",
+          "key": "storage",
+          "go_name": "Storage",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Storage for rendered output in live mode: mem (default) or disk. Does not change HTTP cache policy.",
+          "example": "disk",
+          "validate": "omitempty,oneof=mem disk",
+          "authoring": {
+            "label": "Storage",
             "control": "text",
             "group": "route",
             "publish": {
@@ -2855,6 +2894,8 @@
               "section",
               "static",
               "cache",
+              "cache.storage",
+              "cache.expire",
               "nocache",
               "index",
               "content_type"
@@ -2987,12 +3028,49 @@
           "path": "cache",
           "key": "cache",
           "go_name": "Cache",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Legacy field; does not override the process-wide hyperbricks.live.cache duration.",
+          "go_type": "composite.RouteCacheConfig",
+          "kind": "object",
+          "description": "Rendered-output cache: a duration such as 30s selects memory caching; a mapping selects storage (mem or disk) and optional expire. Package live.cache: 0s and nocache: true disable caching.",
           "example": "{!{hypermedia-cache.hyperbricks.yaml}}",
           "authoring": {
             "label": "Cache",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache.expire",
+          "key": "expire",
+          "go_name": "Expire",
+          "go_type": "*string",
+          "kind": "string",
+          "description": "Route lifetime as a Go duration; omitted inherits hyperbricks.live.cache. Use 0s to disable caching for this route.",
+          "example": "30s",
+          "authoring": {
+            "label": "Expire",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache.storage",
+          "key": "storage",
+          "go_name": "Storage",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Storage for rendered output in live mode: mem (default) or disk. Does not change HTTP cache policy.",
+          "example": "disk",
+          "validate": "omitempty,oneof=mem disk",
+          "authoring": {
+            "label": "Storage",
             "control": "text",
             "group": "route",
             "publish": {

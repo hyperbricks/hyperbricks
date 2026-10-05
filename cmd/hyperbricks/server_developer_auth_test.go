@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -42,7 +43,14 @@ func TestDeveloperRouteAuthenticationStates(t *testing.T) {
 		return response
 	}
 
-	locked := assertStatus("locked", func() *http.Request {
+	open := assertStatus("no account", func() *http.Request {
+		return httptest.NewRequest(http.MethodGet, errorsViewPath, nil)
+	}, http.StatusOK)
+	if open.Header().Get("WWW-Authenticate") != "" {
+		t.Fatal("unconfigured dashboard must not challenge for login")
+	}
+	cfg.Development.Dashboard.Credentials = shared.CredentialsConfig{User: "developer"}
+	locked := assertStatus("partial account", func() *http.Request {
 		return httptest.NewRequest(http.MethodGet, errorsViewPath, nil)
 	}, http.StatusServiceUnavailable)
 	if locked.Header().Get("WWW-Authenticate") != "" || !strings.Contains(locked.Body.String(), shared.DeveloperInterfaceUnavailableMessage) {
@@ -134,5 +142,35 @@ func TestFrontendErrorPanelRequiresDeveloperLogin(t *testing.T) {
 	handler(authenticatedResponse, developerTestRequest(http.MethodGet, "http://localhost/", nil))
 	if !strings.Contains(authenticatedResponse.Body.String(), `id="error_panel"`) {
 		t.Fatal("authenticated developer response omitted the configured error panel")
+	}
+}
+
+func TestOpenDashboardDoesNotOpenEditingOrFrontendPanels(t *testing.T) {
+	setupErrorsViewTest(t)
+	cfg := getHyperBricksConfiguration()
+	cfg.Development.Dashboard.Credentials = shared.CredentialsConfig{}
+	cfg.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
+	cfg.Development.FrontendEditing.Editors = map[string]shared.FrontendEditorConfig{
+		"external": {Plugin: "Editor@1.0.0", Route: "/__hyperbricks/external"},
+	}
+	for _, path := range []string{cfg.Development.FrontendEditing.Spaces.Route, "/__hyperbricks/external", "/?edit=true"} {
+		response := httptest.NewRecorder()
+		request := httptest.NewRequest(http.MethodGet, path, nil)
+		if !handleFrontendEditor(response, request) {
+			handler(response, request)
+		}
+		if response.Code != http.StatusServiceUnavailable {
+			t.Errorf("GET %s = %d, want locked editor", path, response.Code)
+		}
+	}
+	response := httptest.NewRecorder()
+	spacesEditor.ServeHTTP(response, httptest.NewRequest(http.MethodGet, cfg.Development.FrontendEditing.Spaces.Route, nil))
+	if response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("direct Spaces handler = %d, want locked editor", response.Code)
+	}
+	request := httptest.NewRequest(http.MethodGet, "/", nil)
+	ctx := context.WithValue(context.Background(), shared.Request, request)
+	if shared.DeveloperInterfaceAuthorized(ctx) {
+		t.Fatal("open dashboard authorized frontend error panels")
 	}
 }

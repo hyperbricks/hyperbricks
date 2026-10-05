@@ -977,3 +977,32 @@ func TestDoctorCredentialsFollowEnabledDeveloperSurfaces(t *testing.T) {
 		})
 	}
 }
+
+func TestDoctorCredentialsDistinguishesOpenAndPartialAccounts(t *testing.T) {
+	for _, scenario := range []struct {
+		name        string
+		credentials shared.CredentialsConfig
+		editors     bool
+		status      doctorCheckStatus
+		message     string
+	}{
+		{"no account", shared.CredentialsConfig{}, false, doctorWarn, "accessible without login"},
+		{"editors remain locked", shared.CredentialsConfig{}, true, doctorWarn, "Spaces and frontend editors remain locked"},
+		{"user only", shared.CredentialsConfig{User: "developer"}, false, doctorFail, "require both user and password"},
+		{"password only", shared.CredentialsConfig{Password: "secret"}, false, doctorFail, "require both user and password"},
+		{"configured", shared.CredentialsConfig{User: "developer", Password: "secret"}, true, doctorPass, "credentials are configured"},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			config := &shared.Config{Mode: shared.DEVELOPMENT_MODE}
+			config.Development.Dashboard = shared.DevelopmentDashboardConfig{Enabled: true, Credentials: scenario.credentials}
+			config.Development.FrontendEditing.Enabled = scenario.editors
+			config.Development.FrontendEditing.Spaces.Enabled = scenario.editors
+			collector := newDoctorCollector()
+			checkDoctorCredentials(collector, config)
+			check := collector.checks["security.developer_credentials"]
+			if check.Status != scenario.status || !strings.Contains(check.Message, scenario.message) {
+				t.Fatalf("credential check = %+v, want %s containing %q", check, scenario.status, scenario.message)
+			}
+		})
+	}
+}

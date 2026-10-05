@@ -83,7 +83,7 @@ func (r *runtimeReload) Stop(ctx context.Context) error {
 	}
 }
 
-func startRuntimeWatcher(ctx context.Context, directories []string, reload func() bool) (<-chan error, error) {
+func startRuntimeWatcher(ctx context.Context, directories []string, reload func() bool, cacheDirectories ...string) (<-chan error, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
@@ -94,6 +94,9 @@ func startRuntimeWatcher(ctx context.Context, directories []string, reload func(
 				return err
 			}
 			if info.IsDir() {
+				if isResponseCacheWatchPath(path, cacheDirectories) {
+					return filepath.SkipDir
+				}
 				return watcher.Add(path)
 			}
 			return nil
@@ -123,6 +126,9 @@ func startRuntimeWatcher(ctx context.Context, directories []string, reload func(
 			case event, ok := <-watcher.Events:
 				if !ok {
 					return
+				}
+				if isResponseCacheWatchPath(event.Name, cacheDirectories) {
+					continue
 				}
 				if strings.HasPrefix(filepath.Base(event.Name), ".hb-esbuild-") || isEsbuildOutput(event.Name) {
 					continue
@@ -154,4 +160,26 @@ func startRuntimeWatcher(ctx context.Context, directories []string, reload func(
 		}
 	}()
 	return done, nil
+}
+
+func isResponseCacheWatchPath(path string, configured []string) bool {
+	for _, part := range strings.Split(filepath.Clean(path), string(filepath.Separator)) {
+		if part == ".cache" {
+			return true
+		}
+	}
+	absolute, err := filepath.Abs(path)
+	if err != nil {
+		return false
+	}
+	for _, directory := range configured {
+		if directory == "" {
+			continue
+		}
+		root, err := filepath.Abs(directory)
+		if err == nil && cachePathContains(root, absolute) {
+			return true
+		}
+	}
+	return false
 }

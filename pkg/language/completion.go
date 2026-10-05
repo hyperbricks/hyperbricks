@@ -449,6 +449,25 @@ func (a *Analyzer) completionCandidates(uri, text string, position Position, doc
 		return resolverKeyCompletions(c.indent, c.flow)
 	}
 	if descriptor != nil {
+		if field, ok := descriptor.fieldByPath[fieldPath]; ok {
+			if values := field.AllowedValues(); len(values) > 0 {
+				items := []CompletionItem{}
+				for _, value := range values {
+					if !strings.HasPrefix(value, c.prefix) {
+						continue
+					}
+					item := literalCompletions(value)[0]
+					if c.quoted {
+						item.InsertText = strconv.Quote(value)
+					}
+					items = append(items, item)
+				}
+				if strings.TrimSpace(c.prefix) == "" && field.Kind != "list" {
+					items = append(items, inlineResolverCompletions()...)
+				}
+				return items
+			}
+		}
 		if field, ok := descriptor.fieldByPath[fieldPath]; ok && field.Kind == "bool" {
 			return literalCompletions("true", "false")
 		}
@@ -503,7 +522,6 @@ func schemaKeyCompletions(descriptor *typeDescriptor, prefix string, existing ma
 		if existing[key] || (prefix == "" && authoringSlotOwnsCompletion(descriptor, key)) {
 			continue
 		}
-		field.Path = path
 		groups[key] = append(groups[key], field)
 	}
 	keys := []string{}
@@ -521,11 +539,12 @@ func schemaKeyCompletions(descriptor *typeDescriptor, prefix string, existing ma
 				snippetIndent = 0
 			}
 		}
-		detail := fields[0].Kind
+		field := schemaFieldForPath(fields, joinTargetPath(prefix, key))
+		detail := field.Kind
 		if len(fields) > 1 {
 			detail = "object"
 		}
-		items = append(items, CompletionItem{Label: key, Kind: CompletionItemKindField, Detail: detail, Documentation: MarkupContent{Kind: "markdown", Value: fields[0].Description}, InsertText: fieldSnippet(key, fields, snippetIndent), InsertTextFormat: InsertTextFormatSnippet})
+		items = append(items, CompletionItem{Label: key, Kind: CompletionItemKindField, Detail: detail, Documentation: MarkupContent{Kind: "markdown", Value: field.Description}, InsertText: fieldSnippet(key, fields, snippetIndent, prefix), InsertTextFormat: InsertTextFormatSnippet})
 	}
 	return items
 }
@@ -567,6 +586,9 @@ func flowSchemaSnippet(descriptor *typeDescriptor, prefix, key string) string {
 		i := placeholder
 		placeholder++
 		if node.field != nil {
+			if snippet, ok := schemaScalarSnippet(*node.field, i); ok {
+				return snippet
+			}
 			switch node.field.Kind {
 			case "map":
 				placeholder++

@@ -96,12 +96,13 @@ type Config struct {
 	Development          DevelopmentConfig `mapstructure:"development" description:"Source watching and developer interfaces. Interface enablement, authentication, and write permissions are separate settings." example:"{watch: true, watch_dirs: [hyperbricks, templates, resources]}"`
 	Debug                DebugConfig       `mapstructure:"debug" description:"Legacy debug configuration container with no exported configurable fields. Use mode: debug and logger settings instead." example:"{}"`
 	Live                 LiveConfig        `mapstructure:"live" description:"Live-mode rendered-output caching. Browser and reverse-proxy caching are configured separately through HTTP headers." example:"{cache: 10m}"`
-	Directories          map[string]string `mapstructure:"directories" description:"Named filesystem directories including hyperbricks, templates, resources, static, render, and plugins. Bare relative paths use the invocation directory; use a module-based path resolver for module-owned files." example:"{resources: {path: {base: module, path: resources}}}"`
+	Directories          map[string]string `mapstructure:"directories" description:"Named filesystem directories including hyperbricks, templates, resources, static, render, plugins, and cache. Cache defaults to the module's private .cache directory and is excluded from deployment artifacts. Bare relative paths use the invocation directory; use a module-based path resolver for module-owned files." example:"{resources: {path: {base: module, path: resources}}}"`
 	Plugins              PluginsConfig     `mapstructure:"plugins" description:"Compiled plugin names to preload and optional plugin-specific configuration. Built-in Spaces does not require a plugin." example:"{enabled: [ExamplePlugin@1.0.0]}"`
 	System               SystemConfig      `mapstructure:"system" description:"Internal runtime service settings, including the developer metrics sampling interval." example:"{metrics_watch_interval: 10s}"`
 	frontendEditingError error
 	dashboardConfigError error
 	processesConfigError error
+	diskCacheConfigError error
 }
 
 // Frontend editors are development-only; Spaces is built in, other editors are plugins.
@@ -121,7 +122,8 @@ type SystemConfig struct {
 }
 
 type LiveConfig struct {
-	CacheTime CacheTime `mapstructure:"cache" description:"Process-wide lifetime of reusable rendered output in live mode, expressed as a Go duration. Use 0s to disable internal output caching; negative durations are invalid. Does not set browser cache policy or bound cache memory." example:"10m"`
+	CacheTime CacheTime       `mapstructure:"cache" description:"Default lifetime of reusable rendered output in live mode. A route can override this duration; 0s disables all internal output caching. Negative durations are invalid. Does not set browser cache policy or bound cache memory." example:"10m"`
+	DiskCache DiskCacheConfig `mapstructure:"disk_cache" description:"Limits and cleanup for disposable route response files under directories.cache/responses. Disk entries are not reused across restarts." example:"{max_bytes: 268435456, max_entries: 10000, cleanup_interval: 1m}"`
 }
 
 type DebugConfig struct {
@@ -146,7 +148,7 @@ type DevelopmentConfig struct {
 
 type DevelopmentDashboardConfig struct {
 	Enabled     bool              `mapstructure:"enabled" description:"Enable Dashboard Overview and Errors. This switch does not disable independently enabled Spaces or other developer interfaces." example:"false"`
-	Credentials CredentialsConfig `mapstructure:"credentials" description:"Shared developer-interface username and password, separate from deployment-service credentials. There is no default account. Missing or empty values leave enabled interfaces locked with HTTP 503; use environment resolvers and protect non-loopback access with encrypted transport." example:"{user: {env: HB_DEVELOPER_USER}, password: {env: HB_DEVELOPER_PASSWORD}}"`
+	Credentials CredentialsConfig `mapstructure:"credentials" description:"Shared developer-interface username and password, separate from deployment-service credentials. With both values absent, an enabled development/debug dashboard, Errors and diagnostics open without login and emit a startup warning. Spaces, editing and frontend error panels still require credentials. A partial account stays locked with HTTP 503. Use environment resolvers and encrypted transport for non-loopback access." example:"{user: {env: HB_DEVELOPER_USER}, password: {env: HB_DEVELOPER_PASSWORD}}"`
 }
 
 // LoggerConfig with defaults.
@@ -364,6 +366,7 @@ func defaultPackageConfig(moduleDir string) *Config {
 		},
 
 		Directories: map[string]string{
+			"cache":       filepath.Join(moduleDir, ".cache"),
 			"render":      fmt.Sprintf("%s/rendered", moduleDir),
 			"static":      fmt.Sprintf("%s/static", moduleDir),
 			"plugins":     "bin/plugins",
@@ -379,6 +382,7 @@ func defaultPackageConfig(moduleDir string) *Config {
 		},
 
 		Live: LiveConfig{
+			DiskCache: DefaultDiskCacheConfig(),
 			CacheTime: CacheTime{
 				Duration: 10 * time.Minute, // Default cache duration
 			},
@@ -493,6 +497,14 @@ func decodeConfig(input interface{}, output interface{}) error {
 
 func decodeConfigWithPolicy(input interface{}, output interface{}, strict bool) error {
 	if config, ok := output.(*Config); ok {
+		diskCache, err := decodeDiskCache(input)
+		config.diskCacheConfigError = err
+		config.Live.DiskCache = diskCache
+		if err != nil {
+			return err
+		}
+		defer func() { config.Live.DiskCache = diskCache }()
+
 		hooks, services, err := decodeDevelopmentProcesses(input)
 		config.processesConfigError = err
 		config.Development.Hooks, config.Development.Services = hooks, services

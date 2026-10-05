@@ -1,0 +1,23 @@
+# Optional exclusion probe. No upstream connection is made until this route
+# is requested; all other routes run without an external service.
+vars:
+  cache_test_upstream:
+    env:
+      name: HB_CACHE_TEST_UPSTREAM
+      default: http://127.0.0.1:8180
+
+probe_api:
+  - type: api_fragment_render
+  - route: probe/api
+  - endpoint:
+      format: '%s/cache-probe'
+      args:
+        - var: cache_test_upstream
+  - method: GET
+  - querykeys: [variant]
+  - response:
+      headers:
+        Content-Type: text/plain; charset=utf-8
+        X-Cache-Fixture: response-cache-test
+        Cache-Control: no-store
+  - inline: 'upstream_call={{.Data.call}} variant={{ default "default" .Data.variant }}'

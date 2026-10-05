@@ -96,10 +96,17 @@ such as Spaces still use the same credentials
 when the Dashboard is disabled. Public application routes remain accessible
 without this login and do not receive developer-only panels or edit controls.
 
-There is no default developer username or password. If either resolved value is
-empty, enabled developer routes return `503 Service Unavailable`. Missing or
-incorrect browser credentials return `401 Unauthorized` with a Basic Auth
-challenge. Environment changes require a process restart.
+There is no default developer username or password. Spaces and editing require
+both resolved values; otherwise they return `503 Service Unavailable`. Missing
+or incorrect browser credentials return `401 Unauthorized` with a Basic Auth
+challenge when an account is configured. Environment changes require a process restart.
+
+Dashboard Overview, Errors, and their diagnostics have a development/debug
+exception: with `dashboard.enabled: true` and both credential values absent,
+they open without login and startup warns about network access. Anyone who can
+reach the server can view them. A partial account remains locked. This
+exception does not enable Spaces, editing, or frontend error panels without a
+login; diagnostics still require credentials when the Dashboard is disabled.
 
 The editor rejects access outside development, including production, even when explicitly enabled. Spaces checks the configured host and browser origin. It ignores forwarded-host/origin headers. Opening the CMS creates no module files.
 

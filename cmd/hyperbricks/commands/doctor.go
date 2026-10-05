@@ -843,7 +843,14 @@ func checkDoctorCredentials(collector *doctorCollector, config *shared.Config) {
 	case credentials.Complete():
 		collector.simple("security.developer_credentials", doctorPass, "developer-interface credentials are configured")
 	case credentials.Empty() && surfaceEnabled:
-		collector.set(doctorCheck{ID: "security.developer_credentials", Group: "security", Status: doctorWarn, Message: "developer interfaces are enabled but locked because credentials are not configured", Path: "hyperbricks.development.dashboard.credentials", Hint: "Configure both development.dashboard.credentials.user and development.dashboard.credentials.password"})
+		message := "enabled Spaces and frontend editors are locked because credentials are not configured"
+		if dashboardEnabled {
+			message = "Dashboard, Errors and diagnostics are accessible without login to anyone who can reach the server"
+			if frontendEditorsEnabled {
+				message += "; Spaces and frontend editors remain locked"
+			}
+		}
+		collector.set(doctorCheck{ID: "security.developer_credentials", Group: "security", Status: doctorWarn, Message: message, Path: "hyperbricks.development.dashboard.credentials", Hint: "Configure both development.dashboard.credentials.user and development.dashboard.credentials.password"})
 	case credentials.Empty():
 		collector.simple("security.developer_credentials", doctorPass, "developer interfaces are disabled and credentials are not configured")
 	default:

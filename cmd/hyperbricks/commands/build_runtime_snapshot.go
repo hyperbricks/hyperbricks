@@ -175,9 +175,13 @@ func PackageRuntimeSnapshot(opts RuntimeSnapshotOptions) (RuntimeSnapshotResult,
 // known in-progress editor/Spaces/esbuild staging names. New Spaces documents
 // and assets are intentionally included.
 func collectRuntimeSnapshotFiles(root string) ([]buildFile, error) {
+	excludeCache, err := moduleCacheExclusion(root)
+	if err != nil {
+		return nil, err
+	}
 	var files []buildFile
 	var totalBytes int64
-	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
+	err = filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
 		}
@@ -185,10 +189,10 @@ func collectRuntimeSnapshotFiles(root string) ([]buildFile, error) {
 			return nil
 		}
 		name := entry.Name()
-		if entry.IsDir() && isExcludedDir(name) {
+		if entry.IsDir() && (isExcludedDir(name) || excludeCache(path)) {
 			return fs.SkipDir
 		}
-		if !entry.IsDir() && (isExcludedFile(name) || isRuntimeStagingFile(name)) {
+		if !entry.IsDir() && (isExcludedFile(name) || isRuntimeStagingFile(name) || excludeCache(path)) {
 			return nil
 		}
 		if entry.Type()&os.ModeSymlink != 0 {

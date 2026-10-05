@@ -166,6 +166,13 @@ def main() -> int:
                 print(f"  - {error}")
         else:
             print(f"PASS {check.name}")
+    if selected is None or "response-cache-test" in selected:
+        result = subprocess.run(
+            [sys.executable, os.path.join(ROOT, "scripts", "test_response_cache_module.py")],
+            cwd=ROOT,
+        )
+        if result.returncode:
+            failures += 1
     print()
     print("-" * 72)
     if failures:
