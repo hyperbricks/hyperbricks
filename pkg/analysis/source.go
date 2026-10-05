@@ -288,6 +288,9 @@ func analyzeComponent(registry map[string]*componentType, path string, sequence 
 			continue
 		}
 		issues = append(issues, validateNestedSchemaFields(descriptor, path, key, valueNode)...)
+		if key == "cache" {
+			issues = append(issues, validateRouteCacheSource(descriptor, path, valueNode)...)
+		}
 		issues = append(issues, analyzeMounted(registry, path+"."+key, valueNode, mapValue(effective, key), unknownSeverity)...)
 	}
 
