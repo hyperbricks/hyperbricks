@@ -98,10 +98,17 @@ such as Spaces still use the same credentials
 when the Dashboard is disabled. Public application routes remain accessible
 without this login and do not receive developer-only panels or edit controls.
 
-There is no default developer username or password. If either resolved value is
-empty, enabled developer routes return `503 Service Unavailable`. Missing or
-incorrect browser credentials return `401 Unauthorized` with a Basic Auth
-challenge. Environment changes require a process restart.
+There is no default developer username or password. Spaces and editing require
+both resolved values; otherwise they return `503 Service Unavailable`. Missing
+or incorrect browser credentials return `401 Unauthorized` with a Basic Auth
+challenge when an account is configured. Environment changes require a process restart.
+
+Dashboard Overview, Errors, and their diagnostics have a development/debug
+exception: with `dashboard.enabled: true` and both credential values absent,
+they open without login and startup warns about network access. Anyone who can
+reach the server can view them. A partial account remains locked. This
+exception does not enable Spaces, editing, or frontend error panels without a
+login; diagnostics still require credentials when the Dashboard is disabled.
 
 The editor rejects access outside development, including production, even when explicitly enabled. Spaces checks the configured host and browser origin. It ignores forwarded-host/origin headers. Opening the CMS creates no module files.
 
@@ -465,7 +472,7 @@ Run Spaces and native Markdown tests with `go test ./...` from the repository ro
 
 ## Run the Night Owl Café example
 
-The [Swup navigation demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/navigation-demo-swup/README.md) includes an English café page and German and Dutch Spaces that inherit it.
+The [Swup navigation demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/navigation-demo-swup/README.md) includes an English café page and German and Dutch Spaces that inherit it.
 
 Always run the command from the HyperBricks project root:
 
@@ -534,4 +541,4 @@ Remove `--dry-run` to create the Space with English source defaults. Translate i
 Set `section: cafe_translations` to keep the page out of the main venue menu. Add its language link to `templates/place.html`. The CLI creates an inheriting page. It does not translate text automatically.
 
 For another example with two page sources and English/German instances, see the
-[localized Spaces pattern](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/docs/pages/localized-spaces.md).
+[localized Spaces pattern](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/hyperbricks-patterns-yaml/docs/pages/localized-spaces.md).

@@ -220,7 +220,7 @@ account_status:
       - value: <div id="account-status">Current account status</div>
 ```
 
-Conversely, a public page may deliberately use the internal cache while sending `Cache-Control: no-store` to clients. Repeated requests still reuse the server's rendered output for `live.cache`.
+Conversely, a public page may deliberately use the internal cache while sending `Cache-Control: no-store` to clients. Repeated requests still reuse the server's rendered output for the route's effective cache lifetime.
 
 ### Request Variants
 

@@ -4,10 +4,10 @@
 
 This is a versioned, generated mirror of the canonical documents in `docs/`. The HyperBricks skill uses the separate files below for targeted reading. Product behavior remains owned by the source documents.
 
-- **HyperBricks version:** v1.2.9-beta
-- **Source version:** [`v1.2.9-beta`](https://github.com/hyperbricks/hyperbricks/tree/v1.2.9-beta)
+- **HyperBricks version:** v1.3.0-beta
+- **Source version:** [`v1.3.0-beta`](https://github.com/hyperbricks/hyperbricks/tree/v1.3.0-beta)
 - **Snapshot provenance:** [Manifest](documentation-manifest.json)
-- **Included documents:** 27
+- **Included documents:** 28
 
 ## Contents
 
@@ -46,6 +46,7 @@ This is a versioned, generated mirror of the canonical documents in `docs/`. The
 ### Additional documents
 
 - [Author Command Reference](docs/AUTHOR_REFERENCE.md) — `docs/AUTHOR_REFERENCE.md`
+- [Caching: A Practical Guide](docs/CACHING.md) — `docs/CACHING.md`
 - [HTMX Fragments And Canonical URLs](docs/HTMX_FRAGMENTS_AND_CANONICAL_URLS.md) — `docs/HTMX_FRAGMENTS_AND_CANONICAL_URLS.md`
 - [HTTP Responses](docs/HTTP_RESPONSES.md) — `docs/HTTP_RESPONSES.md`
 - [HyperBricks CLI](docs/HYPERBRICKS_CLI.md) — `docs/HYPERBRICKS_CLI.md`

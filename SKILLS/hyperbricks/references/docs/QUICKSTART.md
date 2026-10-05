@@ -270,11 +270,15 @@ hyperbricks:
           env: HB_DEVELOPER_PASSWORD
 ```
 
-The same module-owned login protects the Dashboard's Overview and Errors views,
-render diagnostics, Spaces, contextual editing, and configured frontend-editor
-plugins. There is no
-default account; unresolved credentials lock those interfaces while public
-application routes remain available.
+When both credentials are configured, the same module-owned login protects the
+Dashboard's Overview and Errors views, render diagnostics, Spaces, contextual
+editing, and configured frontend-editor plugins. There is no default account.
+
+In development and debug mode, leaving both credentials empty allows the enabled
+Dashboard, Errors, and their diagnostics to open without a login and produces a
+startup warning. Spaces, contextual editing, and frontend-editor plugins still
+require credentials. If only one credential resolves, developer access remains
+blocked. Public application routes remain available in either case.
 
 
 ## Run And Try It
@@ -323,8 +327,9 @@ Type `hyperbricks static --help` for all static options.
 
 ## Next Steps
 
-- [Development hooks and managed services](DEVELOPMENT_HOOKS.md): start a local API with your module, wait for readiness, and stop both with one command. Try the [beginner demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-demo/README.md).
-- [General HyperBricks skill](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
+- [Caching: a practical guide](CACHING.md): watch a route render fresh, enable memory or disk caching, observe expiry, and purge stored responses.
+- [Development hooks and managed services](DEVELOPMENT_HOOKS.md): start a local API with your module, wait for readiness, and stop both with one command. Try the [beginner demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/development-hooks-demo/README.md).
+- [General HyperBricks skill](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
 - [YAML usage](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
 - [Component reference](REFERENCE.md): component fields and executable examples.
 - [ROUTING.md](ROUTING.md): route resolution and clean URLs.

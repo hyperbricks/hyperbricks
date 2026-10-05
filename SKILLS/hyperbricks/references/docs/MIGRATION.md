@@ -4,6 +4,34 @@
 
 Use this guide when updating an older configuration to the current component contracts. Apply only the changes that affect your project. The examples describe configuration changes; they do not assign every change to a particular release interval.
 
+## Upgrade to v1.3.0-beta
+
+### Route cache durations now take effect
+
+A page or ordinary fragment's scalar `cache: 30s` now means memory storage with a 30-second route lifetime. Earlier versions accepted that field but used the package's `hyperbricks.live.cache` duration instead. Existing routes with explicit durations can therefore refresh more often or retain output longer after upgrading. Remove the route field to retain the package lifetime. `cache: 0s` now disables output caching for that route.
+
+The equivalent expanded form is `cache: {storage: mem, expire: 30s}`. Use `storage: disk` to store response bodies on disk. Package `live.cache: 0s`, route `nocache: true`, and the development/debug mode bypass still take priority. Invalid scalar values now produce configuration errors; replace unused placeholder strings with a duration or remove the field.
+
+`.cache` is now a built-in exclusion for module deployment archives and runtime snapshots. Configured cache directories inside the module are excluded too. Keep application source and required assets outside cache directories. See [output caching](LIVE_MODE_HTTP.md#output-cache) and [deployment exclusions](DEPLOY.md#response-cache-files-and-deployment).
+
+
+### Open an enabled development dashboard without credentials
+
+With `development.dashboard.enabled: true` in development or debug mode,
+Dashboard Overview, Errors, and their diagnostic data now open without login
+when both `development.dashboard.credentials.user` and `.password` are absent.
+Startup and `doctor` warn that anyone who can reach the server can view them.
+The server listens on all network interfaces; configure both credentials before
+exposing these views on a network where access needs to be restricted.
+
+A configured account still requires Basic Auth. A partial account remains
+locked with `503`; an unresolved environment variable can produce this state.
+If both environment values resolve empty, the dashboard opens without login and
+warns. Spaces, contextual editing, frontend-editor plugins, and frontend error
+panels still require credentials. Diagnostics still require credentials when
+the Dashboard is disabled. Live mode, production runtimes, and static rendering
+do not expose these dashboard routes. Restart after changing configuration.
+
 ## Upgrade from v1.2.4-beta to v1.2.5-beta
 
 ### Replace the dashboard Boolean and configure developer access
@@ -32,12 +60,15 @@ hyperbricks:
 
 Set both environment variables before starting the module. For a previously
 disabled dashboard, use `enabled: false`; `dashboard: false` is also rejected.
-The shared credentials protect Dashboard, Errors, and Spaces. Missing or empty
-credentials leave enabled developer interfaces locked with HTTP 503; incorrect
+The shared credentials protect Dashboard, Errors, and Spaces. In v1.2.5-beta,
+missing or empty credentials leave enabled developer interfaces locked with HTTP 503; incorrect
 or absent browser credentials receive an HTTP 401 Basic Auth challenge once the
 account is configured. These are module credentials, separate from deployment
 service credentials. Use HTTPS or a private encrypted connection for non-loopback
 access because Basic Auth does not encrypt credentials.
+
+For the optional Dashboard login introduced later, see
+[Upgrade to v1.3.0-beta](#upgrade-to-v130-beta).
 
 Restart the module after changing its settings, and update the
 [dashboard URL](#update-developer-dashboard-links). See

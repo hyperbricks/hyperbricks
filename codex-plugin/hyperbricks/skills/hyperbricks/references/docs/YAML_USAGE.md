@@ -748,7 +748,7 @@ Some fields preserve and validate their original YAML types before decoding. For
 
 ## Template Syntax
 
-HyperBricks templates use Go `html/template`. The [template helper](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/pkg/shared/helpers_templating.go) registers Sprig v3's `GenericFuncMap()` and adds `safe`, `random`, and `valueOrEmpty`. See the [Sprig function reference](https://masterminds.github.io/sprig/) for the complete list.
+HyperBricks templates use Go `html/template`. The [template helper](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/pkg/shared/helpers_templating.go) registers Sprig v3's `GenericFuncMap()` and adds `safe`, `random`, and `valueOrEmpty`. See the [Sprig function reference](https://masterminds.github.io/sprig/) for the complete list.
 
 Go template expressions stay literal in YAML values. The YAML pipeline does not resolve them.
 
@@ -968,7 +968,7 @@ Common `hyperbricks` package fields:
 | `development.watch` | Watch source directories in development mode. |
 | `development.reload` | Enable development reload behavior. |
 | `development.dashboard.enabled` | Enable the Dashboard's Overview and Errors views. The old Boolean `development.dashboard` form is invalid. |
-| `development.dashboard.credentials` | Required `user` and `password` for every enabled developer interface: Dashboard Overview, Errors, diagnostics, Spaces, contextual editing, editor plugins, and frontend error panels. Values may use environment resolvers. There is no default account. |
+| `development.dashboard.credentials` | Shared `user` and `password` for developer interfaces. When both are absent, an enabled development/debug Dashboard, Errors, and diagnostics open without login and startup warns about network access. A partial account stays locked (`503`). Spaces, contextual editing, editor plugins, and frontend error panels still require credentials. Values may use environment resolvers; there is no default account. |
 | `development.frontend_editing.enabled` | Master switch for Spaces and configured frontend editors; defaults to `true`. |
 | `development.frontend_editing.spaces.enabled` | Independently show or hide Spaces without disabling other frontend editors; defaults to `true`. Both this and the master switch must be enabled to serve Spaces. |
 | `development.frontend_errors` | Permit frontend error panels when component `debugpanel` is enabled. The panel is emitted only for a request authenticated with `development.dashboard.credentials`. |

@@ -51,14 +51,14 @@ my-project/                   Project root
 Run HyperBricks commands from the project root and select the module with `-m`.
 
 
-See the [module catalog](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/README.md) for an overview of the available modules, including learning applications, examples, integrations, and test fixtures. The patterns module has Go integration tests and an optional plugin smoke suite; the generated starter has CLI tests. Check this coverage when choosing an example: finding source code alone does not confirm that the complete application still runs.
+See the [module catalog](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/README.md) for an overview of the available modules, including learning applications, examples, integrations, and test fixtures. The patterns module has Go integration tests and an optional plugin smoke suite; the generated starter has CLI tests. Check this coverage when choosing an example: finding source code alone does not confirm that the complete application still runs.
 
-The [YAML patterns module](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/README.md) contains runnable examples of composition, navigation, fragments, access checks, API routes, and plugins. For a new application, `hyperbricks init` generates the maintained starting structure. You can extend that structure with your own database, services, and deployment setup.
+The [YAML patterns module](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/hyperbricks-patterns-yaml/README.md) contains runnable examples of composition, navigation, fragments, access checks, API routes, and plugins. For a new application, `hyperbricks init` generates the maintained starting structure. You can extend that structure with your own database, services, and deployment setup.
 
-The [development hooks demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-demo/README.md) starts
+The [development hooks demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/development-hooks-demo/README.md) starts
 a local Python API with the application, waits for readiness, verifies the
 running page, and stops the API with the session. Its separate
-[plugin fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-plugin-demo/README.md) demonstrates
+[plugin fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/development-hooks-plugin-demo/README.md) demonstrates
 building a native plugin before the runtime loads it.
 
 ## 1. Start from a module
@@ -383,7 +383,7 @@ review_confirm:
 
 `/preview` passes `preview` to the plugin; `/confirm` passes `confirm`. The plugin reads `data.action`, processes the submitted form, and returns values for the result template. YAML defines the URLs; the plugin implements the actions.
 
-The plugin must be built and enabled, and its result template must be present. This demo previews and confirms a project name; it does not save it. See the [complete review plugin](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/project-lifecycle-test/plugins/lifecycle-test/1.0.0/lifecycle_test_plugin.go), [result template](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/project-lifecycle-test/profiles/plugin/templates/review-result.html), and [module instructions](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/project-lifecycle-test/README.md).
+The plugin must be built and enabled, and its result template must be present. This demo previews and confirms a project name; it does not save it. See the [complete review plugin](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/project-lifecycle-test/plugins/lifecycle-test/1.0.0/lifecycle_test_plugin.go), [result template](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/project-lifecycle-test/profiles/plugin/templates/review-result.html), and [module instructions](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/project-lifecycle-test/README.md).
 
 ## 10. Protect a route with an access check
 
@@ -426,7 +426,7 @@ The authorization endpoint is illustrative. A request to `/settings` must includ
 
 `nocache: true` ensures each request runs the access check instead of reusing cached document output.
 
-See [Route Guard](ROUTE_GUARD.md) for the YAML configuration and [the guarded page example](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/docs/pages/guarded-page-demo.md) for a complete demonstration.
+See [Route Guard](ROUTE_GUARD.md) for the YAML configuration and [the guarded page example](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/hyperbricks-patterns-yaml/docs/pages/guarded-page-demo.md) for a complete demonstration.
 
 ## 11. Export a static site
 
@@ -442,7 +442,7 @@ The output is written to `modules/demo/rendered/`. Upload those files to a stati
 
 Browser JavaScript still works, and HTMX can load exported fragments. Server-side calculations, access checks, and API actions need a running HyperBricks server; a static export only contains the results produced during the export. See [Static output](HYPERBRICKS_CLI.md#static-rendering) for export options.
 
-For more complete examples, see the [patterns module source guide](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md).
+For more complete examples, see the [patterns module source guide](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md).
 
 ## 12. Start a local API with the module
 
@@ -458,7 +458,7 @@ HyperBricks waits for each service's HTTP readiness endpoint before initializing
 the application. It runs the after-start checks when HTTP is listening and stops
 its APIs after HTTP shutdown. Ordinary `start` keeps the manual service workflow.
 
-Use the [beginner module](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-demo/README.md) for complete
+Use the [beginner module](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/development-hooks-demo/README.md) for complete
 Python scripts and a rendered page, or the [configuration reference](DEVELOPMENT_HOOKS.md)
 for command arguments, environment values, timeouts, failure handling, and the
 development-only execution boundary.
@@ -477,13 +477,13 @@ Keep `href` pointed at the page a visitor can open directly. The enhancement can
 
 Here `#main-content` is the existing page container. This approach keeps a normal link useful when browser JavaScript is disabled. Verify Back, Forward, reload, active navigation, and page titles as part of the enhanced flow.
 
-Another supported approach uses `menu` to request a canonical page and select the needed part of its HTML. See the existing [MENU example](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/docs/pages/menu-htmx-demo.md). Choose the approach that fits the application; separate fragment routes are useful, but not a universal requirement for every navigation link.
+Another supported approach uses `menu` to request a canonical page and select the needed part of its HTML. See the existing [MENU example](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/hyperbricks-patterns-yaml/docs/pages/menu-htmx-demo.md). Choose the approach that fits the application; separate fragment routes are useful, but not a universal requirement for every navigation link.
 
 ## 2. Describe navigation in configuration
 
 Put navigation labels, canonical paths, and fragment paths in a small data map and render that list through one shared template. A new section then needs one navigation entry instead of duplicated HTML in every page.
 
-A shared navigation definition keeps labels and destinations together. A larger application can use route metadata with `menu` or configured sidebar entries with subsection links. The [sidebar navigation example](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/docs/pages/sidebar-section-navigation.md) shows the latter. Keep role-based visibility separate from actual authorization.
+A shared navigation definition keeps labels and destinations together. A larger application can use route metadata with `menu` or configured sidebar entries with subsection links. The [sidebar navigation example](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/hyperbricks-patterns-yaml/docs/pages/sidebar-section-navigation.md) shows the latter. Keep role-based visibility separate from actual authorization.
 
 **Try it:** add a navigation label and its route, then check both direct and HTMX navigation. The template should remain shared.
 
@@ -504,12 +504,12 @@ The example uses keyed maps for structured navigation and card collections. The 
 - [Route Guard](ROUTE_GUARD.md)
 
 ## Module References
-- [HyperBricks modules index](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/README.md)
-- [hyperbricks-patterns-yaml](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/README.md)
-- [lifecycle_test_plugin.go](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/project-lifecycle-test/plugins/lifecycle-test/1.0.0/lifecycle_test_plugin.go)
-- [review-result.html](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/project-lifecycle-test/profiles/plugin/templates/review-result.html)
-- [Project lifecycle test fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/project-lifecycle-test/README.md)
-- [Guarded Page Demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/docs/pages/guarded-page-demo.md)
-- [Patterns module source guide](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md)
-- [MENU + HTMX Demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/docs/pages/menu-htmx-demo.md)
-- [Build sidebar navigation with section links](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/hyperbricks-patterns-yaml/docs/pages/sidebar-section-navigation.md)
+- [HyperBricks modules index](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/README.md)
+- [hyperbricks-patterns-yaml](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/hyperbricks-patterns-yaml/README.md)
+- [lifecycle_test_plugin.go](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/project-lifecycle-test/plugins/lifecycle-test/1.0.0/lifecycle_test_plugin.go)
+- [review-result.html](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/project-lifecycle-test/profiles/plugin/templates/review-result.html)
+- [Project lifecycle test fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/project-lifecycle-test/README.md)
+- [Guarded Page Demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/hyperbricks-patterns-yaml/docs/pages/guarded-page-demo.md)
+- [Patterns module source guide](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/hyperbricks-patterns-yaml/docs/SOURCE_GUIDE.md)
+- [MENU + HTMX Demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/hyperbricks-patterns-yaml/docs/pages/menu-htmx-demo.md)
+- [Build sidebar navigation with section links](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/hyperbricks-patterns-yaml/docs/pages/sidebar-section-navigation.md)

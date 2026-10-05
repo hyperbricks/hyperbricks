@@ -1,5 +1,5 @@
 **Licence:** MIT
-**Version:** v1.2.9-beta
+**Version:** v1.3.0-beta
 
 
 # HyperBricks Component Reference
@@ -296,7 +296,9 @@ A `<FRAGMENT>` dynamically renders part of an HTML page, allowing updates withou
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
 | `beautify` | `bool` | no | Override server.beautify for this object when rendered directly |
-| `cache` | `string` | no | Legacy field; does not override the process-wide hyperbricks.live.cache duration. |
+| `cache` | `object` | no | Rendered-output cache: a duration such as 30s selects memory caching; a mapping selects storage (mem or disk) and optional expire. Package live.cache: 0s and nocache: true disable caching. |
+| `cache.expire` | `string` | no | Route lifetime as a Go duration; omitted inherits hyperbricks.live.cache. Use 0s to disable caching for this route. |
+| `cache.storage` | `string` | no | Storage for rendered output in live mode: mem (default) or disk. Does not change HTTP cache policy. |
 | `content_type` | `string` | no | content type header definition |
 | `enclose` | `string` | no | Wrapping property for the fragment rendered output |
 | `guard.auth.cookie` | `string` | no | Cookie name used to resolve the request token |
@@ -456,7 +458,9 @@ Route-owning page shell that renders the main HyperBricks document.
 | --- | --- | --- | --- |
 | `beautify` | `bool` | no | Override server.beautify for this object when rendered directly |
 | `bodytag` | `string` | no | Special body enclose with use of \|. Please note that this will not work when a `<HYPERMEDIA>`.template is configured. In that case, you have to add the bodytag in the template. |
-| `cache` | `string` | no | Legacy field; does not override the process-wide hyperbricks.live.cache duration. |
+| `cache` | `object` | no | Rendered-output cache: a duration such as 30s selects memory caching; a mapping selects storage (mem or disk) and optional expire. Package live.cache: 0s and nocache: true disable caching. |
+| `cache.expire` | `string` | no | Route lifetime as a Go duration; omitted inherits hyperbricks.live.cache. Use 0s to disable caching for this route. |
+| `cache.storage` | `string` | no | Storage for rendered output in live mode: mem (default) or disk. Does not change HTTP cache policy. |
 | `content_type` | `string` | no | content type header definition |
 | `cookies` | `list` | no | Set-Cookie values to include when serving this hypermedia |
 | `doctype` | `string` | no | Alternative Doctype for the HTML document |

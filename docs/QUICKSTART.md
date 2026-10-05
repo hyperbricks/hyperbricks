@@ -268,11 +268,15 @@ hyperbricks:
           env: HB_DEVELOPER_PASSWORD
 ```
 
-The same module-owned login protects the Dashboard's Overview and Errors views,
-render diagnostics, Spaces, contextual editing, and configured frontend-editor
-plugins. There is no
-default account; unresolved credentials lock those interfaces while public
-application routes remain available.
+When both credentials are configured, the same module-owned login protects the
+Dashboard's Overview and Errors views, render diagnostics, Spaces, contextual
+editing, and configured frontend-editor plugins. There is no default account.
+
+In development and debug mode, leaving both credentials empty allows the enabled
+Dashboard, Errors, and their diagnostics to open without a login and produces a
+startup warning. Spaces, contextual editing, and frontend-editor plugins still
+require credentials. If only one credential resolves, developer access remains
+blocked. Public application routes remain available in either case.
 
 
 ## Run And Try It
