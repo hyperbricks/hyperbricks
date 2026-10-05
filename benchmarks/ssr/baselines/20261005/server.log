@@ -1,0 +1,10 @@
+17:32:26.939  INFO   runtime  Module configured  module=module mode=live
+17:32:26.943  INFO   runtime  Configurations loaded  count=3
+17:32:26.943  INFO   routes  Routes registered  count=3
+17:32:26.943  INFO   routes  Route available  route=/ url=http://192.168.2.55:59015/
+17:32:26.943  INFO   routes  Route available  route=/healthz url=http://192.168.2.55:59015/healthz
+17:32:26.943  INFO   routes  Route available  route=/start url=http://192.168.2.55:59015/start
+17:32:26.945  INFO   server  Listening  url=http://192.168.2.55:59015 mode=live
+17:32:26.945  INFO   server  Started
+17:32:37.389  INFO   server  Stopping
+17:32:37.389  INFO   server  Stopped

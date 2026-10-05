@@ -1,24 +1,33 @@
-# HyperBricks performance baselines
+# HyperBricks benchmarks
 
-This directory contains reproducible measurements of HyperBricks and tools for
-comparing its own versions. Each workload has an executable fixture, a documented
-measurement method and immutable recorded results. The purpose is to show how
-the same workload changes across HyperBricks revisions on the same machine.
+Run the workloads below to measure throughput and response latency. Each
+benchmark includes setup instructions, a runnable fixture, and recorded results.
 
 | Workload | Fixture version | Recorded reference | Status |
 | --- | --- | --- | --- |
-| [Response-cache HTTP](response-cache/README.md) | [`response-cache-test` 1.0.0](../modules/response-cache-test/README.md) | [2026-10-05 baseline](response-cache/baselines/20261005/README.md) | Development baseline; dirty revision `4c6e9256b27b19e6244655d632240418ef00aee4`; no tagged-release measurement |
+| [SSR HTTP](ssr/README.md) | [`ssr-proof-hyperbricks` 1.0.0](../modules/ssr-proof-hyperbricks/README.md) | [2026-10-05 baseline](ssr/baselines/20261005/README.md) | Development snapshot at `61a7d4f`, with uncommitted changes |
+| [Response-cache HTTP](response-cache/README.md) | [`response-cache-test` 1.0.0](../modules/response-cache-test/README.md) | [2026-10-05 baseline](response-cache/baselines/20261005/README.md) | Development snapshot at `4c6e925`, with uncommitted changes |
 
+The SSR fixture renders a nested page for every request and verifies its unique
+request ID in the complete HTML response.
 The response-cache fixture measures fresh rendering, memory-cache hits and
-disk-cache hits with identical 16 KiB and 256 KiB responses. Its first record
-establishes the baseline at this feature's introduction. It does not demonstrate
-improvement over a release that lacked the feature. Earlier releases can only
-be compared with workloads and configuration they actually support.
+disk-cache hits with identical 16 KiB and 256 KiB responses.
 
-Exploratory experiments live separately under the Git-ignored
-`internal-benchmarks/` directory. They are not part of the public baseline set.
+## Run the SSR workload
 
-## Compare a saved run with a current run
+```sh
+./benchmarks/ssr/run.sh
+```
+
+The [SSR instructions](ssr/README.md) cover the workload, recorded settings,
+response checks and measuring two server binaries with one fixed runner.
+Compare compatible saved SSR runs with:
+
+```sh
+python3 benchmarks/compare-ssr.py /path/to/prior/result.json /path/to/current/result.json
+```
+
+## Compare saved response-cache runs
 
 Use Python 3.9 or newer; the comparator has no external dependencies:
 
@@ -66,7 +75,7 @@ are not automatically comparable with it. Matching CPU model and OS strings do
 not prove that two runs used the same physical host. On another machine, or
 without the identical runner, make a new pair of measurements.
 
-## Measure two server versions with one fixed runner and fixture
+## Measure two server versions with the response-cache fixture
 
 Keep an existing checkout of the earlier server revision outside the current
 checkout. It must support this fixture's response-cache configuration. Build
@@ -114,7 +123,7 @@ top-level `provenance.git_revision` identifies the **runner checkout**; when
 testing two prebuilt servers it can legitimately be identical in both records.
 It must not be presented as the earlier server's revision.
 
-## What the comparison verifies
+## What the response-cache comparison verifies
 
 The comparator requires complete valid runs with clean server shutdown, the
 full repeated trial matrix, successful response checks, exact expected payload
@@ -159,7 +168,7 @@ includes body/hash validation in throughput. Disk cache results use warm
 filesystem pages. These results do not measure cold-disk I/O, process RSS or
 production request capacity.
 
-## Versioning and publication
+## Recording a baseline
 
 `response-cache-test` currently declares module version `1.0.0`; the baseline's
 exact fixture SHA-256 is
@@ -176,10 +185,9 @@ executable workload first exists.
 
 Keep original JSON, raw trials, report and relevant logs unchanged under a
 dated workload `baselines/` directory. Record whether a run used a clean tag,
-a commit or a dirty development checkout. Only a run actually measured from
-the identified clean release source should be described as a release baseline;
-a later tag does not retroactively turn the 2026-10-05 development record into
-a tagged-release measurement. Ordinary local `results/` output stays ignored.
+a commit or a working tree with uncommitted changes. Label the baseline using
+the source metadata captured during measurement. Ordinary local `results/`
+output stays ignored.
 
 Comparator verification, without starting a server or a benchmark:
 
