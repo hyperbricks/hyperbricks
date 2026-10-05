@@ -59,6 +59,8 @@ Set `enabled: false` when a trusted reverse proxy owns rate limiting, or for a c
 
 ## Output Cache
 
+For a guided first setup with observable results, follow [Caching: a practical guide](CACHING.md). This section defines the full configuration and runtime behavior.
+
 `live.cache` supplies the default lifetime for reusable rendered output in live mode. The default is `10m`. Pages (`hypermedia`) and ordinary `fragment` routes can override that lifetime and choose memory or disk storage. Development and debug modes always render fresh, while still validating route cache configuration.
 
 ```yaml

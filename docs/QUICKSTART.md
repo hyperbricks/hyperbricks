@@ -321,6 +321,7 @@ Type `hyperbricks static --help` for all static options.
 
 ## Next Steps
 
+- [Caching: a practical guide](CACHING.md): watch a route render fresh, enable memory or disk caching, observe expiry, and purge stored responses.
 - [Development hooks and managed services](DEVELOPMENT_HOOKS.md): start a local API with your module, wait for readiness, and stop both with one command. Try the [beginner demo](../modules/development-hooks-demo/README.md).
 - [General HyperBricks skill](../SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
 - [YAML usage](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
