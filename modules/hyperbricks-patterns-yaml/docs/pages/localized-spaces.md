@@ -70,8 +70,9 @@ defaults into each instance and creates the import files. Adapt the generated
 values, `htmltag`, and metadata for each language. Quote YAML prose containing
 `: `, as in `intro: "Pattern: a reusable page source."`.
 
-Before starting the server, set the module's shared developer credentials in the
-same terminal:
+Spaces and contextual editing open without login when both developer credentials
+are absent, with a startup warning. To require login, set both values in the same
+terminal before starting the server:
 
 ```sh
 export HB_DEVELOPER_USER=developer
@@ -97,21 +98,25 @@ With direct values, the environment exports above are not needed. Choose your
 own password, restart the server, and use these values to log in. The password
 is stored as plain text; do not commit real credentials to a shared repository.
 
-Empty credentials produce **Developer interface unavailable: credentials
-are not configured**; configure both values and restart. Open the configured Spaces
-URL directly to log in, then reload the public page to discover its editor links.
-The same login protects Overview, Errors and contextual editing, independently of
-the `spaces.write` setting. See `docs/SPACES.md`, Development Configuration, in
-the repository root for the complete access requirements.
+A partial account blocks access with `503`; a complete account requires login.
+With both values absent, enabled Overview, Errors, Spaces, and contextual editing
+open without login. If credentials are configured, open the Spaces URL directly
+to log in, then reload the public page to discover its editor links. The write
+setting is independent of login. See `docs/SPACES.md`, Development Configuration,
+in the repository root for enablement, host restrictions, and network access.
 
 This pattern module enables `hyperbricks.development.frontend_editing.spaces.write`
-for local development. Every localized page, the pattern index, and the guide
-sidebar show a **Manage Spaces** link when the editor API confirms writes are
-available. The link stays hidden in
+for local development. With the supplied development configuration, each
+localized page, the pattern index, and the guide sidebar show a **Manage Spaces**
+link when the editor API confirms writes are available. The link stays hidden in
 live or static output and when editor writes are disabled. The editor route comes
-from the package configuration. For another module, enable writes explicitly and
-restart the server. Saving persists YAML; the existing watcher or a restart
-updates runtime configuration, and the browser still needs refreshing.
+from the package configuration. Spaces and its writes default to enabled in
+development and debug mode. Set
+`hyperbricks.development.frontend_editing.spaces.write: false` for read-only access.
+Live mode, production runtimes, and static output exclude the editor. Saving
+persists YAML. Automatic watching updates runtime configuration only in
+development mode; in debug or with watching disabled, reload or restart the
+runtime after saving. Then refresh the public page.
 
 ## Verify
 

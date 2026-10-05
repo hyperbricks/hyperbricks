@@ -2,19 +2,25 @@
   "schema_version": 2,
   "hyperbricks_version": "v1.3.0-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_digest": "591edd48ec83c181bca84724fc716cd31545f4b7c18c1f435a02443b11f2dbf0",
+  "source_digest": "01e7f56c7d046c7f4be0d4e1eb78f4b9cea52573a5616ad14dd436bde259822c",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
       "bundled_path": "docs/INTRODUCTION.md",
-      "source_sha256": "8b0ce48f9a4cbbd8f1961a32c32da3840a415ee47137010c7af5cb212f61a581",
-      "bundled_sha256": "5573f37189f21047466cb9721219c0ec570c074195305f4144a8039d952fac5b"
+      "source_sha256": "343682a83fa543ad6ff6a568a5de58792dc9201589586b9216c465456cb3ed67",
+      "bundled_sha256": "57ecb519c2eb23d4a14bb16b29bd4f396b519fa54abe1892d51842f49453e147"
     },
     {
       "source_path": "docs/QUICKSTART.md",
       "bundled_path": "docs/QUICKSTART.md",
-      "source_sha256": "f85e45cf8b36d9f41f2dc403b6315c4691a20fc2f4c00671f24fa05a02a45601",
-      "bundled_sha256": "6f091b24915c29cfbbc78cb9b1e5fc4e1a6a04b60f90231e6587d4585a0e8b14"
+      "source_sha256": "1cfece9d0301c8a97e002e467ce6cef7fb1bbf730dac3ad86c50853469f4cba9",
+      "bundled_sha256": "35707b7cb5539e0f5c7a81984f3e856c8f8bf4fdcb3606e5595b693da9854b5d"
+    },
+    {
+      "source_path": "docs/PACKAGE_CONFIGURATION.md",
+      "bundled_path": "docs/PACKAGE_CONFIGURATION.md",
+      "source_sha256": "6d4975fc248f7f6dc17106bc378a3703f862a46e44ef79f20b63004a9b142db7",
+      "bundled_sha256": "be4d8ca3b5d021a382806220466134f1d4137d390441272b2f3883da49133ad6"
     },
     {
       "source_path": "docs/HOWTOS.md",
@@ -25,8 +31,8 @@
     {
       "source_path": "docs/TROUBLESHOOTING.md",
       "bundled_path": "docs/TROUBLESHOOTING.md",
-      "source_sha256": "c2ae3e6020fc59082d2f2e2d57730a57d83f2f66c3b7a8e4eb507f42e3a513fe",
-      "bundled_sha256": "b635f835876dd1a80efb94367756fcf110fe074c307c36eb2fc6acaf22cfa267"
+      "source_sha256": "f4bebaec3f0f279ac050efe2734453130469c154d8b1f33c3f374569af80c2a4",
+      "bundled_sha256": "2dd452dd07253dfe4d302bd1906dab2a45c4c263c64224be876fb022805975e5"
     },
     {
       "source_path": "docs/ROUTING.md",
@@ -43,14 +49,14 @@
     {
       "source_path": "docs/MARKDOWN.md",
       "bundled_path": "docs/MARKDOWN.md",
-      "source_sha256": "72e9064e34e2e865b89ec149e29f10fdf2558cdad48f1bb4454bf763b5ab7f6f",
-      "bundled_sha256": "f6f58da8ee4c33bed4f782b381294f2c6d7ecf786df232e55e63abd1eea3a06e"
+      "source_sha256": "f75ad98c2df777c4a8a41974d1ff53e498f1880769cb7f11aa0d50a7aec8fa86",
+      "bundled_sha256": "4e6406dedd55e498faa1a3aae2b15f78c5dd8075edde894441e9a522eb2ec731"
     },
     {
       "source_path": "docs/SPACES.md",
       "bundled_path": "docs/SPACES.md",
-      "source_sha256": "0966fc67a035907a33a5b8af14856a6943720d271e71f349898c3ad604d3d741",
-      "bundled_sha256": "d77c727ad5413b4d21bc1b09ea178141929f3f7c1225fa104b4bd54e9075ea21"
+      "source_sha256": "1e23d55d164ce7bbfbeeb1a482d914c2d4ac1c2ee2f36dab0c40bef7050e2475",
+      "bundled_sha256": "f08ded294732c7c96296cc9ea8bf3a0844153d8dcb91f999d5850b438a027759"
     },
     {
       "source_path": "docs/AUTHOR.md",
@@ -91,8 +97,8 @@
     {
       "source_path": "docs/DEPLOY.md",
       "bundled_path": "docs/DEPLOY.md",
-      "source_sha256": "264070a2fefe7baec0d650bbd7d17757f8986bbae568e047cc75d07dfa0523c2",
-      "bundled_sha256": "674a24a44d7c01a48a8c9fcbc70c0165094f90072844e3f4fd5d791a7f16a3c5"
+      "source_sha256": "8d2c6f403b0ac944f4be50c9c2e4a9969431fb7da57155a457c09c4e2d88401d",
+      "bundled_sha256": "453143d4e1fddb42b61a9a03d899765d48ce3b168cb47c7769391d8bf1e960d3"
     },
     {
       "source_path": "docs/DOCKER.md",
@@ -103,8 +109,8 @@
     {
       "source_path": "docs/MIGRATION.md",
       "bundled_path": "docs/MIGRATION.md",
-      "source_sha256": "fcfac97251dff2ea2ddf6da8102ac14a4033fd134ba6ef94d05f6295babdca34",
-      "bundled_sha256": "4dfbe64210bdbc476ad481b34caee861a35175d13383d67996e3715bf8c7507d"
+      "source_sha256": "ba931e0e563a1abf364cb1a36cb7a64aed708572b9921ceb2121fc8d859f1f3d",
+      "bundled_sha256": "c17d870b688e2c24e484fd1918bd042d8bdfff6efb11ce4bb393b390e0187538"
     },
     {
       "source_path": "docs/AUTHOR_REFERENCE.md",
@@ -133,8 +139,8 @@
     {
       "source_path": "docs/HYPERBRICKS_CLI.md",
       "bundled_path": "docs/HYPERBRICKS_CLI.md",
-      "source_sha256": "9893b00394632fa35d1a3ee7d40200f787290e3b299f96a53dd22bb656fd7668",
-      "bundled_sha256": "460b8d32c020c915b8cfcbba2325f9f1bcda43e7b7c9b9bed4668a9a882e6de8"
+      "source_sha256": "85a92010b8440e74731744d8ed3c561e07bbdd7e89d37e6889bbfa25738dcca3",
+      "bundled_sha256": "26ce5f511489422d8d09f2e6ab1036d574df9f1879b4ae04155249bc0cbd252e"
     },
     {
       "source_path": "docs/HYPERBRICKS_TYPE_EXAMPLES.md",
@@ -169,8 +175,8 @@
     {
       "source_path": "docs/YAML_USAGE.md",
       "bundled_path": "docs/YAML_USAGE.md",
-      "source_sha256": "ab4c47addd52091e4bfe6e40de829679601166679ff90b05c19761a7426e9b46",
-      "bundled_sha256": "2a4454810e1ce634ea4fa74e3ea0b00b171c99c706e23421155543063495ebd1"
+      "source_sha256": "53f838cd1648693e26275a2fd2a81c334d408177c7fb4389ab1cb19a3f619b68",
+      "bundled_sha256": "83ad41605a7a33af812cf90d8f999b70fda71916358da089d4588e507916794a"
     }
   ]
 }

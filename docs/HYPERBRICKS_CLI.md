@@ -442,11 +442,15 @@ cannot prove ownership without loading plugin code. `--strict` rejects that
 unverified state in CI.
 A configured mode other than `live`, `development`, or `debug` is a failure,
 even though normal startup can warn and fall back to `live`.
-A development/debug dashboard with both credential values absent opens without
-login. The doctor warns that anyone who can reach the server can view Dashboard,
-Errors, and diagnostics. Spaces and editing remain locked without credentials;
-the doctor reports that separately in the warning. A partial account is a
-configuration failure and stays locked. There are no default credentials.
+Enabled Dashboard views and Spaces in development/debug mode open without login
+when both credential values are absent. The doctor warns about this access.
+Dashboard views and diagnostics are visible to anyone who can reach the server;
+Spaces and contextual editing additionally enforce their allowed-host and write
+settings. Spaces writes default to enabled. A partial account is a configuration
+failure and stays locked. A complete account requires login. Frontend-editor
+plugins and frontend error panels still require credentials and remain
+development-only. There are no default credentials. See
+[Spaces configuration](SPACES.md#development-configuration) for access settings.
 
 Passing checks collapse to one line per group. Warnings, failures, and skipped
 checks expand with their source location and a suggested repair when one is
@@ -680,6 +684,11 @@ hyperbricks start -m ./modules/demo --config profiles/development.hyperbricks.ya
 ```
 
 `--config` is relative to the selected module directory and must stay inside that directory. Absolute paths and paths that escape through `..` are rejected.
+
+The selected file supplies the complete package configuration; omitted settings
+use runtime defaults rather than values from `package.hyperbricks.yaml`. See
+[Run With a Different Configuration](PACKAGE_CONFIGURATION.md#run-with-a-different-configuration)
+for a complete example and matching `doctor` command.
 
 Enable debug logging:
 

@@ -136,7 +136,7 @@ class CompilationTests(unittest.TestCase):
 
     def test_documentation_sections_match_readme_navigation(self):
         self.assertEqual(DOCUMENTATION_SECTIONS, (
-            ("Start", (("Introduction", "docs/INTRODUCTION.md"), ("Quickstart", "docs/QUICKSTART.md"), ("How-to guides", "docs/HOWTOS.md"), ("Troubleshooting", "docs/TROUBLESHOOTING.md"))),
+            ("Start", (("Introduction", "docs/INTRODUCTION.md"), ("Quickstart", "docs/QUICKSTART.md"), ("Package Configuration", "docs/PACKAGE_CONFIGURATION.md"), ("How-to guides", "docs/HOWTOS.md"), ("Troubleshooting", "docs/TROUBLESHOOTING.md"))),
             ("Application model", (("Routing", "docs/ROUTING.md"), ("Component reference", "docs/REFERENCE.md"), ("Markdown", "docs/MARKDOWN.md"), ("Spaces CMS", "docs/SPACES.md"), ("Authoring", "docs/AUTHOR.md"))),
             ("Logic and assets", (("API Render", "docs/API_RENDER.md"), ("Server Scripts", "docs/GOJA_RENDER.md"), ("Plugins", "docs/PLUGINS.md"), ("JavaScript and CSS", "docs/ESBUILD.md"))),
             ("Development services", (("Hooks and managed services", "docs/DEVELOPMENT_HOOKS.md"),)),
