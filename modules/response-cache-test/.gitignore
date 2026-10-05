@@ -1,0 +1,5 @@
+/generated-cache/
+/.cache/
+!/rendered/
+/rendered/*
+!/rendered/.gitkeep

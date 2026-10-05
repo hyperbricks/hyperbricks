@@ -1,0 +1,26 @@
+15:24:58.918  INFO   runtime  Module configured  module=module mode=live
+15:24:58.922  INFO   runtime  Configurations loaded  count=19
+15:24:58.923  INFO   routes  Routes registered  count=19
+15:24:58.923  INFO   routes  Route available  route=/probe/api url=http://192.168.2.55:54670/probe/api
+15:24:58.923  INFO   routes  Route available  route=/bench/disk url=http://192.168.2.55:54670/bench/disk
+15:24:58.923  INFO   routes  Route available  route=/bench/fresh url=http://192.168.2.55:54670/bench/fresh
+15:24:58.923  INFO   routes  Route available  route=/bench/mem url=http://192.168.2.55:54670/bench/mem
+15:24:58.923  INFO   routes  Route available  route=/ url=http://192.168.2.55:54670/
+15:24:58.923  INFO   routes  Route available  route=/healthz url=http://192.168.2.55:54670/healthz
+15:24:58.923  INFO   routes  Route available  route=/probe/default url=http://192.168.2.55:54670/probe/default
+15:24:58.923  INFO   routes  Route available  route=/probe/disk url=http://192.168.2.55:54670/probe/disk
+15:24:58.923  INFO   routes  Route available  route=/probe/disk-inherit url=http://192.168.2.55:54670/probe/disk-inherit
+15:24:58.923  INFO   routes  Route available  route=/probe/empty url=http://192.168.2.55:54670/probe/empty
+15:24:58.923  INFO   routes  Route available  route=/probe/expire-only url=http://192.168.2.55:54670/probe/expire-only
+15:24:58.923  INFO   routes  Route available  route=/probe/mem url=http://192.168.2.55:54670/probe/mem
+15:24:58.923  INFO   routes  Route available  route=/probe/nocache url=http://192.168.2.55:54670/probe/nocache
+15:24:58.923  INFO   routes  Route available  route=/probe/page-disk url=http://192.168.2.55:54670/probe/page-disk
+15:24:58.923  INFO   routes  Route available  route=/probe/page-mem url=http://192.168.2.55:54670/probe/page-mem
+15:24:58.923  INFO   routes  Route available  route=/probe/scalar url=http://192.168.2.55:54670/probe/scalar
+15:24:58.923  INFO   routes  Route available  route=/probe/zero-disk url=http://192.168.2.55:54670/probe/zero-disk
+15:24:58.923  INFO   routes  Route available  route=/probe/zero-mem url=http://192.168.2.55:54670/probe/zero-mem
+15:24:58.923  INFO   routes  Route available  route=/probe/zero-scalar url=http://192.168.2.55:54670/probe/zero-scalar
+15:24:58.924  INFO   server  Listening  url=http://192.168.2.55:54670 mode=live
+15:24:58.924  INFO   server  Started
+15:26:12.666  INFO   server  Stopping
+15:26:12.667  INFO   server  Stopped

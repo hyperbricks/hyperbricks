@@ -1,0 +1,19 @@
+15:05:31.942  WARN   config  Failed to load package configuration; using defaults  file=../.. error="read /Users/robbertstreng/Documents/GitHub/hyperbricks/cmd/hyperbricks: is a directory"
+goos: darwin
+goarch: arm64
+pkg: github.com/hyperbricks/hyperbricks/cmd/hyperbricks
+cpu: Apple M3
+BenchmarkResponseCacheBackendHit/default-memory-4         	 1257861	       971.6 ns/op	16862.07 MB/s	     16384 retained-body-B	     383 B/op	      20 allocs/op
+BenchmarkResponseCacheBackendHit/default-memory-4         	 1246434	       974.0 ns/op	16820.71 MB/s	     16384 retained-body-B	     384 B/op	      20 allocs/op
+BenchmarkResponseCacheBackendHit/default-memory-4         	 1208176	       962.0 ns/op	17030.46 MB/s	     16384 retained-body-B	     384 B/op	      20 allocs/op
+BenchmarkResponseCacheBackendHit/scalar-memory-4          	 1209734	       998.8 ns/op	16403.65 MB/s	     16384 retained-body-B	     384 B/op	      20 allocs/op
+BenchmarkResponseCacheBackendHit/scalar-memory-4          	 1000000	      1003 ns/op	16341.49 MB/s	     16384 retained-body-B	     384 B/op	      20 allocs/op
+BenchmarkResponseCacheBackendHit/scalar-memory-4          	 1000000	      1020 ns/op	16055.92 MB/s	     16384 retained-body-B	     384 B/op	      20 allocs/op
+BenchmarkResponseCacheBackendHit/mapping-memory-4         	 1000000	      1063 ns/op	15412.29 MB/s	     16384 retained-body-B	     384 B/op	      20 allocs/op
+BenchmarkResponseCacheBackendHit/mapping-memory-4         	 1000000	      1088 ns/op	15053.46 MB/s	     16384 retained-body-B	     384 B/op	      20 allocs/op
+BenchmarkResponseCacheBackendHit/mapping-memory-4         	 1000000	      1048 ns/op	15630.22 MB/s	     16384 retained-body-B	     384 B/op	      20 allocs/op
+BenchmarkResponseCacheBackendHit/disk-4                   	   55387	     21581 ns/op	 759.19 MB/s	         0 retained-body-B	    1121 B/op	      28 allocs/op
+BenchmarkResponseCacheBackendHit/disk-4                   	   55694	     21641 ns/op	 757.08 MB/s	         0 retained-body-B	    1121 B/op	      28 allocs/op
+BenchmarkResponseCacheBackendHit/disk-4                   	   55429	     21705 ns/op	 754.85 MB/s	         0 retained-body-B	    1122 B/op	      28 allocs/op
+PASS
+ok  	github.com/hyperbricks/hyperbricks/cmd/hyperbricks	18.856s

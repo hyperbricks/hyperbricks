@@ -1,0 +1,20 @@
+# Every measured route inherits this same deterministic template workload.
+# Inline scalars avoid a trailing newline. One block is exactly 16 bytes.
+bench_mem:
+  - type: fragment
+  - route: bench/mem
+  - content_type: text/plain; charset=utf-8
+  - cache: {storage: mem, expire: 10m}
+  - template:
+      querykeys: [blocks]
+      inline: '{{ repeat (atoi (default "1024" .Params.blocks)) "0123456789abcdef" }}'
+
+bench_disk:
+  - inherit: bench_mem
+  - route: bench/disk
+  - cache: {storage: disk}
+
+bench_fresh:
+  - inherit: bench_mem
+  - route: bench/fresh
+  - nocache: true
