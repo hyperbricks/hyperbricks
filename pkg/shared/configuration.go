@@ -146,7 +146,7 @@ type DevelopmentConfig struct {
 
 type DevelopmentDashboardConfig struct {
 	Enabled     bool              `mapstructure:"enabled" description:"Enable Dashboard Overview and Errors. This switch does not disable independently enabled Spaces or other developer interfaces." example:"false"`
-	Credentials CredentialsConfig `mapstructure:"credentials" description:"Shared developer-interface username and password, separate from deployment-service credentials. There is no default account. Missing or empty values leave enabled interfaces locked with HTTP 503; use environment resolvers and protect non-loopback access with encrypted transport." example:"{user: {env: HB_DEVELOPER_USER}, password: {env: HB_DEVELOPER_PASSWORD}}"`
+	Credentials CredentialsConfig `mapstructure:"credentials" description:"Shared developer-interface username and password, separate from deployment-service credentials. With both values absent, an enabled development/debug dashboard, Errors and diagnostics open without login and emit a startup warning. Spaces, editing and frontend error panels still require credentials. A partial account stays locked with HTTP 503. Use environment resolvers and encrypted transport for non-loopback access." example:"{user: {env: HB_DEVELOPER_USER}, password: {env: HB_DEVELOPER_PASSWORD}}"`
 }
 
 // LoggerConfig with defaults.

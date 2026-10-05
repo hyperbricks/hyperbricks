@@ -457,8 +457,9 @@ hyperbricks:
       enabled: false
 ```
 
-Use `enabled: true` only when the developer dashboard is intended to be enabled;
-it still requires the configured developer credentials for access. Rebuild the
+Use `enabled: true` only when the developer dashboard is intended to be enabled.
+Configure both developer credentials to require login; with both absent, a
+development dashboard opens without login and emits a startup warning. Rebuild the
 archive from corrected source for a durable fix, because changing the extracted
 runtime configuration does not change the original archive.
 
@@ -474,8 +475,10 @@ unapplied saved mode change. Local and remote status responses provide
 opening that path.
 
 The developer endpoint is `/__hyperbricks/dashboard`. It uses the module's
-developer Basic Auth credentials, not the deployment HMAC secret. An HTTP 401
-challenge is expected before login; missing module credentials return 503.
+developer Basic Auth credentials, not the deployment HMAC secret. With both
+module credential values absent, Dashboard, Errors, and diagnostics open without
+login and startup warns that anyone who can reach the server can view them.
+A configured account requires login (`401` challenge); a partial account returns `503`.
 After editing dashboard settings, restart the module to apply them.
 
 ### Legacy Build-Index Migration
@@ -517,9 +520,10 @@ without changing credentials. Dashboard defaults to disabled; Spaces defaults
 to enabled for compatibility. The parent
 `hyperbricks.development.frontend_editing.enabled` still controls all frontend
 editors. If that parent is disabled, switching Spaces on alone does not make it
-visible. Neither tool is available in Live mode. Enabling a tool without a
-configured developer login causes its protected routes to return 503 until
-credentials are configured and the module is restarted.
+visible. Neither tool is available in Live mode. With both developer credential
+values absent, the enabled Dashboard opens without login and warns at startup;
+Spaces remains locked with `503` until credentials are configured and the module
+is restarted. A partial account locks both tools.
 
 Environment-backed values are displayed as their configured YAML reference,
 never as resolved server environment secrets. Unchanged references are

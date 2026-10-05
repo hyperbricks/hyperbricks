@@ -94,7 +94,7 @@ func TestRuntimeSummaryCredentialWarningFollowsAvailableEditor(t *testing.T) {
 	started := time.Now()
 	logRuntimeSummary(config)
 	for _, event := range logging.GetLogs() {
-		if !event.Time.Before(started) && strings.Contains(event.Message, "Developer interface locked") {
+		if !event.Time.Before(started) && strings.Contains(event.Message, "Spaces and frontend editors locked") {
 			t.Fatal("disabled Spaces should not require developer credentials")
 		}
 	}
@@ -102,7 +102,7 @@ func TestRuntimeSummaryCredentialWarningFollowsAvailableEditor(t *testing.T) {
 	started = time.Now()
 	logRuntimeSummary(config)
 	for _, event := range logging.GetLogs() {
-		if !event.Time.Before(started) && strings.Contains(event.Message, "Developer interface locked") {
+		if !event.Time.Before(started) && strings.Contains(event.Message, "Spaces and frontend editors locked") {
 			return
 		}
 	}
@@ -156,5 +156,47 @@ func TestRenderLogUsesModuleRelativeLocations(t *testing.T) {
 	encoded, _ := json.Marshal(entry)
 	if strings.Contains(string(encoded), root) || strings.Contains(string(encoded), "private") || strings.Contains(string(encoded), "https://") {
 		t.Fatalf("non-relative event: %s", encoded)
+	}
+}
+
+func TestRuntimeSummaryDashboardCredentialWarnings(t *testing.T) {
+	setupModuleLogTest(t)
+	oldRuntime := shared.GetRuntimeOptions()
+	t.Cleanup(func() { shared.SetRuntimeOptions(oldRuntime) })
+	for _, scenario := range []struct {
+		name, mode, warning string
+		credentials         shared.CredentialsConfig
+		production, static  bool
+	}{
+		{"open development", shared.DEVELOPMENT_MODE, "accessible without login to anyone who can reach this server", shared.CredentialsConfig{}, false, false},
+		{"open debug", shared.DEBUG_MODE, "accessible without login to anyone who can reach this server", shared.CredentialsConfig{}, false, false},
+		{"partial account", shared.DEVELOPMENT_MODE, "Developer interface locked", shared.CredentialsConfig{User: "developer"}, false, false},
+		{"configured", shared.DEVELOPMENT_MODE, "", developerTestCredentials, false, false},
+		{"live", shared.LIVE_MODE, "", shared.CredentialsConfig{}, false, false},
+		{"production", shared.DEVELOPMENT_MODE, "", shared.CredentialsConfig{}, true, false},
+		{"static", shared.DEVELOPMENT_MODE, "", shared.CredentialsConfig{}, false, true},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			config := &shared.Config{Mode: scenario.mode}
+			config.Development.Dashboard = shared.DevelopmentDashboardConfig{Enabled: true, Credentials: scenario.credentials}
+			runtime := oldRuntime
+			runtime.Production, commands.RenderStatic = scenario.production, scenario.static
+			shared.SetRuntimeOptions(runtime)
+			started := time.Now()
+			logRuntimeSummary(config)
+			var warnings []string
+			for _, event := range logging.GetLogs() {
+				if !event.Time.Before(started) && event.Level == zapcore.WarnLevel {
+					warnings = append(warnings, event.Message)
+				}
+			}
+			if scenario.warning == "" {
+				if len(warnings) != 0 {
+					t.Fatalf("unexpected warnings: %v", warnings)
+				}
+			} else if len(warnings) != 1 || !strings.Contains(warnings[0], scenario.warning) {
+				t.Fatalf("warnings = %v, want one containing %q", warnings, scenario.warning)
+			}
+		})
 	}
 }
