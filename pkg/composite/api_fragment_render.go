@@ -450,7 +450,7 @@ func applyApiFragmentTemplate(templateStr string, data interface{}, config ApiFr
 		}
 	}
 
-	tmpl, err := shared.GenericTemplate().Parse(templateStr)
+	tmpl, err := shared.ParsedGenericTemplate(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
