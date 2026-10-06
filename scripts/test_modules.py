@@ -31,6 +31,10 @@ class ModuleCheck:
 CHECKS = (
     ModuleCheck("api-security-test", 8105, (("/dashboard", ("user", "admin", "public")),)),
     ModuleCheck("esbuild-demo", 8097, (("/", ("VAT",)),)),
+    ModuleCheck("spaces-image-demo", 8134, (
+        ("/", ("First study", "Objects in good light", "/static/css/site.css", "_w720_h720.jpg")),
+        ("/second", ("Second study", "Cream &amp; brass", "/static/css/site.css", "_w720_h720.jpg")),
+    )),
     ModuleCheck("navigation-demo-swup", 8125, (("/", ("After Hours",)), ("/last-bite", ("Last Bite",)))),
     ModuleCheck("sampleapis-coffee-static", 8080, (("/", ("Coffee",)),)),
     ModuleCheck("todo-demo-htmx", 8121, (("/", ("Tasks",)), ("/fragments/tasks", ("task",)))),

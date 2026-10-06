@@ -168,6 +168,8 @@ Spaces supports nested templates such as `content.values.body`. Use `editable: [
 
 ### Nested properties and native images
 
+Try the runnable [Spaces image starter](../modules/spaces-image-demo/README.md) for two independent Spaces with image selection, uploads, and nested text fields.
+
 A component mounted inside a template value keeps its own editing contract. Spaces resolves inherited components before discovering their fields, so declare `editable` alongside the reusable component's properties. Native `image` components support `src` as an asset field and `alt` and `title` as text or textarea fields. The source must declare each editable image property.
 
 ```yaml

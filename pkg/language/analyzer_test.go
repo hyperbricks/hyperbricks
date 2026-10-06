@@ -887,3 +887,30 @@ func completionByLabel(items []CompletionItem, label string) (CompletionItem, bo
 	}
 	return CompletionItem{}, false
 }
+
+func TestAnalyzerImplicitPageTemplateValues(t *testing.T) {
+	analyzer := NewAnalyzer(AnalyzerOptions{WorkspaceRoot: t.TempDir()})
+	source := `header:
+  - type: template
+  - inline: header
+page:
+  - type: hypermedia
+  - template:
+      - inline: {format: '%s', args: ['{{.header}} {{.content}}']}
+      - values:
+          header:
+            - inherit: header
+            - values:
+                active: index
+          content:
+            - type: template
+            - inline: '{{.image}}'
+            - values:
+                image:
+                  - type: image
+                  - src: photo.jpg
+`
+	if diagnostics := analyzer.Diagnostics("untitled:page", source, nil); len(diagnostics) != 0 {
+		t.Fatalf("native template values diagnostics = %#v", diagnostics)
+	}
+}

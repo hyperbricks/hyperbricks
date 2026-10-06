@@ -917,6 +917,7 @@ Single image renderer with optional optimization and HTML output.
 | `alt` | `string` | no | Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images. |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `class` | `string` | no | CSS class for styling the image |
+| `editable` | `interface` | no | Source-owned Spaces declarations for src, alt, and title. Image src uses a resources asset policy. Not rendered. |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
 | `height` | `int` | no | Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size. |
 | `id` | `string` | no | Id of image |

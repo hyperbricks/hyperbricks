@@ -12,6 +12,7 @@ const root = path.resolve(new URL('..', import.meta.url).pathname);
 const skipPluginBuild = process.argv.includes('--skip-plugin-build');
 const modules = [
   ['esbuild-demo', 8097, '/', 'VAT'],
+  ['spaces-image-demo', 8134, '/', 'Objects in good light'],
   ['navigation-demo-swup', 8125, '/', 'After Hours'],
   ['todo-demo-htmx', 8121, '/', 'Your list is ready.'],
   ['todo-demo-swup', 8124, '/', 'Your list is ready.'],

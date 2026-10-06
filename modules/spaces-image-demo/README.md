@@ -94,6 +94,14 @@ result.
 
 ## Development access
 
+To require login, set both credentials before startup:
+
+```sh
+export HB_DEVELOPER_USER=editor
+export HB_DEVELOPER_PASSWORD='replace-with-your-local-password'
+go run ./cmd/hyperbricks start -m spaces-image-demo
+```
+
 Spaces is enabled with writes. When both developer credentials are absent it
 opens without login on allowed hosts. Set both `HB_DEVELOPER_USER` and
 `HB_DEVELOPER_PASSWORD` before starting to require login. Partial credentials
