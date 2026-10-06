@@ -302,7 +302,7 @@ func runDoctor(opts doctorOptions) doctorReport {
 		} else {
 			checkDoctorComponents(collector, plan, graph, config)
 			checkDoctorRoutes(collector, graph)
-			checkDoctorSpaces(collector, graph)
+			checkDoctorSpaces(collector, graph, module.Directories)
 		}
 	} else {
 		collector.simple("components.native_schema", doctorSkip, "source graph is unavailable")
@@ -793,14 +793,14 @@ func checkDoctorRoutes(collector *doctorCollector, graph doctorGraph) {
 	collector.simple("routes.unique", doctorPass, fmt.Sprintf("%d unique routes", routeCount))
 }
 
-func checkDoctorSpaces(collector *doctorCollector, graph doctorGraph) {
+func checkDoctorSpaces(collector *doctorCollector, graph doctorGraph, directories map[string]string) {
 	count := 0
 	for _, name := range sortedDoctorRootNames(graph.Values) {
 		object := graph.Values[name]
 		if object["@type"] != "<HYPERMEDIA>" {
 			continue
 		}
-		fields, err := spaces.SourceFields(object)
+		fields, err := spaces.SourceFields(object, directories)
 		if err != nil {
 			collector.simple("spaces.contract", doctorFail, fmt.Sprintf("source %s: %v", name, err))
 			return

@@ -1,0 +1,5 @@
+second:
+  - inherit: study_source
+  - title: Second study
+  - route: second
+  - static: second.html

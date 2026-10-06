@@ -40,23 +40,31 @@ type Field struct {
 	Group            string          `json:"group,omitempty" mapstructure:"group"`
 	Value            string          `json:"value"`
 	Default          string          `json:"default"`
+	imageSource      bool
+	strictTarget     bool
 	markdownFile     bool
 	markdownMaxBytes int64
 }
 
 // SourceFields derives and validates the editing contract of an effective source.
-// It does not read or mutate source files or enable the editor.
-func SourceFields(root map[string]interface{}) ([]Field, error) {
-	return schemaFields(root)
+// It does not read or mutate source files or enable the editor. Pass the module
+// directories for native image sources so resolved paths become portable references.
+func SourceFields(root map[string]interface{}, directories ...map[string]string) ([]Field, error) {
+	return schemaFields(root, directories...)
 }
 
-func schemaFields(root map[string]interface{}) ([]Field, error) {
+func schemaFields(root map[string]interface{}, directories ...map[string]string) ([]Field, error) {
+	var dirs map[string]string
+	if len(directories) > 0 {
+		dirs = directories[0]
+	}
 	fields := []Field{}
+	seen := map[string]bool{}
 	var visit func(map[string]interface{}, []string) error
 	visit = func(m map[string]interface{}, parts []string) error {
 		if schema, ok := m["editable"]; ok {
-			if m["@type"] != "<TEMPLATE>" && m["@type"] != "<MARKDOWN>" {
-				return fmt.Errorf("editable belongs to a template or markdown component at %s", strings.Join(parts, "."))
+			if m["@type"] != "<TEMPLATE>" && m["@type"] != "<MARKDOWN>" && m["@type"] != "<IMAGE>" {
+				return fmt.Errorf("editable belongs to a template, markdown, or image component at %s", strings.Join(parts, "."))
 			}
 			definitions := map[string]interface{}{}
 			switch v := schema.(type) {
@@ -83,17 +91,32 @@ func schemaFields(root map[string]interface{}) ([]Field, error) {
 					return fmt.Errorf("editable key cannot be empty")
 				}
 				f := Field{Key: k, Label: k, Type: "text", Rows: 3}
+				var declaredPath []string
 				switch v := definitions[k].(type) {
 				case string:
 					f.Type = v
 				case map[string]interface{}:
-					allowed := map[string]bool{"type": true, "label": true, "help": true, "placeholder": true, "required": true, "rows": true, "max": true, "upload": true, "directory": true, "edit": true, "order": true, "group": true}
+					allowed := map[string]bool{"type": true, "label": true, "help": true, "placeholder": true, "required": true, "rows": true, "max": true, "upload": true, "directory": true, "edit": true, "order": true, "group": true, "path": true}
 					for key := range v {
 						if !allowed[key] {
 							return fmt.Errorf("unknown editable metadata %s.%s", k, key)
 						}
 					}
-					if err := mapstructure.WeakDecode(v, &f); err != nil {
+					if raw, exists := v["path"]; exists {
+						var err error
+						declaredPath, err = editablePath(raw)
+						if err != nil {
+							return fmt.Errorf("editable.%s at %s: %w", k, fieldPointer(parts), err)
+						}
+					}
+					// path is declaration metadata, not the resolved Field.Path.
+					metadata := make(map[string]interface{}, len(v))
+					for key, value := range v {
+						if key != "path" {
+							metadata[key] = value
+						}
+					}
+					if err := mapstructure.WeakDecode(metadata, &f); err != nil {
 						return err
 					}
 					if edit, ok := v["edit"]; ok {
@@ -138,29 +161,29 @@ func schemaFields(root map[string]interface{}) ([]Field, error) {
 						return fmt.Errorf("asset and upload directories must match")
 					}
 				}
-				f.Path = append(append([]string{}, parts...), "values", k)
-				if m["@type"] == "<MARKDOWN>" {
-					if err := validateMarkdownField(m, k, f); err != nil {
-						return fmt.Errorf("markdown editable.%s: %w", k, err)
-					}
-					f.Path = append(append([]string{}, parts...), k)
-					f.markdownFile = k == "file"
-					f.markdownMaxBytes = markdown.DefaultMaxBytes
-					if raw, exists := m["max_bytes"]; exists {
-						f.markdownMaxBytes, _ = strconv.ParseInt(str(raw), 10, 64)
-					}
+				target := declaredPath
+				if target == nil {
+					target = []string{k}
 				}
-				for _, p := range f.Path {
-					f.ID += "/" + strings.ReplaceAll(strings.ReplaceAll(p, "~", "~0"), "/", "~1")
+				f.strictTarget = declaredPath != nil || m["@type"] == "<IMAGE>"
+				f.Path = append([]string{}, parts...)
+				if m["@type"] == "<TEMPLATE>" {
+					f.Path = append(f.Path, "values")
 				}
-				v := getMap(root, f.Path)
-				if _, ok := v.(map[string]interface{}); ok {
-					return fmt.Errorf("editable field %s must contain a scalar reference or text", k)
+				f.Path = append(f.Path, target...)
+				f.ID = fieldPointer(f.Path)
+				if seen[f.ID] {
+					return fmt.Errorf("duplicate editable target %s", f.ID)
 				}
-				if _, ok := v.([]interface{}); ok {
-					return fmt.Errorf("editable field %s must be scalar", k)
+				seen[f.ID] = true
+				if err := configureFieldTarget(root, &f); err != nil {
+					return fmt.Errorf("editable.%s at %s: %w", k, f.ID, err)
 				}
-				f.Value = str(v)
+				var err error
+				f.Value, err = fieldValue(root, f, dirs)
+				if err != nil {
+					return fmt.Errorf("editable.%s at %s: %w", k, f.ID, err)
+				}
 				f.Default = f.Value
 				fields = append(fields, f)
 			}
@@ -279,6 +302,11 @@ func fieldDirectory(f Field) Directory {
 	return Directory{Base: "static"}
 }
 func validateText(f Field, v string) error {
+	if f.imageSource {
+		if err := validateImageReference(f, v); err != nil {
+			return fmt.Errorf("%s: %w", f.Label, err)
+		}
+	}
 	if f.markdownFile && v == "" {
 		return fmt.Errorf("%s requires a Markdown file", f.Label)
 	}

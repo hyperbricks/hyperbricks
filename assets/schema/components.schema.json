@@ -3842,6 +3842,22 @@
           }
         },
         {
+          "path": "editable",
+          "key": "editable",
+          "go_name": "Editable",
+          "go_type": "interface {}",
+          "kind": "interface",
+          "description": "Source-owned Spaces declarations for src, alt, and title. Image src uses a resources asset policy. Not rendered.",
+          "authoring": {
+            "label": "Editable",
+            "control": "text",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
           "path": "enclose",
           "key": "enclose",
           "go_name": "Enclose",

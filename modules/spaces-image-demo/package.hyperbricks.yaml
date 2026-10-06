@@ -1,0 +1,30 @@
+hyperbricks:
+  metadata:
+    module: spaces-image-demo
+    moduleversion: "1.0.0"
+    hyperbricks: v1.3.0-beta
+  mode: development
+  development:
+    watch: true
+    reload: false
+    dashboard:
+      enabled: false
+      credentials:
+        user: {env: HB_DEVELOPER_USER}
+        password: {env: HB_DEVELOPER_PASSWORD}
+    frontend_editing:
+      enabled: true
+      spaces:
+        enabled: true
+        write: true
+  rate_limit:
+    enabled: false
+  server:
+    port: 8080
+  directories:
+    hyperbricks: {path: {base: module, path: hyperbricks}}
+    templates: {path: {base: module, path: templates}}
+    resources: {path: {base: module, path: resources}}
+    static: {path: {base: module, path: static}}
+    render: {path: {base: module, path: rendered}}
+    plugins: {path: {base: module, path: plugins}}

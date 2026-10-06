@@ -135,3 +135,32 @@ func TestContextualPageEnforcesDevelopmentHostAndRequestBoundaries(t *testing.T)
 		})
 	}
 }
+
+func TestOrdinaryRequestSkipsInvalidNativeEditingContract(t *testing.T) {
+	s := imageService(t)
+	createTest(t, s, "first")
+	// Invalid editor policy must affect edit=true only, not ordinary rendering.
+	writeTestFile(t, s.dirs["hyperbricks"]+"/portfolio.hyperbricks.yaml", strings.Replace(fileText(t, s.dirs["hyperbricks"]+"/portfolio.hyperbricks.yaml"), "alt: text", "width: text", 1))
+	shared.Init_configuration()
+	cfg := shared.GetHyperBricksConfiguration()
+	previous, runtime := *cfg, shared.GetRuntimeOptions()
+	t.Cleanup(func() { *cfg = previous; shared.SetRuntimeOptions(runtime) })
+	cfg.Mode = shared.DEVELOPMENT_MODE
+	cfg.Directories = s.dirs
+	cfg.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
+	cfg.Development.Dashboard.Credentials = shared.CredentialsConfig{}
+	shared.SetRuntimeOptions(shared.RuntimeOptions{ModuleRoot: s.module})
+	handler := &Handler{}
+	body := "ordinary rendered content"
+	for _, query := range []string{"", "?edit=false", "?edit=true"} {
+		request := httptest.NewRequest(http.MethodGet, "http://localhost/portfolio/first"+query, nil)
+		got, active, err := handler.ContextualPage(request, "portfolio/first", body)
+		if query == "?edit=true" {
+			if !active || err == nil {
+				t.Fatalf("editor did not validate contract: %v %v", active, err)
+			}
+		} else if active || err != nil || got != body {
+			t.Fatalf("ordinary request performed discovery: %v %v", active, err)
+		}
+	}
+}

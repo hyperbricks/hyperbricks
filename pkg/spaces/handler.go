@@ -1,6 +1,7 @@
 package spaces
 
 import (
+	"bytes"
 	"embed"
 	"encoding/json"
 	"errors"
@@ -13,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/parser"
@@ -235,6 +237,25 @@ func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			replyJSON(w, 200, snap)
+		case "/api/asset":
+			field, err := s.assetField(c, r.URL.Query().Get("name"), r.URL.Query().Get("field"))
+			if err != nil {
+				replyError(w, err)
+				return
+			}
+			reference := r.URL.Query().Get("reference")
+			ext := strings.ToLower(filepath.Ext(reference))
+			if fieldDirectory(field).Base != "resources" || !supportedExtension(ext) || ext == ".md" || ext == ".markdown" {
+				replyError(w, fmt.Errorf("preview requires an image in the field's resources directory"))
+				return
+			}
+			filename, data, err := s.assetData(field, reference)
+			if err != nil {
+				replyError(w, err)
+				return
+			}
+			w.Header().Set("Content-Type", mime.TypeByExtension(ext))
+			http.ServeContent(w, r, filepath.Base(filename), time.Time{}, bytes.NewReader(data))
 		case "/api/assets":
 			assets, err := s.assetList(c, r.URL.Query().Get("name"), r.URL.Query().Get("field"))
 			if err != nil {
