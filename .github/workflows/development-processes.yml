@@ -1,4 +1,4 @@
-name: Development process lifecycle
+name: Configuration and process lifecycle
 
 on:
   push:
@@ -22,5 +22,12 @@ jobs:
           go-version: 1.26.1
       - name: Process and configuration contracts
         run: go test -race ./pkg/shared ./cmd/hyperbricks -run 'TestDevelopment|TestRuntime|TestStartServer' -count=1 -timeout 180s
+      - name: Package imports, settings, retention, and static contracts
+        run: go test -race ./pkg/yaml-parser ./pkg/shared ./pkg/component ./pkg/language ./cmd/hyperbricks/commands ./cmd/hyperbricks -run 'TestPackage|TestSettings|TestEsbuild|TestStatic|TestLifecycle|TestFinish|TestBuild.*Import|TestArtifactUsesImported' -count=1 -timeout 180s
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Configuration module integration
+        run: python3 scripts/test_configuration_lifecycle.py
       - name: Module lifecycle smoke scenarios
         run: bash scripts/test_development_process_lifecycle.sh

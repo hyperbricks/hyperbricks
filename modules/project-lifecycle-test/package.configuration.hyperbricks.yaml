@@ -1,0 +1,11 @@
+# Isolated configuration integration profile.
+imports:
+  - package.static.hyperbricks.yaml
+  - config/lifecycle.hyperbricks.yaml
+vars:
+  fixture_port: 8107
+hyperbricks:
+  server:
+    port: {var: fixture_port}
+  development:
+    watch_dirs: []
