@@ -18,6 +18,7 @@ import (
 
 	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/pkg/packagemetadata"
+	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/spf13/cobra"
 )
 
@@ -236,7 +237,7 @@ func runBuild() (buildResult, error) {
 
 	commit := packagemetadata.GitShortCommit(moduleDir)
 	builtAt := time.Now().UTC().Format(time.RFC3339)
-	artifact, err := packagemetadata.RenderArtifact(configContent, packagemetadata.ArtifactOptions{
+	artifact, err := renderPackageArtifact(configContent, configPath, moduleDir, packagemetadata.ArtifactOptions{
 		Module:        moduleName,
 		Format:        format,
 		FormatVersion: "1",
@@ -360,6 +361,9 @@ func collectModuleFiles(root string) ([]buildFile, error) {
 		return nil, err
 	}
 
+	if err := verifyPackageArchiveInputs(root, files); err != nil {
+		return nil, err
+	}
 	sort.Slice(files, func(i, j int) bool {
 		return files[i].rel < files[j].rel
 	})
@@ -633,4 +637,59 @@ func findBuildIndex(index buildIndex, buildID string) (buildIndexRow, bool) {
 		}
 	}
 	return buildIndexRow{}, false
+}
+
+// Never emit an archive whose explicit import graph was filtered out. Ordinary
+// config fragments are included by the module walk and participate in hashes.
+func verifyPackageArchiveInputs(root string, files []buildFile) error {
+	entry := filepath.Join(root, PackageConfigFileName)
+	if _, err := os.Stat(entry); os.IsNotExist(err) {
+		return nil
+	}
+	result, err := shared.LoadPackageConfigSource(entry, root, nil)
+	if err != nil {
+		return err
+	}
+	included := map[string]bool{}
+	for _, file := range files {
+		if !file.isDir {
+			absolute, err := filepath.Abs(file.abs)
+			if err != nil {
+				return err
+			}
+			included[absolute] = true
+		}
+	}
+	for _, path := range result.Dependencies {
+		if !included[path] {
+			return fmt.Errorf("package input %s is excluded from the archive; move it to an included module directory", path)
+		}
+	}
+	return nil
+}
+
+func renderPackageArtifact(content []byte, origin, module string, options packagemetadata.ArtifactOptions) (packagemetadata.ArtifactResult, error) {
+	origin, err := filepath.Abs(origin)
+	if err != nil {
+		return packagemetadata.ArtifactResult{}, err
+	}
+	result, err := shared.LoadPackageConfigSource(origin, module, func(path string) ([]byte, error) {
+		absolute, err := filepath.Abs(path)
+		if err != nil {
+			return nil, err
+		}
+		if absolute == origin {
+			return content, nil
+		}
+		return os.ReadFile(path)
+	})
+	if err != nil {
+		return packagemetadata.ArtifactResult{}, err
+	}
+	if len(result.Dependencies) > 1 {
+		hb, _ := result.Materialized["hyperbricks"].(map[string]interface{})
+		metadata, _ := hb["metadata"].(map[string]interface{})
+		options.ModuleVersion, _ = metadata["moduleversion"].(string)
+	}
+	return packagemetadata.RenderArtifact(content, options)
 }

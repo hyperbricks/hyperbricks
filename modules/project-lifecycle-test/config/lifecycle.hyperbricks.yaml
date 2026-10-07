@@ -1,0 +1,26 @@
+vars:
+  fixture_port: 8108
+hyperbricks:
+  development:
+    watch_dirs: [templates, resources]
+  hooks:
+    before_start:
+      - name: record-before-start
+        command: [python3, tools/record_lifecycle.py]
+        timeout: 10s
+    after_start:
+      - name: record-after-start
+        command: [python3, tools/record_lifecycle.py]
+        timeout: 10s
+    before_static:
+      - name: record-before-static
+        command: [python3, tools/record_lifecycle.py]
+        timeout: 10s
+    after_static:
+      - name: record-after-static
+        command: [python3, tools/record_lifecycle.py]
+        timeout: 10s
+    finish:
+      - name: record-finish
+        command: [python3, tools/record_lifecycle.py]
+        timeout: 10s

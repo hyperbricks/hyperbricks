@@ -16,7 +16,7 @@ import (
 func LoadPackageCacheDirectories(configPath, moduleRoot string) (map[string]string, bool, error) {
 	options := packageConfigYAMLOptions(moduleRoot)
 	options.SkipTemplateRegistration = true
-	result, err := yamlparser.ProcessConfigFile(configPath, options)
+	result, err := yamlparser.ProcessPackageConfigFile(configPath, moduleRoot, options)
 	if err != nil {
 		return nil, false, err
 	}

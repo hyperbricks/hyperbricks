@@ -132,7 +132,13 @@ func TestRuntimeServiceDrainKeepsManagedAPIUntilRequestFinishes(t *testing.T) {
 	})
 	wait := func(description string, condition func() bool) {
 		t.Helper()
-		deadline := time.Now().Add(6 * time.Second)
+		budget := 6 * time.Second
+		// Race instrumentation makes component registration slower; the assertion
+		// concerns shutdown ordering, not startup throughput.
+		if description == "main HTTP listener" {
+			budget = 20 * time.Second
+		}
+		deadline := time.Now().Add(budget)
 		for !condition() {
 			select {
 			case <-done:

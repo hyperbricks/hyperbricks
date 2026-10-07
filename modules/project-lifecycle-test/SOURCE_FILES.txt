@@ -50,3 +50,7 @@ templates/status.html
 tools/fixture-api/main.go
 tools/fixture-api/main_test.go
 tools/stage_source.py
+
+package.configuration.hyperbricks.yaml
+config/lifecycle.hyperbricks.yaml
+tools/record_lifecycle.py

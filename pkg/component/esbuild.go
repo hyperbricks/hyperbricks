@@ -31,8 +31,9 @@ type EsbuildConfig struct {
 	Mangle             bool              `mapstructure:"mangle" description:"Advanced: mangle JavaScript properties using .*; may break external property contracts. Default false; not allowed for CSS-only entries."`
 	Sourcemap          bool              `mapstructure:"sourcemap" description:"Emit a linked source map. Default false."`
 	Debug              bool              `mapstructure:"debug" description:"Log effective build options, engine, and cache diagnostics."`
+	CacheKeep          int               `mapstructure:"cache_keep" description:"Previous successful output generations to retain in addition to current. Default zero. Active renders and cached responses protect referenced assets."`
 	Cache              bool              `mapstructure:"cache" description:"True reuses valid builds; false rebuilds on every component render. Default false. Independent of page caching."`
-	Fingerprint        bool              `mapstructure:"fingerprint" description:"Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Old assets are retained."`
+	Fingerprint        bool              `mapstructure:"fingerprint" description:"Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Obsolete owned generations are pruned after successful replacement."`
 	Target             []string          `mapstructure:"target" description:"Optional browser/language targets, e.g. chrome110, safari16, es2020."`
 	Loader             map[string]string `mapstructure:"loader" description:"Extension loader overrides, e.g. .woff2: file or .png: dataurl."`
 	External           []string          `mapstructure:"external" description:"Import or asset URL patterns to leave unbundled, e.g. /static/vendor/*."`
@@ -63,6 +64,7 @@ func (r *EsbuildRenderer) Invalidate() {
 	if r.store.prepared {
 		r.store.reuseDisk = false
 	}
+	r.store.assetFailure = nil
 	r.store.results = make(map[string]*esbuildResult)
 	r.store.owners = make(map[string]string)
 }
@@ -73,6 +75,7 @@ type PreparedEsbuild struct {
 	spec      esbuildSpec
 	key       string
 	cache     bool
+	cacheKeep int
 	debug     bool
 	err       error
 }
@@ -92,12 +95,15 @@ func (r *EsbuildRenderer) Prepare(config EsbuildConfig) *PreparedEsbuild {
 		r.store.prepared = true
 		r.store.mu.Unlock()
 	}
-	p := &PreparedEsbuild{component: config.Component, store: r.store, cache: config.Cache, debug: config.Debug}
+	p := &PreparedEsbuild{component: config.Component, store: r.store, cache: config.Cache, cacheKeep: config.CacheKeep, debug: config.Debug}
 	p.err = p.prepare(config)
 	return p
 }
 
 func (p *PreparedEsbuild) prepare(config EsbuildConfig) error {
+	if config.CacheKeep < 0 {
+		return fmt.Errorf("esbuild cache_keep must be nonnegative")
+	}
 	if p.store == nil {
 		return fmt.Errorf("esbuild renderer has no module build store")
 	}
@@ -269,16 +275,20 @@ func (s esbuildSpec) options() (api.BuildOptions, error) {
 }
 
 type esbuildStore struct {
-	mu          sync.Mutex
-	staticDir   string
-	cacheDir    string
-	cacheDirErr error
-	reuseDisk   bool
-	prepared    bool
-	results     map[string]*esbuildResult
-	generated   map[string]bool
-	owners      map[string]string
-	buildCount  uint64
+	mu            sync.Mutex
+	staticDir     string
+	cacheDir      string
+	cacheDirErr   error
+	reuseDisk     bool
+	prepared      bool
+	results       map[string]*esbuildResult
+	generated     map[string]bool
+	owners        map[string]string
+	buildCount    uint64
+	protectOutput func(string) bool
+	sessionUnlock func()
+	activeOwners  map[string]int
+	assetFailure  error
 }
 
 func esbuildOutputPath(root, output string) error {
@@ -320,3 +330,5 @@ func esbuildExistingPath(path string) (string, error) {
 	}
 	return filepath.Join(resolved, filepath.Base(path)), nil
 }
+
+func (p *PreparedEsbuild) RetainedGenerations() int { return p.cacheKeep }
