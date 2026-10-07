@@ -417,3 +417,44 @@ func issuesByCodeList(issues []Issue, code string) []Issue {
 	}
 	return result
 }
+
+func TestAnalyzeSourceImplicitTemplateValueMounts(t *testing.T) {
+	for _, kind := range []string{"hypermedia", "fragment"} {
+		t.Run(kind, func(t *testing.T) {
+			source := `header:
+  - type: template
+  - inline: header
+page:
+  - type: ` + kind + `
+  - template:
+      - inline: '{{.header}} {{.content}}'
+      - values:
+          header:
+            - inherit: header
+            - values:
+                active: index
+          content:
+            - type: template
+            - inline: '{{.image}}'
+            - values:
+                image:
+                  - type: image
+                  - src: photo.jpg
+`
+			for _, source := range []string{source, strings.Replace(strings.Replace(source, "      - inline:", "        inline:", 1), "      - values:", "        values:", 1)} {
+				if issues := AnalyzeSource([]byte(source), SourceOptions{}); len(issues) != 0 {
+					t.Fatalf("implicit template diagnostics: %#v", issues)
+				}
+				invalid := strings.Replace(source, "- src: photo.jpg", "- src: photo.jpg\n                  - made_up: true", 1)
+				issues := AnalyzeSource([]byte(invalid), SourceOptions{})
+				if len(issues) != 1 || issues[0].Code != "component.unsupported_field" || issues[0].Path != "page.template.values.content.values.image.made_up" {
+					t.Fatalf("nested image validation lost ownership: %#v", issues)
+				}
+				invalid = strings.Replace(source, "values:", "queryparams:", 1)
+				if len(AnalyzeSource([]byte(invalid), SourceOptions{})) == 0 {
+					t.Fatal("components in queryparams accepted as template values")
+				}
+			}
+		})
+	}
+}

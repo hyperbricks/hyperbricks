@@ -69,9 +69,14 @@ func validateAsset(data []byte, ext string) error {
 	return nil
 }
 func (s *service) assetPath(f Field, ref string) (string, error) {
+	filename, _, err := s.assetData(f, ref)
+	return filename, err
+}
+
+func (s *service) assetData(f Field, ref string) (string, []byte, error) {
 	p, err := s.assetLocation(f, ref)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	ext := strings.ToLower(filepath.Ext(p))
 	limit := int64(20 << 20)
@@ -87,20 +92,25 @@ func (s *service) assetPath(f Field, ref string) (string, error) {
 			}
 		}
 		if !allowed {
-			return "", fmt.Errorf("extension is not permitted by this field")
+			return "", nil, fmt.Errorf("extension is not permitted by this field")
 		}
 	}
 	data, err := s.readAssetFile(p, limit)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	if err := validateAsset(data, ext); err != nil {
-		return "", err
+		return "", nil, err
 	}
-	return p, nil
+	return p, data, nil
 }
 
 func (s *service) assetLocation(f Field, ref string) (string, error) {
+	if f.imageSource {
+		if err := validateImageReference(f, ref); err != nil {
+			return "", err
+		}
+	}
 	d := fieldDirectory(f)
 	if err := validateDirectory(d); err != nil {
 		return "", err
@@ -236,6 +246,8 @@ func (s *service) assetList(c *catalog, name, id string) ([]Asset, error) {
 		preview := ""
 		if d.Base == "static" {
 			preview = ref
+		} else if ext != ".md" && ext != ".markdown" {
+			preview = s.route + "/api/asset?" + url.Values{"name": {name}, "field": {id}, "reference": {ref}}.Encode()
 		}
 		if id == "@meta.og:image" {
 			ref = s.publicOrigin + ref

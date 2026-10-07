@@ -29,6 +29,14 @@ Changes since `v1.2.9-beta`.
   configured credentials require login, and partial accounts remain blocked.
   Set `spaces.write: false` to retain read-only access. External editor plugins
   and frontend error panels still require authentication.
+- Edit explicitly declared nested properties in Spaces, including the source and
+  alternative text of inherited native images. Select or upload resource
+  originals while preserving image processing and independent Space overrides.
+  Resource-image previews remain behind editor access checks.
+- Add the `spaces-image-demo` starter with two editable Spaces, bundled image
+  originals, and nested text fields.
+- Recognize component values inside built-in page and fragment templates in
+  language-server diagnostics, including inherited values and nested images.
 - Add language-server completion, hover, and configuration diagnostics for route
   cache storage and expiry without changing the editor protocol.
 

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="lofi">
+{{.head}}
+<body class="bg-base-200 text-base-content min-h-screen">
+  <div class="max-w-5xl mx-auto px-5 py-8 md:py-14">
+    <header class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between mb-10">
+      <div>
+        <p class="text-sm uppercase tracking-widest mb-2">HyperBricks / Spaces</p>
+        <h1 class="text-4xl md:text-5xl font-semibold tracking-tight">Light study</h1>
+      </div>
+      <nav aria-label="Studies" class="flex flex-wrap gap-2">
+        <a class="btn" href="/">First study</a>
+        <a class="btn" href="/second">Second study</a>
+      </nav>
+    </header>
+    <main class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+      <div class="md:col-span-2">{{.content}}</div>
+      <aside class="space-y-6 md:pt-4">
+        <h2 class="text-2xl font-semibold">One original.<br>Its own Space.</h2>
+        <p class="leading-relaxed">Choose a different photograph for the first study. The second study keeps its own image and text.</p>
+        {{if or (eq .runtime_mode "development") (eq .runtime_mode "debug")}}
+        <a class="btn btn-primary" href="/__hyperbricks/spaces?name=home">Edit first study</a>
+        <a class="btn" href="/__hyperbricks/spaces?name=second">Edit second study</a>
+        <p class="text-sm leading-relaxed">In Spaces, choose an existing original or upload a photograph. Update the alternative text and caption, save, then refresh this page.</p>
+        {{end}}
+        <p class="text-sm text-base-content/60 leading-relaxed">A small collection of everyday objects, photographed in soft light.</p>
+      </aside>
+    </main>
+    <footer class="mt-12 border-t border-base-300 pt-5 text-sm text-base-content/60">Light study · Native images, editable with Spaces.</footer>
+  </div>
+</body>
+</html>

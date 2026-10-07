@@ -1,0 +1,5 @@
+home:
+  - inherit: study_source
+  - title: First study
+  - route: index
+  - static: index.html

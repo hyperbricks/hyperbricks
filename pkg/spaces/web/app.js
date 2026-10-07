@@ -215,7 +215,7 @@ import {readResponse} from './http.mjs';
       const preview = el('div', { class: 'asset-preview' });
       const showPreview = (url = input.value, filename = '') => {
         preview.replaceChildren();
-        if (/\.(png|jpe?g|webp|gif)(\?|$)/i.test(url) || url.startsWith('blob:')) preview.append(el('button', {type: 'button', class: 'image-thumb', title: 'Preview ' + f.label, 'aria-label': 'Preview ' + f.label, onclick: () => openImage(input.value, f.label, state.files.get(f.id))}, el('img', { src: url, alt: f.label })));
+        if (/\.(png|jpe?g|webp|gif)(\?|$)/i.test(url) || url.startsWith('blob:')) preview.append(el('button', {type: 'button', class: 'image-thumb', title: 'Preview ' + f.label, 'aria-label': 'Preview ' + f.label, onclick: () => openImage(input.value, f.label, state.files.get(f.id), assetPreview(f, input.value))}, el('img', { src: assetPreview(f, url), alt: f.label })));
         if (filename || input.value) preview.append(el('span', {}, filename || input.value));
       };
       input.addEventListener('input', () => { state.files.delete(f.id); showPreview(); });
@@ -369,10 +369,15 @@ import {readResponse} from './http.mjs';
       request.send(body);
     });
   }
-  async function openImage(reference, label, file) {
+  function assetPreview(field, reference) {
+    const directory = field.upload?.directory || field.directory;
+    if (reference.startsWith('blob:') || directory?.base !== 'resources') return reference;
+    return `${base}/api/asset?${new URLSearchParams({name: state.selected, field: field.id, reference})}`;
+  }
+  async function openImage(reference, label, file, previewURL = reference) {
     if (imageObjectURL) URL.revokeObjectURL(imageObjectURL);
     imageObjectURL = file ? URL.createObjectURL(file) : null;
-    const url = imageObjectURL || reference;
+    const url = imageObjectURL || previewURL;
     const filename = file?.name || reference.split('/').pop()?.split('?')[0] || label;
     $('#image-title').textContent = filename; $('#image-error').textContent = '';
     $('#image-details').textContent = 'Loading image...'; setImageZoom(false);

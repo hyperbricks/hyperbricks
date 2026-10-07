@@ -145,7 +145,7 @@ It is optional for ordinary editing. Sharing-image upload and selection require 
 
 ## Source Schema
 
-Declare the fields users may edit in the source's `editable` configuration. On a `template`, each field targets `values.<key>`. On `markdown`, it targets the component's own `file` or `content`. An instance cannot add editing rights. See [Markdown and Spaces editing](MARKDOWN.md#spaces-editing) for native Markdown composition.
+Declare the fields users may edit in the source's `editable` configuration. On a `template`, each field targets `values.<key>`. On `markdown`, it targets the component's own `file` or `content`. On native `image`, it targets the declared `src`, `alt`, or `title` property. An instance cannot add editing rights. See [Markdown and Spaces editing](MARKDOWN.md#spaces-editing) for native Markdown composition.
 
 A minimal source declares a template, default values, and editable fields:
 
@@ -167,6 +167,62 @@ page_source:
 Place this in a loaded `*.hyperbricks.yaml` file. It has no route, so only its Spaces expose public URLs. An existing routed page can also be a source.
 
 Spaces supports nested templates such as `content.values.body`. Use `editable: [heading, intro]` for single-line text fields, or compact mappings such as `intro: textarea`. Field metadata supports `type`, `label`, `help`, `placeholder`, `required`, `rows` (1-40), and `max` (Unicode code points). Spaces rejects unknown controls and metadata.
+
+### Nested properties and native images
+
+Try the runnable [Spaces image starter](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/spaces-image-demo/README.md) for two independent Spaces with image selection, uploads, and nested text fields.
+
+A component mounted inside a template value keeps its own editing contract. Spaces resolves inherited components before discovering their fields, so declare `editable` alongside the reusable component's properties. Native `image` components support `src` as an asset field and `alt` and `title` as text or textarea fields. The source must declare each editable image property.
+
+```yaml
+home_image:
+  - type: image
+  - src: {path: {base: resources, path: images/home/original.jpg}}
+  - width: 1400
+  - quality: 90
+  - alt: Painting on a white wall
+  - editable:
+      src:
+        type: asset
+        label: Home image
+        required: true
+        upload:
+          directory: {base: resources, path: images/home}
+          accept: [.jpg, .jpeg, .png]
+          max_bytes: 10485760
+      alt: {type: text, label: Alternative text, max: 500}
+
+home_source:
+  - type: hypermedia
+  - title: Home
+  - content:
+      - type: template
+      - inline: '{{.image}} {{.caption}}'
+      - values:
+          image:
+            - inherit: home_image
+          caption: Selected work
+          details:
+            subtitle: Original paintings
+      - editable:
+          caption: text
+          subtitle:
+            path: [details, subtitle]
+            type: text
+            label: Subtitle
+```
+
+The image selector has the field ID `/content/values/image/src`. Selecting an original or uploading one writes a resource resolver at that property in the Space instance. The shared image definition, sibling Spaces, and inherited width, quality, and class remain unchanged. Normal native image rendering processes the chosen original and generates its web asset; Spaces does not resize the upload.
+
+Image `src` requires an explicit `resources` directory through `directory` or `upload.directory`. Originals must be JPEG, PNG, or GIF; WebP and document assets are not supported for this native image field. Selection uses the same directory, file-content, size, extension, and containment checks as uploads. Use `directory` alone to allow selection without uploads. An image source cannot be empty, even when `required` is omitted. Its effective value must resolve to an absolute path inside the declared resource directory; use a resources path resolver in YAML. The editor shows a resources-relative reference and never writes a machine-specific filename. Resource-image thumbnails and previews use an editor endpoint protected by the same access and field-directory rules; resources do not become a public asset directory.
+
+For deeper properties, `path` is a nonempty list of literal string keys. A template path is relative to its `values` object; an image or Markdown path is relative to that component. Without `path`, template fields retain the existing `values.<key>` behavior and native fields target their named property. Aliases and labels do not change the field ID, which is the escaped JSON pointer of the actual target. Quote numeric-looking keys. Keys containing dots or slashes are literal keys, not dotted-path expressions.
+
+Explicit paths may target declared string properties in nested data objects or supported component properties. Crossing into an image or Markdown component applies that component's validation. Spaces rejects missing targets, intermediate scalars, whole objects or arrays, array indexes, duplicate targets, structural keys such as `type`, `@type`, `inherit`, and `editable`, and unsupported native properties. Numeric and boolean editing, including image dimensions and quality, is not supported. Markdown paths retain the existing `content` and `file` restrictions.
+
+Deleting the instance's property override from YAML restores its inherited default. There is no generic content-field reset button or API operation. Editing-contract discovery runs in Spaces/editor operations, authoring inspection and validation, and doctor; ordinary visitor requests do not discover fields or scan asset directories.
+
+A selected image does not automatically update independently configured Open Graph, Twitter, or JSON-LD images. Those integrations must consume the effective instance's processed image result. Inheritance alone does not link independently mounted image copies.
 
 ### Asset fields
 

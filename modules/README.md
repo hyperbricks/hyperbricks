@@ -40,6 +40,7 @@ The patterns module can install its pinned npm dependencies through the optional
 | [`goja-render-demo`](goja-render-demo/) | Feature demo | Server-side calculations with `goja_render`, including query validation, resource scripts, request isolation, and development reload behavior. |
 | [`hello-world`](hello-world/) | Feature demo | Minimal YAML starter with one Hello World route and no external dependencies. |
 | [`sampleapis-coffee-static`](sampleapis-coffee-static/) | Feature demo | Static snapshot example that fetches the public SampleAPIs coffee endpoint through nested `api_render` and exports the rendered result. |
+| [`spaces-image-demo`](spaces-image-demo/) | Feature demo | Two Spaces with inherited native image selection/uploads, preserved resizing, and explicit nested text properties. |
 | [`streaming-demo`](streaming-demo/) | Feature demo | Native Go plugin example that streams several HTML progress updates over one response while HTMX swaps the target as chunks arrive. |
 | [`navigation-demo-swup`](navigation-demo-swup/) | Frontend integration | Text-only neighbourhood guide whose complete server-rendered pages use Swup for animated navigation and browser-history transitions. |
 | [`todo-demo-htmx`](todo-demo-htmx/) | Frontend integration | The Little List todo application using HTMX 4 fragment updates and browser `localStorage`. |

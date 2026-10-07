@@ -2,7 +2,7 @@
   "schema_version": 2,
   "hyperbricks_version": "v1.3.0-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_digest": "01e7f56c7d046c7f4be0d4e1eb78f4b9cea52573a5616ad14dd436bde259822c",
+  "source_digest": "9e2255d7d1edd0cbe607fe036aeb32ba73100507ebcd11428b851964e861ddc6",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
@@ -43,8 +43,8 @@
     {
       "source_path": "docs/REFERENCE.md",
       "bundled_path": "docs/REFERENCE.md",
-      "source_sha256": "77b38959f27df7876e93df49ac066a8094ba794d689b75c343258fbcc8fad561",
-      "bundled_sha256": "d1944be62c3def4032ee9f7283e6b05ae59336ae80ff780a8179dc3284c7256d"
+      "source_sha256": "5bb283c8bdb3492d32981e065e87616411812c507c2c98550a1fa00775c0b6f8",
+      "bundled_sha256": "2527ec2bf26405fbe05d2b14f416070c2e5e18c67633860c1d83a10633a7fb68"
     },
     {
       "source_path": "docs/MARKDOWN.md",
@@ -55,8 +55,8 @@
     {
       "source_path": "docs/SPACES.md",
       "bundled_path": "docs/SPACES.md",
-      "source_sha256": "1e23d55d164ce7bbfbeeb1a482d914c2d4ac1c2ee2f36dab0c40bef7050e2475",
-      "bundled_sha256": "f08ded294732c7c96296cc9ea8bf3a0844153d8dcb91f999d5850b438a027759"
+      "source_sha256": "83aa81948caac3b8e19cd144751beb32e147dacd52f8c0e2c6e4c1db652e51b0",
+      "bundled_sha256": "55e69ece059f3138578fc27736b2318b8072a5662cf03d22339c83112728a002"
     },
     {
       "source_path": "docs/AUTHOR.md",
