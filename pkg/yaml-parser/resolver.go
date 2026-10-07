@@ -145,7 +145,7 @@ func materializeValueWithResolver(value interface{}, ctx *valueResolverContext, 
 }
 
 func resolveValueMap(value map[string]interface{}, ctx *valueResolverContext, path string) (interface{}, bool) {
-	if ctx == nil {
+	if ctx == nil || !isValueResolver(value) {
 		return nil, false
 	}
 	if isFormatResolver(value) {
@@ -169,6 +169,23 @@ func resolveValueMap(value map[string]interface{}, ctx *valueResolverContext, pa
 		}
 	}
 	return nil, false
+}
+
+// isValueResolver is shared by resolution and package merge semantics.
+func isValueResolver(value map[string]interface{}) bool {
+	if isFormatResolver(value) {
+		return true
+	}
+	if len(value) != 1 {
+		return false
+	}
+	for key := range value {
+		switch key {
+		case "var", "env", "config", "path", "file":
+			return true
+		}
+	}
+	return false
 }
 
 func isFormatResolver(value map[string]interface{}) bool {

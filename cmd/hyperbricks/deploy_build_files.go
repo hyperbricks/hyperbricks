@@ -126,7 +126,10 @@ func savePackageConfig(location deployPackageConfigLocation, request packageConf
 		return nil, http.StatusConflict, errors.New("package configuration changed since it was opened; reload before saving")
 	}
 	content := []byte(request.Content)
-	if _, err := shared.ValidatePackageConfigBytes(content, location.moduleRoot); err != nil {
+	if _, err := shared.ValidatePackageConfigBytesAt(content, location.path, location.moduleRoot, func(path string) ([]byte, error) {
+		raw, _, err := readRegularConfinedFile(location.moduleRoot, path)
+		return raw, err
+	}); err != nil {
 		return nil, http.StatusUnprocessableEntity, err
 	}
 	if err := atomicWriteDeployFile(location.path, content, mode); err != nil {

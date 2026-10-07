@@ -30,6 +30,7 @@ type developmentProcesses struct {
 	invocationDir string
 	executable    string
 	serverPort    int
+	hookContext   map[string]string
 	mu            sync.Mutex
 	children      []*developmentChild
 	stopping      bool
@@ -79,6 +80,10 @@ func newDevelopmentProcesses(moduleRoot string, serverPort int) (*developmentPro
 func (p *developmentProcesses) Failures() <-chan error { return p.failures }
 
 func (p *developmentProcesses) RunTasks(ctx context.Context, phase string, tasks []shared.DevelopmentTaskConfig) error {
+	if p.hookContext == nil {
+		p.hookContext = map[string]string{}
+	}
+	p.hookContext["HB_HOOK_PHASE"] = phase
 	for _, task := range tasks {
 		if err := ctx.Err(); err != nil {
 			return context.Cause(ctx)
@@ -202,13 +207,22 @@ func (p *developmentProcesses) childEnvironment(overrides map[string]string) ([]
 		}
 	}
 	for key, value := range overrides {
-		switch key {
-		case "PATH", "HB_EXECUTABLE", "HB_MODULE_ROOT", "HB_SERVER_PORT":
+		if shared.ReservedProcessEnv(key) {
 			return nil, fmt.Errorf("environment variable %s is reserved", key)
 		}
 		values[key] = value
 	}
 	values["HB_EXECUTABLE"], values["HB_MODULE_ROOT"], values["HB_SERVER_PORT"] = p.executable, p.moduleRoot, strconv.Itoa(p.serverPort)
+	for _, key := range []string{"HB_HOOK_PHASE", "HB_OPERATION", "HB_OUTCOME", "HB_FAILED_PHASE", "HB_EXIT_CODE", "HB_RENDER_DIR", "HB_EXPORT_ZIP"} {
+		values[key] = ""
+	}
+	values["HB_OPERATION"] = "start"
+	for key, value := range p.hookContext {
+		values[key] = value
+	}
+	if values["HB_OPERATION"] == "static" {
+		values["HB_SERVER_PORT"] = ""
+	}
 	keys := make([]string, 0, len(values))
 	for key := range values {
 		keys = append(keys, key)

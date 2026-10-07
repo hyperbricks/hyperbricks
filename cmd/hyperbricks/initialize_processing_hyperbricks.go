@@ -46,6 +46,7 @@ func PreProcessAndPopulateConfigs() error {
 	for _, source := range sources {
 		if err := processScript(source.Filename, source.Config, source.Errors, tempConfigs, tempHyperMediasBySection, tempRouteSourceErrors, logger, filenameToRoutes); err != nil {
 			logger.Warnw("Error processing script", "file", source.Filename, "error", err)
+			sourceErrors = append(sourceErrors, err)
 		}
 	}
 
@@ -56,21 +57,40 @@ func PreProcessAndPopulateConfigs() error {
 	// linking resources to the renderers
 	linkRendererResources()
 	prepareGojaRouteConfigs(tempConfigs, tempRouteSourceErrors)
-	prepareEsbuildRouteConfigs(tempConfigs, tempRouteSourceErrors)
+	activeAssetOwners, err := prepareEsbuildRouteConfigs(tempConfigs, tempRouteSourceErrors)
+	if err != nil {
+		return err
+	}
 	tempRoutePlans := compileRoutePlans(tempConfigs, logger)
 	generation := publishRouteSnapshot(tempConfigs, tempRoutePlans, tempRouteSourceErrors)
 	recordConfigDiagnosticsAtGeneration(sourceErrors, generation)
+	if len(sourceErrors) == 0 && len(tempRouteSourceErrors) == 0 && activeAssetOwners != nil {
+		runtimeAssetGate.Lock()
+		renderer := runtimeEsbuildRenderer()
+		err := renderer.ReconcileAssets(activeAssetOwners)
+		runtimeAssetGate.Unlock()
+		if err != nil {
+			return phaseError("asset_cleanup", err)
+		}
+	}
 
 	logger.Infof("Configurations loaded  count=%d", len(tempConfigs))
 	printFilenameToRoutesMapping(filenameToRoutes, tempConfigs)
 
-	// prepare for static rendering
 	if commands.RenderStatic {
-		if err := PrepareForStaticRendering(tempConfigs); err != nil {
-			return err
+		var failures []error
+		for _, items := range tempRouteSourceErrors {
+			for _, err := range items {
+				diagnostic, ok := shared.AsComponentError(err)
+				if !ok || !strings.EqualFold(diagnostic.Level, "warning") {
+					failures = append(failures, err)
+				}
+			}
+		}
+		if len(failures) > 0 {
+			return fmt.Errorf("static configuration has %d error(s): %v", len(failures), failures[0])
 		}
 	}
-
 	return nil
 }
 

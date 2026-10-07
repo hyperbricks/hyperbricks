@@ -247,7 +247,14 @@ func runDoctor(opts doctorOptions) doctorReport {
 	}
 
 	if module != nil {
-		checkDoctorMetadata(collector, module.PackageBytes, selection.Name, strings.TrimSpace(assets.VersionMD), report.Module.Config)
+		metadataContent := module.PackageBytes
+		if composed, err := shared.LoadPackageConfigSource(module.ConfigPath, module.Root, nil); err == nil && len(composed.Dependencies) > 1 {
+			hb, _ := composed.Materialized["hyperbricks"].(map[string]interface{})
+			if rendered, err := yaml.Marshal(map[string]interface{}{"hyperbricks": map[string]interface{}{"metadata": hb["metadata"]}}); err == nil {
+				metadataContent = rendered
+			}
+		}
+		checkDoctorMetadata(collector, metadataContent, selection.Name, strings.TrimSpace(assets.VersionMD), report.Module.Config)
 	} else {
 		for _, id := range []string{"metadata.identity", "metadata.module_version", "metadata.runtime_version", "metadata.source_fields", "build.provenance"} {
 			collector.simple(id, doctorSkip, "package metadata is unavailable")

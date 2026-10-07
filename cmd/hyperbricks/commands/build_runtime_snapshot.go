@@ -128,7 +128,7 @@ func PackageRuntimeSnapshot(opts RuntimeSnapshotOptions) (RuntimeSnapshotResult,
 			return result, err
 		}
 		builtAt := time.Now().UTC().Add(time.Duration(attempt) * time.Nanosecond).Format(time.RFC3339Nano)
-		artifact, err := packagemetadata.RenderArtifact(config, packagemetadata.ArtifactOptions{
+		artifact, err := renderPackageArtifact(config, configPath, snapshotRoot, packagemetadata.ArtifactOptions{
 			Module:        opts.Module,
 			Format:        "hra",
 			FormatVersion: "1",
@@ -222,6 +222,9 @@ func collectRuntimeSnapshotFiles(root string) ([]buildFile, error) {
 		return nil
 	})
 	if err != nil {
+		return nil, err
+	}
+	if err := verifyPackageArchiveInputs(root, files); err != nil {
 		return nil, err
 	}
 	sort.Slice(files, func(i, j int) bool { return files[i].rel < files[j].rel })

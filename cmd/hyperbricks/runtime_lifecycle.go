@@ -61,6 +61,9 @@ func runRuntimeMode(config *shared.Config) {
 		commands.ExitCode = 130
 	default:
 		commands.ReportError(err)
+		if errors.Is(err, errRuntimeInterrupt) {
+			commands.ExitCode = 130
+		}
 	}
 }
 
@@ -70,6 +73,7 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 	ctx, cancel := context.WithCancelCause(parent)
 	defer cancel(nil)
 	logger := logging.GetLogger().Named("server")
+	phase := "before_start"
 	var processes *developmentProcesses
 	var running *runtimeHTTPServer
 	var stopCacheControl func(context.Context) error
@@ -116,8 +120,13 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 			result = context.Cause(ctx)
 		}
 		if cleanupErr != nil {
-			result = errors.Join(result, fmt.Errorf("runtime cleanup: %w", cleanupErr))
+			if result == nil || result == context.Canceled {
+				phase = "cleanup"
+			}
+			result = errors.Join(result, phaseError("cleanup", cleanupErr))
 		}
+		closeRuntimeAssets()
+		result = finishOperation(config, enabled, "start", phase, staticExportResult{}, result)
 		logger.Info("Stopped")
 	}()
 
@@ -136,9 +145,10 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 			case <-ctx.Done():
 			}
 		}()
-		if err := processes.RunTasks(ctx, "before_start", config.Development.Hooks.BeforeStart); err != nil {
+		if err := processes.RunTasks(ctx, "before_start", config.HookTasks("before_start")); err != nil {
 			return err
 		}
+		phase = "services"
 		if err := processes.StartServices(ctx, config.Development.Services); err != nil {
 			return err
 		}
@@ -146,6 +156,7 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 		logger.Info("Development hooks and services are disabled; use start --with-processes to enable them")
 	}
 
+	phase = "initialize"
 	// Preparation may execute a compiler/plugin. Cancellation must still let the
 	// CLI clean up its children if an in-process dependency does not cooperate.
 	prepared := make(chan error, 1)
@@ -188,6 +199,7 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 	}
 	initStaticFileServer(newRequestRateLimiter(config.RateLimit))
 	var err error
+	phase = "start_http"
 	running, err = startRuntimeHTTPServer()
 	if err != nil {
 		return err
@@ -203,8 +215,9 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 		case <-ctx.Done():
 		}
 	}()
+	phase = "after_start"
 	if processes != nil {
-		if err := processes.RunTasks(ctx, "after_start", config.Development.Hooks.AfterStart); err != nil {
+		if err := processes.RunTasks(ctx, "after_start", config.HookTasks("after_start")); err != nil {
 			return err
 		}
 	}
@@ -220,6 +233,7 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 			return err
 		}
 	}
+	phase = "serve"
 	logger.Info("Started")
 	select {
 	case <-ctx.Done():

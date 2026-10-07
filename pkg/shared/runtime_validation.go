@@ -15,6 +15,9 @@ func (config *Config) ValidateRuntimeSettings() error {
 	if config == nil {
 		return fmt.Errorf("runtime configuration is required")
 	}
+	if config.packageLoadError != nil {
+		return config.packageLoadError
+	}
 	if config.diskCacheConfigError != nil {
 		return config.diskCacheConfigError
 	}
