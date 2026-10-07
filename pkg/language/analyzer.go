@@ -109,8 +109,13 @@ func NewAnalyzer(opts AnalyzerOptions) *Analyzer {
 // Diagnostics validates a single editor buffer. documents is an optional map
 // of URI to unsaved content used as an overlay while imports are loaded.
 func (a *Analyzer) Diagnostics(uri, text string, documents map[string]string) []Diagnostic {
-	if a.isPackageConfig(uri) {
-		if _, err := shared.ValidatePackageConfigBytesWithResourceReader([]byte(text), a.moduleRoot(), a.readResourceFile); err != nil {
+	reader := a.packageReader(uri, text, documents)
+	if entry := a.owningPackageEntry(uri, reader); entry != "" {
+		raw, err := reader(entry)
+		if err == nil {
+			_, err = shared.ValidatePackageConfigBytesAt(raw, entry, a.moduleRoot(), reader)
+		}
+		if err != nil {
 			return []Diagnostic{diagnosticFromError(text, err, "yaml.configuration")}
 		}
 		return nil
@@ -576,7 +581,7 @@ func (a *Analyzer) packageConfig() map[string]interface{} {
 		return nil
 	}
 	paths := a.basePathMarkers()
-	result, err := yamlparser.ProcessConfigBytes(raw, yamlparser.Options{
+	result, err := yamlparser.ProcessPackageConfigBytes(raw, configPath, root, yamlparser.Options{
 		Variables:                map[string]string{"module": root},
 		TemplateDir:              paths.Templates,
 		Paths:                    paths,
@@ -676,6 +681,94 @@ func (a *Analyzer) hasEnabledPlugins() bool {
 		return strings.TrimSpace(value) != ""
 	default:
 		return false
+	}
+}
+
+// owningPackageEntry identifies imported fragments even when their pending
+// contents are invalid. Traversal is source-only and uses the same overlay.
+func (a *Analyzer) owningPackageEntry(uri string, read func(string) ([]byte, error)) string {
+	target, err := uriToPath(uri)
+	if err != nil {
+		return ""
+	}
+	if a.isPackageConfig(uri) {
+		return target
+	}
+	entry := a.config
+	if !filepath.IsAbs(entry) {
+		entry = filepath.Join(a.moduleRoot(), entry)
+	}
+	seen := map[string]bool{}
+	var reaches func(string) bool
+	reaches = func(path string) bool {
+		path, err := a.confinedPath(path)
+		if err != nil {
+			return false
+		}
+		key := canonicalPath(path)
+		if key == canonicalPath(target) {
+			return true
+		}
+		if seen[key] {
+			return false
+		}
+		seen[key] = true
+		raw, err := read(path)
+		if err != nil {
+			return false
+		}
+		var doc yaml.Node
+		if yaml.Unmarshal(raw, &doc) != nil || len(doc.Content) != 1 {
+			return false
+		}
+		body := doc.Content[0]
+		if body.Kind != yaml.MappingNode {
+			return false
+		}
+		for i := 0; i < len(body.Content); i += 2 {
+			if body.Content[i].Value != "imports" || body.Content[i+1].Kind != yaml.SequenceNode {
+				continue
+			}
+			for _, item := range body.Content[i+1].Content {
+				if item.Kind == yaml.ScalarNode && item.Tag == "!!str" && reaches(filepath.Join(filepath.Dir(path), item.Value)) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	if reaches(entry) {
+		return entry
+	}
+	return ""
+}
+
+// packageReader confines both unsaved overlays and disk reads to the module.
+func (a *Analyzer) packageReader(uri, text string, documents map[string]string) func(string) ([]byte, error) {
+	overlays := map[string][]byte{}
+	add := func(uri, text string) {
+		path, err := uriToPath(uri)
+		if err != nil {
+			return
+		}
+		path, err = a.confinedPath(path)
+		if err == nil {
+			overlays[canonicalPath(path)] = []byte(text)
+		}
+	}
+	for uri, text := range documents {
+		add(uri, text)
+	}
+	add(uri, text)
+	return func(path string) ([]byte, error) {
+		path, err := a.confinedPath(path)
+		if err != nil {
+			return nil, err
+		}
+		if content, ok := overlays[canonicalPath(path)]; ok {
+			return append([]byte(nil), content...), nil
+		}
+		return os.ReadFile(path)
 	}
 }
 

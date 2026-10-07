@@ -16,6 +16,10 @@ type ConfigResult struct {
 	Preprocessed string
 	Materialized map[string]interface{}
 	Diagnostics  []Diagnostic
+	Sources      map[string]ConfigSource
+	Dependencies []string
+	Origins      map[string]ConfigOrigin
+	Unresolved   *yaml.Node
 }
 
 // ProcessConfigFile loads and materializes a generic HyperBricks YAML

@@ -8,14 +8,15 @@ import (
 )
 
 var (
-	RenderStatic    bool
-	ServeStatic     bool
-	ForceStatic     bool
-	ExportZip       bool
-	ExportOutDir    string
-	ExportExclude   string
-	StaticWizard    bool
-	StaticServePort int
+	StaticWithProcesses bool
+	RenderStatic        bool
+	ServeStatic         bool
+	ForceStatic         bool
+	ExportZip           bool
+	ExportOutDir        string
+	ExportExclude       string
+	StaticWizard        bool
+	StaticServePort     int
 )
 
 func NewMakeStaticCommand() *cobra.Command {
@@ -36,6 +37,7 @@ func NewMakeStaticCommand() *cobra.Command {
 	}
 
 	// Add flags
+	cmd.Flags().BoolVar(&StaticWithProcesses, "with-processes", false, "Run configured static and finish tasks")
 	cmd.Flags().BoolVar(&ServeStatic, "serve", false, "Serve static output after rendering completes")
 	cmd.Flags().BoolVar(&ForceStatic, "force", false, "Overwrite rendered output without confirmation")
 	cmd.Flags().BoolVar(&ExportZip, "zip", false, "Export rendered output as a zip file")

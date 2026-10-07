@@ -339,6 +339,12 @@ hyperbricks static -m demo --zip --force
 The `--force ` option automatically overrides the exported files in `rendered/`.
 Type `hyperbricks static --help` for all static options.
 
+## Adjust package settings
+
+Run `hyperbricks settings -m demo` for an interactive settings menu with descriptions, effective values, and source locations. Review pending changes before saving, then restart the application. One package file is enough; imports are optional when configuration grows. See [Package Configuration](PACKAGE_CONFIGURATION.md#editing-settings-interactively).
+
+Native esbuild output cleanup is automatic for startup/restart and static export. No cleanup hook is required. Use the component's `cache_keep` option when older fingerprinted generations must remain available; see [Native esbuild](ESBUILD.md#versioned-output).
+
 ## Next Steps
 
 - [Package Configuration](PACKAGE_CONFIGURATION.md): configure runtime modes, developer access, caching, and module directories.

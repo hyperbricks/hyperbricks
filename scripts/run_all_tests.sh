@@ -90,6 +90,9 @@ go vet ./...
 announce "Running Go package tests, including test/dedicated..."
 go test ./...
 
+announce "Running configuration lifecycle integration..."
+python3 "${SCRIPT_DIR}/test_configuration_lifecycle.py"
+
 announce "Running Docker-backed dedicated API render tests..."
 bash "${SCRIPT_DIR}/run_api_fragment_render_tests_docker.sh"
 

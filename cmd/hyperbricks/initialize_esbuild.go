@@ -9,11 +9,12 @@ import (
 )
 
 // Preparation binds effective inherited configs without compiling any assets.
-func prepareEsbuildRouteConfigs(routes map[string]map[string]interface{}, diagnostics map[string][]error) {
+func prepareEsbuildRouteConfigs(routes map[string]map[string]interface{}, diagnostics map[string][]error) (map[string]int, error) {
 	renderer, ok := rm.GetRenderComponent(component.EsbuildConfigGetName()).(*component.EsbuildRenderer)
 	if !ok {
-		return
+		return nil, nil
 	}
+	renderer.SetAssetProtection(protectRuntimeAsset)
 	renderer.Invalidate()
 	type preparedRoute struct {
 		route    string
@@ -72,12 +73,25 @@ func prepareEsbuildRouteConfigs(routes map[string]map[string]interface{}, diagno
 			}
 		}
 	}
+	active := map[string]int{}
+	valid := true
 	for _, item := range prepared {
 		if err := item.prepared.Err(); err != nil {
-			_, errors := item.prepared.Render(nil)
-			addRouteSourceErrors(diagnostics, item.route, errors)
+			valid = false
+			_, failures := item.prepared.Render(nil)
+			addRouteSourceErrors(diagnostics, item.route, failures)
+		} else {
+			output, _ := item.prepared.BuildIdentity()
+			keep := item.prepared.RetainedGenerations()
+			if previous, ok := active[output]; !ok || keep > previous {
+				active[output] = keep
+			}
 		}
 	}
+	if !valid {
+		return nil, nil
+	}
+	return active, nil
 }
 
 func isEsbuildOutput(path string) bool {

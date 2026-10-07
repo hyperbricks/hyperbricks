@@ -88,6 +88,12 @@ func ensureDirectoriesExist(directories map[string]string) error {
 			continue
 		}
 		info, err := os.Stat(dir)
+		if os.IsNotExist(err) && (name == "static" || name == "render") {
+			if err := os.MkdirAll(dir, 0755); err != nil {
+				return fmt.Errorf("create output directory %s: %w", name, err)
+			}
+			continue
+		}
 		if err != nil {
 			return fmt.Errorf("required directory %s (%s): %w; run hyperbricks init to create missing directories", name, runtimeLogPath(dir), err)
 		}

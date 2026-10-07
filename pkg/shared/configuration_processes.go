@@ -46,7 +46,7 @@ const developmentProcessesPath = "hyperbricks.development"
 
 // HasDevelopmentProcesses reports whether this package declares any commands.
 func (c *Config) HasDevelopmentProcesses() bool {
-	return c != nil && (len(c.Development.Hooks.BeforeStart)+len(c.Development.Hooks.AfterStart)+len(c.Development.Services) > 0)
+	return c != nil && (len(c.HookTasks("before_start"))+len(c.HookTasks("after_start"))+len(c.Hooks.Finish)+len(c.Development.Services) > 0)
 }
 
 // ValidateDevelopmentProcesses performs host-independent structural validation.
@@ -83,8 +83,7 @@ func (c *Config) ValidateDevelopmentProcesses() error {
 			if key == "" || strings.ContainsAny(key, "=\x00") {
 				return fmt.Errorf("%s.env has an invalid environment variable name", path)
 			}
-			switch key {
-			case "PATH", "HB_EXECUTABLE", "HB_MODULE_ROOT", "HB_SERVER_PORT":
+			if ReservedProcessEnv(key) {
 				return fmt.Errorf("%s.env.%s is reserved and cannot be overridden", path, key)
 			}
 			if strings.ContainsRune(env[key], '\x00') {
@@ -96,9 +95,12 @@ func (c *Config) ValidateDevelopmentProcesses() error {
 	for _, list := range []struct {
 		name  string
 		tasks []DevelopmentTaskConfig
-	}{{"before_start", c.Development.Hooks.BeforeStart}, {"after_start", c.Development.Hooks.AfterStart}} {
+	}{{"before_start", c.HookTasks("before_start")}, {"after_start", c.HookTasks("after_start")}, {"before_static", c.Hooks.BeforeStatic}, {"after_static", c.Hooks.AfterStatic}, {"finish", c.Hooks.Finish}} {
 		for i, task := range list.tasks {
-			path := fmt.Sprintf("%s.hooks.%s[%d]", developmentProcessesPath, list.name, i)
+			path := fmt.Sprintf("hyperbricks.hooks.%s[%d]", list.name, i)
+			if (list.name == "before_start" && c.Hooks.BeforeStart == nil) || (list.name == "after_start" && c.Hooks.AfterStart == nil) {
+				path = fmt.Sprintf("%s.hooks.%s[%d]", developmentProcessesPath, list.name, i)
+			}
 			if err := validateCommand(task.Name, task.Command, task.Cwd, task.Env, path); err != nil {
 				return err
 			}
@@ -351,7 +353,7 @@ func validateDevelopmentProcessResolverDiagnostics(result *yamlparser.ConfigResu
 	if len(failures) == 0 {
 		return nil
 	}
-	paths := []string{developmentProcessesPath + ".hooks", developmentProcessesPath + ".services"}
+	paths := []string{"hyperbricks.hooks", developmentProcessesPath + ".hooks", developmentProcessesPath + ".services"}
 	var source yaml.Node
 	if err := yaml.Unmarshal([]byte(result.Preprocessed), &source); err != nil {
 		return &developmentProcessesSourceError{err}
@@ -389,6 +391,7 @@ func validateDevelopmentProcessResolverDiagnostics(result *yamlparser.ConfigResu
 			}
 		}
 		development := developmentProcessSourceField(developmentProcessSourceField(root, "hyperbricks"), "development")
+		collectReferences(developmentProcessSourceField(developmentProcessSourceField(root, "hyperbricks"), "hooks"))
 		collectReferences(developmentProcessSourceField(development, "hooks"))
 		collectReferences(developmentProcessSourceField(development, "services"))
 	}
@@ -470,6 +473,11 @@ func validateDevelopmentProcessSourceTypes(source string) error {
 	hooks := lookup(development, "hooks")
 	for _, phase := range []string{"before_start", "after_start"} {
 		if err := checkEntries(lookup(hooks, phase), developmentProcessesPath+".hooks."+phase); err != nil {
+			return err
+		}
+	}
+	for _, phase := range []string{"before_start", "after_start", "before_static", "after_static", "finish"} {
+		if err := checkEntries(lookup(lookup(lookup(root.Content[0], "hyperbricks"), "hooks"), phase), "hyperbricks.hooks."+phase); err != nil {
 			return err
 		}
 	}

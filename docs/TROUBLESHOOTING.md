@@ -165,3 +165,22 @@ shutdown ordering, environment boundaries, and exit codes.
 ## An older configuration is rejected
 
 Check [Migration Guide](MIGRATION.md) for removed response fields and changed API authentication settings. Update reusable definitions as well as the routes that inherit them.
+
+## Package imports and settings conflicts
+
+- **Import fails:** paths are relative to the importing file and must remain within the module, including symlinks. Check the named file, declaration order, duplicate keys, and import cycles. Imported files must contain one YAML mapping document.
+- **A list entry disappeared:** lists replace rather than concatenate. A later definition or the entry package replaces the imported list, including an explicit empty list.
+- **Build rejects an imported input:** the archive filters excluded a file required by the import graph. Include that source in the package inputs; build refuses to create an archive whose imports are missing.
+- **Settings refuses to save:** a source changed, moved, was deleted, or changed its symlink target after opening. Pending edits remain available for review. Ctrl+R reloads compatible edits; use `D` to explicitly discard/reload when ownership changed, then reapply the intended edit. Missing imports are never silently recreated.
+- **Only some settings files saved:** the error identifies completed writes. Review the remaining pending files after fixing the reported write problem; multi-file saves are not all-or-nothing transactions.
+
+## Generated asset retention
+
+- **Old fingerprints remain:** `cache_keep` counts previous successful generations. Cached responses, active renders, and current exported pages can protect additional generations. Unrecorded legacy assets and handwritten files are deliberately not inferred from their names.
+- **Output is in use by another operation:** stop the runtime/export writing that same static root, or use a separate output root. OS locks release when the owning process exits.
+- **Ownership storage unavailable or invalid:** restore access to the private esbuild cache directory and keep it outside static. Do not delete ownership records as routine cleanup; they contain the evidence needed to safely identify generated files.
+- **An edited generated file survives cleanup:** its contents no longer match the recorded output. HyperBricks preserves it and releases ownership instead of deleting external changes.
+
+## Static hooks and finish
+
+Static hooks require `static --with-processes`; asset housekeeping does not. Put publishing in `after_static`, which runs only after a successful export. Use `HB_OUTCOME`, `HB_FAILED_PHASE`, and `HB_EXIT_CODE` in finish scripts to distinguish errors from controlled cancellation. Finish runs after owned cleanup with a fresh timeout context, and cannot be guaranteed after SIGKILL or machine failure.

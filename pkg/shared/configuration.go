@@ -1,6 +1,7 @@
 package shared
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -89,16 +90,18 @@ const PackageConfigFileName = "package.hyperbricks.yaml"
 // remain in defaultPackageConfig and section decoders, not in a second schema.
 // Package metadata and static-export settings have separate consumers.
 type Config struct {
-	Mode                 string            `mapstructure:"mode" description:"Runtime mode: development, live, or debug. Startup options can override this value; a profile filename does not select a mode." example:"development"`
-	Logger               LoggerConfig      `mapstructure:"logger" description:"Runtime logging level, output format, and optional log file. Logging CLI options can override the configured level and format." example:"{level: info, format: console}"`
-	Server               ServerConfig      `mapstructure:"server" description:"HTTP listener, connection handling, rendering defaults, routing, runtime gateway, and process-wide CPU parallelism." example:"{port: 8080, gomaxprocs: auto}"`
-	RateLimit            RateLimitConfig   `mapstructure:"rate_limit" description:"Process-level token-bucket request limiter, independent of rendered-output caching." example:"{enabled: true, requests_per_second: 100, burst: 500}"`
-	Development          DevelopmentConfig `mapstructure:"development" description:"Source watching and developer interfaces. Interface enablement, authentication, and write permissions are separate settings." example:"{watch: true, watch_dirs: [hyperbricks, templates, resources]}"`
-	Debug                DebugConfig       `mapstructure:"debug" description:"Legacy debug configuration container with no exported configurable fields. Use mode: debug and logger settings instead." example:"{}"`
-	Live                 LiveConfig        `mapstructure:"live" description:"Live-mode rendered-output caching. Browser and reverse-proxy caching are configured separately through HTTP headers." example:"{cache: 10m}"`
-	Directories          map[string]string `mapstructure:"directories" description:"Named filesystem directories including hyperbricks, templates, resources, static, render, plugins, and cache. Cache defaults to the module's private .cache directory and is excluded from deployment artifacts. Bare relative paths use the invocation directory; use a module-based path resolver for module-owned files." example:"{resources: {path: {base: module, path: resources}}}"`
-	Plugins              PluginsConfig     `mapstructure:"plugins" description:"Compiled plugin names to preload and optional plugin-specific configuration. Built-in Spaces does not require a plugin." example:"{enabled: [ExamplePlugin@1.0.0]}"`
-	System               SystemConfig      `mapstructure:"system" description:"Internal runtime service settings, including the developer metrics sampling interval." example:"{metrics_watch_interval: 10s}"`
+	Hooks                LifecycleHooksConfig `mapstructure:"hooks" description:"Finite startup, static-export, and finish tasks. Commands run only with the operation process opt-in; built-in asset management needs no hooks." example:"{finish: [{name: report, command: [sh, report.sh]}]}"`
+	Mode                 string               `mapstructure:"mode" description:"Runtime mode: development, live, or debug. Startup options can override this value; a profile filename does not select a mode." example:"development"`
+	Logger               LoggerConfig         `mapstructure:"logger" description:"Runtime logging level, output format, and optional log file. Logging CLI options can override the configured level and format." example:"{level: info, format: console}"`
+	Server               ServerConfig         `mapstructure:"server" description:"HTTP listener, connection handling, rendering defaults, routing, runtime gateway, and process-wide CPU parallelism." example:"{port: 8080, gomaxprocs: auto}"`
+	RateLimit            RateLimitConfig      `mapstructure:"rate_limit" description:"Process-level token-bucket request limiter, independent of rendered-output caching." example:"{enabled: true, requests_per_second: 100, burst: 500}"`
+	Development          DevelopmentConfig    `mapstructure:"development" description:"Source watching and developer interfaces. Interface enablement, authentication, and write permissions are separate settings." example:"{watch: true, watch_dirs: [hyperbricks, templates, resources]}"`
+	Debug                DebugConfig          `mapstructure:"debug" description:"Legacy debug configuration container with no exported configurable fields. Use mode: debug and logger settings instead." example:"{}"`
+	Live                 LiveConfig           `mapstructure:"live" description:"Live-mode rendered-output caching. Browser and reverse-proxy caching are configured separately through HTTP headers." example:"{cache: 10m}"`
+	Directories          map[string]string    `mapstructure:"directories" description:"Named filesystem directories including hyperbricks, templates, resources, static, render, plugins, and cache. Cache defaults to the module's private .cache directory and is excluded from deployment artifacts. Bare relative paths use the invocation directory; use a module-based path resolver for module-owned files." example:"{resources: {path: {base: module, path: resources}}}"`
+	Plugins              PluginsConfig        `mapstructure:"plugins" description:"Compiled plugin names to preload and optional plugin-specific configuration. Built-in Spaces does not require a plugin." example:"{enabled: [ExamplePlugin@1.0.0]}"`
+	System               SystemConfig         `mapstructure:"system" description:"Internal runtime service settings, including the developer metrics sampling interval." example:"{metrics_watch_interval: 10s}"`
+	packageLoadError     error
 	frontendEditingError error
 	dashboardConfigError error
 	processesConfigError error
@@ -222,22 +225,29 @@ func loadHyperBricksConfiguration() *Config {
 
 	runtimeOptions := GetRuntimeOptions()
 	moduleDir := runtimeModuleRoot(runtimeOptions)
+	if runtimeOptions.ModuleRoot == "" {
+		moduleDir = filepath.Dir(configFilePath)
+	}
 	parsedConfig, err := LoadPackageConfigMap(configFilePath, moduleDir)
 	var processesSourceError error
 	if _, ok := err.(*developmentProcessesSourceError); ok {
 		processesSourceError = err
 	}
 	if err != nil {
-		GetLogger().Warnw("Failed to load package configuration; using defaults", "file", logging.ModulePath(moduleDir, configFilePath), "error", logging.ModuleText(moduleDir, err.Error()))
+		GetLogger().Warnw("Package configuration is invalid; runtime startup is blocked", "file", logging.ModulePath(moduleDir, configFilePath), "error", logging.ModuleText(moduleDir, err.Error()))
 		parsedConfig = map[string]interface{}{}
 	}
 	parser.HbConfig = parsedConfig
 
 	config, decodeErr := decodePackageConfig(parsedConfig, moduleDir)
+	if err != nil {
+		config.packageLoadError = err
+	}
 	if processesSourceError != nil {
 		config.processesConfigError = processesSourceError
 	}
 	if decodeErr != nil {
+		config.packageLoadError = errors.Join(config.packageLoadError, decodeErr)
 		GetLogger().Errorw("Failed to decode configuration", "file", logging.ModulePath(moduleDir, configFilePath), "error", logging.ModuleText(moduleDir, decodeErr.Error()))
 	}
 	applyRuntimeOptions(config, runtimeOptions)
@@ -251,7 +261,7 @@ func loadHyperBricksConfiguration() *Config {
 // uses the same defaults, typed decoding, and runtime overrides as normal
 // startup, while returning errors that startup may log or recover from.
 func LoadPackageConfigStrict(configFilePath string, moduleDir string) (*Config, error) {
-	result, err := yamlparser.ProcessConfigFile(configFilePath, packageConfigYAMLOptions(moduleDir))
+	result, err := yamlparser.ProcessPackageConfigFile(configFilePath, moduleDir, packageConfigYAMLOptions(moduleDir))
 	if err != nil {
 		return nil, fmt.Errorf("load package configuration: %w", err)
 	}
@@ -263,7 +273,7 @@ func LoadPackageConfigStrict(configFilePath string, moduleDir string) (*Config, 
 // It is intended for editors that validate what will be persisted rather than
 // the effective configuration of the process performing the validation.
 func ValidatePackageConfigBytes(input []byte, moduleDir string) (*Config, error) {
-	result, err := yamlparser.ProcessConfigBytes(input, packageConfigYAMLOptions(moduleDir))
+	result, err := yamlparser.ProcessPackageConfigBytes(input, filepath.Join(moduleDir, PackageConfigFileName), moduleDir, packageConfigYAMLOptions(moduleDir))
 	if err != nil {
 		return nil, fmt.Errorf("load package configuration: %w", err)
 	}
@@ -278,17 +288,24 @@ func ValidatePackageConfigBytesWithResourceReader(input []byte, moduleDir string
 	if readFile == nil {
 		return nil, fmt.Errorf("resource reader is required")
 	}
+	return ValidatePackageConfigBytesAt(input, filepath.Join(moduleDir, PackageConfigFileName), moduleDir, readFile)
+}
+
+// ValidatePackageConfigBytesAt validates an unsaved entry/profile using its actual
+// origin and the caller-controlled reader for both imports and resources.
+func ValidatePackageConfigBytesAt(input []byte, origin, moduleDir string, readFile func(string) ([]byte, error)) (*Config, error) {
 	options := packageConfigYAMLOptions(moduleDir)
 	options.ResourceReadFile = readFile
 	options.SkipTemplateRegistration = true
-	result, err := yamlparser.ProcessConfigBytes(input, options)
+	result, err := yamlparser.ProcessPackageConfigBytes(input, origin, moduleDir, options)
 	if err != nil {
 		return nil, fmt.Errorf("load package configuration: %w", err)
 	}
 	return validatePackageConfigResult(result, moduleDir, RuntimeOptions{}, false)
 }
 
-func validatePackageConfigResult(result *yamlparser.ConfigResult, moduleDir string, runtimeOptions RuntimeOptions, applyOverrides bool) (*Config, error) {
+func validatePackageConfigResult(result *yamlparser.ConfigResult, moduleDir string, runtimeOptions RuntimeOptions, applyOverrides bool) (configResult *Config, resultErr error) {
+	defer func() { resultErr = packageErrorOrigin(result, resultErr) }()
 	for _, diagnostic := range result.Diagnostics {
 		if strings.EqualFold(diagnostic.Level, "error") {
 			return nil, fmt.Errorf("load package configuration: %s at %s: %s", diagnostic.Code, diagnostic.Path, diagnostic.Message)
@@ -457,11 +474,12 @@ func normalizePackageMode(config *Config) {
 	}
 }
 
-func LoadPackageConfigMap(configFilePath string, moduleDir string) (map[string]interface{}, error) {
-	result, err := yamlparser.ProcessConfigFile(configFilePath, packageConfigYAMLOptions(moduleDir))
+func LoadPackageConfigMap(configFilePath string, moduleDir string) (configMap map[string]interface{}, resultErr error) {
+	result, err := yamlparser.ProcessPackageConfigFile(configFilePath, moduleDir, packageConfigYAMLOptions(moduleDir))
 	if err != nil {
 		return nil, err
 	}
+	defer func() { resultErr = packageErrorOrigin(result, resultErr) }()
 	if err := validateDevelopmentProcessSourceTypes(result.Preprocessed); err != nil {
 		return nil, err
 	}
@@ -505,6 +523,13 @@ func decodeConfigWithPolicy(input interface{}, output interface{}, strict bool) 
 		}
 		defer func() { config.Live.DiskCache = diskCache }()
 
+		lifecycle, err := decodeLifecycleHooks(input)
+		config.Hooks = lifecycle
+		config.processesConfigError = err
+		if err != nil {
+			return err
+		}
+		defer func() { config.Hooks = lifecycle }()
 		hooks, services, err := decodeDevelopmentProcesses(input)
 		config.processesConfigError = err
 		config.Development.Hooks, config.Development.Services = hooks, services
@@ -584,4 +609,37 @@ func decodeConfigWithPolicy(input interface{}, output interface{}, strict bool) 
 	}
 
 	return decoder.Decode(input)
+}
+
+// LoadPackageConfigSource exposes the same composition to source tooling without
+// initializing runtime state or applying process overrides.
+func LoadPackageConfigSource(origin, module string, readFile func(string) ([]byte, error)) (*yamlparser.ConfigResult, error) {
+	opts := packageConfigYAMLOptions(module)
+	opts.ResourceReadFile = readFile
+	opts.SkipTemplateRegistration = true
+	return yamlparser.ProcessPackageConfigFile(origin, module, opts)
+}
+
+func packageErrorOrigin(result *yamlparser.ConfigResult, err error) error {
+	if err == nil || result == nil {
+		return err
+	}
+	best := ""
+	for path := range result.Origins {
+		if path != "" && strings.Contains(err.Error(), path) && len(path) > len(best) {
+			best = path
+		}
+	}
+	if best == "" {
+		return err
+	}
+	origin := result.Origins[best]
+	if origin.File == "" {
+		return err
+	}
+	decorated := fmt.Errorf("%s:%d:%d: %w", origin.File, origin.Line, origin.Column, err)
+	if _, ok := err.(*developmentProcessesSourceError); ok {
+		return &developmentProcessesSourceError{decorated}
+	}
+	return decorated
 }
