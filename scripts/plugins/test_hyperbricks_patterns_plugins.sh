@@ -19,9 +19,13 @@ trap cleanup EXIT
 
 cd "$ROOT_DIR"
 
+# Launch the compiled runtime directly so cleanup owns the actual server PID.
+env GOWORK=off HYPERBRICKS_LOCAL_PATH="$ROOT_DIR" \
+  go build -o "$TMP_DIR/hyperbricks" ./cmd/hyperbricks
+
 echo "Starting HyperBricks plugin smoke runtime on port $PORT..."
 env GOWORK=off HYPERBRICKS_LOCAL_PATH="$ROOT_DIR" \
-  go run ./cmd/hyperbricks start -m "$MODULE_NAME" -p "$PORT" --non-interactive \
+  "$TMP_DIR/hyperbricks" start -m "$MODULE_NAME" -p "$PORT" --non-interactive \
   >"$SERVER_LOG" 2>&1 &
 SERVER_PID="$!"
 

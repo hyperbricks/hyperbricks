@@ -1,8 +1,8 @@
 <!-- Generated from docs/DEVELOPMENT_HOOKS.md. Do not edit directly. -->
 
-# Development hooks and managed services
+# Lifecycle hooks and managed services
 
-Use development hooks to prepare a module and check the running application.
+Use lifecycle hooks to prepare a module, check the running application, publish a successful static export, and finalize an operation.
 Use managed services to run a local API or microservice for the same development
 session. HyperBricks owns the processes it starts and stops them on shutdown.
 
@@ -12,7 +12,7 @@ Execution is optional and explicit:
 hyperbricks start -m my-module --with-processes
 ```
 
-The flag enables both hooks and services. Ordinary `start` executes neither.
+For startup, the flag enables hooks and services. Ordinary `start` executes neither. Static hooks use their own explicit `static --with-processes` flag and do not launch development services.
 This feature requires HyperBricks v1.2.9-beta or newer. Check
 `hyperbricks start --help` for `--with-processes` before trying the examples;
 build the current checkout if your installed binary does not have the flag.
@@ -116,7 +116,7 @@ Fields apply to each hook or service unless identified otherwise.
 
 | Field | Required | Meaning / default |
 | --- | --- | --- |
-| `name` | Yes | Readable identifier, unique across both hook lists and all services. Appears in diagnostics and child output. |
+| `name` | Yes | Readable identifier, unique across all hook lists and services. Appears in diagnostics and child output. |
 | `command` | Yes | Nonempty argument list; first item is the executable. Command strings are rejected. |
 | `cwd` | No | Selected module directory by default. Explicit values use normal resolvers; relative results are normalized against the invocation directory. |
 | `env` | No | String map of overrides for this child, after resolver evaluation. Inherits the parent environment. |
@@ -163,7 +163,7 @@ Setting it only in a service's `env` does not change the parent's endpoint.
 2. Start services and wait for readiness; initialize components and plugins;
    begin HTTP serving; run `after_start` hooks; enable normal source reloads.
 3. On interruption or failure, stop reloads, finish bounded HTTP shutdown, then
-   stop services in reverse order and collect child exit results.
+   stop services in reverse order and collect child exit results. Run `finish` after owned cleanup.
 
 `after_start` can request the running site. HTTP is already accepting requests
 at that point, so a failed verification cannot undo requests already served.
@@ -214,7 +214,8 @@ runner does not continuously poll health or restart it.
 | `start --with-processes --production` / effective live mode | Rejects process execution before spawning. |
 | Deployment-managed runtime, including development preview | Does not execute them; attempted opt-in is rejected. |
 | `init`, `init-starter`, `doctor`, `author`, editor validation | Does not execute them. |
-| Build, static export/serving, deployment packaging | Does not execute them. |
+| `static --with-processes` | Runs static lifecycle tasks, including finish; does not start development services. |
+| Ordinary static export/serving, build, deployment packaging, settings | Does not execute them. |
 | Template/source reload | Does not execute them again. |
 
 `--with-processes` executes module-authored commands with the current user's OS
@@ -263,3 +264,52 @@ failure takes precedence over an otherwise clean interruption.
 
 See [Troubleshooting](TROUBLESHOOTING.md#development-hooks-or-managed-services-do-not-start)
 and the [CLI start reference](HYPERBRICKS_CLI.md#development-hooks-and-services).
+
+## General lifecycle configuration
+
+The general `hyperbricks.hooks` namespace supports the following finite task lists. Existing `hyperbricks.development.hooks.before_start` and `after_start` remain compatible. A phase must be declared in only one namespace, including explicit empty lists; duplicate declarations fail validation.
+
+| Phase | Runs when | Failure behavior |
+| --- | --- | --- |
+| `before_start` | Before services and component/plugin initialization. | Skip later startup phases; clean up and finish. |
+| `after_start` | Services are ready and HTTP accepts requests. | Stop the session, clean up, and finish. |
+| `before_static` | Package and export choices are validated, before component initialization. | Skip rendering and publishing; clean up and finish. |
+| `after_static` | Rendering, owned-asset cleanup, asset copying, and requested ZIP creation all succeeded. | Report failure; finish still runs. |
+| `finish` | After owned cleanup, on success, failure, or controlled cancellation. | A finish failure makes an otherwise successful operation fail; original failures remain reported. |
+
+```yaml
+hyperbricks:
+  hooks:
+    before_static:
+      - name: prepare-content
+        command: [python3, scripts/prepare_content.py]
+        timeout: 1m
+    after_static:
+      - name: publish-export
+        command: [python3, scripts/publish_export.py]
+        timeout: 2m
+    finish:
+      - name: record-result
+        command: [python3, scripts/record_result.py]
+        timeout: 10s
+```
+
+Run with `hyperbricks static -m demo --force --zip --with-processes`. Publishing belongs in `after_static`; it is skipped on initialization, render, asset cleanup, copy, or ZIP failure. `finish` is suitable for reporting and application-specific finalization. Native esbuild asset cleanup is built in and runs without process opt-in.
+
+All interactive export choices are collected before execution. Declining the export or failing package validation does not enter the lifecycle and runs no hook. If `--serve` is selected, `after_static` runs before preview serving and `finish` runs after it stops. A full CLI restart creates a new startup lifecycle; source reloads do not.
+
+### Result context
+
+In addition to the child context above, HyperBricks supplies these reserved environment variables. Tasks cannot override them through `env`.
+
+| Variable | Value |
+| --- | --- |
+| `HB_OPERATION` | `start` or `static`. |
+| `HB_HOOK_PHASE` | The current task phase. |
+| `HB_RENDER_DIR` | Absolute output directory for static operations. |
+| `HB_EXPORT_ZIP` | Absolute ZIP path after successful ZIP creation; empty when unavailable. |
+| `HB_OUTCOME` | In finish: `success`, `failure`, or `cancelled`. |
+| `HB_FAILED_PHASE` | In finish: phase that failed; empty for success or cancellation alone. |
+| `HB_EXIT_CODE` | In finish: outcome code before finish itself runs (`0`, `1`, or `130` for interruption). |
+
+Static tasks do not receive `HB_SERVER_PORT`: export preparation has no live application listener. The result is richer than a binary exit status: outcome and failed phase distinguish cancellation, failure, and success. Finish receives a fresh bounded context so cancellation of the operation does not immediately cancel finalization. Each finish task still has its own timeout. Forced process termination or machine failure cannot guarantee finalization.

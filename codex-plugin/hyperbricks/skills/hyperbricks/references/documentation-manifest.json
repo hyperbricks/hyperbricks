@@ -2,7 +2,7 @@
   "schema_version": 2,
   "hyperbricks_version": "v1.3.0-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_digest": "9e2255d7d1edd0cbe607fe036aeb32ba73100507ebcd11428b851964e861ddc6",
+  "source_digest": "6fff73dba2d25bc6a6d250f4882be5e8bc932afbe022db2d6606cbc83c10016b",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
@@ -13,14 +13,14 @@
     {
       "source_path": "docs/QUICKSTART.md",
       "bundled_path": "docs/QUICKSTART.md",
-      "source_sha256": "1cfece9d0301c8a97e002e467ce6cef7fb1bbf730dac3ad86c50853469f4cba9",
-      "bundled_sha256": "35707b7cb5539e0f5c7a81984f3e856c8f8bf4fdcb3606e5595b693da9854b5d"
+      "source_sha256": "633643a14f497a25e2b1e800eea8aea1eb29cc966b659e997e8efe78f22f5f11",
+      "bundled_sha256": "67941a8eefacb6b7524f15a062c1688de901239e21afed0bbc4e9756bd618068"
     },
     {
       "source_path": "docs/PACKAGE_CONFIGURATION.md",
       "bundled_path": "docs/PACKAGE_CONFIGURATION.md",
-      "source_sha256": "6d4975fc248f7f6dc17106bc378a3703f862a46e44ef79f20b63004a9b142db7",
-      "bundled_sha256": "be4d8ca3b5d021a382806220466134f1d4137d390441272b2f3883da49133ad6"
+      "source_sha256": "526b0b3b7600584f0d2a5eb361847cb376ede8a40f3a4200945353ccab2d39ea",
+      "bundled_sha256": "427979ae7b2e0d4d2e873de2f0728d4633c92637371d71c0e8c0354fda677252"
     },
     {
       "source_path": "docs/HOWTOS.md",
@@ -31,8 +31,8 @@
     {
       "source_path": "docs/TROUBLESHOOTING.md",
       "bundled_path": "docs/TROUBLESHOOTING.md",
-      "source_sha256": "f4bebaec3f0f279ac050efe2734453130469c154d8b1f33c3f374569af80c2a4",
-      "bundled_sha256": "2dd452dd07253dfe4d302bd1906dab2a45c4c263c64224be876fb022805975e5"
+      "source_sha256": "ca0837687d0efa97a6ca79ee956420f17b18d0ee60653efc29fdb8b75aa9e13c",
+      "bundled_sha256": "5a092c32cc2b20381099c0e30245001b2d70a53a3bb6de78bb800efcf520605b"
     },
     {
       "source_path": "docs/ROUTING.md",
@@ -43,8 +43,8 @@
     {
       "source_path": "docs/REFERENCE.md",
       "bundled_path": "docs/REFERENCE.md",
-      "source_sha256": "5bb283c8bdb3492d32981e065e87616411812c507c2c98550a1fa00775c0b6f8",
-      "bundled_sha256": "2527ec2bf26405fbe05d2b14f416070c2e5e18c67633860c1d83a10633a7fb68"
+      "source_sha256": "90f655c291c53806e96bce46073b8fe545b497df8825932f0935841e90b39a4d",
+      "bundled_sha256": "b4fa601d49528299a055669fcde4ec368cba2f25de680aae760ff989e10f8842"
     },
     {
       "source_path": "docs/MARKDOWN.md",
@@ -85,14 +85,14 @@
     {
       "source_path": "docs/ESBUILD.md",
       "bundled_path": "docs/ESBUILD.md",
-      "source_sha256": "855c216473903a4f0c497386b756cd2f1b7d869a123999e4dca1b3d79de1a3d1",
-      "bundled_sha256": "e99e3a49355233bdf661050899cfb6f4237f1b7b15de2f9d1f8996db96994b1d"
+      "source_sha256": "1fea74cbee063977c2fa79faa65f967a87fe2719db547cb7707e12c7187fec3c",
+      "bundled_sha256": "0eb5515ad396e9bda8b4fe78bbc2975e55c289fbd7ba6f965606f026209a68ec"
     },
     {
       "source_path": "docs/DEVELOPMENT_HOOKS.md",
       "bundled_path": "docs/DEVELOPMENT_HOOKS.md",
-      "source_sha256": "4c338f03b2d76acac57b6b51da29c201c83089f840b7e27530d5268959293659",
-      "bundled_sha256": "d87797343f1d4383f77380073bc383705b45e0baf2dfbcda2ee77e4c45b5b8b5"
+      "source_sha256": "69b7bb40c3f315a071121d66535d7b36d00835b206f1f3b324393454cbe2c38b",
+      "bundled_sha256": "01f65ec3c040c95c2e1d436b7470cb4d4f6bb4f6f7e23fb09e17d0548a423f4d"
     },
     {
       "source_path": "docs/DEPLOY.md",
@@ -139,8 +139,8 @@
     {
       "source_path": "docs/HYPERBRICKS_CLI.md",
       "bundled_path": "docs/HYPERBRICKS_CLI.md",
-      "source_sha256": "85a92010b8440e74731744d8ed3c561e07bbdd7e89d37e6889bbfa25738dcca3",
-      "bundled_sha256": "26ce5f511489422d8d09f2e6ab1036d574df9f1879b4ae04155249bc0cbd252e"
+      "source_sha256": "bd8af4e393b439dfcb7d66b8ba92ce421a35b086e4d1d75e04513d1123a75167",
+      "bundled_sha256": "8f7ea9da3e688c48aac0e764ab56a2c15a64696091d918aa9e447b39b6ea14a0"
     },
     {
       "source_path": "docs/HYPERBRICKS_TYPE_EXAMPLES.md",

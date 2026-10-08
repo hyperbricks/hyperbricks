@@ -53,7 +53,7 @@ This serves the existing demo module on port `8081` in debug mode, using its nor
 hyperbricks doctor -m demo --config profiles/preview.hyperbricks.yaml
 ```
 
-The selected file supplies the complete package configuration. Omitted settings use runtime defaults; HyperBricks does not merge it over `package.hyperbricks.yaml`. Copy the default package file as a starting point when you want to retain its custom directory, plugin, or application settings.
+The selected file supplies the complete package configuration. Omitted settings use runtime defaults; HyperBricks does not merge it over `package.hyperbricks.yaml`. Import the default package explicitly when you want to retain its custom directory, plugin, or application settings.
 
 The `--config` path is relative to the selected module directory. Absolute paths and paths that escape through `..` are rejected. A file in `profiles/` still uses the selected module as its `module` path base; its source and asset directories do not move into `profiles/`.
 
@@ -67,10 +67,32 @@ The current CLI treats `--port 8080` as its default value and leaves a different
 
 Omit `--config` to use `package.hyperbricks.yaml` again. Restart the process after editing whichever package file it uses.
 
+## Optional Package Imports
+
+A single package file remains fully supported. Larger packages can import mapping fragments outside the component-source directory:
+
+```yaml
+imports:
+  - config/runtime.hyperbricks.yaml
+  - config/development.hyperbricks.yaml
+
+hyperbricks:
+  mode: development
+```
+
+Each fragment uses the same `hyperbricks`, `vars`, and `myconf` mappings as the entry package. Imports are literal relative filenames, resolved relative to the containing file. Nested imports are supported; paths must remain inside the selected module, including after resolving symlinks. Globs, remote URLs, and resolver expressions in import filenames are not supported.
+
+Imports apply in declaration order, with each document's own values applied after its imports. Mappings merge recursively; later scalars and whole lists replace earlier ones. `[]` clears an inherited list. Recognized resolver expressions are replaced as a unit. Explicit null replaces an inherited value and undergoes the normal field validation; it does not delete a key. Duplicate keys within any file and circular imports are errors. A shared import reached through two branches is applied at each declared position.
+
+Variables resolve after the complete merge, so an entry-file variable override can supply an imported setting. Import locations do not change existing path bases such as `{base: module}`. The selected `--config` file remains the entry point; a profile may explicitly import `../package.hyperbricks.yaml`.
+
+Restart after editing either the entry or an imported file. Editor validation uses pending imported-file contents and reports source ownership. Runtime archives preserve configuration fragments at their module-relative paths, and imported changes participate in build hashes. A build rejects an import filtered out by archive exclusions instead of creating a package with missing inputs; keep configuration fragments in an included directory such as `config/`.
+
 ## Top-Level Values and Resolvers
 
 | Key | Purpose |
 | --- | --- |
+| `imports` | Optional ordered list of package configuration fragments. |
 | `hyperbricks` | Runtime settings described in this document. |
 | `myconf` | Application-owned configuration that components can read through the `config` resolver. |
 | `vars` | Inputs for value resolvers. They are not copied into the materialized configuration. |
@@ -247,3 +269,15 @@ hyperbricks:
 To require developer login, set both referenced environment variables before starting the module. With both absent, Spaces opens without login and startup warns; Dashboard remains disabled in this example. Set `development.dashboard.enabled: true` under `hyperbricks` to expose its Overview and Errors views too.
 
 Run `hyperbricks doctor -m demo` to check the module configuration and read any warnings. See [Migration](MIGRATION.md) when updating a package written for an older HyperBricks version.
+
+## Editing settings interactively
+
+Run `hyperbricks settings -m demo` to inspect effective settings, built-in defaults, descriptions, and the source file defining each value. Use `--config package.preview.hyperbricks.yaml` to select another entry. Navigate with Enter to open a section or edit a setting, and Esc to return to the parent. A breadcrumb shows your location, and each section remembers its selected item. Search with `/` across all sections; review/save remains available at every level. The editor uses the same package composition and validation as runtime loading.
+
+A normal edit changes the winning definition in its owning file. Choose **override in entry** to keep an imported definition unchanged and write an explicit override in the selected package. Lists replace whole lists; overriding a list item copies the effective list into the entry first. Removing a definition exposes an inherited value or built-in default. Values supplied by resolvers retain their expressions unless explicitly edited.
+
+Changes remain pending until reviewed and saved. Saving checks every loaded source's bytes and canonical path before writing, then revalidates the complete package. If an import changes, moves, disappears, or resolves through a different symlink while the editor is open, saving stops without recreating the missing import. Reload can retain pending edits only where source identity and ownership still match. Otherwise review the pending edits, then explicitly discard/reload and reapply them to the new source.
+
+Writes are atomic per file and preserve permissions. A multi-file save is not a filesystem transaction: if a later write fails, the editor reports which files were saved and keeps the remaining edits pending. Settings changes take effect on a full application restart. Opening, validating, and saving settings never runs lifecycle tasks or asset builds.
+
+A single `package.hyperbricks.yaml` remains the default. Imports are optional; the settings command does not split files or introduce a second configuration system.

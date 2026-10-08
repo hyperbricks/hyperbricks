@@ -875,11 +875,12 @@ Native JavaScript, TypeScript, and CSS bundling with lazy cached or per-render b
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `binary` | `string` | no | Optional external esbuild executable; empty uses the embedded Go API. |
 | `cache` | `bool` | no | True reuses valid builds; false rebuilds on every component render. Default false. Independent of page caching. |
+| `cache_keep` | `int` | no | Previous successful output generations to retain in addition to current. Default zero. Active renders and cached responses protect referenced assets. |
 | `debug` | `bool` | no | Log effective build options, engine, and cache diagnostics. |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
 | `entry` | `string` | yes | Source filename. Use path with an explicit resources base. |
 | `external` | `list` | no | Import or asset URL patterns to leave unbundled, e.g. /static/vendor/*. |
-| `fingerprint` | `bool` | no | Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Old assets are retained. |
+| `fingerprint` | `bool` | no | Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Obsolete owned generations are pruned after successful replacement. |
 | `loader` | `map` | no | Extension loader overrides, e.g. .woff2: file or .png: dataurl. |
 | `mangle` | `bool` | no | Advanced: mangle JavaScript properties using .*; may break external property contracts. Default false; not allowed for CSS-only entries. |
 | `minify` | `bool` | no | Minify whitespace and syntax. Default false. |

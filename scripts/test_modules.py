@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import signal
 import subprocess
 import sys
 import socket
@@ -88,6 +89,19 @@ def free_port() -> int:
         return sock.getsockname()[1]
 
 
+def stop_process_group(process):
+    # go run may exit before its compiled child; signal the entire session.
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        os.killpg(process.pid, signal.SIGKILL)
+        process.wait()
+
+
 def check_module(check: ModuleCheck) -> list[str]:
     runtime_port = check.port if check.name == "api-security-test" else free_port()
     env = os.environ.copy()
@@ -100,10 +114,11 @@ def check_module(check: ModuleCheck) -> list[str]:
         fixture = subprocess.Popen(
             ["go", "run", "./modules/api-security-test/tools/mock-api", "-port", "8098", "-redirect-port", "8099"],
             cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            start_new_session=True,
         )
         time.sleep(1)
     process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT, text=True)
+                               stderr=subprocess.STDOUT, text=True, start_new_session=True)
     base = f"http://127.0.0.1:{runtime_port}"
     errors: list[str] = []
     try:
@@ -137,19 +152,9 @@ def check_module(check: ModuleCheck) -> list[str]:
                 if marker.lower() not in body.lower():
                     errors.append(f"GET {path}: missing marker {marker!r}")
     finally:
-        process.terminate()
-        try:
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait()
+        stop_process_group(process)
         if fixture is not None:
-            fixture.terminate()
-            try:
-                fixture.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                fixture.kill()
-                fixture.wait()
+            stop_process_group(fixture)
     return errors
 
 

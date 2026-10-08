@@ -19,6 +19,18 @@ Changes since `v1.2.9-beta`.
   snapshots now exclude `.cache` and configured module-local cache directories.
   See the [migration guide](docs/MIGRATION.md#upgrade-to-v130-beta).
 
+### Configuration and lifecycle
+
+- Compose package settings through ordered imports and edit their owning files
+  with the tree-based `hyperbricks settings` menu, including change review and
+  protection against external edits or moved imports.
+- Run opt-in startup and static-export hooks with a final outcome notification
+  through `finish`, including failure and cancellation details.
+- Automatically remove obsolete fingerprinted esbuild assets after successful
+  builds while preserving active, retained, and unrelated files. Use `cache_keep`
+  to retain previous generations.
+- Add configuration lifecycle integration coverage to Linux and macOS CI.
+
 ### Development tools
 
 - Open an enabled Dashboard, Errors, and their diagnostics in development/debug
