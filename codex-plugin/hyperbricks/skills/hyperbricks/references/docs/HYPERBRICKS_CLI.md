@@ -25,6 +25,7 @@ hyperbricks version
 | `init`         | Create the embedded module or maintain existing package metadata           | [↗](#init-and-init-starter)                     |
 | `init-starter` | Install an official starter module                                         | [↗](#init-starter-install-an-official-starter) |
 | `scaffold`     | Bubble Tea wizard for root composites and components                       | [↗](#scaffold)                                 |
+| `settings` | Inspect and edit effective package settings with source-aware saving | [↗](#settings) |
 | `author`       | Create and extend configuration through JSON specs for agents and automation | [↗](#author)                                   |
 | `space`        | Create an inheriting hypermedia Space from an existing source              | [↗](#space)                                    |
 | `doctor`       | Diagnose a source module's static readiness before running or building      | [↗](#doctor)                                   |
@@ -710,8 +711,7 @@ This flag enables `hyperbricks.development.hooks.before_start`,
 `hooks.after_start`, and `development.services` for a direct development/debug
 session. HyperBricks waits for readiness and stops its child services during
 shutdown. The flag is rejected in live mode and deployment-managed launches.
-Without it, configured commands do not execute. Build, static export, authoring,
-and inspection do not run these commands either.
+Without it, configured commands do not execute. Build, authoring, settings, and inspection do not run these commands. Static export has a separate explicit `--with-processes` option for static lifecycle tasks.
 
 See [Development hooks and managed services](DEVELOPMENT_HOOKS.md) for the complete
 configuration, readiness, process ownership, and exit-code contract. The
@@ -1114,3 +1114,40 @@ hyperbricks --non-interactive static -m demo --force
 ```
 
 This disables keyboard-driven prompts where supported.
+
+## Settings
+
+```sh
+hyperbricks settings -m demo
+hyperbricks settings -m demo --config package.preview.hyperbricks.yaml
+```
+
+Omit `-m` for the module picker. The command requires an interactive terminal. Navigate sections as a tree: Enter opens a section or edits a setting, and Esc cancels an edit or returns one level. The breadcrumb shows the current section; returning restores your selection. Each level shows only its direct children. The menu shows effective values, defaults, descriptions, and source ownership. Boolean and mode fields offer choices; collections and resolver expressions use YAML input. Hook/service entries can be added, edited, reordered, and removed without executing their commands.
+
+| Key | Action |
+| --- | --- |
+| `/` | Search names and descriptions across all sections; Esc returns to your previous location. |
+| Enter | Open a section or edit the selected source definition. |
+| Esc | Cancel editing or return to the parent section; at the root, stay in settings. |
+| `e` | Edit a collection/task as YAML (also available inside an empty collection). |
+| `o` | Create an override in the selected package entry. |
+| `d` | Remove the selected definition or task. |
+| `a` | Add a task/service to the selected list or the list currently open. |
+| `[` / `]` | Move a selected task/service entry. |
+| Ctrl+S | Stage a text/YAML edit. |
+| `r` | Review changes by file; Enter in review saves. |
+| Ctrl+R | Reload sources while retaining compatible pending changes. |
+| `D` | Confirm discarding pending edits and reloading. |
+| `q` | Exit; pending edits require a discard choice. |
+
+Saving checks the full import graph for external changes, including moved/deleted files and changed symlink targets. Conflicts keep pending edits for review. See [package settings editing](PACKAGE_CONFIGURATION.md#editing-settings-interactively) for write ownership and partial-save behavior.
+
+### Static lifecycle opt-in
+
+```sh
+hyperbricks static -m demo --force --zip --with-processes
+```
+
+`--with-processes` enables `before_static`, `after_static`, and `finish`. It does not start development services. Without this flag static export still manages native esbuild assets automatically. Export errors skip `after_static`, so publishing tasks cannot run on a failed export. See [lifecycle hooks](DEVELOPMENT_HOOKS.md#general-lifecycle-configuration) for ordering and result context.
+
+The interactive static wizard collects overwrite consent, ZIP destination/exclusions, and serving choices before rendering starts. Declining overwrite cancels the operation.

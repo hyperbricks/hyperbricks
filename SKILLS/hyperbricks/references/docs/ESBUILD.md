@@ -96,7 +96,8 @@ All ten esbuild 2.0.0 plugin options are retained. `target`, `loader`, `external
 | `sourcemap` | `false` | Emit a linked `.map` file, including source text. Consider source exposure before publishing. |
 | `debug` | `false` | Log effective options, build/cache events, and external engine version when applicable. |
 | `cache` | `false` | False builds on every component render; true reuses a valid build. Not page caching. |
-| `fingerprint` | `false` | Add an esbuild content hash to entry output filenames. Keep the configured directory and retain older assets. Independent of `cache`. |
+| `fingerprint` | `false` | Add an esbuild content hash to entry output filenames. Keep the configured directory; generation retention is controlled by `cache_keep`. Independent of `cache`. |
+| `cache_keep` | `0` | Number of previous successful output generations retained in addition to current. Must be nonnegative. Independent of build reuse. |
 | `target` | `[]` | esbuild browser/language targets. Empty keeps engine defaults; not a universal compatibility guarantee. |
 | `loader` | `{}` | File-extension to loader overrides. |
 | `external` | `[]` | Unbundled import/URL patterns, with at most one `*` per pattern. |
@@ -139,7 +140,11 @@ Identical builds with the same engine and paths keep the same names. Changed emi
 
 `cache: false` still compiles every render, even with fingerprinting. Conversely, `cache: true` can reuse builds with either fixed or versioned filenames.
 
-All files are published before the component returns the URL. New versions leave previous versions available for older HTML. There is no automatic pruning or `cache_keep` option. Deploy cleanup must account for old pages, browser caches, and rollbacks; retaining old files locally does not guarantee your deployment tool retains them remotely.
+All files are published before the component returns the URL. Built-in cleanup keeps the current successful generation by default. Set `cache_keep: 2` on a component to retain two previous successful generations as well. A generation includes its entry, linked source maps, CSS siblings, and file-loader assets. Unchanged builds and cache hits do not create duplicate generations. A failed compile preserves the last successful output.
+
+Start, restart, reload, and static export reconcile recorded ownership. Removing a component makes its recorded generations eligible for cleanup. In-flight rendering, cached HTML responses, and pages in the current static export protect their referenced generations. No cleanup hook or plugin is needed. Browser/CDN caches and previously downloaded HTML are outside this local protection: choose a retention value appropriate to your deployment and rollback policy.
+
+Cleanup only removes files recorded as owned by esbuild, within the static root, whose contents still match the recorded output. Handwritten files and unrecorded legacy fingerprints are left alone. Shared files remain while any retained generation needs them. Existing valid native manifests can supply ownership for migration; filenames alone never establish ownership.
 
 ## Persistent build cache
 
@@ -151,7 +156,9 @@ At first use after restart or a new `static` command, HyperBricks validates the 
 
 No sources means no validated runtime build reuse: this is not a source-free server mode. A deployed static export, however, needs only its exported assets. Moving a checkout or changing effective paths starts a separate cache identity.
 
-Deleting manifests is safe; later renders rebuild. If the cache directory cannot be used, HyperBricks logs a warning and keeps working with in-memory caching. Build failures still return component errors, never a stale success tag. Builds are coordinated within a module renderer, not across separate OS processes; do not run independent writers against the same fixed output directory.
+Build manifests control reuse; a separate generation record in the same private cache directory records ownership even with `cache: false`. Deleting this record loses the evidence needed to clean up outputs that cannot be recovered from valid manifests. Prefer letting HyperBricks maintain it.
+
+Ownership storage must be writable and outside static. Invalid history, an unavailable directory, or a competing operation holding the same output-root lock fails explicitly. Runtime sessions and static exports hold an OS file lock until cleanup; standalone component builds lock their publication operation. Separate processes must not write the same output root concurrently. Build failures return component errors, never a stale success tag.
 
 ## Development watch
 
@@ -174,7 +181,7 @@ For the original development workflow, use `cache: false`: every component rende
 
 If a build fails, HyperBricks reports the error and tries again on the next render. Files from the last successful build stay available and are not replaced by a broken build.
 
-HyperBricks finishes writing generated files before returning their URL. Give each build its own `outfile`, keep generated output separate from source files, and make sure the static output directory is writable. Fingerprinted files are kept so older pages can still load them; remove obsolete files during deployment when needed.
+HyperBricks finishes writing generated files before returning their URL. Give each build its own `outfile`, keep generated output separate from source files, and make sure the static output directory is writable. Generation retention handles owned fingerprints automatically; remote deployment retention remains the responsibility of your publishing workflow.
 
 Keep entry paths and build options in trusted application configuration rather than creating them from request data.
 
