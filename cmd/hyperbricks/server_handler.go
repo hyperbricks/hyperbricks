@@ -7,13 +7,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	if contextualEditingRequested(r) && !requireDeveloperInterfaceAuth(w, r) {
+	if contextualEditingRequested(r) && !shared.RequireSpacesAuth(w, r, getHyperBricksConfiguration().Development.Dashboard.Credentials) {
 		return
 	}
 
@@ -46,11 +47,12 @@ func handleRenderDiagnosticsEndpoint(w http.ResponseWriter, r *http.Request) boo
 	if "/"+strings.Trim(r.URL.Path, "/") != renderDiagnosticsPath {
 		return false
 	}
-	if shared.GetHyperBricksConfiguration().Mode == shared.LIVE_MODE {
+	mode := getHyperBricksConfiguration().Mode
+	if (mode != shared.DEVELOPMENT_MODE && mode != shared.DEBUG_MODE) || shared.GetRuntimeOptions().Production || commands.RenderStatic {
 		http.NotFound(w, r)
 		return true
 	}
-	if !requireDeveloperInterfaceAuth(w, r) {
+	if !requireDashboardAuth(w, r) {
 		return true
 	}
 	if r.URL.Query().Get("view") == "current" {

@@ -85,6 +85,6 @@ Filenames include a fingerprint of the source bytes and processing settings, fol
 
 Do not construct generated filenames in templates. Use the HTML returned by the component. Old generated files remain available for already-rendered pages; image processing does not delete previous versions. After an upgrade from the older basename-only naming scheme, regenerate and deploy HTML together with its static assets. Remove unused generations as part of a controlled rebuild or deployment cleanup.
 
-In live mode, a cached page can continue referencing its earlier image until the page is rendered again. See [live caching](LIVE_MODE_HTTP.md#expiry-updates-and-memory) when planning content updates, and [static export configuration](HYPERBRICKS_CLI.md#package-configuration) when generating a static site.
+In live mode, a cached page can continue referencing its earlier image until the page is rendered again. See [live caching](LIVE_MODE_HTTP.md#storage-expiry-and-cleanup) when planning content updates, and [static export configuration](HYPERBRICKS_CLI.md#package-configuration) when generating a static site.
 
 The complete field list is generated in the [component reference](REFERENCE.md#image).

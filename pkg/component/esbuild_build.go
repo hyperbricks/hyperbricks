@@ -47,6 +47,12 @@ func (s *esbuildStore) build(ctx context.Context, p *PreparedEsbuild) (string, e
 	// A waiting cached request checks the result again after the first build ends.
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	unlock, err := s.lockAssetOperation()
+	if err != nil {
+		s.assetFailure = err
+		return "", err
+	}
+	defer unlock()
 	if err := ctx.Err(); err != nil {
 		return "", err
 	}
@@ -54,6 +60,9 @@ func (s *esbuildStore) build(ctx context.Context, p *PreparedEsbuild) (string, e
 		if result := s.results[p.key]; result != nil && result.valid() {
 			if p.debug {
 				logging.GetLogger().Infow("esbuild cache hit", "entry", p.spec.Entry)
+			}
+			if err := s.retain(p, result); err != nil {
+				return "", err
 			}
 			return result.entry, nil
 		}
@@ -74,6 +83,9 @@ func (s *esbuildStore) build(ctx context.Context, p *PreparedEsbuild) (string, e
 			s.results[p.key] = result
 			if p.debug {
 				logging.GetLogger().Infow("esbuild persistent cache hit", "entry", p.spec.Entry)
+			}
+			if err := s.retain(p, result); err != nil {
+				return "", err
 			}
 			return result.entry, nil
 		}
@@ -127,6 +139,9 @@ func (s *esbuildStore) build(ctx context.Context, p *PreparedEsbuild) (string, e
 		s.persist(p, engine, result)
 	} else {
 		delete(s.results, p.key)
+	}
+	if err := s.retain(p, result); err != nil {
+		return "", err
 	}
 	return entry, nil
 }

@@ -22,7 +22,9 @@ CHANGES.md
 docker/ssh/authorized_keys
 *.pdf
 /output/
-/benchmarks/
+/internal-benchmarks/
+/benchmarks/**/results/
+/benchmarks/**/__pycache__/
 /test-results.txt
 /test/docs/yaml_documentation_test_results.txt
 .env

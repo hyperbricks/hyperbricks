@@ -235,7 +235,7 @@ func (s *service) snapshot(c *catalog) (Snapshot, error) {
 		if d.effective["@type"] != "<HYPERMEDIA>" {
 			continue
 		}
-		fields, err := SourceFields(d.effective)
+		fields, err := SourceFields(d.effective, s.dirs)
 		if err != nil {
 			return snap, fmt.Errorf("source %s: %w", name, err)
 		}
@@ -309,13 +309,23 @@ func (s *service) space(c *catalog, e importEntry) (Space, error) {
 		return space, fmt.Errorf("Space %s is not hypermedia", name)
 	}
 	space.Title, space.Route = str(effective["title"]), str(effective["route"])
-	fields, err := schemaFields(d.effective)
+	fields, err := schemaFields(d.effective, s.dirs)
 	if err != nil {
 		return space, err
 	}
 	for i := range fields {
-		fields[i].Value = str(getMap(effective, fields[i].Path))
-		fields[i].Default = str(getMap(d.effective, fields[i].Path))
+		// Validate the effective instance against the source-owned target policy.
+		target := fields[i]
+		if err := configureFieldTarget(effective, &target); err != nil {
+			return space, fmt.Errorf("field %s: %w", target.ID, err)
+		}
+		if target.imageSource != fields[i].imageSource || target.markdownFile != fields[i].markdownFile || target.markdownMaxBytes != fields[i].markdownMaxBytes {
+			return space, fmt.Errorf("field %s changed its source-owned target semantics", target.ID)
+		}
+		fields[i].Value, err = fieldValue(effective, fields[i], s.dirs)
+		if err != nil {
+			return space, fmt.Errorf("field %s: %w", fields[i].ID, err)
+		}
 	}
 	space.Fields = fields
 	space.Meta = metaMap(effective)

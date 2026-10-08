@@ -2,6 +2,59 @@
 
 Use this guide when updating an older configuration to the current component contracts. Apply only the changes that affect your project. The examples describe configuration changes; they do not assign every change to a particular release interval.
 
+## Upgrade to v1.3.0-beta
+
+### Route cache durations now take effect
+
+A page or ordinary fragment's scalar `cache: 30s` now means memory storage with a 30-second route lifetime. Earlier versions accepted that field but used the package's `hyperbricks.live.cache` duration instead. Existing routes with explicit durations can therefore refresh more often or retain output longer after upgrading. Remove the route field to retain the package lifetime. `cache: 0s` now disables output caching for that route.
+
+The equivalent expanded form is `cache: {storage: mem, expire: 30s}`. Use `storage: disk` to store response bodies on disk. Package `live.cache: 0s`, route `nocache: true`, and the development/debug mode bypass still take priority. Invalid scalar values now produce configuration errors; replace unused placeholder strings with a duration or remove the field.
+
+`.cache` is now a built-in exclusion for module deployment archives and runtime snapshots. Configured cache directories inside the module are excluded too. Keep application source and required assets outside cache directories. See [output caching](LIVE_MODE_HTTP.md#output-cache) and [deployment exclusions](DEPLOY.md#response-cache-files-and-deployment).
+
+
+### Developer access and Spaces defaults
+
+With `development.dashboard.enabled: true` in development or debug mode,
+Dashboard Overview, Errors, and their diagnostic data now open without login
+when both `development.dashboard.credentials.user` and `.password` are absent.
+Startup and `doctor` warn that anyone who can reach the server can view them.
+The server listens on all network interfaces; configure both credentials before
+exposing these views on a network where access needs to be restricted.
+
+A configured account still requires Basic Auth. A partial account remains
+locked with `503`; an unresolved environment variable can produce this state.
+If both environment values resolve empty, the dashboard opens without login and
+warns. Diagnostics still require credentials when the Dashboard is disabled.
+
+Spaces and contextual editing now follow the same optional-login policy in
+development **and debug** mode, even with the Dashboard disabled. Their existing
+host and write-origin checks still apply. Localhost and loopback work by default;
+add a server hostname or IP to `spaces.allowed_hosts` for LAN access. This list
+controls the server address, not the clients allowed to connect.
+
+**Spaces writes now default to `true`.** If a module relied on an omitted `write`
+setting for read-only access, add an explicit `false` before upgrading:
+
+```yaml
+hyperbricks:
+  development:
+    frontend_editing:
+      spaces:
+        write: false
+```
+
+Existing explicit `write: false` settings keep their behavior. Spaces enablement
+and its parent switch still default to `true`; setting either
+`frontend_editing.enabled: false` or `spaces.enabled: false` disables Spaces and
+contextual editing. Set both developer credentials to require login.
+
+Frontend-editor plugins and frontend error panels still require credentials
+and remain development-only. Live mode, production runtimes, and static output
+do not expose developer interfaces. Restart after changing configuration or
+credential environment variables. See [Spaces configuration](SPACES.md#development-configuration)
+for the access table, LAN setup, and `public_origin`.
+
 ## Upgrade from v1.2.4-beta to v1.2.5-beta
 
 ### Replace the dashboard Boolean and configure developer access
@@ -30,12 +83,15 @@ hyperbricks:
 
 Set both environment variables before starting the module. For a previously
 disabled dashboard, use `enabled: false`; `dashboard: false` is also rejected.
-The shared credentials protect Dashboard, Errors, and Spaces. Missing or empty
-credentials leave enabled developer interfaces locked with HTTP 503; incorrect
+The shared credentials protect Dashboard, Errors, and Spaces. In v1.2.5-beta,
+missing or empty credentials leave enabled developer interfaces locked with HTTP 503; incorrect
 or absent browser credentials receive an HTTP 401 Basic Auth challenge once the
 account is configured. These are module credentials, separate from deployment
 service credentials. Use HTTPS or a private encrypted connection for non-loopback
 access because Basic Auth does not encrypt credentials.
+
+For the optional Dashboard login introduced later, see
+[Upgrade to v1.3.0-beta](#upgrade-to-v130-beta).
 
 Restart the module after changing its settings, and update the
 [dashboard URL](#update-developer-dashboard-links). See

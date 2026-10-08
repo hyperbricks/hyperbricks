@@ -42,6 +42,7 @@ func TestEsbuildEmbeddedVersion(t *testing.T) {
 func TestEsbuildFingerprintFreshnessAndRestart(t *testing.T) {
 	r, cfg := esbuildFixture(t)
 	cfg.Fingerprint, cfg.Sourcemap, cfg.Enclose = true, true, ""
+	cfg.CacheKeep = 1
 	p := r.Prepare(cfg)
 	first := esbuildRender(t, p)
 	firstPath := esbuildURLPath(t, r, first)
@@ -114,6 +115,7 @@ func TestEsbuildFingerprintCSSAndAuxiliaryInvalidation(t *testing.T) {
 	cfg.Entry = filepath.Join(filepath.Dir(cfg.Entry), "site.css")
 	cfg.Outfile = filepath.Join(r.store.staticDir, "css", "site.css")
 	cfg.Enclose, cfg.Fingerprint, cfg.Sourcemap = "", true, true
+	cfg.CacheKeep = 1
 	cfg.Loader = map[string]string{".woff2": "file"}
 	esbuildWrite(t, cfg.Entry, `@import "./tokens.css"; @font-face {font-family: Demo; src: url("./font.woff2")}`)
 	esbuildWrite(t, filepath.Join(filepath.Dir(cfg.Entry), "tokens.css"), `body { color: red; }`)
@@ -275,6 +277,12 @@ func TestEsbuildPrivatePersistenceAndUnavailableCache(t *testing.T) {
 				}
 			}
 			p := r.Prepare(cfg)
+			if name != "private" {
+				if _, errs := p.Render(context.Background()); len(errs) == 0 {
+					t.Fatal("unsafe/unavailable ownership storage accepted")
+				}
+				return
+			}
 			esbuildRender(t, p)
 			esbuildRender(t, p)
 			if r.store.buildCount != 1 {

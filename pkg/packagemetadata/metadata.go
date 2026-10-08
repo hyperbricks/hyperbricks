@@ -90,6 +90,9 @@ type ReconcileOptions struct {
 
 // ArtifactOptions contains the provenance supplied by a build.
 type ArtifactOptions struct {
+	// ModuleVersion supplies the effective version from a composed package.
+	// Empty preserves single-document metadata validation.
+	ModuleVersion string
 	Module        string
 	Format        string
 	FormatVersion string
@@ -259,11 +262,15 @@ func RenderArtifact(content []byte, opts ArtifactOptions) (ArtifactResult, error
 	if body == nil || body.Kind != yaml.MappingNode {
 		return ArtifactResult{}, errors.New("package document must be a YAML mapping")
 	}
-	hyperbricks, err := requireMapping(body, "hyperbricks", "package")
+	mapping := requireMapping
+	if opts.ModuleVersion != "" {
+		mapping = ensureMapping
+	}
+	hyperbricks, err := mapping(body, "hyperbricks", "package")
 	if err != nil {
 		return ArtifactResult{}, err
 	}
-	metadata, err := requireMapping(hyperbricks, "metadata", "hyperbricks")
+	metadata, err := mapping(hyperbricks, "metadata", "hyperbricks")
 	if err != nil {
 		return ArtifactResult{}, err
 	}
@@ -271,6 +278,9 @@ func RenderArtifact(content []byte, opts ArtifactOptions) (ArtifactResult, error
 		return ArtifactResult{}, fmt.Errorf("hyperbricks.metadata: %w", err)
 	}
 
+	if opts.ModuleVersion != "" {
+		setMappingString(metadata, "moduleversion", opts.ModuleVersion, yaml.DoubleQuotedStyle)
+	}
 	moduleVersionNode, found, err := mappingField(metadata, "moduleversion")
 	if err != nil {
 		return ArtifactResult{}, fmt.Errorf("hyperbricks.metadata: %w", err)

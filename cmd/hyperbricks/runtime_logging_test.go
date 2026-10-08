@@ -81,32 +81,83 @@ func TestRuntimeSummaryAndRoutesStayCompactAtInfo(t *testing.T) {
 	}
 }
 
-func TestRuntimeSummaryCredentialWarningFollowsAvailableEditor(t *testing.T) {
+func TestRuntimeSummarySpacesAccessWarnings(t *testing.T) {
 	setupModuleLogTest(t)
 	oldRuntime := shared.GetRuntimeOptions()
-	runtime := oldRuntime
-	runtime.Production = false
-	shared.SetRuntimeOptions(runtime)
 	t.Cleanup(func() { shared.SetRuntimeOptions(oldRuntime) })
-	config := &shared.Config{Mode: shared.DEVELOPMENT_MODE}
-	config.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
-	config.Development.FrontendEditing.Spaces.Enabled = false
-	started := time.Now()
-	logRuntimeSummary(config)
-	for _, event := range logging.GetLogs() {
-		if !event.Time.Before(started) && strings.Contains(event.Message, "Developer interface locked") {
-			t.Fatal("disabled Spaces should not require developer credentials")
-		}
+	for _, scenario := range []struct {
+		name, mode                   string
+		credentials                  shared.CredentialsConfig
+		disableParent, disableSpaces bool
+		readOnly, externalEditor     bool
+		production, static           bool
+		wantTools                    bool
+		warnings                     []string
+	}{
+		{name: "open development", mode: shared.DEVELOPMENT_MODE, wantTools: true, warnings: []string{"Spaces and contextual editing are accessible without login through allowed hosts; write=true"}},
+		{name: "open debug", mode: shared.DEBUG_MODE, wantTools: true, warnings: []string{"Spaces and contextual editing are accessible without login through allowed hosts; write=true"}},
+		{name: "read only", mode: shared.DEVELOPMENT_MODE, readOnly: true, wantTools: true, warnings: []string{"Spaces and contextual editing are accessible without login through allowed hosts; write=false"}},
+		{name: "Spaces disabled", mode: shared.DEVELOPMENT_MODE, disableSpaces: true},
+		{name: "parent disabled", mode: shared.DEVELOPMENT_MODE, disableParent: true, externalEditor: true},
+		{name: "configured", mode: shared.DEVELOPMENT_MODE, credentials: developerTestCredentials, wantTools: true},
+		{name: "user only", mode: shared.DEVELOPMENT_MODE, credentials: shared.CredentialsConfig{User: "developer"}, wantTools: true, warnings: []string{"Developer interface locked"}},
+		{name: "password only", mode: shared.DEBUG_MODE, credentials: shared.CredentialsConfig{Password: "secret"}, wantTools: true, warnings: []string{"Developer interface locked"}},
+		{name: "live", mode: shared.LIVE_MODE, externalEditor: true},
+		{name: "production", mode: shared.DEVELOPMENT_MODE, production: true, externalEditor: true},
+		{name: "static", mode: shared.DEVELOPMENT_MODE, static: true, externalEditor: true},
+		{name: "external plugin locked", mode: shared.DEVELOPMENT_MODE, disableSpaces: true, externalEditor: true, warnings: []string{"Frontend editor plugins locked"}},
+		{name: "external plugin unavailable in debug", mode: shared.DEBUG_MODE, disableSpaces: true, externalEditor: true},
+		{name: "Spaces open and external plugin locked", mode: shared.DEVELOPMENT_MODE, externalEditor: true, wantTools: true, warnings: []string{"Spaces and contextual editing are accessible without login through allowed hosts; write=true", "Frontend editor plugins locked"}},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			config := &shared.Config{Mode: scenario.mode}
+			config.Development.Dashboard.Credentials = scenario.credentials
+			config.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
+			config.Development.FrontendEditing.Enabled = !scenario.disableParent
+			config.Development.FrontendEditing.Spaces.Enabled = !scenario.disableSpaces
+			config.Development.FrontendEditing.Spaces.Write = !scenario.readOnly
+			if scenario.externalEditor {
+				config.Development.FrontendEditing.Editors = map[string]shared.FrontendEditorConfig{"other": {Plugin: "Other@1", Route: "/__hyperbricks/other"}}
+			}
+			runtime := oldRuntime
+			runtime.Production, commands.RenderStatic = scenario.production, scenario.static
+			shared.SetRuntimeOptions(runtime)
+			started := time.Now()
+			logRuntimeSummary(config)
+			var warnings []string
+			var toolsMessage string
+			for _, event := range logging.GetLogs() {
+				if event.Time.Before(started) {
+					continue
+				}
+				if event.Level == zapcore.WarnLevel {
+					warnings = append(warnings, event.Message)
+				}
+				if strings.HasPrefix(event.Message, "Developer tools  ") {
+					toolsMessage = event.Message
+				}
+			}
+			if len(warnings) != len(scenario.warnings) {
+				t.Fatalf("warnings = %v, want %v", warnings, scenario.warnings)
+			}
+			for index, want := range scenario.warnings {
+				if !strings.Contains(warnings[index], want) {
+					t.Fatalf("warning = %q, want %q", warnings[index], want)
+				}
+			}
+			if scenario.wantTools {
+				want := "Developer tools  dashboard=disabled spaces=/__hyperbricks/spaces write=true"
+				if scenario.readOnly {
+					want = "Developer tools  dashboard=disabled spaces=/__hyperbricks/spaces write=false"
+				}
+				if toolsMessage != want {
+					t.Fatalf("tools summary = %q, want %q", toolsMessage, want)
+				}
+			} else if toolsMessage != "" {
+				t.Fatalf("disabled Spaces advertised in startup summary: %q", toolsMessage)
+			}
+		})
 	}
-	config.Development.FrontendEditing.Editors = map[string]shared.FrontendEditorConfig{"other": {Plugin: "Other@1", Route: "/__hyperbricks/other"}}
-	started = time.Now()
-	logRuntimeSummary(config)
-	for _, event := range logging.GetLogs() {
-		if !event.Time.Before(started) && strings.Contains(event.Message, "Developer interface locked") {
-			return
-		}
-	}
-	t.Fatal("enabled external editor should require developer credentials")
 }
 
 func TestRuntimeRoutesGroupedBySourceAndSorted(t *testing.T) {
@@ -156,5 +207,47 @@ func TestRenderLogUsesModuleRelativeLocations(t *testing.T) {
 	encoded, _ := json.Marshal(entry)
 	if strings.Contains(string(encoded), root) || strings.Contains(string(encoded), "private") || strings.Contains(string(encoded), "https://") {
 		t.Fatalf("non-relative event: %s", encoded)
+	}
+}
+
+func TestRuntimeSummaryDashboardCredentialWarnings(t *testing.T) {
+	setupModuleLogTest(t)
+	oldRuntime := shared.GetRuntimeOptions()
+	t.Cleanup(func() { shared.SetRuntimeOptions(oldRuntime) })
+	for _, scenario := range []struct {
+		name, mode, warning string
+		credentials         shared.CredentialsConfig
+		production, static  bool
+	}{
+		{"open development", shared.DEVELOPMENT_MODE, "accessible without login to anyone who can reach this server", shared.CredentialsConfig{}, false, false},
+		{"open debug", shared.DEBUG_MODE, "accessible without login to anyone who can reach this server", shared.CredentialsConfig{}, false, false},
+		{"partial account", shared.DEVELOPMENT_MODE, "Developer interface locked", shared.CredentialsConfig{User: "developer"}, false, false},
+		{"configured", shared.DEVELOPMENT_MODE, "", developerTestCredentials, false, false},
+		{"live", shared.LIVE_MODE, "", shared.CredentialsConfig{}, false, false},
+		{"production", shared.DEVELOPMENT_MODE, "", shared.CredentialsConfig{}, true, false},
+		{"static", shared.DEVELOPMENT_MODE, "", shared.CredentialsConfig{}, false, true},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			config := &shared.Config{Mode: scenario.mode}
+			config.Development.Dashboard = shared.DevelopmentDashboardConfig{Enabled: true, Credentials: scenario.credentials}
+			runtime := oldRuntime
+			runtime.Production, commands.RenderStatic = scenario.production, scenario.static
+			shared.SetRuntimeOptions(runtime)
+			started := time.Now()
+			logRuntimeSummary(config)
+			var warnings []string
+			for _, event := range logging.GetLogs() {
+				if !event.Time.Before(started) && event.Level == zapcore.WarnLevel {
+					warnings = append(warnings, event.Message)
+				}
+			}
+			if scenario.warning == "" {
+				if len(warnings) != 0 {
+					t.Fatalf("unexpected warnings: %v", warnings)
+				}
+			} else if len(warnings) != 1 || !strings.Contains(warnings[0], scenario.warning) {
+				t.Fatalf("warnings = %v, want one containing %q", warnings, scenario.warning)
+			}
+		})
 	}
 }

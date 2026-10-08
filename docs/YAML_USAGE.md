@@ -21,7 +21,7 @@ package.hyperbricks.yaml
 Component files and package configuration use different YAML structures:
 
 - `*.hyperbricks.yaml` files define ordered HyperBricks component trees.
-- `package.hyperbricks.yaml` is normal configuration data under keys such as `hyperbricks` and `myconf`.
+- `package.hyperbricks.yaml` is normal configuration data under keys such as `hyperbricks` and `myconf`. See [Package Configuration](PACKAGE_CONFIGURATION.md) for runtime settings and defaults.
 
 HyperBricks loads `*.hyperbricks.yaml` files directly inside the configured `hyperbricks/` directory. To load files in subdirectories, add file-level [imports](#imports) to a loaded source file. Import paths are relative to that file.
 
@@ -899,117 +899,6 @@ The fixtures show source input, materialized JSON, expected diagnostics where re
 
 ## Package Configuration
 
-Use ordinary YAML configuration in `package.hyperbricks.yaml`. It does not use ordered component trees.
+Configure runtime modes, developer tools, server settings, caching, plugins, logging, and module directories in `package.hyperbricks.yaml`. See [Package Configuration](PACKAGE_CONFIGURATION.md) for a minimal example, grouped settings, and the module directory layout.
 
-```yaml
-vars:
-  module: modules/demo
-
-myconf:
-  demo:
-    title: YAML Runtime Fixture
-
-hyperbricks:
-  mode: development
-  development:
-    watch: true
-    reload: true
-    frontend_errors: false
-    dashboard:
-      enabled: false
-      credentials:
-        user:
-          env: HB_DEVELOPER_USER
-        password:
-          env: HB_DEVELOPER_PASSWORD
-  live:
-    cache: 10m
-  server:
-    port: 8080
-    gomaxprocs: auto
-    read_timeout: 5s
-    write_timeout: 10s
-    idle_timeout: 20s
-    keep_alives_enabled: true
-  rate_limit:
-    enabled: true
-    requests_per_second: 100
-    burst: 500
-  directories:
-    render:
-      path:
-        base: module
-        path: rendered
-    templates:
-      path:
-        base: module
-        path: templates
-    hyperbricks:
-      path:
-        base: module
-        path: hyperbricks
-```
-
-Configuration values support the same resolvers. HyperBricks uses `vars` as resolver input but does not copy it into the materialized configuration.
-
-Package configuration seeds the `module` runtime variable for `var`; other
-variable names must come from its `vars` mapping. Path resolver bases are a
-separate mechanism: names such as `resources`, `templates`, and `static` remain
-available as `base` values. Component source receives the full runtime-variable
-set listed under [Vars](#vars) after package directories have been configured.
-
-Common `hyperbricks` package fields:
-
-| Field | Purpose |
-| --- | --- |
-| `mode` | Runtime mode. Supported values are `development`, `live`, and `debug`. Invalid values fall back to live mode. |
-| `development.watch` | Watch source directories in development mode. |
-| `development.reload` | Enable development reload behavior. |
-| `development.dashboard.enabled` | Enable the Dashboard's Overview and Errors views. The old Boolean `development.dashboard` form is invalid. |
-| `development.dashboard.credentials` | Required `user` and `password` for every enabled developer interface: Dashboard Overview, Errors, diagnostics, Spaces, contextual editing, editor plugins, and frontend error panels. Values may use environment resolvers. There is no default account. |
-| `development.frontend_editing.enabled` | Master switch for Spaces and configured frontend editors; defaults to `true`. |
-| `development.frontend_editing.spaces.enabled` | Independently show or hide Spaces without disabling other frontend editors; defaults to `true`. Both this and the master switch must be enabled to serve Spaces. |
-| `development.frontend_errors` | Permit frontend error panels when component `debugpanel` is enabled. The panel is emitted only for a request authenticated with `development.dashboard.credentials`. |
-| `live.cache` | Default live-mode cache duration. Uses Go duration strings such as `10s`, `5m`, or `2h`. |
-| `server.port` | HTTP server port, unless overridden by CLI flags. |
-| `server.gomaxprocs` | Process-wide Go execution parallelism: `auto` (default) or an integer from `1` through the machine’s logical CPU count. Invalid values fail startup. See [CPU parallelism](LIVE_MODE_HTTP.md#cpu-parallelism). |
-| `server.beautify` | Beautify rendered HTML when supported. |
-| `server.self_closing_tags` | Render XHTML-style self-closing tags when enabled. |
-| `server.read_timeout`, `server.write_timeout`, `server.idle_timeout` | HTTP server timeout durations. |
-| `server.keep_alives_enabled` | Enable or disable HTTP keep-alive connections. |
-| `server.routing` | Clean URL and extension routing settings. See [Routing](ROUTING.md). |
-| `server.runtime_gateway` | Runtime host gateway settings. See [Runtime Gateway](RUNTIME_GATEWAY.md). |
-| `rate_limit.enabled` | Enable the request rate limiter. Defaults to `true`; set it to `false` only when another layer owns rate limiting or for controlled measurements. |
-| `rate_limit.requests_per_second`, `rate_limit.burst` | Token-bucket request rate and burst settings used when the limiter is enabled. |
-| `plugins.enabled` | Plugin config names to preload, without `.so` or `.wasm`. See [Plugins](PLUGINS.md). |
-| `plugins.config` | Optional plugin-specific config map. |
-| `directories` | Module directory locations. Resolver path objects are supported here. |
-| `logger.level`, `logger.path` | File logging settings. |
-
-The default module layout is:
-
-```text
-modules/<name>/
-  hyperbricks/
-  rendered/
-  resources/
-  static/
-  templates/
-  package.hyperbricks.yaml
-```
-
-Directory roles:
-
-| Directory | Purpose |
-| --- | --- |
-| `hyperbricks` | Runtime source files. The runtime scans `*.hyperbricks.yaml` files in this directory. |
-| `templates` | Go `html/template` files used by `template.file` and other template providers. |
-| `resources` | Source assets or data that can be read through `file` and path resolvers. |
-| `static` | Public files served directly by the runtime. |
-| `rendered` | Static output written by `hyperbricks static`. |
-
-> Note: `/static/somefile.ext` serves `somefile.ext` from the configured
-> `hyperbricks.directories.static` directory, regardless of its name or `base`.
-> A custom path does not require an additional directory named `static`.
-
-HyperBricks does not load subdirectories below `hyperbricks/` automatically. Add a root source file and use `imports` to load shared files.
+Package files use ordinary YAML mappings; component source uses the ordered trees described in this guide.

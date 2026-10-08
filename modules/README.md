@@ -40,6 +40,7 @@ The patterns module can install its pinned npm dependencies through the optional
 | [`goja-render-demo`](goja-render-demo/) | Feature demo | Server-side calculations with `goja_render`, including query validation, resource scripts, request isolation, and development reload behavior. |
 | [`hello-world`](hello-world/) | Feature demo | Minimal YAML starter with one Hello World route and no external dependencies. |
 | [`sampleapis-coffee-static`](sampleapis-coffee-static/) | Feature demo | Static snapshot example that fetches the public SampleAPIs coffee endpoint through nested `api_render` and exports the rendered result. |
+| [`spaces-image-demo`](spaces-image-demo/) | Feature demo | Two Spaces with inherited native image selection/uploads, preserved resizing, and explicit nested text properties. |
 | [`streaming-demo`](streaming-demo/) | Feature demo | Native Go plugin example that streams several HTML progress updates over one response while HTMX swaps the target as chunks arrive. |
 | [`navigation-demo-swup`](navigation-demo-swup/) | Frontend integration | Text-only neighbourhood guide whose complete server-rendered pages use Swup for animated navigation and browser-history transitions. |
 | [`todo-demo-htmx`](todo-demo-htmx/) | Frontend integration | The Little List todo application using HTMX 4 fragment updates and browser `localStorage`. |
@@ -69,6 +70,7 @@ The patterns module can install its pinned npm dependencies through the optional
 | Module | Category | Description |
 | --- | --- | --- |
 | [`ssr-proof-hyperbricks`](ssr-proof-hyperbricks/) | Benchmark fixture | Minimal nested SSR workload with request-specific data, health endpoints, cached and raw server profiles, and stable output for throughput and allocation measurements. |
+| [`response-cache-test`](response-cache-test/) | Test and benchmark fixture | Memory/disk route policies, expiry, mode bypass, purge, cleanup and packaging checks, plus identical response workloads for the [cache baseline](../benchmarks/response-cache/README.md). |
 | [`api-security-test`](api-security-test/) | Test fixture | Explicit upstream credential selection, composed private/public APIs, redirect boundaries, and validated browser-cookie issuance, with a controlled mock API and the security research article. |
 | [`development-hooks-plugin-demo`](development-hooks-plugin-demo/) | Test fixture | A before-start hook compiles a native plugin; an after-start check proves the freshly embedded build ID is the one loaded by the runtime. |
 | [`headers-test`](headers-test/) | Test fixture | Development-mode half of the header regression fixture, covering configured response headers, cookies, routes, and generated output. |

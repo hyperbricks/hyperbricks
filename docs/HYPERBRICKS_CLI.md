@@ -23,6 +23,7 @@ hyperbricks version
 | `init`         | Create the embedded module or maintain existing package metadata           | [↗](#init-and-init-starter)                     |
 | `init-starter` | Install an official starter module                                         | [↗](#init-starter-install-an-official-starter) |
 | `scaffold`     | Bubble Tea wizard for root composites and components                       | [↗](#scaffold)                                 |
+| `settings` | Inspect and edit effective package settings with source-aware saving | [↗](#settings) |
 | `author`       | Create and extend configuration through JSON specs for agents and automation | [↗](#author)                                   |
 | `space`        | Create an inheriting hypermedia Space from an existing source              | [↗](#space)                                    |
 | `doctor`       | Diagnose a source module's static readiness before running or building      | [↗](#doctor)                                   |
@@ -442,9 +443,15 @@ cannot prove ownership without loading plugin code. `--strict` rejects that
 unverified state in CI.
 A configured mode other than `live`, `development`, or `debug` is a failure,
 even though normal startup can warn and fall back to `live`.
-A dashboard without configured credentials remains valid but locked. The
-doctor warns when a locked developer interface is enabled and never invents
-default credentials.
+Enabled Dashboard views and Spaces in development/debug mode open without login
+when both credential values are absent. The doctor warns about this access.
+Dashboard views and diagnostics are visible to anyone who can reach the server;
+Spaces and contextual editing additionally enforce their allowed-host and write
+settings. Spaces writes default to enabled. A partial account is a configuration
+failure and stays locked. A complete account requires login. Frontend-editor
+plugins and frontend error panels still require credentials and remain
+development-only. There are no default credentials. See
+[Spaces configuration](SPACES.md#development-configuration) for access settings.
 
 Passing checks collapse to one line per group. Warnings, failures, and skipped
 checks expand with their source location and a suggested repair when one is
@@ -679,6 +686,11 @@ hyperbricks start -m ./modules/demo --config profiles/development.hyperbricks.ya
 
 `--config` is relative to the selected module directory and must stay inside that directory. Absolute paths and paths that escape through `..` are rejected.
 
+The selected file supplies the complete package configuration; omitted settings
+use runtime defaults rather than values from `package.hyperbricks.yaml`. See
+[Run With a Different Configuration](PACKAGE_CONFIGURATION.md#run-with-a-different-configuration)
+for a complete example and matching `doctor` command.
+
 Enable debug logging:
 
 ```bash
@@ -697,8 +709,7 @@ This flag enables `hyperbricks.development.hooks.before_start`,
 `hooks.after_start`, and `development.services` for a direct development/debug
 session. HyperBricks waits for readiness and stops its child services during
 shutdown. The flag is rejected in live mode and deployment-managed launches.
-Without it, configured commands do not execute. Build, static export, authoring,
-and inspection do not run these commands either.
+Without it, configured commands do not execute. Build, authoring, settings, and inspection do not run these commands. Static export has a separate explicit `--with-processes` option for static lifecycle tasks.
 
 See [Development hooks and managed services](DEVELOPMENT_HOOKS.md) for the complete
 configuration, readiness, process ownership, and exit-code contract. The
@@ -727,9 +738,13 @@ http://localhost:8080/__hyperbricks/render-diagnostics?request_id=hb-12
 ```
 
 The details include the source file, component path, key, type, and error message
-where available. The endpoint requires the module's
+where available. The endpoint uses the module's
 `hyperbricks.development.dashboard.credentials`; complete the browser's Basic
-Auth challenge with that account. Use your server's host and port, and open
+Auth challenge when that account is configured. With the Dashboard explicitly
+enabled and both credential values absent, diagnostics open without login and
+startup warns about network access. With the Dashboard disabled, credentials
+remain required. A partial account stays locked with HTTP 503.
+Use your server's host and port, and open
 configuration-load links after startup. Fix the reported source and request the
 route again. With `hyperbricks.development.dashboard.enabled: true`, the
 developer interface's **Errors** section shows these diagnostics; on
@@ -740,7 +755,7 @@ Without a request ID, `/__hyperbricks/render-diagnostics` lists up to ten curren
 
 Use `/__hyperbricks/render-diagnostics?view=current` to see all retained diagnostics and checked/unchecked route information. An empty error list does not prove that every route or input has been tested.
 
-The endpoint is disabled in live mode. Static exports omit the link because their temporary server stops after rendering.
+The endpoint is disabled in live mode, production runtimes, and static rendering. Static exports omit the link because their temporary server stops after rendering.
 
 Server setup failures, such as unusable directories, listener, watcher, or gateway configuration, can still prevent startup. If the server cannot start, read the error in the terminal; the diagnostics endpoint is not available yet.
 
@@ -1097,3 +1112,40 @@ hyperbricks --non-interactive static -m demo --force
 ```
 
 This disables keyboard-driven prompts where supported.
+
+## Settings
+
+```sh
+hyperbricks settings -m demo
+hyperbricks settings -m demo --config package.preview.hyperbricks.yaml
+```
+
+Omit `-m` for the module picker. The command requires an interactive terminal. Navigate sections as a tree: Enter opens a section or edits a setting, and Esc cancels an edit or returns one level. The breadcrumb shows the current section; returning restores your selection. Each level shows only its direct children. The menu shows effective values, defaults, descriptions, and source ownership. Boolean and mode fields offer choices; collections and resolver expressions use YAML input. Hook/service entries can be added, edited, reordered, and removed without executing their commands.
+
+| Key | Action |
+| --- | --- |
+| `/` | Search names and descriptions across all sections; Esc returns to your previous location. |
+| Enter | Open a section or edit the selected source definition. |
+| Esc | Cancel editing or return to the parent section; at the root, stay in settings. |
+| `e` | Edit a collection/task as YAML (also available inside an empty collection). |
+| `o` | Create an override in the selected package entry. |
+| `d` | Remove the selected definition or task. |
+| `a` | Add a task/service to the selected list or the list currently open. |
+| `[` / `]` | Move a selected task/service entry. |
+| Ctrl+S | Stage a text/YAML edit. |
+| `r` | Review changes by file; Enter in review saves. |
+| Ctrl+R | Reload sources while retaining compatible pending changes. |
+| `D` | Confirm discarding pending edits and reloading. |
+| `q` | Exit; pending edits require a discard choice. |
+
+Saving checks the full import graph for external changes, including moved/deleted files and changed symlink targets. Conflicts keep pending edits for review. See [package settings editing](PACKAGE_CONFIGURATION.md#editing-settings-interactively) for write ownership and partial-save behavior.
+
+### Static lifecycle opt-in
+
+```sh
+hyperbricks static -m demo --force --zip --with-processes
+```
+
+`--with-processes` enables `before_static`, `after_static`, and `finish`. It does not start development services. Without this flag static export still manages native esbuild assets automatically. Export errors skip `after_static`, so publishing tasks cannot run on a failed export. See [lifecycle hooks](DEVELOPMENT_HOOKS.md#general-lifecycle-configuration) for ordering and result context.
+
+The interactive static wizard collects overwrite consent, ZIP destination/exclusions, and serving choices before rendering starts. Declining overwrite cancels the operation.

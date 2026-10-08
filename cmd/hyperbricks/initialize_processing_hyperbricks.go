@@ -46,6 +46,7 @@ func PreProcessAndPopulateConfigs() error {
 	for _, source := range sources {
 		if err := processScript(source.Filename, source.Config, source.Errors, tempConfigs, tempHyperMediasBySection, tempRouteSourceErrors, logger, filenameToRoutes); err != nil {
 			logger.Warnw("Error processing script", "file", source.Filename, "error", err)
+			sourceErrors = append(sourceErrors, err)
 		}
 	}
 
@@ -56,24 +57,40 @@ func PreProcessAndPopulateConfigs() error {
 	// linking resources to the renderers
 	linkRendererResources()
 	prepareGojaRouteConfigs(tempConfigs, tempRouteSourceErrors)
-	prepareEsbuildRouteConfigs(tempConfigs, tempRouteSourceErrors)
+	activeAssetOwners, err := prepareEsbuildRouteConfigs(tempConfigs, tempRouteSourceErrors)
+	if err != nil {
+		return err
+	}
 	tempRoutePlans := compileRoutePlans(tempConfigs, logger)
 	generation := publishRouteSnapshot(tempConfigs, tempRoutePlans, tempRouteSourceErrors)
 	recordConfigDiagnosticsAtGeneration(sourceErrors, generation)
-
-	// clear cache
-	clearHTMLCache()
+	if len(sourceErrors) == 0 && len(tempRouteSourceErrors) == 0 && activeAssetOwners != nil {
+		runtimeAssetGate.Lock()
+		renderer := runtimeEsbuildRenderer()
+		err := renderer.ReconcileAssets(activeAssetOwners)
+		runtimeAssetGate.Unlock()
+		if err != nil {
+			return phaseError("asset_cleanup", err)
+		}
+	}
 
 	logger.Infof("Configurations loaded  count=%d", len(tempConfigs))
 	printFilenameToRoutesMapping(filenameToRoutes, tempConfigs)
 
-	// prepare for static rendering
 	if commands.RenderStatic {
-		if err := PrepareForStaticRendering(tempConfigs); err != nil {
-			return err
+		var failures []error
+		for _, items := range tempRouteSourceErrors {
+			for _, err := range items {
+				diagnostic, ok := shared.AsComponentError(err)
+				if !ok || !strings.EqualFold(diagnostic.Level, "warning") {
+					failures = append(failures, err)
+				}
+			}
+		}
+		if len(failures) > 0 {
+			return fmt.Errorf("static configuration has %d error(s): %v", len(failures), failures[0])
 		}
 	}
-
 	return nil
 }
 
@@ -507,6 +524,9 @@ type routeMetadataConfig struct {
 
 func decodeHyperMediaConfig(v map[string]interface{}) (composite.HyperMediaConfig, error) {
 	var hypermediaInfo composite.HyperMediaConfig
+	if err := hypermediaInfo.ValidateRawConfig(v); err != nil {
+		return hypermediaInfo, err
+	}
 	decoder, err := createDecoder(&hypermediaInfo)
 	if err != nil {
 		return hypermediaInfo, err
@@ -517,6 +537,9 @@ func decodeHyperMediaConfig(v map[string]interface{}) (composite.HyperMediaConfi
 
 func decodeFragmentConfig(v map[string]interface{}) (composite.FragmentConfig, error) {
 	var fragmentConfig composite.FragmentConfig
+	if err := fragmentConfig.ValidateRawConfig(v); err != nil {
+		return fragmentConfig, err
+	}
 	decoder, err := createDecoder(&fragmentConfig)
 	if err != nil {
 		return fragmentConfig, err
@@ -538,6 +561,7 @@ func decodeRouteMetadataConfig(v map[string]interface{}) (routeMetadataConfig, e
 // createDecoder creates a mapstructure decoder with the necessary hooks.
 func createDecoder(result interface{}) (*mapstructure.Decoder, error) {
 	combinedHook := mapstructure.ComposeDecodeHookFunc(
+		typefactory.ConfigValueDecodeHookFunc(),
 		typefactory.StringToSliceHookFunc(),
 		typefactory.StringToIntHookFunc(),
 		typefactory.StringToMapStringHookFunc(),
@@ -635,6 +659,9 @@ func publishRouteSnapshot(tempConfigs map[string]map[string]interface{}, tempRou
 		updateGlobalRouteSourceErrors(sourceErrors)
 	}
 	routeGeneration++
+	// Invalidate while publishing the matching configuration generation. Old
+	// renders may finish, but their cache write tokens are no longer accepted.
+	clearHTMLCache()
 	resetRenderDiagnostics(routeGeneration, tempConfigs)
 	return routeGeneration
 }
@@ -686,7 +713,5 @@ func cloneErrorsByRoute(source map[string][]error) map[string][]error {
 
 // resetHTMLCache clears the HTML cache.
 func clearHTMLCache() {
-	htmlCacheMutex.Lock()
-	defer htmlCacheMutex.Unlock()
-	htmlCache = make(map[string]CacheEntry)
+	purgeResponseCache("")
 }

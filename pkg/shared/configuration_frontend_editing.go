@@ -26,16 +26,26 @@ type SpacesUploadPolicy struct {
 }
 
 type SpacesConfig struct {
-	Enabled      bool                `mapstructure:"enabled" description:"Enable the built-in Spaces mount in development mode, provided frontend_editing.enabled is also true. This switch does not grant writes." example:"true"`
+	Enabled      bool                `mapstructure:"enabled" description:"Enable built-in Spaces and contextual editing in development/debug mode, provided frontend_editing.enabled is also true. Defaults to true; write controls editing independently." example:"true"`
 	Route        string              `mapstructure:"route" description:"Clean, non-reserved /__hyperbricks/ path for Spaces. Must not overlap another editor route." example:"/__hyperbricks/spaces"`
-	Write        bool                `mapstructure:"write" description:"Explicitly permit source edits and asset uploads through Spaces. Without this opt-in, the editor remains read-only." example:"false"`
-	PublicOrigin string              `mapstructure:"public_origin" description:"Public site origin used by Spaces when constructing public links, separate from the editor access host." example:"https://example.com"`
-	AllowedHosts []string            `mapstructure:"allowed_hosts" description:"Explicit trusted editor hosts for non-loopback access. Spaces checks the request host and browser origin, not forwarded host/origin headers; use encrypted transport for remote access." example:"[editor.example.test]"`
+	Write        bool                `mapstructure:"write" description:"Permit source edits and asset uploads through Spaces. Defaults to true; set false for a read-only editor." example:"true"`
+	PublicOrigin string              `mapstructure:"public_origin" description:"Public website origin used for absolute sharing-image URLs. This optional setting does not grant editor access." example:"https://example.com"`
+	AllowedHosts []string            `mapstructure:"allowed_hosts" description:"Additional editor hostnames or IP addresses without scheme or port. Localhost and loopback addresses are always allowed. This controls the requested server address, not client IPs. Spaces checks browser origins for writes and ignores forwarded host/origin headers." example:"[editor.example.test]"`
 	SharingImage *SpacesUploadPolicy `mapstructure:"sharing_image" description:"Optional image-only upload policy for sharing metadata, with an explicit size limit and static storage directory." example:"{accept: [.png, .webp], max_bytes: 5242880, directory: {base: static, path: uploads/images}}"`
 }
 
 func DefaultFrontendEditingConfig() FrontendEditingConfig {
-	return FrontendEditingConfig{Enabled: true, Spaces: SpacesConfig{Enabled: true, Route: DefaultSpacesRoute}}
+	return FrontendEditingConfig{Enabled: true, Spaces: SpacesConfig{Enabled: true, Route: DefaultSpacesRoute, Write: true}}
+}
+
+// SpacesAvailable applies the shared availability policy for the built-in
+// editor and contextual editing. Static-export callers must exclude those
+// responses separately; authentication and host checks remain request-specific.
+func SpacesAvailable(config *Config, runtime RuntimeOptions) bool {
+	return config != nil && (config.Mode == DEVELOPMENT_MODE || config.Mode == DEBUG_MODE) &&
+		!runtime.Production && config.Development.FrontendEditing.Enabled &&
+		config.Development.FrontendEditing.Spaces.Enabled && config.ValidateFrontendEditing() == nil &&
+		config.ValidateDevelopmentDashboard() == nil
 }
 
 var frontendEditorRoutePattern = regexp.MustCompile(`^/__hyperbricks/[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*$`)

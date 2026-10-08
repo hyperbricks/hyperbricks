@@ -21,6 +21,7 @@ type compiler struct {
 	manager          *render.RenderManager
 	templateProvider templateProvider
 	querySets        [][]string
+	templateSources  map[*templateNode]string
 }
 
 // Compile prepares an eligible route without changing the raw configuration.
@@ -41,10 +42,14 @@ func Compile(
 		return nil, notEligible("only hypermedia routes are compiled in phase 1")
 	}
 
-	c := compiler{manager: manager, templateProvider: provider}
+	c := compiler{manager: manager, templateProvider: provider, templateSources: make(map[*templateNode]string)}
 	root, err := c.compileHyperMedia(raw)
 	if err != nil {
 		return nil, err
+	}
+	page := root.(*hyperMediaNode)
+	if combined := combineTemplates(page.template, c.templateSources); combined != nil {
+		page.template = combined
 	}
 	return &Plan{root: root, querySets: c.querySets, needsAPIRequestContext: NeedsAPIRequestContext(raw)}, nil
 }
@@ -182,6 +187,9 @@ func (c *compiler) compileTemplate(raw map[string]interface{}) (renderNode, erro
 		querySet: querySet,
 		params:   policy,
 		warnings: append([]string(nil), response.Warnings...),
+	}
+	if c.templateSources != nil {
+		c.templateSources[node] = templateContent
 	}
 	if len(values) == 1 && values[0].child != nil && forwardsOnlyChild(templateContent, values[0].key, parsed.Name()) {
 		node.forwardChild = values[0].child

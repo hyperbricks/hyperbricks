@@ -960,10 +960,13 @@ func TestDoctorCredentialsFollowEnabledDeveloperSurfaces(t *testing.T) {
 		{"Dashboard enabled", shared.DEVELOPMENT_MODE, true, true, false, false, doctorWarn},
 		{"live mode", shared.LIVE_MODE, true, true, true, true, doctorPass},
 		{"debug Dashboard", shared.DEBUG_MODE, true, false, false, false, doctorWarn},
+		{"debug Spaces", shared.DEBUG_MODE, false, true, true, false, doctorWarn},
+		{"debug external editor unavailable", shared.DEBUG_MODE, false, true, false, true, doctorPass},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := &shared.Config{Mode: tc.mode}
 			config.Development.Dashboard.Enabled = tc.dashboard
+			config.Development.FrontendEditing = shared.DefaultFrontendEditingConfig()
 			config.Development.FrontendEditing.Enabled = tc.frontendEditing
 			config.Development.FrontendEditing.Spaces.Enabled = tc.spaces
 			if tc.externalEditor {
@@ -973,6 +976,71 @@ func TestDoctorCredentialsFollowEnabledDeveloperSurfaces(t *testing.T) {
 			checkDoctorCredentials(collector, config)
 			if got := collector.checks["security.developer_credentials"].Status; got != tc.want {
 				t.Fatalf("credentials status = %s, want %s", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestDoctorCredentialsDistinguishesOpenAndPartialAccounts(t *testing.T) {
+	for _, scenario := range []struct {
+		name, mode  string
+		credentials shared.CredentialsConfig
+		frontend    string
+		status      doctorCheckStatus
+		messages    []string
+		absent      []string
+	}{
+		{name: "default open Spaces", mode: shared.DEVELOPMENT_MODE, status: doctorWarn, messages: []string{"Spaces and contextual editing are accessible without login through allowed hosts (write=true)"}, absent: []string{"Dashboard", "locked"}},
+		{name: "debug open Spaces", mode: shared.DEBUG_MODE, status: doctorWarn, messages: []string{"Spaces and contextual editing are accessible without login through allowed hosts (write=true)"}},
+		{name: "read only Spaces", mode: shared.DEVELOPMENT_MODE, frontend: "      spaces:\n        write: false\n", status: doctorWarn, messages: []string{"accessible without login through allowed hosts (write=false)"}},
+		{name: "Spaces disabled", mode: shared.DEVELOPMENT_MODE, frontend: "      spaces:\n        enabled: false\n", status: doctorPass, messages: []string{"developer interfaces are disabled"}, absent: []string{"accessible without login"}},
+		{name: "parent disabled", mode: shared.DEVELOPMENT_MODE, frontend: "      enabled: false\n", status: doctorPass, messages: []string{"developer interfaces are disabled"}},
+		{name: "user only", mode: shared.DEVELOPMENT_MODE, credentials: shared.CredentialsConfig{User: "developer"}, status: doctorFail, messages: []string{"require both user and password"}, absent: []string{"accessible without login"}},
+		{name: "password only", mode: shared.DEBUG_MODE, credentials: shared.CredentialsConfig{Password: "secret"}, status: doctorFail, messages: []string{"require both user and password"}, absent: []string{"accessible without login"}},
+		{name: "configured", mode: shared.DEVELOPMENT_MODE, credentials: shared.CredentialsConfig{User: "developer", Password: "secret"}, status: doctorPass, messages: []string{"credentials are configured"}, absent: []string{"accessible without login", "locked"}},
+		{name: "external plugin remains locked", mode: shared.DEVELOPMENT_MODE, frontend: "      editors:\n        other:\n          plugin: Other@1\n          route: /__hyperbricks/other\n", status: doctorWarn, messages: []string{"Spaces and contextual editing are accessible without login", "frontend editor plugins remain locked"}},
+		{name: "live Spaces unavailable", mode: shared.LIVE_MODE, status: doctorPass, messages: []string{"developer interfaces are disabled"}, absent: []string{"accessible without login"}},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			projectRoot := t.TempDir()
+			moduleRoot := writeDoctorFixture(t, projectRoot, "demo", strings.TrimSpace(assets.VersionMD), "", "")
+			packagePath := filepath.Join(moduleRoot, PackageConfigFileName)
+			content, err := os.ReadFile(packagePath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			packageText := strings.Replace(string(content), "mode: development", "mode: "+scenario.mode, 1)
+			packageText = strings.Replace(packageText, "user: doctor-user-secret", fmt.Sprintf("user: %q", scenario.credentials.User), 1)
+			packageText = strings.Replace(packageText, "password: doctor-password-secret", fmt.Sprintf("password: %q", scenario.credentials.Password), 1)
+			frontend := ""
+			if scenario.frontend != "" {
+				frontend = "    frontend_editing:\n" + scenario.frontend
+			}
+			packageText = strings.Replace(packageText, "    frontend_editing:\n      enabled: false\n", frontend, 1)
+			if err := os.WriteFile(packagePath, []byte(packageText), 0o640); err != nil {
+				t.Fatal(err)
+			}
+			report, _, code := executeDoctorJSON(t, projectRoot, "--module", "demo")
+			check := doctorCheckByID(t, report, "security.developer_credentials")
+			wantCode := 0
+			if scenario.status == doctorFail {
+				wantCode = 1
+			}
+			if check.Status != scenario.status || code != wantCode {
+				t.Fatalf("credential check = %+v, code = %d; want status %s, code %d", check, code, scenario.status, wantCode)
+			}
+			for _, want := range scenario.messages {
+				if !strings.Contains(check.Message, want) {
+					t.Fatalf("credential message = %q, want %q", check.Message, want)
+				}
+			}
+			for _, absent := range scenario.absent {
+				if strings.Contains(check.Message, absent) {
+					t.Fatalf("credential message = %q, must not contain %q", check.Message, absent)
+				}
+			}
+			if (scenario.status == doctorWarn || scenario.status == doctorFail) && !strings.Contains(check.Hint, "credentials.password") {
+				t.Fatalf("credential diagnostic has no configuration guidance: %+v", check)
 			}
 		})
 	}

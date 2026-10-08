@@ -106,3 +106,44 @@ func TestBasicAuthAuthorizedPreservesCredentialBytes(t *testing.T) {
 		t.Fatal("password normalization was accepted")
 	}
 }
+
+func TestSpacesAuthRequiresCompleteOrEmptyAccount(t *testing.T) {
+	account := CredentialsConfig{User: "developer", Password: "secret"}
+	for _, tc := range []struct {
+		name        string
+		credentials CredentialsConfig
+		login       CredentialsConfig
+		want        int
+	}{
+		{name: "empty account", want: http.StatusOK},
+		{name: "user only", credentials: CredentialsConfig{User: "developer"}, want: http.StatusServiceUnavailable},
+		{name: "password only", credentials: CredentialsConfig{Password: "secret"}, want: http.StatusServiceUnavailable},
+		{name: "missing login", credentials: account, want: http.StatusUnauthorized},
+		{name: "incorrect login", credentials: account, login: CredentialsConfig{User: "developer", Password: "wrong"}, want: http.StatusUnauthorized},
+		{name: "correct login", credentials: account, login: account, want: http.StatusOK},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodGet, "/__hyperbricks/spaces", nil)
+			if !tc.login.Empty() {
+				request.SetBasicAuth(tc.login.User, tc.login.Password)
+			}
+			response := httptest.NewRecorder()
+			authorized := RequireSpacesAuth(response, request, tc.credentials)
+			if response.Code != tc.want || authorized != (tc.want == http.StatusOK) || SpacesAuthAuthorized(request, tc.credentials) != authorized {
+				t.Fatalf("response=%d authorized=%v body=%s", response.Code, authorized, response.Body.String())
+			}
+			if (response.Header().Get("WWW-Authenticate") != "") != (tc.want == http.StatusUnauthorized) {
+				t.Fatalf("unexpected challenge: %q", response.Header().Get("WWW-Authenticate"))
+			}
+			if !authorized && response.Header().Get("Cache-Control") != "no-store" {
+				t.Fatal("rejected authentication response can be cached")
+			}
+			if tc.want == http.StatusServiceUnavailable && !strings.Contains(response.Body.String(), "set both development.dashboard.credentials.user and password, or leave both empty") {
+				t.Fatalf("missing partial-account guidance: %s", response.Body.String())
+			}
+		})
+	}
+	if SpacesAuthAuthorized(nil, CredentialsConfig{}) {
+		t.Fatal("missing request authorized contextual editing")
+	}
+}

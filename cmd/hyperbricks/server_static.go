@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"path"
@@ -128,10 +130,10 @@ func buildRuntimeHandler(limiter *rate.Limiter) http.Handler {
 		}
 	})
 	if limiter == nil {
-		return baseHandler
+		return assetRequestMiddleware(baseHandler)
 	}
 	// Wrap the base handler with the rate limiting middleware.
-	return rateLimitMiddleware(limiter)(baseHandler)
+	return rateLimitMiddleware(limiter)(assetRequestMiddleware(baseHandler))
 }
 
 // FileHandler routes requests to the appropriate directory based on the URL path
@@ -151,87 +153,139 @@ func FileHandler(dirs map[string]string) http.HandlerFunc {
 	}
 }
 
+type staticExportPlan struct{ RenderDir, StaticDir string }
+type staticExportResult struct{ RenderDir, ZipPath string }
+
+var errStaticDeclined = errors.New("static export declined")
+
+func planStaticExport(config *shared.Config) (staticExportPlan, error) {
+	var plan staticExportPlan
+	var err error
+	if config.Directories["render"] == "" || config.Directories["static"] == "" {
+		return plan, fmt.Errorf("static export requires render and static directories")
+	}
+	plan.RenderDir, err = filepath.Abs(config.Directories["render"])
+	if err != nil {
+		return plan, err
+	}
+	plan.StaticDir, err = filepath.Abs(config.Directories["static"])
+	if err != nil {
+		return plan, err
+	}
+	if err = validatePath(plan.RenderDir); err != nil {
+		return plan, err
+	}
+	if _, err = parseExcludeList(commands.ExportExclude); err != nil {
+		return plan, err
+	}
+	if !commands.ForceStatic && !commands.StaticWizard && !confirmDeletion(plan.RenderDir) {
+		return plan, errStaticDeclined
+	}
+	return plan, nil
+}
+
+// PrepareForStaticRendering is retained for direct export callers. The CLI
+// plans before preparation and invokes executeStaticExport after initialization.
 func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) error {
+	plan, err := planStaticExport(shared.GetHyperBricksConfiguration())
+	if err != nil {
+		return err
+	}
+	_, err = executeStaticExport(tempConfigs, plan)
+	return err
+}
 
-	hbConfig := shared.GetHyperBricksConfiguration()
+func executeStaticExport(tempConfigs map[string]map[string]interface{}, plan staticExportPlan) (staticExportResult, error) {
+	return executeStaticExportContext(context.Background(), tempConfigs, plan)
+}
+
+func executeStaticExportContext(ctx context.Context, tempConfigs map[string]map[string]interface{}, plan staticExportPlan) (staticExportResult, error) {
+	result := staticExportResult{RenderDir: plan.RenderDir}
+	renderDir, staticDir := plan.RenderDir, plan.StaticDir
 	logger := logging.GetLogger().Named("static")
-	logger.Info("Rendering routes")
-
-	renderDir := ""
-	if tbrender, ok := hbConfig.Directories["render"]; ok {
-		renderDir = tbrender
+	if err := os.RemoveAll(renderDir); err != nil {
+		return result, fmt.Errorf("remove render directory: %w", err)
 	}
-
-	staticDir := ""
-	if tbstatic, ok := hbConfig.Directories["static"]; ok {
-		staticDir = tbstatic
-	}
-
-	if renderDir == "" || staticDir == "" {
-		return nil
-	}
-
-	// Validate renderDir is inside ./modules
-	if err := validatePath(renderDir); err != nil {
-		return fmt.Errorf("validate render directory %q: %w", renderDir, err)
-	}
-
-	shouldDelete := commands.ForceStatic
-	if !commands.StaticWizard {
-		shouldDelete = commands.ForceStatic || confirmDeletion(renderDir)
-	}
-	if !shouldDelete {
-		logger.Infow("User skipped deletion", "directory", renderDir)
-	} else {
-		logger.Infow("Deleting all files in ", "directory", renderDir)
-		err := os.RemoveAll(renderDir)
-		if err != nil {
-			return fmt.Errorf("remove render directory %q: %w", renderDir, err)
-		}
-	}
-
 	logger.Infow("Copying static directory", "source", staticDir, "destination", renderDir)
 
 	err := os.MkdirAll(renderDir, 0755)
 	if err != nil {
-		return fmt.Errorf("create render directory %q: %w", renderDir, err)
+		return result, fmt.Errorf("create render directory %q: %w", renderDir, err)
 	}
 
-	err = snapshotStaticRoutes(tempConfigs, renderDir)
+	err = snapshotStaticRoutesContext(ctx, tempConfigs, renderDir)
 	if err != nil {
-		return err
+		if renderer := runtimeEsbuildRenderer(); renderer != nil {
+			if cleanup := renderer.AssetFailure(); cleanup != nil {
+				return result, phaseError("asset_cleanup", errors.Join(err, cleanup))
+			}
+		}
+		return result, err
 	}
 
+	if renderer := runtimeEsbuildRenderer(); renderer != nil {
+		// Snapshot files are now the response owners; protect their references
+		// while pruning before assets are copied into the export.
+		var pages strings.Builder
+		if err := filepath.WalkDir(renderDir, func(path string, entry os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if entry.IsDir() {
+				return nil
+			}
+			raw, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			pages.Write(raw)
+			pages.WriteByte('\n')
+			return nil
+		}); err != nil {
+			return result, phaseError("asset_cleanup", err)
+		}
+		rendered := pages.String()
+		renderer.SetAssetProtection(func(output string) bool {
+			relative, err := filepath.Rel(staticDir, output)
+			if err != nil {
+				return true
+			}
+			public := (&url.URL{Path: "/static/" + filepath.ToSlash(relative)}).EscapedPath()
+			return strings.Contains(rendered, public)
+		})
+		defer renderer.SetAssetProtection(protectRuntimeAsset)
+		if err := renderer.ReconcileAssets(nil); err != nil {
+			return result, phaseError("asset_cleanup", err)
+		}
+	}
 	err = copy.Copy(staticDir, filepath.Join(renderDir, "static"))
 	if err != nil {
-		return fmt.Errorf("copy static directory %q to %q: %w", staticDir, filepath.Join(renderDir, "static"), err)
+		return result, phaseError("copy_assets", fmt.Errorf("copy static directory %q to %q: %w", staticDir, filepath.Join(renderDir, "static"), err))
 	} else {
 		logger.Infow("Copied static file directory successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
 	}
 
 	if commands.ExportZip {
-		if commands.StaticWizard && strings.TrimSpace(commands.ExportExclude) == "" {
-			excludeCSV, err := commands.RunStaticExcludePicker(renderDir)
-			if err != nil {
-				logger.Errorw("Error selecting zip excludes", "error", err)
-			} else {
-				commands.ExportExclude = excludeCSV
-			}
-		}
 		exportPath, err := exportStaticZip(renderDir, commands.StartModule, commands.ExportOutDir, commands.ExportExclude)
 		if err != nil {
-			return fmt.Errorf("export static zip: %w", err)
+			return result, phaseError("package", err)
 		} else {
+			result.ZipPath, err = filepath.Abs(exportPath)
+			if err != nil {
+				return result, err
+			}
 			logger.Infow("Created static export", "path", exportPath)
 		}
 	}
 
 	logger.Infow("Rendering complete", "directory", renderDir)
-	return nil
+	return result, nil
 
 }
 
-func serveStatic() error {
+func serveStatic() error { return serveStaticContext(context.Background()) }
+
+func serveStaticContext(operation context.Context) error {
 	hbConfig := shared.GetHyperBricksConfiguration()
 
 	// Get host IPv4 addresses
@@ -296,51 +350,58 @@ func serveStatic() error {
 	}
 	defer server.Close()
 
-	// Run server in background goroutine
+	served := make(chan error, 1)
 	go func() {
 		logging.GetLogger().Named("static").Infow("Listening", "url", "http://"+addr)
-		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
-			logging.GetLogger().Named("static").Fatalw("Server failed", "error", err)
-		}
+		served <- server.Serve(listener)
 	}()
-
-	if os.Getenv("HB_NO_KEYBOARD") != "" || !logging.IsTerminal(os.Stdin) {
-		return waitForServerSignal(server)
-	}
-
-	// Open keyboard for input
-	if err := keyboard.Open(); err != nil {
-		logging.GetLogger().Warnw("Failed to open keyboard", "error", err)
-		return err
-	}
-	defer keyboard.Close()
-
-	logging.GetLogger().Info("Press q, Esc or Ctrl+C to stop")
-
-	// Wait for q, ESC, or Ctrl+C
-	for {
-		char, key, err := keyboard.GetKey()
+	var keys <-chan keyboard.KeyEvent
+	if os.Getenv("HB_NO_KEYBOARD") == "" && logging.IsTerminal(os.Stdin) {
+		events, err := keyboard.GetKeys(10)
 		if err != nil {
-			logging.GetLogger().Warnw("Keyboard input unavailable", "error", err)
-			break
+			return err
 		}
-		if char == 'q' || key == keyboard.KeyEsc || key == keyboard.KeyCtrlC {
-			logging.GetLogger().Named("static").Info("Stopping")
-			break
+		keys = events
+		defer keyboard.Close()
+		logging.GetLogger().Info("Press q, Esc or Ctrl+C to stop")
+	}
+	var result error
+wait:
+	for {
+		select {
+		case <-operation.Done():
+			result = context.Cause(operation)
+			break wait
+		case err := <-served:
+			if err != http.ErrServerClosed {
+				result = err
+			}
+			break wait
+		case event, ok := <-keys:
+			if !ok {
+				keys = nil
+				continue
+			}
+			if event.Err != nil {
+				result = event.Err
+				break wait
+			}
+			if event.Key == keyboard.KeyCtrlC {
+				result = errRuntimeInterrupt
+				break wait
+			}
+			if event.Rune == 'q' || event.Key == keyboard.KeyEsc {
+				break wait
+			}
 		}
 	}
-
-	// Gracefully shutdown server with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
-	if err := server.Shutdown(ctx); err != nil {
-		logging.GetLogger().Named("static").Errorw("Shutdown failed", "error", err)
-		return err
+	if err := server.Shutdown(shutdown); err != nil {
+		result = errors.Join(result, phaseError("cleanup", err))
 	}
-
 	logging.GetLogger().Named("static").Info("Stopped")
-	return nil
+	return result
 }
 
 func waitForServerSignal(server *http.Server) error {

@@ -30,7 +30,7 @@ func handleErrorsView(w http.ResponseWriter, r *http.Request) bool {
 		http.NotFound(w, r)
 		return true
 	}
-	if !requireDeveloperInterfaceAuth(w, r) {
+	if !requireDashboardAuth(w, r) {
 		return true
 	}
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {
@@ -44,8 +44,7 @@ func handleErrorsView(w http.ResponseWriter, r *http.Request) bool {
 	case "", "/":
 		cfg := getHyperBricksConfiguration()
 		data := SysData{Module: filepath.Base(shared.GetRuntimeOptions().ModuleRoot), Mode: cfg.Mode}
-		if cfg.Mode == shared.DEVELOPMENT_MODE && cfg.Development.FrontendEditing.Enabled &&
-			cfg.Development.FrontendEditing.Spaces.Enabled && cfg.ValidateFrontendEditing() == nil {
+		if spacesEditorAvailable() {
 			data.SpacesRoute = cfg.Development.FrontendEditing.Spaces.Route
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")

@@ -119,7 +119,7 @@ func inspectAuthorContext(ctx *authorContext, target string) (*authorInspection,
 			result.Metadata[key] = v
 		}
 	}
-	fields, err := spaces.SourceFields(effective)
+	fields, err := spaces.SourceFields(effective, ctx.Directories)
 	if err != nil {
 		return nil, err
 	}

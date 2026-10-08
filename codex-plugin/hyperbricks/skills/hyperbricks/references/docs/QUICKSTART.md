@@ -71,6 +71,10 @@ mkdir -p \
 
 Keep the generated `package.hyperbricks.yaml`. Replace the contents of the starter's `hyperbricks/hello-world.hyperbricks.yaml` with the configuration below. This replaces the starter route instead of creating a second route for `/`.
 
+The package file controls module settings such as the server port, runtime mode,
+and directory locations. See [Package Configuration](PACKAGE_CONFIGURATION.md)
+for its structure and defaults.
+
 The files you will work with are:
 
 ```text
@@ -255,8 +259,8 @@ Edit files under `resources/` and `templates/`; the files under `static/` are bu
 ## Developer Interface
 
 Open `modules/demo/package.hyperbricks.yaml` and enable the module's developer
-dashboard. Keep credentials in environment variables rather than committing a
-password:
+dashboard. The credential references below let you optionally require a login
+without storing a password in the file:
 
 ```yaml
 hyperbricks:
@@ -270,11 +274,25 @@ hyperbricks:
           env: HB_DEVELOPER_PASSWORD
 ```
 
-The same module-owned login protects the Dashboard's Overview and Errors views,
-render diagnostics, Spaces, contextual editing, and configured frontend-editor
-plugins. There is no
-default account; unresolved credentials lock those interfaces while public
-application routes remain available.
+When both credentials are configured, the same module-owned login protects the
+Dashboard's Overview and Errors views, render diagnostics, Spaces, contextual
+editing, and configured frontend-editor plugins. There is no default account.
+
+In development and debug mode, leaving both credentials empty allows the enabled
+Dashboard, Errors, their diagnostics, Spaces, and contextual editing to open
+without login and produces a startup warning. If only one credential resolves,
+developer access remains blocked with `503`. Frontend-editor plugins still
+require credentials and run only in development mode. Public application routes
+remain available in either case.
+
+Spaces and its writes default to enabled. Under
+`hyperbricks.development.frontend_editing.spaces`, set `write: false` for
+read-only access or `enabled: false` to disable Spaces and contextual editing.
+Spaces accepts localhost and loopback by default; other server addresses need
+an explicit `allowed_hosts` entry in that same section, even when login is configured. See
+[Spaces configuration](SPACES.md#development-configuration) for LAN setup and
+the separate `public_origin` setting. Developer interfaces are unavailable in
+live mode, production runtimes, and static output.
 
 
 ## Run And Try It
@@ -282,10 +300,12 @@ application routes remain available.
 From the project root:
 
 ```bash
-export HB_DEVELOPER_USER=developer
-export HB_DEVELOPER_PASSWORD='choose-a-long-password'
 hyperbricks start -m demo
 ```
+
+To require a developer login, set both `HB_DEVELOPER_USER` and
+`HB_DEVELOPER_PASSWORD` in this terminal before starting the server. Restart after
+changing those variables or the package configuration.
 
 Open [localhost:8080](http://localhost:8080/). The first page render builds the assets, including the imported HTMX source. No npm installation or separate asset build command is needed for this example.
 
@@ -321,10 +341,18 @@ hyperbricks static -m demo --zip --force
 The `--force ` option automatically overrides the exported files in `rendered/`.
 Type `hyperbricks static --help` for all static options.
 
+## Adjust package settings
+
+Run `hyperbricks settings -m demo` for an interactive settings menu with descriptions, effective values, and source locations. Review pending changes before saving, then restart the application. One package file is enough; imports are optional when configuration grows. See [Package Configuration](PACKAGE_CONFIGURATION.md#editing-settings-interactively).
+
+Native esbuild output cleanup is automatic for startup/restart and static export. No cleanup hook is required. Use the component's `cache_keep` option when older fingerprinted generations must remain available; see [Native esbuild](ESBUILD.md#versioned-output).
+
 ## Next Steps
 
-- [Development hooks and managed services](DEVELOPMENT_HOOKS.md): start a local API with your module, wait for readiness, and stop both with one command. Try the [beginner demo](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-demo/README.md).
-- [General HyperBricks skill](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
+- [Package Configuration](PACKAGE_CONFIGURATION.md): configure runtime modes, developer access, caching, and module directories.
+- [Caching: a practical guide](CACHING.md): watch a route render fresh, enable memory or disk caching, observe expiry, and purge stored responses.
+- [Development hooks and managed services](DEVELOPMENT_HOOKS.md): start a local API with your module, wait for readiness, and stop both with one command. Try the [beginner demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/development-hooks-demo/README.md).
+- [General HyperBricks skill](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/SKILLS/hyperbricks/SKILL.md): give an agent the project conventions, CLI workflow, and task-based Source Of Truth.
 - [YAML usage](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
 - [Component reference](REFERENCE.md): component fields and executable examples.
 - [ROUTING.md](ROUTING.md): route resolution and clean URLs.

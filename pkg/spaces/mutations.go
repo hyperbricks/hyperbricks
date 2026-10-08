@@ -87,7 +87,7 @@ func (s *service) planCreate(c *catalog, m Mutation, plan *CreatePlan) error {
 	if err != nil {
 		return err
 	}
-	fields, err := schemaFields(d.effective)
+	fields, err := schemaFields(d.effective, s.dirs)
 	if err != nil {
 		return err
 	}
@@ -95,10 +95,15 @@ func (s *service) planCreate(c *catalog, m Mutation, plan *CreatePlan) error {
 	put(n, "inherit", scalar(m.Source))
 	put(n, "route", scalar(m.Route))
 	put(n, "title", scalar(m.Title))
-	// Copy the complete content tree in source form, retaining inheritance and resolvers.
-	// Missing inherited containers are added by setAt when the field defaults are copied.
+	// Copy declared field defaults in source form, retaining native asset resolvers.
+	// Missing inherited containers are added by setAt; other properties stay inherited.
 	for _, field := range fields {
-		if err := setAt(n, field.Path, scalar(field.Value), d.effective); err != nil {
+		if field.imageSource {
+			if _, err := s.assetPath(field, field.Value); err != nil {
+				return fmt.Errorf("%s: %w", field.ID, err)
+			}
+		}
+		if err := setAt(n, field.Path, fieldNode(field, field.Value), d.effective); err != nil {
 			return err
 		}
 	}
@@ -237,7 +242,7 @@ func (s *service) save(c *catalog, m Mutation, upload *pendingUpload) error {
 			}
 		}
 		if ok || (upload != nil && upload.field == id) {
-			if err := setAt(n, field.Path, scalar(v), c.defs[m.Name].effective); err != nil {
+			if err := setAt(n, field.Path, fieldNode(field, v), c.defs[m.Name].effective); err != nil {
 				return err
 			}
 		}

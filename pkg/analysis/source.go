@@ -288,6 +288,9 @@ func analyzeComponent(registry map[string]*componentType, path string, sequence 
 			continue
 		}
 		issues = append(issues, validateNestedSchemaFields(descriptor, path, key, valueNode)...)
+		if key == "cache" {
+			issues = append(issues, validateRouteCacheSource(descriptor, path, valueNode)...)
+		}
 		issues = append(issues, analyzeMounted(registry, path+"."+key, valueNode, mapValue(effective, key), unknownSeverity)...)
 	}
 
@@ -334,6 +337,14 @@ func validateChildPlacements(descriptor *componentType, componentPath string, se
 				walk(appendPath(relative, key), valueNode, keyNode, effectiveMap[key])
 			}
 		case yaml.SequenceNode:
+			// Structured native fields use ordered YAML entries but materialize
+			// as maps. Keep those keys aligned with their effective values.
+			if effectiveMap, ok := effectiveValue.(map[string]interface{}); ok {
+				for _, item := range node.Content {
+					walk(relative, item, anchor, effectiveMap)
+				}
+				return
+			}
 			effectiveList, _ := effectiveValue.([]interface{})
 			for index, item := range node.Content {
 				var itemValue interface{}
@@ -363,6 +374,15 @@ func childPlacementAllowed(typeSchema schema.TypeSchema, relative []string) bool
 		return false
 	}
 	slots := typeSchema.Authoring.Slots
+	// Hypermedia and Fragment embed native TemplateOptions. Their values
+	// belong to that template even when the source omits `type: template`.
+	if len(relative) == 3 && relative[0] == "template" && relative[1] == "values" {
+		for _, field := range typeSchema.Fields {
+			if field.Path == "template.values" && field.Kind == "map" {
+				return true
+			}
+		}
+	}
 	if typeSchema.ChildModel == schema.ChildModelValues {
 		for _, slot := range slots {
 			if slot.Model != string(schema.ChildModelValues) || relative[0] != slot.Key {
@@ -500,6 +520,12 @@ func analyzeMounted(registry map[string]*componentType, path string, node *yaml.
 			issues = append(issues, analyzeMounted(registry, path+"."+key, value, effectiveMap[key], unknownSeverity)...)
 		}
 	case yaml.SequenceNode:
+		if effectiveMap, ok := effective.(map[string]interface{}); ok {
+			for _, item := range node.Content {
+				issues = append(issues, analyzeMounted(registry, path, item, effectiveMap, unknownSeverity)...)
+			}
+			break
+		}
 		effectiveList, _ := effective.([]interface{})
 		for index, value := range node.Content {
 			var item interface{}

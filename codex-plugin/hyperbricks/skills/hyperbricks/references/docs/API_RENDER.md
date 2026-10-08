@@ -114,7 +114,7 @@ hyperbricks:
         output: products/shoes.html
 ```
 
-The [Coffee static example](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/sampleapis-coffee-static/README.md) fetches the SampleAPIs Coffee endpoint with `api_render` and saves the rendered result in `rendered/index.html`.
+The [Coffee static example](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/sampleapis-coffee-static/README.md) fetches the SampleAPIs Coffee endpoint with `api_render` and saves the rendered result in `rendered/index.html`.
 
 See [static package configuration](HYPERBRICKS_CLI.md#package-configuration) for target matching and export boundaries.
 
@@ -204,7 +204,7 @@ detail_fragment:
 An upstream 200 makes no proposal, so the route's `response.status` remains the
 fallback. Configure a retry fragment separately: a browser client may require
 explicit handling before it displays the body of a non-2xx response.
-The [response status fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/api-response-status-test/README.md)
+The [response status fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/api-response-status-test/README.md)
 runs both components and an embedded API fragment against a local mock API.
 
 | Field | Contract |
@@ -676,7 +676,7 @@ See [Route Guard](ROUTE_GUARD.md) for the full guard contract.
 - Token issuers and receiving services enforce token audience, expiry, scope,
   signature verification, and revocation.
 
-The runnable [API security test module](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/api-security-test/README.md)
+The runnable [API security test module](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/api-security-test/README.md)
 contains a controlled upstream service, configuration examples, the research
 article, and automated HTTP assertions for both allowed and rejected behavior.
 For all available component fields, see [Reference](REFERENCE.md).

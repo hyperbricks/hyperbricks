@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf16"
 	"unicode/utf8"
 
@@ -108,8 +109,13 @@ func NewAnalyzer(opts AnalyzerOptions) *Analyzer {
 // Diagnostics validates a single editor buffer. documents is an optional map
 // of URI to unsaved content used as an overlay while imports are loaded.
 func (a *Analyzer) Diagnostics(uri, text string, documents map[string]string) []Diagnostic {
-	if a.isPackageConfig(uri) {
-		if _, err := shared.ValidatePackageConfigBytesWithResourceReader([]byte(text), a.moduleRoot(), a.readResourceFile); err != nil {
+	reader := a.packageReader(uri, text, documents)
+	if entry := a.owningPackageEntry(uri, reader); entry != "" {
+		raw, err := reader(entry)
+		if err == nil {
+			_, err = shared.ValidatePackageConfigBytesAt(raw, entry, a.moduleRoot(), reader)
+		}
+		if err != nil {
 			return []Diagnostic{diagnosticFromError(text, err, "yaml.configuration")}
 		}
 		return nil
@@ -323,7 +329,7 @@ func hoverForSchemaFields(text, label string, fields []schema.Field, node *yaml.
 	if len(fields) == 0 {
 		return nil
 	}
-	field := fields[0]
+	field := schemaFieldForPath(fields, label)
 	kind := field.Kind
 	if len(fields) > 1 {
 		kind = "object"
@@ -339,6 +345,15 @@ func hoverForSchemaFields(text, label string, fields []schema.Field, node *yaml.
 		value += "\n\nExample: `" + strings.ReplaceAll(example, "`", "\\`") + "`"
 	}
 	return &Hover{Contents: MarkupContent{Kind: "markdown", Value: value}, Range: rangePointer(yamlNodeRange(text, node))}
+}
+
+func schemaFieldForPath(fields []schema.Field, path string) schema.Field {
+	for _, field := range fields {
+		if field.Path == path {
+			return field
+		}
+	}
+	return fields[0]
 }
 
 func editorHoverExample(example string) string {
@@ -566,7 +581,7 @@ func (a *Analyzer) packageConfig() map[string]interface{} {
 		return nil
 	}
 	paths := a.basePathMarkers()
-	result, err := yamlparser.ProcessConfigBytes(raw, yamlparser.Options{
+	result, err := yamlparser.ProcessPackageConfigBytes(raw, configPath, root, yamlparser.Options{
 		Variables:                map[string]string{"module": root},
 		TemplateDir:              paths.Templates,
 		Paths:                    paths,
@@ -666,6 +681,94 @@ func (a *Analyzer) hasEnabledPlugins() bool {
 		return strings.TrimSpace(value) != ""
 	default:
 		return false
+	}
+}
+
+// owningPackageEntry identifies imported fragments even when their pending
+// contents are invalid. Traversal is source-only and uses the same overlay.
+func (a *Analyzer) owningPackageEntry(uri string, read func(string) ([]byte, error)) string {
+	target, err := uriToPath(uri)
+	if err != nil {
+		return ""
+	}
+	if a.isPackageConfig(uri) {
+		return target
+	}
+	entry := a.config
+	if !filepath.IsAbs(entry) {
+		entry = filepath.Join(a.moduleRoot(), entry)
+	}
+	seen := map[string]bool{}
+	var reaches func(string) bool
+	reaches = func(path string) bool {
+		path, err := a.confinedPath(path)
+		if err != nil {
+			return false
+		}
+		key := canonicalPath(path)
+		if key == canonicalPath(target) {
+			return true
+		}
+		if seen[key] {
+			return false
+		}
+		seen[key] = true
+		raw, err := read(path)
+		if err != nil {
+			return false
+		}
+		var doc yaml.Node
+		if yaml.Unmarshal(raw, &doc) != nil || len(doc.Content) != 1 {
+			return false
+		}
+		body := doc.Content[0]
+		if body.Kind != yaml.MappingNode {
+			return false
+		}
+		for i := 0; i < len(body.Content); i += 2 {
+			if body.Content[i].Value != "imports" || body.Content[i+1].Kind != yaml.SequenceNode {
+				continue
+			}
+			for _, item := range body.Content[i+1].Content {
+				if item.Kind == yaml.ScalarNode && item.Tag == "!!str" && reaches(filepath.Join(filepath.Dir(path), item.Value)) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	if reaches(entry) {
+		return entry
+	}
+	return ""
+}
+
+// packageReader confines both unsaved overlays and disk reads to the module.
+func (a *Analyzer) packageReader(uri, text string, documents map[string]string) func(string) ([]byte, error) {
+	overlays := map[string][]byte{}
+	add := func(uri, text string) {
+		path, err := uriToPath(uri)
+		if err != nil {
+			return
+		}
+		path, err = a.confinedPath(path)
+		if err == nil {
+			overlays[canonicalPath(path)] = []byte(text)
+		}
+	}
+	for uri, text := range documents {
+		add(uri, text)
+	}
+	add(uri, text)
+	return func(path string) ([]byte, error) {
+		path, err := a.confinedPath(path)
+		if err != nil {
+			return nil, err
+		}
+		if content, ok := overlays[canonicalPath(path)]; ok {
+			return append([]byte(nil), content...), nil
+		}
+		return os.ReadFile(path)
 	}
 }
 
@@ -1188,8 +1291,8 @@ func relatedTargetPaths(left, right string) bool {
 		strings.HasPrefix(left, right+"[") || strings.HasPrefix(right, left+"[")
 }
 
-func fieldSnippet(key string, fields []schema.Field, indent int) string {
-	if snippet, ok := nestedFieldSnippet(key, fields, indent); ok {
+func fieldSnippet(key string, fields []schema.Field, indent int, prefix string) string {
+	if snippet, ok := nestedFieldSnippet(key, fields, indent, prefix); ok {
 		return snippet
 	}
 	if len(fields) == 0 {
@@ -1197,6 +1300,9 @@ func fieldSnippet(key string, fields []schema.Field, indent int) string {
 	}
 	if fields[0].Kind == "map" {
 		return key + ":\n" + strings.Repeat(" ", indent+4) + "${1:key}: ${2:value}"
+	}
+	if snippet, ok := schemaScalarSnippet(fields[0], 1); ok {
+		return key + ": " + snippet
 	}
 	switch fields[0].Kind {
 	case "bool":
@@ -1210,6 +1316,27 @@ func fieldSnippet(key string, fields []schema.Field, indent int) string {
 	}
 }
 
+// Keep schema leaf paths intact while building nested completions. Cache
+// duration examples are useful executable defaults; unrelated schema examples
+// may contain external files, multiline source, or application-specific data.
+func schemaScalarSnippet(field schema.Field, placeholder int) (string, bool) {
+	if values := field.AllowedValues(); len(values) > 0 {
+		escape := strings.NewReplacer("\\", "\\\\", ",", "\\,", "|", "\\|")
+		choices := make([]string, len(values))
+		for index, value := range values {
+			choices[index] = escape.Replace(value)
+		}
+		return fmt.Sprintf("${%d|%s|}", placeholder, strings.Join(choices, ",")), true
+	}
+	if field.Path == "cache.expire" {
+		example := strings.TrimSpace(field.Example)
+		if duration, err := time.ParseDuration(example); err == nil && duration >= 0 {
+			return fmt.Sprintf("${%d:%s}", placeholder, example), true
+		}
+	}
+	return "", false
+}
+
 type snippetFieldNode struct {
 	field    *schema.Field
 	children map[string]*snippetFieldNode
@@ -1219,11 +1346,15 @@ type snippetFieldNode struct {
 // response.headers into an insertable YAML object. It deliberately emits only
 // paths present in the schema; generic placeholder keys belong only inside
 // schema-declared dynamic maps.
-func nestedFieldSnippet(key string, fields []schema.Field, indent int) (string, bool) {
+func nestedFieldSnippet(key string, fields []schema.Field, indent int, prefix string) (string, bool) {
 	root := &snippetFieldNode{children: make(map[string]*snippetFieldNode)}
 	leafCount := 0
 	for index := range fields {
-		parts := strings.Split(fields[index].Path, ".")
+		path := fields[index].Path
+		if prefix != "" {
+			path = strings.TrimPrefix(path, prefix+".")
+		}
+		parts := strings.Split(path, ".")
 		if len(parts) < 2 || parts[0] != key {
 			continue
 		}
@@ -1265,6 +1396,11 @@ func renderSnippetFields(node *snippetFieldNode, indent int, placeholder *int) [
 			continue
 		}
 		if child.field == nil {
+			continue
+		}
+		if snippet, ok := schemaScalarSnippet(*child.field, *placeholder); ok {
+			lines = append(lines, padding+key+": "+snippet)
+			*placeholder++
 			continue
 		}
 		switch child.field.Kind {

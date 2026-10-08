@@ -1,5 +1,67 @@
 # Changelog
 
+## v1.3.0-beta
+
+Changes since `v1.2.9-beta`.
+
+### Rendering and caching
+
+- Reduce repeated rendering work by combining eligible nested templates into a
+  prepared render plan and reusing parsed API templates, while preserving
+  escaping, request isolation, and diagnostics.
+- Choose memory or disk response caching per page or fragment with
+  `cache.storage` (`mem` or `disk`) and `cache.expire`. Add bounded disk storage, expiry
+  cleanup, and `hyperbricks cache purge` for individual routes or all cached
+  responses in a running instance.
+- **Migration:** scalar route settings such as `cache: 30s` now override the
+  package lifetime; `cache: 0s` disables caching for that route. Remove the route
+  setting to keep the package lifetime. Deployment archives and runtime
+  snapshots now exclude `.cache` and configured module-local cache directories.
+  See the [migration guide](docs/MIGRATION.md#upgrade-to-v130-beta).
+
+### Configuration and lifecycle
+
+- Compose package settings through ordered imports and edit their owning files
+  with the tree-based `hyperbricks settings` menu, including change review and
+  protection against external edits or moved imports.
+- Run opt-in startup and static-export hooks with a final outcome notification
+  through `finish`, including failure and cancellation details.
+- Automatically remove obsolete fingerprinted esbuild assets after successful
+  builds while preserving active, retained, and unrelated files. Use `cache_keep`
+  to retain previous generations.
+- Add configuration lifecycle integration coverage to Linux and macOS CI.
+
+### Development tools
+
+- Open an enabled Dashboard, Errors, and their diagnostics in development/debug
+  mode when both credentials are absent, with a startup warning. Partial
+  credentials remain blocked.
+- Enable Spaces and contextual editing in development/debug mode with optional
+  login and writes enabled by default. Host and origin checks still apply;
+  configured credentials require login, and partial accounts remain blocked.
+  Set `spaces.write: false` to retain read-only access. External editor plugins
+  and frontend error panels still require authentication.
+- Edit explicitly declared nested properties in Spaces, including the source and
+  alternative text of inherited native images. Select or upload resource
+  originals while preserving image processing and independent Space overrides.
+  Resource-image previews remain behind editor access checks.
+- Add the `spaces-image-demo` starter with two editable Spaces, bundled image
+  originals, and nested text fields.
+- Recognize component values inside built-in page and fragment templates in
+  language-server diagnostics, including inherited values and nested images.
+- Add language-server completion, hover, and configuration diagnostics for route
+  cache storage and expiry without changing the editor protocol.
+
+### Guides and benchmarks
+
+- Add a dedicated [Package Configuration guide](docs/PACKAGE_CONFIGURATION.md)
+  covering module settings, defaults, and alternate configuration files selected
+  with `--config`.
+- Add a [practical caching guide](docs/CACHING.md) and runnable test module
+  covering memory, disk, expiry, purge, runtime modes, and deployment exclusions.
+- Add local HTTP [benchmarks](benchmarks/README.md) for fresh rendering and
+  response caching, with recorded baselines and validated comparison commands.
+
 ## v1.2.9-beta
 
 Changes since `v1.2.8-beta`.

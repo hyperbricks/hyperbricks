@@ -1,0 +1,6 @@
+@import "tailwindcss" source(none);
+@source "../../templates/*.html";
+@source "../../hyperbricks/*.hyperbricks.yaml";
+@plugin "daisyui" {
+  themes: lofi --default;
+}

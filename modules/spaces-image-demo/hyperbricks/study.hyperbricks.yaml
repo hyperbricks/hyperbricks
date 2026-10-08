@@ -1,0 +1,69 @@
+imports:
+  - spaces/study_source/index.hyperbricks.yaml
+
+study_image:
+  - type: image
+  - src: {path: {base: resources, path: images/originals/cream-lamp.jpg}}
+  - width: 720
+  - quality: 90
+  - alt: Cream desk lamp with a brass arm
+  - class: w-full h-auto
+  - editable:
+      src:
+        type: asset
+        label: Original image
+        group: Photograph
+        order: 10
+        required: true
+        help: Select an original or upload one. Native image processing keeps the inherited width and quality.
+        upload:
+          directory: {base: resources, path: images/originals}
+          accept: [.jpg, .jpeg, .png, .gif]
+          max_bytes: 10485760
+      alt:
+        type: text
+        label: Alternative text
+        group: Photograph
+        order: 20
+        max: 500
+
+study_source:
+  - type: hypermedia
+  - title: Light study
+  - nocache: true
+  - head:
+      - type: head
+      - metadata:
+          - type: html
+          - value: |
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <link rel="stylesheet" href="/static/css/site.css">
+  - template:
+      - type: template
+      - template: {file: {base: templates, path: page.html}}
+      - values:
+          runtime_mode: {config: hyperbricks.mode}
+          content:
+            - type: template
+            - template: {file: {base: templates, path: photograph.html}}
+            - values:
+                image:
+                  - inherit: study_image
+                caption: Cream & brass · A quiet corner
+                details:
+                  subtitle: Objects in good light
+            - editable:
+                caption:
+                  type: text
+                  label: Caption
+                  group: Photograph
+                  order: 30
+                  max: 200
+                subtitle:
+                  path: [details, subtitle]
+                  type: text
+                  label: Collection subtitle
+                  group: Collection
+                  order: 40
+                  max: 120

@@ -6,16 +6,18 @@ Start with the developer interface or server log and check the affected route. A
 
 ## Find the reported error
 
-In development mode, use the developer interface's **Errors** section:
+In development or debug mode, use the developer interface's **Errors** section:
 
-1. Set `hyperbricks.development.dashboard.enabled: true` and configure
-   `hyperbricks.development.dashboard.credentials.user` and `.password` in
-   `package.hyperbricks.yaml`, preferably through environment resolvers.
-2. Set the referenced environment variables and restart the server. There is no
-   default developer account.
-3. Open `/__hyperbricks/dashboard` on your running server, complete the browser's Basic Auth
-   challenge, and select **Errors**. You can also open
-   `/__hyperbricks/errors` directly with the same login.
+1. Set `hyperbricks.development.dashboard.enabled: true` in
+   `package.hyperbricks.yaml` and restart the server.
+2. With both credential values absent, Dashboard, Errors, and diagnostics open
+   without login. Startup warns that anyone who can reach this server can view
+   them. To require login, configure both
+   `hyperbricks.development.dashboard.credentials.user` and `.password`,
+   preferably through environment resolvers, and restart.
+3. Open `/__hyperbricks/dashboard` and select **Errors**, or open
+   `/__hyperbricks/errors` directly. Complete the browser's Basic Auth challenge
+   if credentials are configured. There is no default developer account.
 4. Select the affected route or request and read its diagnostics. Filter by
    severity when you need to separate errors from warnings.
 
@@ -34,10 +36,34 @@ The response header `X-Hyperbricks-Render-Error-Count` reports the number of col
 The Errors view also shows unchecked routes. An empty error list does not prove that every route or input has been tested.
 
 The endpoint is disabled in live mode. A `503` response means the module's
-developer credentials are absent or did not resolve; a `401` response means the
+developer credentials are only partially configured, or are absent while the
+Dashboard is disabled; a `401` response means the
 browser did not supply the configured login or supplied the wrong one. If the
 server cannot start, read the terminal error instead. See
 [HyperBricks CLI: Render diagnostics](HYPERBRICKS_CLI.md#render-diagnostics).
+
+## Spaces will not open or save
+
+Spaces and contextual editing work in development and debug mode when both
+`development.frontend_editing.enabled` and `.spaces.enabled` are enabled. Both
+switches default to `true`. Live mode, production runtimes, and static output
+exclude the editor.
+
+| Response or symptom | Cause and next step |
+| --- | --- |
+| No login prompt | Both credentials may be absent, or the browser may be reusing a saved Basic Auth login. Check the configured values and startup warning. Configure both values and restart to require login. |
+| `401 Unauthorized` | A complete developer account is configured. Enter its username and password; there is no default account. |
+| `503 Service Unavailable` | Only one credential resolved. Configure both values or remove both, then restart. Check the environment of the process that starts HyperBricks. |
+| `403` when opening Spaces over the LAN | Add the server hostname or IP from the browser URL to `development.frontend_editing.spaces.allowed_hosts`, without a scheme or port, then restart. Localhost and loopback work by default. |
+| `403` when saving | Check `spaces.write` and the browser-origin check. API writes also require `X-Spaces-Request: 1`. Setting `write: false` makes the editor read-only; omitted `write` defaults to `true`. |
+| Editor opens through an HTTPS proxy, but saves return `403` | If the proxy forwards HTTP to HyperBricks, the browser's HTTPS origin does not match the backend connection. Forwarded headers and `public_origin` do not override this check. Use a private encrypted tunnel or network that preserves the HTTP origin; see [LAN access](SPACES.md#lan-access-and-allowed-hosts). |
+| Sharing-image selection/upload is unavailable | Configure `spaces.public_origin` and a `sharing_image` policy. The public origin produces absolute image URLs; it does not grant editor access. |
+
+The host list applies whether or not login is configured. It checks the server
+address, not the connecting client's IP. With no credentials and writes enabled,
+anyone who can reach an allowed address can edit. Contextual `?edit=true` uses
+the same rules. See [Spaces configuration](SPACES.md#development-configuration)
+for complete examples.
 
 ## VS Code feedback is missing or stale
 
@@ -76,7 +102,7 @@ Query input must be allowed by `querykeys`. Check resolver diagnostics if the va
 
 ## An edit does not appear
 
-Check that the file is loaded and development watching is enabled for its directory. Changes to `package.hyperbricks.yaml` require a server restart.
+Check that the file is loaded. Automatic watching operates only in development mode and must include the file's directory. In debug mode or with watching disabled, reload or restart the runtime after saving, then refresh the browser. A Spaces save persists source files; it does not reload the runtime itself. Changes to `package.hyperbricks.yaml` always require a server restart.
 
 In live mode, the containing route may reuse cached output. Use `nocache: true` on that route when each request needs current data. Static output is a snapshot: rebuild it after source changes. See [Live Mode HTTP Settings](LIVE_MODE_HTTP.md) and [HyperBricks CLI: Static Rendering](HYPERBRICKS_CLI.md#static-rendering).
 
@@ -109,7 +135,7 @@ Export route discovery also includes routes found in the loaded source. `static.
 Check `hyperbricks start --help` for `--with-processes`, and opt in explicitly.
 Without that flag, hooks and services are skipped. A globally installed binary
 may predate the feature even when its version label matches a development
-checkout. The [demo README](https://github.com/hyperbricks/hyperbricks/blob/v1.2.9-beta/modules/development-hooks-demo/README.md) shows how
+checkout. The [demo README](https://github.com/hyperbricks/hyperbricks/blob/v1.3.0-beta/modules/development-hooks-demo/README.md) shows how
 to build and use the current checkout without replacing the global installation.
 
 Process execution supports direct development/debug starts on macOS and Linux.
@@ -141,3 +167,22 @@ shutdown ordering, environment boundaries, and exit codes.
 ## An older configuration is rejected
 
 Check [Migration Guide](MIGRATION.md) for removed response fields and changed API authentication settings. Update reusable definitions as well as the routes that inherit them.
+
+## Package imports and settings conflicts
+
+- **Import fails:** paths are relative to the importing file and must remain within the module, including symlinks. Check the named file, declaration order, duplicate keys, and import cycles. Imported files must contain one YAML mapping document.
+- **A list entry disappeared:** lists replace rather than concatenate. A later definition or the entry package replaces the imported list, including an explicit empty list.
+- **Build rejects an imported input:** the archive filters excluded a file required by the import graph. Include that source in the package inputs; build refuses to create an archive whose imports are missing.
+- **Settings refuses to save:** a source changed, moved, was deleted, or changed its symlink target after opening. Pending edits remain available for review. Ctrl+R reloads compatible edits; use `D` to explicitly discard/reload when ownership changed, then reapply the intended edit. Missing imports are never silently recreated.
+- **Only some settings files saved:** the error identifies completed writes. Review the remaining pending files after fixing the reported write problem; multi-file saves are not all-or-nothing transactions.
+
+## Generated asset retention
+
+- **Old fingerprints remain:** `cache_keep` counts previous successful generations. Cached responses, active renders, and current exported pages can protect additional generations. Unrecorded legacy assets and handwritten files are deliberately not inferred from their names.
+- **Output is in use by another operation:** stop the runtime/export writing that same static root, or use a separate output root. OS locks release when the owning process exits.
+- **Ownership storage unavailable or invalid:** restore access to the private esbuild cache directory and keep it outside static. Do not delete ownership records as routine cleanup; they contain the evidence needed to safely identify generated files.
+- **An edited generated file survives cleanup:** its contents no longer match the recorded output. HyperBricks preserves it and releases ownership instead of deleting external changes.
+
+## Static hooks and finish
+
+Static hooks require `static --with-processes`; asset housekeeping does not. Put publishing in `after_static`, which runs only after a successful export. Use `HB_OUTCOME`, `HB_FAILED_PHASE`, and `HB_EXIT_CODE` in finish scripts to distinguish errors from controlled cancellation. Finish runs after owned cleanup with a fresh timeout context, and cannot be guaranteed after SIGKILL or machine failure.

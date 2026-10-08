@@ -50,6 +50,7 @@ func RegisterSubcommands() {
 	RootCmd.AddCommand(NewAuthorCommand())
 	RootCmd.AddCommand(NewSpaceCommand())
 	RootCmd.AddCommand(NewDoctorCommand())
+	RootCmd.AddCommand(NewSettingsCommand())
 	RootCmd.AddCommand(NewLanguageServerCommand())
 	RootCmd.AddCommand(NewStartCommand())
 	RootCmd.AddCommand(NewDeployCommand())
@@ -59,6 +60,7 @@ func RegisterSubcommands() {
 	RootCmd.AddCommand(PluginCommand())
 	RootCmd.AddCommand(InitStarterCommand())
 	RootCmd.AddCommand(NewBuildCommand())
+	RootCmd.AddCommand(NewCacheCommand())
 
 }
 

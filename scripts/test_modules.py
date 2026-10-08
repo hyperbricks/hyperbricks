@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import signal
 import subprocess
 import sys
 import socket
@@ -31,6 +32,10 @@ class ModuleCheck:
 CHECKS = (
     ModuleCheck("api-security-test", 8105, (("/dashboard", ("user", "admin", "public")),)),
     ModuleCheck("esbuild-demo", 8097, (("/", ("VAT",)),)),
+    ModuleCheck("spaces-image-demo", 8134, (
+        ("/", ("First study", "Objects in good light", "/static/css/site.css", "_w720_h720.jpg")),
+        ("/second", ("Second study", "Cream &amp; brass", "/static/css/site.css", "_w720_h720.jpg")),
+    )),
     ModuleCheck("navigation-demo-swup", 8125, (("/", ("After Hours",)), ("/last-bite", ("Last Bite",)))),
     ModuleCheck("sampleapis-coffee-static", 8080, (("/", ("Coffee",)),)),
     ModuleCheck("todo-demo-htmx", 8121, (("/", ("Tasks",)), ("/fragments/tasks", ("task",)))),
@@ -84,6 +89,19 @@ def free_port() -> int:
         return sock.getsockname()[1]
 
 
+def stop_process_group(process):
+    # go run may exit before its compiled child; signal the entire session.
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        os.killpg(process.pid, signal.SIGKILL)
+        process.wait()
+
+
 def check_module(check: ModuleCheck) -> list[str]:
     runtime_port = check.port if check.name == "api-security-test" else free_port()
     env = os.environ.copy()
@@ -96,10 +114,11 @@ def check_module(check: ModuleCheck) -> list[str]:
         fixture = subprocess.Popen(
             ["go", "run", "./modules/api-security-test/tools/mock-api", "-port", "8098", "-redirect-port", "8099"],
             cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            start_new_session=True,
         )
         time.sleep(1)
     process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT, text=True)
+                               stderr=subprocess.STDOUT, text=True, start_new_session=True)
     base = f"http://127.0.0.1:{runtime_port}"
     errors: list[str] = []
     try:
@@ -133,19 +152,9 @@ def check_module(check: ModuleCheck) -> list[str]:
                 if marker.lower() not in body.lower():
                     errors.append(f"GET {path}: missing marker {marker!r}")
     finally:
-        process.terminate()
-        try:
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait()
+        stop_process_group(process)
         if fixture is not None:
-            fixture.terminate()
-            try:
-                fixture.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                fixture.kill()
-                fixture.wait()
+            stop_process_group(fixture)
     return errors
 
 
@@ -166,6 +175,13 @@ def main() -> int:
                 print(f"  - {error}")
         else:
             print(f"PASS {check.name}")
+    if selected is None or "response-cache-test" in selected:
+        result = subprocess.run(
+            [sys.executable, os.path.join(ROOT, "scripts", "test_response_cache_module.py")],
+            cwd=ROOT,
+        )
+        if result.returncode:
+            failures += 1
     print()
     print("-" * 72)
     if failures:

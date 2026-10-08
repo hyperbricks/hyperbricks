@@ -66,7 +66,10 @@ func validateDeployStartupConfig(location deployPackageConfigLocation) error {
 	if err != nil {
 		return fmt.Errorf("read package configuration before start: %w", err)
 	}
-	if _, err := shared.ValidatePackageConfigBytes(content, location.moduleRoot); err != nil {
+	if _, err := shared.ValidatePackageConfigBytesAt(content, location.path, location.moduleRoot, func(path string) ([]byte, error) {
+		raw, _, err := readRegularConfinedFile(location.moduleRoot, path)
+		return raw, err
+	}); err != nil {
 		return fmt.Errorf("cannot start module: %w; edit package.hyperbricks.yaml or rebuild this archive", err)
 	}
 	return nil

@@ -58,7 +58,17 @@ func RenderWarning(warning string) string {
 
 func DecodeWithBasicHooks(instance interface{}, config interface{}) []error {
 	var errors []error
+	if raw, ok := instance.(map[string]interface{}); ok {
+		if validator, ok := config.(interface {
+			ValidateRawConfig(map[string]interface{}) error
+		}); ok {
+			if err := validator.ValidateRawConfig(raw); err != nil {
+				return []error{ComponentError{Err: err.Error()}}
+			}
+		}
+	}
 	combinedHook := mapstructure.ComposeDecodeHookFunc(
+		typefactory.ConfigValueDecodeHookFunc(),
 		typefactory.StringToSliceHookFunc(),
 		typefactory.StringToIntHookFunc(),
 		typefactory.StringToMapStringHookFunc(),

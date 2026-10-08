@@ -247,7 +247,14 @@ func runDoctor(opts doctorOptions) doctorReport {
 	}
 
 	if module != nil {
-		checkDoctorMetadata(collector, module.PackageBytes, selection.Name, strings.TrimSpace(assets.VersionMD), report.Module.Config)
+		metadataContent := module.PackageBytes
+		if composed, err := shared.LoadPackageConfigSource(module.ConfigPath, module.Root, nil); err == nil && len(composed.Dependencies) > 1 {
+			hb, _ := composed.Materialized["hyperbricks"].(map[string]interface{})
+			if rendered, err := yaml.Marshal(map[string]interface{}{"hyperbricks": map[string]interface{}{"metadata": hb["metadata"]}}); err == nil {
+				metadataContent = rendered
+			}
+		}
+		checkDoctorMetadata(collector, metadataContent, selection.Name, strings.TrimSpace(assets.VersionMD), report.Module.Config)
 	} else {
 		for _, id := range []string{"metadata.identity", "metadata.module_version", "metadata.runtime_version", "metadata.source_fields", "build.provenance"} {
 			collector.simple(id, doctorSkip, "package metadata is unavailable")
@@ -302,7 +309,7 @@ func runDoctor(opts doctorOptions) doctorReport {
 		} else {
 			checkDoctorComponents(collector, plan, graph, config)
 			checkDoctorRoutes(collector, graph)
-			checkDoctorSpaces(collector, graph)
+			checkDoctorSpaces(collector, graph, module.Directories)
 		}
 	} else {
 		collector.simple("components.native_schema", doctorSkip, "source graph is unavailable")
@@ -793,14 +800,14 @@ func checkDoctorRoutes(collector *doctorCollector, graph doctorGraph) {
 	collector.simple("routes.unique", doctorPass, fmt.Sprintf("%d unique routes", routeCount))
 }
 
-func checkDoctorSpaces(collector *doctorCollector, graph doctorGraph) {
+func checkDoctorSpaces(collector *doctorCollector, graph doctorGraph, directories map[string]string) {
 	count := 0
 	for _, name := range sortedDoctorRootNames(graph.Values) {
 		object := graph.Values[name]
 		if object["@type"] != "<HYPERMEDIA>" {
 			continue
 		}
-		fields, err := spaces.SourceFields(object)
+		fields, err := spaces.SourceFields(object, directories)
 		if err != nil {
 			collector.simple("spaces.contract", doctorFail, fmt.Sprintf("source %s: %v", name, err))
 			return
@@ -836,14 +843,25 @@ func checkDoctorPlugins(collector *doctorCollector, config *shared.Config, cwd, 
 func checkDoctorCredentials(collector *doctorCollector, config *shared.Config) {
 	credentials := config.Development.Dashboard.Credentials
 	dashboardEnabled := (config.Mode == shared.DEVELOPMENT_MODE || config.Mode == shared.DEBUG_MODE) && config.Development.Dashboard.Enabled
+	spacesEnabled := shared.SpacesAvailable(config, shared.RuntimeOptions{})
 	frontendEditorsEnabled := config.Mode == shared.DEVELOPMENT_MODE && config.Development.FrontendEditing.Enabled &&
-		(config.Development.FrontendEditing.Spaces.Enabled || len(config.Development.FrontendEditing.Editors) > 0)
-	surfaceEnabled := dashboardEnabled || frontendEditorsEnabled
+		len(config.Development.FrontendEditing.Editors) > 0
+	surfaceEnabled := dashboardEnabled || spacesEnabled || frontendEditorsEnabled
 	switch {
 	case credentials.Complete():
 		collector.simple("security.developer_credentials", doctorPass, "developer-interface credentials are configured")
 	case credentials.Empty() && surfaceEnabled:
-		collector.set(doctorCheck{ID: "security.developer_credentials", Group: "security", Status: doctorWarn, Message: "developer interfaces are enabled but locked because credentials are not configured", Path: "hyperbricks.development.dashboard.credentials", Hint: "Configure both development.dashboard.credentials.user and development.dashboard.credentials.password"})
+		messages := []string{}
+		if dashboardEnabled {
+			messages = append(messages, "Dashboard, Errors and diagnostics are accessible without login to anyone who can reach the server")
+		}
+		if spacesEnabled {
+			messages = append(messages, fmt.Sprintf("Spaces and contextual editing are accessible without login through allowed hosts (write=%t)", config.Development.FrontendEditing.Spaces.Write))
+		}
+		if frontendEditorsEnabled {
+			messages = append(messages, "frontend editor plugins remain locked because credentials are not configured")
+		}
+		collector.set(doctorCheck{ID: "security.developer_credentials", Group: "security", Status: doctorWarn, Message: strings.Join(messages, "; "), Path: "hyperbricks.development.dashboard.credentials", Hint: "Configure both development.dashboard.credentials.user and development.dashboard.credentials.password to require login"})
 	case credentials.Empty():
 		collector.simple("security.developer_credentials", doctorPass, "developer interfaces are disabled and credentials are not configured")
 	default:

@@ -11,6 +11,7 @@ hyperbricks:
     frontend_errors: false
     dashboard:
       enabled: true
+      # Both absent: no login. Set both to require login; a partial account blocks access.
       credentials:
         user:
           env: HB_DEVELOPER_USER
@@ -20,6 +21,8 @@ hyperbricks:
       enabled: true
       spaces:
         write: true
+        # For LAN access, list the server hostname/IP without a scheme or port:
+        # allowed_hosts: [editor.example.test]
   server:
     port: 8125
     beautify: false

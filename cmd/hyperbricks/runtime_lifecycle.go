@@ -61,6 +61,9 @@ func runRuntimeMode(config *shared.Config) {
 		commands.ExitCode = 130
 	default:
 		commands.ReportError(err)
+		if errors.Is(err, errRuntimeInterrupt) {
+			commands.ExitCode = 130
+		}
 	}
 }
 
@@ -70,8 +73,13 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 	ctx, cancel := context.WithCancelCause(parent)
 	defer cancel(nil)
 	logger := logging.GetLogger().Named("server")
+	phase := "before_start"
 	var processes *developmentProcesses
 	var running *runtimeHTTPServer
+	var stopCacheControl func(context.Context) error
+	var stopCacheCleanup context.CancelFunc
+	var cacheCleanupDone chan struct{}
+	cacheConfigured := false
 	watchCtx, stopWatch := context.WithCancel(context.Background())
 	var watchDone <-chan error
 	defer func() {
@@ -93,6 +101,18 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 			cleanupErr = errors.Join(cleanupErr, running.shutdown(shutdownCtx))
 			stopHTTP()
 		}
+		if stopCacheControl != nil {
+			controlCtx, stopControl := context.WithTimeout(context.Background(), 5*time.Second)
+			cleanupErr = errors.Join(cleanupErr, stopCacheControl(controlCtx))
+			stopControl()
+		}
+		if stopCacheCleanup != nil {
+			stopCacheCleanup()
+			<-cacheCleanupDone
+		}
+		if cacheConfigured {
+			cleanupErr = errors.Join(cleanupErr, closeResponseCache())
+		}
 		if processes != nil {
 			cleanupErr = errors.Join(cleanupErr, processes.Stop())
 		}
@@ -100,8 +120,13 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 			result = context.Cause(ctx)
 		}
 		if cleanupErr != nil {
-			result = errors.Join(result, fmt.Errorf("runtime cleanup: %w", cleanupErr))
+			if result == nil || result == context.Canceled {
+				phase = "cleanup"
+			}
+			result = errors.Join(result, phaseError("cleanup", cleanupErr))
 		}
+		closeRuntimeAssets()
+		result = finishOperation(config, enabled, "start", phase, staticExportResult{}, result)
 		logger.Info("Stopped")
 	}()
 
@@ -120,9 +145,10 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 			case <-ctx.Done():
 			}
 		}()
-		if err := processes.RunTasks(ctx, "before_start", config.Development.Hooks.BeforeStart); err != nil {
+		if err := processes.RunTasks(ctx, "before_start", config.HookTasks("before_start")); err != nil {
 			return err
 		}
+		phase = "services"
 		if err := processes.StartServices(ctx, config.Development.Services); err != nil {
 			return err
 		}
@@ -130,6 +156,7 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 		logger.Info("Development hooks and services are disabled; use start --with-processes to enable them")
 	}
 
+	phase = "initialize"
 	// Preparation may execute a compiler/plugin. Cancellation must still let the
 	// CLI clean up its children if an in-process dependency does not cooperate.
 	prepared := make(chan error, 1)
@@ -148,8 +175,31 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 	if config.Mode != shared.LIVE_MODE {
 		statusServer()
 	}
+	if config.Mode == shared.LIVE_MODE {
+		cacheRoot, cacheErr := responseCacheDirectory(commands.GetModuleRoot(), config)
+		if cacheErr != nil {
+			logger.Warnw("Disk response cache unavailable; disk routes will render fresh", "error", cacheErr)
+			_ = closeResponseCache()
+		} else if err := configureResponseCache(commands.GetModuleRoot(), cacheRoot, config.Live.DiskCache.MaxBytes, config.Live.DiskCache.MaxEntries); err != nil {
+			logger.Warnw("Disk response cache unavailable; disk routes will render fresh", "error", err)
+		}
+		cacheConfigured = true
+		cleanupCtx, stopCleanup := context.WithCancel(context.Background())
+		stopCacheCleanup = stopCleanup
+		cacheCleanupDone = make(chan struct{})
+		go func() {
+			defer close(cacheCleanupDone)
+			runResponseCacheCleanup(cleanupCtx, config.Live.DiskCache.CleanupInterval)
+		}()
+		var err error
+		stopCacheControl, err = startCacheControl(commands.GetModuleRoot())
+		if err != nil {
+			logger.Warnw("Local cache purge control unavailable", "error", err)
+		}
+	}
 	initStaticFileServer(newRequestRateLimiter(config.RateLimit))
 	var err error
+	phase = "start_http"
 	running, err = startRuntimeHTTPServer()
 	if err != nil {
 		return err
@@ -165,8 +215,9 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 		case <-ctx.Done():
 		}
 	}()
+	phase = "after_start"
 	if processes != nil {
-		if err := processes.RunTasks(ctx, "after_start", config.Development.Hooks.AfterStart); err != nil {
+		if err := processes.RunTasks(ctx, "after_start", config.HookTasks("after_start")); err != nil {
 			return err
 		}
 	}
@@ -177,11 +228,12 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 		reloads.Enable()
 	}
 	if config.Mode == shared.DEVELOPMENT_MODE && config.Development.Watch {
-		watchDone, err = startRuntimeWatcher(watchCtx, resolveDevelopmentWatchDirectories(config), reloads.Request)
+		watchDone, err = startRuntimeWatcher(watchCtx, resolveDevelopmentWatchDirectories(config), reloads.Request, config.Directories["cache"])
 		if err != nil {
 			return err
 		}
 	}
+	phase = "serve"
 	logger.Info("Started")
 	select {
 	case <-ctx.Done():

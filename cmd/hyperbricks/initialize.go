@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -76,15 +77,12 @@ func run() {
 	logRuntimeSummary(hbConfig)
 
 	if commands.RenderStatic {
-		if err := basic_initialisation(); err != nil {
-			commands.ReportError(err)
-			return
-		}
-
-		// serve
-		if commands.ServeStatic {
-			if err := serveStatic(); err != nil {
-				commands.ReportError(fmt.Errorf("serve static output: %w", err))
+		if err := runStaticOperation(hbConfig); err != nil {
+			if !onlyOperationCancellation(err) {
+				commands.ReportError(err)
+			}
+			if errors.Is(err, errRuntimeInterrupt) {
+				commands.ExitCode = 130
 			}
 		}
 	}
@@ -164,6 +162,15 @@ func basic_initialisation() error {
 	initializeComponents()
 
 	// Now configure and populate the registered renderers with acquired configurations
-	PreProcessAndPopulateHyperbricksConfigurations()
+	if renderer := runtimeEsbuildRenderer(); renderer != nil {
+		if err := renderer.BeginAssetSession(); err != nil {
+			return phaseError("asset_cleanup", err)
+		}
+	}
+	if err := PreProcessAndPopulateConfigs(); err != nil {
+		closeRuntimeAssets()
+		return err
+	}
+
 	return nil
 }

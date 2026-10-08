@@ -28,6 +28,10 @@ func RunStaticWizard() {
 		Exit = true
 		return
 	}
+	if !force {
+		Exit = true
+		return
+	}
 	ForceStatic = force
 
 	exportZip, err := promptYesNo(reader, "Export rendered output to zip? (y/N): ")
@@ -45,6 +49,13 @@ func RunStaticWizard() {
 			return
 		}
 		ExportOutDir = strings.TrimSpace(outDir)
+		exclusions, err := promptInput(reader, "ZIP exclusions, comma-separated paths relative to rendered output (optional): ")
+		if err != nil {
+			failf("Error reading input: %v\n", err)
+			Exit = true
+			return
+		}
+		ExportExclude = strings.TrimSpace(exclusions)
 	}
 
 	serve, err := promptYesNo(reader, "Serve rendered files? (y/N): ")

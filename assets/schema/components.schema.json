@@ -1533,6 +1533,22 @@
           }
         },
         {
+          "path": "cache_keep",
+          "key": "cache_keep",
+          "go_name": "CacheKeep",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Previous successful output generations to retain in addition to current. Default zero. Active renders and cached responses protect referenced assets.",
+          "authoring": {
+            "label": "Cache Keep",
+            "control": "number",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
           "path": "debug",
           "key": "debug",
           "go_name": "Debug",
@@ -1609,7 +1625,7 @@
           "go_name": "Fingerprint",
           "go_type": "bool",
           "kind": "bool",
-          "description": "Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Old assets are retained.",
+          "description": "Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Obsolete owned generations are pruned after successful replacement.",
           "authoring": {
             "label": "Fingerprint",
             "control": "checkbox",
@@ -1760,6 +1776,8 @@
               "section",
               "static",
               "cache",
+              "cache.storage",
+              "cache.expire",
               "nocache",
               "index",
               "content_type",
@@ -1849,12 +1867,49 @@
           "path": "cache",
           "key": "cache",
           "go_name": "Cache",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Legacy field; does not override the process-wide hyperbricks.live.cache duration.",
+          "go_type": "composite.RouteCacheConfig",
+          "kind": "object",
+          "description": "Rendered-output cache: a duration such as 30s selects memory caching; a mapping selects storage (mem or disk) and optional expire. Package live.cache: 0s and nocache: true disable caching.",
           "example": "{!{fragment-cache.hyperbricks.yaml}}",
           "authoring": {
             "label": "Cache",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache.expire",
+          "key": "expire",
+          "go_name": "Expire",
+          "go_type": "*string",
+          "kind": "string",
+          "description": "Route lifetime as a Go duration; omitted inherits hyperbricks.live.cache. Use 0s to disable caching for this route.",
+          "example": "30s",
+          "authoring": {
+            "label": "Expire",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache.storage",
+          "key": "storage",
+          "go_name": "Storage",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Storage for rendered output in live mode: mem (default) or disk. Does not change HTTP cache policy.",
+          "example": "disk",
+          "validate": "omitempty,oneof=mem disk",
+          "authoring": {
+            "label": "Storage",
             "control": "text",
             "group": "route",
             "publish": {
@@ -2855,6 +2910,8 @@
               "section",
               "static",
               "cache",
+              "cache.storage",
+              "cache.expire",
               "nocache",
               "index",
               "content_type"
@@ -2987,12 +3044,49 @@
           "path": "cache",
           "key": "cache",
           "go_name": "Cache",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Legacy field; does not override the process-wide hyperbricks.live.cache duration.",
+          "go_type": "composite.RouteCacheConfig",
+          "kind": "object",
+          "description": "Rendered-output cache: a duration such as 30s selects memory caching; a mapping selects storage (mem or disk) and optional expire. Package live.cache: 0s and nocache: true disable caching.",
           "example": "{!{hypermedia-cache.hyperbricks.yaml}}",
           "authoring": {
             "label": "Cache",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache.expire",
+          "key": "expire",
+          "go_name": "Expire",
+          "go_type": "*string",
+          "kind": "string",
+          "description": "Route lifetime as a Go duration; omitted inherits hyperbricks.live.cache. Use 0s to disable caching for this route.",
+          "example": "30s",
+          "authoring": {
+            "label": "Expire",
+            "control": "text",
+            "group": "route",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache.storage",
+          "key": "storage",
+          "go_name": "Storage",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Storage for rendered output in live mode: mem (default) or disk. Does not change HTTP cache policy.",
+          "example": "disk",
+          "validate": "omitempty,oneof=mem disk",
+          "authoring": {
+            "label": "Storage",
             "control": "text",
             "group": "route",
             "publish": {
@@ -3757,6 +3851,22 @@
             "label": "Class",
             "control": "text",
             "group": "image",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "editable",
+          "key": "editable",
+          "go_name": "Editable",
+          "go_type": "interface {}",
+          "kind": "interface",
+          "description": "Source-owned Spaces declarations for src, alt, and title. Image src uses a resources asset policy. Not rendered.",
+          "authoring": {
+            "label": "Editable",
+            "control": "text",
             "publish": {
               "omit_empty": true,
               "omit_false": true

@@ -73,7 +73,8 @@ func logRuntimeSummary(config *shared.Config) {
 	if config.Development.Dashboard.Enabled {
 		dashboard, errors = developerDashboardPath, errorsViewPath
 	}
-	if config.Mode == shared.DEVELOPMENT_MODE && config.Development.FrontendEditing.Enabled && config.Development.FrontendEditing.Spaces.Enabled {
+	spacesEnabled := shared.SpacesAvailable(config, shared.GetRuntimeOptions())
+	if spacesEnabled {
 		spaces = runtimeRoutePath(config.Development.FrontendEditing.Spaces.Route)
 	}
 	if logging.VerboseEnabled() {
@@ -82,10 +83,18 @@ func logRuntimeSummary(config *shared.Config) {
 	} else if dashboard != "disabled" || spaces != "disabled" {
 		logger.Infof("Developer tools  dashboard=%s spaces=%s write=%t", dashboard, spaces, spaces != "disabled" && config.Development.FrontendEditing.Spaces.Write)
 	}
-	if (config.Development.Dashboard.Enabled ||
-		(config.Mode == shared.DEVELOPMENT_MODE && config.Development.FrontendEditing.Enabled &&
-			(config.Development.FrontendEditing.Spaces.Enabled || len(config.Development.FrontendEditing.Editors) > 0))) &&
-		!config.Development.Dashboard.Credentials.Complete() {
+	credentials := config.Development.Dashboard.Credentials
+	editorsEnabled := config.Mode == shared.DEVELOPMENT_MODE && config.Development.FrontendEditing.Enabled &&
+		len(config.Development.FrontendEditing.Editors) > 0
+	if config.Development.Dashboard.Enabled && credentials.Empty() {
+		logger.Warn("Dashboard, Errors and diagnostics are accessible without login to anyone who can reach this server; configure hyperbricks.development.dashboard.credentials.user and .password to require login")
+	}
+	if credentials.Empty() && spacesEnabled {
+		logger.Warnf("Spaces and contextual editing are accessible without login through allowed hosts; write=%t; configure hyperbricks.development.dashboard.credentials.user and .password to require login", config.Development.FrontendEditing.Spaces.Write)
+	}
+	if credentials.Empty() && editorsEnabled {
+		logger.Warn("Frontend editor plugins locked: hyperbricks.development.dashboard.credentials is not configured")
+	} else if !credentials.Empty() && !credentials.Complete() && (spacesEnabled || editorsEnabled || config.Development.Dashboard.Enabled) {
 		logger.Warn("Developer interface locked: hyperbricks.development.dashboard.credentials is not fully configured")
 	}
 	watching := config.Mode == shared.DEVELOPMENT_MODE && config.Development.Watch

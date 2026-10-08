@@ -149,3 +149,74 @@ func TestAuthorInspectionMissingTemplateDiagnostic(t *testing.T) {
 		t.Fatalf("missing reference concealed: %+v", value)
 	}
 }
+
+func TestAuthorAndDoctorNativeImageProperties(t *testing.T) {
+	root := scaffoldFixtureModule(t)
+	source := `painting:
+  - type: image
+  - src: {path: {base: resources, path: images/original.png}}
+  - width: 1400
+  - alt: Painting
+  - editable:
+      src: {type: asset, directory: {base: resources, path: images}}
+      alt: text
+base:
+  - type: hypermedia
+  - content:
+      - type: template
+      - inline: '{{.image}}'
+      - values:
+          image:
+            - inherit: painting
+`
+	scaffoldWrite(t, filepath.Join(root, "source", "app.hyperbricks.yaml"), source)
+	ctx, err := authorProject(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := scaffoldState(t, root)
+	for _, target := range []string{"base", "base.content", "base.content.values.image"} {
+		inspection, err := inspectAuthorContext(ctx, target)
+		if err != nil || len(inspection.EditableFields) != 2 {
+			t.Fatalf("%s: %+v %v", target, inspection, err)
+		}
+	}
+	module, err := loadAuthoringModule(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	plan, err := newScaffoldPlan(module)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := validateAuthorSources(plan); err != nil {
+		t.Fatal(err)
+	}
+	graph, err := loadDoctorGraph(module)
+	if err != nil {
+		t.Fatal(err)
+	}
+	collector := newDoctorCollector()
+	checkDoctorSpaces(collector, graph, module.Directories)
+	if collector.checks["spaces.contract"].Status != doctorPass {
+		t.Fatal(collector.checks)
+	}
+	// The same target-aware diagnostic must reach authoring and doctor.
+	scaffoldWrite(t, filepath.Join(root, "source", "app.hyperbricks.yaml"), strings.Replace(source, "width: 1400", "width: -1", 1))
+	_, err = authorProject(root, "")
+	if err == nil || !strings.Contains(err.Error(), "/content/values/image/") {
+		t.Fatalf("missing target diagnostic: %v", err)
+	}
+	graph, err = loadDoctorGraph(module)
+	if err != nil {
+		t.Fatal(err)
+	}
+	checkDoctorSpaces(collector, graph, module.Directories)
+	if check := collector.checks["spaces.contract"]; check.Status != doctorFail || !strings.Contains(check.Message, "/content/values/image/") {
+		t.Fatal(check)
+	}
+	scaffoldWrite(t, filepath.Join(root, "source", "app.hyperbricks.yaml"), source)
+	if !reflect.DeepEqual(before, scaffoldState(t, root)) {
+		t.Fatal("inspection or validation wrote files")
+	}
+}

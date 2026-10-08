@@ -22,6 +22,18 @@ Native plugins require a compatible platform and Go toolchain. The plugin profil
 
 Use `--binary /path/to/hyperbricks` to test an existing runtime built from this checkout. Add `--keep` to retain the temporary projects and logs after a successful run.
 
+## Configuration contracts
+
+```sh
+python3 scripts/test_configuration_lifecycle.py
+```
+
+This focused check stages `package.configuration.hyperbricks.yaml` as the entry package in a disposable project. It imports the static profile and `config/lifecycle.hyperbricks.yaml`; the entry overrides the imported port variable and clears an inherited list. Hooks only record their phase and outcome in `lifecycle-events.jsonl`.
+
+The check covers opt-in execution, successful and failed exports, ZIP completion before `after_static`, finish outcome/exit status, start/restart cancellation, fingerprint cleanup on cache hits and changed builds, failed-build preservation, unrelated asset preservation, archive imports, and missing-import rejection. It accepts `--binary` and `--keep` like the main lifecycle check.
+
+The configuration and process CI workflow runs this profile on Linux and macOS alongside Go contracts for import merge rules, settings tree navigation, source ownership, entry overrides, external edits/moves/deletions, symlink changes, and partial saves. The default all-tests script also runs the profile. See the canonical [package configuration](../../docs/PACKAGE_CONFIGURATION.md) and [CLI settings](../../docs/HYPERBRICKS_CLI.md) documentation for behavior and usage.
+
 ## What is tested
 
 | Configuration | Checks |
@@ -29,6 +41,7 @@ Use `--binary /path/to/hyperbricks` to test an existing runtime built from this 
 | `package.hyperbricks.yaml` | Pages and fragments, native assets, request-specific `goja_render`, concurrent requests, development reload, production rendering, and `.hra` deployment |
 | `package.api.hyperbricks.yaml` | API reads and writes, validation errors, version conflicts, cookies, and route guards |
 | `package.plugin.hyperbricks.yaml` | Native plugin builds, configured actions, template rendering, and HTML escaping |
+| `package.configuration.hyperbricks.yaml` | Imported settings, lifecycle outcomes, asset cleanup, and archive preservation |
 | `package.static.hyperbricks.yaml` | An isolated static route, generated assets, and zip export |
 
 See [Fixture profiles](docs/profiles.md) for the routes and expected responses. The API profile uses a local API that keeps its data in memory; restarting it resets the data.

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -37,6 +38,10 @@ type staticSnapshotRuntime struct {
 }
 
 func snapshotStaticRoutes(configs map[string]map[string]interface{}, renderDir string) error {
+	return snapshotStaticRoutesContext(context.Background(), configs, renderDir)
+}
+
+func snapshotStaticRoutesContext(ctx context.Context, configs map[string]map[string]interface{}, renderDir string) (result error) {
 	targets, err := collectStaticSnapshotTargets(configs)
 	if err != nil {
 		return err
@@ -52,7 +57,7 @@ func snapshotStaticRoutes(configs map[string]map[string]interface{}, renderDir s
 	}
 	defer func() {
 		if err := runtime.close(); err != nil {
-			logging.GetLogger().Warnw("Static snapshot runtime shutdown failed", "error", err)
+			result = errors.Join(result, phaseError("cleanup", err))
 		}
 	}()
 
@@ -66,8 +71,11 @@ func snapshotStaticRoutes(configs map[string]map[string]interface{}, renderDir s
 	logger := logging.GetLogger()
 	logger.Infow("Static snapshot runtime started", "base_url", runtime.baseURL, "target_count", len(targets))
 	for _, target := range targets {
+		if err := context.Cause(ctx); err != nil {
+			return err
+		}
 		logger.Infow("Snapshotting static route", "request", target.requestURI(), "output", target.OutputPath, "source", target.Source)
-		body, err := fetchStaticSnapshotTarget(client, runtime.baseURL, target)
+		body, err := fetchStaticSnapshotTargetContext(ctx, client, runtime.baseURL, target)
 		if err != nil {
 			return err
 		}
@@ -364,12 +372,16 @@ func dedupeStaticSnapshotTargets(targets []staticSnapshotTarget) ([]staticSnapsh
 }
 
 func fetchStaticSnapshotTarget(client *http.Client, baseURL string, target staticSnapshotTarget) ([]byte, error) {
+	return fetchStaticSnapshotTargetContext(context.Background(), client, baseURL, target)
+}
+
+func fetchStaticSnapshotTargetContext(ctx context.Context, client *http.Client, baseURL string, target staticSnapshotTarget) ([]byte, error) {
 	targetURL, err := target.url(baseURL)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodGet, targetURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create static snapshot request %s: %w", target.requestURI(), err)
 	}

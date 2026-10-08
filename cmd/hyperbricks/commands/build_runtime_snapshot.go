@@ -128,7 +128,7 @@ func PackageRuntimeSnapshot(opts RuntimeSnapshotOptions) (RuntimeSnapshotResult,
 			return result, err
 		}
 		builtAt := time.Now().UTC().Add(time.Duration(attempt) * time.Nanosecond).Format(time.RFC3339Nano)
-		artifact, err := packagemetadata.RenderArtifact(config, packagemetadata.ArtifactOptions{
+		artifact, err := renderPackageArtifact(config, configPath, snapshotRoot, packagemetadata.ArtifactOptions{
 			Module:        opts.Module,
 			Format:        "hra",
 			FormatVersion: "1",
@@ -175,9 +175,13 @@ func PackageRuntimeSnapshot(opts RuntimeSnapshotOptions) (RuntimeSnapshotResult,
 // known in-progress editor/Spaces/esbuild staging names. New Spaces documents
 // and assets are intentionally included.
 func collectRuntimeSnapshotFiles(root string) ([]buildFile, error) {
+	excludeCache, err := moduleCacheExclusion(root)
+	if err != nil {
+		return nil, err
+	}
 	var files []buildFile
 	var totalBytes int64
-	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
+	err = filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
 		}
@@ -185,10 +189,10 @@ func collectRuntimeSnapshotFiles(root string) ([]buildFile, error) {
 			return nil
 		}
 		name := entry.Name()
-		if entry.IsDir() && isExcludedDir(name) {
+		if entry.IsDir() && (isExcludedDir(name) || excludeCache(path)) {
 			return fs.SkipDir
 		}
-		if !entry.IsDir() && (isExcludedFile(name) || isRuntimeStagingFile(name)) {
+		if !entry.IsDir() && (isExcludedFile(name) || isRuntimeStagingFile(name) || excludeCache(path)) {
 			return nil
 		}
 		if entry.Type()&os.ModeSymlink != 0 {
@@ -218,6 +222,9 @@ func collectRuntimeSnapshotFiles(root string) ([]buildFile, error) {
 		return nil
 	})
 	if err != nil {
+		return nil, err
+	}
+	if err := verifyPackageArchiveInputs(root, files); err != nil {
 		return nil, err
 	}
 	sort.Slice(files, func(i, j int) bool { return files[i].rel < files[j].rel })

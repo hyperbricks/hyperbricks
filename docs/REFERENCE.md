@@ -1,5 +1,5 @@
 **Licence:** MIT
-**Version:** v1.2.9-beta
+**Version:** v1.3.0-beta
 
 
 # HyperBricks Component Reference
@@ -296,7 +296,9 @@ A `<FRAGMENT>` dynamically renders part of an HTML page, allowing updates withou
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
 | `beautify` | `bool` | no | Override server.beautify for this object when rendered directly |
-| `cache` | `string` | no | Legacy field; does not override the process-wide hyperbricks.live.cache duration. |
+| `cache` | `object` | no | Rendered-output cache: a duration such as 30s selects memory caching; a mapping selects storage (mem or disk) and optional expire. Package live.cache: 0s and nocache: true disable caching. |
+| `cache.expire` | `string` | no | Route lifetime as a Go duration; omitted inherits hyperbricks.live.cache. Use 0s to disable caching for this route. |
+| `cache.storage` | `string` | no | Storage for rendered output in live mode: mem (default) or disk. Does not change HTTP cache policy. |
 | `content_type` | `string` | no | content type header definition |
 | `enclose` | `string` | no | Wrapping property for the fragment rendered output |
 | `guard.auth.cookie` | `string` | no | Cookie name used to resolve the request token |
@@ -456,7 +458,9 @@ Route-owning page shell that renders the main HyperBricks document.
 | --- | --- | --- | --- |
 | `beautify` | `bool` | no | Override server.beautify for this object when rendered directly |
 | `bodytag` | `string` | no | Special body enclose with use of \|. Please note that this will not work when a `<HYPERMEDIA>`.template is configured. In that case, you have to add the bodytag in the template. |
-| `cache` | `string` | no | Legacy field; does not override the process-wide hyperbricks.live.cache duration. |
+| `cache` | `object` | no | Rendered-output cache: a duration such as 30s selects memory caching; a mapping selects storage (mem or disk) and optional expire. Package live.cache: 0s and nocache: true disable caching. |
+| `cache.expire` | `string` | no | Route lifetime as a Go duration; omitted inherits hyperbricks.live.cache. Use 0s to disable caching for this route. |
+| `cache.storage` | `string` | no | Storage for rendered output in live mode: mem (default) or disk. Does not change HTTP cache policy. |
 | `content_type` | `string` | no | content type header definition |
 | `cookies` | `list` | no | Set-Cookie values to include when serving this hypermedia |
 | `doctype` | `string` | no | Alternative Doctype for the HTML document |
@@ -869,11 +873,12 @@ Native JavaScript, TypeScript, and CSS bundling with lazy cached or per-render b
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `binary` | `string` | no | Optional external esbuild executable; empty uses the embedded Go API. |
 | `cache` | `bool` | no | True reuses valid builds; false rebuilds on every component render. Default false. Independent of page caching. |
+| `cache_keep` | `int` | no | Previous successful output generations to retain in addition to current. Default zero. Active renders and cached responses protect referenced assets. |
 | `debug` | `bool` | no | Log effective build options, engine, and cache diagnostics. |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
 | `entry` | `string` | yes | Source filename. Use path with an explicit resources base. |
 | `external` | `list` | no | Import or asset URL patterns to leave unbundled, e.g. /static/vendor/*. |
-| `fingerprint` | `bool` | no | Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Old assets are retained. |
+| `fingerprint` | `bool` | no | Emit content-versioned JS/CSS filenames in the configured output directory. Default false. Obsolete owned generations are pruned after successful replacement. |
 | `loader` | `map` | no | Extension loader overrides, e.g. .woff2: file or .png: dataurl. |
 | `mangle` | `bool` | no | Advanced: mangle JavaScript properties using .*; may break external property contracts. Default false; not allowed for CSS-only entries. |
 | `minify` | `bool` | no | Minify whitespace and syntax. Default false. |
@@ -913,6 +918,7 @@ Single image renderer with optional optimization and HTML output.
 | `alt` | `string` | no | Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images. |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
 | `class` | `string` | no | CSS class for styling the image |
+| `editable` | `interface` | no | Source-owned Spaces declarations for src, alt, and title. Image src uses a resources asset policy. Not rendered. |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
 | `height` | `int` | no | Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size. |
 | `id` | `string` | no | Id of image |

@@ -20,9 +20,10 @@ See [Server Scripts](../../docs/GOJA_RENDER.md) for the component contract.
 
 ## Optional Developer Access
 
-The public pages work without developer credentials. To use the protected
-development tools, choose your own password and export these values in the same
-terminal before starting the module:
+The public pages work without developer credentials. Spaces also opens without
+login when both developer credentials are absent. To require a developer login
+and use render diagnostics while Dashboard is disabled, choose your own password
+and export these values in the same terminal before starting the module:
 
 ```sh
 export HB_DEVELOPER_USER=developer
@@ -31,10 +32,12 @@ hyperbricks start -m goja-render-demo
 ```
 
 Replace the password placeholder before running the commands. By default, the
-package reads these variables through `development.dashboard.credentials`; use
+package reads these variables through
+`hyperbricks.development.dashboard.credentials`; use
 the same values for the browser's login prompt. There is no default account.
-Missing values lock the developer tools while the public pages stay available.
-Restart the process after changing credentials or package settings.
+With both values absent, Spaces and enabled Dashboard views open without login
+and startup warns. A partial account blocks access with `503`; a complete account
+requires login. Restart the process after changing credentials or package settings.
 
 Developer credentials can also be set directly in `package.hyperbricks.yaml`.
 Replace only `credentials` under `hyperbricks.development.dashboard`, leaving
@@ -50,11 +53,14 @@ With direct values, the environment exports above are not needed. Choose your
 own password, restart the server, and use these values to log in. The password
 is stored as plain text; do not commit real credentials to a shared repository.
 
-[Render diagnostics](http://localhost:8095/__hyperbricks/render-diagnostics) and
-the read-only [Spaces view](http://localhost:8095/__hyperbricks/spaces) share this
-login even though the dashboard is disabled. To also open the
+[Render diagnostics](http://localhost:8095/__hyperbricks/render-diagnostics) require
+credentials while Dashboard is disabled. [Spaces](http://localhost:8095/__hyperbricks/spaces)
+uses the same login when configured and opens without login when both values are
+absent. Spaces and its writes default to enabled in development and debug mode;
+set `hyperbricks.development.frontend_editing.spaces.write: false` for read-only
+access. To also open the
 [Dashboard](http://localhost:8095/__hyperbricks/dashboard), set
 `hyperbricks.development.dashboard.enabled: true` in
 `package.hyperbricks.yaml` and restart. See
 [development configuration](../../docs/SPACES.md#development-configuration) for
-the shared access settings.
+the shared access settings, host restrictions, and network setup.

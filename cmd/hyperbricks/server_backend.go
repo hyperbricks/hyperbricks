@@ -167,24 +167,24 @@ func registerDashboardHandlers(mux *http.ServeMux) bool {
 		return false
 	}
 
-	mux.Handle("/assets/brandmark.svg", developerInterfaceHandler(http.HandlerFunc(serveBrandMark)))
-	mux.Handle("/assets/favicon.svg", developerInterfaceHandler(http.HandlerFunc(serveFavicon)))
+	mux.Handle("/assets/brandmark.svg", dashboardHandler(http.HandlerFunc(serveBrandMark)))
+	mux.Handle("/assets/favicon.svg", dashboardHandler(http.HandlerFunc(serveFavicon)))
 
-	mux.Handle("/assets/dashboard.css", developerInterfaceHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/assets/dashboard.css", dashboardHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", mime.TypeByExtension(".css"))
 		w.Header().Set("Cache-Control", "no-store")
 		w.Write([]byte(assets.DashboardCSS))
 	})))
-	mux.Handle("/assets/hyperbricks-ui.css", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksUIStylesheet)))
-	mux.Handle("/assets/hyperbricks-theme.js", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksThemeScript)))
-	mux.Handle("/assets/hyperbricks-icons.js", developerInterfaceHandler(http.HandlerFunc(serveHyperbricksIconsScript)))
+	mux.Handle("/assets/hyperbricks-ui.css", dashboardHandler(http.HandlerFunc(serveHyperbricksUIStylesheet)))
+	mux.Handle("/assets/hyperbricks-theme.js", dashboardHandler(http.HandlerFunc(serveHyperbricksThemeScript)))
+	mux.Handle("/assets/hyperbricks-icons.js", dashboardHandler(http.HandlerFunc(serveHyperbricksIconsScript)))
 
 	mux.Handle(developerDashboardPath, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !developerDashboardEnabled() {
 			http.NotFound(w, r)
 			return
 		}
-		if !requireDeveloperInterfaceAuth(w, r) {
+		if !requireDashboardAuth(w, r) {
 			return
 		}
 		w.Header().Set("Cache-Control", "no-store")
@@ -211,8 +211,7 @@ func registerDashboardHandlers(mux *http.ServeMux) bool {
 		if errorsViewEnabled() {
 			data.ErrorsRoute = errorsViewPath
 		}
-		if data.HbConfig.Mode == shared.DEVELOPMENT_MODE && !shared.GetRuntimeOptions().Production && data.HbConfig.Development.FrontendEditing.Enabled &&
-			data.HbConfig.Development.FrontendEditing.Spaces.Enabled && data.HbConfig.ValidateFrontendEditing() == nil {
+		if spacesEditorAvailable() {
 			data.SpacesRoute = data.HbConfig.Development.FrontendEditing.Spaces.Route
 		}
 		data.CacheExpire = data.HbConfig.Live.CacheTime.String()

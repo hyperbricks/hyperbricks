@@ -111,8 +111,8 @@ func validateAuthorSources(p *scaffoldPlan) error {
 		if values[name]["@type"] != "<HYPERMEDIA>" {
 			continue
 		}
-		if _, err := spaces.SourceFields(values[name]); err != nil {
-			return fmt.Errorf("source %s: %w; preserve scalar editable bindings or explicitly override the editing contract", name, err)
+		if _, err := spaces.SourceFields(values[name], p.module.Directories); err != nil {
+			return fmt.Errorf("source %s: %w; preserve declared editable targets or explicitly override the editing contract", name, err)
 		}
 	}
 	return nil

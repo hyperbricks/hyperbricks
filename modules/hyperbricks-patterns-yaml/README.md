@@ -102,8 +102,9 @@ The rule is simple:
 
 ## Developer access
 
-Before starting either the installed or local runtime, configure the developer
-login in the same terminal:
+Dashboard, Spaces, and contextual editing open without login when both developer
+credentials are absent, with a startup warning. To require login, configure both
+values in the same terminal before starting either the installed or local runtime:
 
 ```sh
 export HB_DEVELOPER_USER=developer
@@ -130,12 +131,17 @@ With direct values, the environment exports above are not needed. Choose your
 own password, restart the server, and use these values to log in. The password
 is stored as plain text; do not commit real credentials to a shared repository.
 
-If either resolved credential is empty, developer routes return **Developer interface
-unavailable: credentials are not configured**. Public pattern pages still work,
-but the **Manage Spaces** links need an authenticated editor API response before
-they appear. Open the Spaces URL directly to log in, then reload the pattern page.
-This developer login is separate from the guarded application demo's
-`demo` / `open-sesame` credentials.
+A partial account blocks developer access with `503`; a complete account requires
+login. With both credentials absent, enabled developer views open without login.
+The **Manage Spaces** links appear when the editor API confirms write access. If
+login is configured, open the Spaces URL directly to log in, then reload the
+pattern page. Spaces also supports debug mode; automatic file watching operates
+only in development mode. In debug, reload or restart the runtime after saving,
+then refresh the public page. Set
+`hyperbricks.development.frontend_editing.spaces.write: false` for read-only access.
+See [Spaces configuration](../../docs/SPACES.md#development-configuration) for
+enablement and network access. This developer login is separate from the guarded
+application demo's `demo` / `open-sesame` credentials.
 
 ## Install Or Build The Plugins
 

@@ -251,7 +251,7 @@ A typical module contains:
 
 HyperBricks automatically loads `*.hyperbricks.yaml` files directly inside the configured `hyperbricks/` directory. It does not scan subdirectories for source files. Load those files through file-level `imports` in a loaded source file; paths are relative to the importing file. See [YAML Usage: Imports](YAML_USAGE.md#imports).
 
-Directory locations are configured in `package.hyperbricks.yaml`. See [YAML Usage](YAML_USAGE.md) for the YAML source contract and [Reference](REFERENCE.md) for generated component fields.
+Directory locations and module settings are configured in `package.hyperbricks.yaml`. See [Package Configuration](PACKAGE_CONFIGURATION.md) for the file structure, settings, and defaults, [YAML Usage](YAML_USAGE.md) for the YAML source contract, and [Reference](REFERENCE.md) for generated component fields.
 
 ## Glossary
 
@@ -274,6 +274,7 @@ See [Spaces](SPACES.md) for source-owned editing and [Routing](ROUTING.md) for r
 ## Next Steps
 
 - [Quickstart](QUICKSTART.md) creates a working YAML module.
+- [Package Configuration](PACKAGE_CONFIGURATION.md) explains module settings, defaults, and directory layout.
 - [Routing](ROUTING.md) explains route owners and URL matching.
 - [YAML Usage](YAML_USAGE.md) documents the YAML syntax and resolvers.
 - [Reference](REFERENCE.md) lists runtime component fields.

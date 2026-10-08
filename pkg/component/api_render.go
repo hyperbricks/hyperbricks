@@ -380,7 +380,7 @@ func applyApiTemplate(templateStr string, data interface{}, config APIConfig) (s
 		}
 	}
 
-	tmpl, err := shared.GenericTemplate().Parse(templateStr)
+	tmpl, err := shared.ParsedGenericTemplate(templateStr)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{
 			Hash:     shared.GenerateHash(),
