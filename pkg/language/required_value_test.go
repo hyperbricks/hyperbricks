@@ -53,8 +53,15 @@ func TestRequiredValueDiagnosticsExplainEmptyFileAndClearOnRepair(t *testing.T) 
 		t.Run(test.name, func(t *testing.T) {
 			source := "doc:\n  - type: text\n  - value: " + test.expression + "\n"
 			diagnostics := analyzer.Diagnostics(uri, source, nil)
-			if len(diagnostics) != 1 || diagnostics[0].Code != "component.empty_required_field" {
+			styleWarnings := 0
+			if test.name == "quoted path" {
+				styleWarnings = 1
+			}
+			if len(diagnostics) != 1+styleWarnings || diagnostics[0].Code != "component.empty_required_field" {
 				t.Fatalf("existing empty resource diagnostics = %#v", diagnostics)
+			}
+			if styleWarnings > 0 && diagnostics[1].Code != "yaml.unnecessary_quotes" {
+				t.Fatalf("expected independent quote warning: %#v", diagnostics)
 			}
 			diagnostic := diagnostics[0]
 			for _, want := range []string{"text.value", "empty", "resources/docs/test.md"} {
@@ -66,7 +73,7 @@ func TestRequiredValueDiagnosticsExplainEmptyFileAndClearOnRepair(t *testing.T) 
 				t.Fatalf("empty resource diagnostic must anchor value expression, not type: %#v", diagnostic)
 			}
 			repaired := strings.Replace(source, "docs/test.md", "docs/populated.md", 1)
-			if diagnostics := analyzer.Diagnostics(uri, repaired, nil); len(diagnostics) != 0 {
+			if diagnostics := analyzer.Diagnostics(uri, repaired, nil); len(diagnostics) != styleWarnings || (styleWarnings > 0 && diagnostics[0].Code != "yaml.unnecessary_quotes") {
 				t.Fatalf("source repair retained empty value error: %#v", diagnostics)
 			}
 		})
