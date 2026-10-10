@@ -947,6 +947,37 @@ func TestDoctorHumanReportEscapesTerminalControlCharacters(t *testing.T) {
 	}
 }
 
+func TestDoctorLegacyDashboardWarnsWithoutBlocking(t *testing.T) {
+	for _, enabled := range []bool{true, false} {
+		t.Run(fmt.Sprint(enabled), func(t *testing.T) {
+			projectRoot := t.TempDir()
+			moduleRoot := writeDoctorFixture(t, projectRoot, "demo", strings.TrimSpace(assets.VersionMD), "", "")
+			packagePath := filepath.Join(moduleRoot, PackageConfigFileName)
+			content, err := os.ReadFile(packagePath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			mapping := "dashboard:\n      enabled: false\n      credentials:\n        user: doctor-user-secret\n        password: doctor-password-secret"
+			updated := strings.Replace(string(content), mapping, fmt.Sprintf("dashboard: %t", enabled), 1)
+			if updated == string(content) {
+				t.Fatal("fixture did not contain dashboard mapping")
+			}
+			if err := os.WriteFile(packagePath, []byte(updated), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			before := snapshotDoctorTree(t, projectRoot)
+			report, _, code := executeDoctorJSON(t, projectRoot, "-m", "demo")
+			check := doctorCheckByID(t, report, "package.configuration")
+			if code != 0 || report.Summary.Failed != 0 || check.Status != doctorWarn || !strings.Contains(check.Message, fmt.Sprintf("development.dashboard.enabled: %t", enabled)) {
+				t.Fatalf("legacy config blocked or warning missing: code=%d report=%#v", code, report)
+			}
+			if !reflect.DeepEqual(before, snapshotDoctorTree(t, projectRoot)) {
+				t.Fatal("Doctor changed the legacy module")
+			}
+		})
+	}
+}
+
 func TestDoctorCredentialsFollowEnabledDeveloperSurfaces(t *testing.T) {
 	for _, tc := range []struct {
 		name, mode                                         string

@@ -14,6 +14,15 @@ func (c *Config) ValidateDevelopmentDashboard() error {
 	return c.dashboardConfigError
 }
 
+// LegacyWarning describes the supported Boolean shorthand without making it a
+// configuration error. Consumers choose where to display the migration advice.
+func (c DevelopmentDashboardConfig) LegacyWarning() string {
+	if !c.legacyBoolean {
+		return ""
+	}
+	return fmt.Sprintf("development.dashboard: %t uses the legacy Boolean form; use development.dashboard.enabled: %t instead", c.Enabled, c.Enabled)
+}
+
 func decodeDevelopmentDashboard(input interface{}) (DevelopmentDashboardConfig, error) {
 	var config DevelopmentDashboardConfig
 	root, _ := input.(map[string]interface{})
@@ -22,9 +31,12 @@ func decodeDevelopmentDashboard(input interface{}) (DevelopmentDashboardConfig, 
 	if !exists {
 		return config, nil
 	}
+	if frontendBoolean(raw) {
+		return DevelopmentDashboardConfig{Enabled: raw == true || raw == "true", legacyBoolean: true}, nil
+	}
 	settings, ok := raw.(map[string]interface{})
 	if !ok {
-		return config, fmt.Errorf("development.dashboard must be a mapping with enabled and credentials")
+		return config, fmt.Errorf("development.dashboard must be a mapping with enabled and credentials, or a legacy Boolean")
 	}
 	if enabled, exists := settings["enabled"]; exists && !frontendBoolean(enabled) {
 		return config, fmt.Errorf("development.dashboard.enabled must be a boolean")

@@ -66,6 +66,9 @@ func logRuntimeSummary(config *shared.Config) {
 	if logging.VerboseEnabled() {
 		logger.Debugw("Logging configured", "level", logger.Level().String(), "file", file)
 	}
+	if warning := config.Development.Dashboard.LegacyWarning(); warning != "" {
+		logger.Warn(warning)
+	}
 	if commands.RenderStatic || shared.GetRuntimeOptions().Production || (config.Mode != shared.DEVELOPMENT_MODE && config.Mode != shared.DEBUG_MODE) {
 		return
 	}

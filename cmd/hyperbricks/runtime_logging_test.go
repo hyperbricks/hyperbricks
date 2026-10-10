@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http/httptest"
 	"path/filepath"
 	"strings"
@@ -14,6 +15,26 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"go.uber.org/zap/zapcore"
 )
+
+func TestRuntimeSummaryWarnsForLegacyDashboardBoolean(t *testing.T) {
+	root := setupModuleLogTest(t)
+	for _, enabled := range []bool{true, false} {
+		t.Run(fmt.Sprint(enabled), func(t *testing.T) {
+			config, err := shared.ValidatePackageConfigBytes([]byte(fmt.Sprintf("hyperbricks: {mode: development, development: {dashboard: %t, frontend_editing: {enabled: false}}}", enabled)), root)
+			if err != nil {
+				t.Fatal(err)
+			}
+			started := time.Now()
+			logRuntimeSummary(config)
+			for _, event := range logging.GetLogs() {
+				if !event.Time.Before(started) && event.Level == zapcore.WarnLevel && event.Message == config.Development.Dashboard.LegacyWarning() {
+					return
+				}
+			}
+			t.Fatal("legacy dashboard migration warning was not logged")
+		})
+	}
+}
 
 func setupModuleLogTest(t *testing.T) string {
 	t.Helper()

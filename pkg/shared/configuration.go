@@ -142,7 +142,7 @@ type DevelopmentConfig struct {
 	Hooks           DevelopmentHooksConfig     `mapstructure:"hooks" description:"Optional finite before_start and after_start tasks. Executed only by a direct development/debug start with --with-processes; each task must finish successfully." example:"{before_start: [{name: prepare, command: [sh, prepare.sh]}]}"`
 	Services        []DevelopmentServiceConfig `mapstructure:"services" description:"Optional foreground local HTTP services owned by an opted-in development session. Services start in order, must become ready, and stop with HyperBricks in reverse order." example:"[{name: demo-api, command: [python3, server.py], ready: {http: 'http://127.0.0.1:4319/health'}}]"`
 	FrontendEditing FrontendEditingConfig      `mapstructure:"frontend_editing" description:"Spaces in development/debug and frontend-editor plugin mounts in development, with independent write controls. Uses shared dashboard credentials even when the dashboard is disabled; Spaces permits an empty account, while external editors require a complete account." example:"{enabled: true, spaces: {enabled: true, write: true}}"`
-	Dashboard       DevelopmentDashboardConfig `mapstructure:"dashboard" description:"Dashboard Overview and Errors enablement plus shared developer-interface credentials. Must be a mapping; the former Boolean form is invalid." example:"{enabled: false}"`
+	Dashboard       DevelopmentDashboardConfig `mapstructure:"dashboard" description:"Dashboard Overview and Errors enablement plus shared developer-interface credentials. Use a mapping with enabled and credentials. Legacy Boolean true/false sets enabled with a migration warning." example:"{enabled: false}"`
 	FrontendErrors  bool                       `mapstructure:"frontend_errors" description:"Permit frontend error panels when the component enables debugpanel. Panels are restricted to requests authenticated with the shared developer credentials." example:"false"`
 	Watch           bool                       `mapstructure:"watch" description:"Enable source-directory watching in development mode. Package configuration changes still require a process restart." example:"true"`
 	WatchDirs       []string                   `mapstructure:"watch_dirs" description:"Directories to watch when development watching is enabled. Entries matching directories keys use those configured paths; other entries are filesystem paths. An omitted or empty list watches hyperbricks and templates." example:"[hyperbricks, templates, resources]"`
@@ -150,8 +150,9 @@ type DevelopmentConfig struct {
 }
 
 type DevelopmentDashboardConfig struct {
-	Enabled     bool              `mapstructure:"enabled" description:"Enable Dashboard Overview and Errors. This switch does not disable independently enabled Spaces or other developer interfaces." example:"false"`
-	Credentials CredentialsConfig `mapstructure:"credentials" description:"Shared developer-interface username and password, separate from deployment-service credentials. With both values absent, enabled Dashboard, Errors, diagnostics and Spaces open without login in development/debug and emit a startup warning. Spaces host and write policies still apply. Configured accounts require login; partial accounts stay locked with HTTP 503. External editor plugins and frontend error panels require credentials. Use environment resolvers and encrypted transport for non-loopback access." example:"{user: {env: HB_DEVELOPER_USER}, password: {env: HB_DEVELOPER_PASSWORD}}"`
+	Enabled       bool              `mapstructure:"enabled" description:"Enable Dashboard Overview and Errors. This switch does not disable independently enabled Spaces or other developer interfaces." example:"false"`
+	Credentials   CredentialsConfig `mapstructure:"credentials" description:"Shared developer-interface username and password, separate from deployment-service credentials. With both values absent, enabled Dashboard, Errors, diagnostics and Spaces open without login in development/debug and emit a startup warning. Spaces host and write policies still apply. Configured accounts require login; partial accounts stay locked with HTTP 503. External editor plugins and frontend error panels require credentials. Use environment resolvers and encrypted transport for non-loopback access." example:"{user: {env: HB_DEVELOPER_USER}, password: {env: HB_DEVELOPER_PASSWORD}}"`
+	legacyBoolean bool
 }
 
 // LoggerConfig with defaults.
@@ -565,6 +566,14 @@ func decodeConfigWithPolicy(input interface{}, output interface{}, strict bool) 
 	}
 
 	decodeHook := mapstructure.ComposeDecodeHookFunc(
+		// Preserve the legacy dashboard switch in the general decoder too. The
+		// separately validated dashboard above owns credentials and the warning.
+		func(srcType reflect.Type, destType reflect.Type, value interface{}) (interface{}, error) {
+			if destType == reflect.TypeOf(DevelopmentDashboardConfig{}) && frontendBoolean(value) {
+				return map[string]interface{}{"enabled": value == true || value == "true"}, nil
+			}
+			return value, nil
+		},
 		// Decode CacheTime
 		func(srcType reflect.Type, destType reflect.Type, value interface{}) (interface{}, error) {
 			if srcType.Kind() == reflect.String && destType == reflect.TypeOf(CacheTime{}) {
