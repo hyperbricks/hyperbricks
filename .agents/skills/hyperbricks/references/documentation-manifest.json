@@ -1,0 +1,188 @@
+{
+  "schema_version": 2,
+  "hyperbricks_version": "v1.3.1-beta",
+  "source_repository": "https://github.com/hyperbricks/hyperbricks",
+  "source_digest": "3f7b09e3808ab903e9e2492fe57cd1712dc261ef76c8efbfb258e0251cff5677",
+  "documents": [
+    {
+      "source_path": "docs/INTRODUCTION.md",
+      "bundled_path": "docs/INTRODUCTION.md",
+      "source_sha256": "33d88a954c703bf3f4ace53ab28d64b6136a07047bc6893307b0a678a7578362",
+      "bundled_sha256": "939018e409f46858320e0bf116d4357bf7ad640a0a50fd4c0df27da442ca9733"
+    },
+    {
+      "source_path": "docs/QUICKSTART.md",
+      "bundled_path": "docs/QUICKSTART.md",
+      "source_sha256": "03ec68829c7e2e898b0495e377eb17ad10d73564945c730c51a7fed5ab32fe7c",
+      "bundled_sha256": "c1037227257a6926ec4cc2a3bb115fdf2fd21918899e1e40b8423d51e9bd915e"
+    },
+    {
+      "source_path": "docs/AGENT_SETUP.md",
+      "bundled_path": "docs/AGENT_SETUP.md",
+      "source_sha256": "4e8f73358009c0c1782189b49ecc970d9d6e24e8bed4919d89bc02b4ea506d65",
+      "bundled_sha256": "ece012752ca86cbc4fbdddeb191ce572df0e0fbc017087ed868f02aa6b150680"
+    },
+    {
+      "source_path": "docs/PACKAGE_CONFIGURATION.md",
+      "bundled_path": "docs/PACKAGE_CONFIGURATION.md",
+      "source_sha256": "ab5889879fb9208f0bd98096b7b6105c5c067a20d72c3fdc834932435321b382",
+      "bundled_sha256": "b8624b9a143028455fc687c59e66eaacb68edc95d2224a147f02d118a498847e"
+    },
+    {
+      "source_path": "docs/HOWTOS.md",
+      "bundled_path": "docs/HOWTOS.md",
+      "source_sha256": "353006f8cb8baa1aaecf3a632140a72dedcb2d1e07a66bc8df111fc852771889",
+      "bundled_sha256": "fc23af2166abbf247328e12537a669eb8178186613200c76b7f4cfb9f11be823"
+    },
+    {
+      "source_path": "docs/TROUBLESHOOTING.md",
+      "bundled_path": "docs/TROUBLESHOOTING.md",
+      "source_sha256": "b1d7131c463ca8939e23bb99b2a9f927d1d02a6466b4a6ae69c300e90931cded",
+      "bundled_sha256": "84ca8cd786264849772f6fab21ac6bbdd0888667438a43aa71157350f1795275"
+    },
+    {
+      "source_path": "docs/ROUTING.md",
+      "bundled_path": "docs/ROUTING.md",
+      "source_sha256": "394cbbf5e97be836f4bdc567464cbe1693fc4c06207847ee01af4d54607d6c18",
+      "bundled_sha256": "3ee1cf25aaf36f617734fedb9193448f9709876b5cf493ba27cf9ad25a8bec76"
+    },
+    {
+      "source_path": "docs/REFERENCE.md",
+      "bundled_path": "docs/REFERENCE.md",
+      "source_sha256": "d965c3f1cbb0117664ee6eb597648120ce23e40f3ff1e2df9b209cb9f780a9ea",
+      "bundled_sha256": "081a710dae255a9be56a1e60695c14c8f148320859bf8ba7ae0014cac1e6ccfa"
+    },
+    {
+      "source_path": "docs/MARKDOWN.md",
+      "bundled_path": "docs/MARKDOWN.md",
+      "source_sha256": "f75ad98c2df777c4a8a41974d1ff53e498f1880769cb7f11aa0d50a7aec8fa86",
+      "bundled_sha256": "6ef9e9107c2d40b4d5cfa46694264738e641634db761f58a129c0f479cb44639"
+    },
+    {
+      "source_path": "docs/SPACES.md",
+      "bundled_path": "docs/SPACES.md",
+      "source_sha256": "d637c474f66e48a3a5eeb65afc268ea182b80e1fc2250244c354b19bc9e6aa28",
+      "bundled_sha256": "7f9667178c5ae65ba2b8b29f78fce26dcaa25a525474491156aea392fad8ad90"
+    },
+    {
+      "source_path": "docs/AUTHOR.md",
+      "bundled_path": "docs/AUTHOR.md",
+      "source_sha256": "e2f2956f19689cb49506ce900bbbbb4caa60a231451b11be9c8c3752003f4d03",
+      "bundled_sha256": "6141e1369d9e2b4c70fbcae935afa3b905b5450f5a4e4e50a23bde92093323f1"
+    },
+    {
+      "source_path": "docs/API_RENDER.md",
+      "bundled_path": "docs/API_RENDER.md",
+      "source_sha256": "0db8a366896c6c86e26e41520d583e5c3671c7179d40d38b706774f4a5fe31b9",
+      "bundled_sha256": "f3dfd8761cb7b8c5ffd67f823bec4e00974a7bd3ac77676045ecc3e80d1ffe32"
+    },
+    {
+      "source_path": "docs/GOJA_RENDER.md",
+      "bundled_path": "docs/GOJA_RENDER.md",
+      "source_sha256": "c2869994a4b643095d0c40c873ef4dbe8a869456ef5da57e927c44683458249e",
+      "bundled_sha256": "7dbf4605c9058a209c3c754b492216e9abfce93bffdcbea60dd26d96899c326b"
+    },
+    {
+      "source_path": "docs/PLUGINS.md",
+      "bundled_path": "docs/PLUGINS.md",
+      "source_sha256": "6ff100a5a54b7e7f561171a62676e5637d133fac2d05ecfcfe4a034b80039e87",
+      "bundled_sha256": "74a72cee24d7840ef64e52a5eeae9056bed7c847728d99bf2a8283022081cf2a"
+    },
+    {
+      "source_path": "docs/ESBUILD.md",
+      "bundled_path": "docs/ESBUILD.md",
+      "source_sha256": "1fea74cbee063977c2fa79faa65f967a87fe2719db547cb7707e12c7187fec3c",
+      "bundled_sha256": "0eb5515ad396e9bda8b4fe78bbc2975e55c289fbd7ba6f965606f026209a68ec"
+    },
+    {
+      "source_path": "docs/DEVELOPMENT_HOOKS.md",
+      "bundled_path": "docs/DEVELOPMENT_HOOKS.md",
+      "source_sha256": "69b7bb40c3f315a071121d66535d7b36d00835b206f1f3b324393454cbe2c38b",
+      "bundled_sha256": "e5c7de5b7a5ad23856e6547fd8f447c57040a9f35d301fd49122420d258c878f"
+    },
+    {
+      "source_path": "docs/DEPLOY.md",
+      "bundled_path": "docs/DEPLOY.md",
+      "source_sha256": "8d2c6f403b0ac944f4be50c9c2e4a9969431fb7da57155a457c09c4e2d88401d",
+      "bundled_sha256": "453143d4e1fddb42b61a9a03d899765d48ce3b168cb47c7769391d8bf1e960d3"
+    },
+    {
+      "source_path": "docs/DOCKER.md",
+      "bundled_path": "docs/DOCKER.md",
+      "source_sha256": "281e6a18ec2806790d4935411600a28b7573c4f87964e6e11bde0efaaeb6cd1a",
+      "bundled_sha256": "e35021ae1e5afb0027fa34473d860dedea6da63bec06da9f7277da6f6d03595d"
+    },
+    {
+      "source_path": "docs/MIGRATION.md",
+      "bundled_path": "docs/MIGRATION.md",
+      "source_sha256": "352b530f271897640f34d133df712a03231febebd04f29fe446a37b548e780d0",
+      "bundled_sha256": "d08c5271ac416920460be510d486b2729ed3773310264ba1c9da30d6497ec8b8"
+    },
+    {
+      "source_path": "docs/AUTHOR_REFERENCE.md",
+      "bundled_path": "docs/AUTHOR_REFERENCE.md",
+      "source_sha256": "60e3a1c5e6e1ec14b566598d2bd902427bbfb5571620f99e0f87b1219442dc94",
+      "bundled_sha256": "82e9a15d42b50797b088082c9f5df311beee6bb7124c188e70b5876e9b7efbce"
+    },
+    {
+      "source_path": "docs/CACHING.md",
+      "bundled_path": "docs/CACHING.md",
+      "source_sha256": "a4f326925011294a91e21147b1cd200f164b2417032c1d4c23fe0d1daae986f8",
+      "bundled_sha256": "47a8480b49341850e59691cb1d6a1c9e39f3c80bca1784a3004a48171aaad450"
+    },
+    {
+      "source_path": "docs/HTMX_FRAGMENTS_AND_CANONICAL_URLS.md",
+      "bundled_path": "docs/HTMX_FRAGMENTS_AND_CANONICAL_URLS.md",
+      "source_sha256": "7bce3731b506845654abfddfc816ab97825195b70ffbcba22cf009d3e2ecbd37",
+      "bundled_sha256": "7e02ba17f7679268da6ede4d9573aa2972f671f2c3fe22cb142549428625fa58"
+    },
+    {
+      "source_path": "docs/HTTP_RESPONSES.md",
+      "bundled_path": "docs/HTTP_RESPONSES.md",
+      "source_sha256": "7dba91fa27087733321bb6105917c0d8d59a1513fd91ee92f93d0ba78dbcd286",
+      "bundled_sha256": "203758f92e737518dd8295cb5b271664b8ca3272a9ac283c5271bbb1d364cf25"
+    },
+    {
+      "source_path": "docs/HYPERBRICKS_CLI.md",
+      "bundled_path": "docs/HYPERBRICKS_CLI.md",
+      "source_sha256": "ace7f4cae8e48237ca3179a6c29467ba6a7a740cdbebe1bb964110362de03849",
+      "bundled_sha256": "a24a4d3fa3afed46158cd774bd41f01789e6ba257ba7d2f86f622f4a83b920e2"
+    },
+    {
+      "source_path": "docs/HYPERBRICKS_TYPE_EXAMPLES.md",
+      "bundled_path": "docs/HYPERBRICKS_TYPE_EXAMPLES.md",
+      "source_sha256": "2e3b65c982f1b12daff6976f7ce2ad3592cd084540df38cc2a7a72853a9573c3",
+      "bundled_sha256": "76e0f579cb04ae783004bda070573d909c5db2bd2c7930621b741149d4bf29c7"
+    },
+    {
+      "source_path": "docs/IMAGES.md",
+      "bundled_path": "docs/IMAGES.md",
+      "source_sha256": "0d1a35fb3811634fdb37c4ac47c93003b32cefae5c22c4c9abef416f62a1319f",
+      "bundled_sha256": "14945dd3bafb4a0fe16158f590d9866b0cfee20b81bd08b55085ffefb284b1fd"
+    },
+    {
+      "source_path": "docs/LIVE_MODE_HTTP.md",
+      "bundled_path": "docs/LIVE_MODE_HTTP.md",
+      "source_sha256": "f2af15928c647e3a5528fabf21c5d0b592aa47418f412c8512468674bd7ea9f2",
+      "bundled_sha256": "9bb4bed1bccde948e6a1cebf3e361ed2524ce31a461a99da7cf0abb96fcbe49c"
+    },
+    {
+      "source_path": "docs/ROUTE_GUARD.md",
+      "bundled_path": "docs/ROUTE_GUARD.md",
+      "source_sha256": "b63fcfd035278bf02cc0d03534162c4bea361c65718f7156b87b4ed4e9f68883",
+      "bundled_sha256": "bafcdafb57bc821e33a93c27e28b600d2669dec74e2ec1331566e8fd037b0274"
+    },
+    {
+      "source_path": "docs/RUNTIME_GATEWAY.md",
+      "bundled_path": "docs/RUNTIME_GATEWAY.md",
+      "source_sha256": "a3e18af40d713050812397e2b1af4cb5c30aa6e910362cb8ad517d1f41ba4025",
+      "bundled_sha256": "d9c44e5817f74a554256df5afb207fec0f6723423e6cd9c8111b948b7768e07f"
+    },
+    {
+      "source_path": "docs/YAML_USAGE.md",
+      "bundled_path": "docs/YAML_USAGE.md",
+      "source_sha256": "504e6bebc41583f6fae3c2baf161e6c11882cd4292d95283daf5a662a697032d",
+      "bundled_sha256": "02d96bfc39d0922064eba9291d8c00fb2ff153da753ec8cb251811c706a4e1ab"
+    }
+  ]
+}

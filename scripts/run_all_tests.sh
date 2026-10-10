@@ -63,6 +63,7 @@ done
 cd "${REPO_ROOT}"
 
 announce "Running all tests..."
+python3 -m unittest scripts/test_package_agent_skill.py scripts/test_agent_pipeline.py scripts/test_api_render_runner.py
 
 if [[ "${WITH_DOCS}" == "true" ]]; then
   echo "Regenerating documentation before tests..."

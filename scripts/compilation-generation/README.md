@@ -4,27 +4,34 @@ These scripts collect separately maintained HyperBricks documents into two
 snapshot compilations. The generated files preserve their source paths and are
 not intended to read as one continuous manual.
 
-After changing canonical documentation or the skill, run one command from the
-repository root:
+When documentation synchronization is requested and README/reference are already
+current, run from the repository root:
 
 ```sh
 ./scripts/sync_docs.sh
 ```
 
-It regenerates the README and component reference, every compilation format,
-both skill-reference trees, and the packaged Codex plugin mirror from the
-current working tree. It runs the focused checks and never commits, tags, or
-pushes. Repeating it without source changes leaves tracked output bytes
-unchanged.
+It builds every compilation format and the shared skill's versioned references
+from the working tree, then runs focused checks. It never commits, tags, or
+pushes. For full release preparation, use `./scripts/pre_release.sh`, which also
+regenerates README/reference and runs the complete core suite first.
 
-When the packaged skill changes, synchronization increments the Codex plugin's
-plain `MAJOR.MINOR.PATCH` version in `.codex-plugin/plugin.json`. For example,
-an older `0.1.1+codex.<timestamp>` version becomes `0.1.2`; the timestamp suffix
-is no longer generated because the Codex app could not upload or install that
-format. The package preflight rejects suffixes so this fails locally before an
-upload. To choose a new major or minor plugin version, synchronize first and
-then set the desired plain version in the manifest. A repeat sync with no skill
-change keeps that version.
+The maintained skill is `.agents/skills/hyperbricks/`. Its references are
+outputs of canonical `docs/`; no second skill tree or plugin mirror is built.
+After the prepared sources and references are committed, package the complete
+skill with `python3 scripts/package_agent_skill.py`. The versioned ZIP and
+SHA-256 sidecar are written under ignored `bin/`. The website download script
+uses that same packager together with the separately maintained VS Code VSIX.
+
+The release entry points have distinct responsibilities:
+
+| Entry point | Reads | Writes or verifies |
+| --- | --- | --- |
+| `scripts/build_docs.sh` | README templates, schema, executable examples, runtime version | `README.md`, `docs/REFERENCE.md` |
+| `scripts/sync_docs.sh` | Canonical `docs/`, maintained skill, runtime version | Compilations and shared skill references; checks their freshness |
+| `scripts/pre_release.sh` | Current checkout | Full mandatory test scopes, then `sync_docs.sh`; stops on failure |
+| `scripts/package_agent_skill.py` | Committed shared skill, canonical documentation and version | Deterministic skill ZIP and SHA-256 sidecar |
+| `scripts/prepare_landing_downloads.sh` | Committed core sources and clean recorded VS Code checkout | Skill ZIP, VSIX, checksums and website filename map |
 
 To build compilations alone, run:
 
@@ -39,10 +46,12 @@ environment is ignored by Git; it is not part of the repository or a release
 commit.
 When Markdown is generated (`all` or `--format markdown`), a versioned,
 one-file-per-source documentation snapshot is also synchronized to the
-HyperBricks skill and packaged Codex plugin references. Both compilations remain
-publication artifacts in `docs/compilations/`; they are not copied into either
-skill bundle.
-PDF-only and EPUB-only builds leave the skill references unchanged.
+shared HyperBricks skill references. Both compilations remain publication
+artifacts in `docs/compilations/`; they are not copied into the skill bundle.
+PDF-only and EPUB-only builds leave the skill references unchanged. Builds with
+an explicit historical `--ref` also leave the current skill untouched. To inspect
+a historical skill snapshot, run `build_skill_documentation.py --ref <revision>
+--output-dir <empty-temporary-directory>` separately.
 
 ## Text and cover copy
 
@@ -84,7 +93,7 @@ Build only the separate documentation snapshot used by the skill:
 ```
 
 The snapshot writes `DOCUMENTATION_INDEX.md`, `documentation-manifest.json`, and
-generated documents under `SKILLS/hyperbricks/references/docs/`. The documents
+generated documents under `.agents/skills/hyperbricks/references/docs/`. The documents
 retain the source prose from `/docs`; links within `/docs` remain local and links
 to other repository paths use the release version from `assets/version.md`.
 Each document has a stable `Generated from docs/...` notice without a commit ID.
@@ -98,20 +107,17 @@ copy from older bundles. The individual documents, index and manifest provide
 the bundled documentation; unrelated reference files are preserved.
 
 Pass `--check` to verify an existing snapshot against the current working tree
-without writing it. The one-command workflow runs both mirror checks;
-manually:
+without writing it. The shared snapshot check is:
 
 ```sh
 .venv-compilations/bin/python scripts/compilation-generation/build_skill_documentation.py --check
-.venv-compilations/bin/python scripts/compilation-generation/build_skill_documentation.py --check --output-dir codex-plugin/hyperbricks/skills/hyperbricks/references
-bash scripts/check_codex_plugin_sync.sh
 ```
 
 With an explicit `--ref`, the check compares against that committed revision.
 Changed source text, version, document inventory, generated links, bundled
-content, or an obsolete bundled compilation fail. The tree-sync script checks
-that skill and plugin copies match each other; it does not replace the content
-checks against canonical documentation.
+content, or an obsolete bundled compilation fail. The release ZIP packager
+also checks the committed snapshot against canonical documentation before
+packaging; a valid archive must not contain stale documentation.
 
 For safety, a custom non-empty output directory must already contain a valid
 snapshot manifest. Use an empty directory for its first generation; the
@@ -119,8 +125,10 @@ repository root, canonical `docs/` tree, and symlinked output paths are never
 accepted as output.
 
 The snapshot records content rather than a particular commit. Canonical docs,
-generated references, and the packaged mirror can be verified together before
-any commit and committed as one coherent change.
+and generated references can be verified together before any commit and
+committed as one coherent change. The ZIP is built from that committed tree.
+Historical revisions may read the former `SKILLS/` source layout; current
+working-tree generation requires `.agents/skills/hyperbricks/`.
 
 The EPUB uses the PDF's Arial/sans-serif typography, navy/teal heading palette,
 code panels, and rendered Mermaid diagrams, with relative sizes and wrapping
