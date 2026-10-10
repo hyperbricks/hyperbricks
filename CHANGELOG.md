@@ -1,5 +1,47 @@
 # Changelog
 
+## v1.3.1-beta
+
+Changes since `v1.3.0-beta`.
+
+### Onboarding and development tools
+
+- Clarify the quickstart, module layout, imports, and the path from a running
+  module to Dashboard, Spaces, and Errors. Print the full Dashboard URL at
+  startup when it is enabled, and include URLs in Dashboard logs.
+- Improve navigation and feedback in Dashboard, Errors, and Spaces, including
+  guidance for creating pages and declaring editable content fields.
+- Accept legacy `dashboard: true` and `dashboard: false` settings with migration
+  warnings. Explicit `false` continues to disable the Dashboard.
+- Add `hyperbricks lint --json` and shared language-server checks for unnecessary
+  YAML quotes and the string type of `moduleversion`. Generate plain module
+  versions when YAML preserves their string type without quotes.
+- Improve VS Code executable discovery and recovery when HyperBricks is
+  installed outside the editor's PATH.
+
+### Agent support
+
+- Maintain one shared skill under `.agents/skills/hyperbricks/`, with a Claude
+  compatibility link and setup guidance for Codex, Claude, and Gemini.
+- Add `hyperbricks skills install` and a versioned skill ZIP containing matching
+  documentation. Replace the Codex plugin distribution and its duplicated skill
+  sources; keep `docs/` as the source for generated documentation copies.
+
+### Static previews and examples
+
+- Add `hyperbricks serve [directory]` to preview existing static files and
+  unpacked exports, with clean URLs, directory-confined access, and no module
+  configuration requirement. Use it in the static-hosting examples.
+- Preserve catalog filters during retries and restore keyboard focus after
+  catalog fragment updates.
+
+### Test tooling
+
+- Cancel existing-output deletion without waiting for keyboard input in
+  non-interactive runs.
+- Check Docker availability before starting API render fixtures, prevent
+  concurrent fixture runs, and limit cleanup to resources owned by the run.
+
 ## v1.3.0-beta
 
 Changes since `v1.2.9-beta`.

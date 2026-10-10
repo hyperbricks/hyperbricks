@@ -2,19 +2,76 @@
 
 Start with the developer interface or server log and check the affected route. An HTTP `200` response can still contain component errors.
 
+## HyperBricks is not found
+
+After `go install`, Go places the executable in `GOBIN` when configured, or in
+the first `GOPATH` entry's `bin` directory. Check the actual settings:
+
+```bash
+go env GOBIN GOPATH
+```
+
+The default is `~/go/bin/hyperbricks` on macOS and Linux. Add the actual binary
+directory to your shell's `PATH`; for the default location in Bash or Zsh:
+
+```bash
+export PATH="$PATH:$HOME/go/bin"
+hyperbricks version
+```
+
+Use your configured directory instead when `go env` reports another location.
+To keep the change, add that export to the appropriate shell startup file,
+such as `~/.zshrc` or `~/.bashrc`, and open a new terminal. On Windows, add the
+Go binary directory to your user Path and open a new terminal;
+`where.exe hyperbricks` shows the selected executable.
+
+If the version differs from the one you installed, run `command -v hyperbricks`
+to find the active installation. Correct the `PATH` order or use the intended
+binary's absolute path. An install failure must be resolved before changing PATH.
+
+## VS Code cannot find HyperBricks
+
+VS Code can inherit a different `PATH` from your terminal, especially when
+opened from the Dock or desktop. `spawn hyperbricks ENOENT` means the editor
+could not find or launch that executable; it is not a YAML error.
+
+Run `command -v hyperbricks` in a terminal where it works (`where.exe hyperbricks`
+on Windows), then set `hyperbricks.executable` in VS Code Settings to that
+absolute path. **HyperBricks: Show Output** should identify the same runtime.
+Check `hyperbricks version` and `hyperbricks language-server --help` using that
+path if the server still fails to start.
+
+After changing PATH, fully quit and reopen VS Code. Restarting only the language
+server cannot update the editor's inherited environment. For protocol or
+runtime-feedback problems after startup, continue with
+[missing or stale feedback](#vs-code-feedback-is-missing-or-stale).
+
+## The server port is already in use
+
+Keep an existing service running if it is still needed. Start this module on a
+different port, for example `hyperbricks start -m demo --port 8081`, then use
+`http://localhost:8081/` for both the application and its developer interfaces.
+To make the choice persistent, update `hyperbricks.server.port` in the selected
+package file and restart. See [package configuration](PACKAGE_CONFIGURATION.md).
+
 ## Find the reported error
 
 In development or debug mode, use the developer interface's **Errors** section:
 
-1. Set `hyperbricks.development.dashboard.enabled: true` in
-   `package.hyperbricks.yaml` and restart the server.
+1. If Dashboard is disabled, follow [Open The Dashboard](QUICKSTART.md#open-the-dashboard)
+   to enable it through `hyperbricks settings -m demo`, using your module name.
+   This sets `hyperbricks.development.dashboard.enabled: true` in the package;
+   restart the server with the same configuration and port.
 2. With both credential values absent, Dashboard, Errors, and diagnostics open
    without login. Startup warns that anyone who can reach this server can view
    them. To require login, configure both
    `hyperbricks.development.dashboard.credentials.user` and `.password`,
    preferably through environment resolvers, and restart.
-3. Open `/__hyperbricks/dashboard` and select **Errors**, or open
-   `/__hyperbricks/errors` directly. Complete the browser's Basic Auth challenge
+3. Open the Dashboard URL printed at startup, normally
+   [http://localhost:8080/__hyperbricks/dashboard](http://localhost:8080/__hyperbricks/dashboard),
+   and select **Errors**, or open
+   [http://localhost:8080/__hyperbricks/errors](http://localhost:8080/__hyperbricks/errors)
+   directly. Replace `8080` if you selected another port. Complete the browser's Basic Auth challenge
    if credentials are configured. There is no default developer account.
 4. Select the affected route or request and read its diagnostics. Filter by
    severity when you need to separate errors from warnings.

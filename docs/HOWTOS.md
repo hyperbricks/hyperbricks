@@ -89,6 +89,10 @@ hyperbricks start -m my-project
 
 Open `http://localhost:8080/` to see the output.
 
+For route links and render errors, [enable and open Dashboard](QUICKSTART.md#open-the-dashboard).
+Use `my-project` in place of the quickstart's `demo` module name, and keep the
+same server port. Dashboard is disabled by default.
+
 `init` provides a working scaffold. Its `package.hyperbricks.yaml` is ordinary YAML configuration; the files in `hyperbricks/` contain ordered component definitions. Keep templates in `templates/`, source assets in `resources/`, and public assets in `static/`. The `/static/` URL refers to the configured public directory; a `path` resolver returns a filesystem path, not a public URL.
 
 Use `hyperbricks <command> --help` for the installed flags. A development checkout may contain features newer than its embedded version label; build and verify the example against that checkout before assuming another installation has the same components. See [CLI](HYPERBRICKS_CLI.md).
@@ -437,6 +441,9 @@ hyperbricks static -m demo --serve
 ```
 
 The output is written to `modules/demo/rendered/`. Upload those files to a static host, such as GitHub Pages or Cloudflare Pages. Omit `--serve` if you only want to export the files.
+
+To preview existing output or an extracted ZIP without rendering again, use
+[`hyperbricks serve`](HYPERBRICKS_CLI.md#serve) with that site's directory.
 
 Browser JavaScript still works, and HTMX can load exported fragments. Server-side calculations, access checks, and API actions need a running HyperBricks server; a static export only contains the results produced during the export. See [Static output](HYPERBRICKS_CLI.md#static-rendering) for export options.
 

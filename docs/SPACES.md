@@ -41,6 +41,13 @@ editor](http://localhost:8080/__hyperbricks/spaces) or the [Dashboard
 Overview](http://localhost:8080/__hyperbricks/dashboard). Restart the module
 after changing package settings.
 
+When Dashboard is enabled, startup prints its full URL with the effective port;
+open it and select **Spaces** when frontend editing and Spaces are enabled.
+If you prefer the settings editor to editing YAML,
+follow [Open The Dashboard](QUICKSTART.md#open-the-dashboard). The `hello-world`
+starter also needs frontend editing enabled, as described under
+[Developer Interface](QUICKSTART.md#developer-interface).
+
 With both developer credentials absent, the enabled Dashboard and Spaces open without login and startup warns about access. Set `development.frontend_editing.spaces.write: false` for a read-only editor.
 
 Automatic file watching runs only in development mode. In debug mode, saving still persists the source, but you must reload or restart the runtime to update public rendering. Refresh the public page after the runtime updates in either mode.
@@ -142,6 +149,13 @@ A reverse proxy that terminates HTTPS and forwards HTTP to HyperBricks can open 
 It is optional for ordinary editing. Sharing-image upload and selection require both `public_origin` and a `sharing_image` policy. It does not grant access, change `allowed_hosts`, or supply a browser origin for write requests.
 
 ## Source Schema
+
+When creating a Space, the source selector shows how many content fields are
+editable. A source with no editable fields still permits a page with its own
+title, route, and metadata. The Content panel explains that limitation. To add
+content editing, declare the fields in the shared source as below, then use
+**Reload source files** in Spaces. This updates the editor's field list; runtime
+watching or a server restart loads the source change into the served pages.
 
 Declare the fields users may edit in the source's `editable` configuration. On a `template`, each field targets `values.<key>`. On `markdown`, it targets the component's own `file` or `content`. On native `image`, it targets the declared `src`, `alt`, or `title` property. An instance cannot add editing rights. See [Markdown and Spaces editing](MARKDOWN.md#spaces-editing) for native Markdown composition.
 

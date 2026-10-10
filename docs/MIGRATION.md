@@ -15,6 +15,14 @@ The equivalent expanded form is `cache: {storage: mem, expire: 30s}`. Use `stora
 
 ### Developer access and Spaces defaults
 
+Legacy `development.dashboard: true` and `dashboard: false` are accepted again.
+They behave like `development.dashboard.enabled: true` and `false`, respectively,
+and produce a migration warning at startup and in `doctor`. An explicit `false`
+keeps Dashboard Overview and Errors disabled; it does not prevent the module
+from starting. Omission still defaults to disabled. Migrate to the mapping form
+below to remove the warning or configure credentials. Configuration files are
+not rewritten automatically.
+
 With `development.dashboard.enabled: true` in development or debug mode,
 Dashboard Overview, Errors, and their diagnostic data now open without login
 when both `development.dashboard.credentials.user` and `.password` are absent.
@@ -90,7 +98,7 @@ account is configured. These are module credentials, separate from deployment
 service credentials. Use HTTPS or a private encrypted connection for non-loopback
 access because Basic Auth does not encrypt credentials.
 
-For the optional Dashboard login introduced later, see
+For Boolean compatibility and the optional Dashboard login introduced later, see
 [Upgrade to v1.3.0-beta](#upgrade-to-v130-beta).
 
 Restart the module after changing its settings, and update the

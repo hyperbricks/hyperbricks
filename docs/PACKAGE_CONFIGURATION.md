@@ -128,6 +128,13 @@ Production runtimes and static output exclude developer interfaces. Invalid mode
 
 ## Developer Tools
 
+To enable Dashboard through the settings editor and open it in your browser,
+follow [Open The Dashboard](QUICKSTART.md#open-the-dashboard). In development or
+debug mode, startup prints the enabled Dashboard's full local URL with the
+effective port, normally
+[http://localhost:8080/__hyperbricks/dashboard](http://localhost:8080/__hyperbricks/dashboard).
+The table below explains the corresponding configuration and login policy.
+
 The fields below are relative to the top-level `hyperbricks` mapping. For example, `development.dashboard.enabled` belongs under `hyperbricks.development.dashboard`.
 
 | Field | Purpose |
@@ -135,7 +142,7 @@ The fields below are relative to the top-level `hyperbricks` mapping. For exampl
 | `development.watch` | Enable source-directory watching in development mode. Defaults to `false`. |
 | `development.watch_dirs` | Source directories to watch. The small package example lists the module's source, templates, and resources. |
 | `development.reload` | Retained reload setting; this flag alone does not enable browser refresh. Source watching is controlled by `watch`. |
-| `development.dashboard.enabled` | Enable Dashboard Overview and Errors in development/debug mode. Defaults to `false`. The old Boolean `development.dashboard` form is invalid. |
+| `development.dashboard.enabled` | Enable Dashboard Overview and Errors in development/debug mode. Defaults to `false`. Legacy `development.dashboard: true` or `false` sets the same switch with a migration warning; `false` keeps these views disabled without blocking module startup. |
 | `development.dashboard.credentials` | Shared `user` and `password` for developer interfaces. Values may use environment resolvers; there is no default account. |
 | `development.frontend_editing.enabled` | Master switch for Spaces and configured frontend editors. Defaults to `true`. |
 | `development.frontend_editing.spaces.enabled` | Show Spaces and contextual editing in development/debug mode. Defaults to `true`; the master switch must also be enabled. |
@@ -271,6 +278,11 @@ Run `hyperbricks doctor -m demo` to check the module configuration and read any 
 ## Editing settings interactively
 
 Run `hyperbricks settings -m demo` to inspect effective settings, built-in defaults, descriptions, and the source file defining each value. Use `--config package.preview.hyperbricks.yaml` to select another entry. Navigate with Enter to open a section or edit a setting, and Esc to return to the parent. A breadcrumb shows your location, and each section remembers its selected item. Search with `/` across all sections; review/save remains available at every level. The editor uses the same package composition and validation as runtime loading.
+
+For a first settings change, follow [Open The Dashboard](QUICKSTART.md#open-the-dashboard):
+**Development → Dashboard → Enabled** controls its availability. Review and save
+the change, quit settings, and restart the same module and configuration before
+opening the Dashboard URL.
 
 A normal edit changes the winning definition in its owning file. Choose **override in entry** to keep an imported definition unchanged and write an explicit override in the selected package. Lists replace whole lists; overriding a list item copies the effective list into the entry first. Removing a definition exposes an inherited value or built-in default. Values supplied by resolvers retain their expressions unless explicitly edited.
 
