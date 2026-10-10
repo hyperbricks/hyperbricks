@@ -83,6 +83,21 @@ exceeds the limits; exit 2 means invalid, inconclusive or regressed evidence.
 Calibrate with independent A/A runs before using this as a release gate. A noisy
 A/A is evidence to improve measurement conditions, not permission to widen limits.
 
+For release calibration, reserve a quiet Linux environment with fixed CPU
+affinity and memory limits. Record the OS, kernel, CPU topology, effective CPU
+set, memory limit and CPU throttling counters alongside the results. The
+comparator checks host identity and CPU count, but cannot detect an affinity
+change or competing host workloads by itself. A container shares its host's
+kernel and physical CPUs; fixed limits do not reserve exclusive physical cores.
+
+Before measuring different server revisions, declare three independent A/A
+runs (A, B and C) with the same frozen binaries and options. Compare A/B and
+A/C; both must pass. Keep all runs, including failed and inconclusive attempts.
+Do not remove slow trials or disable error logging, response validation or RSS
+sampling to obtain a pass. If the environment or runner changes, establish a
+new complete baseline rather than comparing across that change. Keep binaries,
+raw results and environment records outside Git in `internal-benchmarks/`.
+
 Client, upstream and server share a host; contention, temperature and scheduling
 remain confounders. Hashing the host name cannot prove unchanged hardware or
 background load. This is a warm fixed-size workload; it does not establish peak
