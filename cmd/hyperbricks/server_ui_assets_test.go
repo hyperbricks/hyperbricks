@@ -153,8 +153,8 @@ func TestDashboardSharedUIRendering(t *testing.T) {
 		t.Fatal(err)
 	}
 	page := output.String()
-	if got := strings.Count(page, ` hb-surface"`); got != 5 {
-		t.Errorf("dashboard should frame metrics, module, routes, logs and plugins, got %d surfaces", got)
+	if got := strings.Count(page, ` hb-surface"`); got != 6 {
+		t.Errorf("dashboard should frame workflow, metrics, module, routes, logs and plugins, got %d surfaces", got)
 	}
 	for _, expected := range []string{`<title>Overview | HyperBricks Dashboard</title>`, `class="hb-header"`, `<span>Dashboard</span>`, `>Overview</a>`, `<h1>Overview</h1>`, `href="/custom/spaces"`, `href="/__hyperbricks/errors"`, `data-theme-toggle`, `&lt;HYPERMEDIA&gt;`, `badge-error`, `&lt;script&gt;`, `id="logLevel"`, `id="routeFilter"`} {
 		if !strings.Contains(page, expected) {
@@ -175,6 +175,25 @@ func TestDashboardSharedUIRendering(t *testing.T) {
 	}
 	if strings.Contains(output.String(), `>Errors</a>`) {
 		t.Error("dashboard must not link to a disabled Errors view")
+	}
+}
+
+func TestDashboardLogURLIsEscaped(t *testing.T) {
+	unsafeURL := `https://example.test/<img src=x onerror=alert(1)>`
+	data := SysData{Logs: []logging.LogMessage{
+		{Level: zapcore.InfoLevel, Message: "Route available", Fields: map[string]interface{}{"url": unsafeURL}},
+		{Level: zapcore.InfoLevel, Message: "Started"},
+	}}
+	var output bytes.Buffer
+	if err := tmpl.Execute(&output, data); err != nil {
+		t.Fatal(err)
+	}
+	page := output.String()
+	if strings.Contains(page, unsafeURL) || !strings.Contains(page, `https://example.test/&lt;img src=x onerror=alert(1)&gt;`) {
+		t.Fatal("log URLs must be shown as escaped text")
+	}
+	if !strings.Contains(page, `<p>Started</p>`) {
+		t.Fatal("log entries without a URL should remain unchanged")
 	}
 }
 

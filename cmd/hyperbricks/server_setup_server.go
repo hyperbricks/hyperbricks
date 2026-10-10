@@ -87,6 +87,10 @@ func startRuntimeHTTPServer() (*runtimeHTTPServer, error) {
 		close(running.done)
 	}()
 	logging.GetLogger().Named("server").Infow("Listening", "url", "http://"+shared.Location, "mode", hbConfig.Mode)
+	if developerDashboardEnabled() {
+		port := listener.Addr().(*net.TCPAddr).Port
+		logging.GetLogger().Named("server").Infow("Dashboard", "url", fmt.Sprintf("http://localhost:%d%s", port, developerDashboardPath))
+	}
 	return running, nil
 }
 

@@ -1,4 +1,8 @@
 /* Runtime and deployment layout; components and theme tokens come from pkg/ui. */
+.hb-workflow { margin-bottom: 24px; }
+.hb-workflow p { max-width: 90ch; overflow-wrap: anywhere; }
+.hb-workflow .hb-actions { flex-wrap: wrap; margin: 16px 0; }
+.hb-workflow .btn { white-space: normal; height: auto; min-height: 32px; }
 .hb-metrics { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); margin-bottom: 24px; }
 .hb-metrics>div { padding: 0 28px; border-right: 1px solid var(--color-base-300); min-width: 0; }
 .hb-metrics>div:first-child { padding-left: 0; }.hb-metrics>div:last-child { border-right: 0; }

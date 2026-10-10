@@ -22,6 +22,16 @@
   </header>
   <main id="main" class="hb-page">
     <div class="hb-page-heading"><div><p class="hb-eyebrow">{{.Module}}</p><h1>Overview</h1></div><a class="btn btn-sm btn-ghost" href="/" target="_blank" rel="noopener"><i data-lucide="external-link"></i>Open site</a></div>
+    <section class="hb-workflow hb-section hb-surface" aria-labelledby="workflow-title">
+      <div class="hb-section-heading"><h2 id="workflow-title">Work on this module</h2></div>
+      <p>Open a route, edit its YAML or template in your editor, then save and reload the page. If watching is disabled, restart the server to load source changes. Changes to package settings always require a restart.</p>
+      <div class="hb-actions">
+        <a class="btn btn-sm" href="#routes">Browse routes</a>
+        {{if .ErrorsRoute}}<a class="btn btn-sm" href="{{.ErrorsRoute}}">Find render errors</a>{{end}}
+        {{if .SpacesRoute}}<a class="btn btn-sm" href="{{.SpacesRoute}}">Edit content in Spaces</a>{{end}}
+      </div>
+      <p class="hb-muted">{{if .ErrorsRoute}}Errors shows diagnostics from requests that have run; open the affected route before checking it. {{end}}{{if .SpacesRoute}}Spaces edits the content fields declared by a page source.{{else}}Spaces is disabled for this module. Enable frontend editing and Spaces in the package settings, then restart to use it.{{end}}</p>
+    </section>
     <section class="hb-metrics hb-surface" aria-label="System metrics">
       <div><span class="hb-muted">Requests</span><strong>{{.Counter}}</strong><small>Since startup</small></div>
       <div><span class="hb-muted">Memory</span><strong>{{.Mem}} <span>MiB</span></strong><small>System allocation</small></div>
@@ -36,7 +46,7 @@
           <div><dt>Cache expiry</dt><dd>{{.CacheExpire}}</dd></div><div><dt>Bandwidth</dt><dd>{{if .BandWidth}}{{.BandWidth}}{{else}}Pending sample{{end}}</dd></div>
         </dl>
       </section>
-      <section class="hb-section hb-surface"><div class="hb-section-heading"><h2><i data-lucide="route"></i>Routes <span class="badge badge-sm">{{len .Configs}}</span></h2><input id="routeFilter" class="input input-sm hb-route-filter" type="search" aria-label="Filter routes" placeholder="Filter routes"></div>
+      <section id="routes" class="hb-section hb-surface"><div class="hb-section-heading"><h2><i data-lucide="route"></i>Routes <span class="badge badge-sm">{{len .Configs}}</span></h2><input id="routeFilter" class="input input-sm hb-route-filter" type="search" aria-label="Filter routes" placeholder="Filter routes"></div>
         <div class="hb-table-scroll"><table class="table hb-routes"><thead><tr><th>Route</th><th>Type</th><th><span class="sr-only">Open</span></th></tr></thead><tbody id="routeRows">
           {{range $key, $value := .Configs}}{{$route := $value.route}}{{$type := index $value "@type"}}
           <tr><td><code>/{{if ne $route "index"}}{{$route}}{{end}}</code></td><td><span class="badge badge-sm">{{$type}}</span></td><td><a class="btn btn-sm btn-square btn-ghost" href="/{{if ne $route "index"}}{{$route}}{{end}}" target="_blank" rel="noopener" aria-label="Open route /{{$route}}" title="Open route"><i data-lucide="external-link"></i></a></td></tr>
@@ -49,7 +59,7 @@
         <select id="logLevel" class="select select-sm" aria-label="Log level"><option value="all">All levels</option><option value="debug">Debug</option><option value="info">Info</option><option value="warn">Warning</option><option value="error">Error</option></select>
         <div class="join" role="group" aria-label="Log view"><button class="btn btn-sm join-item" id="logTable" type="button" aria-pressed="true">Table</button><button class="btn btn-sm join-item" id="logTerminal" type="button" aria-pressed="false">Terminal</button></div>
       </div></div>
-      <div id="logRows">{{range .Logs}}{{$level := .Level.String}}<div class="hb-log-row" data-level="{{$level}}"><time>{{.Time.Format "15:04:05"}}</time><span class="badge badge-sm {{if eq $level "info"}}badge-info{{else if eq $level "warn"}}badge-warning{{else if or (eq $level "error") (eq $level "fatal") (eq $level "panic") (eq $level "dpanic")}}badge-error{{end}}">{{$level}}</span><p>{{.Message}}</p></div>{{end}}</div>
+      <div id="logRows">{{range .Logs}}{{$level := .Level.String}}<div class="hb-log-row" data-level="{{$level}}"><time>{{.Time.Format "15:04:05"}}</time><span class="badge badge-sm {{if eq $level "info"}}badge-info{{else if eq $level "warn"}}badge-warning{{else if or (eq $level "error") (eq $level "fatal") (eq $level "panic") (eq $level "dpanic")}}badge-error{{end}}">{{$level}}</span><p>{{.Message}}{{with .Fields.url}}  url={{.}}{{end}}</p></div>{{end}}</div>
       <pre id="logOutput" class="hb-terminal" hidden></pre><p id="logEmpty" class="hb-muted" hidden>No log entries for this level.</p>
     </section>
     <section class="hb-section hb-surface"><div class="hb-section-heading"><h2><i data-lucide="puzzle"></i>Plugins <span class="badge badge-sm">{{len .Plugins}}</span></h2><code class="hb-muted">{{.PluginDir}}</code></div>
