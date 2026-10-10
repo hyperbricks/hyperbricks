@@ -10,18 +10,18 @@
           <h2><a href="/catalog/detail?id={{.id}}">{{.name}}</a></h2>
           <p>{{.price_label}} each</p>
           <div class="quantity-control" aria-label="Quantity for {{.name}}">
-            <button type="button" aria-label="Decrease {{.name}} quantity" hx-post="/cart-update?id={{.id}}&quantity={{.decrement}}" hx-target="#cart-panel" hx-swap="outerHTML">−</button>
+            <button id="cart-decrease-{{.id}}" type="button" aria-label="Decrease {{.name}} quantity" hx-post="/cart-update?id={{.id}}&quantity={{.decrement}}" hx-target="#cart-panel" hx-swap="outerHTML">−</button>
             <span>{{.quantity}}</span>
-            <button type="button" aria-label="Increase {{.name}} quantity" hx-post="/cart-update?id={{.id}}&quantity={{.increment}}" hx-target="#cart-panel" hx-swap="outerHTML" {{if .at_max}}disabled{{end}}>+</button>
+            <button id="cart-increase-{{.id}}" type="button" aria-label="Increase {{.name}} quantity" hx-post="/cart-update?id={{.id}}&quantity={{.increment}}" hx-target="#cart-panel" hx-swap="outerHTML" {{if .at_max}}disabled{{end}}>+</button>
           </div>
-          <button class="remove-item" type="button" hx-post="/cart-update?id={{.id}}&quantity=0" hx-target="#cart-panel" hx-swap="outerHTML">Remove</button>
+          <button id="cart-remove-{{.id}}" class="remove-item" type="button" hx-post="/cart-update?id={{.id}}&quantity=0" hx-target="#cart-panel" hx-swap="outerHTML">Remove</button>
         </div>
         <strong class="line-total">{{.line_total_label}}</strong>
       </article>
       {{end}}
     </div>
     <aside class="order-summary">
-      <h2>Order summary</h2>
+      <h2 id="cart-summary" tabindex="-1">Order summary</h2>
       <p><span>Items ({{.Data.count}})</span><strong>{{.Data.subtotal_label}}</strong></p>
       <p><span>Shipping</span><span>Calculated at checkout</span></p>
       <p class="summary-total"><span>Subtotal</span><strong>{{.Data.subtotal_label}}</strong></p>
@@ -30,6 +30,6 @@
     </aside>
   </div>
   {{else}}
-  <div class="empty-state cart-empty"><h2>Your cart is empty</h2><p>Explore the collection and add something you like.</p><a class="back-button" href="/catalog">Browse the catalog</a></div>
+  <div class="empty-state cart-empty"><h2 id="cart-empty" tabindex="-1">Your cart is empty</h2><p>Explore the collection and add something you like.</p><a class="back-button" href="/catalog">Browse the catalog</a></div>
   {{end}}
 </section>

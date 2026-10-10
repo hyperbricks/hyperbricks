@@ -19,6 +19,7 @@
 body{font-family:"DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}
 h1,h2,h3,.wordmark,.footer-brand{font-family:"Fraunces",Georgia,serif;font-optical-sizing:auto}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#66636a}
+#catalog-panel [tabindex="-1"]:focus-visible,#cart-panel [tabindex="-1"]:focus-visible,#checkout-content [tabindex="-1"]:focus-visible{outline:3px solid #66636a;outline-offset:4px}
 .add-to-cart:hover,.checkout-button:hover{background:#403e44}
 .site-header,.page,.site-footer{max-width:1320px}
 .site-header{height:88px}
