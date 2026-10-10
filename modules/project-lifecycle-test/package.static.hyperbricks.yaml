@@ -3,7 +3,7 @@ hyperbricks:
   mode: development
   metadata:
     module: project-lifecycle-test
-    moduleversion: "1.0.0"
+    moduleversion: 1.0.0
   development:
     watch: false
     reload: false

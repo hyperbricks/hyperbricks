@@ -8,7 +8,7 @@ hyperbricks:
   mode: development
   metadata:
     module: sampleapis-coffee-static
-    moduleversion: "1.0.0"
+    moduleversion: 1.0.0
     hyperbricks: v1.2.5-beta
   debug:
     level: debugging

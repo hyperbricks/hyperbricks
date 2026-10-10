@@ -51,13 +51,13 @@ Both creation paths write current source-owned package metadata automatically:
 hyperbricks:
   metadata:
     module: demo
-    moduleversion: "1.0.0"
+    moduleversion: 1.0.0
     hyperbricks: <exact installed version>
 ```
 
 `<exact installed version>` represents the version reported by the binary that
 created the module. `module` is the new module directory's base name. New
-modules start at `moduleversion: "1.0.0"`, independently of the Git revision
+modules start at `moduleversion: 1.0.0`, independently of the Git revision
 used to download an official starter. Build-specific provenance is added only to an archive; a
 source package does not own `format`, `format_version`, `commit`, or `built_at`.
 It also does not own `source_hash`, which belongs to the build index.
@@ -217,6 +217,10 @@ path separator selects that relative or absolute directory. It:
   `built_at`, and `source_hash`
 - preserves unrelated package configuration
 - leaves an already-current file unchanged
+
+When metadata is rewritten, generated fields use plain strings where possible,
+including `moduleversion: 1.0.0`. A metadata refresh does not rewrite a file just
+to change its quote style.
 
 The selected module and `package.hyperbricks.yaml` must already exist. This
 mode never falls back to creating the embedded starter.

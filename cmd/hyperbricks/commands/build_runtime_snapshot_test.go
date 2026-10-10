@@ -80,7 +80,7 @@ func TestPackageRuntimeSnapshotIncludesCurrentFilesAndProvenance(t *testing.T) {
 	}
 	if !strings.Contains(entries[PackageConfigFileName], "origin_build_id: parent-id") ||
 		!strings.Contains(entries[PackageConfigFileName], "commit: source7") ||
-		!strings.Contains(entries[PackageConfigFileName], "moduleversion: \"1.0.1\"") {
+		!strings.Contains(entries[PackageConfigFileName], "moduleversion: 1.0.1") {
 		t.Fatalf("derived metadata missing: %s", entries[PackageConfigFileName])
 	}
 	if entries["hyperbricks/spaces/page/nl.hyperbricks.yaml"] != "title: Current Spaces content\n" {
