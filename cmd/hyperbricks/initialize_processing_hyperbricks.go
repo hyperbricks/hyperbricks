@@ -422,9 +422,9 @@ func processScript(
 		logging.GetLogger().Errorw("Error retrieving host IPs", "error", err)
 	}
 	if len(ips) == 0 {
-		logging.GetLogger().Errorw("No IPv4 addresses found for the host")
+		logging.GetLogger().Warnw("No non-loopback IPv4 address found; using loopback for the runtime URL")
 	}
-	shared.Location = fmt.Sprintf("%s:%d", ips[0], hbConfig.Server.Port)
+	shared.Location = runtimeLocationForIPs(ips, hbConfig.Server.Port)
 
 	for _, key := range keys {
 		v := config[key]
@@ -514,6 +514,15 @@ func processScript(
 		}
 	}
 	return nil
+}
+
+// The server can still serve local requests on a host with only loopback.
+func runtimeLocationForIPs(ips []string, port int) string {
+	host := "127.0.0.1"
+	if len(ips) > 0 {
+		host = ips[0]
+	}
+	return fmt.Sprintf("%s:%d", host, port)
 }
 
 type routeMetadataConfig struct {
