@@ -6,6 +6,7 @@ benchmark includes setup instructions, a runnable fixture, and recorded results.
 | Workload | Fixture version | Recorded reference | Status |
 | --- | --- | --- | --- |
 | [SSR HTTP](ssr/README.md) | [`ssr-proof-hyperbricks` 1.0.0](../modules/ssr-proof-hyperbricks/README.md) | [2026-10-05 baseline](ssr/baselines/20261005/README.md) | Development snapshot at `61a7d4f`, with uncommitted changes |
+| [Multichannel API HTTP](multichannel/README.md) | Disposable page + three API fragments | Local measurements outside Git | Clean committed server required; response validation, repeated latency and RSS measurements |
 | [Response-cache HTTP](response-cache/README.md) | [`response-cache-test` 1.0.0](../modules/response-cache-test/README.md) | [2026-10-05 baseline](response-cache/baselines/20261005/README.md) | Development snapshot at `4c6e925`, with uncommitted changes |
 
 The SSR fixture renders a nested page for every request and verifies its unique
