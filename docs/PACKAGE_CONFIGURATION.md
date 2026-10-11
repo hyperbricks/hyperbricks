@@ -142,6 +142,7 @@ The fields below are relative to the top-level `hyperbricks` mapping. For exampl
 | `development.watch` | Enable source-directory watching in development mode. Defaults to `false`. |
 | `development.watch_dirs` | Source directories to watch. The small package example lists the module's source, templates, and resources. |
 | `development.reload` | Retained reload setting; this flag alone does not enable browser refresh. Source watching is controlled by `watch`. |
+| `development.status_indicator` | Render-status badge on full HTML pages in development/debug when Dashboard is enabled. Defaults to `true`; set `false` to hide it. See [the status indicator](QUICKSTART.md#render-status-indicator). |
 | `development.dashboard.enabled` | Enable Dashboard Overview and Errors in development/debug mode. Defaults to `true`; an omitted Dashboard mapping or `enabled` field leaves it enabled. Live mode, production runtimes and static output never expose Dashboard. Legacy `development.dashboard: true` or `false` sets the same switch with a migration warning; `false` keeps these views disabled without blocking module startup. |
 | `development.dashboard.credentials` | Shared `user` and `password` for developer interfaces. Values may use environment resolvers; there is no default account. |
 | `development.frontend_editing.enabled` | Master switch for Spaces and configured frontend editors. Defaults to `true`. |

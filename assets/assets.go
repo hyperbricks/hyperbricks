@@ -32,3 +32,9 @@ var ErrorsScript []byte
 
 //go:embed errors-model.mjs
 var ErrorsModel []byte
+
+//go:embed status-indicator.js
+var StatusIndicatorScript []byte
+
+//go:embed status-indicator.css
+var StatusIndicatorStylesheet []byte

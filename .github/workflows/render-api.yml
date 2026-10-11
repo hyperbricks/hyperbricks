@@ -30,7 +30,7 @@ jobs:
       - name: Status arbitration, request isolation, and asset lifecycle
         env:
           ESBUILD_TEST_BINARY: ${{ runner.temp }}/hb-esbuild
-        run: go test -race ./pkg/shared ./cmd/hyperbricks -run 'TestResponseStatus|TestAPIResponseCookieCapture|TestAPISecurityModule|TestAPIMultichannel|TestServeContent.*(API|ResponseStatus)|Esbuild|TestImage|TestMarkdown|TestRuntimeAssetCleanup|TestRuntimeReload|TestRuntimeWatcher' -count=1 -timeout=180s
+        run: go test -race ./pkg/shared ./cmd/hyperbricks -run 'TestResponseStatus|TestAPIResponseCookieCapture|TestAPISecurityModule|TestAPIMultichannel|TestServeContent.*(API|ResponseStatus)|Esbuild|TestImage|TestMarkdown|TestRuntimeAssetCleanup|TestRuntimeReload|TestRuntimeWatcher|TestStatusIndicator' -count=1 -timeout=180s
       - name: Catalog image URL refresh contracts
         run: go test -race ./modules/catalog-store/tests -count=1 -timeout=60s
   catalog-client:
@@ -43,3 +43,5 @@ jobs:
           node-version: '22'
       - name: Catalog multichannel client contracts
         run: node --test modules/catalog-store/tests/*.test.mjs
+      - name: Development indicator request isolation
+        run: node --test assets/status-indicator.test.mjs

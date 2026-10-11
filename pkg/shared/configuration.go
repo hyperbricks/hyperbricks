@@ -139,6 +139,7 @@ type PluginsConfig struct {
 }
 
 type DevelopmentConfig struct {
+	StatusIndicator bool                       `mapstructure:"status_indicator" description:"Show a render-status badge on development/debug HTML pages when Dashboard is enabled. Default true; never included in live or static output." example:"true"`
 	Hooks           DevelopmentHooksConfig     `mapstructure:"hooks" description:"Optional finite before_start and after_start tasks. Executed only by a direct development/debug start with --with-processes; each task must finish successfully." example:"{before_start: [{name: prepare, command: [sh, prepare.sh]}]}"`
 	Services        []DevelopmentServiceConfig `mapstructure:"services" description:"Optional foreground local HTTP services owned by an opted-in development session. Services start in order, must become ready, and stop with HyperBricks in reverse order." example:"[{name: demo-api, command: [python3, server.py], ready: {http: 'http://127.0.0.1:4319/health'}}]"`
 	FrontendEditing FrontendEditingConfig      `mapstructure:"frontend_editing" description:"Spaces in development/debug and frontend-editor plugin mounts in development, with independent write controls. Uses shared dashboard credentials even when the dashboard is disabled; Spaces permits an empty account, while external editors require a complete account." example:"{enabled: true, spaces: {enabled: true, write: true}}"`
@@ -394,9 +395,10 @@ func defaultPackageConfig(moduleDir string) *Config {
 		},
 
 		Development: DevelopmentConfig{
-			Watch:          false,
-			Reload:         false,
-			FrontendErrors: false,
+			StatusIndicator: true,
+			Watch:           false,
+			Reload:          false,
+			FrontendErrors:  false,
 		},
 
 		Live: LiveConfig{

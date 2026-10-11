@@ -89,6 +89,33 @@ With both developer credentials absent, Dashboard opens without a login. See
 the access rules and [the settings editor](PACKAGE_CONFIGURATION.md#editing-settings-interactively)
 for source ownership and saving. Package settings take effect after a restart.
 
+### Render Status Indicator
+
+Render status is visible by default on your application page in development/debug
+when Dashboard is enabled. Set `hyperbricks.development.status_indicator: false`
+in the package and restart to hide it.
+
+The small badge is green when the renders observed by this page have succeeded.
+Red means a page or fragment render reported an error. Click green to open Dashboard
+or red to open the selected error. Clicks reuse the named developer browser tab.
+Configured Dashboard credentials still require login there.
+
+The badge follows the Dashboard light/dark preference on the same origin, or your
+system theme when no preference is saved. An `ok` badge hides after five seconds.
+A new render error makes it visible again; after recovery it shows `ok` for another
+five seconds. Further successful requests do not restart this timer.
+
+Same-origin `fetch` and XMLHttpRequest responses update the indicator using
+HyperBricks response headers. A successful retry of the same URL and method clears
+that request's error; unrelated successes do not hide other failures. A page reload
+starts a new observation. Green is not a whole-application health check: JavaScript
+errors, network failures and requests without render-status headers are not assessed.
+
+The button is omitted from fragment bodies, live mode, production runtimes and
+static exports. It shows no error details on the public page. It requires JavaScript;
+a restrictive Content Security Policy must permit the same-origin helper script
+and stylesheet. HyperBricks does not relax your policy.
+
 ## Extend The Same Module
 
 The running starter is the base for the rest of this page. Next, replace its
