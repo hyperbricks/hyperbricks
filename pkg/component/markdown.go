@@ -27,9 +27,13 @@ type MarkdownConfig struct {
 	Class              string      `mapstructure:"class" description:"Optional escaped CSS class for a wrapping div. Empty emits only Markdown HTML."`
 	MaxBytes           int64       `mapstructure:"max_bytes" description:"Maximum input bytes. Default 1048576 (1 MiB); must be between 1 and 20971520 when specified."`
 	Editable           interface{} `mapstructure:"editable" json:"-" description:"Source-owned Spaces metadata for this component's content or file field. Not rendered."`
+	Cache              bool        `mapstructure:"cache" description:"Reuse sanitized HTML for unchanged validated content in a bounded memory cache. Default false. Files are still read and validated on every component render."`
 }
 
-type MarkdownRenderer struct{ ResourcesRoot string }
+type MarkdownRenderer struct {
+	ResourcesRoot string
+	cache         markdownCache
+}
 
 var _ shared.ComponentRenderer = (*MarkdownRenderer)(nil)
 
@@ -114,7 +118,18 @@ func (r *MarkdownRenderer) Render(instance interface{}, ctx context.Context) (st
 	if !utf8.Valid(content) || strings.ContainsRune(string(content), 0) {
 		return fail(fmt.Errorf("Markdown must be UTF-8 without NUL characters"))
 	}
-	output := markdown.Render(content)
+	if ctx != nil && ctx.Err() != nil {
+		return fail(ctx.Err())
+	}
+	var output string
+	if config.Cache {
+		output = r.cache.render(content, ctx)
+	} else {
+		output = markdown.Render(content)
+	}
+	if ctx != nil && ctx.Err() != nil {
+		return fail(ctx.Err())
+	}
 	if config.Class != "" {
 		output = `<div class="` + html.EscapeString(config.Class) + `">` + output + "</div>\n"
 	}

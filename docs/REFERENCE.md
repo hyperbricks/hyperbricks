@@ -58,6 +58,7 @@ Sanitized Markdown from declared text or bounded resources-relative files; no pl
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
+| `cache` | `bool` | no | Reuse sanitized HTML for unchanged validated content in a bounded memory cache. Default false. Files are still read and validated on every component render. |
 | `class` | `string` | no | Optional escaped CSS class for a wrapping div. Empty emits only Markdown HTML. |
 | `content` | `string` | no | Inline Markdown text, including an explicitly empty string. Mutually exclusive with file. The file resolver can also supply content at load time. |
 | `editable` | `interface` | no | Source-owned Spaces metadata for this component's content or file field. Not rendered. |

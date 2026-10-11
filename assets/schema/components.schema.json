@@ -4664,6 +4664,22 @@
           }
         },
         {
+          "path": "cache",
+          "key": "cache",
+          "go_name": "Cache",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Reuse sanitized HTML for unchanged validated content in a bounded memory cache. Default false. Files are still read and validated on every component render.",
+          "authoring": {
+            "label": "Cache",
+            "control": "checkbox",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
           "path": "class",
           "key": "class",
           "go_name": "Class",
