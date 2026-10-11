@@ -7,6 +7,11 @@ new output if needed. The default is `cache: false`, which generates on every re
 Page caching is separate: in live mode, HyperBricks can return a cached page
 without running its components.
 
+For the relationship between cache layers, see the [caching overview](CACHING.md#cache-layers).
+Markdown reuses HTML in memory rather than generated asset files; see
+[Markdown caching](MARKDOWN.md#rendering-and-caching) for its settings and source
+freshness behavior.
+
 ```mermaid
 flowchart TD
     REQUEST["Page request"] --> PAGE{"Live mode and usable page cache?"}
