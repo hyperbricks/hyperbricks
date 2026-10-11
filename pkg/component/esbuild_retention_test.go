@@ -2,6 +2,7 @@ package component
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -273,5 +274,99 @@ func TestEsbuildRetentionDeferredCleanupRetriesWithoutRewriting(t *testing.T) {
 	}
 	if r.HasPendingAssetCleanup() {
 		t.Fatal("completed cleanup is still pending")
+	}
+}
+
+func TestEsbuildRetentionCleanupFailurePreservesHistoryAndRetries(t *testing.T) {
+	r, cfg := esbuildFixture(t)
+	cfg.Fingerprint, cfg.Enclose = true, ""
+	old := esbuildURLPath(t, r, esbuildRender(t, r.Prepare(cfg)))
+	original := esbuildRead(t, old)
+	protected := true
+	r.SetAssetProtection(func(path string) bool { return protected && path == old })
+	esbuildWrite(t, filepath.Join(filepath.Dir(cfg.Entry), "message.js"), `export const message="replacement";`)
+	current := esbuildURLPath(t, r, esbuildRender(t, r.Prepare(cfg)))
+	historyPath, err := r.store.historyPath()
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := esbuildRead(t, historyPath)
+	protected = false
+	if err := os.Remove(old); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(old, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.ReconcileAssets(nil); err == nil {
+		t.Fatal("cleanup silently accepted a directory replacing an owned file")
+	}
+	if !r.HasPendingAssetCleanup() {
+		t.Fatal("failed cleanup was not retained for retry")
+	}
+	if got := esbuildRead(t, historyPath); got != before {
+		t.Fatal("failed cleanup changed ownership history")
+	}
+	if _, err := os.Stat(current); err != nil {
+		t.Fatal("failed cleanup lost current output", err)
+	}
+	if err := os.Remove(old); err != nil {
+		t.Fatal(err)
+	}
+	esbuildWrite(t, old, original)
+	if err := r.ReconcileAssets(nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(old); !os.IsNotExist(err) {
+		t.Fatal("successful retry did not remove obsolete asset", err)
+	}
+	if r.HasPendingAssetCleanup() {
+		t.Fatal("successful retry remains pending")
+	}
+}
+
+func TestEsbuildRetentionCorruptHistoryFailsWithoutDeletingAssets(t *testing.T) {
+	for _, kind := range []string{"malformed", "version", "root", "nil-owner", "outside-owner"} {
+		t.Run(kind, func(t *testing.T) {
+			r, cfg := esbuildFixture(t)
+			esbuildRender(t, r.Prepare(cfg))
+			path, err := r.store.historyPath()
+			if err != nil {
+				t.Fatal(err)
+			}
+			h, err := r.store.loadHistory()
+			if err != nil {
+				t.Fatal(err)
+			}
+			switch kind {
+			case "version":
+				h.Version++
+			case "root":
+				h.Root = t.TempDir()
+			case "nil-owner":
+				h.Owners[cfg.Outfile] = nil
+			case "outside-owner":
+				h.Owners[filepath.Join(t.TempDir(), "outside.js")] = h.Owners[cfg.Outfile]
+				delete(h.Owners, cfg.Outfile)
+			}
+			bytes, err := json.Marshal(h)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if kind == "malformed" {
+				bytes = []byte("not JSON")
+			}
+			esbuildWrite(t, path, string(bytes))
+			output := esbuildRead(t, cfg.Outfile)
+			if err := r.ReconcileAssets(map[string]int{}); err == nil {
+				t.Fatal("invalid ownership was accepted for deletion")
+			}
+			if esbuildRead(t, cfg.Outfile) != output {
+				t.Fatal("invalid history changed a successful output")
+			}
+			if esbuildRead(t, path) != string(bytes) {
+				t.Fatal("invalid history was silently replaced")
+			}
+		})
 	}
 }

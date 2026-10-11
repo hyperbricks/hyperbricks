@@ -295,7 +295,9 @@ func (s *esbuildStore) pruneHistory(h esbuildHistory, active map[string]int) err
 				if err = os.Remove(path); err != nil {
 					return fmt.Errorf("asset_cleanup: remove %s: %w", path, err)
 				}
-				delete(s.generated, path)
+				// Keep the known generated path for this session: the watcher may
+				// receive its removal event after cleanup releases the store lock.
+				// Durable ownership still comes exclusively from history records.
 			}
 		}
 		if len(kept[name]) == 0 {

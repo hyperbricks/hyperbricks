@@ -21,10 +21,16 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: 1.26.1
+      - name: Build the pinned external esbuild engine
+        run: go build -o "${RUNNER_TEMP}/hb-esbuild" github.com/evanw/esbuild/cmd/esbuild
       - name: Renderers, compiled plans, and API transport
+        env:
+          ESBUILD_TEST_BINARY: ${{ runner.temp }}/hb-esbuild
         run: go test -race ./pkg/render ./pkg/renderplan ./pkg/component ./pkg/composite ./pkg/shared/apiutil -count=1 -timeout=180s
       - name: Status arbitration, request isolation, and asset lifecycle
-        run: go test -race ./pkg/shared ./cmd/hyperbricks -run 'TestResponseStatus|TestAPIResponseCookieCapture|TestAPISecurityModule|TestAPIMultichannel|TestServeContent.*(API|ResponseStatus)|TestEsbuild|TestRuntimeAssetCleanup' -count=1 -timeout=180s
+        env:
+          ESBUILD_TEST_BINARY: ${{ runner.temp }}/hb-esbuild
+        run: go test -race ./pkg/shared ./cmd/hyperbricks -run 'TestResponseStatus|TestAPIResponseCookieCapture|TestAPISecurityModule|TestAPIMultichannel|TestServeContent.*(API|ResponseStatus)|Esbuild|TestRuntimeAssetCleanup|TestRuntimeReload|TestRuntimeWatcher' -count=1 -timeout=180s
   catalog-client:
     runs-on: ubuntu-latest
     timeout-minutes: 5

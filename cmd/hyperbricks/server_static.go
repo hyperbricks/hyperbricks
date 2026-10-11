@@ -120,6 +120,14 @@ func buildRuntimeHandler(limiter *rate.Limiter) http.Handler {
 		switch {
 		case strings.HasPrefix(r.URL.Path, "/static/"):
 			// Serve files from the static directory
+			if tbConfig.Mode == shared.DEVELOPMENT_MODE {
+				// Fixed asset URLs can change within HTTP's one-second date
+				// precision. Development must not return a stale browser hit.
+				w.Header().Set("Cache-Control", "no-store")
+				r = r.Clone(r.Context())
+				r.Header.Del("If-Modified-Since")
+				r.Header.Del("If-None-Match")
+			}
 			http.StripPrefix("/static/", http.FileServer(staticFS)).ServeHTTP(w, r)
 		case strings.HasPrefix(r.URL.Path, "/out/"):
 			// Serve embedded files
