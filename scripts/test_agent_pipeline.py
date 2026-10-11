@@ -113,6 +113,28 @@ class AgentPipelineTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 2)
         self.assertEqual(self.events(), [])
 
+    def test_plugin_scope_runs_ui_regressions_and_stops_on_failure(self):
+        shutil.copy2(SCRIPTS / 'run_all_tests.sh', self.root / 'scripts/run_all_tests.sh')
+        (self.bin / 'python3').unlink()
+        self.stage_stub('bin/python3', 'python')
+        self.stage_stub('bin/go', 'go')
+        self.executable('bin/npm', '#!/bin/sh\n'
+                        'echo "npm $*" >> "$PIPELINE_EVENTS"\n'
+                        '[ "$*" != "run test:ui" ] || [ "${FAIL_UI:-}" != 1 ] || exit 19\n')
+        for name in ('plugins/build_hyperbricks_plugins.sh', 'plugins/test_hyperbricks_patterns_plugins.sh',
+                     'run_api_fragment_render_tests_docker.sh', 'run_template_tests.sh',
+                     'run_marker_tests.sh', 'test_headers_module.sh'):
+            self.stage_stub('scripts/' + name, name)
+        self.environment['FAIL_UI'] = '1'
+        self.run_script('run_all_tests.sh', '--with-plugins', success=False)
+        self.assertEqual(self.events(), ['python', 'npm i', 'npm run test:ui'])
+        (self.root / 'events').unlink()
+        self.environment.pop('FAIL_UI')
+        self.run_script('run_all_tests.sh', '--with-plugins')
+        events = self.events()
+        self.assertLess(events.index('npm run test:ui'), events.index('plugins/build_hyperbricks_plugins.sh'))
+        self.assertIn('test_headers_module.sh', events)
+
     def setup_prerelease(self):
         self.stage_stub('tests.sh', 'core-tests', 'printf "%s\\n" "$@" > core-args.txt\n')
         self.stage_stub('scripts/sync_docs.sh', 'sync', 'printf "%s\\n" "$@" > sync-args.txt\n')

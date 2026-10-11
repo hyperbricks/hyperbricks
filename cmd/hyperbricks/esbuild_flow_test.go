@@ -110,7 +110,7 @@ func (f *esbuildFlowFixture) asset(w *httptest.ResponseRecorder, want string) (s
 	if count := w.Header().Get(renderErrorCountHeader); count != "" && count != "0" {
 		f.t.Fatalf("render errors %s: %s", count, w.Body.String())
 	}
-	url := esbuildScriptURL(f.t, w.Body.String())
+	url := esbuildScriptURL(f.t, w.Body.String(), "/static/js/app.")
 	asset := httptest.NewRecorder()
 	f.handler.ServeHTTP(asset, httptest.NewRequest("GET", url, nil))
 	if asset.Code != 200 || !strings.Contains(asset.Body.String(), want) {

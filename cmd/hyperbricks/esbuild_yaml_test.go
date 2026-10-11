@@ -110,7 +110,7 @@ page:
 		writer := httptest.NewRecorder()
 		ServeContent(writer, httptest.NewRequest("GET", "/", nil))
 		body := writer.Body.String()
-		assetURL := esbuildScriptURL(t, body)
+		assetURL := esbuildScriptURL(t, body, "/static/js/bundle.min.main.")
 		if writer.Code != 200 || !strings.HasPrefix(assetURL, "/static/js/bundle.min.main.") || !strings.HasSuffix(assetURL, ".js") {
 			t.Fatalf("status=%d body=%s", writer.Code, body)
 		}
@@ -121,7 +121,8 @@ page:
 		if count := writer.Header().Get(renderErrorCountHeader); count != "" && count != "0" {
 			t.Fatalf("render errors=%s body=%s", count, body)
 		}
-		if strings.Index(body, `name="before"`) > strings.Index(body, "<script") || strings.Index(body, "<script") > strings.Index(body, `name="after"`) {
+		assetPosition := strings.Index(body, `src="`+assetURL+`"`)
+		if strings.Index(body, `name="before"`) > assetPosition || assetPosition > strings.Index(body, `name="after"`) {
 			t.Fatal("inherited component position changed")
 		}
 		data, err := os.ReadFile(output)
@@ -164,8 +165,11 @@ page:
 	}
 }
 
-func esbuildScriptURL(t *testing.T, body string) string {
+func esbuildScriptURL(t *testing.T, body, outputPrefix string) string {
 	t.Helper()
+	// Development helpers may precede application scripts. Locate the fixture's
+	// generated asset without disabling those helpers or relaxing asset checks.
+	var assetURL string
 	tokens := html.NewTokenizer(strings.NewReader(body))
 	for {
 		switch tokens.Next() {
@@ -173,13 +177,19 @@ func esbuildScriptURL(t *testing.T, body string) string {
 			if err := tokens.Err(); err != io.EOF {
 				t.Fatal(err)
 			}
-			t.Fatalf("no script URL in %s", body)
+			if assetURL == "" {
+				t.Fatalf("no script URL matching %q in %s", outputPrefix, body)
+			}
+			return assetURL
 		case html.StartTagToken:
 			token := tokens.Token()
 			if token.Data == "script" {
 				for _, attr := range token.Attr {
-					if attr.Key == "src" {
-						return attr.Val
+					if attr.Key == "src" && strings.HasPrefix(attr.Val, outputPrefix) && strings.HasSuffix(attr.Val, ".js") {
+						if assetURL != "" {
+							t.Fatalf("multiple script URLs matching %q in %s", outputPrefix, body)
+						}
+						assetURL = attr.Val
 					}
 				}
 			}
