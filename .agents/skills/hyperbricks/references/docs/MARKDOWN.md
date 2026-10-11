@@ -77,11 +77,28 @@ and [Bluemonday](https://github.com/microcosm-cc/bluemonday).
 
 The renderer does not fetch remote content. Visitors' browsers may load allowed remote images. Use the route's Content Security Policy to restrict those requests. Sanitization does not determine which documents you should publish.
 
-The component has no output/file cache of its own. A cached containing route may
-skip rendering; `nocache: true` on the route forces fresh reads. Development
-resource watching retains its existing reload/cache invalidation responsibilities.
-With watching disabled, refresh or reload as appropriate to the route's cache
-policy. Package configuration changes still require a restart.
+Set `cache: true` on the Markdown component to reuse sanitized HTML when the
+validated input bytes are unchanged. The default is `false`. Both inline content
+and declared files support this setting. The component always reads and validates
+`file` before looking up cached HTML: edits are visible on the next component
+render, even when size and modification time are unchanged. Missing, invalid,
+out-of-bounds, or unreadable input produces an error instead of stale output.
+Class and enclosure markup are applied separately on every render.
+
+Each runtime's Markdown renderer retains at most 8 MiB of HTML and 256 entries
+in memory, evicting the least recently used results. Larger results still render
+but are not stored. These limits bound retained cache data, not temporary memory
+used during conversion or concurrent requests. There is no disk cache or generated
+asset file; `cache_keep` and `cache_grace` do not apply. Restarting drops the cache.
+Concurrent cache misses can independently convert the same document.
+
+In development, `file` changes are visible on the next request without requiring
+a watch event. Inline YAML content and load-time file resolver values need a
+configuration reload, either through configured watching or manually. In live
+mode, a cached containing route may skip the component entirely until expiry or
+invalidation; `nocache: true` on that route makes each request reach the component.
+Component caching still saves conversion work when that content is unchanged.
+Package configuration changes still require a restart.
 
 Markdown works in development, live mode, and static rendering. It needs no
 request data and also supports requestless component rendering. Static output is

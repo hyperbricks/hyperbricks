@@ -4,6 +4,7 @@
 
 - [Where to find complete module examples](#where-to-find-complete-module-examples)
 - [1. Start from a module](#1-start-from-a-module)
+- [Show or hide the development status indicator](#show-or-hide-the-development-status-indicator)
 - [2. Reuse structure with imports and inheritance](#2-reuse-structure-with-imports-and-inheritance)
 - [3. Define HTML structure in templates](#3-define-html-structure-in-templates)
 - [4. Assign a URL to a composite component](#4-assign-a-url-to-a-composite-component)
@@ -102,6 +103,36 @@ same server port. Dashboard is enabled by default in development/debug unless ex
 Use `hyperbricks <command> --help` for the installed flags. A development checkout may contain features newer than its embedded version label; build and verify the example against that checkout before assuming another installation has the same components. See [CLI](HYPERBRICKS_CLI.md).
 
 **Try it:** change the port, start the module, and open the new address. If a file is missing, check the selected module and configured directory first.
+
+### Show or hide the development status indicator
+
+With Dashboard enabled in development/debug mode, full HTML pages show a small
+badge at the bottom right. **● ok** opens Dashboard and hides after five seconds;
+**● errors** stays visible and opens diagnostics for an observed page or fragment
+render error. After recovery, `ok` appears for another five seconds.
+
+To hide the badge while keeping Dashboard available, add or update this setting
+in `modules/my-project/package.hyperbricks.yaml`. Merge it into the existing
+mapping and keep the other settings:
+
+```yaml
+hyperbricks:
+  development:
+    status_indicator: false
+```
+
+Stop the running server with **Ctrl+C** and restart it:
+
+```sh
+hyperbricks start -m my-project
+```
+
+Keep any `--port` override you used before. Set `status_indicator: true` to show
+the badge again; `true` is the default. With Dashboard disabled, in live mode,
+in production runtimes or in static exports, there is no indicator.
+
+For error recovery, the reused browser tab and which requests the badge observes,
+see [Render Status Indicator](QUICKSTART.md#render-status-indicator).
 
 ## 2. Reuse structure with imports and inheritance
 

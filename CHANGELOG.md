@@ -4,6 +4,20 @@
 
 Changes since `v1.3.0-beta`.
 
+### Rendering and caching
+
+- Cache unchanged generated images and sanitized Markdown with opt-in component
+  caching. Preserve current source results during component rendering in development;
+  bound retained Markdown HTML and safely retire generated image files.
+- Avoid writing unchanged esbuild asset history on ordinary requests. Preserve
+  cached and in-flight asset references during cleanup and prevent generated-file
+  watcher loops. Share durable asset-history writes with failure recovery tests.
+- Refresh catalog image URLs after source changes and support startup on hosts
+  with only a loopback network address.
+- Fix response-status policy identity reuse during garbage collection and extend
+  multichannel isolation, cancellation, resource-lifecycle and race checks.
+- Add validated multichannel latency/memory and esbuild lifecycle benchmarks.
+
 ### Onboarding and development tools
 
 - Clarify the quickstart, module layout, imports, and the path from a running
@@ -11,6 +25,12 @@ Changes since `v1.3.0-beta`.
   startup when it is enabled, and include URLs in Dashboard logs.
 - Improve navigation and feedback in Dashboard, Errors, and Spaces, including
   guidance for creating pages and declaring editable content fields.
+- Enable Dashboard by default in development/debug unless explicitly disabled;
+  keep it absent in live mode and show the same default in deployment settings.
+  Warn when configured development services are not started.
+- Show a development status badge linking to Dashboard or request diagnostics,
+  including fragment failures and recovery. Follow the Dashboard theme, hide `ok`
+  after five seconds, and isolate observation failures from application requests.
 - Accept legacy `dashboard: true` and `dashboard: false` settings with migration
   warnings. Explicit `false` continues to disable the Dashboard.
 - Add `hyperbricks lint --json` and shared language-server checks for unnecessary
@@ -37,6 +57,8 @@ Changes since `v1.3.0-beta`.
 
 ### Test tooling
 
+- Run browser UI regressions in the prerelease plugin scope and enforce render/API
+  race contracts on Linux and macOS in CI.
 - Cancel existing-output deletion without waiting for keyboard input in
   non-interactive runs.
 - Check Docker availability before starting API render fixtures, prevent

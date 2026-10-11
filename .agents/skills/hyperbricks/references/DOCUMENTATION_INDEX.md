@@ -7,7 +7,7 @@ This is a versioned, generated mirror of the canonical documents in `docs/`. The
 - **HyperBricks version:** v1.3.1-beta
 - **Source version:** [`v1.3.1-beta`](https://github.com/hyperbricks/hyperbricks/tree/v1.3.1-beta)
 - **Snapshot provenance:** [Manifest](documentation-manifest.json)
-- **Included documents:** 30
+- **Included documents:** 31
 
 ## Contents
 
@@ -47,6 +47,7 @@ This is a versioned, generated mirror of the canonical documents in `docs/`. The
 
 ### Additional documents
 
+- [Asset caching — esbuild and images](docs/ASSET_CACHING.md) — `docs/ASSET_CACHING.md`
 - [Author Command Reference](docs/AUTHOR_REFERENCE.md) — `docs/AUTHOR_REFERENCE.md`
 - [Caching: A Practical Guide](docs/CACHING.md) — `docs/CACHING.md`
 - [HTMX Fragments And Canonical URLs](docs/HTMX_FRAGMENTS_AND_CANONICAL_URLS.md) — `docs/HTMX_FRAGMENTS_AND_CANONICAL_URLS.md`

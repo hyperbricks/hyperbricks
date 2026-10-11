@@ -12,6 +12,22 @@ caching visible. You will see fresh rendering, enable memory caching, observe
 expiry, switch to disk, and clear the cache yourself. The detailed rules remain
 in the [output-cache reference](LIVE_MODE_HTTP.md#output-cache).
 
+## Cache Layers
+
+HyperBricks can reuse a complete response or reuse component output while
+rendering a response:
+
+| Layer | What is reused | Guide |
+| --- | --- | --- |
+| Page and fragment responses | The rendered response, in live mode, until expiry or purge. | This guide. |
+| esbuild and images | Generated files when the component's inputs and output remain valid. | [Asset caching](ASSET_CACHING.md). |
+| Markdown | Converted and sanitized HTML in a bounded memory cache. | [Markdown caching](MARKDOWN.md#rendering-and-caching). |
+
+Reusing a complete response skips its components. When the response renders
+again, each component can still reuse its own cached output. Component
+`cache: true` and route cache lifetimes are separate settings; development
+renders responses on every request while still allowing component caching.
+
 ## Before You Begin
 
 Use HyperBricks **v1.3.0-beta or newer**, which supports route cache storage and

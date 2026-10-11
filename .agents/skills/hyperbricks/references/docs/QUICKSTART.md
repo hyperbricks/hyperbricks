@@ -63,10 +63,14 @@ uses. If that differs from your terminal or cannot start, set
 
 ## Open The Dashboard
 
-Dashboard lists your routes and links to **Errors**. Enable it
-before extending the example so you can find problems as you work.
+Dashboard lists your routes and links to **Errors**. It is enabled by default
+in development and debug mode. Open
+[http://localhost:8080/__hyperbricks/dashboard](http://localhost:8080/__hyperbricks/dashboard),
+using your selected port. The **Dashboard** startup log shows the complete URL.
+Dashboard is unavailable in live mode, production runtimes and static output.
 
-If the server is running, stop it with **Ctrl+C**. From the same project root:
+If an existing module explicitly sets `development.dashboard.enabled: false`
+(or legacy `development.dashboard: false`), stop it with **Ctrl+C** and run:
 
 ```bash
 hyperbricks settings -m demo
@@ -80,16 +84,52 @@ Choose `true` and press **Enter** to stage the change. Press **r** to review,
 hyperbricks start -m demo
 ```
 
-If you previously used `--port 8081`, include it again when restarting. Open
-[http://localhost:8080/__hyperbricks/dashboard](http://localhost:8080/__hyperbricks/dashboard),
-using your selected port. Once the server is listening, the **Dashboard** log
-line shows the complete URL with the effective port when Dashboard is enabled
-in development or debug mode.
+If you previously used `--port 8081`, include it again when restarting.
 
 With both developer credentials absent, Dashboard opens without a login. See
 [developer access, credentials, Errors, and Spaces](#developer-interface) for
 the access rules and [the settings editor](PACKAGE_CONFIGURATION.md#editing-settings-interactively)
 for source ownership and saving. Package settings take effect after a restart.
+
+### Render Status Indicator
+
+In development/debug mode, a small render-status badge appears at the bottom right
+of full HTML pages when Dashboard is enabled. It is on by default.
+
+Green **● ok** means the renders observed by this page have succeeded.
+Red **● errors** means a page or fragment render reported an error. Click green to
+open Dashboard or red to open the selected error. Clicks reuse the same developer browser tab.
+Configured Dashboard credentials still require login there.
+
+The badge follows the Dashboard light/dark preference on the same origin, or your
+system theme when no preference is saved. An `ok` badge hides after five seconds.
+A new render error makes it visible again; after recovery it shows `ok` for another
+five seconds. Further successful requests do not restart this timer.
+
+**Hide the indicator:** add or update this setting under the existing
+`hyperbricks.development` mapping in `modules/demo/package.hyperbricks.yaml`:
+
+```yaml
+hyperbricks:
+  development:
+    status_indicator: false
+```
+
+Keep the module's other settings. Stop the server with **Ctrl+C**, then restart
+with `hyperbricks start -m demo` (and your chosen `--port`, if any). Dashboard
+remains available. Set `status_indicator: true` to show the badge again.
+Disabling Dashboard also disables the indicator.
+
+Same-origin `fetch` and XMLHttpRequest responses update the indicator using
+HyperBricks response headers. A successful retry of the same URL and method clears
+that request's error; unrelated successes do not hide other failures. A page reload
+starts a new observation. Green is not a whole-application health check: JavaScript
+errors, network failures and requests without render-status headers are not assessed.
+
+The button is omitted from fragment bodies, live mode, production runtimes and
+static exports. It shows no error details on the public page. It requires JavaScript;
+a restrictive Content Security Policy must permit the same-origin helper script
+and stylesheet. HyperBricks does not relax your policy.
 
 ## Extend The Same Module
 

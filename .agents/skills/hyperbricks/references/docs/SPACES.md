@@ -20,7 +20,7 @@ Start with [Development Configuration](#development-configuration), declare the 
 
 ## Development Configuration
 
-Spaces and writes are enabled by default in development and debug mode. Enable the dashboard and file watching in the module's `package.hyperbricks.yaml`:
+Dashboard, Spaces and writes are enabled by default in development and debug mode. Configure the dashboard and file watching in the module's `package.hyperbricks.yaml`:
 
 ```yaml
 hyperbricks:
