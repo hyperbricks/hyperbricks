@@ -64,12 +64,11 @@ func assetRequestMiddleware(next http.Handler) http.Handler {
 		defer func() {
 			runtimeAssetRequests.Add(-1)
 			runtimeAssetGate.RUnlock()
-			if runtimeAssetGate.TryLock() {
+			renderer := runtimeEsbuildRenderer()
+			if renderer != nil && renderer.HasPendingAssetCleanup() && runtimeAssetGate.TryLock() {
 				defer runtimeAssetGate.Unlock()
-				if renderer := runtimeEsbuildRenderer(); renderer != nil {
-					if err := renderer.ReconcileAssets(nil); err != nil {
-						logging.GetLogger().Errorw("Generated asset cleanup failed", "error", err)
-					}
+				if err := renderer.ReconcileAssets(nil); err != nil {
+					logging.GetLogger().Errorw("Generated asset cleanup failed", "error", err)
 				}
 			}
 		}()
