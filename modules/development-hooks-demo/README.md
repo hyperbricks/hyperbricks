@@ -34,9 +34,8 @@ checks work without those CDN requests.
 Press **Ctrl+C** in the terminal to stop the whole session. Exit code `130` is
 the expected result of a clean Ctrl+C. A clean SIGTERM returns `0`.
 
-The public demo runs without a developer login. Its dashboard is disabled by
-default. If you enable Dashboard in `package.hyperbricks.yaml`, it opens without
-login when both developer credentials are absent, with a startup warning. To
+The public demo runs without a developer login. Dashboard is enabled in development and opens without login when both developer
+credentials are absent, with a startup warning. To
 require login, set both values before startup; there is no built-in account:
 
 ```sh

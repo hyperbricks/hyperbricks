@@ -130,7 +130,7 @@ func startRuntimeWatcher(ctx context.Context, directories []string, reload func(
 				if isResponseCacheWatchPath(event.Name, cacheDirectories) {
 					continue
 				}
-				if strings.HasPrefix(filepath.Base(event.Name), ".hb-esbuild-") || isEsbuildOutput(event.Name) {
+				if strings.HasPrefix(filepath.Base(event.Name), ".hb-esbuild-") || isEsbuildOutput(event.Name) || isImageOutput(event.Name) || strings.HasPrefix(filepath.Base(event.Name), ".image-") {
 					continue
 				}
 				if event.Has(fsnotify.Create) {

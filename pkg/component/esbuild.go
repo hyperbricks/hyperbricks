@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/evanw/esbuild/pkg/api"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
@@ -275,20 +276,21 @@ func (s esbuildSpec) options() (api.BuildOptions, error) {
 }
 
 type esbuildStore struct {
-	mu            sync.Mutex
-	staticDir     string
-	cacheDir      string
-	cacheDirErr   error
-	reuseDisk     bool
-	prepared      bool
-	results       map[string]*esbuildResult
-	generated     map[string]bool
-	owners        map[string]string
-	buildCount    uint64
-	protectOutput func(string) bool
-	sessionUnlock func()
-	activeOwners  map[string]int
-	assetFailure  error
+	mu             sync.Mutex
+	staticDir      string
+	cacheDir       string
+	cacheDirErr    error
+	reuseDisk      bool
+	prepared       bool
+	results        map[string]*esbuildResult
+	generated      map[string]bool
+	owners         map[string]string
+	buildCount     uint64
+	protectOutput  func(string) bool
+	sessionUnlock  func()
+	activeOwners   map[string]int
+	assetFailure   error
+	pendingCleanup atomic.Bool
 }
 
 func esbuildOutputPath(root, output string) error {

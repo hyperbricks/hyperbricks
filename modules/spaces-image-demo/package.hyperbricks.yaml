@@ -1,14 +1,14 @@
 hyperbricks:
   metadata:
     module: spaces-image-demo
-    moduleversion: "1.0.0"
+    moduleversion: 1.0.0
     hyperbricks: v1.3.0-beta
   mode: development
   development:
     watch: true
     reload: false
     dashboard:
-      enabled: false
+      enabled: true
       credentials:
         user: {env: HB_DEVELOPER_USER}
         password: {env: HB_DEVELOPER_PASSWORD}

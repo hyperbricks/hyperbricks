@@ -180,7 +180,7 @@ func ReconcileSource(content []byte, opts ReconcileOptions) (ReconcileResult, er
 	}
 
 	setMappingString(metadata, "module", after.Module, 0)
-	setMappingString(metadata, "moduleversion", after.ModuleVersion, yaml.DoubleQuotedStyle)
+	setMappingString(metadata, "moduleversion", after.ModuleVersion, 0)
 	setMappingString(metadata, "hyperbricks", after.HyperBricks, 0)
 	for _, field := range artifactOnlyFields {
 		removeMappingField(metadata, field)
@@ -279,7 +279,7 @@ func RenderArtifact(content []byte, opts ArtifactOptions) (ArtifactResult, error
 	}
 
 	if opts.ModuleVersion != "" {
-		setMappingString(metadata, "moduleversion", opts.ModuleVersion, yaml.DoubleQuotedStyle)
+		setMappingString(metadata, "moduleversion", opts.ModuleVersion, 0)
 	}
 	moduleVersionNode, found, err := mappingField(metadata, "moduleversion")
 	if err != nil {
@@ -307,6 +307,7 @@ func RenderArtifact(content []byte, opts ArtifactOptions) (ArtifactResult, error
 	}
 
 	setMappingString(metadata, "module", effective.Module, 0)
+	setMappingString(metadata, "moduleversion", effective.ModuleVersion, 0)
 	setMappingString(metadata, "format", effective.Format, 0)
 	setMappingString(metadata, "format_version", effective.FormatVersion, yaml.DoubleQuotedStyle)
 	setMappingString(metadata, "commit", effective.Commit, 0)
@@ -540,7 +541,7 @@ func rejectDuplicateFields(mapping *yaml.Node, fields []string) error {
 	return nil
 }
 
-func setMappingString(mapping *yaml.Node, key, value string, newStyle yaml.Style) {
+func setMappingString(mapping *yaml.Node, key, value string, style yaml.Style) {
 	for index := 0; index+1 < len(mapping.Content); index += 2 {
 		if mapping.Content[index].Value != key {
 			continue
@@ -549,12 +550,13 @@ func setMappingString(mapping *yaml.Node, key, value string, newStyle yaml.Style
 		if node.Kind == yaml.ScalarNode {
 			node.Tag = "!!str"
 			node.Value = value
+			node.Style = style
 			return
 		}
-		mapping.Content[index+1] = stringNode(value, newStyle)
+		mapping.Content[index+1] = stringNode(value, style)
 		return
 	}
-	mapping.Content = append(mapping.Content, stringNode(key, 0), stringNode(value, newStyle))
+	mapping.Content = append(mapping.Content, stringNode(key, 0), stringNode(value, style))
 }
 
 func removeMappingField(mapping *yaml.Node, key string) {

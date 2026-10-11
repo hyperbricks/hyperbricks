@@ -14,7 +14,6 @@ from urllib.request import urlopen
 DATA = json.loads((Path(__file__).parent/'catalog.json').read_text())
 LOCK = threading.Lock()
 IMAGE_LOCK = threading.Lock()
-IMAGE_READY = False
 SITE_URL = 'http://127.0.0.1:4320'
 STATE = {'fail': False, 'requests': 0, 'failures': 0}
 CARTS = {}
@@ -32,6 +31,8 @@ class ImageManifestParser(HTMLParser):
         if tag == 'span':
             self.current = attributes.get('data-image-id')
         elif tag == 'img' and self.current:
+            if self.current in self.images:
+                raise ValueError('Duplicate image in HyperBricks manifest')
             self.images[self.current] = attributes['src']
 
     def handle_endtag(self, tag):
@@ -40,22 +41,23 @@ class ImageManifestParser(HTMLParser):
 
 
 def ensure_images():
-    """Ask HyperBricks to render IMAGE components and reuse their static URLs."""
-    global IMAGE_READY
-    if IMAGE_READY:
-        return
+    """Refresh URLs; HyperBricks reuses unchanged generated image files."""
     with IMAGE_LOCK:
-        if IMAGE_READY:
-            return
         with urlopen(SITE_URL + '/catalog-images', timeout=30) as response:
             markup = response.read().decode('utf-8')
         parser = ImageManifestParser()
         parser.feed(markup)
         if set(parser.images) != set(ITEMS):
             raise ValueError('HyperBricks did not render all 24 catalog images')
-        for item in DATA:
-            item['image'] = parser.images[item['id']]
-        IMAGE_READY = True
+        for value in parser.images.values():
+            url = urlsplit(value)
+            if url.scheme or url.netloc or url.query or url.fragment or not url.path.startswith('/static/images/'):
+                raise ValueError('Invalid HyperBricks image URL')
+        # Publish a complete manifest; a failed refresh keeps the previous data
+        # and is reported to the caller rather than silently serving old URLs.
+        with LOCK:
+            for item in DATA:
+                item['image'] = parser.images[item['id']]
 
 
 def cart_view(session):
@@ -129,20 +131,22 @@ class Handler(BaseHTTPRequestHandler):
                     STATE['failures']+=1
                     return self.send(503,{'error':'Catalog temporarily unavailable'})
             query=parse_qs(url.query, keep_blank_values=True)
+            with LOCK:
+                data = [dict(item) for item in DATA]
             if 'id' in query or query.get('view')==['detail']:
                 ids=query.get('id',[])
                 if not ids:
                     return self.send(404,{'error':'Item not found'})
                 if len(ids)!=1 or not ids[0]:
                     return self.send(400,{'error':'Provide one non-empty item id'})
-                item=next((item for item in DATA if item['id']==ids[0]),None)
+                item=next((item for item in data if item['id']==ids[0]),None)
                 if item is None:
                     return self.send(404,{'error':'Item not found'})
                 return self.send(200,item)
             if query.get('view')==['list']:
                 search=query.get('search',[''])[0].strip()
                 category=query.get('category',[''])[0]
-                matches=[item for item in DATA if search.lower() in (item['name']+' '+item['description']).lower() and (not category or item['category']==category)]
+                matches=[item for item in data if search.lower() in (item['name']+' '+item['description']).lower() and (not category or item['category']==category)]
                 size=6
                 pages=max(1,(len(matches)+size-1)//size)
                 try: page=int(query.get('page',['0'])[0])
@@ -158,7 +162,7 @@ class Handler(BaseHTTPRequestHandler):
                     'previous_url':url_for(page-1),'next_url':url_for(page+1),
                     'filtered':bool(search or category)
                 })
-            return self.send(200,DATA)
+            return self.send(200,data)
         self.send(404,{'error':'Not found'})
 
     def do_POST(self):

@@ -10,6 +10,9 @@ CSS class for styling the image
 ==== expected json ====
 {
   "Alt": "",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 0,
   "Class": "aclass bclass cclass",
   "ConfigCategory": "",
   "ConfigType": "<IMAGE>",

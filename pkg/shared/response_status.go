@@ -104,12 +104,17 @@ type responseStatusEntry struct {
 	diagnostic error
 }
 
+type responseStatusIdentity struct {
+	file, path string
+	policy     *ResponseStatusConfig
+}
+
 // ResponseStatusCapture lives for one render request. Result is read only after
 // every child has finished; arrival order cannot determine the response.
 type ResponseStatusCapture struct {
 	mu      sync.Mutex
 	entries []responseStatusEntry
-	seen    map[string]bool
+	seen    map[responseStatusIdentity]bool
 }
 
 func CaptureResponseStatus(ctx context.Context, policy *ResponseStatusConfig, meta Meta, outcome APIResponseOutcome) {
@@ -157,11 +162,14 @@ func (c *ResponseStatusCapture) record(ctx context.Context, p *ResponseStatusCon
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.seen == nil {
-		c.seen = make(map[string]bool)
+		c.seen = make(map[responseStatusIdentity]bool)
 	}
-	identity := meta.HyperBricksFile + ":" + meta.HyperBricksPath
+	identity := responseStatusIdentity{file: meta.HyperBricksFile, path: meta.HyperBricksPath}
 	if meta.HyperBricksPath == "" {
-		identity = fmt.Sprintf("policy:%p", p)
+		// Retain the actual policy until this request finishes. Formatting its
+		// address as text lets GC reclaim it and a later occurrence reuse the
+		// address, falsely reporting a duplicate execution.
+		identity = responseStatusIdentity{policy: p}
 	}
 	if c.seen[identity] {
 		entry.status, entry.failure = 500, true

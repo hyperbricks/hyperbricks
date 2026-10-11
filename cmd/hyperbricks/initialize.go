@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/hyperbricks/hyperbricks/assets"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
@@ -164,6 +165,12 @@ func basic_initialisation() error {
 	// Now configure and populate the registered renderers with acquired configurations
 	if renderer := runtimeEsbuildRenderer(); renderer != nil {
 		if err := renderer.BeginAssetSession(); err != nil {
+			return phaseError("asset_cleanup", err)
+		}
+	}
+	if images := runtimeImageProcessor(); images != nil {
+		if err := images.BeginAssetSession(filepath.Join(getHyperBricksConfiguration().Directories["static"], "images")); err != nil {
+			closeRuntimeAssets()
 			return phaseError("asset_cleanup", err)
 		}
 	}

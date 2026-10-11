@@ -109,26 +109,7 @@ func (s *esbuildStore) saveHistory(h esbuildHistory) error {
 	if err != nil {
 		return err
 	}
-	if err = os.MkdirAll(filepath.Dir(path), 0700); err != nil {
-		return err
-	}
-	file, err := os.CreateTemp(filepath.Dir(path), ".hb-esbuild-history-*")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(file.Name())
-	if _, err = file.Write(data); err != nil {
-		file.Close()
-		return err
-	}
-	if err = file.Sync(); err != nil {
-		file.Close()
-		return err
-	}
-	if err = file.Close(); err != nil {
-		return err
-	}
-	return os.Rename(file.Name(), path)
+	return writeAssetHistory(path, data, len(h.Owners) == 0, ".hb-esbuild-history-*")
 }
 
 func (s *esbuildStore) retain(p *PreparedEsbuild, result *esbuildResult) (failure error) {
@@ -142,6 +123,20 @@ func (s *esbuildStore) retain(p *PreparedEsbuild, result *esbuildResult) (failur
 		return fmt.Errorf("asset_cleanup: %w", err)
 	}
 	owner := h.Owners[p.spec.Outfile]
+	if owner != nil && owner.Keep == p.cacheKeep && len(owner.Generations) > 0 &&
+		reflect.DeepEqual(owner.Generations[0], esbuildGeneration{Entry: result.entry, Outputs: result.outputs}) {
+		// A legacy build manifest can supply this generation before an ownership
+		// record exists. Persist that adoption once, including its retention.
+		path, pathErr := s.historyPath()
+		if pathErr != nil {
+			return pathErr
+		}
+		if _, statErr := os.Stat(path); statErr == nil {
+			return nil
+		} else if !os.IsNotExist(statErr) {
+			return statErr
+		}
+	}
 	if owner == nil {
 		owner = &esbuildOwnerHistory{}
 		h.Owners[p.spec.Outfile] = owner
@@ -160,6 +155,20 @@ func (s *esbuildStore) retain(p *PreparedEsbuild, result *esbuildResult) (failur
 		return fmt.Errorf("asset_cleanup: record successful generation: %w", err)
 	}
 	return s.pruneHistory(h, s.activeOwners)
+}
+
+// ScheduleAssetReconciliation records complete owner discovery without deleting
+// files. Active API renders may need nested requests before they can finish;
+// cleanup retries under the exclusive runtime gate after those requests finish.
+func (r *EsbuildRenderer) ScheduleAssetReconciliation(active map[string]int) {
+	s := r.store
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.activeOwners = make(map[string]int, len(active))
+	for owner, keep := range active {
+		s.activeOwners[owner] = keep
+	}
+	s.pendingCleanup.Store(true)
 }
 
 // ReconcileAssets is called only after complete successful owner discovery.
@@ -186,6 +195,12 @@ func (r *EsbuildRenderer) ReconcileAssets(active map[string]int) error {
 	return s.pruneHistory(h, s.activeOwners)
 }
 
+// HasPendingAssetCleanup reports obsolete generations whose removal was
+// deferred while their outputs were protected. Ordinary requests do no I/O.
+func (r *EsbuildRenderer) HasPendingAssetCleanup() bool {
+	return r.store.pendingCleanup.Load()
+}
+
 // SetAssetProtection lets the runtime protect outputs referenced by requests
 // and response caches. The callback must not call back into this renderer.
 func (r *EsbuildRenderer) SetAssetProtection(protect func(string) bool) {
@@ -195,6 +210,9 @@ func (r *EsbuildRenderer) SetAssetProtection(protect func(string) bool) {
 }
 
 func (s *esbuildStore) pruneHistory(h esbuildHistory, active map[string]int) error {
+	// Leave maintenance pending on failure so the runtime can retry safely.
+	s.pendingCleanup.Store(true)
+	pending := false
 	retained := map[string]bool{}
 	kept := map[string][]esbuildGeneration{}
 	for name, owner := range h.Owners {
@@ -214,6 +232,9 @@ func (s *esbuildStore) pruneHistory(h esbuildHistory, active map[string]int) err
 				if s.protectOutput != nil && s.protectOutput(path) {
 					protect = true
 				}
+			}
+			if protect && i >= limit {
+				pending = true
 			}
 			if protect {
 				kept[name] = append(kept[name], generation)
@@ -258,7 +279,9 @@ func (s *esbuildStore) pruneHistory(h esbuildHistory, active map[string]int) err
 				if err = os.Remove(path); err != nil {
 					return fmt.Errorf("asset_cleanup: remove %s: %w", path, err)
 				}
-				delete(s.generated, path)
+				// Keep the known generated path for this session: the watcher may
+				// receive its removal event after cleanup releases the store lock.
+				// Durable ownership still comes exclusively from history records.
 			}
 		}
 		if len(kept[name]) == 0 {
@@ -270,6 +293,7 @@ func (s *esbuildStore) pruneHistory(h esbuildHistory, active map[string]int) err
 	if err := s.saveHistory(h); err != nil {
 		return fmt.Errorf("asset_cleanup: %w", err)
 	}
+	s.pendingCleanup.Store(pending)
 	return nil
 }
 

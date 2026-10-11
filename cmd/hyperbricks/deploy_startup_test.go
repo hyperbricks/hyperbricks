@@ -237,7 +237,7 @@ func TestBuildModeReportsRestartFailureAndKeepsRunningProcess(t *testing.T) {
 			}
 			cleanupDeployStartupProcess(t, proc)
 			configPath := filepath.Join(fixture.root, "demo", "runtime", "build-1", shared.PackageConfigFileName)
-			invalid := "hyperbricks:\n  mode: development\n  development:\n    dashboard: false\n"
+			invalid := "hyperbricks:\n  mode: development\n  development:\n    dashboard: invalid\n"
 			if err := os.WriteFile(configPath, []byte(invalid), 0o644); err != nil {
 				t.Fatal(err)
 			}
@@ -274,7 +274,7 @@ func TestLocalDevStartValidatesBeforeStopping(t *testing.T) {
 	if err := os.MkdirAll(moduleDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(moduleDir, shared.PackageConfigFileName), []byte("hyperbricks: {development: {dashboard: false}}\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(moduleDir, shared.PackageConfigFileName), []byte("hyperbricks: {development: {dashboard: invalid}}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	api := &deployLocalServer{modulesDir: filepath.Join(root, "modules"), buildRoot: filepath.Join(root, "deploy")}

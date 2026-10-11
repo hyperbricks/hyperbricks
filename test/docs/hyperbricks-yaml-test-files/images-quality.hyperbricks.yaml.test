@@ -11,6 +11,9 @@ JPEG quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF enc
 ==== expected json ====
 {
   "Alt": "",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 0,
   "Class": "",
   "ConfigCategory": "",
   "ConfigType": "<IMAGES>",

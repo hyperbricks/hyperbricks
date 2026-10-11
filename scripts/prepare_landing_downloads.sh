@@ -4,42 +4,48 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-PLUGIN_MANIFEST="${ROOT}/codex-plugin/hyperbricks/.codex-plugin/plugin.json"
+VERSION_FILE="${ROOT}/assets/version.md"
 VSCODE_DIR="${ROOT}/editors/vscode"
 
 usage() {
     cat <<'USAGE'
 Usage: ./scripts/prepare_landing_downloads.sh /absolute/path/to/static/downloads
 
-Builds and verifies the committed Codex plugin and the checked-out VS Code
-extension, creates SHA-256 sidecars, and copies these four untracked publication
+Builds and verifies the committed shared HyperBricks skill and checked-out
+VS Code extension, creates SHA-256 sidecars, and copies publication
 artifacts to the specified landing-site downloads directory:
 
-  hyperbricks-codex-plugin-<plugin-version>.zip
-  hyperbricks-codex-plugin-<plugin-version>.zip.sha256
+  hyperbricks-skill-<runtime-version>.zip
+  hyperbricks-skill-<runtime-version>.zip.sha256
   hyperbricks-vscode-<extension-version>+vscode.<commit-UTC-timestamp>.vsix
   hyperbricks-vscode-<extension-version>+vscode.<commit-UTC-timestamp>.vsix.sha256
 
 It also writes ../../resources/json/downloads.json relative to the downloads
-directory, mapping the four stable artifact keys to these generated filenames.
+directory, mapping the selected artifact keys to these generated filenames.
 
 The script does not edit landing-site templates, Git indexes, commits, or tags.
 USAGE
 }
 
-if [[ $# -ne 1 || "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-    usage
-    [[ $# -eq 1 ]] && exit 0
-    exit 2
-fi
+DESTINATION=""
+for argument in "$@"; do
+    case "${argument}" in
+        -h|--help) usage; exit 0 ;;
+        --*) echo "Unknown option: ${argument}" >&2; exit 2 ;;
+        *)
+            if [[ -n "${DESTINATION}" ]]; then usage >&2; exit 2; fi
+            DESTINATION="${argument}"
+            ;;
+    esac
+done
+if [[ -z "${DESTINATION}" ]]; then usage >&2; exit 2; fi
 
-DESTINATION="$1"
 if [[ "${DESTINATION}" != /* || "${DESTINATION}" == "/" ]]; then
     echo "Destination must be an absolute downloads-directory path, not '/'." >&2
     exit 2
 fi
-if [[ ! -f "${PLUGIN_MANIFEST}" || ! -f "${VSCODE_DIR}/package.json" ]]; then
-    echo "Missing Codex plugin manifest or VS Code extension checkout." >&2
+if [[ ! -f "${VSCODE_DIR}/package.json" ]]; then
+    echo "Missing VS Code extension checkout." >&2
     exit 1
 fi
 
@@ -49,29 +55,35 @@ if [[ -n "$(git -C "${VSCODE_DIR}" status --porcelain --untracked-files=all)" ]]
     echo "The VS Code extension checkout has uncommitted files; refusing to package it." >&2
     exit 1
 fi
+recorded_vscode_commit="$(git rev-parse HEAD:editors/vscode)"
+if [[ "$(git -C "${VSCODE_DIR}" rev-parse HEAD)" != "${recorded_vscode_commit}" ]]; then
+    echo "The VS Code extension HEAD differs from the committed submodule revision." >&2
+    exit 1
+fi
 
-plugin_version="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["version"])' "${PLUGIN_MANIFEST}")"
+skill_version="$(cat "${VERSION_FILE}")"
 vscode_version="$(node -p 'require(process.argv[1]).version' "${VSCODE_DIR}/package.json")"
 vscode_commit_epoch="$(git -C "${VSCODE_DIR}" show -s --format=%ct HEAD)"
 vscode_timestamp="$(python3 -c 'from datetime import datetime, timezone; import sys; print(datetime.fromtimestamp(int(sys.argv[1]), tz=timezone.utc).strftime("%Y%m%d%H%M%S"))' "${vscode_commit_epoch}")"
 version_pattern='^[0-9A-Za-z][0-9A-Za-z.+_-]*$'
-if [[ ! "${plugin_version}" =~ ${version_pattern} || ! "${vscode_version}" =~ ${version_pattern} || ! "${vscode_timestamp}" =~ ^[0-9]{14}$ ]]; then
-    echo "Plugin or VS Code extension version is unsafe for an artifact filename." >&2
+if [[ ! "${vscode_version}" =~ ${version_pattern} || ! "${vscode_timestamp}" =~ ^[0-9]{14}$ ||
+      ! "${skill_version}" =~ ${version_pattern} ]]; then
+    echo "HyperBricks or VS Code extension version is unsafe for an artifact filename." >&2
     exit 1
 fi
 
 STAGING="$(mktemp -d "${TMPDIR:-/tmp}/hyperbricks-downloads.XXXXXX")"
 trap 'rm -rf "${STAGING}"' EXIT
 
-plugin_name="hyperbricks-codex-plugin-${plugin_version}.zip"
+skill_name="hyperbricks-skill-${skill_version}.zip"
 vscode_name="hyperbricks-vscode-${vscode_version}+vscode.${vscode_timestamp}.vsix"
 vscode_ignore="${STAGING}/vscodeignore"
 
 cp "${VSCODE_DIR}/.vscodeignore" "${vscode_ignore}"
 printf '\n.dev/**\n' >> "${vscode_ignore}"
 
-python3 "${SCRIPT_DIR}/package_codex_plugin.py" \
-    --output "${STAGING}/${plugin_name}"
+python3 "${SCRIPT_DIR}/package_agent_skill.py" \
+    --output "${STAGING}/${skill_name}"
 
 (
     cd "${VSCODE_DIR}"
@@ -95,30 +107,47 @@ write_sha256() {
     )
 }
 
-write_sha256 "${plugin_name}"
 write_sha256 "${vscode_name}"
 
+verify_sha256() {
+    python3 - "$1" "${skill_name}" "${vscode_name}" <<'PYCHECK'
+import hashlib
+from pathlib import Path
+import sys
+destination = Path(sys.argv[1])
+for name in sys.argv[2:]:
+    checksum, filename = (destination / (name + '.sha256')).read_text().split()
+    if filename != name or hashlib.sha256((destination / name).read_bytes()).hexdigest() != checksum:
+        sys.exit(f'Download checksum mismatch: {name}')
+PYCHECK
+}
+verify_sha256 "${STAGING}"
+
 downloads_json="${STAGING}/downloads.json"
-python3 -c 'import json, pathlib, sys; target = pathlib.Path(sys.argv[1]); values = {"hyperbricks-codex-plugin": sys.argv[2], "hyperbricks-codex-plugin-sha": sys.argv[3], "hyperbricks-vscode": sys.argv[4], "hyperbricks-vscode-sha": sys.argv[5]}; target.write_text(json.dumps(values, indent=2) + "\n", encoding="utf-8")' \
-    "${downloads_json}" \
-    "${plugin_name}" \
-    "${plugin_name}.sha256" \
-    "${vscode_name}" \
-    "${vscode_name}.sha256"
+python3 - "${downloads_json}" "${vscode_name}" "${skill_name}" <<'PYJSON'
+import json
+from pathlib import Path
+import sys
+values = {"hyperbricks-vscode": sys.argv[2], "hyperbricks-vscode-sha": sys.argv[2] + ".sha256"}
+values.update({"hyperbricks-skill": sys.argv[3], "hyperbricks-skill-sha": sys.argv[3] + ".sha256"})
+Path(sys.argv[1]).write_text(json.dumps(values, indent=2) + "\n", encoding="utf-8")
+PYJSON
 
 mkdir -p "${DESTINATION}"
-cp "${STAGING}/${plugin_name}" "${DESTINATION}/${plugin_name}"
-cp "${STAGING}/${plugin_name}.sha256" "${DESTINATION}/${plugin_name}.sha256"
+cp "${STAGING}/${skill_name}" "${DESTINATION}/${skill_name}"
+cp "${STAGING}/${skill_name}.sha256" "${DESTINATION}/${skill_name}.sha256"
 cp "${STAGING}/${vscode_name}" "${DESTINATION}/${vscode_name}"
 cp "${STAGING}/${vscode_name}.sha256" "${DESTINATION}/${vscode_name}.sha256"
+
+verify_sha256 "${DESTINATION}"
 
 JSON_DESTINATION="${DESTINATION}/../../resources/json"
 mkdir -p "${JSON_DESTINATION}"
 cp "${downloads_json}" "${JSON_DESTINATION}/downloads.json"
 
 echo "Prepared landing-page downloads in ${DESTINATION}:"
-echo "  ${plugin_name}"
-echo "  ${plugin_name}.sha256"
+echo "  ${skill_name}"
+echo "  ${skill_name}.sha256"
 echo "  ${vscode_name}"
 echo "  ${vscode_name}.sha256"
 echo "Wrote download filename map to ${JSON_DESTINATION}/downloads.json"

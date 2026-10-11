@@ -3,7 +3,7 @@ hyperbricks:
 
   metadata:
     module: hello-world
-    moduleversion: "1.0.0"
+    moduleversion: 1.0.0
     hyperbricks: v1.2.9-beta
 
   debug:
@@ -14,7 +14,7 @@ hyperbricks:
     reload: true
     frontend_errors: false
     dashboard:
-      enabled: false
+      enabled: true
       credentials:
         user: {env: HB_DEVELOPER_USER}
         password: {env: HB_DEVELOPER_PASSWORD}

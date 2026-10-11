@@ -14,8 +14,9 @@ Runs the ordered pre-release pipeline:
                 --with-screenshots
   2. ./scripts/sync_docs.sh
 
-All documentation, plugin, module, and screenshot checks are enabled
-automatically. This script does not accept test-scope options.
+All documentation, native Go plugin, module, and screenshot checks are enabled
+automatically. The shared skill documentation is synchronized from docs/.
+This script does not accept core test-scope options or publish downloads.
 USAGE
 }
 

@@ -158,7 +158,17 @@ import {readResponse} from './http.mjs';
     renderList();
     const s = selected();
     if (!s) {
-      $('#main').replaceChildren(el('div', { class: 'empty' }, icon(state.trash ? 'archive' : 'layers'), el('h2', {}, state.trash ? 'Trash is empty' : 'No Space selected'), !state.trash ? el('button', { class: 'btn btn-sm btn-primary', disabled: !state.snapshot.write || !state.snapshot.sources.length, onclick: openCreate }, icon('plus'), 'Create Space') : null));
+      const hasSpaces = state.snapshot.spaces.some(space => space.trashed === state.trash);
+      const hasSources = state.snapshot.sources.length > 0;
+      const title = hasSpaces ? 'Select a Space' : state.trash ? 'Trash is empty' : !hasSources ? 'Add a Space source' : state.snapshot.write ? 'Create your first Space' : 'No Spaces yet';
+      const help = hasSpaces ? 'Choose a page from Browse Spaces to view its content and metadata.'
+        : state.trash ? 'Spaces moved to Trash appear here. Select one to review and restore its route.'
+        : !hasSources ? 'No Hypermedia page source is available. Add a Hypermedia component to a loaded YAML source file, declare its editable content fields, then reload source files.'
+        : !state.snapshot.write ? 'This editor is read-only. A project developer must enable Spaces writes before pages can be created.'
+        : 'A Space is a page that inherits a shared source. Choose the source when creating it; the source decides which content fields you can edit.';
+      $('#main').replaceChildren(el('div', { class: 'empty' }, icon(state.trash ? 'archive' : 'layers'), el('h2', {}, title), el('p', {}, help),
+        !state.trash && hasSources && state.snapshot.write ? el('button', { class: 'btn btn-sm btn-primary', onclick: openCreate }, icon('plus'), 'Create Space') : null,
+        !state.trash && !hasSources ? el('button', { class: 'btn btn-sm', onclick: () => reload() }, icon('refresh-cw'), 'Reload source files') : null));
       updateSaveState(); icons(); return;
     }
     const actions = el('div', { class: 'heading-actions' });
@@ -186,8 +196,11 @@ import {readResponse} from './http.mjs';
     const body = el('div', { class: 'editor-body' });
     const content = el('section', { id: 'content-panel', class: 'hb-surface', hidden: state.tab !== 'content' });
     content.append(el('div', { class: 'identity' }, el('label', {}, 'Title', el('input', { class: 'input', name: 'title', value: s.title, required: true, maxLength: 200, readOnly: !state.snapshot.write, oninput: dirty })), el('label', {}, 'Route', el('input', { class: 'input', name: 'route', value: s.route, required: true, readOnly: !state.snapshot.write, oninput: dirty }))));
-    content.append(el('div', { class: 'section-heading' }, el('h3', {}, 'Content', el('small', {}, `${s.fields.length} fields`))));
-    if (!s.fields.length) content.append(el('p', { class: 'subtle' }, 'No editable content fields'));
+    content.append(el('div', { class: 'section-heading' }, el('h3', {}, 'Content', el('small', {}, `${s.fields.length} ${s.fields.length === 1 ? 'field' : 'fields'}`))));
+    if (!s.fields.length) content.append(el('div', { class: 'empty-content' },
+      el('h4', {}, 'No editable content fields'),
+      el('p', {}, 'The source ', el('code', {}, s.source), ' does not declare any editable content fields. A project developer can add editable fields to its templates, Markdown, or images, then reload source files here.'),
+      el('p', {}, state.snapshot.write ? 'You can still change this page’s title, route, and metadata.' : 'You can view this page’s title, route, and metadata. This editor is read-only.')));
     for (const group of fieldGroups(s.fields)) {
       const section = el('div', {class: 'field-group'});
       if (group.name) section.append(el('h3', {class: 'field-group-title'}, group.name));
@@ -522,8 +535,17 @@ import {readResponse} from './http.mjs';
     const form = $('#create-form'); form.reset(); $('.form-error', form).textContent = '';
     form.elements.source.replaceChildren(...state.snapshot.sources.map(s => el('option', { value: s.name }, s.name)));
     if (selected()?.source) form.elements.source.value = selected().source;
+    updateCreateHelp();
     $('#create-dialog').showModal();
   }
+  function updateCreateHelp() {
+    const source = state.snapshot.sources.find(s => s.name === $('#create-form').elements.source.value);
+    const count = source?.fields.length || 0;
+    $('#create-source-help').textContent = count
+      ? `${count} editable content ${count === 1 ? 'field' : 'fields'} from this source. The new page starts with its inherited content; your edits apply to the new Space.`
+      : 'This source has no editable content fields. You can create the page and change its title, route, and metadata. To edit its content here, a project developer must first declare editable fields in the source.';
+  }
+  $('#create-form').elements.source.addEventListener('change', updateCreateHelp);
   $('#create-form').addEventListener('submit', async event => {
     event.preventDefault(); if (state.busy) return; const form = event.currentTarget;
     const m = { action: 'create', revision: state.snapshot.revision }; for (const k of ['source','name','title','route']) m[k] = form.elements[k].value;

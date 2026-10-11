@@ -8,9 +8,13 @@ Output height in integer pixels. Omit one dimension to preserve the aspect ratio
 ==== expected json ====
 {
   "Alt": "",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 0,
   "Class": "",
   "ConfigCategory": "",
   "ConfigType": "<IMAGES>",
+  "Directory": "hyperbricks-yaml-test-files/assets/",
   "Enclose": "",
   "ExtraAttributes": null,
   "Height": 100,
@@ -22,7 +26,6 @@ Output height in integer pixels. Omit one dimension to preserve the aspect ratio
   "Loading": "",
   "MetaDocDescription": "",
   "Quality": 0,
-  "Directory": "hyperbricks-yaml-test-files/assets/",
   "Title": "",
   "Width": 0
 }

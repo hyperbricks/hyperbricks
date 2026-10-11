@@ -2,6 +2,31 @@
 
 Use this guide when updating an older configuration to the current component contracts. Apply only the changes that affect your project. The examples describe configuration changes; they do not assign every change to a particular release interval.
 
+## Upgrade to v1.3.1-beta
+
+### Dashboard enabled by default during development
+
+In development and debug mode, omitting `development.dashboard` or its `enabled`
+field now enables Dashboard and Errors. Explicit `enabled: false` and legacy
+`dashboard: false` remain disabled. Existing modules with an explicit `false`
+are not automatically opted in. Newly initialized modules enable Dashboard.
+
+With both credentials absent, the enabled interface opens without login and
+startup warns about access. A complete account requires login; a partial account
+still blocks access. Set `hyperbricks.development.dashboard.enabled: false` to
+opt out. Live mode, production runtimes and static output never expose Dashboard.
+Restart after changing package settings. See [developer tools](PACKAGE_CONFIGURATION.md#developer-tools).
+
+Legacy `development.dashboard: true` and `dashboard: false` are accepted with a
+migration warning at startup and in `doctor`. They set the same enablement switch
+as the mapping form. Migrate to `dashboard: {enabled: true}` or
+`dashboard: {enabled: false}` to remove the warning. Configuration files are not
+rewritten automatically.
+
+The development status indicator is also enabled by default when Dashboard is
+available. Set `development.status_indicator: false` to hide it independently.
+See [the render status indicator](QUICKSTART.md#render-status-indicator).
+
 ## Upgrade to v1.3.0-beta
 
 ### Route cache durations now take effect
@@ -90,8 +115,9 @@ account is configured. These are module credentials, separate from deployment
 service credentials. Use HTTPS or a private encrypted connection for non-loopback
 access because Basic Auth does not encrypt credentials.
 
-For the optional Dashboard login introduced later, see
-[Upgrade to v1.3.0-beta](#upgrade-to-v130-beta).
+For optional Dashboard login, see [Upgrade to v1.3.0-beta](#upgrade-to-v130-beta).
+For Boolean compatibility and the current enablement default, see
+[Upgrade to v1.3.1-beta](#upgrade-to-v131-beta).
 
 Restart the module after changing its settings, and update the
 [dashboard URL](#update-developer-dashboard-links). See

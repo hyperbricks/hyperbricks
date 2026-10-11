@@ -25,6 +25,74 @@ Component files and package configuration use different YAML structures:
 
 HyperBricks loads `*.hyperbricks.yaml` files directly inside the configured `hyperbricks/` directory. To load files in subdirectories, add file-level [imports](#imports) to a loaded source file. Import paths are relative to that file.
 
+## File Organization
+
+Prefer one root Hypermedia page per file directly in the configured
+`hyperbricks/` directory. This includes pages that inherit their Hypermedia type
+from a shared source. Name files after their page or purpose so a developer can
+find the owner of a route without searching a large application file.
+
+Keep reusable component definitions in subdirectories and import them explicitly
+where needed. A typical organization is:
+
+```text
+hyperbricks/
+  home.hyperbricks.yaml
+  events.hyperbricks.yaml
+  assets/
+    bundles.hyperbricks.yaml
+  partials/
+    site.hyperbricks.yaml
+    event-card.hyperbricks.yaml
+  spaces/
+    <source>/
+      index.hyperbricks.yaml
+      <name>.hyperbricks.yaml
+```
+
+- `assets/` holds HyperBricks component definitions for shared styles, scripts
+  and asset builds. The actual CSS, JavaScript and other input files belong in
+  the module's configured resource directories; templates belong in templates.
+- `partials/` holds shared page shells, navigation and reusable components.
+  Keep small page-specific children with their page when extraction would only
+  make that page harder to follow.
+- `spaces/` follows the existing [Spaces source structure](SPACES.md#source-files-and-crud).
+  Preserve its per-source index and imports; it has its own ownership rules.
+
+Prefer grouping file-level `imports` near the top for readability. This is a
+style preference, not a required position. Preserve the declared import order;
+do not sort or relocate declarations merely to satisfy a layout convention.
+Imports are relative to the importing file: a page can
+import `partials/site.hyperbricks.yaml`, while that shared file can import
+`../assets/bundles.hyperbricks.yaml`. A directory alone does not load its files.
+Keep ordered component entries in their intended execution/render order; do not
+alphabetize them as a style cleanup.
+
+Leave one blank line between separate root component definitions, including
+pages, fragments and inherited definitions. Keep the properties belonging to
+each component together. For example:
+
+```yaml
+index_page:
+  - type: hypermedia
+  - route: index
+  - title: Home
+
+catalog_page:
+  - type: hypermedia
+  - route: catalog
+  - title: Catalog
+```
+
+These are organization conventions, not parser requirements or current lint
+rules. Preserve an existing module's coherent structure when making a focused
+change. The [starter modules](../modules/README.md#starter-modules) show useful
+patterns: `hello-world` has a minimal page, `hyperbricks-patterns-yaml` separates
+page examples, and the navigation/todo demos share definitions through partials.
+Some examples group several pages or keep asset definitions in
+`partials/assets.hyperbricks.yaml`; the preferred layout above does not require
+an unrelated migration of those modules.
+
 ## Component Source Shape
 
 Start a component source file with a top-level YAML mapping. Most top-level keys name HyperBricks objects.
@@ -278,7 +346,12 @@ page:
       - inherit: shared_hero
 ```
 
-HyperBricks resolves relative import paths from the importing file's directory. It loads imported objects before the current file. Duplicate top-level object names across imported files are source errors for that file.
+HyperBricks resolves relative import paths from the importing file's directory.
+The loader collects file-level imports wherever they occur in the top-level
+mapping, loads them in the declared order, and then appends the current file's
+own definitions. The `imports` block therefore does not have to be at the top.
+Duplicate top-level object names across imported files are source errors for
+that file.
 
 ### Two-level imports
 
@@ -679,6 +752,23 @@ empty_value: ""
 ```
 
 If a value needs no quotes or escapes, plain, single-quoted, and double-quoted forms produce the same text. Quotes control YAML parsing. HyperBricks does not receive the surrounding quote characters.
+
+Use [`hyperbricks lint --json`](HYPERBRICKS_CLI.md#lint) to check for unnecessary
+quotes around simple strings. Pass the source files you changed or select a
+module with `-m`. The same rule appears in language-server diagnostics. It
+preserves necessary quotes and does not rewrite files or replace module health
+and runtime checks.
+
+Use `moduleversion: 1.0.0` for module metadata. This version is already a YAML
+string without quotes. The metadata generator uses this spelling, and the
+linter applies the same quote rules as for other strings.
+
+The shared linter and language-server also require literal
+`hyperbricks.metadata.moduleversion` values to be strings. Unquoted `1.0`
+is a YAML number and produces `metadata.moduleversion_type`; write the full
+version `1.0.0`, or keep `"1.0"` for a legacy version. Numbers, booleans, null,
+lists, and ordinary mappings are type errors here. This check does not evaluate
+value resolvers or validate the version's SemVer syntax.
 
 ### Multiline strings
 

@@ -165,7 +165,7 @@ func writeDeployCredentialsResponse(w http.ResponseWriter, module, buildID strin
 	if err != nil {
 		return err
 	}
-	dashboardEnabled, err := deployCredentialBoolean(root, []string{"hyperbricks", "development", "dashboard", "enabled"}, false)
+	dashboardEnabled, err := deployCredentialBoolean(root, []string{"hyperbricks", "development", "dashboard", "enabled"}, true)
 	if err != nil {
 		return err
 	}

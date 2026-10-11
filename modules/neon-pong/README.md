@@ -12,9 +12,9 @@ hyperbricks start -m neon-pong --port 8080 --non-interactive
 
 Open http://localhost:8080/ and press **Let’s Play**. The first player to seven wins.
 
-The game runs without a developer login. Its dashboard is disabled by default.
-If you enable the developer interface in `package.hyperbricks.yaml`, set
-credentials before startup; there is no built-in account:
+The game runs without a developer login. Dashboard is enabled in development and opens without login when both credentials
+are absent. To require login, set both credentials before startup; there is no
+built-in account:
 
 ```sh
 export HB_DEVELOPER_USER=developer

@@ -246,7 +246,7 @@ func TestLoadPackageConfigStrictReturnsConfigurationErrors(t *testing.T) {
 	}{
 		{name: "yaml", body: "hyperbricks: [\n", want: "load package configuration"},
 		{name: "typed decode", body: "hyperbricks: {server: {port: invalid}}\n", want: "decode package configuration"},
-		{name: "dashboard", body: "hyperbricks: {development: {dashboard: true}}\n", want: "development.dashboard must be a mapping"},
+		{name: "dashboard", body: "hyperbricks: {development: {dashboard: invalid}}\n", want: "development.dashboard must be a mapping"},
 		{name: "frontend editing", body: "hyperbricks: {development: {frontend_editing: {spaces: {route: /public/spaces}}}}\n", want: "non-reserved /__hyperbricks/ route"},
 		{name: "spaces plugin conflict", body: "hyperbricks: {plugins: {enabled: [SpacesPlugin@0.1.0]}}\n", want: "Spaces is built in"},
 		{name: "invalid mode despite production override", body: "hyperbricks: {mode: preview}\n", want: "invalid hyperbricks.mode \"preview\""},

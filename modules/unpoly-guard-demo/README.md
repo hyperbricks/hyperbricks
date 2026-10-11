@@ -71,9 +71,7 @@ With direct values, the environment exports above are not needed. Choose your
 own password, restart the server, and use these values to log in. The password
 is stored as plain text; do not commit real credentials to a shared repository.
 
-Dashboard is disabled by default. To enable its Overview and Errors views, set
-`hyperbricks.development.dashboard.enabled: true` in
-`package.hyperbricks.yaml`, restart, and open
+Dashboard is enabled in development. Open
 [Dashboard](http://localhost:8132/__hyperbricks/dashboard). Spaces uses the same
 optional login even while Dashboard is disabled. Render diagnostics still require
 credentials while Dashboard is disabled. Spaces and its writes default to enabled

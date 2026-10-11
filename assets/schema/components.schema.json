@@ -3840,6 +3840,57 @@
           }
         },
         {
+          "path": "cache",
+          "key": "cache",
+          "go_name": "Cache",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Reuse valid generated images when source bytes and resize settings match. Default false; independent of page caching.",
+          "example": "{!{image-cache.hyperbricks.yaml}}",
+          "authoring": {
+            "label": "Cache",
+            "control": "checkbox",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache_grace",
+          "key": "cache_grace",
+          "go_name": "CacheGrace",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Minimum time to retain retired URLs, e.g. 1h or 0s. Default 1h; requests, cached HTML and exports add protection.",
+          "example": "{!{image-cache_grace.hyperbricks.yaml}}",
+          "authoring": {
+            "label": "Cache Grace",
+            "control": "text",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache_keep",
+          "key": "cache_keep",
+          "go_name": "CacheKeep",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Previous successful generations retained per image in addition to current. Default zero; must be nonnegative.",
+          "example": "{!{image-cache_keep.hyperbricks.yaml}}",
+          "authoring": {
+            "label": "Cache Keep",
+            "control": "number",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
           "path": "class",
           "key": "class",
           "go_name": "Class",
@@ -4077,6 +4128,57 @@
           "authoring": {
             "label": "Attributes",
             "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache",
+          "key": "cache",
+          "go_name": "Cache",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Reuse valid generated images when source bytes and resize settings match. Default false; independent of page caching.",
+          "example": "{!{images-cache.hyperbricks.yaml}}",
+          "authoring": {
+            "label": "Cache",
+            "control": "checkbox",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache_grace",
+          "key": "cache_grace",
+          "go_name": "CacheGrace",
+          "go_type": "string",
+          "kind": "string",
+          "description": "Minimum time to retain retired URLs, e.g. 1h or 0s. Default 1h; requests, cached HTML and exports add protection.",
+          "example": "{!{images-cache_grace.hyperbricks.yaml}}",
+          "authoring": {
+            "label": "Cache Grace",
+            "control": "text",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache_keep",
+          "key": "cache_keep",
+          "go_name": "CacheKeep",
+          "go_type": "int",
+          "kind": "int",
+          "description": "Previous successful generations retained per image in addition to current. Default zero; must be nonnegative.",
+          "example": "{!{images-cache_keep.hyperbricks.yaml}}",
+          "authoring": {
+            "label": "Cache Keep",
+            "control": "number",
             "publish": {
               "omit_empty": true,
               "omit_false": true
@@ -4555,6 +4657,22 @@
           "authoring": {
             "label": "Attributes",
             "control": "key-value",
+            "publish": {
+              "omit_empty": true,
+              "omit_false": true
+            }
+          }
+        },
+        {
+          "path": "cache",
+          "key": "cache",
+          "go_name": "Cache",
+          "go_type": "bool",
+          "kind": "bool",
+          "description": "Reuse sanitized HTML for unchanged validated content in a bounded memory cache. Default false. Files are still read and validated on every component render.",
+          "authoring": {
+            "label": "Cache",
+            "control": "checkbox",
             "publish": {
               "omit_empty": true,
               "omit_false": true

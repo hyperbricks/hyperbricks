@@ -1,5 +1,6 @@
 catalog_data:
   - type: template
+  - querykeys: [search, category]
   - template: {file: catalog.html}
   - values:
       feed:

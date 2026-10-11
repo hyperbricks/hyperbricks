@@ -12,9 +12,8 @@ Open [http://127.0.0.1:8080/](http://127.0.0.1:8080/). The source is in
 [`hyperbricks/hello-world.hyperbricks.yaml`](hyperbricks/hello-world.hyperbricks.yaml).
 Edit the text there and refresh while development watching is enabled.
 
-The page runs without a developer login. Its dashboard is disabled by default.
-If you enable Dashboard in `package.hyperbricks.yaml`, it opens without
-login when both developer credentials are absent, with a startup warning. To
+The page runs without a developer login. Dashboard is enabled in development and opens without login when both developer
+credentials are absent, with a startup warning. To
 require login, set both values before startup; there is no built-in account:
 
 ```sh

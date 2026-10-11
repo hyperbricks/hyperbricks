@@ -1,6 +1,0 @@
-interface:
-  display_name: "HyperBricks"
-  short_description: "Develop and maintain HyperBricks applications"
-  icon_small: "./assets/hyperbricks_round_black_on_white.svg"
-  icon_large: "./assets/hyperbricks_round_white_on_black.svg"
-  default_prompt: "Use $hyperbricks to develop, change, troubleshoot, or package this HyperBricks project."

@@ -5,10 +5,28 @@ set +m
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 COMPOSE_FILE="${REPO_ROOT}/test/dedicated/docker/docker-compose.yml"
+COMPOSE_PROJECT="hyperbricks-api-tests-$$"
 TEST_SERVER_LOG="${TEST_SERVER_LOG:-/tmp/hyperbricks-api-render-test-server.log}"
 TEST_SERVER_PID=""
+TEST_RUN_DIR=""
+STACK_STARTED=false
+RUN_LOCK="${TMPDIR:-/tmp}/hyperbricks-api-render-tests-${UID}.lock"
+LOCK_ACQUIRED=false
 
 cd "${REPO_ROOT}"
+
+if ! command -v docker >/dev/null 2>&1; then
+  echo "Docker CLI is not on PATH. Install Docker or open a new terminal after installation, then verify 'docker version'." >&2
+  exit 1
+fi
+if ! docker compose version >/dev/null 2>&1; then
+  echo "Docker Compose is unavailable. Verify 'docker compose version' before running these tests." >&2
+  exit 1
+fi
+if ! docker info >/dev/null 2>&1; then
+  echo "Docker is not reachable. Start Docker and verify 'docker info' before running these tests." >&2
+  exit 1
+fi
 
 if ! command -v openssl >/dev/null 2>&1; then
   echo "openssl is required to generate temporary Docker test credentials." >&2
@@ -55,33 +73,31 @@ ensure_port_available() {
     return 0
   fi
 
-  local blocked=""
   for entry in ${listeners}; do
     local cmd="${entry%%:*}"
     local pid="${entry##*:}"
-    if [[ "${cmd}" == "main" ]]; then
-      echo "Port ${port} is held by a stale API test server (pid ${pid}); stopping it..."
-      stop_pid "${pid}"
-    else
-      echo "Port ${port} is in use by ${cmd} (pid ${pid}). Stop it and re-run."
-      blocked="yes"
-    fi
+    echo "Port ${port} is in use by ${cmd} (pid ${pid}). Wait for the other run or stop the process yourself, then re-run." >&2
   done
-
-  if [[ -n "${blocked}" ]]; then
-    exit 1
-  fi
+  return 1
 }
 
 cleanup() {
-  docker compose -f "${COMPOSE_FILE}" down -v >/dev/null 2>&1 || true
+  if [[ "${STACK_STARTED}" == "true" ]]; then
+    docker compose -p "${COMPOSE_PROJECT}" -f "${COMPOSE_FILE}" down -v >/dev/null 2>&1 || true
+  fi
 
   if [[ -n "${TEST_SERVER_PID:-}" ]] && kill -0 "${TEST_SERVER_PID}" >/dev/null 2>&1; then
     stop_pid "${TEST_SERVER_PID}"
   fi
   TEST_SERVER_PID=""
+  if [[ -n "${TEST_RUN_DIR}" ]]; then
+    rm -rf "${TEST_RUN_DIR}"
+  fi
+  if [[ "${LOCK_ACQUIRED}" == "true" ]]; then
+    rm -f "${RUN_LOCK}/pid"
+    rmdir "${RUN_LOCK}" || true
+  fi
 }
-trap cleanup EXIT
 
 wait_for_url() {
   local url="$1"
@@ -110,15 +126,29 @@ wait_for_url() {
   return 1
 }
 
-echo "Starting local API test server..."
+if ! mkdir "${RUN_LOCK}" 2>/dev/null; then
+  echo "Another API render test run owns ${RUN_LOCK}. Wait for it to finish. If a run was forcibly killed, remove this lock only after checking that it has stopped." >&2
+  exit 1
+fi
+LOCK_ACQUIRED=true
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+printf '%s\n' "$$" > "${RUN_LOCK}/pid"
+
 ensure_port_available 8090
-go run ./cmd/testing/main.go >"${TEST_SERVER_LOG}" 2>&1 &
+ensure_port_available "${POSTGREST_PORT:-3000}"
+TEST_RUN_DIR=$(mktemp -d "${TMPDIR:-/tmp}/hyperbricks-api-render-tests.XXXXXX")
+echo "Building local API test server..."
+go build -o "${TEST_RUN_DIR}/api-test-server" ./cmd/testing
+echo "Starting local API test server..."
+"${TEST_RUN_DIR}/api-test-server" >"${TEST_SERVER_LOG}" 2>&1 &
 TEST_SERVER_PID=$!
 wait_for_url "http://localhost:8090/echo/query?ready=1" "local API test server" "${TEST_SERVER_PID}"
 
 echo "Starting PostgREST docker stack..."
-docker compose -f "${COMPOSE_FILE}" down -v >/dev/null 2>&1 || true
-docker compose -f "${COMPOSE_FILE}" up -d postgres server
+STACK_STARTED=true
+docker compose -p "${COMPOSE_PROJECT}" -f "${COMPOSE_FILE}" up -d postgres server
 wait_for_url "http://127.0.0.1:${POSTGREST_PORT:-3000}/" "PostgREST docker stack"
 
 echo "Running Docker YAML API_RENDER and API_FRAGMENT_RENDER tests..."

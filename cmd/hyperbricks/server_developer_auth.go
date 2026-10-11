@@ -31,12 +31,18 @@ func requireDashboardAuth(w http.ResponseWriter, r *http.Request) bool {
 
 func requireDeveloperInterfaceAuth(w http.ResponseWriter, r *http.Request) bool {
 	credentials := getHyperBricksConfiguration().Development.Dashboard.Credentials
+	message := shared.DeveloperInterfaceUnavailableMessage
+	if credentials.Empty() {
+		message += ". Dashboard is disabled. To view diagnostics, set hyperbricks.development.dashboard.enabled: true in package.hyperbricks.yaml, or configure both development.dashboard.credentials.user and password. Restart HyperBricks after changing settings. An enabled Dashboard without credentials is accessible without login."
+	} else if !credentials.Complete() {
+		message += ". The developer account is incomplete: set both development.dashboard.credentials.user and password, then restart HyperBricks."
+	}
 	return shared.RequireBasicAuth(
 		w,
 		r,
 		credentials,
 		shared.DeveloperInterfaceRealm,
-		shared.DeveloperInterfaceUnavailableMessage,
+		message,
 	)
 }
 

@@ -14,6 +14,9 @@ team_photo:
   - src:
       path: {base: resources, path: images/team.jpg}
   - width: 800
+  - cache: true
+  - cache_keep: 1
+  - cache_grace: 1h
   - alt: The project team outside the office
   - class: content-image
   - quality: 85
@@ -65,6 +68,7 @@ gallery:
   - directory:
       path: {base: resources, path: images/gallery}
   - width: 400
+  - cache: true
   - id: gallery-image-
   - class: content-image
   - loading: lazy
@@ -81,8 +85,77 @@ An unreadable or invalid supported image reports its filename in the render diag
 
 Filenames include a fingerprint of the source bytes and processing settings, followed by the output dimensions. Different source content or JPEG quality produces different files even when the original basenames and dimensions match. Repeating the same content and settings yields the same filename. Files are published only after encoding completes, so concurrent renders cannot expose partially written images.
 
-Do not construct generated filenames in templates. Use the HTML returned by the component. Old generated files remain available for already-rendered pages; image processing does not delete previous versions. After an upgrade from the older basename-only naming scheme, regenerate and deploy HTML together with its static assets. Remove unused generations as part of a controlled rebuild or deployment cleanup.
+Do not construct generated filenames in templates. Use the HTML returned by the
+component. After an upgrade from the older basename-only naming scheme,
+regenerate and deploy HTML together with its static assets.
 
-In live mode, a cached page can continue referencing its earlier image until the page is rendered again. See [live caching](LIVE_MODE_HTTP.md#storage-expiry-and-cleanup) when planning content updates, and [static export configuration](HYPERBRICKS_CLI.md#package-configuration) when generating a static site.
+## Reuse and freshness
 
-The complete field list is generated in the [component reference](REFERENCE.md#image).
+See [Asset caching](ASSET_CACHING.md) for practical development/live settings,
+image examples and guidance on retaining old URLs.
+
+| Field | Default | Behavior |
+| --- | --- | --- |
+| `cache` | `false` | True reuses a recorded valid output when source bytes and transformation settings match. False processes on each component render. |
+| `cache_keep` | `0` | Number of previous successful generations retained per image, in addition to current. Must be nonnegative. |
+| `cache_grace` | `1h` | Minimum retention after a generation is retired. A nonnegative Go duration, such as `15m`, `1h` or `0s`. Independent of `cache_keep`. |
+
+Development renders the page on each request. With image caching enabled, changed
+source bytes are detected even when the file size and timestamp stay unchanged;
+unchanged requests reuse the generated output. Missing or modified output is
+regenerated. Source checks and output validation still read bytes: a cache hit
+avoids decoding, resizing, encoding and publication, not all filesystem work.
+
+Watch reloads reread component definitions but preserve valid generated files.
+Include resources in `development.watch_dirs` if their changes should trigger a
+module reload. Generated image files and temporary publication files do not
+trigger reloads. Browser refresh remains manual; the existing `reload` setting
+does not implement automatic browser refresh.
+
+Live mode can serve cached page HTML without checking images. When the page
+cache expires or `nocache: true` requires rendering, the image cache policy
+applies. Alt text, title, IDs, classes and other HTML attributes are produced
+from the current component values, independently of the cached image bytes.
+
+For `images`, every render reads the directory list. Added images are generated,
+changed images are regenerated, and successfully discovering a removed file
+retires that component's ownership of its output. Different components can
+share identical generated files; another retained owner protects the file.
+
+## Publication and cleanup
+
+Init discovers owners without generating images. A successful generation is
+published as a complete file, then recorded in private ownership history under
+the operating system's HyperBricks image cache directory. A runtime/export
+session excludes another process writing to the same output root. Concurrent
+component renders serialize publication and reuse a successful cached result.
+
+Cleanup removes only explicitly recorded image files with matching output bytes.
+Unrecorded files are never inferred to be owned from a filename. Existing output
+from older HyperBricks versions is not scanned and automatically deleted.
+Externally modified obsolete files are preserved and their ownership released.
+Symlink escapes, corrupt ownership records and non-regular owned outputs report
+errors rather than authorizing deletion.
+
+A generation is eligible only after it exceeds `cache_keep` and its retirement
+grace has elapsed. Active requests, cached HTML and static export add protection.
+Pending cleanup is retried after requests, or during init/module reload; there is
+no periodic background cleanup when the server is idle. Cache hits and identical
+uncached output do not rewrite unchanged ownership records.
+
+If requests are active during reload, cleanup is scheduled for a later exclusive
+maintenance window. Reload does not block a nested local asset request that an
+API render needs in order to finish.
+
+External consumers and open browser pages are not tracked runtime references.
+Choose a grace period and retained-version count suitable for the lifetime of
+URLs you distribute. `0s` explicitly removes that time allowance. An external
+API that stores image URLs must refresh its manifest; `catalog-store` demonstrates
+refreshing on each image-dependent request while reusing generated image files.
+Generation or manifest errors remain visible and preserve previous files/data;
+there is no silent successful fallback to stale source results.
+
+See [live caching](LIVE_MODE_HTTP.md#storage-expiry-and-cleanup) when planning
+content updates, and [static export configuration](HYPERBRICKS_CLI.md#package-configuration)
+when generating a static site. The complete field list is generated in the
+[component reference](REFERENCE.md#image).

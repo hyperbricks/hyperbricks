@@ -242,6 +242,8 @@ func runDoctor(opts doctorOptions) doctorReport {
 		collector.set(doctorCheck{ID: "package.configuration", Group: "package", Status: doctorFail, Message: doctorCleanMessage(moduleErr.Error(), root, cwd), File: report.Module.Config})
 	} else if configErr != nil {
 		collector.set(doctorCheck{ID: "package.configuration", Group: "package", Status: doctorFail, Message: doctorCleanMessage(configErr.Error(), root, cwd), File: report.Module.Config})
+	} else if warning := config.Development.Dashboard.LegacyWarning(); warning != "" {
+		collector.set(doctorCheck{ID: "package.configuration", Group: "package", Status: doctorWarn, Message: warning, File: report.Module.Config, Path: "hyperbricks.development.dashboard"})
 	} else {
 		collector.simple("package.configuration", doctorPass, "configuration loaded and validated")
 	}

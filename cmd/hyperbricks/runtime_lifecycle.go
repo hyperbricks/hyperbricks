@@ -153,7 +153,7 @@ func runRuntimeSession(parent context.Context, config *shared.Config, enabled bo
 			return err
 		}
 	} else if config.HasDevelopmentProcesses() {
-		logger.Info("Development hooks and services are disabled; use start --with-processes to enable them")
+		logger.Warn("Development hooks and services are disabled; configured API services will not be started. Run them separately or restart with start --with-processes to enable them")
 	}
 
 	phase = "initialize"

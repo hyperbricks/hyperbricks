@@ -23,8 +23,12 @@ hyperbricks start -m catalog-store --with-processes
 
 Open [http://127.0.0.1:4320/catalog](http://127.0.0.1:4320/catalog). The first
 catalog request can take a moment: the API asks HyperBricks to render the 24
-`<IMAGE>` components, then caches their generated `/static/images/` URLs for
-this run. The API listens only on `127.0.0.1:4319`; HyperBricks uses port 4320.
+`<IMAGE>` components. Later image-dependent API requests refresh the URLs;
+HyperBricks reuses unchanged generated files with `cache: true`. Editing a
+source image updates its URL on the next request without restarting the API.
+One previous version is retained, and retired URLs have a one-hour grace
+period before safe cleanup. The API listens only on `127.0.0.1:4319`;
+HyperBricks uses port 4320.
 The managed API starts first and must answer `/health` before HyperBricks begins
 serving. Ctrl+C or `q` stops the site and its API. The two empty runtime
 directories are included, so `hyperbricks init` is not needed.
@@ -33,9 +37,9 @@ If you are developing HyperBricks from its source checkout and have not
 installed the binary, run `go install ./cmd/hyperbricks` there first. Run
 `hyperbricks version` to check which version is on your path.
 
-The public store runs without a developer login. Its dashboard is disabled by
-default. If you enable Dashboard in `package.hyperbricks.yaml`, it opens without
-login when both developer credentials are absent, with a startup warning. To
+The public store runs without a developer login. Dashboard is enabled by default in development/debug mode. It opens without
+login when both developer credentials are absent, with a startup warning. Set
+`hyperbricks.development.dashboard.enabled: false` to disable it. To
 require login, set both values before startup; there is no built-in account:
 
 ```sh

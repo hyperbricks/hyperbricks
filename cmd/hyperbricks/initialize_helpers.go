@@ -48,13 +48,12 @@ func validatePath(renderDir string) error {
 }
 
 func confirmDeletion(dir string) bool {
-
-	fmt.Fprintf(os.Stderr, "Delete directory %q? (y/n): ", dir)
-
-	if os.Getenv("HB_NO_KEYBOARD") != "" {
+	if commands.NonInteractive || os.Getenv("HB_NO_KEYBOARD") != "" {
 		fmt.Fprintln(os.Stderr, "Non-interactive mode: deletion canceled.")
 		return false
 	}
+
+	fmt.Fprintf(os.Stderr, "Delete directory %q? (y/n): ", dir)
 
 	if err := keyboard.Open(); err != nil {
 		logging.GetLogger().Warnw("Keyboard unavailable; deletion canceled", "error", err)

@@ -64,12 +64,13 @@ func registerRenderers() {
 		return content, exists
 	}
 
+	imageProcessor := component.NewImageProcessor()
 	singleImageRenderer := &component.SingleImageRenderer{
-		ImageProcessorInstance: &component.ImageProcessor{},
+		ImageProcessorInstance: imageProcessor,
 	}
 
 	multipleImagesRenderer := &component.MultipleImagesRenderer{
-		ImageProcessorInstance: &component.ImageProcessor{},
+		ImageProcessorInstance: imageProcessor,
 	}
 	pluginRenderer := &component.PluginRenderer{
 		CompositeRenderer: renderer.CompositeRenderer{
