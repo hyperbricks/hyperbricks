@@ -18,7 +18,9 @@ func TestDevelopmentDashboardLegacyBooleanAndMapping(t *testing.T) {
 		{"quoted disabled", `dashboard: "false"`, false, true},
 		{"mapping enabled", "dashboard: {enabled: true}", true, false},
 		{"mapping disabled", "dashboard: {enabled: false}", false, false},
-		{"omitted", "", false, false},
+		{"omitted", "", true, false},
+		{"empty mapping", "dashboard: {}", true, false},
+		{"credentials only", "dashboard: {credentials: {}}", true, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			body := fmt.Sprintf("hyperbricks: {development: {%s}}", tc.setting)

@@ -8,7 +8,7 @@ hyperbricks:
     watch: false
     reload: false
     dashboard:
-      enabled: false
+      enabled: true
       credentials:
         user:
           env: HB_DEVELOPER_USER

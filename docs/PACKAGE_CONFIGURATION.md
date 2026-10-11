@@ -24,7 +24,7 @@ Save it as `modules/demo/package.hyperbricks.yaml` and start the module from the
 hyperbricks start -m demo
 ```
 
-Omitted settings use runtime defaults. In this example, Dashboard is disabled; Spaces and its writes are enabled, with no login when both developer credentials are absent. Spaces still enforces its host and write-origin checks. See [Developer Tools](#developer-tools) to change those settings.
+Omitted settings use runtime defaults. In this example, Dashboard, Spaces and its writes are enabled, with no login when both developer credentials are absent. Spaces still enforces its host and write-origin checks. See [Developer Tools](#developer-tools) to change those settings.
 
 Restart after changing package settings or credential environment variables. Source watching does not reload the package file. See the [CLI module selection rules](HYPERBRICKS_CLI.md#start-module-argument) for module paths and alternative package files selected with `--config`.
 
@@ -142,7 +142,7 @@ The fields below are relative to the top-level `hyperbricks` mapping. For exampl
 | `development.watch` | Enable source-directory watching in development mode. Defaults to `false`. |
 | `development.watch_dirs` | Source directories to watch. The small package example lists the module's source, templates, and resources. |
 | `development.reload` | Retained reload setting; this flag alone does not enable browser refresh. Source watching is controlled by `watch`. |
-| `development.dashboard.enabled` | Enable Dashboard Overview and Errors in development/debug mode. Defaults to `false`. Legacy `development.dashboard: true` or `false` sets the same switch with a migration warning; `false` keeps these views disabled without blocking module startup. |
+| `development.dashboard.enabled` | Enable Dashboard Overview and Errors in development/debug mode. Defaults to `true`; an omitted Dashboard mapping or `enabled` field leaves it enabled. Live mode, production runtimes and static output never expose Dashboard. Legacy `development.dashboard: true` or `false` sets the same switch with a migration warning; `false` keeps these views disabled without blocking module startup. |
 | `development.dashboard.credentials` | Shared `user` and `password` for developer interfaces. Values may use environment resolvers; there is no default account. |
 | `development.frontend_editing.enabled` | Master switch for Spaces and configured frontend editors. Defaults to `true`. |
 | `development.frontend_editing.spaces.enabled` | Show Spaces and contextual editing in development/debug mode. Defaults to `true`; the master switch must also be enabled. |

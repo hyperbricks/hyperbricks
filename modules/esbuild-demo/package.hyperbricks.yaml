@@ -10,7 +10,7 @@ hyperbricks:
     reload: false
     frontend_errors: true
     dashboard:
-      enabled: false
+      enabled: true
       credentials:
         user:
           env: HB_DEVELOPER_USER

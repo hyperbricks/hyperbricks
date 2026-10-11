@@ -61,10 +61,14 @@ uses. If that differs from your terminal or cannot start, set
 
 ## Open The Dashboard
 
-Dashboard lists your routes and links to **Errors**. Enable it
-before extending the example so you can find problems as you work.
+Dashboard lists your routes and links to **Errors**. It is enabled by default
+in development and debug mode. Open
+[http://localhost:8080/__hyperbricks/dashboard](http://localhost:8080/__hyperbricks/dashboard),
+using your selected port. The **Dashboard** startup log shows the complete URL.
+Dashboard is unavailable in live mode, production runtimes and static output.
 
-If the server is running, stop it with **Ctrl+C**. From the same project root:
+If an existing module explicitly sets `development.dashboard.enabled: false`
+(or legacy `development.dashboard: false`), stop it with **Ctrl+C** and run:
 
 ```bash
 hyperbricks settings -m demo
@@ -78,11 +82,7 @@ Choose `true` and press **Enter** to stage the change. Press **r** to review,
 hyperbricks start -m demo
 ```
 
-If you previously used `--port 8081`, include it again when restarting. Open
-[http://localhost:8080/__hyperbricks/dashboard](http://localhost:8080/__hyperbricks/dashboard),
-using your selected port. Once the server is listening, the **Dashboard** log
-line shows the complete URL with the effective port when Dashboard is enabled
-in development or debug mode.
+If you previously used `--port 8081`, include it again when restarting.
 
 With both developer credentials absent, Dashboard opens without a login. See
 [developer access, credentials, Errors, and Spaces](#developer-interface) for

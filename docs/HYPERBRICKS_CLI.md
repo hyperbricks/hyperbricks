@@ -791,8 +791,9 @@ In development or debug mode, once the server is listening, the **Dashboard**
 message at **INFO** level shows an enabled Dashboard's full local URL, for example
 [http://localhost:8080/__hyperbricks/dashboard](http://localhost:8080/__hyperbricks/dashboard).
 The URL uses the effective server port, including a `--port` override. Dashboard
-is disabled by default; follow [Open The Dashboard](QUICKSTART.md#open-the-dashboard)
-to enable it with `hyperbricks settings`. It is unavailable in live mode,
+is enabled by default unless `development.dashboard.enabled: false` (or legacy
+`development.dashboard: false`) is explicitly configured. See
+[Open The Dashboard](QUICKSTART.md#open-the-dashboard) to change it with `hyperbricks settings`. It is unavailable in live mode,
 production runtimes, and static output.
 
 The same event appears in the Dashboard's **Logs** views and in the log file

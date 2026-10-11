@@ -230,3 +230,32 @@ func TestSpacesMountOptionalLoginInDevelopmentAndDebug(t *testing.T) {
 		t.Fatal("Spaces mounted during static output")
 	}
 }
+
+func TestDiagnosticsUnavailableExplainsRecoveryWithoutExposingErrors(t *testing.T) {
+	setupDevelopmentModeServeContentTest(t, false)
+	cfg := getHyperBricksConfiguration()
+	old := cfg.Development.Dashboard
+	t.Cleanup(func() { cfg.Development.Dashboard = old })
+	cfg.Development.Dashboard.Enabled = false
+	for _, tc := range []struct {
+		name        string
+		credentials shared.CredentialsConfig
+		want        string
+	}{
+		{"disabled without account", shared.CredentialsConfig{}, "hyperbricks.development.dashboard.enabled: true"},
+		{"partial account", shared.CredentialsConfig{User: "private-user"}, "account is incomplete"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg.Development.Dashboard.Credentials = tc.credentials
+			response := httptest.NewRecorder()
+			handler(response, httptest.NewRequest(http.MethodGet, renderDiagnosticsPath+"?request_id=hb-5", nil))
+			body := response.Body.String()
+			if response.Code != http.StatusServiceUnavailable || !strings.Contains(body, tc.want) || !strings.Contains(strings.ToLower(body), "restart") {
+				t.Fatalf("unhelpful locked response: %d %s", response.Code, body)
+			}
+			if response.Header().Get("Cache-Control") != "no-store" || response.Header().Get("WWW-Authenticate") != "" || strings.Contains(body, "private-user") {
+				t.Fatalf("unsafe locked response: %v %s", response.Header(), body)
+			}
+		})
+	}
+}

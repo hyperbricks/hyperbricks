@@ -29,6 +29,10 @@ func TestDefaultInitAssetsWriteThreePageStarter(t *testing.T) {
 		t.Fatal(err)
 	}
 	hb := config.Materialized["hyperbricks"].(map[string]interface{})
+	dashboard := hb["development"].(map[string]interface{})["dashboard"].(map[string]interface{})
+	if dashboard["enabled"] != "true" {
+		t.Fatalf("new module must enable Dashboard: %#v", dashboard)
+	}
 	metadata := hb["metadata"].(map[string]interface{})
 	if got := metadata["module"]; got != "demo" {
 		t.Fatalf("module = %v", got)

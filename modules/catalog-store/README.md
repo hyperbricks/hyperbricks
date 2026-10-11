@@ -37,9 +37,9 @@ If you are developing HyperBricks from its source checkout and have not
 installed the binary, run `go install ./cmd/hyperbricks` there first. Run
 `hyperbricks version` to check which version is on your path.
 
-The public store runs without a developer login. Its dashboard is disabled by
-default. If you enable Dashboard in `package.hyperbricks.yaml`, it opens without
-login when both developer credentials are absent, with a startup warning. To
+The public store runs without a developer login. Dashboard is enabled by default in development/debug mode. It opens without
+login when both developer credentials are absent, with a startup warning. Set
+`hyperbricks.development.dashboard.enabled: false` to disable it. To
 require login, set both values before startup; there is no built-in account:
 
 ```sh

@@ -60,8 +60,9 @@ The integrated `esbuild` component bundles JavaScript, TypeScript, and CSS and a
 
 During development, **Dashboard** lists application routes, **Errors** helps
 locate rendering problems, and **Spaces** edits content declared by your source
-pages. Dashboard is disabled by default. The quickstart shows how to
-[enable and open it](QUICKSTART.md#open-the-dashboard) as soon as your first page
+pages. Dashboard is enabled by default in development/debug unless explicitly
+disabled, and is unavailable in live mode. The quickstart shows how to
+[open it](QUICKSTART.md#open-the-dashboard) as soon as your first page
 is running.
 
 ## Authoring Format

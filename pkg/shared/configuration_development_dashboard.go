@@ -24,7 +24,7 @@ func (c DevelopmentDashboardConfig) LegacyWarning() string {
 }
 
 func decodeDevelopmentDashboard(input interface{}) (DevelopmentDashboardConfig, error) {
-	var config DevelopmentDashboardConfig
+	config := DevelopmentDashboardConfig{Enabled: true}
 	root, _ := input.(map[string]interface{})
 	development, _ := root["development"].(map[string]interface{})
 	raw, exists := development["dashboard"]

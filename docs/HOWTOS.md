@@ -93,9 +93,9 @@ hyperbricks start -m my-project
 
 Open `http://localhost:8080/` to see the output.
 
-For route links and render errors, [enable and open Dashboard](QUICKSTART.md#open-the-dashboard).
+For route links and render errors, [open Dashboard](QUICKSTART.md#open-the-dashboard).
 Use `my-project` in place of the quickstart's `demo` module name, and keep the
-same server port. Dashboard is disabled by default.
+same server port. Dashboard is enabled by default in development/debug unless explicitly disabled.
 
 `init` provides a working scaffold. Its `package.hyperbricks.yaml` is ordinary YAML configuration; the files in `hyperbricks/` contain ordered component definitions. Keep templates in `templates/`, source assets in `resources/`, and public assets in `static/`. The `/static/` URL refers to the configured public directory; a `path` resolver returns a filesystem path, not a public URL.
 

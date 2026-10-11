@@ -40,7 +40,7 @@ With direct values, the environment exports above are not needed. Choose your
 own password, restart the server, and use these values to log in. The password
 is stored as plain text; do not commit real credentials to a shared repository.
 
-Spaces and its writes default to enabled in development and debug mode. Set `hyperbricks.development.frontend_editing.spaces.write: false` for read-only access. The Dashboard is disabled; to inspect its Overview and Errors views, set `hyperbricks.development.dashboard.enabled: true` in [package.hyperbricks.yaml](package.hyperbricks.yaml), restart, and open the [Dashboard](http://localhost:8123/__hyperbricks/dashboard). Configured developer credentials protect Overview, Errors, and Spaces, including Spaces when the Dashboard is disabled. Render diagnostics still require credentials while Dashboard is disabled. See [Spaces configuration](../../docs/SPACES.md#development-configuration) for enablement, host restrictions, and network access.
+Spaces and its writes default to enabled in development and debug mode. Set `hyperbricks.development.frontend_editing.spaces.write: false` for read-only access. The Dashboard is enabled; open the [Dashboard](http://localhost:8123/__hyperbricks/dashboard) for Overview and Errors. Configured developer credentials protect Overview, Errors, and Spaces, including Spaces when the Dashboard is disabled. Render diagnostics still require credentials while Dashboard is disabled. See [Spaces configuration](../../docs/SPACES.md#development-configuration) for enablement, host restrictions, and network access.
 
 ## Try it
 

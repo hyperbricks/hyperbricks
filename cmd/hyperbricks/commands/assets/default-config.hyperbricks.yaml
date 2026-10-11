@@ -21,7 +21,7 @@ hyperbricks:
     watch_dirs: [hyperbricks, templates, resources]
     frontend_errors: false
     dashboard:
-      enabled: false
+      enabled: true
       credentials:
         user:
           env: HB_DEVELOPER_USER

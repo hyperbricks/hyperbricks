@@ -2,6 +2,21 @@
 
 Use this guide when updating an older configuration to the current component contracts. Apply only the changes that affect your project. The examples describe configuration changes; they do not assign every change to a particular release interval.
 
+## Upgrade to v1.3.1-beta
+
+### Dashboard enabled by default during development
+
+In development and debug mode, omitting `development.dashboard` or its `enabled`
+field now enables Dashboard and Errors. Explicit `enabled: false` and legacy
+`dashboard: false` remain disabled. Existing modules with an explicit `false`
+are not automatically opted in. Newly initialized modules enable Dashboard.
+
+With both credentials absent, the enabled interface opens without login and
+startup warns about access. A complete account requires login; a partial account
+still blocks access. Set `hyperbricks.development.dashboard.enabled: false` to
+opt out. Live mode, production runtimes and static output never expose Dashboard.
+Restart after changing package settings. See [developer tools](PACKAGE_CONFIGURATION.md#developer-tools).
+
 ## Upgrade to v1.3.0-beta
 
 ### Route cache durations now take effect
