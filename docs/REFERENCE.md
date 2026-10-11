@@ -917,6 +917,9 @@ Single image renderer with optional optimization and HTML output.
 | --- | --- | --- | --- |
 | `alt` | `string` | no | Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images. |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
+| `cache` | `bool` | no | Reuse valid generated images when source bytes and resize settings match. Default false; independent of page caching. |
+| `cache_grace` | `string` | no | Minimum time to retain retired URLs, e.g. 1h or 0s. Default 1h; requests, cached HTML and exports add protection. |
+| `cache_keep` | `int` | no | Previous successful generations retained per image in addition to current. Default zero; must be nonnegative. |
 | `class` | `string` | no | CSS class for styling the image |
 | `editable` | `interface` | no | Source-owned Spaces declarations for src, alt, and title. Image src uses a resources asset policy. Not rendered. |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
@@ -965,6 +968,9 @@ Multiple image renderer for a directory of images.
 | --- | --- | --- | --- |
 | `alt` | `string` | no | Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images. |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
+| `cache` | `bool` | no | Reuse valid generated images when source bytes and resize settings match. Default false; independent of page caching. |
+| `cache_grace` | `string` | no | Minimum time to retain retired URLs, e.g. 1h or 0s. Default 1h; requests, cached HTML and exports add protection. |
+| `cache_keep` | `int` | no | Previous successful generations retained per image in addition to current. Default zero; must be nonnegative. |
 | `class` | `string` | no | CSS class for styling the image |
 | `directory` | `string` | yes | Local filesystem directory containing JPEG, PNG, or GIF images. Reads files in filename order without descending into subdirectories; other extensions are skipped. |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |

@@ -12,6 +12,9 @@ Local filesystem path to a JPEG, PNG, or GIF image. Remote URLs and SVG processi
 ==== expected json ====
 {
   "Alt": "",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 0,
   "Class": "",
   "ConfigCategory": "",
   "ConfigType": "<IMAGE>",

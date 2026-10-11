@@ -1,0 +1,45 @@
+==== hyperbricks yaml {!{image}} ====
+image:
+  - type: image
+  - cache: true
+  - alt: cat but cute
+  - attributes:
+      usemap: '#catmap'
+  - class: class-a class-b class-c
+  - id: '#cat'
+  - quality: "90"
+  - src: hyperbricks-yaml-test-files/assets/cute_cat.jpg
+  - title: Some Cute Cat!
+  - width: "100"
+==== explainer ====
+Process a local JPEG, PNG, or GIF. The generated /static/images/ URL works at nested routes and uses a fingerprint of the source bytes and resize settings. Width and height are integer pixels. See [Image usage](IMAGES.md) for module path resolvers, responsive CSS, gallery behavior, and migration notes.
+
+==== expected json ====
+{
+  "Alt": "cat but cute",
+  "Cache": true,
+  "CacheGrace": "",
+  "CacheKeep": 0,
+  "Class": "class-a class-b class-c",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGE>",
+  "Enclose": "",
+  "ExtraAttributes": {
+    "usemap": "#catmap"
+  },
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "#cat",
+  "IsStatic": false,
+  "Loading": "",
+  "MetaDocDescription": "",
+  "Quality": 90,
+  "Src": "hyperbricks-yaml-test-files/assets/cute_cat.jpg",
+  "Title": "Some Cute Cat!",
+  "Width": 100
+}
+
+==== expected output ====
+ <img src="/static/images/cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="cat but cute" title="Some Cute Cat!" class="class-a class-b class-c" id="#cat" usemap="#catmap" />

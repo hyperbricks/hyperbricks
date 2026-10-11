@@ -1,7 +1,9 @@
 package component
 
 import (
+	"bytes"
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"errors"
 	"fmt"
@@ -11,12 +13,12 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
-	"io"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"unicode/utf8"
 
 	"github.com/disintegration/imaging"
@@ -31,7 +33,12 @@ var SupportedExtensions = map[string]bool{
 	".gif":  true,
 }
 
-type ImageProcessor struct{}
+type ImageProcessor struct {
+	mu            sync.Mutex
+	stores        map[string]*imageStore
+	cacheDir      string
+	protectOutput func(string) bool
+}
 
 type RenderImageConfig struct {
 	Single   *SingleImageConfig    `mapstructure:"single"`
@@ -122,6 +129,9 @@ func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (st
 			Title:   config.Title,
 			Class:   config.Class,
 			Quality: config.Quality,
+			Cache:   config.Cache, CacheKeep: config.CacheKeep, CacheGrace: config.CacheGrace,
+			imageGroup:    config.Directory,
+			renderContext: config.renderContext,
 		}
 		if config.Id != "" {
 			fileConfig.Id = config.Id + strconv.Itoa(imgcount)
@@ -137,6 +147,30 @@ func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (st
 		imgcount++
 	}
 
+	if len(processingErrors) == 0 && !config.IsStatic {
+		policy, err := imageRetentionPolicy(config.CacheKeep, config.CacheGrace)
+		if err != nil {
+			return "", err
+		}
+		group, err := imageGroup(config.Directory, config.Width, config.Height, config.Quality, true)
+		if err != nil {
+			return "", err
+		}
+		store, err := ir.storeFor(destDir)
+		if err != nil {
+			return "", err
+		}
+		members := map[string]imagePolicy{}
+		for _, file := range files {
+			if !file.IsDir() && SupportedExtensions[strings.ToLower(filepath.Ext(file.Name()))] {
+				id, _ := imageOwner(filepath.Join(config.Directory, file.Name()), config.Width, config.Height, config.Quality)
+				members[group+":"+id] = policy
+			}
+		}
+		if err := store.updateGroup(group, members); err != nil {
+			return "", err
+		}
+	}
 	return builder.String(), errors.Join(processingErrors...)
 }
 
@@ -164,6 +198,15 @@ func (ir *ImageProcessor) processAndBuildImgTag(srcPath, destDir string, config 
 }
 
 func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleImageConfig) (string, error) {
+	checkContext := func() error {
+		if config.renderContext != nil {
+			return config.renderContext.Err()
+		}
+		return nil
+	}
+	if err := checkContext(); err != nil {
+		return "", err
+	}
 	if config.Width < 0 || config.Height < 0 {
 		return "", fmt.Errorf("image width and height must be non-negative pixel counts")
 	}
@@ -174,24 +217,50 @@ func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleIma
 		return srcPath, nil
 	}
 
-	srcFile, err := os.Open(srcPath)
+	policy, err := imageRetentionPolicy(config.CacheKeep, config.CacheGrace)
 	if err != nil {
-		return "", fmt.Errorf("failed to open source image: %w", err)
+		return "", err
 	}
-	defer srcFile.Close()
-
-	// Include the source bytes, not just its basename, in the generated asset name.
-	fingerprint := sha256.New()
-	if _, err := io.Copy(fingerprint, srcFile); err != nil {
+	source, err := os.ReadFile(srcPath)
+	if err != nil {
 		return "", fmt.Errorf("failed to read source image: %w", err)
 	}
-	if _, err := srcFile.Seek(0, io.SeekStart); err != nil {
-		return "", fmt.Errorf("failed to rewind source image: %w", err)
-	}
-
-	srcImage, format, err := image.Decode(srcFile)
+	header, format, err := image.DecodeConfig(bytes.NewReader(source))
 	if err != nil {
 		return "", fmt.Errorf("failed to decode image: %w", err)
+	}
+	fingerprint := sha256.New()
+	fingerprint.Write(source)
+	groupSource := srcPath
+	multi := config.imageGroup != ""
+	if multi {
+		groupSource = config.imageGroup
+	}
+	group, err := imageGroup(groupSource, config.Width, config.Height, config.Quality, multi)
+	if err != nil {
+		return "", err
+	}
+	id, err := imageOwner(srcPath, config.Width, config.Height, config.Quality)
+	if err != nil {
+		return "", err
+	}
+	owner := group + ":" + id
+	store, err := ir.storeFor(destDir)
+	if err != nil {
+		return "", err
+	}
+	store.mu.Lock()
+	defer store.mu.Unlock()
+	if err := checkContext(); err != nil {
+		return "", err
+	}
+	unlock, err := store.lock()
+	if err != nil {
+		return "", err
+	}
+	defer unlock()
+	if err := store.load(); err != nil {
+		return "", err
 	}
 
 	baseName := filepath.Base(srcPath)
@@ -201,17 +270,15 @@ func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleIma
 	width, height := config.Width, config.Height
 
 	if width == 0 && height == 0 {
-		width = srcImage.Bounds().Dx()
-		height = srcImage.Bounds().Dy()
+		width = header.Width
+		height = header.Height
 	} else if width == 0 {
-		width = max(1, (height*srcImage.Bounds().Dx())/srcImage.Bounds().Dy())
+		width = max(1, (height*header.Width)/header.Height)
 	} else if height == 0 {
-		height = max(1, (width*srcImage.Bounds().Dy())/srcImage.Bounds().Dx())
+		height = max(1, (width*header.Height)/header.Width)
 	}
 
-	resizedImage := imaging.Resize(srcImage, width, height, imaging.Lanczos)
-
-	if err := os.MkdirAll(destDir, os.ModePerm); err != nil {
+	if err := os.MkdirAll(store.root, os.ModePerm); err != nil {
 		return "", fmt.Errorf("failed to create destination directory: %v", err)
 	}
 
@@ -231,14 +298,33 @@ func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleIma
 		}
 	}
 	newFileName := fmt.Sprintf("%s_%x_w%d_h%d%s", nameWithoutExt, fingerprint.Sum(nil)[:16], width, height, ext)
-	destPath := filepath.Join(destDir, newFileName)
+	if config.Cache && store.valid(owner, newFileName) {
+		if err := store.retain(owner, group, newFileName, policy); err != nil {
+			return "", err
+		}
+		return newFileName, nil
+	}
+	srcImage, _, err := image.Decode(bytes.NewReader(source))
+	if err != nil {
+		return "", fmt.Errorf("failed to decode image: %w", err)
+	}
+	resizedImage := imaging.Resize(srcImage, width, height, imaging.Lanczos)
+	if err := store.safeOutput(newFileName); err != nil {
+		return "", err
+	}
 
 	// Publish only a complete image, even when concurrent renders share this name.
-	destFile, err := os.CreateTemp(destDir, ".image-*")
+	root, err := store.openRoot()
+	if err != nil {
+		return "", err
+	}
+	defer root.Close()
+	staging := fmt.Sprintf(".image-%x", rand.Text())
+	destFile, err := root.OpenFile(staging, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
 	if err != nil {
 		return "", fmt.Errorf("failed to create destination file: %v", err)
 	}
-	defer os.Remove(destFile.Name())
+	defer root.Remove(staging)
 	defer destFile.Close()
 
 	switch format {
@@ -261,10 +347,16 @@ func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleIma
 	if err := destFile.Close(); err != nil {
 		return "", fmt.Errorf("failed to close generated image: %w", err)
 	}
-	if err := os.Rename(destFile.Name(), destPath); err != nil {
+	if err := checkContext(); err != nil {
+		return "", err
+	}
+	if err := root.Rename(staging, newFileName); err != nil {
 		return "", fmt.Errorf("failed to publish generated image: %w", err)
 	}
 
+	if err := store.retain(owner, group, newFileName, policy); err != nil {
+		return "", err
+	}
 	return newFileName, nil
 }
 

@@ -16,6 +16,9 @@ Process a local JPEG, PNG, or GIF. The generated /static/images/ URL works at ne
 ==== expected json ====
 {
   "Alt": "cat but cute",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 0,
   "Class": "class-a class-b class-c",
   "ConfigCategory": "",
   "ConfigType": "<IMAGE>",

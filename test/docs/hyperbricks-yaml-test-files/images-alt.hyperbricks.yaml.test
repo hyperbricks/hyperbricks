@@ -13,6 +13,9 @@ Alternative text for the image
 ==== expected json ====
 {
   "Alt": "gallery image",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 0,
   "Class": "galleryimage bordered",
   "ConfigCategory": "",
   "ConfigType": "<IMAGES>",

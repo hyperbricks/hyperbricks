@@ -25,6 +25,9 @@ This section is for developers who know web development and are new to HyperBric
 
 If an example fails, start with [Troubleshooting](TROUBLESHOOTING.md). For older configurations, see the [Migration Guide](MIGRATION.md).
 
+For source images, generated static files, caching and safe cleanup, see
+[Generated images](IMAGES.md).
+
 ## Where to find complete module examples
 
 A **module** is a folder that groups the files for a HyperBricks application or example. It contains a `package.hyperbricks.yaml` file with the module’s settings, YAML component definitions, HTML templates, and resources such as CSS and JavaScript. A module can define several document and fragment routes.

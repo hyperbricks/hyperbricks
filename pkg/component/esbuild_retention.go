@@ -187,6 +187,20 @@ func (s *esbuildStore) retain(p *PreparedEsbuild, result *esbuildResult) (failur
 	return s.pruneHistory(h, s.activeOwners)
 }
 
+// ScheduleAssetReconciliation records complete owner discovery without deleting
+// files. Active API renders may need nested requests before they can finish;
+// cleanup retries under the exclusive runtime gate after those requests finish.
+func (r *EsbuildRenderer) ScheduleAssetReconciliation(active map[string]int) {
+	s := r.store
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.activeOwners = make(map[string]int, len(active))
+	for owner, keep := range active {
+		s.activeOwners[owner] = keep
+	}
+	s.pendingCleanup.Store(true)
+}
+
 // ReconcileAssets is called only after complete successful owner discovery.
 // nil active means enforce retention without declaring any owners orphaned.
 func (r *EsbuildRenderer) ReconcileAssets(active map[string]int) error {

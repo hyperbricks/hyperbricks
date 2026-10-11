@@ -11,9 +11,13 @@ Local directory of JPEG, PNG, or GIF files. Files are read in filename order; un
 ==== expected json ====
 {
   "Alt": "",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 0,
   "Class": "",
   "ConfigCategory": "",
   "ConfigType": "<IMAGES>",
+  "Directory": "hyperbricks-yaml-test-files/assets/",
   "Enclose": "<div id=\"#gallery\">|</div>",
   "ExtraAttributes": {
     "loading": "lazy"
@@ -27,7 +31,6 @@ Local directory of JPEG, PNG, or GIF files. Files are read in filename order; un
   "Loading": "",
   "MetaDocDescription": "",
   "Quality": 0,
-  "Directory": "hyperbricks-yaml-test-files/assets/",
   "Title": "",
   "Width": 100
 }

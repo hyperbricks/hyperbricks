@@ -10,6 +10,10 @@ import (
 )
 
 func lockEsbuildFile(path string) (func(), error) {
+	return lockAssetFile(path, "esbuild")
+}
+
+func lockAssetFile(path, kind string) (func(), error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
 		return nil, err
 	}
@@ -19,7 +23,7 @@ func lockEsbuildFile(path string) (func(), error) {
 	}
 	if err = unix.Flock(int(file.Fd()), unix.LOCK_EX|unix.LOCK_NB); err != nil {
 		file.Close()
-		return nil, fmt.Errorf("esbuild outputs are in use by another operation: %w", err)
+		return nil, fmt.Errorf("%s outputs are in use by another operation: %w", kind, err)
 	}
 	return func() { _ = unix.Flock(int(file.Fd()), unix.LOCK_UN); _ = file.Close() }, nil
 }

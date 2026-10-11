@@ -28,12 +28,31 @@ func runtimeEsbuildRenderer() *component.EsbuildRenderer {
 	return renderer
 }
 
+func runtimeImageProcessor() *component.ImageProcessor {
+	if rm == nil {
+		return nil
+	}
+	renderer, ok := rm.GetRenderComponent(component.SingleImageConfigGetName()).(*component.SingleImageRenderer)
+	if !ok {
+		return nil
+	}
+	return renderer.ImageProcessorInstance
+}
+
 func protectRuntimeAsset(path string) bool {
 	if commands.RenderStatic || runtimeAssetRequests.Load() > 0 {
 		return true
 	}
 	root := getHyperBricksConfiguration().Directories["static"]
 	root, _ = filepath.Abs(root)
+	// Image ownership uses the resolved output root (macOS /var is a symlink).
+	// Compare canonical paths when deriving the public URL for cache protection.
+	if resolved, err := filepath.EvalSymlinks(root); err == nil {
+		root = resolved
+	}
+	if resolved, err := filepath.EvalSymlinks(path); err == nil {
+		path = resolved
+	}
 	rel, err := filepath.Rel(root, path)
 	if err != nil {
 		return true
@@ -65,10 +84,20 @@ func assetRequestMiddleware(next http.Handler) http.Handler {
 			runtimeAssetRequests.Add(-1)
 			runtimeAssetGate.RUnlock()
 			renderer := runtimeEsbuildRenderer()
-			if renderer != nil && renderer.HasPendingAssetCleanup() && runtimeAssetGate.TryLock() {
+			images := runtimeImageProcessor()
+			pendingImages := images != nil && images.HasPendingAssetCleanup()
+			pendingEsbuild := renderer != nil && renderer.HasPendingAssetCleanup()
+			if (pendingEsbuild || pendingImages) && runtimeAssetGate.TryLock() {
 				defer runtimeAssetGate.Unlock()
-				if err := renderer.ReconcileAssets(nil); err != nil {
-					logging.GetLogger().Errorw("Generated asset cleanup failed", "error", err)
+				if pendingEsbuild {
+					if err := renderer.ReconcileAssets(nil); err != nil {
+						logging.GetLogger().Errorw("Generated asset cleanup failed", "error", err)
+					}
+				}
+				if pendingImages {
+					if err := images.ReconcileAssets(filepath.Join(getHyperBricksConfiguration().Directories["static"], "images"), nil); err != nil {
+						logging.GetLogger().Errorw("Generated image cleanup failed", "error", err)
+					}
 				}
 			}
 		}()
@@ -77,6 +106,9 @@ func assetRequestMiddleware(next http.Handler) http.Handler {
 }
 
 func closeRuntimeAssets() {
+	if images := runtimeImageProcessor(); images != nil {
+		images.CloseAssets()
+	}
 	if renderer := runtimeEsbuildRenderer(); renderer != nil {
 		renderer.CloseAssets()
 	}
