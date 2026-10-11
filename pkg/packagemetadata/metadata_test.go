@@ -41,6 +41,9 @@ func TestReconcileSourceCreatesStableMetadata(t *testing.T) {
 	assertScalar(t, metadata, "module", "demo")
 	assertScalar(t, metadata, "moduleversion", "1.0.0")
 	assertScalar(t, metadata, "hyperbricks", "v1.2.5-beta")
+	if !bytes.Contains(result.Content, []byte("moduleversion: 1.0.0\n")) {
+		t.Fatalf("generated module version should be plain:\n%s", result.Content)
+	}
 }
 
 func TestReconcileSourceCreatesMissingMetadataInsideExistingHyperbricks(t *testing.T) {
@@ -145,8 +148,8 @@ func TestReconcileSourceDetectsWhitespaceNormalization(t *testing.T) {
 	assertScalar(t, decodedMetadata(t, result.Content), "module", "demo")
 }
 
-func TestReconcileSourcePreservesExistingScalarStyle(t *testing.T) {
-	input := []byte("hyperbricks:\n  metadata:\n    module: \"old\"\n    moduleversion: '1.0'\n    hyperbricks: \"v0.0.0\"\n")
+func TestReconcileSourceWritesPlainMetadataAndPreservesUnrelatedStyle(t *testing.T) {
+	input := []byte("hyperbricks:\n  metadata:\n    module: \"old\"\n    moduleversion: '1.0' # release\n    hyperbricks: \"v0.0.0\"\n    owner: 'team'\n")
 	result, err := ReconcileSource(input, ReconcileOptions{
 		Module:                    "demo",
 		HyperBricks:               "v1.2.5-beta",
@@ -156,9 +159,9 @@ func TestReconcileSourcePreservesExistingScalarStyle(t *testing.T) {
 		t.Fatalf("ReconcileSource() error = %v", err)
 	}
 	output := string(result.Content)
-	for _, want := range []string{`module: "demo"`, `moduleversion: '1.0.0'`, `hyperbricks: "v1.2.5-beta"`} {
+	for _, want := range []string{`module: demo`, `moduleversion: 1.0.0 # release`, `hyperbricks: v1.2.5-beta`, `owner: 'team'`} {
 		if !strings.Contains(output, want) {
-			t.Fatalf("output did not preserve scalar style %q:\n%s", want, output)
+			t.Fatalf("output lacks expected metadata or preserved custom content %q:\n%s", want, output)
 		}
 	}
 }
@@ -191,6 +194,10 @@ func TestReconcileSourceBumpsVersions(t *testing.T) {
 			}
 			if result.Metadata.ModuleVersion != test.want {
 				t.Fatalf("version = %q, want %q", result.Metadata.ModuleVersion, test.want)
+			}
+			assertScalar(t, decodedMetadata(t, result.Content), "moduleversion", test.want)
+			if !bytes.Contains(result.Content, []byte("moduleversion: "+test.want+"\n")) {
+				t.Fatalf("bumped version should be plain:\n%s", result.Content)
 			}
 		})
 	}
@@ -384,6 +391,43 @@ hyperbricks:
 	}
 }
 
+func TestRenderArtifactWritesPlainModuleVersion(t *testing.T) {
+	for _, test := range []struct {
+		name    string
+		source  []byte
+		version string
+		want    string
+	}{
+		{name: "source version", source: packageYAML("1.0.0"), want: "1.0.0"},
+		{name: "override version", source: packageYAML("9.4"), version: "1.2.3-beta.1+build.4", want: "1.2.3-beta.1+build.4"},
+		{name: "new metadata", source: []byte("hyperbricks: {}\n"), version: "1.0.0", want: "1.0.0"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			original := append([]byte(nil), test.source...)
+			result, err := RenderArtifact(test.source, ArtifactOptions{
+				Module: "demo", ModuleVersion: test.version, Format: "hra", FormatVersion: "1",
+				Commit: "1234567", BuiltAt: "2026-09-24T12:34:56Z", HyperBricks: "v1.2.5-beta",
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(test.source, original) {
+				t.Fatal("artifact rendering changed source bytes")
+			}
+			metadata := decodedMetadata(t, result.Content)
+			for field, want := range map[string]string{
+				"moduleversion": test.want, "format_version": "1", "commit": "1234567", "built_at": "2026-09-24T12:34:56Z",
+			} {
+				assertScalar(t, metadata, field, want)
+			}
+			version, _, _ := mappingField(metadata, "moduleversion")
+			if version.Style != 0 {
+				t.Fatalf("artifact version should be plain:\n%s", result.Content)
+			}
+		})
+	}
+}
+
 func TestRenderArtifactRequiresValidSourceMetadataAndOptions(t *testing.T) {
 	validOptions := ArtifactOptions{
 		Module: "demo", Format: "hra", FormatVersion: "1", Commit: "unknown",
@@ -493,8 +537,8 @@ func assertScalar(t *testing.T, mapping *yaml.Node, field, want string) {
 	if err != nil || !found {
 		t.Fatalf("field %q: found=%v, err=%v", field, found, err)
 	}
-	if node.Kind != yaml.ScalarNode || node.Value != want {
-		t.Fatalf("field %q = kind %v value %q, want scalar %q", field, node.Kind, node.Value, want)
+	if node.Kind != yaml.ScalarNode || node.Tag != "!!str" || node.Value != want {
+		t.Fatalf("field %q = kind %v tag %q value %q, want string %q", field, node.Kind, node.Tag, node.Value, want)
 	}
 }
 

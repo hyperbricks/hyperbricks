@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -9,6 +10,36 @@ import (
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 )
+
+func TestLegacyDashboardBooleanControlsDashboardAndErrorsAccess(t *testing.T) {
+	setupErrorsViewTest(t)
+	cfg := getHyperBricksConfiguration()
+	for _, mode := range []string{shared.DEVELOPMENT_MODE, shared.DEBUG_MODE, shared.LIVE_MODE} {
+		for _, enabled := range []bool{true, false} {
+			t.Run(fmt.Sprintf("%s/%t", mode, enabled), func(t *testing.T) {
+				parsed, err := shared.ValidatePackageConfigBytes([]byte(fmt.Sprintf("hyperbricks: {mode: %s, development: {dashboard: %t, frontend_editing: {enabled: false}}}", mode, enabled)), t.TempDir())
+				if err != nil {
+					t.Fatal(err)
+				}
+				*cfg = *parsed
+				mux := http.NewServeMux()
+				registerDashboardHandlers(mux)
+				mux.HandleFunc("/", handler)
+				want := http.StatusNotFound
+				if enabled && mode != shared.LIVE_MODE {
+					want = http.StatusOK
+				}
+				for _, path := range []string{developerDashboardPath, errorsViewPath} {
+					response := httptest.NewRecorder()
+					mux.ServeHTTP(response, httptest.NewRequest(http.MethodGet, path, nil))
+					if response.Code != want {
+						t.Fatalf("GET %s = %d, want %d", path, response.Code, want)
+					}
+				}
+			})
+		}
+	}
+}
 
 func TestDashboardCanonicalRouteAuthenticationAndApplicationRoute(t *testing.T) {
 	setupErrorsViewTest(t)
@@ -214,5 +245,44 @@ func TestDashboardAccessPolicyCoversAssetsAndDiagnostics(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestDefaultDashboardModeAndExplicitOptOut(t *testing.T) {
+	setupErrorsViewTest(t)
+	cfg := getHyperBricksConfiguration()
+	for _, mode := range []string{shared.DEVELOPMENT_MODE, shared.DEBUG_MODE, shared.LIVE_MODE} {
+		for _, setting := range []string{"", "development: {dashboard: {}}", "development: {dashboard: {enabled: false}}", "development: {dashboard: false}"} {
+			t.Run(mode+"/"+setting, func(t *testing.T) {
+				parsed, err := shared.ValidatePackageConfigBytes([]byte("hyperbricks:\n  mode: "+mode+"\n  "+setting+"\n"), t.TempDir())
+				if err != nil {
+					t.Fatal(err)
+				}
+				*cfg = *parsed
+				mux := http.NewServeMux()
+				registerDashboardHandlers(mux)
+				mux.HandleFunc("/", handler)
+				want := http.StatusOK
+				if mode == shared.LIVE_MODE || strings.Contains(setting, "false") {
+					want = http.StatusNotFound
+				}
+				for _, path := range []string{developerDashboardPath, errorsViewPath} {
+					response := httptest.NewRecorder()
+					mux.ServeHTTP(response, httptest.NewRequest(http.MethodGet, path, nil))
+					if response.Code != want {
+						t.Fatalf("GET %s = %d, want %d", path, response.Code, want)
+					}
+				}
+				response := httptest.NewRecorder()
+				mux.ServeHTTP(response, httptest.NewRequest(http.MethodGet, renderDiagnosticsPath+"?view=current", nil))
+				diagnosticsWant := want
+				if mode != shared.LIVE_MODE && want == http.StatusNotFound {
+					diagnosticsWant = http.StatusServiceUnavailable
+				}
+				if response.Code != diagnosticsWant {
+					t.Fatalf("diagnostics = %d, want %d", response.Code, diagnosticsWant)
+				}
+			})
+		}
 	}
 }

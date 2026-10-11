@@ -58,6 +58,13 @@ Application-specific backend logic can use native Go plugins through the `plugin
 
 The integrated `esbuild` component bundles JavaScript, TypeScript, and CSS and adds `script` or `style` tags for the generated files to the HTML.
 
+During development, **Dashboard** lists application routes, **Errors** helps
+locate rendering problems, and **Spaces** edits content declared by your source
+pages. Dashboard is enabled by default in development/debug unless explicitly
+disabled, and is unavailable in live mode. The quickstart shows how to
+[open it](QUICKSTART.md#open-the-dashboard) as soon as your first page
+is running.
+
 ## Authoring Format
 
 The components and their children are rendered in order of the sequence in the YAML configuration file. Then the runtime uses that order when rendering tree-like structures. Each entry starts with `-`. This preserves the configured order of component children.

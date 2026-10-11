@@ -526,8 +526,8 @@ The same dialog has independent Development-mode switches for **Dashboard**
 (`hyperbricks.development.dashboard.enabled`), which shows the Overview and
 Errors views, and **Spaces**
 (`hyperbricks.development.frontend_editing.spaces.enabled`). They can be saved
-without changing credentials. Dashboard defaults to disabled; Spaces defaults
-to enabled for compatibility. The parent
+without changing credentials. Dashboard and Spaces default to enabled in
+Development mode unless explicitly disabled. The parent
 `hyperbricks.development.frontend_editing.enabled` still controls all frontend
 editors. If that parent is disabled, switching Spaces on alone does not make it
 visible. Neither tool is available in Live mode. With both developer credential

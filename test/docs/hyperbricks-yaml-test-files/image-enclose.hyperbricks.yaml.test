@@ -11,6 +11,9 @@ Use the pipe symbol | to enclose the ````<IMG>```` tag.
 ==== expected json ====
 {
   "Alt": "",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 0,
   "Class": "",
   "ConfigCategory": "",
   "ConfigType": "<IMAGE>",

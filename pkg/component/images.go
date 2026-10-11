@@ -10,18 +10,23 @@ import (
 )
 
 type MultipleImagesConfig struct {
+	renderContext      context.Context
 	shared.Component   `mapstructure:",squash"`
 	MetaDocDescription string `mapstructure:"@doc" description:"Processes JPEG, PNG, and GIF files from a local directory into fingerprinted static/images copies with root-relative URLs and escaped attributes. Uses the base id plus an index only when id is set. Reports unreadable or invalid images as render errors." example:"{!{images-@doc.hyperbricks.yaml}}"`
-	Directory          string `mapstructure:"directory" validate:"required" description:"Local filesystem directory containing JPEG, PNG, or GIF images. Reads files in filename order without descending into subdirectories; other extensions are skipped." example:"{!{images-directory.hyperbricks.yaml}}"`
-	Width              int    `mapstructure:"width" validate:"min=0" description:"Output width in integer pixels; omit or use 0 to preserve aspect ratio from height. Omit both dimensions to keep each source size." example:"{!{images-width.hyperbricks.yaml}}"`
-	Height             int    `mapstructure:"height" validate:"min=0" description:"Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size." example:"{!{images-height.hyperbricks.yaml}}"`
-	Id                 string `mapstructure:"id" description:"Id of images with a index added to it" example:"{!{images-id.hyperbricks.yaml}}"`
-	Class              string `mapstructure:"class" description:"CSS class for styling the image" example:"{!{images-class.hyperbricks.yaml}}"`
-	IsStatic           bool   `mapstructure:"is_static" exclude:"true" description:"Flag indicating if the images are static" example:"{!{images-is_static.hyperbricks.yaml}}"`
-	Alt                string `mapstructure:"alt" description:"Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images." example:"{!{images-alt.hyperbricks.yaml}}"`
-	Title              string `mapstructure:"title" description:"The title attribute of the image" example:"{!{images-title.hyperbricks.yaml}}"`
-	Quality            int    `mapstructure:"quality" description:"JPEG encoding quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding." example:"{!{images-quality.hyperbricks.yaml}}"`
-	Loading            string `mapstructure:"loading" description:"Lazy loading strategy (e.g., 'lazy', 'eager')" example:"{!{images-loading.hyperbricks.yaml}}"`
+	Cache              bool   `mapstructure:"cache" description:"Reuse valid generated images when source bytes and resize settings match. Default false; independent of page caching." example:"{!{images-cache.hyperbricks.yaml}}"`
+	CacheKeep          int    `mapstructure:"cache_keep" description:"Previous successful generations retained per image in addition to current. Default zero; must be nonnegative." example:"{!{images-cache_keep.hyperbricks.yaml}}"`
+	CacheGrace         string `mapstructure:"cache_grace" description:"Minimum time to retain retired URLs, e.g. 1h or 0s. Default 1h; requests, cached HTML and exports add protection." example:"{!{images-cache_grace.hyperbricks.yaml}}"`
+
+	Directory string `mapstructure:"directory" validate:"required" description:"Local filesystem directory containing JPEG, PNG, or GIF images. Reads files in filename order without descending into subdirectories; other extensions are skipped." example:"{!{images-directory.hyperbricks.yaml}}"`
+	Width     int    `mapstructure:"width" validate:"min=0" description:"Output width in integer pixels; omit or use 0 to preserve aspect ratio from height. Omit both dimensions to keep each source size." example:"{!{images-width.hyperbricks.yaml}}"`
+	Height    int    `mapstructure:"height" validate:"min=0" description:"Output height in integer pixels; omit or use 0 to preserve aspect ratio from width. Setting both dimensions resizes to that exact size." example:"{!{images-height.hyperbricks.yaml}}"`
+	Id        string `mapstructure:"id" description:"Id of images with a index added to it" example:"{!{images-id.hyperbricks.yaml}}"`
+	Class     string `mapstructure:"class" description:"CSS class for styling the image" example:"{!{images-class.hyperbricks.yaml}}"`
+	IsStatic  bool   `mapstructure:"is_static" exclude:"true" description:"Flag indicating if the images are static" example:"{!{images-is_static.hyperbricks.yaml}}"`
+	Alt       string `mapstructure:"alt" description:"Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images." example:"{!{images-alt.hyperbricks.yaml}}"`
+	Title     string `mapstructure:"title" description:"The title attribute of the image" example:"{!{images-title.hyperbricks.yaml}}"`
+	Quality   int    `mapstructure:"quality" description:"JPEG encoding quality from 1 to 100; omit or use 0 for 90. Does not affect PNG or GIF encoding." example:"{!{images-quality.hyperbricks.yaml}}"`
+	Loading   string `mapstructure:"loading" description:"Lazy loading strategy (e.g., 'lazy', 'eager')" example:"{!{images-loading.hyperbricks.yaml}}"`
 }
 
 func MultipleImagesConfigGetName() string {
@@ -68,10 +73,14 @@ func (mir *MultipleImagesRenderer) Render(instance interface{}, ctx context.Cont
 		})
 		return "", errors
 	}
+	config.renderContext = ctx
 
 	errors = append(errors, config.Validate()...)
 
-	processor := ImageProcessor{}
+	processor := mir.ImageProcessorInstance
+	if processor == nil {
+		return "", []error{fmt.Errorf("ImageProcessorInstance is nil")}
+	}
 	result, err := processor.ProcessMultipleImages(config)
 	if err != nil {
 		errors = append(errors, shared.ComponentError{

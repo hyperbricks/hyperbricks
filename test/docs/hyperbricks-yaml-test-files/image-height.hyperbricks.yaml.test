@@ -12,6 +12,9 @@ Output height in integer pixels. Omit one dimension to preserve the aspect ratio
 ==== expected json ====
 {
   "Alt": "",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 0,
   "Class": "",
   "ConfigCategory": "",
   "ConfigType": "<IMAGE>",

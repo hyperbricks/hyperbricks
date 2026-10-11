@@ -2,13 +2,13 @@ hyperbricks:
   mode: development
   metadata:
     module: streaming-demo
-    moduleversion: "0.1.0"
+    moduleversion: 0.1.0
     hyperbricks: v1.2.5-beta
   development:
     watch: false
     reload: false
     dashboard:
-      enabled: false
+      enabled: true
       credentials:
         user:
           env: HB_DEVELOPER_USER

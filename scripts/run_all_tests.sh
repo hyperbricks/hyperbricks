@@ -21,8 +21,9 @@ Runs the repository test suite. Documentation generation is skipped by default.
 
 Options:
   --with-docs     Regenerate README, reference docs, and documentation test results.
-  --with-plugins  Install root npm dependencies, rebuild local HyperBricks
-                  plugins, and run plugin-backed runtime smoke tests.
+  --with-plugins  Install root npm dependencies, run browser UI regressions,
+                  rebuild local HyperBricks plugins, and run plugin-backed
+                  runtime smoke tests.
   --with-modules  Start documented modules, run their HTTP smoke checks, and
                   exercise the development-process lifecycle demo.
   --with-screenshots
@@ -63,6 +64,7 @@ done
 cd "${REPO_ROOT}"
 
 announce "Running all tests..."
+python3 -m unittest scripts/test_package_agent_skill.py scripts/test_agent_pipeline.py scripts/test_api_render_runner.py
 
 if [[ "${WITH_DOCS}" == "true" ]]; then
   echo "Regenerating documentation before tests..."
@@ -74,6 +76,8 @@ fi
 if [[ "${WITH_PLUGINS}" == "true" ]]; then
   echo "Installing root npm dependencies for plugin-backed assets..."
   npm i
+  announce "Running browser UI regression tests..."
+  npm run test:ui
   echo "Building local HyperBricks plugins..."
   bash "${SCRIPT_DIR}/plugins/build_hyperbricks_plugins.sh"
   announce "Running plugin-backed runtime smoke tests..."

@@ -20,6 +20,9 @@ aside .tabs { margin: 0 8px; }aside .tab { gap: 8px; padding-inline: 8px; }aside
 .no-items { padding: 16px 8px; }main { min-width: 0; }
 .empty { display: flex; align-items: center; justify-content: center; flex-direction: column; min-height: 400px; padding: 32px; gap: 12px; text-align: center; }
 .empty>.lucide { width: 32px; height: 32px; }.empty h2 { font-size: 20px; }
+.empty>p { max-width: 60ch; overflow-wrap: anywhere; }
+.empty-content { max-width: 70ch; overflow-wrap: anywhere; }
+.empty-content p { margin-top: 12px; }
 .editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 36px 22px; }
 .editor-heading>div:first-child { min-width: 0; }.editor-heading h2 { font-size: 22px; max-width: 680px; overflow-wrap: anywhere; }
 .breadcrumb { font-size: 12px; margin-bottom: 7px; overflow-wrap: anywhere; }

@@ -322,6 +322,7 @@ func TestEsbuildFingerprintExternalParityAndRestart(t *testing.T) {
 	first := esbuildRender(t, r.Prepare(cfg))
 	mainPath := esbuildURLPath(t, r, first)
 	mainBytes := esbuildRead(t, mainPath)
+	mainMapBytes := esbuildRead(t, mainPath+".map")
 	cfg.Binary = binary
 	second := esbuildRender(t, r.Prepare(cfg))
 	secondPath := esbuildURLPath(t, r, second)
@@ -334,7 +335,7 @@ func TestEsbuildFingerprintExternalParityAndRestart(t *testing.T) {
 		t.Fatal("engines produce different JavaScript")
 	}
 	var embeddedMap, externalMap interface{}
-	if err := json.Unmarshal([]byte(esbuildRead(t, mainPath+".map")), &embeddedMap); err != nil {
+	if err := json.Unmarshal([]byte(mainMapBytes), &embeddedMap); err != nil {
 		t.Fatal(err)
 	}
 	if err := json.Unmarshal([]byte(esbuildRead(t, secondPath+".map")), &externalMap); err != nil {

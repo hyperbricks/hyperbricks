@@ -4,9 +4,40 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime"
 	"sync"
 	"testing"
 )
+
+// Metadata-free API occurrences use policy identity. Finished successful calls
+// must remain distinct even when GC runs before their siblings finish.
+func TestResponseStatusDistinctPoliciesSurviveGC(t *testing.T) {
+	capture := &ResponseStatusCapture{}
+	ctx := context.WithValue(context.Background(), ResponseStatusCaptureKey, capture)
+	for i := 0; i < 512; i++ {
+		CaptureResponseStatus(ctx, &ResponseStatusConfig{Required: true}, Meta{}, APIResponseOutcome{Received: true, Status: 200})
+		if i%16 == 15 {
+			runtime.GC()
+		}
+	}
+	status, diagnostics := capture.Result()
+	if status != 0 || len(diagnostics) != 0 {
+		t.Fatalf("distinct successful occurrences were treated as duplicate executions: status=%d diagnostics=%v", status, diagnostics)
+	}
+}
+
+func TestResponseStatusRepeatedPolicyWithoutMetadataIsRejected(t *testing.T) {
+	capture := &ResponseStatusCapture{}
+	ctx := context.WithValue(context.Background(), ResponseStatusCaptureKey, capture)
+	policy := &ResponseStatusConfig{Required: true}
+	for i := 0; i < 2; i++ {
+		CaptureResponseStatus(ctx, policy, Meta{}, APIResponseOutcome{Received: true, Status: 200})
+		runtime.GC()
+	}
+	if status, diagnostics := capture.Result(); status != 500 || len(diagnostics) != 1 {
+		t.Fatalf("actual duplicate must remain rejected: status=%d diagnostics=%v", status, diagnostics)
+	}
+}
 
 func TestResponseStatusOutcomes(t *testing.T) {
 	policy := &ResponseStatusConfig{Required: true, Map: map[string]interface{}{"404": 404, "409": "ignore", "502": 503}}

@@ -94,13 +94,22 @@ This allows clean browser URLs while still supporting explicit `.html` routes.
 
 Export request selection and output filenames are configured separately from URL matching. See [Static package configuration](HYPERBRICKS_CLI.md#package-configuration) for a complete `hyperbricks.static` example, request variants, and the relationship to automatic route discovery.
 
-When serving static files, for example after `hyperbricks static`:
+The preview started by `hyperbricks static --serve` uses the module's
+`server.routing` configuration. The standalone
+[`hyperbricks serve`](HYPERBRICKS_CLI.md#serve) command uses the same file-serving
+rules with clean URLs enabled, extensions `html`/`htm`, and indexes
+`index.html`/`index.htm`; it does not read package settings.
+
+Static files resolve in this order:
 
 1. If the URL ends with `/`, try configured `index_files`.
 2. If `clean_urls` is `true` and the URL has no extension, try configured `extensions`.
 3. Otherwise serve the file as requested.
 
-Go's static file server can still redirect `/index.html` to `/`. HyperBricks serves `/` directly to avoid redirect loops.
+A directory URL such as `/folder` redirects to `/folder/` only when that
+directory has an index file. Explicit file URLs such as `/index.html` are
+served directly. Missing files and directories without an index return `404`;
+the preview provides neither directory listings nor a single-page-app fallback.
 
 ## Practical Examples
 

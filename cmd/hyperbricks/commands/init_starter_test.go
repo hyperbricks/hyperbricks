@@ -211,7 +211,7 @@ func TestRunInitStarterGetReadsIndexAndModuleFromSameArchive(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read installed package: %v", err)
 	}
-	for _, want := range []string{"module: example-site", "moduleversion: \"1.0.0\"", "hyperbricks: " + strings.TrimSpace(assets.VersionMD), "preserved: true"} {
+	for _, want := range []string{"module: example-site", "moduleversion: 1.0.0", "hyperbricks: " + strings.TrimSpace(assets.VersionMD), "preserved: true"} {
 		if !strings.Contains(string(data), want) {
 			t.Fatalf("installed package lacks %q:\n%s", want, data)
 		}

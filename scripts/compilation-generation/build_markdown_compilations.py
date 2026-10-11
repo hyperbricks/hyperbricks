@@ -42,6 +42,7 @@ DOCUMENTATION_SECTIONS = (
         (
             ("Introduction", "docs/INTRODUCTION.md"),
             ("Quickstart", "docs/QUICKSTART.md"),
+            ("Agent setup", "docs/AGENT_SETUP.md"),
             ("Package Configuration", "docs/PACKAGE_CONFIGURATION.md"),
             ("How-to guides", "docs/HOWTOS.md"),
             ("Troubleshooting", "docs/TROUBLESHOOTING.md"),
@@ -90,17 +91,17 @@ DOCUMENTATION_NAVIGATION = {
 }
 
 SKILLS_ORDER = (
-    "SKILLS/hyperbricks/SKILL.md",
+    ".agents/skills/hyperbricks/SKILL.md",
 )
 
 GENERATED_SKILL_COMPILATIONS = {
-    "SKILLS/hyperbricks/references/HyperBricks-Documentation.md",
-    "SKILLS/hyperbricks/references/HyperBricks-Skills.md",
+    ".agents/skills/hyperbricks/references/HyperBricks-Documentation.md",
+    ".agents/skills/hyperbricks/references/HyperBricks-Skills.md",
 }
 GENERATED_SKILL_DOCUMENTATION = {
-    "SKILLS/hyperbricks/references/DOCUMENTATION_INDEX.md",
+    ".agents/skills/hyperbricks/references/DOCUMENTATION_INDEX.md",
 }
-GENERATED_SKILL_DOCUMENTATION_PREFIX = "SKILLS/hyperbricks/references/docs/"
+GENERATED_SKILL_DOCUMENTATION_PREFIX = ".agents/skills/hyperbricks/references/docs/"
 
 LINK_RE = re.compile(
     r"(?P<image>!)?\[(?P<label>[^\]]*)\]"
@@ -411,7 +412,7 @@ def collect_sources(
         text = committed_text(repository, commit, path)
         fallback = (
             "HyperBricks skill"
-            if path == "SKILLS/hyperbricks/SKILL.md"
+            if path == ".agents/skills/hyperbricks/SKILL.md"
             else PurePosixPath(path).stem.replace("_", " ").replace("-", " ").title()
         )
         section, display_title = (navigation or {}).get(
@@ -676,8 +677,10 @@ def source_heading_entries(
     return tuple(entries)
 
 
-def skill_source_paths(snapshot_paths: set[str]) -> tuple[str, ...]:
-    missing_skills = [path for path in SKILLS_ORDER if path not in snapshot_paths]
+def skill_source_paths(snapshot_paths: set[str], legacy: bool = False) -> tuple[str, ...]:
+    root = "SKILLS/hyperbricks" if legacy else ".agents/skills/hyperbricks"
+    ordered = (f"{root}/SKILL.md",)
+    missing_skills = [path for path in ordered if path not in snapshot_paths]
     if missing_skills:
         raise BuildError(
             "required skills source files are missing from the snapshot: "
@@ -685,14 +688,16 @@ def skill_source_paths(snapshot_paths: set[str]) -> tuple[str, ...]:
         )
     extra_references = tuple(sorted(
         path for path in snapshot_paths
-        if path.startswith("SKILLS/hyperbricks/references/")
+        if path.startswith(f"{root}/references/")
         and PurePosixPath(path).suffix.lower() in {".md", ".markdown"}
-        and path not in SKILLS_ORDER
-        and path not in GENERATED_SKILL_COMPILATIONS
-        and path not in GENERATED_SKILL_DOCUMENTATION
-        and not path.startswith(GENERATED_SKILL_DOCUMENTATION_PREFIX)
+        and path not in {
+            f"{root}/references/HyperBricks-Documentation.md",
+            f"{root}/references/HyperBricks-Skills.md",
+            f"{root}/references/DOCUMENTATION_INDEX.md",
+        }
+        and not path.startswith(f"{root}/references/docs/")
     ))
-    return SKILLS_ORDER + extra_references
+    return ordered + extra_references
 
 
 def build_compilations(repository: Path, commit: str) -> tuple[Compilation, Compilation]:
@@ -712,11 +717,15 @@ def build_compilations(repository: Path, commit: str) -> tuple[Compilation, Comp
     if not docs:
         raise BuildError("no Markdown documentation files found under docs")
 
-    snapshot_paths = set(committed_paths(repository, commit, "SKILLS/hyperbricks"))
+    snapshot_paths = set(committed_paths(repository, commit, ".agents/skills/hyperbricks"))
+    # Explicit historical snapshots retain their original source layout.
+    legacy = commit != WORKTREE and not snapshot_paths
+    if legacy:
+        snapshot_paths = set(committed_paths(repository, commit, "SKILLS/hyperbricks"))
     skills = collect_sources(
         repository,
         commit,
-        skill_source_paths(snapshot_paths),
+        skill_source_paths(snapshot_paths, legacy=legacy),
         "skills",
     )
 

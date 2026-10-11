@@ -1182,6 +1182,10 @@ func renderContent(w http.ResponseWriter, route string, r *http.Request, request
 		}
 	}
 
+	if handledResponse == nil && captureErr == nil {
+		renderOutput = decorateStatusIndicator(renderOutput, fmt.Sprint(configCopy["@type"]), contentType, requestID, len(renderErrors), r)
+	}
+
 	if resolveBeautify(configCopy, hbConfig.Server.Beautify) {
 		renderOutput = gohtml.Format(renderOutput)
 	}

@@ -12,6 +12,9 @@ Process a directory in filename order. Each generated URL includes the source co
 ==== expected json ====
 {
   "Alt": "",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 0,
   "Class": "",
   "ConfigCategory": "",
   "ConfigType": "<IMAGES>",

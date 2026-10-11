@@ -213,9 +213,12 @@ func TestDeployCredentialsVisibilityResponse(t *testing.T) {
 		name, source                       string
 		dashboard, spaces, frontendEditing bool
 	}{
-		{"defaults", "hyperbricks:\n  mode: development\n", false, true, true},
+		{"defaults", "hyperbricks:\n  mode: development\n", true, true, true},
+		{"empty dashboard", "hyperbricks:\n  development:\n    dashboard: {}\n", true, true, true},
+		{"credentials only", "hyperbricks:\n  development:\n    dashboard:\n      credentials: {}\n", true, true, true},
+		{"dashboard disabled", "hyperbricks:\n  development:\n    dashboard:\n      enabled: false\n", false, true, true},
 		{"explicit", "hyperbricks:\n  development:\n    dashboard:\n      enabled: true\n    frontend_editing:\n      spaces:\n        enabled: false\n", true, false, true},
-		{"parent disabled", "hyperbricks:\n  development:\n    frontend_editing:\n      enabled: false\n      spaces:\n        enabled: true\n", false, true, false},
+		{"parent disabled", "hyperbricks:\n  development:\n    frontend_editing:\n      enabled: false\n      spaces:\n        enabled: true\n", true, true, false},
 		{"quoted booleans", "hyperbricks:\n  development:\n    dashboard:\n      enabled: 'false'\n    frontend_editing:\n      spaces:\n        enabled: \"true\"\n", false, true, true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -226,6 +229,15 @@ func TestDeployCredentialsVisibilityResponse(t *testing.T) {
 			payload := decodeResponseMap(t, response)
 			if payload["dashboard_enabled"] != test.dashboard || payload["spaces_enabled"] != test.spaces || payload["frontend_editing_enabled"] != test.frontendEditing {
 				t.Fatalf("visibility = dashboard %#v spaces %#v parent %#v", payload["dashboard_enabled"], payload["spaces_enabled"], payload["frontend_editing_enabled"])
+			}
+			// Compare the source-only form with the runtime contract. This fixture
+			// contains no resolvers; the production form must never resolve secrets.
+			config, err := shared.ValidatePackageConfigBytes([]byte(test.source), t.TempDir())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if payload["dashboard_enabled"] != config.Development.Dashboard.Enabled {
+				t.Fatal("developer access form disagrees with runtime dashboard setting")
 			}
 		})
 	}

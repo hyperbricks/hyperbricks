@@ -17,6 +17,9 @@ if config.IsStatic {
 ==== expected json ====
 {
   "Alt": "",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 0,
   "Class": "",
   "ConfigCategory": "",
   "ConfigType": "<IMAGE>",

@@ -136,7 +136,7 @@ class CompilationTests(unittest.TestCase):
 
     def test_documentation_sections_match_readme_navigation(self):
         self.assertEqual(DOCUMENTATION_SECTIONS, (
-            ("Start", (("Introduction", "docs/INTRODUCTION.md"), ("Quickstart", "docs/QUICKSTART.md"), ("Package Configuration", "docs/PACKAGE_CONFIGURATION.md"), ("How-to guides", "docs/HOWTOS.md"), ("Troubleshooting", "docs/TROUBLESHOOTING.md"))),
+            ("Start", (("Introduction", "docs/INTRODUCTION.md"), ("Quickstart", "docs/QUICKSTART.md"), ("Agent setup", "docs/AGENT_SETUP.md"), ("Package Configuration", "docs/PACKAGE_CONFIGURATION.md"), ("How-to guides", "docs/HOWTOS.md"), ("Troubleshooting", "docs/TROUBLESHOOTING.md"))),
             ("Application model", (("Routing", "docs/ROUTING.md"), ("Component reference", "docs/REFERENCE.md"), ("Markdown", "docs/MARKDOWN.md"), ("Spaces CMS", "docs/SPACES.md"), ("Authoring", "docs/AUTHOR.md"))),
             ("Logic and assets", (("API Render", "docs/API_RENDER.md"), ("Server Scripts", "docs/GOJA_RENDER.md"), ("Plugins", "docs/PLUGINS.md"), ("JavaScript and CSS", "docs/ESBUILD.md"))),
             ("Development services", (("Hooks and managed services", "docs/DEVELOPMENT_HOOKS.md"),)),
@@ -162,7 +162,7 @@ class CompilationTests(unittest.TestCase):
 
     def test_skills_contents_use_skill_sections(self):
         source = SourceDocument(
-            "SKILLS/hyperbricks/SKILL.md",
+            ".agents/skills/hyperbricks/SKILL.md",
             "HyperBricks",
             "# HyperBricks\n\n## Working principles\n\nText.\n\n"
             "### Detail\n\nMore.\n\n## Execute the task\n",
@@ -191,7 +191,7 @@ class CompilationTests(unittest.TestCase):
 
     def test_skills_pdf_contents_use_sections_without_instructions(self):
         source = SourceDocument(
-            "SKILLS/hyperbricks/SKILL.md",
+            ".agents/skills/hyperbricks/SKILL.md",
             "HyperBricks",
             "# HyperBricks\n\n## Working principles\n\nText.\n\n## Execute the task\n\nMore.\n",
             "hyperbricks",
@@ -322,7 +322,7 @@ class CompilationTests(unittest.TestCase):
             )
 
     def test_generated_compilations_are_not_skills_sources(self):
-        extra = "SKILLS/hyperbricks/references/extra.md"
+        extra = ".agents/skills/hyperbricks/references/extra.md"
         generated_document = f"{GENERATED_SKILL_DOCUMENTATION_PREFIX}INTRODUCTION.md"
         paths = (
             set(SKILLS_ORDER)
@@ -335,6 +335,15 @@ class CompilationTests(unittest.TestCase):
         self.assertTrue(GENERATED_SKILL_COMPILATIONS.isdisjoint(selected))
         self.assertTrue(GENERATED_SKILL_DOCUMENTATION.isdisjoint(selected))
         self.assertNotIn(generated_document, selected)
+
+    def test_historical_skill_layout_remains_readable(self):
+        legacy = {"SKILLS/hyperbricks/SKILL.md", "SKILLS/hyperbricks/references/extra.md",
+                  "SKILLS/hyperbricks/references/docs/INTRODUCTION.md",
+                  "SKILLS/hyperbricks/references/DOCUMENTATION_INDEX.md"}
+        self.assertEqual(skill_source_paths(legacy, legacy=True),
+                         ("SKILLS/hyperbricks/SKILL.md", "SKILLS/hyperbricks/references/extra.md"))
+        with self.assertRaises(BuildError):
+            skill_source_paths(legacy)
 
     def test_explicit_anchors_resolve_with_accents_and_across_chapters(self):
         anchor = "run-the-night-owl-cafe-example"

@@ -1,5 +1,5 @@
 **Licence:** MIT
-**Version:** v1.3.0-beta
+**Version:** v1.3.1-beta
 
 
 # HyperBricks Component Reference
@@ -58,6 +58,7 @@ Sanitized Markdown from declared text or bounded resources-relative files; no pl
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
+| `cache` | `bool` | no | Reuse sanitized HTML for unchanged validated content in a bounded memory cache. Default false. Files are still read and validated on every component render. |
 | `class` | `string` | no | Optional escaped CSS class for a wrapping div. Empty emits only Markdown HTML. |
 | `content` | `string` | no | Inline Markdown text, including an explicitly empty string. Mutually exclusive with file. The file resolver can also supply content at load time. |
 | `editable` | `interface` | no | Source-owned Spaces metadata for this component's content or file field. Not rendered. |
@@ -917,6 +918,9 @@ Single image renderer with optional optimization and HTML output.
 | --- | --- | --- | --- |
 | `alt` | `string` | no | Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images. |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
+| `cache` | `bool` | no | Reuse valid generated images when source bytes and resize settings match. Default false; independent of page caching. |
+| `cache_grace` | `string` | no | Minimum time to retain retired URLs, e.g. 1h or 0s. Default 1h; requests, cached HTML and exports add protection. |
+| `cache_keep` | `int` | no | Previous successful generations retained per image in addition to current. Default zero; must be nonnegative. |
 | `class` | `string` | no | CSS class for styling the image |
 | `editable` | `interface` | no | Source-owned Spaces declarations for src, alt, and title. Image src uses a resources asset policy. Not rendered. |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |
@@ -965,6 +969,9 @@ Multiple image renderer for a directory of images.
 | --- | --- | --- | --- |
 | `alt` | `string` | no | Alternative text, automatically HTML-escaped. An empty value renders an empty alt attribute for decorative images; supply meaningful text for informative images. |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
+| `cache` | `bool` | no | Reuse valid generated images when source bytes and resize settings match. Default false; independent of page caching. |
+| `cache_grace` | `string` | no | Minimum time to retain retired URLs, e.g. 1h or 0s. Default 1h; requests, cached HTML and exports add protection. |
+| `cache_keep` | `int` | no | Previous successful generations retained per image in addition to current. Default zero; must be nonnegative. |
 | `class` | `string` | no | CSS class for styling the image |
 | `directory` | `string` | yes | Local filesystem directory containing JPEG, PNG, or GIF images. Reads files in filename order without descending into subdirectories; other extensions are skipped. |
 | `enclose` | `string` | no | Wrap rendered output using prefix\|suffix syntax |

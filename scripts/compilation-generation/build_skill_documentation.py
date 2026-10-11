@@ -22,8 +22,7 @@ DOCUMENTS_DIRECTORY = "docs"
 LEGACY_COMPILATION_FILENAME = "HyperBricks-Documentation.md"
 GENERATOR_PATH = "scripts/compilation-generation/build_skill_documentation.py"
 TRUSTED_OUTPUT_DIRECTORIES = (
-    "SKILLS/hyperbricks/references",
-    "codex-plugin/hyperbricks/skills/hyperbricks/references",
+    ".agents/skills/hyperbricks/references",
 )
 
 
@@ -453,7 +452,7 @@ def parse_arguments() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output-dir",
-        default="SKILLS/hyperbricks/references",
+        default=".agents/skills/hyperbricks/references",
         help=(
             "Skill references directory, relative to the repository root unless "
             "absolute."

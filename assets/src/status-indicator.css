@@ -1,0 +1,13 @@
+/* daisyUI badge and theme are bundled locally; no application CSS is changed. */
+@import "daisyui/theme/lofi.css";
+@import "daisyui/theme/night.css";
+@import "daisyui/components/badge.css";
+@import "daisyui/components/tooltip.css";
+button, .tooltip { font-family: system-ui, sans-serif; }
+button { cursor: pointer; box-sizing: border-box; }
+.badge-soft { box-shadow: 0 1px 4px color-mix(in oklab, var(--color-base-content) 10%, transparent); border: 1px solid color-mix(in oklab, var(--badge-color) 35%, var(--color-base-100)); }
+button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* Keep the tooltip inside the viewport above the bottom-right badge. */
+.tooltip { display: inline-flex; }
+.tooltip::before { left: auto; right: 0; transform: translateY(var(--tt-pos)); max-width: calc(100vw - 32px); }

@@ -109,6 +109,18 @@ func NewAnalyzer(opts AnalyzerOptions) *Analyzer {
 // Diagnostics validates a single editor buffer. documents is an optional map
 // of URI to unsaved content used as an overlay while imports are loaded.
 func (a *Analyzer) Diagnostics(uri, text string, documents map[string]string) []Diagnostic {
+	diagnostics := a.sourceDiagnostics(uri, text, documents)
+	for _, diagnostic := range LintDocument(text) {
+		// Source analysis already owns syntax errors. Keep shared type errors
+		// and style warnings without duplicating parse failures while editing.
+		if diagnostic.Code != "yaml.syntax" {
+			diagnostics = append(diagnostics, diagnostic)
+		}
+	}
+	return diagnostics
+}
+
+func (a *Analyzer) sourceDiagnostics(uri, text string, documents map[string]string) []Diagnostic {
 	reader := a.packageReader(uri, text, documents)
 	if entry := a.owningPackageEntry(uri, reader); entry != "" {
 		raw, err := reader(entry)

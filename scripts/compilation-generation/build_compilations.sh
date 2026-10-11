@@ -95,24 +95,15 @@ else
 fi
 
 if [[ "${FORMAT}" == "all" || "${FORMAT}" == "markdown" ]]; then
-    COMPILATIONS=(
-        HyperBricks-Documentation.md
-    )
-    DESTINATIONS=(
-        "${ROOT}/SKILLS/hyperbricks/references"
-        "${ROOT}/codex-plugin/hyperbricks/skills/hyperbricks/references"
-    )
+    if [[ ! -f "${OUTPUT_DIR}/HyperBricks-Documentation.md" ]]; then
+        echo "Generated documentation compilation is missing: ${OUTPUT_DIR}" >&2
+        exit 1
+    fi
 
-    for compilation in "${COMPILATIONS[@]}"; do
-        if [[ ! -f "${OUTPUT_DIR}/${compilation}" ]]; then
-            echo "Generated compilation is missing: ${OUTPUT_DIR}/${compilation}" >&2
-            exit 1
-        fi
-    done
-
-    for destination in "${DESTINATIONS[@]}"; do
+    # A historical compilation must not replace the current skill's references.
+    if [[ "${SOURCE_REF}" == "WORKTREE" ]]; then
         "${ENV_DIR}/bin/python" "${SCRIPT_DIR}/build_skill_documentation.py" \
-            --ref "${SOURCE_REF}" \
-            --output-dir "${destination}"
-    done
+            --ref WORKTREE \
+            --output-dir "${ROOT}/.agents/skills/hyperbricks/references"
+    fi
 fi

@@ -1,0 +1,42 @@
+==== hyperbricks yaml {!{images}} ====
+images:
+  - type: images
+  - cache_keep: 1
+  - attributes:
+      decoding: async
+  - directory: hyperbricks-yaml-test-files/assets/
+  - id: '#img_'
+  - loading: lazy
+  - width: "100"
+==== explainer ====
+Process a directory in filename order. Each generated URL includes the source content and resize settings. A configured id gets an index suffix; no id is added when omitted. Invalid images produce render errors. See [Image usage](IMAGES.md) for file formats and gallery accessibility.
+==== expected json ====
+{
+  "Alt": "",
+  "Cache": false,
+  "CacheGrace": "",
+  "CacheKeep": 1,
+  "Class": "",
+  "ConfigCategory": "",
+  "ConfigType": "<IMAGES>",
+  "Directory": "hyperbricks-yaml-test-files/assets/",
+  "Enclose": "",
+  "ExtraAttributes": {
+    "decoding": "async"
+  },
+  "Height": 0,
+  "HyperBricksFile": "",
+  "HyperBricksKey": "",
+  "HyperBricksPath": "",
+  "Id": "#img_",
+  "IsStatic": false,
+  "Loading": "lazy",
+  "MetaDocDescription": "",
+  "Quality": 0,
+  "Title": "",
+  "Width": 100
+}
+
+==== expected output ====
+<img src="/static/images/cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="" id="#img_0" loading="lazy" decoding="async" />
+<img src="/static/images/same_cute_cat_cf6e86a5019b7eff32b5cae8e570c67d_w100_h100.jpg" width="100" height="100" alt="" id="#img_1" loading="lazy" decoding="async" />

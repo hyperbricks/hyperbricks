@@ -2,6 +2,9 @@ catalog_image:
   - type: image
   - src: {path: {base: resources, path: images/products/item-01.jpg}}
   - width: 640
+  - cache: true
+  - cache_keep: 1
+  - cache_grace: 1h
   - class: catalog-product-image
   - loading: lazy
   - attributes:

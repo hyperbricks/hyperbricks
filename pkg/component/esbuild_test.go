@@ -351,3 +351,46 @@ func TestEsbuildRealExternalParity(t *testing.T) {
 		t.Fatal("external compile failure replaced valid output")
 	}
 }
+
+func TestEsbuildPublicationFailurePreservesEntryAndRemovesStaging(t *testing.T) {
+	r, cfg := esbuildFixture(t)
+	cfg.Sourcemap = true
+	esbuildWrite(t, cfg.Entry, `import "./site.css"; console.log("first");`)
+	esbuildWrite(t, filepath.Join(filepath.Dir(cfg.Entry), "site.css"), `body{color:red}`)
+	esbuildRender(t, r.Prepare(cfg))
+	previous := esbuildRead(t, cfg.Outfile)
+	css := strings.TrimSuffix(cfg.Outfile, ".js") + ".css"
+	if err := os.Remove(css); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(css, 0755); err != nil {
+		t.Fatal(err)
+	}
+	esbuildWrite(t, filepath.Join(css, "manual.txt"), "preserve")
+	esbuildWrite(t, cfg.Entry, `import "./site.css"; console.log("second");`)
+	if output, failures := r.Prepare(cfg).Render(context.Background()); output != "" || len(failures) == 0 {
+		t.Fatal("failed publication returned a success tag")
+	}
+	if esbuildRead(t, cfg.Outfile) != previous {
+		t.Fatal("auxiliary publication failure replaced the previous entry")
+	}
+	if esbuildRead(t, filepath.Join(css, "manual.txt")) != "preserve" {
+		t.Fatal("publication destroyed conflicting directory")
+	}
+	files, err := os.ReadDir(filepath.Dir(cfg.Outfile))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, file := range files {
+		if strings.HasPrefix(file.Name(), ".hb-esbuild-") {
+			t.Fatal("publication failure leaked staging file", file.Name())
+		}
+	}
+	if err := os.RemoveAll(css); err != nil {
+		t.Fatal(err)
+	}
+	esbuildRender(t, r.Prepare(cfg))
+	if !strings.Contains(esbuildRead(t, cfg.Outfile), "second") {
+		t.Fatal("publication did not recover after conflict removal")
+	}
+}

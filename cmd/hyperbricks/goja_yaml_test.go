@@ -58,6 +58,9 @@ func TestGojaYAMLResourceLoadingReloadAndDevelopment(t *testing.T) {
 	commands.ModuleRoot = root
 	hbConfig.Server.Beautify = false
 	hbConfig.Development.FrontendErrors = false
+	// This fixture verifies server-side Goja output without browser scripts.
+	// The optional development indicator has separate response-gating tests.
+	hbConfig.Development.StatusIndicator = false
 	parser.HbConfig = map[string]interface{}{}
 	parser.ClearTemplateStore()
 	load := func() {

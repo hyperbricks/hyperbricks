@@ -28,7 +28,7 @@ class SkillDocumentationTests(unittest.TestCase):
             PurePosixPath("docs/guides/EXAMPLE.md"),
         )
         with self.assertRaisesRegex(BuildError, "outside docs"):
-            bundled_document_path("SKILLS/hyperbricks/SKILL.md")
+            bundled_document_path(".agents/skills/hyperbricks/SKILL.md")
 
     def test_document_links_stay_local_and_repository_links_use_release_version(self):
         commit = "a" * 40

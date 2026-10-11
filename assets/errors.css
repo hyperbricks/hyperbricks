@@ -1,5 +1,6 @@
 /* Shared UI owns colors and controls; this file owns the diagnostic workspace. */
 .errors-page { max-width: 1480px; }
+.errors-help { max-width: 90ch; margin-bottom: 20px; overflow-wrap: anywhere; }
 .errors-toolbar { display: flex; align-items: center; gap: 12px; }
 .errors-search { flex: 1; max-width: 520px; min-width: 0; }
 .errors-search input { min-width: 0; width: 100%; }

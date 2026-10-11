@@ -84,10 +84,7 @@ credentials while Dashboard is disabled. [Spaces](http://127.0.0.1:18110/__hyper
 uses the same login when configured and opens without login when both values are
 absent. Spaces and its writes default to enabled in development and debug mode;
 set `hyperbricks.development.frontend_editing.spaces.write: false` for read-only
-access. To also open the
-[Dashboard](http://127.0.0.1:18110/__hyperbricks/dashboard), set
-`hyperbricks.development.dashboard.enabled: true` in
-`package.hyperbricks.yaml` and restart. See
+access. The [Dashboard](http://127.0.0.1:18110/__hyperbricks/dashboard) is already enabled. See
 [development configuration](../../docs/SPACES.md#development-configuration) for
 the shared access settings, host restrictions, and network setup.
 

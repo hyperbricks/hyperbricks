@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -22,6 +21,7 @@ import (
 	"github.com/hyperbricks/hyperbricks/pkg/core"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
+	"github.com/hyperbricks/hyperbricks/pkg/staticserver"
 	"github.com/otiai10/copy"
 	"golang.org/x/time/rate"
 )
@@ -120,6 +120,14 @@ func buildRuntimeHandler(limiter *rate.Limiter) http.Handler {
 		switch {
 		case strings.HasPrefix(r.URL.Path, "/static/"):
 			// Serve files from the static directory
+			if tbConfig.Mode == shared.DEVELOPMENT_MODE {
+				// Fixed asset URLs can change within HTTP's one-second date
+				// precision. Development must not return a stale browser hit.
+				w.Header().Set("Cache-Control", "no-store")
+				r = r.Clone(r.Context())
+				r.Header.Del("If-Modified-Since")
+				r.Header.Del("If-None-Match")
+			}
 			http.StripPrefix("/static/", http.FileServer(staticFS)).ServeHTTP(w, r)
 		case strings.HasPrefix(r.URL.Path, "/out/"):
 			// Serve embedded files
@@ -306,43 +314,11 @@ func serveStaticContext(operation context.Context) error {
 	if strings.TrimSpace(renderDir) == "" {
 		renderDir = core.ModuleDirectories.RenderedDir
 	}
-	routing := normalizeRoutingConfig(hbConfig.Server.Routing)
-	fileServer := http.FileServer(http.Dir(renderDir))
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestPath := r.URL.Path
-		if requestPath == "" {
-			requestPath = "/"
-		}
-
-		if strings.HasSuffix(requestPath, "/") {
-			for _, indexFile := range routing.IndexFiles {
-				candidate := requestPath + indexFile
-				if filePath, ok := staticFilePath(renderDir, candidate); ok {
-					serveStaticFile(w, r, filePath)
-					return
-				}
-			}
-		}
-
-		if routing.CleanURLs {
-			base := path.Base(requestPath)
-			if !strings.Contains(base, ".") {
-				for _, ext := range routing.Extensions {
-					if ext == "" {
-						continue
-					}
-					candidate := requestPath + "." + ext
-					if staticFileExists(renderDir, candidate) {
-						r.URL.Path = candidate
-						fileServer.ServeHTTP(w, r)
-						return
-					}
-				}
-			}
-		}
-
-		fileServer.ServeHTTP(w, r)
-	})
+	handler, err := staticserver.New(renderDir, hbConfig.Server.Routing)
+	if err != nil {
+		return err
+	}
+	defer handler.Close()
 	server := &http.Server{Addr: addr, Handler: handler}
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -420,40 +396,4 @@ func waitForServerSignal(server *http.Server) error {
 
 	logging.GetLogger().Named("static").Info("Stopped")
 	return nil
-}
-
-func staticFileExists(rootDir, urlPath string) bool {
-	_, ok := staticFilePath(rootDir, urlPath)
-	return ok
-}
-
-func staticFilePath(rootDir, urlPath string) (string, bool) {
-	cleanPath := path.Clean("/" + urlPath)
-	cleanPath = strings.TrimPrefix(cleanPath, "/")
-	if cleanPath == "" {
-		return "", false
-	}
-	fullPath := filepath.Join(rootDir, filepath.FromSlash(cleanPath))
-	info, err := os.Stat(fullPath)
-	if err != nil || info.IsDir() {
-		return "", false
-	}
-	return fullPath, true
-}
-
-func serveStaticFile(w http.ResponseWriter, r *http.Request, filePath string) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	}
-	defer file.Close()
-
-	info, err := file.Stat()
-	if err != nil || info.IsDir() {
-		http.NotFound(w, r)
-		return
-	}
-
-	http.ServeContent(w, r, info.Name(), info.ModTime(), file)
 }

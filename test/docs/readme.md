@@ -67,11 +67,11 @@ Start with the [Introduction](docs/INTRODUCTION.md) to understand the component 
 
 ## For agents
 
-The [general HyperBricks skill](SKILLS/hyperbricks/SKILL.md) helps agents apply the same workflows in your project.
+The [HyperBricks skill](.agents/skills/hyperbricks/SKILL.md) helps agents apply the same workflows in your project. Install it with `hyperbricks skills install` or download the complete skill ZIP. Follow [Agent setup](docs/AGENT_SETUP.md) for Codex, Claude Code, or Gemini CLI. All three use the same versioned instructions and documentation.
 
 ## Docs
 
-- **Start:** [Introduction](docs/INTRODUCTION.md), [Quickstart](docs/QUICKSTART.md), [Package Configuration](docs/PACKAGE_CONFIGURATION.md), [How-to guides](docs/HOWTOS.md), and [Troubleshooting](docs/TROUBLESHOOTING.md)
+- **Start:** [Introduction](docs/INTRODUCTION.md), [Quickstart](docs/QUICKSTART.md), [Agent setup](docs/AGENT_SETUP.md), [Package Configuration](docs/PACKAGE_CONFIGURATION.md), [How-to guides](docs/HOWTOS.md), and [Troubleshooting](docs/TROUBLESHOOTING.md)
 - **Application model:** [Routing](docs/ROUTING.md), [Component reference](docs/REFERENCE.md), [Markdown](docs/MARKDOWN.md), [Spaces CMS](docs/SPACES.md), and [Authoring](docs/AUTHOR.md)
 - **Logic and assets:** [API Render](docs/API_RENDER.md), [Server Scripts](docs/GOJA_RENDER.md), [Plugins](docs/PLUGINS.md), and [JavaScript and CSS](docs/ESBUILD.md)
 - **Development services:** [Hooks and managed services](docs/DEVELOPMENT_HOOKS.md), [runnable API demo](modules/development-hooks-demo/README.md), and [build-before-load plugin demo](modules/development-hooks-plugin-demo/README.md)

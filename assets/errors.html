@@ -23,6 +23,7 @@
   </header>
   <main id="main" class="hb-page errors-page">
     <div class="hb-page-heading"><div><p class="hb-eyebrow">{{.Module}}</p><h1>Errors</h1></div><a class="btn btn-sm btn-ghost" href="/__hyperbricks/render-diagnostics?view=current" target="_blank" rel="noopener"><i data-lucide="braces"></i>Diagnostic JSON</a></div>
+    <p class="errors-help">Request the page or fragment with the problem, select its diagnostic here, and fix the reported source or resource file. Then save and request it again. Refresh diagnostics updates this list; it does not run the routes for you.</p>
     <div class="errors-toolbar">
       <label class="input input-sm errors-search"><i data-lucide="search"></i><input id="search" type="search" placeholder="Search diagnostics" aria-label="Search diagnostics"></label>
       <select id="severity" class="select select-sm" aria-label="Diagnostic severity"><option value="all">All diagnostics</option><option value="error">Errors</option><option value="warning">Warnings</option><option value="info">Information</option></select>

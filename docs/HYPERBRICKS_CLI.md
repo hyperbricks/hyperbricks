@@ -22,14 +22,17 @@ hyperbricks version
 | -------------- | -------------------------------------------------------------------------- | ---------------------------------------------- |
 | `init`         | Create the embedded module or maintain existing package metadata           | [↗](#init-and-init-starter)                     |
 | `init-starter` | Install an official starter module                                         | [↗](#init-starter-install-an-official-starter) |
+| `skills`       | Install version-matched coding-agent instructions and documentation       | [↗](#skills)                                  |
 | `scaffold`     | Bubble Tea wizard for root composites and components                       | [↗](#scaffold)                                 |
 | `settings` | Inspect and edit effective package settings with source-aware saving | [↗](#settings) |
 | `author`       | Create and extend configuration through JSON specs for agents and automation | [↗](#author)                                   |
 | `space`        | Create an inheriting hypermedia Space from an existing source              | [↗](#space)                                    |
 | `doctor`       | Diagnose a source module's static readiness before running or building      | [↗](#doctor)                                   |
+| `lint`         | Check YAML syntax and source style without changing files                  | [↗](#lint)                                     |
 | `language-server` | Provide editor diagnostics, completion, hover, and formatting over LSP   | [↗](#language-server)                          |
 | `start`        | Start the runtime server                                                   | [↗](#start)                                    |
 | `static`       | Render static output                                                       | [↗](#static-rendering)                         |
+| `serve`        | Preview an existing static directory without rendering                    | [↗](#serve)                                    |
 | `build`        | Build a deploy archive                                                     | [↗](#build-archives)                           |
 | `plugin`       | List, install, build, and remove plugins                                   | [↗](#plugins)                                  |
 | `select`       | Interactively choose and start a module                                    | [↗](#select)                                   |
@@ -41,6 +44,32 @@ Use command help for the current flag list:
 hyperbricks <command> --help
 ```
 
+## `skills`
+
+Install the HyperBricks skill into the current project root, or select an
+existing project with `--project`. The installed executable determines the
+exact skill/documentation version.
+
+```bash
+hyperbricks skills install
+hyperbricks skills install --agent codex
+hyperbricks skills install --agent claude --project /path/to/project
+hyperbricks skills install --update
+hyperbricks skills install --archive /path/to/hyperbricks-skill-<version>.zip
+```
+
+| Flag | Behavior |
+| --- | --- |
+| `--agent` | `all` (default), `codex`, `gemini`, or `claude`. Installs the shared skill; `all` and `claude` also create a Claude compatibility symlink. |
+| `--project` | Existing project directory; defaults to the working directory. |
+| `--archive` | Use a downloaded ZIP with its adjacent `.sha256` file instead of downloading. |
+| `--update` | Replace an unchanged installer-managed skill; preserve locally modified or independently installed content. |
+
+Installation verifies the ZIP checksum, safe paths, bundled document hashes
+and runtime version before replacing files. An unpublished version reports an
+error instead of falling back to another version. See [Agent setup](AGENT_SETUP.md)
+for manual ZIP installation, discovery, updates, and migration from old copies.
+
 ## `init` and `init-starter`
 
 Both commands create a runnable module under `./modules/<module>`. `hyperbricks init -m demo` creates the more verbose, embedded three-page example. `hyperbricks init-starter get hello-world -m demo` downloads the minimal Hello World example. Choose one command for the module you want to create.
@@ -51,13 +80,13 @@ Both creation paths write current source-owned package metadata automatically:
 hyperbricks:
   metadata:
     module: demo
-    moduleversion: "1.0.0"
+    moduleversion: 1.0.0
     hyperbricks: <exact installed version>
 ```
 
 `<exact installed version>` represents the version reported by the binary that
 created the module. `module` is the new module directory's base name. New
-modules start at `moduleversion: "1.0.0"`, independently of the Git revision
+modules start at `moduleversion: 1.0.0`, independently of the Git revision
 used to download an official starter. Build-specific provenance is added only to an archive; a
 source package does not own `format`, `format_version`, `commit`, or `built_at`.
 It also does not own `source_hash`, which belongs to the build index.
@@ -217,6 +246,10 @@ path separator selects that relative or absolute directory. It:
   `built_at`, and `source_hash`
 - preserves unrelated package configuration
 - leaves an already-current file unchanged
+
+When metadata is rewritten, generated fields use plain strings where possible,
+including `moduleversion: 1.0.0`. A metadata refresh does not rewrite a file just
+to change its quote style.
 
 The selected module and `package.hyperbricks.yaml` must already exist. This
 mode never falls back to creating the embedded starter.
@@ -595,6 +628,125 @@ readiness, `start` runs the application, and `build` creates a deployment
 archive. A running local or remote deployment has different health concerns;
 use the deployment interface and API for those checks rather than `doctor`.
 
+## Lint
+
+Use `lint` after writing or changing HyperBricks YAML. It checks YAML syntax,
+literal metadata types, and source style without starting a server, resolving
+imports or configuration, executing components, or writing files. Module health checks remain the job of
+[`doctor`](#doctor).
+
+```bash
+hyperbricks lint -m demo
+hyperbricks lint -m demo --json
+hyperbricks lint modules/demo/hyperbricks/page.hyperbricks.yaml --json
+hyperbricks lint -m demo --json --strict
+```
+
+With no file arguments, `lint` scans regular `*.hyperbricks.yaml` files
+recursively in the selected module, including package files, profiles and nested
+source files whether imported or not. The default module is `default`.
+`--module` / `-m` accepts the usual module name or directory path. Explicit file
+arguments are relative to the current working directory, may use any filename,
+and cannot be combined with `--module`. Repeated paths are checked once.
+Directory symlinks inside a module are not traversed; selected file symlinks are
+reported as read errors. Missing input and an empty module scan are errors.
+
+The first style rule is `yaml.unnecessary_quotes`. It recommends plain strings
+for simple single-line words, titles, types and paths when removing quotes
+preserves the YAML type, value, structure and comments. For example:
+
+```yaml
+# Before
+title: "Event calendar"
+route: 'events'
+
+# After
+title: Event calendar
+route: events
+```
+
+This rule is conservative. It preserves quotes around empty strings, numbers,
+booleans, dates, YAML 1.1 boolean spellings such as `yes` and `on`, escapes,
+explicit tags and anchors, and punctuation-rich content such as HTML, templates
+and JavaScript. Block scalars are preserved. See
+[String Values And Quoting](YAML_USAGE.md#string-values-and-quoting).
+It does not attempt to remove every technically optional pair of quotes.
+
+The same rule applies to metadata: `moduleversion: 1.0.0` is a plain YAML string.
+The metadata generator uses this spelling, and lint reports unnecessary quotes
+around versions such as `"1.0.0"`.
+
+The `metadata.moduleversion_type` rule reports an **error** when a literal
+`hyperbricks.metadata.moduleversion` value is not a YAML string. The diagnostic
+points to the field and recommends a full version such as `1.0.0`, or quotes
+around a legacy version such as `"1.0"`.
+
+| Value | Result |
+| --- | --- |
+| `moduleversion: 1.0.0` | Clean: a YAML string |
+| `moduleversion: "1.0.0"` | Warning: unnecessary quotes |
+| `moduleversion: "1.0"` | Clean: quotes preserve the string |
+| `moduleversion: 1.0` | Error: YAML reads a number |
+| `moduleversion: true` or `moduleversion: null` | Error: not a string |
+
+The type rule applies only at that metadata path, including when it is present
+in a package profile or an explicitly selected imported file. It does not
+require the field to be present, follow imports, or evaluate value resolvers.
+It checks the literal YAML type, not SemVer validity; `doctor` and `build` remain
+responsible for validating the effective module version.
+
+The command is read-only; it has no `--fix` mode. Each warning identifies the
+quoted source span and explains the correction. Apply corrections only to the
+intended source and run lint again. A clean lint result does not prove component
+validity, import resolution, module health, rendered output or browser behavior.
+
+### Output and exit status
+
+Human-readable output includes the file, location, severity, rule code and
+message. `--json` writes one JSON object, with no human-readable summary mixed
+into standard output:
+
+```json
+{
+  "schema_version": 1,
+  "status": "warning",
+  "strict": false,
+  "files_checked": 1,
+  "warnings": 1,
+  "errors": 0,
+  "diagnostics": [
+    {
+      "file": "modules/demo/hyperbricks/page.hyperbricks.yaml",
+      "line": 1,
+      "column": 8,
+      "range": {
+        "start": {"line": 0, "character": 7},
+        "end": {"line": 0, "character": 23}
+      },
+      "severity": "warning",
+      "code": "yaml.unnecessary_quotes",
+      "message": "Unnecessary quotes around a simple string; remove the surrounding quotes and keep the enclosed text unchanged."
+    }
+  ]
+}
+```
+
+`status` is `clean`, `warning` or `error`. Diagnostics have stable rule codes:
+`yaml.unnecessary_quotes`, `metadata.moduleversion_type`, `yaml.syntax`,
+`lint.input` or `lint.read`.
+`diagnostics` is an empty array when no findings exist. Files and source findings
+are ordered deterministically. File paths are relative to the working directory
+when possible. `line` and `column` are one-based; columns count UTF-16 code units.
+`range` uses zero-based, end-exclusive LSP coordinates. Quote warnings span the
+quoted text; module-version type errors identify the `moduleversion` field.
+Input/read errors have no source location: `line` and `column` are omitted and
+`range` is zero. Warning messages do not include scalar values.
+
+Exit status is **0** for clean results and warnings, and **1** for syntax,
+metadata-type, selection or read errors. With `--strict`, warnings also cause
+exit status 1; the JSON `status` still describes the findings. Command-line usage errors follow
+the ordinary CLI error behavior.
+
 ## Language server
 
 `hyperbricks language-server --stdio` exposes HyperBricks source intelligence
@@ -615,6 +767,11 @@ imports, inheritance targets, templates, and resources resolve against the same
 project contract as the CLI. Runtime render feedback is optional and remains
 separate from static source diagnostics.
 
+Source diagnostics also include the shared [`lint`](#lint) metadata-type and
+style checks, identified by source `hyperbricks-lint`. They run on the current editor buffer
+and clear when corrected. Formatting continues to preserve the existing quote
+style; it does not automatically apply lint suggestions.
+
 The HyperBricks editor protocol is versioned independently from LSP. A client
 and executable with incompatible editor-protocol versions reject the session
 with a clear initialization error instead of silently degrading. Standard
@@ -629,6 +786,19 @@ Start a module in `./modules` by its name:
 ```bash
 hyperbricks start -m demo
 ```
+
+In development or debug mode, once the server is listening, the **Dashboard**
+message at **INFO** level shows an enabled Dashboard's full local URL, for example
+[http://localhost:8080/__hyperbricks/dashboard](http://localhost:8080/__hyperbricks/dashboard).
+The URL uses the effective server port, including a `--port` override. Dashboard
+is enabled by default unless `development.dashboard.enabled: false` (or legacy
+`development.dashboard: false`) is explicitly configured. See
+[Open The Dashboard](QUICKSTART.md#open-the-dashboard) to change it with `hyperbricks settings`. It is unavailable in live mode,
+production runtimes, and static output.
+
+The same event appears in the Dashboard's **Logs** views and in the log file
+when file logging is configured. Both the Table and Terminal views include its
+URL. Log-level filtering still applies.
 
 See [Runtime request flow](INTRODUCTION.md#runtime-request-flow) for the request path through a running server.
 
@@ -769,6 +939,46 @@ hyperbricks select
 
 Choose a module from `./modules`. Confirming the choice starts that module with `start`. To choose the module directly, use `hyperbricks start -m demo`.
 
+## Serve
+
+Preview an extracted static ZIP or another existing site directory:
+
+```bash
+hyperbricks serve ./site
+hyperbricks serve ./site --port 8081
+```
+
+Select the exported site directory containing `index.html`, rather than a
+project directory containing source files. This command reads existing files;
+it does not load a module or package, render pages, build assets, or write files.
+It works from any directory and requires no `modules/` folder.
+
+| Argument or flag | Behavior |
+| --- | --- |
+| `directory` | Site directory to serve; defaults to the current directory (`.`). |
+| `--host` | Listening address; defaults to `127.0.0.1` for local access. |
+| `--port`, `-p` | Listening port; defaults to `8080`. Use `0` to select an available port. |
+
+Open the actual URL printed in the terminal. Stop with **Ctrl+C**. The command
+uses its own host and port flags, independently of package server settings.
+An occupied port produces an error; select a different port or use `--port 0`.
+
+Clean URLs resolve `/products` to `products.html` or `products.htm`. Directories
+use `index.html` or `index.htm`; a directory URL without its trailing slash
+redirects to that slash when an index exists. Explicit file URLs are served
+directly. Missing files and directories without an index return `404`, with
+no directory listing or single-page-app fallback. Requests cannot escape the
+selected directory, including through symlinks.
+
+This is a local static preview server. Only put files intended to be served in
+the selected directory. `--host 0.0.0.0` permits network access to its contents;
+the command provides no authentication or HTTPS. For public delivery, configure
+your static host with the matching clean-URL behavior.
+
+To render a fresh snapshot and then preview it, use
+[`hyperbricks static --serve`](#static-rendering). To preview an existing ZIP,
+follow [Serving the export](#serving-the-export).
+
 ## Static Rendering
 
 Render static output:
@@ -789,8 +999,8 @@ hyperbricks static -m demo --serve
 
 With `--serve`, HyperBricks performs that render first and then serves the new
 snapshot. It does not skip the rendering phase. To serve existing files without
-rebuilding them, use a standalone static file server as described under
-[Serving the export](#serving-the-export).
+rebuilding them, use [`hyperbricks serve`](#serve) with the existing render
+directory or an extracted ZIP.
 
 ### Rendering runtime and static file server
 
@@ -948,21 +1158,26 @@ For a selected set of pages, use a separate export module with its own `package.
 
 ### Serving the export
 
-Extract the ZIP into an empty directory and serve that directory as the site root. For example:
+Extract the ZIP into an empty `site/` directory, with `index.html` directly
+inside it. From the directory containing `site/`, run:
 
 ```bash
-npx serve ./site -l 8080
+hyperbricks serve ./site
 ```
 
-`serve` supports [clean URLs](https://github.com/vercel/serve-handler#cleanurls-booleanarray) such as `/products` for `products.html`. Use its regular file-serving mode; a single-page-app fallback would hide missing exported pages.
+Open the URL printed in the terminal. If its default port `8080` is occupied,
+add `--port 8081` or use `--port 0` to choose an available port. The preview
+serves this directory as the site root and resolves clean page and fragment
+URLs such as `/products` for `products.html`. It requires no module, package,
+Node.js, or npm. See [Serve](#serve) for flags and file-serving behavior.
 
-Python also serves the files:
-
-```bash
-python3 -m http.server 8080 --directory ./site
-```
-
-With Python, use explicit file links such as `/products.html`, or export directory indexes and link to `/products/`. Python's [basic file server](https://docs.python.org/3/library/http.server.html#http.server.SimpleHTTPRequestHandler) does not rewrite `/products` to `products.html`. Query variants are separate files: visiting `/products.html?category=shoes` does not select `products/shoes.html`. Link to each variant's output URL in the generated site.
+Check the page, CSS, JavaScript, and fragment URLs directly, then exercise the
+page's interactions. Stop the server with **Ctrl+C**. This verifies the extracted
+files locally; perform the same checks on the chosen host after publication.
+That host must preserve the clean URLs rather than returning the index page
+for every request. Query variants are separate files: visiting
+`/products.html?category=shoes` does not select `products/shoes.html`. Link to
+each variant's output URL in the generated site.
 
 The `modules/sampleapis-coffee-static` module demonstrates a static snapshot that renders `api_render` data from `https://api.sampleapis.com/coffee/hot`. If a nested `api_render` receives a non-2xx upstream response, static rendering fails through the route render-error diagnostics.
 
@@ -1119,6 +1334,14 @@ This disables keyboard-driven prompts where supported.
 hyperbricks settings -m demo
 hyperbricks settings -m demo --config package.preview.hyperbricks.yaml
 ```
+
+For a development or debug module, choose **Development → Dashboard → Enabled**, set it to
+`true`, review with **r**, save with **Enter**, and quit with **q**. Restart the
+same module and configuration, preserving any `--port` override, then open the
+Dashboard URL printed at startup. See
+[Open The Dashboard](QUICKSTART.md#open-the-dashboard) for the complete local example
+and [Developer Tools](PACKAGE_CONFIGURATION.md#developer-tools) for availability
+and credentials.
 
 Omit `-m` for the module picker. The command requires an interactive terminal. Navigate sections as a tree: Enter opens a section or edits a setting, and Esc cancels an edit or returns one level. The breadcrumb shows the current section; returning restores your selection. Each level shows only its direct children. The menu shows effective values, defaults, descriptions, and source ownership. Boolean and mode fields offer choices; collections and resolver expressions use YAML input. Hook/service entries can be added, edited, reordered, and removed without executing their commands.
 

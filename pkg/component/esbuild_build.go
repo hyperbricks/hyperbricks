@@ -29,6 +29,9 @@ type esbuildResult struct {
 	entry   string
 }
 
+// OwnsOutput identifies paths generated in this session, including removed
+// generations whose queued filesystem events must not trigger source reloads.
+// It is not the durable ownership evidence used to delete files.
 func (r *EsbuildRenderer) OwnsOutput(path string) bool {
 	abs, err := filepath.Abs(path)
 	if err != nil {

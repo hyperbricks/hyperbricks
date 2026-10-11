@@ -106,6 +106,9 @@ Supported loader values: `file`, `dataurl`, `text`, `binary`, `base64`, `json`, 
 
 ## Build and cache lifecycle
 
+See [Asset caching](ASSET_CACHING.md) for practical development/live settings
+and examples shared with image components.
+
 1. Module loading resolves inheritance and paths, validates options, and prepares the component. It does not compile assets. Conflicting builds for the same outfile are reported before serving that configuration.
 2. Rendering restores a validated persistent build when possible, or invokes the compiler, publishes the files, and returns the URL/markup. A cold first request without a valid build waits for compilation. Unused declarations do not build.
 3. With `cache: true`, subsequent renders reuse output while its dependencies and files remain valid. With `cache: false`, each component render compiles again.
@@ -114,7 +117,7 @@ Cached components with the same effective build options and paths share a build,
 
 Cache validation currently reads and hashes inputs and outputs on each cached component render. It detects same-size edits, modified/missing auxiliary assets, and nearby `package.json`, `tsconfig.json`, and `jsconfig.json` changes. This avoids recompilation but is **not a zero-I/O request path**. esbuild's resolved input graph does not describe every possible future module-resolution change; reload the module after changes outside that graph, such as an extended config elsewhere or a newly introduced alternative import target. Explicit module reload clears reuse and forces compilation on next use. Restart can restore a validated disk manifest; existing asset files alone are never enough.
 
-Page caching is independent. A whole-page cache hit does not render components, so it cannot trigger either rebuild policy. Use `nocache: true` on a development page when every request must reach its components. Changing a source alone does not invalidate an already cached HTML response outside the development reload. Browser/CDN caching is also separate; use `fingerprint: true` for versioned asset URLs. Fingerprinting does not change HTTP cache headers or invalidate cached HTML.
+Page caching is independent. A whole-page cache hit does not render components, so it cannot trigger either rebuild policy. Development renders the page on every request. In live mode, use `nocache: true` on a page when every request must reach its components. Changing a source alone does not invalidate an already cached HTML response outside the development reload. Browser/CDN caching is also separate; use `fingerprint: true` for versioned asset URLs. Fingerprinting does not change HTTP cache headers or invalidate cached HTML.
 
 ## Versioned output
 
@@ -171,7 +174,7 @@ hyperbricks:
     reload: false
 ```
 
-The debounced reload invalidates asset builds. The next page render builds from current sources. Generated outputs and temporary publication files are ignored by this watcher, even if static is underneath a watched directory. `reload: true` can additionally use HyperBricks' existing browser-reload behavior. This is lazy rebuilding, not an esbuild HMR server or an eager background compiler.
+The debounced reload invalidates asset builds. The next page render builds from current sources. Generated outputs and temporary publication files are ignored by this watcher, even if static is underneath a watched directory. The `reload` setting currently has no implemented automatic browser-refresh effect; refresh the browser manually. This is lazy rebuilding, not an esbuild HMR server or an eager background compiler.
 
 For the original development workflow, use `cache: false`: every component render builds, without waiting for cache invalidation. No HyperBricks binary rebuild is needed in either case.
 
