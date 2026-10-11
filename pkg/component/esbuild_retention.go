@@ -1,7 +1,6 @@
 package component
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -110,36 +109,7 @@ func (s *esbuildStore) saveHistory(h esbuildHistory) error {
 	if err != nil {
 		return err
 	}
-	existing, err := os.ReadFile(path)
-	if err == nil && bytes.Equal(existing, data) {
-		return nil
-	}
-	if err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	if os.IsNotExist(err) && len(h.Owners) == 0 {
-		return nil
-	}
-	if err = os.MkdirAll(filepath.Dir(path), 0700); err != nil {
-		return err
-	}
-	file, err := os.CreateTemp(filepath.Dir(path), ".hb-esbuild-history-*")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(file.Name())
-	if _, err = file.Write(data); err != nil {
-		file.Close()
-		return err
-	}
-	if err = file.Sync(); err != nil {
-		file.Close()
-		return err
-	}
-	if err = file.Close(); err != nil {
-		return err
-	}
-	return os.Rename(file.Name(), path)
+	return writeAssetHistory(path, data, len(h.Owners) == 0, ".hb-esbuild-history-*")
 }
 
 func (s *esbuildStore) retain(p *PreparedEsbuild, result *esbuildResult) (failure error) {

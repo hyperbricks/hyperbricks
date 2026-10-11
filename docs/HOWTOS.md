@@ -26,7 +26,8 @@ This section is for developers who know web development and are new to HyperBric
 If an example fails, start with [Troubleshooting](TROUBLESHOOTING.md). For older configurations, see the [Migration Guide](MIGRATION.md).
 
 For source images, generated static files, caching and safe cleanup, see
-[Generated images](IMAGES.md).
+[Generated images](IMAGES.md). For development/live behavior, component reuse
+and retention, see the [Asset caching guide](ASSET_CACHING.md).
 
 ## Where to find complete module examples
 

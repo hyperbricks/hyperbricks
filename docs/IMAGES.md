@@ -91,6 +91,9 @@ regenerate and deploy HTML together with its static assets.
 
 ## Reuse and freshness
 
+See [Asset caching](ASSET_CACHING.md) for practical development/live settings,
+image examples and guidance on retaining old URLs.
+
 | Field | Default | Behavior |
 | --- | --- | --- |
 | `cache` | `false` | True reuses a recorded valid output when source bytes and transformation settings match. False processes on each component render. |

@@ -1,7 +1,6 @@
 package component
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -221,35 +220,7 @@ func (s *imageStore) save() error {
 	if err != nil {
 		return err
 	}
-	old, err := os.ReadFile(s.historyPath)
-	if err == nil && bytes.Equal(old, data) {
-		return nil
-	}
-	if err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	if os.IsNotExist(err) && len(s.history.Owners) == 0 {
-		return nil
-	}
-	if err := os.MkdirAll(filepath.Dir(s.historyPath), 0700); err != nil {
-		return err
-	}
-	f, err := os.CreateTemp(filepath.Dir(s.historyPath), ".hb-image-history-*")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(f.Name())
-	defer f.Close()
-	if _, err = f.Write(data); err != nil {
-		return err
-	}
-	if err = f.Sync(); err != nil {
-		return err
-	}
-	if err = f.Close(); err != nil {
-		return err
-	}
-	return os.Rename(f.Name(), s.historyPath)
+	return writeAssetHistory(s.historyPath, data, len(s.history.Owners) == 0, ".hb-image-history-*")
 }
 func (s *imageStore) retain(owner, group, name string, policy imagePolicy) error {
 	if active, ok := s.active[owner]; ok {
