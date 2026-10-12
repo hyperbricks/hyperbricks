@@ -104,7 +104,7 @@ func lookupResponseCache(route, key string, ttl time.Duration) (CacheEntry, bool
 		return entry, true
 	}
 
-	file, err := os.Open(entry.cacheDiskPath)
+	file, err := openResponseCacheFile(entry.cacheDiskPath)
 	if err == nil {
 		var info os.FileInfo
 		info, err = file.Stat()

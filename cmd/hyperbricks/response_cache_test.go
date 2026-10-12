@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -100,7 +101,7 @@ func TestResponseCacheStorageRoundTrip(t *testing.T) {
 			}
 			for path, want := range map[string]os.FileMode{indexed.cacheDiskPath: 0600, filepath.Dir(indexed.cacheDiskPath): 0700} {
 				info, err := os.Stat(path)
-				if err != nil || info.Mode().Perm() != want {
+				if err != nil || (runtime.GOOS != "windows" && info.Mode().Perm() != want) {
 					t.Fatalf("cache permissions for %s: info=%v err=%v", path, info, err)
 				}
 			}
@@ -164,6 +165,7 @@ func TestResponseCachePurgeVariantsAndInFlightWrites(t *testing.T) {
 	if result.MemoryEntries != 1 || result.DiskEntries != 1 || result.Bytes != 6 {
 		t.Fatalf("incorrect purge result %+v", result)
 	}
+	storeResponseCacheTestEntry(t, "new", "new", "disk", "new")
 	body, err := io.ReadAll(openEntry.Body)
 	if err != nil || string(body) != "two" {
 		t.Fatalf("purge interrupted an already-open response: body=%q error=%v", body, err)
@@ -355,18 +357,13 @@ func TestResponseCacheNamespaceOwnershipAndShutdown(t *testing.T) {
 }
 
 func TestResponseCacheFailedRemovalSuspendsDiskWrites(t *testing.T) {
-	if os.Geteuid() == 0 {
-		t.Skip("root can unlink files despite the directory permission test")
-	}
 	setupResponseCacheStoreTest(t, 4, 1)
 	storeResponseCacheTestEntry(t, "old", "old", "disk", "1234")
 	htmlCacheMutex.RLock()
 	directory := responseCache.directory
+	path := htmlCache["old"].cacheDiskPath
 	htmlCacheMutex.RUnlock()
-	if err := os.Chmod(directory, 0500); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = os.Chmod(directory, 0700) })
+	unblock := blockResponseCacheRemoval(t, path)
 	purgeResponseCache("old")
 	if err := storeResponseCache("new", "new", "disk", responseCacheTestEntry("5678"), time.Hour, beginResponseCache("new")); err == nil || !strings.Contains(err.Error(), "awaiting cleanup") {
 		t.Fatalf("failed cleanup did not suspend new disk writes: %v", err)
@@ -375,9 +372,7 @@ func TestResponseCacheFailedRemovalSuspendsDiskWrites(t *testing.T) {
 	if err != nil || len(files) != 1 {
 		t.Fatalf("unlinked data was ignored for the disk budget: files=%v err=%v", files, err)
 	}
-	if err := os.Chmod(directory, 0700); err != nil {
-		t.Fatal(err)
-	}
+	unblock()
 	cleanupResponseCache(time.Now())
 	storeResponseCacheTestEntry(t, "new", "new", "disk", "5678")
 	entry, hit := lookupResponseCache("new", "new", time.Hour)
