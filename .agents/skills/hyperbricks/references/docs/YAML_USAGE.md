@@ -88,7 +88,7 @@ catalog_page:
 
 These are organization conventions, not parser requirements or current lint
 rules. Preserve an existing module's coherent structure when making a focused
-change. The [starter modules](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/modules/README.md#starter-modules) show useful
+change. The [starter modules](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/README.md#starter-modules) show useful
 patterns: `hello-world` has a minimal page, `hyperbricks-patterns-yaml` separates
 page examples, and the navigation/todo demos share definitions through partials.
 Some examples group several pages or keep asset definitions in
@@ -838,7 +838,7 @@ Some fields preserve and validate their original YAML types before decoding. For
 
 ## Template Syntax
 
-HyperBricks templates use Go `html/template`. The [template helper](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/pkg/shared/helpers_templating.go) registers Sprig v3's `GenericFuncMap()` and adds `safe`, `random`, and `valueOrEmpty`. See the [Sprig function reference](https://masterminds.github.io/sprig/) for the complete list.
+HyperBricks templates use Go `html/template`. The [template helper](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/pkg/shared/helpers_templating.go) registers Sprig v3's `GenericFuncMap()` and adds `safe`, `random`, and `valueOrEmpty`. See the [Sprig function reference](https://masterminds.github.io/sprig/) for the complete list.
 
 Go template expressions stay literal in YAML values. The YAML pipeline does not resolve them.
 

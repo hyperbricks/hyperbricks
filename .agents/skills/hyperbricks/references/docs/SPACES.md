@@ -184,7 +184,7 @@ Spaces supports nested templates such as `content.values.body`. Use `editable: [
 
 ### Nested properties and native images
 
-Try the runnable [Spaces image starter](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/modules/spaces-image-demo/README.md) for two independent Spaces with image selection, uploads, and nested text fields.
+Try the runnable [Spaces image starter](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/spaces-image-demo/README.md) for two independent Spaces with image selection, uploads, and nested text fields.
 
 A component mounted inside a template value keeps its own editing contract. Spaces resolves inherited components before discovering their fields, so declare `editable` alongside the reusable component's properties. Native `image` components support `src` as an asset field and `alt` and `title` as text or textarea fields. The source must declare each editable image property.
 
@@ -562,7 +562,7 @@ Run Spaces and native Markdown tests with `go test ./...` from the repository ro
 
 ## Run the Night Owl Café example
 
-The [Swup navigation demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/modules/navigation-demo-swup/README.md) includes an English café page and German and Dutch Spaces that inherit it.
+The [Swup navigation demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/navigation-demo-swup/README.md) includes an English café page and German and Dutch Spaces that inherit it.
 
 Always run the command from the HyperBricks project root:
 
@@ -630,4 +630,4 @@ Remove `--dry-run` to create the Space with English source defaults. Translate i
 Set `section: cafe_translations` to keep the page out of the main venue menu. Add its language link to `templates/place.html`. The CLI creates an inheriting page. It does not translate text automatically.
 
 For another example with two page sources and English/German instances, see the
-[localized Spaces pattern](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/modules/hyperbricks-patterns-yaml/docs/pages/localized-spaces.md).
+[localized Spaces pattern](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/hyperbricks-patterns-yaml/docs/pages/localized-spaces.md).

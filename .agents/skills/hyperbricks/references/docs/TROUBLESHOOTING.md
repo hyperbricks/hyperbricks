@@ -192,7 +192,7 @@ Export route discovery also includes routes found in the loaded source. `static.
 Check `hyperbricks start --help` for `--with-processes`, and opt in explicitly.
 Without that flag, hooks and services are skipped. A globally installed binary
 may predate the feature even when its version label matches a development
-checkout. The [demo README](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/modules/development-hooks-demo/README.md) shows how
+checkout. The [demo README](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/development-hooks-demo/README.md) shows how
 to build and use the current checkout without replacing the global installation.
 
 Process execution supports direct development/debug starts on macOS and Linux.

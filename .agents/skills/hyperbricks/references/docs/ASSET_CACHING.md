@@ -146,4 +146,4 @@ remaining protection and image grace.
 For detailed options, see [Native esbuild](ESBUILD.md) and [Images](IMAGES.md).
 Generation errors are reported rather than silently returning an old successful
 result. If an external API stores image URLs, refresh those references as shown
-in [catalog-store](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/modules/catalog-store/README.md).
+in [catalog-store](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/catalog-store/README.md).

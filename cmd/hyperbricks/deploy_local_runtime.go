@@ -8,10 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/packagemetadata"
@@ -732,9 +730,7 @@ func (api *deployLocalServer) startProcess(module string, buildID string, port i
 		}
 	}
 
-	if runtime.GOOS != "windows" {
-		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	}
+	configureRuntimeProcessGroup(cmd)
 
 	startedAt := time.Now().UTC()
 	if err := startDeployProcess(cmd, port, logFile, logPath); err != nil {

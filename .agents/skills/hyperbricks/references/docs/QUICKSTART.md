@@ -583,7 +583,7 @@ package's metadata.
 
 - [Package Configuration](PACKAGE_CONFIGURATION.md): configure runtime modes, developer access, caching, and module directories.
 - [Caching: a practical guide](CACHING.md): watch a route render fresh, enable memory or disk caching, observe expiry, and purge stored responses.
-- [Development hooks and managed services](DEVELOPMENT_HOOKS.md): start a local API with your module, wait for readiness, and stop both with one command. Try the [beginner demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/modules/development-hooks-demo/README.md).
+- [Development hooks and managed services](DEVELOPMENT_HOOKS.md): start a local API with your module, wait for readiness, and stop both with one command. Try the [beginner demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/development-hooks-demo/README.md).
 - [Set up a coding agent](AGENT_SETUP.md): use the shared HyperBricks skill with Codex, Claude Code, or Gemini CLI, without a required plugin.
 - [YAML usage](YAML_USAGE.md): YAML syntax, resolvers, imports, inheritance.
 - [Component reference](REFERENCE.md): component fields and executable examples.

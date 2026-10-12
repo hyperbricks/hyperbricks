@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.3.2-beta
+
+### Platform compatibility
+
+- Isolate Unix process operations so the runtime can compile for Windows.
+- Use Windows process checks and process-tree termination for deployment
+  runtimes. Preserve response caches when process ownership cannot be checked.
+
 ## v1.3.1-beta
 
 Changes since `v1.3.0-beta`.

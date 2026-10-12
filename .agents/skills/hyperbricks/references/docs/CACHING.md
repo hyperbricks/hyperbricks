@@ -326,7 +326,7 @@ the package lifetime was used. That route duration now takes effect.
 
 ## Keep Exploring
 
-The repository includes a [response-cache test module](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/modules/response-cache-test/README.md)
+The repository includes a [response-cache test module](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/response-cache-test/README.md)
 with runnable examples for memory and disk, expiry, purge, runtime modes,
 custom directories, and storage limits. Its automated checks use temporary
 module copies; inspect files from a manually running module when you want to

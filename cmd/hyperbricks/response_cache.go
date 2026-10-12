@@ -14,7 +14,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
@@ -427,9 +426,10 @@ func reapAbandonedResponseCaches(parent, host string) {
 		if err != nil || json.Unmarshal(data, &owner) != nil || owner.Version != 1 || owner.Host != host || owner.PID <= 0 {
 			continue
 		}
-		// Only ESRCH proves that no such process exists. EPERM can mean an
-		// active runtime owned by another user, so leave its files alone.
-		if !errors.Is(syscall.Kill(owner.PID, 0), syscall.ESRCH) {
+		// Only a confirmed exit permits cleanup. Access errors or unknown
+		// process state must leave another runtime's files alone.
+		running, probeErr := processRunning(owner.PID)
+		if probeErr != nil || running {
 			continue
 		}
 		if err := os.RemoveAll(directory); err != nil {
