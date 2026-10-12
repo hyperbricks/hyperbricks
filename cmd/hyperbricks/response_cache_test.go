@@ -225,8 +225,15 @@ func TestResponseCacheDiskBudget(t *testing.T) {
 		storeResponseCacheTestEntry(t, "old", "old", "disk", "old")
 		storeResponseCacheTestEntry(t, "expired", "expired", "disk", "expired")
 		htmlCacheMutex.Lock()
-		entry := htmlCache["expired"]
-		entry.cacheTTL = time.Nanosecond
+		// Use explicit ages: the expired entry is newer than the live entry,
+		// but must be evicted first regardless of clock resolution or speed.
+		now := time.Now()
+		entry := htmlCache["old"]
+		entry.Timestamp = now.Add(-10 * time.Minute)
+		htmlCache["old"] = entry
+		entry = htmlCache["expired"]
+		entry.Timestamp = now.Add(-time.Minute)
+		entry.cacheTTL = 30 * time.Second
 		htmlCache["expired"] = entry
 		htmlCacheMutex.Unlock()
 		storeResponseCacheTestEntry(t, "new", "new", "disk", "new")
