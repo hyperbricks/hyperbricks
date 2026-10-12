@@ -7,6 +7,8 @@
 - Isolate Unix process operations so the runtime can compile for Windows.
 - Use Windows process checks and process-tree termination for deployment
   runtimes. Preserve response caches when process ownership cannot be checked.
+- Allow Windows disk-cache eviction during active reads without interrupting
+  responses or suspending subsequent cache writes.
 
 ## v1.3.1-beta
 
