@@ -150,7 +150,7 @@ The generated configuration and README use the selected module name. The README 
 
 ### Init-starter: install an official starter
 
-`init-starter` downloads a published module from the [HyperBricks repository](https://github.com/hyperbricks/hyperbricks/tree/main/modules). The repository's [`starters.index.json`](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/starters.index.json) selects eligible starter modules and omits test fixtures. Browse the [starter modules](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/modules/README.md#starter-modules) for their setup requirements. Use `hello-world` for the minimal example.
+`init-starter` downloads a published module from the [HyperBricks repository](https://github.com/hyperbricks/hyperbricks/tree/main/modules). The repository's [`starters.index.json`](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/starters.index.json) selects eligible starter modules and omits test fixtures. Browse the [starter modules](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/README.md#starter-modules) for their setup requirements. Use `hello-world` for the minimal example.
 
 List compatible starters published on the current `main` branch:
 
@@ -885,9 +885,9 @@ Without it, configured commands do not execute. Build, authoring, settings, and 
 
 See [Development hooks and managed services](DEVELOPMENT_HOOKS.md) for the complete
 configuration, readiness, process ownership, and exit-code contract. The
-[beginner demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/modules/development-hooks-demo/README.md) includes instructions
+[beginner demo](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/development-hooks-demo/README.md) includes instructions
 to build a checkout that supports this new flag; the
-[plugin fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.3.1-beta/modules/development-hooks-plugin-demo/README.md) demonstrates
+[plugin fixture](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/development-hooks-plugin-demo/README.md) demonstrates
 building a plugin before initialization.
 
 ### Runtime gateway
