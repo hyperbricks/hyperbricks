@@ -22,7 +22,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/hyperbricks/hyperbricks/assets"
@@ -1845,72 +1844,6 @@ func (api *deployAPI) findProcessesByPort(module string, port int) []deployProce
 	return matches
 }
 
-func isProcessRunning(pid int) bool {
-	if pid <= 0 {
-		return false
-	}
-	if runtime.GOOS == "windows" {
-		process, err := os.FindProcess(pid)
-		if err != nil {
-			return false
-		}
-		err = process.Signal(syscall.Signal(0))
-		return err == nil
-	}
-	return syscall.Kill(pid, 0) == nil
-}
-
-func signalProcess(pid int, sig syscall.Signal) error {
-	if pid <= 0 {
-		return errors.New("invalid pid")
-	}
-	if runtime.GOOS == "windows" {
-		process, err := os.FindProcess(pid)
-		if err != nil {
-			return err
-		}
-		return process.Signal(sig)
-	}
-	if err := syscall.Kill(-pid, sig); err == nil {
-		return nil
-	} else if errors.Is(err, syscall.ESRCH) {
-		// Try direct PID signal when process group doesn't exist.
-	} else if errors.Is(err, syscall.EPERM) {
-		return err
-	}
-	if err := syscall.Kill(pid, sig); err != nil && !errors.Is(err, syscall.ESRCH) {
-		return err
-	}
-	return nil
-}
-
-func terminateProcess(pid int) error {
-	if pid <= 0 {
-		return errors.New("invalid pid")
-	}
-	if runtime.GOOS == "windows" {
-		process, err := os.FindProcess(pid)
-		if err != nil {
-			return err
-		}
-		return process.Kill()
-	}
-
-	if err := signalProcess(pid, syscall.SIGTERM); err != nil {
-		return err
-	}
-	for i := 0; i < 20; i++ {
-		if !isProcessRunning(pid) {
-			return nil
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-	if err := signalProcess(pid, syscall.SIGKILL); err != nil {
-		return err
-	}
-	return nil
-}
-
 func getProcessDetails(pid int) (time.Time, string, error) {
 	if pid <= 0 {
 		return time.Time{}, "", errors.New("invalid pid")
@@ -2358,9 +2291,7 @@ func (api *deployAPI) startManagedLocked(module string, buildID string) error {
 		}
 	}
 
-	if runtime.GOOS != "windows" {
-		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	}
+	configureRuntimeProcessGroup(cmd)
 
 	startedAt := time.Now().UTC()
 	if err := startDeployProcess(cmd, port, logFile, logPath); err != nil {

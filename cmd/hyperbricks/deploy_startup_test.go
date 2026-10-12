@@ -37,7 +37,7 @@ func TestDeployStartupHelper(t *testing.T) {
 		}
 		cmd := exec.Command(executable, "-test.run=^TestDeployStartupHelper$")
 		cmd.Env = append(os.Environ(), "HB_DEPLOY_STARTUP_TEST_HELPER=listen")
-		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+		configureRuntimeProcessGroup(cmd)
 		var logFile *os.File
 		logPath := os.Getenv("HB_DEPLOY_STARTUP_LOG_PATH")
 		if logPath != "" {

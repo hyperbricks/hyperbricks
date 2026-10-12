@@ -15,6 +15,18 @@ The old `deploy-daemon` command and the deployment flags on `hyperbricks start`
 have been removed. `start` serves source modules; `deploy run` serves an
 extracted deployment build.
 
+## Process handling by platform
+
+On macOS and Linux, deployment runtimes run in their own process groups. Stop
+requests send a termination signal, then force termination if the runtime does
+not exit within the shutdown wait.
+
+On Windows, deployment stop requests use the system `taskkill.exe /T /F` to
+terminate the runtime and its child processes. This is forced termination, not
+a graceful Unix signal. Process liveness is checked through Windows process
+handles. Response-cache cleanup retains files when the owning process cannot
+be inspected, including access-denied errors.
+
 ## Configuration Model
 
 One `deploy.hyperbricks.yaml` can describe three independent roles:
