@@ -6,22 +6,65 @@ The example uses [HTMX 4](https://four.htmx.org/) to update part of the page.
 
 ## Install, Start And See The Result
 
-Requires Go 1.26.1 or newer, a browser, and internet access to install HyperBricks,
-download the starter, and fetch HTMX. Shell commands below use Bash-compatible
-syntax on macOS, Linux, or WSL. No Node.js or npm is needed for this example.
+You need a browser and internet access to install HyperBricks, download the
+starter, and fetch HTMX. No Node.js or npm is needed for this example.
 
-**1. Install and check HyperBricks**
+**1. Install HyperBricks — choose one option**
+
+### Prebuilt binary
+
+The fastest way to get started. No Go installation or compiler required.
+Choose the command for your operating system:
+
+**macOS / Linux**
+
+```bash
+curl -fsS https://hyperbricks.eu/install.sh | sh
+```
+
+**Windows / PowerShell**
+
+Using HyperBricks on Windows is not recommended yet. The full regression test suite has not yet been run on Windows. And please note that native Go plugins require WSL2 or Linux.
+
+Want to help test HyperBricks on Windows? Try the command below and share your feedback.
+
+```powershell
+irm https://hyperbricks.eu/install.ps1 | iex
+```
+
+The installer selects the package for your system, downloads the newest published
+binary from [hyperbricks-builder](https://github.com/hyperbricks/hyperbricks-builder/releases),
+and checks its SHA-256 before installing it. These commands execute the installer
+directly; the package checksum does not verify the script before execution.
+
+Follow the installer's PATH instructions if needed, then open a new terminal.
+
+### Build from source
+
+If you prefer to compile HyperBricks yourself, install Go 1.26.1 or newer, then run:
 
 ```bash
 go install github.com/hyperbricks/hyperbricks/cmd/hyperbricks@latest
+```
+
+Go downloads the source, compiles it and installs the executable. If it is not
+on your PATH, follow [Go binary directory and PATH](TROUBLESHOOTING.md#hyperbricks-is-not-found).
+To select a specific source release, replace `@latest` with its tag.
+
+### Check your installation
+
+Whichever option you chose, run:
+
+```bash
 hyperbricks version
 ```
 
-The second command should print the installed version. If your shell reports
-`command not found`, follow [Go binary directory and PATH](TROUBLESHOOTING.md#hyperbricks-is-not-found)
-before continuing. When following documentation for a specific release, use
-that release's version and documentation together; `@latest` selects the latest
-published release, not an unreleased checkout.
+This should print the installed version. Use documentation matching that version.
+Go's `@latest` selection can differ from the builder's newest binary release,
+particularly when stable releases and prereleases coexist.
+
+The tutorial below uses Bash-compatible shell commands on macOS, Linux or WSL.
+The HyperBricks commands themselves also work in PowerShell.
 
 **2. Create a project and install the starter**
 
@@ -89,45 +132,7 @@ With both developer credentials absent, Dashboard opens without a login. See
 the access rules and [the settings editor](PACKAGE_CONFIGURATION.md#editing-settings-interactively)
 for source ownership and saving. Package settings take effect after a restart.
 
-### Render Status Indicator
-
-In development/debug mode, a small render-status badge appears at the bottom right
-of full HTML pages when Dashboard is enabled. It is on by default.
-
-Green **● ok** means the renders observed by this page have succeeded.
-Red **● errors** means a page or fragment render reported an error. Click green to
-open Dashboard or red to open the selected error. Clicks reuse the same developer browser tab.
-Configured Dashboard credentials still require login there.
-
-The badge follows the Dashboard light/dark preference on the same origin, or your
-system theme when no preference is saved. An `ok` badge hides after five seconds.
-A new render error makes it visible again; after recovery it shows `ok` for another
-five seconds. Further successful requests do not restart this timer.
-
-**Hide the indicator:** add or update this setting under the existing
-`hyperbricks.development` mapping in `modules/demo/package.hyperbricks.yaml`:
-
-```yaml
-hyperbricks:
-  development:
-    status_indicator: false
-```
-
-Keep the module's other settings. Stop the server with **Ctrl+C**, then restart
-with `hyperbricks start -m demo` (and your chosen `--port`, if any). Dashboard
-remains available. Set `status_indicator: true` to show the badge again.
-Disabling Dashboard also disables the indicator.
-
-Same-origin `fetch` and XMLHttpRequest responses update the indicator using
-HyperBricks response headers. A successful retry of the same URL and method clears
-that request's error; unrelated successes do not hide other failures. A page reload
-starts a new observation. Green is not a whole-application health check: JavaScript
-errors, network failures and requests without render-status headers are not assessed.
-
-The button is omitted from fragment bodies, live mode, production runtimes and
-static exports. It shows no error details on the public page. It requires JavaScript;
-a restrictive Content Security Policy must permit the same-origin helper script
-and stylesheet. HyperBricks does not relax your policy.
+A render-status badge links to Dashboard or Errors. Green means the renders observed by the page succeeded; red means a render reported a problem. It is not a whole-application health check. See [render-status indicator settings and behavior](#render-status-indicator) for details.
 
 ## Extend The Same Module
 
@@ -576,6 +581,46 @@ version in the package. To maintain those values later, see
 [refreshing or bumping package metadata](HYPERBRICKS_CLI.md#refresh-or-bump-package-metadata).
 A build records its provenance in the archive; it does not rewrite the source
 package's metadata.
+
+## Render Status Indicator
+
+In development/debug mode, a small render-status badge appears at the bottom right
+of full HTML pages when Dashboard is enabled. It is on by default.
+
+Green **● ok** means the renders observed by this page have succeeded.
+Red **● errors** means a page or fragment render reported an error. Click green to
+open Dashboard or red to open the selected error. Clicks reuse the same developer browser tab.
+Configured Dashboard credentials still require login there.
+
+The badge follows the Dashboard light/dark preference on the same origin, or your
+system theme when no preference is saved. An `ok` badge hides after five seconds.
+A new render error makes it visible again; after recovery it shows `ok` for another
+five seconds. Further successful requests do not restart this timer.
+
+**Hide the indicator:** add or update this setting under the existing
+`hyperbricks.development` mapping in `modules/demo/package.hyperbricks.yaml`:
+
+```yaml
+hyperbricks:
+  development:
+    status_indicator: false
+```
+
+Keep the module's other settings. Stop the server with **Ctrl+C**, then restart
+with `hyperbricks start -m demo` (and your chosen `--port`, if any). Dashboard
+remains available. Set `status_indicator: true` to show the badge again.
+Disabling Dashboard also disables the indicator.
+
+Same-origin `fetch` and XMLHttpRequest responses update the indicator using
+HyperBricks response headers. A successful retry of the same URL and method clears
+that request's error; unrelated successes do not hide other failures. A page reload
+starts a new observation. Green is not a whole-application health check: JavaScript
+errors, network failures and requests without render-status headers are not assessed.
+
+The button is omitted from fragment bodies, live mode, production runtimes and
+static exports. It shows no error details on the public page. It requires JavaScript;
+a restrictive Content Security Policy must permit the same-origin helper script
+and stylesheet. HyperBricks does not relax your policy.
 
 ## Next Steps
 
