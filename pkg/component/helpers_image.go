@@ -34,10 +34,14 @@ var SupportedExtensions = map[string]bool{
 }
 
 type ImageProcessor struct {
-	mu            sync.Mutex
-	stores        map[string]*imageStore
-	cacheDir      string
-	protectOutput func(string) bool
+	mu             sync.Mutex
+	stores         map[string]*imageStore
+	cacheDir       string
+	ownershipDir   string
+	protectOutput  func(string) bool
+	sourceStatic   string
+	authoredStatic string
+	outputStatic   string
 }
 
 type RenderImageConfig struct {
@@ -93,7 +97,11 @@ func (ir *ImageProcessor) ProcessSingleImage(config SingleImageConfig) (string, 
 func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (string, error) {
 	builder := &strings.Builder{}
 
-	files, err := os.ReadDir(config.Directory)
+	directory, err := ir.sourcePath(config.Directory)
+	if err != nil {
+		return "", err
+	}
+	files, err := os.ReadDir(directory)
 	if err != nil {
 		logging.GetLogger().Errorw("Error reading directory", "directory", config.Directory, "error", err)
 		return "", err
@@ -167,7 +175,7 @@ func (ir *ImageProcessor) ProcessMultipleImages(config MultipleImagesConfig) (st
 				members[group+":"+id] = policy
 			}
 		}
-		if err := store.updateGroup(group, members); err != nil {
+		if err := store.updateGroup(config.renderContext, group, members); err != nil {
 			return "", err
 		}
 	}
@@ -221,7 +229,11 @@ func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleIma
 	if err != nil {
 		return "", err
 	}
-	source, err := os.ReadFile(srcPath)
+	input, err := ir.sourcePath(srcPath)
+	if err != nil {
+		return "", err
+	}
+	source, err := os.ReadFile(input)
 	if err != nil {
 		return "", fmt.Errorf("failed to read source image: %w", err)
 	}
@@ -259,7 +271,16 @@ func (ir *ImageProcessor) processImage(srcPath, destDir string, config SingleIma
 		return "", err
 	}
 	defer unlock()
-	if err := store.load(); err != nil {
+	ctx := config.renderContext
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	unlockTree, err := LockAssetTree(ctx, store.treeRoot, false)
+	if err != nil {
+		return "", err
+	}
+	defer unlockTree()
+	if err := store.loadForMutation(); err != nil {
 		return "", err
 	}
 

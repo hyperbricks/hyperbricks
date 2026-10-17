@@ -1,5 +1,34 @@
 # Changelog
 
+## v1.3.3-beta
+
+Changes since `v1.3.2-beta`.
+
+### Asset caching and export
+
+- Reuse successful ESBUILD results from memory without reading or hashing asset
+  files on warm renders. Preserve startup validation, retention policies and
+  recovery from failed builds; reject outdated prepared configurations.
+- Export generated scripts, styles and images into `rendered/static` while
+  preserving development assets and public URLs. Resolve generated build inputs
+  and image sources from the export copy.
+- Coordinate built-in asset publication, cleanup and static copying with process
+  locks tied to canonical output roots. Reserve export destinations before hooks
+  or deletion and retain reservations through completion.
+- Start repeated exports with fresh ownership, materialize copied symlinks and
+  reject unsafe output overlaps and collisions between snapshots and assets.
+- Store asset ownership independently of build-cache overrides and migrate
+  records from the active legacy location without discarding valid ownership.
+
+### Compatibility
+
+- ESBUILD `cache: true` retains its published result until invalidation. Source
+  or output changes outside configured watcher coverage require a supported
+  reload, explicit invalidation or restart.
+- Remove the ESBUILD `binary` option. Builds use the embedded compiler; remove
+  existing `binary` settings from component configuration. Import patterns in
+  `external` and the `binary` asset loader remain supported.
+
 ## v1.3.2-beta
 
 ### Platform compatibility

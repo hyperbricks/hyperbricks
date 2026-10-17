@@ -8,7 +8,6 @@ import (
 	"html"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -26,7 +25,6 @@ type EsbuildConfig struct {
 	MetaDocDescription string            `mapstructure:"@doc" description:"Build JavaScript, TypeScript, or CSS with embedded esbuild on first use, or on every render when cache is false."`
 	Entry              string            `mapstructure:"entry" validate:"required" description:"Source filename. Use path with an explicit resources base."`
 	Outfile            string            `mapstructure:"outfile" validate:"required" description:"Output filename inside the configured static directory. Use an explicit static path base."`
-	Binary             string            `mapstructure:"binary" description:"Optional external esbuild executable; empty uses the embedded Go API."`
 	Minify             bool              `mapstructure:"minify" description:"Minify whitespace and syntax. Default false."`
 	MinifyIdentifiers  bool              `mapstructure:"minify_identifiers" description:"Minify identifiers independently of whitespace/syntax. Default false. YAML also accepts the legacy minifyident alias."`
 	Mangle             bool              `mapstructure:"mangle" description:"Advanced: mangle JavaScript properties using .*; may break external property contracts. Default false; not allowed for CSS-only entries."`
@@ -41,6 +39,17 @@ type EsbuildConfig struct {
 	Prepared           interface{}       `mapstructure:"@esbuild_prepared" json:"-" exclude:"true"`
 }
 
+// ValidateRawConfig rejects removed options even when the generic decoder
+// permits unknown fields. An empty value is still an unsupported declaration.
+func (config EsbuildConfig) ValidateRawConfig(raw map[string]interface{}) error {
+	for name := range raw {
+		if strings.EqualFold(name, "binary") {
+			return fmt.Errorf("esbuild binary is no longer supported; use the embedded esbuild engine")
+		}
+	}
+	return nil
+}
+
 type EsbuildRenderer struct{ store *esbuildStore }
 
 var _ shared.ComponentRenderer = (*EsbuildRenderer)(nil)
@@ -49,11 +58,44 @@ func EsbuildConfigGetName() string         { return "<ESBUILD>" }
 func (r *EsbuildRenderer) Types() []string { return []string{EsbuildConfigGetName()} }
 
 func NewEsbuildRenderer(staticDir string) *EsbuildRenderer {
+	sourceStaticDir := staticDir
+	if strings.TrimSpace(staticDir) != "" {
+		if absolute, pathErr := filepath.Abs(staticDir); pathErr == nil {
+			if resolved, pathErr := esbuildExistingPath(absolute); pathErr == nil {
+				staticDir = resolved
+			}
+		}
+	}
 	cacheDir, err := os.UserCacheDir()
 	if err == nil {
 		cacheDir = filepath.Join(cacheDir, "hyperbricks", "esbuild")
 	}
-	return &EsbuildRenderer{store: &esbuildStore{staticDir: staticDir, cacheDir: cacheDir, cacheDirErr: err, reuseDisk: true, results: make(map[string]*esbuildResult), generated: make(map[string]bool), owners: make(map[string]string)}}
+	ownershipDir, ownershipErr := assetOwnershipDirectory("esbuild")
+	return &EsbuildRenderer{store: &esbuildStore{staticDir: staticDir, sourceStaticDir: sourceStaticDir, cacheDir: cacheDir, cacheDirErr: err, ownershipDir: ownershipDir, ownershipDirErr: ownershipErr, reuseDisk: true, results: make(map[string]*esbuildResult), configured: make(map[string]*PreparedEsbuild), generated: make(map[string]bool), owners: make(map[string]string)}}
+}
+
+// SetOutputRoot selects an isolated destination before preparation or session
+// acquisition. Authored source paths remain relative to the original project.
+func (r *EsbuildRenderer) SetOutputRoot(root string) error {
+	s := r.store
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.prepared || s.sessionUnlock != nil {
+		return fmt.Errorf("esbuild output root must be selected before preparation and asset session")
+	}
+	if strings.TrimSpace(root) == "" {
+		return fmt.Errorf("esbuild output root is required")
+	}
+	abs, err := filepath.Abs(root)
+	if err != nil {
+		return err
+	}
+	abs, err = esbuildExistingPath(abs)
+	if err != nil {
+		return err
+	}
+	s.staticDir = abs
+	return nil
 }
 
 // Invalidate preserves the publication lock across reloads and in-flight requests.
@@ -66,38 +108,64 @@ func (r *EsbuildRenderer) Invalidate() {
 		r.store.reuseDisk = false
 	}
 	r.store.assetFailure = nil
+	r.store.generation++
 	r.store.results = make(map[string]*esbuildResult)
 	r.store.owners = make(map[string]string)
 }
 
 type PreparedEsbuild struct {
-	component shared.Component
-	store     *esbuildStore
-	spec      esbuildSpec
-	key       string
-	cache     bool
-	cacheKeep int
-	debug     bool
-	err       error
+	component  shared.Component
+	store      *esbuildStore
+	spec       esbuildSpec
+	key        string
+	cache      bool
+	cacheKeep  int
+	debug      bool
+	generation uint64
+	err        error
 }
 
 type esbuildSpec struct {
-	Entry, Outfile, Binary, WorkingDir, StaticDir string
-	Minify, MinifyIdentifiers, Mangle, Sourcemap  bool
-	Fingerprint                                   bool
-	Target                                        []string
-	Loader                                        map[string]string
-	External                                      []string
+	Entry, Outfile, WorkingDir, StaticDir        string
+	SourceStaticDir                              string `json:",omitempty"`
+	Minify, MinifyIdentifiers, Mangle, Sourcemap bool
+	Fingerprint                                  bool
+	Target                                       []string
+	Loader                                       map[string]string
+	External                                     []string
 }
 
 func (r *EsbuildRenderer) Prepare(config EsbuildConfig) *PreparedEsbuild {
-	if r.store != nil {
-		r.store.mu.Lock()
-		r.store.prepared = true
-		r.store.mu.Unlock()
-	}
 	p := &PreparedEsbuild{component: config.Component, store: r.store, cache: config.Cache, cacheKeep: config.CacheKeep, debug: config.Debug}
 	p.err = p.prepare(config)
+	if p.err == nil {
+		s := r.store
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		s.prepared = true
+		p.generation = s.generation
+		previous := s.configured[p.spec.Outfile]
+		if previous != nil && previous.key != p.key {
+			delete(s.results, previous.key)
+		}
+		// The loader prepares all inherited uses before reconciling owners. Keep
+		// their largest policy, and fence older effective configurations by key.
+		if previous == nil || previous.key != p.key || previous.generation != p.generation || previous.cacheKeep < p.cacheKeep {
+			s.configured[p.spec.Outfile] = p
+			if previous != nil && previous.cacheKeep != p.cacheKeep {
+				s.pendingCleanup.Store(true)
+			}
+		}
+		// Discovery may overlap a request before the completed owner set is
+		// reconciled. Add/increase protection now; only complete reconciliation
+		// may remove owners or reduce retention.
+		if s.activeOwners != nil {
+			keep, exists := s.activeOwners[p.spec.Outfile]
+			if !exists || keep < s.configured[p.spec.Outfile].cacheKeep {
+				s.activeOwners[p.spec.Outfile] = s.configured[p.spec.Outfile].cacheKeep
+			}
+		}
+	}
 	return p
 }
 
@@ -128,6 +196,34 @@ func (p *PreparedEsbuild) prepare(config EsbuildConfig) error {
 	if s.StaticDir, err = filepath.Abs(p.store.staticDir); err != nil {
 		return err
 	}
+	configuredRoot, err := filepath.Abs(p.store.sourceStaticDir)
+	if err != nil {
+		return err
+	}
+	resolvedRoot, err := esbuildExistingPath(configuredRoot)
+	if err != nil {
+		return err
+	}
+	// Change only the root spelling. Following the output's final symlink
+	// would turn replacement of that link into publication over its target.
+	resolvedOutput, ok := esbuildMapRoot(s.Outfile, configuredRoot, resolvedRoot)
+	if !ok {
+		resolvedOutput, ok = esbuildMapRoot(s.Outfile, resolvedRoot, resolvedRoot)
+	}
+	if !ok {
+		return fmt.Errorf("esbuild output %q must be inside configured static directory %q", s.Outfile, configuredRoot)
+	}
+	if err := esbuildOutputPath(resolvedRoot, resolvedOutput); err != nil {
+		return err
+	}
+	rel, err := filepath.Rel(resolvedRoot, resolvedOutput)
+	if err != nil {
+		return err
+	}
+	s.Outfile = filepath.Join(s.StaticDir, rel)
+	if resolvedRoot != s.StaticDir {
+		s.SourceStaticDir = configuredRoot
+	}
 	if err := esbuildOutputPath(s.StaticDir, s.Outfile); err != nil {
 		return err
 	}
@@ -139,14 +235,6 @@ func (p *PreparedEsbuild) prepare(config EsbuildConfig) error {
 	}
 	if filepath.Ext(s.Entry) == ".css" && (s.Mangle || filepath.Ext(s.Outfile) != ".css") {
 		return fmt.Errorf("CSS entries require a .css outfile and mangle: false")
-	}
-	if config.Binary != "" {
-		if s.Binary, err = exec.LookPath(config.Binary); err != nil {
-			return fmt.Errorf("esbuild binary: %w", err)
-		}
-		if s.Binary, err = filepath.Abs(s.Binary); err != nil {
-			return err
-		}
 	}
 	s.Target = append([]string(nil), config.Target...)
 	s.External = append([]string(nil), config.External...)
@@ -272,25 +360,34 @@ func (s esbuildSpec) options() (api.BuildOptions, error) {
 		}
 	}
 	o.External = append([]string(nil), s.External...)
+	if s.SourceStaticDir != "" {
+		o.Plugins = []api.Plugin{s.exportInputPlugin()}
+	}
 	return o, nil
 }
 
 type esbuildStore struct {
-	mu             sync.Mutex
-	staticDir      string
-	cacheDir       string
-	cacheDirErr    error
-	reuseDisk      bool
-	prepared       bool
-	results        map[string]*esbuildResult
-	generated      map[string]bool
-	owners         map[string]string
-	buildCount     uint64
-	protectOutput  func(string) bool
-	sessionUnlock  func()
-	activeOwners   map[string]int
-	assetFailure   error
-	pendingCleanup atomic.Bool
+	mu              sync.Mutex
+	staticDir       string
+	sourceStaticDir string
+	cacheDir        string
+	cacheDirErr     error
+	ownershipDir    string
+	ownershipDirErr error
+	reuseDisk       bool
+	freshOutput     bool
+	prepared        bool
+	results         map[string]*esbuildResult
+	configured      map[string]*PreparedEsbuild
+	generation      uint64
+	generated       map[string]bool
+	owners          map[string]string
+	buildCount      uint64
+	protectOutput   func(string) bool
+	sessionUnlock   func()
+	activeOwners    map[string]int
+	assetFailure    error
+	pendingCleanup  atomic.Bool
 }
 
 func esbuildOutputPath(root, output string) error {

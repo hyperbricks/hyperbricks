@@ -19,6 +19,7 @@ func cachedImageFixture(t *testing.T) (*ImageProcessor, string, string) {
 	writeTestImage(t, src, color.RGBA{R: 200, A: 255})
 	p := NewImageProcessor()
 	p.cacheDir = filepath.Join(root, "private")
+	p.ownershipDir = p.cacheDir
 	t.Cleanup(p.CloseAssets)
 	return p, src, filepath.Join(root, "static", "images")
 }
@@ -58,6 +59,7 @@ func TestImageCacheReuseAndRestart(t *testing.T) {
 			p.CloseAssets()
 			restart := NewImageProcessor()
 			restart.cacheDir = p.cacheDir
+			restart.ownershipDir = p.ownershipDir
 			t.Cleanup(restart.CloseAssets)
 			again = imageGenerate(t, restart, src, dest, cfg)
 			if os.SameFile(after, imageInfo(t, filepath.Join(dest, again))) != cached {
@@ -290,6 +292,7 @@ func TestImageCacheHistoryValidationAndSymlinkSafety(t *testing.T) {
 			os.WriteFile(s.historyPath, data, 0600)
 			restart := NewImageProcessor()
 			restart.cacheDir = p.cacheDir
+			restart.ownershipDir = p.ownershipDir
 			t.Cleanup(restart.CloseAssets)
 			if _, err := restart.processImage(src, dest, cfg); err == nil {
 				t.Fatal("invalid ownership accepted")
@@ -352,6 +355,7 @@ func TestImageCacheSessionExcludesOtherProcess(t *testing.T) {
 	}
 	other := NewImageProcessor()
 	other.cacheDir = p.cacheDir
+	other.ownershipDir = p.ownershipDir
 	t.Cleanup(other.CloseAssets)
 	if _, err := other.processImage(src, dest, SingleImageConfig{Cache: true}); err == nil {
 		t.Fatal("second session published")

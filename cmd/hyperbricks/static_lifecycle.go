@@ -39,16 +39,23 @@ func runStaticOperation(config *shared.Config) error {
 		case <-ctx.Done():
 		}
 	}()
-	return runStaticLifecycle(ctx, config, plan, commands.StaticWithProcesses, basic_initialisation, func() (staticExportResult, error) {
-		configMutex.RLock()
-		routes := configs
-		configMutex.RUnlock()
-		return executeStaticExportContext(ctx, routes, plan)
-	}, func() error {
-		if commands.ServeStatic {
-			return serveStaticContext(ctx)
-		}
-		return nil
+	return withStaticExportAssets(ctx, plan, func(assets *staticExportAssets) error {
+		return runStaticLifecycle(ctx, config, plan, commands.StaticWithProcesses, func() error {
+			if err := assets.prepareOutput(ctx); err != nil {
+				return err
+			}
+			return basic_initialisation()
+		}, func() (staticExportResult, error) {
+			configMutex.RLock()
+			routes := configs
+			configMutex.RUnlock()
+			return executeStaticExportContext(ctx, routes, plan)
+		}, func() error {
+			if commands.ServeStatic {
+				return serveStaticContext(ctx)
+			}
+			return nil
+		})
 	})
 }
 
@@ -59,7 +66,6 @@ func runStaticLifecycle(ctx context.Context, config *shared.Config, plan staticE
 	artifact := staticExportResult{RenderDir: plan.RenderDir}
 	var processes *developmentProcesses
 	defer func() {
-		closeRuntimeAssets()
 		if processes != nil {
 			if err := processes.Stop(); err != nil {
 				if result == nil || onlyOperationCancellation(result) {
@@ -74,6 +80,7 @@ func runStaticLifecycle(ctx context.Context, config *shared.Config, plan staticE
 			}
 		}
 		result = finishOperation(config, enabled, "static", phase, artifact, result)
+		closeRuntimeAssets()
 	}()
 	if enabled {
 		var err error

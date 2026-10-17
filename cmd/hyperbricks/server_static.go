@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 	"syscall"
@@ -18,11 +19,11 @@ import (
 
 	"github.com/eiannone/keyboard"
 	"github.com/hyperbricks/hyperbricks/cmd/hyperbricks/commands"
+	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/core"
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	"github.com/hyperbricks/hyperbricks/pkg/staticserver"
-	"github.com/otiai10/copy"
 	"golang.org/x/time/rate"
 )
 
@@ -103,7 +104,7 @@ func initStaticFileServer(limiter *rate.Limiter) {
 
 func buildRuntimeHandler(limiter *rate.Limiter) http.Handler {
 	tbConfig := getHyperBricksConfiguration()
-	staticPath := tbConfig.Directories["static"]
+	staticPath := runtimeStaticDirectory()
 
 	// Create http.FileSystems for both embedded and static directories
 	staticFS := http.Dir(staticPath)
@@ -183,6 +184,9 @@ func planStaticExport(config *shared.Config) (staticExportPlan, error) {
 	if err = validatePath(plan.RenderDir); err != nil {
 		return plan, err
 	}
+	if err = validateStaticExportRoots(config, plan); err != nil {
+		return plan, err
+	}
 	if _, err = parseExcludeList(commands.ExportExclude); err != nil {
 		return plan, err
 	}
@@ -199,8 +203,61 @@ func PrepareForStaticRendering(tempConfigs map[string]map[string]interface{}) er
 	if err != nil {
 		return err
 	}
-	_, err = executeStaticExport(tempConfigs, plan)
-	return err
+	ctx := context.Background()
+	return withStaticExportAssets(ctx, plan, func(assets *staticExportAssets) error {
+		if err := assets.prepareOutput(ctx); err != nil {
+			return err
+		}
+		previousManager := rm
+		configMutex.RLock()
+		previousConfigs, previousPlans := configs, routePlans
+		configMutex.RUnlock()
+		defer func() {
+			rm = previousManager
+			updateGlobalRoutes(previousConfigs, previousPlans)
+		}()
+		if rm == nil {
+			initializeComponents()
+			linkRendererResources()
+		} else {
+			// Keep caller-supplied renderers, plugin instances, and composite
+			// links. Only the three asset registrations belong to this export.
+			for _, binding := range []struct {
+				name     string
+				renderer shared.Renderer
+				config   reflect.Type
+			}{
+				{component.EsbuildConfigGetName(), assets.renderer, reflect.TypeOf(component.EsbuildConfig{})},
+				{component.SingleImageConfigGetName(), &component.SingleImageRenderer{ImageProcessorInstance: assets.images}, reflect.TypeOf(component.SingleImageConfig{})},
+				{component.MultipleImagesConfigGetName(), &component.MultipleImagesRenderer{ImageProcessorInstance: assets.images}, reflect.TypeOf(component.MultipleImagesConfig{})},
+			} {
+				previous := rm.GetRenderComponent(binding.name)
+				if previous == nil {
+					return fmt.Errorf("direct static export requires registered component %s", binding.name)
+				}
+				rm.RegisterComponent(binding.name, binding.renderer, binding.config)
+				defer rm.RegisterComponent(binding.name, previous, binding.config)
+			}
+		}
+		routes := make(map[string]map[string]interface{}, len(tempConfigs))
+		for route, config := range tempConfigs {
+			routes[route] = shared.CloneMapDeep(config)
+		}
+		diagnostics := map[string][]error{}
+		prepareGojaRouteConfigs(routes, diagnostics)
+		if _, err := prepareEsbuildRouteConfigs(routes, diagnostics); err != nil {
+			return err
+		}
+		prepareImageRouteConfigs(routes, diagnostics)
+		for route, failures := range diagnostics {
+			if len(failures) > 0 {
+				return fmt.Errorf("prepare static route %s: %v", route, failures[0])
+			}
+		}
+		updateGlobalRoutes(routes, compileRoutePlans(routes, logging.GetLogger()))
+		_, err := executeStaticExportContext(ctx, routes, plan)
+		return err
+	})
 }
 
 func executeStaticExport(tempConfigs map[string]map[string]interface{}, plan staticExportPlan) (staticExportResult, error) {
@@ -209,19 +266,13 @@ func executeStaticExport(tempConfigs map[string]map[string]interface{}, plan sta
 
 func executeStaticExportContext(ctx context.Context, tempConfigs map[string]map[string]interface{}, plan staticExportPlan) (staticExportResult, error) {
 	result := staticExportResult{RenderDir: plan.RenderDir}
-	renderDir, staticDir := plan.RenderDir, plan.StaticDir
+	renderDir, staticDir := plan.RenderDir, filepath.Join(plan.RenderDir, "static")
 	logger := logging.GetLogger().Named("static")
-	if err := os.RemoveAll(renderDir); err != nil {
-		return result, fmt.Errorf("remove render directory: %w", err)
-	}
-	logger.Infow("Copying static directory", "source", staticDir, "destination", renderDir)
-
-	err := os.MkdirAll(renderDir, 0755)
-	if err != nil {
-		return result, fmt.Errorf("create render directory %q: %w", renderDir, err)
+	if activeStaticExport == nil || activeStaticExport.plan.RenderDir != plan.RenderDir {
+		return result, fmt.Errorf("static export assets were not prepared for %s", plan.RenderDir)
 	}
 
-	err = snapshotStaticRoutesContext(ctx, tempConfigs, renderDir)
+	err := snapshotStaticRoutesContext(ctx, tempConfigs, renderDir)
 	if err != nil {
 		if renderer := runtimeEsbuildRenderer(); renderer != nil {
 			if cleanup := renderer.AssetFailure(); cleanup != nil {
@@ -232,29 +283,32 @@ func executeStaticExportContext(ctx context.Context, tempConfigs map[string]map[
 	}
 
 	if renderer := runtimeEsbuildRenderer(); renderer != nil {
-		// Snapshot files are now the response owners; protect their references
-		// while pruning before assets are copied into the export.
+		// Read only response owners. A configured snapshot may live under static,
+		// but copied/generated assets are not themselves rendered page references.
 		var pages strings.Builder
-		if err := filepath.WalkDir(renderDir, func(path string, entry os.DirEntry, err error) error {
+		targets, err := collectStaticSnapshotTargets(tempConfigs)
+		if err != nil {
+			return result, phaseError("asset_cleanup", err)
+		}
+		for _, target := range targets {
+			filename, err := staticSnapshotOutputFile(renderDir, target.OutputPath)
 			if err != nil {
-				return err
+				return result, phaseError("asset_cleanup", err)
 			}
-			if entry.IsDir() {
-				return nil
-			}
-			raw, err := os.ReadFile(path)
+			raw, err := os.ReadFile(filename)
 			if err != nil {
-				return err
+				return result, phaseError("asset_cleanup", err)
 			}
 			pages.Write(raw)
 			pages.WriteByte('\n')
-			return nil
-		}); err != nil {
-			return result, phaseError("asset_cleanup", err)
 		}
 		rendered := pages.String()
+		assetRoot, err := resolveStaticExportPath(staticDir)
+		if err != nil {
+			return result, phaseError("asset_cleanup", err)
+		}
 		renderer.SetAssetProtection(func(output string) bool {
-			relative, err := filepath.Rel(staticDir, output)
+			relative, err := filepath.Rel(assetRoot, output)
 			if err != nil {
 				return true
 			}
@@ -266,13 +320,6 @@ func executeStaticExportContext(ctx context.Context, tempConfigs map[string]map[
 			return result, phaseError("asset_cleanup", err)
 		}
 	}
-	err = copy.Copy(staticDir, filepath.Join(renderDir, "static"))
-	if err != nil {
-		return result, phaseError("copy_assets", fmt.Errorf("copy static directory %q to %q: %w", staticDir, filepath.Join(renderDir, "static"), err))
-	} else {
-		logger.Infow("Copied static file directory successfully", "source", staticDir, "destination", filepath.Join(renderDir, "static"))
-	}
-
 	if commands.ExportZip {
 		exportPath, err := exportStaticZip(renderDir, commands.StartModule, commands.ExportOutDir, commands.ExportExclude)
 		if err != nil {

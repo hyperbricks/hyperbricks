@@ -169,7 +169,7 @@ func basic_initialisation() error {
 		}
 	}
 	if images := runtimeImageProcessor(); images != nil {
-		if err := images.BeginAssetSession(filepath.Join(getHyperBricksConfiguration().Directories["static"], "images")); err != nil {
+		if err := images.BeginAssetSession(filepath.Join(runtimeStaticDirectory(), "images")); err != nil {
 			closeRuntimeAssets()
 			return phaseError("asset_cleanup", err)
 		}

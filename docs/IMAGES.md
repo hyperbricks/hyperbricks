@@ -126,9 +126,18 @@ share identical generated files; another retained owner protects the file.
 
 Init discovers owners without generating images. A successful generation is
 published as a complete file, then recorded in private ownership history under
-the operating system's HyperBricks image cache directory. A runtime/export
+the account's fixed HyperBricks image cache directory (`~/Library/Caches/hyperbricks/images/`
+on macOS, `~/.cache/hyperbricks/images/` on Linux, Local AppData under
+`hyperbricks/images/` on Windows). Cache-directory environment overrides do not
+move ownership. A valid record in the current legacy cache is migrated only under
+the mutation lock; export copying does not modify source history. A runtime/export
 session excludes another process writing to the same output root. Concurrent
 component renders serialize publication and reuse a successful cached result.
+
+Static export writes generated images into its own `rendered/static/images/`.
+An image source or gallery inside authored static is read from the export copy;
+sources outside static keep their original paths. This lets later image components
+consume files generated earlier in that export without changing development assets.
 
 Cleanup removes only explicitly recorded image files with matching output bytes.
 Unrecorded files are never inferred to be owned from a filename. Existing output
