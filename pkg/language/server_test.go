@@ -72,6 +72,79 @@ func TestServerInitializePublishesProtocolCapabilitiesAndStaticDiagnostics(t *te
 	}
 }
 
+func TestServerPluginDataConfigurationsRemainValidThroughImportsAndInheritance(t *testing.T) {
+	root := t.TempDir()
+	sourceDir := filepath.Join(root, "hyperbricks")
+	if err := os.MkdirAll(sourceDir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	base := `page_query:
+  - type: plugin
+  - plugin: Example__test@1.0.0
+  - data:
+      values:
+        sidebar:
+          - type: plugin
+          - plugin: Example__test@1.0.0
+`
+	page := `imports: [site.hyperbricks.yaml]
+bots_page:
+  - inherit: page_query
+  - data:
+      values:
+        content:
+          - type: template
+          - inline: '{{.Data}}'
+`
+	basePath := filepath.Join(sourceDir, "site.hyperbricks.yaml")
+	if err := os.WriteFile(basePath, []byte(base), 0600); err != nil {
+		t.Fatal(err)
+	}
+	input := framedRPC(t, map[string]interface{}{
+		"jsonrpc": "2.0", "id": 1, "method": "initialize",
+		"params": map[string]interface{}{
+			"rootUri":               pathToURI(root),
+			"initializationOptions": map[string]interface{}{"protocolVersion": ProtocolVersion, "runtimeDiagnostics": "off"},
+		},
+	})
+	for _, document := range []struct{ name, text string }{{"bots.hyperbricks.yaml", page}, {"site.hyperbricks.yaml", base}} {
+		input = append(input, framedRPC(t, map[string]interface{}{
+			"jsonrpc": "2.0", "method": "textDocument/didOpen",
+			"params": map[string]interface{}{"textDocument": map[string]interface{}{
+				"uri": pathToURI(filepath.Join(sourceDir, document.name)), "languageId": "hyperbricks", "version": 1, "text": document.text,
+			}},
+		})...)
+	}
+	input = append(input, framedRPC(t, map[string]interface{}{"jsonrpc": "2.0", "id": 2, "method": "shutdown"})...)
+	input = append(input, framedRPC(t, map[string]interface{}{"jsonrpc": "2.0", "method": "exit"})...)
+	var output bytes.Buffer
+	if err := NewServer(bytes.NewReader(input), &output, ServerOptions{Version: "test"}).Serve(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	seen := make(map[string]bool)
+	for _, message := range readFramedRPC(t, output.Bytes()) {
+		if message.Method != "textDocument/publishDiagnostics" {
+			continue
+		}
+		var published struct {
+			URI         string       `json:"uri"`
+			Diagnostics []Diagnostic `json:"diagnostics"`
+		}
+		if err := json.Unmarshal(message.Params, &published); err != nil {
+			t.Fatal(err)
+		}
+		if len(published.Diagnostics) != 0 {
+			t.Errorf("plugin-owned configurations rejected for %s: %#v", published.URI, published.Diagnostics)
+		}
+		seen[published.URI] = true
+	}
+	for _, name := range []string{"bots.hyperbricks.yaml", "site.hyperbricks.yaml"} {
+		if !seen[pathToURI(filepath.Join(sourceDir, name))] {
+			t.Errorf("no diagnostics published for %s", name)
+		}
+	}
+}
+
 func TestServerPublishesEmptyDiagnosticArrayAfterCorrection(t *testing.T) {
 	root := t.TempDir()
 	uri := pathToURI(filepath.Join(root, "page.hyperbricks.yaml"))

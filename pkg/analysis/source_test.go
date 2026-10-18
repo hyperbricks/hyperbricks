@@ -154,6 +154,33 @@ func TestAnalyzeSourceEnforcesSchemaChildPlacement(t *testing.T) {
 		wantLine   int
 	}{
 		{
+			name: "plugin data carries component configurations without mounting them",
+			source: `view:
+  - type: plugin
+  - plugin: Example__test@1.0.0
+  - data:
+      values:
+        sidebar:
+          - type: plugin
+          - plugin: Example__test@1.0.0
+        content:
+          - type: template
+          - inline: '{{.Data}}'
+`,
+		},
+		{
+			name: "plugin still rejects a direct component child",
+			source: `view:
+  - type: plugin
+  - plugin: Example__test@1.0.0
+  - sidebar:
+      - type: html
+      - value: misplaced
+`,
+			wantIssues: 1,
+			wantLine:   4,
+		},
+		{
 			name: "leaf rejects arbitrary child",
 			source: `leaf:
   - type: html
@@ -228,6 +255,24 @@ func TestAnalyzeSourceEnforcesSchemaChildPlacement(t *testing.T) {
 				t.Fatalf("placement range = %#v, want child key on line %d", placementIssues[0].Range, test.wantLine)
 			}
 		})
+	}
+}
+
+func TestAnalyzeSourcePluginDataPreservesNestedNativeValidation(t *testing.T) {
+	issues := AnalyzeSource([]byte(`view:
+  - type: plugin
+  - plugin: Example__test@1.0.0
+  - data:
+      content:
+        - type: html
+        - value: parent
+        - child:
+            - type: text
+            - value: misplaced
+`), SourceOptions{})
+	placements := issuesByCodeList(issues, "component.invalid_child_placement")
+	if len(placements) != 1 || placements[0].Path != "view.data.content.child" {
+		t.Fatalf("nested native component lost its own placement validation: %#v", issues)
 	}
 }
 

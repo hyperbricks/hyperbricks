@@ -364,6 +364,12 @@ func validateChildPlacements(descriptor *componentType, componentPath string, se
 		if key == "type" || key == "inherit" {
 			continue
 		}
+		// Plugin data may carry component configurations for a later handoff.
+		// They are not children mounted by the plugin itself. analyzeMounted
+		// still checks each nested native component against its own schema.
+		if descriptor.Schema.Token == "<PLUGIN>" && key == "data" {
+			continue
+		}
 		walk([]string{key}, valueNode, keyNode, mapValue(effective, key))
 	}
 	return issues
