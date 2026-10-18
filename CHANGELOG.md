@@ -4,6 +4,12 @@
 
 Changes since `v1.3.2-beta`.
 
+### Language server
+
+- Fix false child-placement errors for component configurations inside PLUGIN
+  `data`, including imports and inheritance. Preserve validation of direct
+  plugin children and nested native component configurations.
+
 ### Asset caching and export
 
 - Reuse successful ESBUILD results from memory without reading or hashing asset
