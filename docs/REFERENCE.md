@@ -1,5 +1,5 @@
 **Licence:** MIT
-**Version:** v1.3.2-beta
+**Version:** v1.3.3-beta
 
 
 # HyperBricks Component Reference

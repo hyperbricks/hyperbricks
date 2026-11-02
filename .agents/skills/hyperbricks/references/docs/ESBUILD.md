@@ -82,19 +82,18 @@ The application must provide external references. This API does not compile CSS 
 
 ## Options
 
-All ten esbuild 2.0.0 plugin options are retained. `target`, `loader`, `external`, and `fingerprint` are additional native-component options. Fields belong directly on the component.
+Fields belong directly on the component. HyperBricks uses its embedded esbuild engine; selecting a separate executable with `binary` is no longer supported.
 
 | Field | Default | Meaning |
 | --- | --- | --- |
 | `entry` | Required | One source filename, normally an explicit resources path. |
 | `outfile` | Required | A `.js` or `.css` filename within static. CSS inputs require a `.css` outfile. |
-| `binary` | `""` | Embedded engine by default; optional external executable name/path. |
 | `enclose` | `""` | Replace `\|` with the public URL. Empty returns the URL without markup. |
 | `minify` | `false` | Minify whitespace and syntax. |
 | `minify_identifiers` | `false` | Minify identifiers independently. YAML also accepts legacy `minifyident`. |
 | `mangle` | `false` | Advanced JS property mangling using `.*`. Can break DOM/library property contracts; rejected for CSS entries. |
 | `sourcemap` | `false` | Emit a linked `.map` file, including source text. Consider source exposure before publishing. |
-| `debug` | `false` | Log effective options, build/cache events, and external engine version when applicable. |
+| `debug` | `false` | Log effective options, build/cache events, and the embedded engine version. |
 | `cache` | `false` | False builds on every component render; true reuses a valid build. Not page caching. |
 | `fingerprint` | `false` | Add an esbuild content hash to entry output filenames. Keep the configured directory; generation retention is controlled by `cache_keep`. Independent of `cache`. |
 | `cache_keep` | `0` | Number of previous successful output generations retained in addition to current. Must be nonnegative. Independent of build reuse. |
@@ -113,11 +112,13 @@ and examples shared with image components.
 
 1. Module loading resolves inheritance and paths, validates options, and prepares the component. It does not compile assets. Conflicting builds for the same outfile are reported before serving that configuration.
 2. Rendering restores a validated persistent build when possible, or invokes the compiler, publishes the files, and returns the URL/markup. A cold first request without a valid build waits for compilation. Unused declarations do not build.
-3. With `cache: true`, subsequent renders reuse output while its dependencies and files remain valid. With `cache: false`, each component render compiles again.
+3. With `cache: true`, subsequent renders return the remembered output URL until invalidation. They do not read or hash asset files, inspect ownership history, or acquire a filesystem lock. With `cache: false`, each component render compiles again.
 
 Cached components with the same effective build options and paths share a build, even across inherited pages. `enclose`, `debug`, and `cache` do not change the build identity. Concurrent successful cached misses compile once. Asset builds within a module are serialized, including uncached builds, to protect output publication. Shared compilation has a 30-second deadline independent of the initiating request.
 
-Cache validation currently reads and hashes inputs and outputs on each cached component render. It detects same-size edits, modified/missing auxiliary assets, and nearby `package.json`, `tsconfig.json`, and `jsconfig.json` changes. This avoids recompilation but is **not a zero-I/O request path**. esbuild's resolved input graph does not describe every possible future module-resolution change; reload the module after changes outside that graph, such as an extended config elsewhere or a newly introduced alternative import target. Explicit module reload clears reuse and forces compilation on next use. Restart can restore a validated disk manifest; existing asset files alone are never enough.
+The generated files remain on disk; the browser fetches them through a separate `/static/` request. The in-memory build cache remembers the successful output path and build metadata. A result becomes reusable only after output publication and ownership registration succeed.
+
+Module reload invalidates in-memory reuse and forces compilation on next use. With development watching enabled, put every relevant source/config directory in `development.watch_dirs`; the defaults do not include resources. Changes outside those directories, or with watching disabled, require a restart or an available explicit module reload. The manual reload interface is not available in every runtime mode. A warm cache does not detect externally deleted or modified files by polling them during page requests. Restart still validates persisted input/output bytes, including same-size edits and missing auxiliary files, before reusing a build. Existing asset files alone are never sufficient evidence. HyperBricks also invalidates affected cached builds when its own ESBUILD publication or cleanup changes their inputs.
 
 Page caching is independent. A whole-page cache hit does not render components, so it cannot trigger either rebuild policy. Development renders the page on every request. In live mode, use `nocache: true` on a page when every request must reach its components. Changing a source alone does not invalidate an already cached HTML response outside the development reload. Browser/CDN caching is also separate; use `fingerprint: true` for versioned asset URLs. Fingerprinting does not change HTTP cache headers or invalidate cached HTML.
 
@@ -139,7 +140,7 @@ The configured `js/app.js` supplies the output directory and base name. The actu
 
 The compiler generates names and links for the entry, linked source maps, and file-loader images/fonts. A JavaScript entry importing CSS also produces a hashed CSS sibling; its URL is not automatically inserted into HTML. Prefer a separate CSS component when its link must be rendered into the head.
 
-Identical builds with the same engine and paths keep the same names. Changed emitted content or referenced assets produces new names. A source edit that does not affect the generated result need not change its URL. External and embedded engines can choose different hashes with source maps: the external engine hashes its staged map before HyperBricks rebases the source labels. Both modes retain valid map links and embedded source text; hashes are not portable build IDs.
+Identical builds with the same engine and paths keep the same names. Changed emitted content or referenced assets produces new names. A source edit that does not affect the generated result need not change its URL. Hashes are not portable build IDs across esbuild versions or source paths.
 
 `cache: false` still compiles every render, even with fingerprinting. Conversely, `cache: true` can reuse builds with either fixed or versioned filenames.
 
@@ -155,13 +156,15 @@ With `cache: true`, successful stable builds write a private JSON manifest under
 
 The manifest records the effective configuration, compiler identity, resolved dependency fingerprints, actual entry filename, and fingerprints of every output. It is not stored under static and is not part of static exports. A cache directory configured inside static is rejected for persistence. Manifests contain local source paths, have private file permissions, and should not be published.
 
-At first use after restart or a new `static` command, HyperBricks validates the manifest and reads/hashes its recorded inputs and outputs. Missing or modified sources, changed options or engine, missing/corrupt assets, and invalid manifests trigger compilation. The external executable is included in input validation. Output ownership and watcher exclusions are restored along with the build.
+At first use after restart, HyperBricks validates the manifest and reads/hashes its recorded inputs and outputs. Missing or modified sources, changed options or engine, missing/corrupt assets, and invalid manifests trigger compilation. Output ownership and watcher exclusions are restored along with the build. A fresh static export starts new output ownership and does not adopt a previous export's manifests.
 
 No sources means no validated runtime build reuse: this is not a source-free server mode. A deployed static export, however, needs only its exported assets. Moving a checkout or changing effective paths starts a separate cache identity.
 
-Build manifests control reuse; a separate generation record in the same private cache directory records ownership even with `cache: false`. Deleting this record loses the evidence needed to clean up outputs that cannot be recovered from valid manifests. Prefer letting HyperBricks maintain it.
+Build manifests control reuse; a separate generation record records ownership even with `cache: false`. Ownership uses a fixed private location per OS account: `~/Library/Caches/hyperbricks/esbuild/` on macOS, `~/.cache/hyperbricks/esbuild/` on Linux, and the account's Windows Local AppData directory under `hyperbricks/esbuild/`. Unlike build manifests, this location does not follow cache-directory environment overrides, so separate processes find the same ownership evidence.
 
-Ownership storage must be writable and outside static. Invalid history, an unavailable directory, or a competing operation holding the same output-root lock fails explicitly. Runtime sessions and static exports hold an OS file lock until cleanup; standalone component builds lock their publication operation. Separate processes must not write the same output root concurrently. Build failures return component errors, never a stale success tag.
+When the fixed record is absent, a valid record for this exact output root in the current legacy cache location is migrated under the publication lock. The original is removed only after successful persistence. Arbitrary old custom cache directories are not searched: start once with the former environment when upgrading from one. Export copying only reads records; it does not migrate source ownership. Deleting ownership records loses cleanup evidence that cannot always be recovered from valid manifests. Prefer letting HyperBricks maintain them.
+
+Ownership storage must be writable and outside static. Invalid history, an unavailable directory, or a competing operation holding the same output-root lock fails explicitly. Runtime sessions and static exports hold an OS file lock until cleanup; standalone component builds lock their publication operation. Locks use the canonical output root, independently of cache and temporary-directory environment overrides. Lock files are not removed or forcefully taken over; the OS releases a lock when its process exits. Separate processes must not write the same output root concurrently. Build failures return component errors, never a stale success tag.
 
 ## Development watch
 
@@ -190,7 +193,11 @@ Keep entry paths and build options in trusted application configuration rather t
 
 ## Deployment and performance
 
-Static rendering builds assets while rendering routes, before the existing static directory copy/export. Deploy the contents of `rendered/`; the destination does not need HyperBricks, esbuild, or the module's `resources/` directory to serve that static site. Bundled images/fonts are emitted into static output; intentionally external references still need to be available at their configured URLs.
+Static rendering reserves its export destination before hooks or deletion, copies authored static files, and builds assets directly into `rendered/static/` while rendering routes. A development server can keep its own static output and writer sessions. Source paths retain their authored resolution; a build that consumes generated static output reads the export's version. Images also write into the export. Public URLs remain `/static/...`.
+
+The initial copy shares a short filesystem lock with built-in ESBUILD, image, Spaces, and scaffold mutations. Known ownership records are checked before copying; temporary publication files are excluded. Symlinks are materialized so later ZIP creation does not read their original targets. Hooks, plugins, external symlink targets, and manual edits are not a project-wide snapshot transaction. Overlapping source/output roots and symlinks at output bindings that will be replaced are rejected before destructive preparation. Export reservations remain held through preview and finish hooks.
+
+Deploy the contents of `rendered/`; the destination does not need HyperBricks, esbuild, or the module's `resources/` directory to serve that static site. Bundled images/fonts are emitted into static output; intentionally external references still need to be available at their configured URLs.
 
 ### Source maps in a static export
 
@@ -220,7 +227,7 @@ Because esbuild is embedded, deployments do not need a separate esbuild installa
 - Native YAML booleans are recommended; legacy quoted `"true"`/`"false"` are accepted.
 - Change `src="/|"` to `src="|"`: the returned URL already starts with `/static/`.
 - `cache: true` builds on first use without a valid manifest; unlike the old entry-only cache, native reuse validates build options, dependencies and output.
-- External mode now respects independent minification switches, matching the Go API. The old external plugin's `--minify` also enabled identifier minification.
+- Remove `binary`; the native component always uses embedded esbuild. The old external plugin's `--minify` also enabled identifier minification; set `minify_identifiers` explicitly when migrating that behavior.
 
 The original esbuild and Tailwind plugins are unchanged.
 

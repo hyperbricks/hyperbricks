@@ -1,7 +1,7 @@
 <!-- Generated from docs/REFERENCE.md. Do not edit directly. -->
 
 **Licence:** MIT
-**Version:** v1.3.2-beta
+**Version:** v1.3.3-beta
 
 
 # HyperBricks Component Reference
@@ -874,7 +874,6 @@ Native JavaScript, TypeScript, and CSS bundling with lazy cached or per-render b
 | Field | Kind | Required | Description |
 | --- | --- | --- | --- |
 | `attributes` | `map` | no | Extra attributes like id, data-role, data-action |
-| `binary` | `string` | no | Optional external esbuild executable; empty uses the embedded Go API. |
 | `cache` | `bool` | no | True reuses valid builds; false rebuilds on every component render. Default false. Independent of page caching. |
 | `cache_keep` | `int` | no | Previous successful output generations to retain in addition to current. Default zero. Active renders and cached responses protect referenced assets. |
 | `debug` | `bool` | no | Log effective build options, engine, and cache diagnostics. |
