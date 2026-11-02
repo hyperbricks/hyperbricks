@@ -105,20 +105,47 @@ Supported loader values: `file`, `dataurl`, `text`, `binary`, `base64`, `json`, 
 
 ## Build and cache lifecycle
 
-See [Asset caching](ASSET_CACHING.md) for practical development/live settings
-and examples shared with image components.
+Assets are built when a page first uses the component, not when the module loads.
+That first request waits for the build unless HyperBricks can reuse a checked
+build from a previous run.
 
-1. Module loading resolves inheritance and paths, validates options, and prepares the component. It does not compile assets. Conflicting builds for the same outfile are reported before serving that configuration.
-2. Rendering restores a validated persistent build when possible, or invokes the compiler, publishes the files, and returns the URL/markup. A cold first request without a valid build waits for compilation. Unused declarations do not build.
-3. With `cache: true`, subsequent renders return the remembered output URL until invalidation. They do not read or hash asset files, inspect ownership history, or acquire a filesystem lock. With `cache: false`, each component render compiles again.
+- With `cache: true`, later renders reuse the output URL without reading or
+  checking the asset files again.
+- With `cache: false` (the default), each component render builds the asset again.
 
-Cached components with the same effective build options and paths share a build, even across inherited pages. `enclose`, `debug`, and `cache` do not change the build identity. Concurrent successful cached misses compile once. Asset builds within a module are serialized, including uncached builds, to protect output publication. Shared compilation has a 30-second deadline independent of the initiating request.
+The generated files stay on disk. The page contains their URLs, and the browser
+fetches them through separate `/static/` requests. Pages using the same source,
+output path and build options can share a cached build, including through inheritance.
+Changing `enclose` or `debug` does not require a separate build.
 
-The generated files remain on disk; the browser fetches them through a separate `/static/` request. The in-memory build cache remembers the successful output path and build metadata. A result becomes reusable only after output publication and ownership registration succeed.
+### Picking up changes
 
-Module reload invalidates in-memory reuse and forces compilation on next use. With development watching enabled, put every relevant source/config directory in `development.watch_dirs`; the defaults do not include resources. Changes outside those directories, or with watching disabled, require a restart or an available explicit module reload. The manual reload interface is not available in every runtime mode. A warm cache does not detect externally deleted or modified files by polling them during page requests. Restart still validates persisted input/output bytes, including same-size edits and missing auxiliary files, before reusing a build. Existing asset files alone are never sufficient evidence. HyperBricks also invalidates affected cached builds when its own ESBUILD publication or cleanup changes their inputs.
+In development, enable watching and include all relevant source and configuration
+directories in `development.watch_dirs`. Add `resources` explicitly: it is not
+watched by default. See the [watch configuration](#development-watch) below.
 
-Page caching is independent. A whole-page cache hit does not render components, so it cannot trigger either rebuild policy. Development renders the page on every request. In live mode, use `nocache: true` on a page when every request must reach its components. Changing a source alone does not invalidate an already cached HTML response outside the development reload. Browser/CDN caching is also separate; use `fingerprint: true` for versioned asset URLs. Fingerprinting does not change HTTP cache headers or invalidate cached HTML.
+A watched change reloads the module. The next page render rebuilds the asset.
+Refresh your browser to see the result.
+
+If watching is disabled, or you change files outside the watched directories,
+restart HyperBricks. You can also reload the module explicitly if your runtime
+provides that action. A module reload forces a rebuild on next use; a restart
+first checks whether the saved build is still usable.
+
+Avoid manually changing or deleting generated files while the server is running.
+Cached renders do not check for those changes. Restart to detect changed or
+missing files and rebuild as needed. When HyperBricks itself changes generated
+files used by another esbuild component, it clears that component's cached build.
+
+### Asset caching and page caching
+
+A cached page returns its HTML without running its components. In live mode,
+set `nocache: true` on a page if every request must render it. You can keep
+`cache: true` on its assets. Development mode already renders every request.
+
+Use `fingerprint: true` to give changed builds new URLs for browsers and CDNs.
+This does not refresh cached page HTML or change HTTP cache headers.
+See [Asset caching](ASSET_CACHING.md) for complete examples.
 
 ## Versioned output
 
@@ -150,19 +177,45 @@ Cleanup only removes files recorded as owned by esbuild, within the static root,
 
 ## Persistent build cache
 
-With `cache: true`, successful stable builds write a private JSON manifest under the operating system's user cache directory, in `hyperbricks/esbuild/`. This is typically `~/Library/Caches/hyperbricks/esbuild/` on macOS, or `$XDG_CACHE_HOME/hyperbricks/esbuild/` / `~/.cache/hyperbricks/esbuild/` on Linux.
+With `cache: true`, HyperBricks saves build information so it can reuse generated
+files after a restart. At first use, it checks the saved information against the
+sources and generated files. Changed sources, build options or compiler versions,
+and missing or damaged output files cause a rebuild. These file checks happen
+before reuse after a restart, not on every page request.
 
-The manifest records the effective configuration, compiler identity, resolved dependency fingerprints, actual entry filename, and fingerprints of every output. It is not stored under static and is not part of static exports. A cache directory configured inside static is rejected for persistence. Manifests contain local source paths, have private file permissions, and should not be published.
+Keep the source files and dependencies available when running HyperBricks.
+Generated files alone are not enough to reuse a build. A deployed static site
+needs only the exported files; see [deployment](#deployment-and-performance).
+Each fresh static export builds independently of previous exports.
 
-At first use after restart, HyperBricks validates the manifest and reads/hashes its recorded inputs and outputs. Missing or modified sources, changed options or engine, missing/corrupt assets, and invalid manifests trigger compilation. Output ownership and watcher exclusions are restored along with the build. A fresh static export starts new output ownership and does not adopt a previous export's manifests.
+Build information is stored in your operating system's user cache directory,
+under `hyperbricks/esbuild/`. On macOS this is usually
+`~/Library/Caches/hyperbricks/esbuild/`; on Linux it is
+`$XDG_CACHE_HOME/hyperbricks/esbuild/` or `~/.cache/hyperbricks/esbuild/`.
+Keep this private directory outside static output: it contains local source paths
+and must not be deployed with your site.
 
-No sources means no validated runtime build reuse: this is not a source-free server mode. A deployed static export, however, needs only its exported assets. Moving a checkout or changing effective paths starts a separate cache identity.
+### File tracking and write conflicts
 
-Build manifests control reuse; a separate generation record records ownership even with `cache: false`. Ownership uses a fixed private location per OS account: `~/Library/Caches/hyperbricks/esbuild/` on macOS, `~/.cache/hyperbricks/esbuild/` on Linux, and the account's Windows Local AppData directory under `hyperbricks/esbuild/`. Unlike build manifests, this location does not follow cache-directory environment overrides, so separate processes find the same ownership evidence.
+HyperBricks also keeps records of the files it generated so cleanup can leave
+handwritten files alone. Let HyperBricks manage these records. Deleting them can
+leave old generated files behind.
 
-When the fixed record is absent, a valid record for this exact output root in the current legacy cache location is migrated under the publication lock. The original is removed only after successful persistence. Arbitrary old custom cache directories are not searched: start once with the former environment when upgrading from one. Export copying only reads records; it does not migrate source ownership. Deleting ownership records loses cleanup evidence that cannot always be recovered from valid manifests. Prefer letting HyperBricks maintain them.
+These records use a fixed location under your account, even if you override the
+build-cache directory:
 
-Ownership storage must be writable and outside static. Invalid history, an unavailable directory, or a competing operation holding the same output-root lock fails explicitly. Runtime sessions and static exports hold an OS file lock until cleanup; standalone component builds lock their publication operation. Locks use the canonical output root, independently of cache and temporary-directory environment overrides. Lock files are not removed or forcefully taken over; the OS releases a lock when its process exits. Separate processes must not write the same output root concurrently. Build failures return component errors, never a stale success tag.
+- macOS: `~/Library/Caches/hyperbricks/esbuild/`
+- Linux: `~/.cache/hyperbricks/esbuild/`
+- Windows: `hyperbricks/esbuild/` under Local AppData
+
+When upgrading from a custom cache location, start once with your previous cache
+environment settings so HyperBricks can migrate the records. It does not search
+all former cache locations.
+
+The cache and tracking directories must be writable. If another process is
+already writing to the same output directory, HyperBricks reports a conflict.
+Stop that process or choose a different output directory; do not delete lock
+files to bypass the check. The lock is released when its process exits.
 
 ## Development watch
 
@@ -177,7 +230,7 @@ hyperbricks:
     reload: false
 ```
 
-The debounced reload invalidates asset builds. The next page render builds from current sources. Generated outputs and temporary publication files are ignored by this watcher, even if static is underneath a watched directory. The `reload` setting currently has no implemented automatic browser-refresh effect; refresh the browser manually. This is lazy rebuilding, not an esbuild HMR server or an eager background compiler.
+When a watched file changes, HyperBricks reloads the module. The next page request builds the assets from the updated sources. Generated assets are ignored by the watcher, even if static is inside a watched directory. Refresh your browser manually: the `reload` setting does not currently refresh it automatically. Restart HyperBricks after changing the package configuration itself.
 
 For the original development workflow, use `cache: false`: every component render builds, without waiting for cache invalidation. No HyperBricks binary rebuild is needed in either case.
 
@@ -191,11 +244,24 @@ Keep entry paths and build options in trusted application configuration rather t
 
 ## Deployment and performance
 
-Static rendering reserves its export destination before hooks or deletion, copies authored static files, and builds assets directly into `rendered/static/` while rendering routes. A development server can keep its own static output and writer sessions. Source paths retain their authored resolution; a build that consumes generated static output reads the export's version. Images also write into the export. Public URLs remain `/static/...`.
+Static export copies your static files and writes generated scripts, styles and
+images into `rendered/static/`. It leaves your development assets in place, so
+you can export while the development server is running. Public asset URLs stay
+`/static/...`.
 
-The initial copy shares a short filesystem lock with built-in ESBUILD, image, Spaces, and scaffold mutations. Known ownership records are checked before copying; temporary publication files are excluded. Symlinks are materialized so later ZIP creation does not read their original targets. Hooks, plugins, external symlink targets, and manual edits are not a project-wide snapshot transaction. Overlapping source/output roots and symlinks at output bindings that will be replaced are rejected before destructive preparation. Export reservations remain held through preview and finish hooks.
+If a build or image component uses a file generated earlier in the export, it
+reads the exported version. Other source files keep their usual paths. Linked
+files are copied into the export as regular files, so the exported site does not
+depend on the original symlink targets.
 
-Deploy the contents of `rendered/`; the destination does not need HyperBricks, esbuild, or the module's `resources/` directory to serve that static site. Bundled images/fonts are emitted into static output; intentionally external references still need to be available at their configured URLs.
+Keep the export destination separate from your source directories and other
+running exports. HyperBricks rejects conflicting or unsafe destinations before
+clearing them. Avoid editing sources or running custom scripts that change them
+during export: it does not freeze the entire project while building.
+
+Deploy the contents of `rendered/`. The destination does not need HyperBricks,
+esbuild, or the module's `resources/` directory. Assets marked `external` still
+need to be available at their configured URLs.
 
 ### Source maps in a static export
 
