@@ -2,7 +2,7 @@
   "schema_version": 2,
   "hyperbricks_version": "v1.3.3-beta",
   "source_repository": "https://github.com/hyperbricks/hyperbricks",
-  "source_digest": "411095e2f91f18a775c18d0775be7d549d9f371444e3f38aaa7ef4570522c8b1",
+  "source_digest": "8a27f80d27c317a2bcb5cb2b51f81fbc1c383ec7c56744ef4271653117ad7752",
   "documents": [
     {
       "source_path": "docs/INTRODUCTION.md",
@@ -13,8 +13,8 @@
     {
       "source_path": "docs/QUICKSTART.md",
       "bundled_path": "docs/QUICKSTART.md",
-      "source_sha256": "1533f26b522dcc1ffd6ad6f75f9986c6db9754d446f06b70b6c16a287cf9e01f",
-      "bundled_sha256": "59e3aff1d059a6b41158632a3cd12fa493d34baa459d2dad1d03cfa841b13699"
+      "source_sha256": "2ed1010bbb4696d5228e47f68b2b7517eec6a65fa56a0cae0d8f8875b5eb23b5",
+      "bundled_sha256": "62eb54807cf68aa3b9c7ec748c7564e64eb326bdaac7831632195a2704490f38"
     },
     {
       "source_path": "docs/AGENT_SETUP.md",
@@ -91,8 +91,8 @@
     {
       "source_path": "docs/ESBUILD.md",
       "bundled_path": "docs/ESBUILD.md",
-      "source_sha256": "9af27938605b09a7f9157f603c93cceabfb8b12a9e12317fcbc5e764e80d5850",
-      "bundled_sha256": "cf00407b5033e4456db175e809863a0d459eb6039cb8cae91d17812fa6d9c407"
+      "source_sha256": "559ea107137b55c690b7d68107fc8b68ee0e9add8b5baab9e7d03b7483914972",
+      "bundled_sha256": "4af33e1c8350306712b3fd2b182b6f5233b083f006270b715e2402090c404a05"
     },
     {
       "source_path": "docs/DEVELOPMENT_HOOKS.md",
@@ -121,8 +121,8 @@
     {
       "source_path": "docs/ASSET_CACHING.md",
       "bundled_path": "docs/ASSET_CACHING.md",
-      "source_sha256": "35eb3f2c804a2943cce6b50279620ed7c5e63449d10d96d77de7036cdc1a2600",
-      "bundled_sha256": "0945d81cf225c0eb291e8a157196ca537243c229baaa9dd8a3b98143cabce92c"
+      "source_sha256": "0e9a490e607498e65c31d843173b720726bfe9cd50769c91149ebe6b83b3af5d",
+      "bundled_sha256": "7ab258f75cb5b547ea10e18b223baaa796ca0847417c513b4c803c6cbc957c99"
     },
     {
       "source_path": "docs/AUTHOR_REFERENCE.md",
@@ -163,8 +163,8 @@
     {
       "source_path": "docs/IMAGES.md",
       "bundled_path": "docs/IMAGES.md",
-      "source_sha256": "fb33781b9aed30a17dd2998dd49ec25060fdd831681bf9041d1e94db57d3080f",
-      "bundled_sha256": "cf77e6f8e652bf70adda672f1da4782b2540412ee93c41be59668b0beabf0abd"
+      "source_sha256": "14fe4f6018056d8560913d727f9f0d7a009e86d7d5728ac9595c37b504ed659d",
+      "bundled_sha256": "d1dff8604a72c5df4219af7a7fe9f74a7229072f801593f07d9228edac132b13"
     },
     {
       "source_path": "docs/LIVE_MODE_HTTP.md",

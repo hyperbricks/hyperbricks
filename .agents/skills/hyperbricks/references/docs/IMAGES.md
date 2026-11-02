@@ -126,45 +126,48 @@ share identical generated files; another retained owner protects the file.
 
 ## Publication and cleanup
 
-Init discovers owners without generating images. A successful generation is
-published as a complete file, then recorded in private ownership history under
-the account's fixed HyperBricks image cache directory (`~/Library/Caches/hyperbricks/images/`
-on macOS, `~/.cache/hyperbricks/images/` on Linux, Local AppData under
-`hyperbricks/images/` on Windows). Cache-directory environment overrides do not
-move ownership. A valid record in the current legacy cache is migrated only under
-the mutation lock; export copying does not modify source history. A runtime/export
-session excludes another process writing to the same output root. Concurrent
-component renders serialize publication and reuse a successful cached result.
+Images are generated when their components render. HyperBricks finishes writing
+each image before returning its URL. If generation fails, it reports the error
+and preserves previous files.
 
-Static export writes generated images into its own `rendered/static/images/`.
-An image source or gallery inside authored static is read from the export copy;
-sources outside static keep their original paths. This lets later image components
-consume files generated earlier in that export without changing development assets.
+Static export writes images into `rendered/static/images/`, leaving your
+development assets in place. Sources inside static are read from the export copy;
+sources elsewhere keep their original paths. This also lets an image component
+use a file generated earlier in the export.
 
-Cleanup removes only explicitly recorded image files with matching output bytes.
-Unrecorded files are never inferred to be owned from a filename. Existing output
-from older HyperBricks versions is not scanned and automatically deleted.
-Externally modified obsolete files are preserved and their ownership released.
-Symlink escapes, corrupt ownership records and non-regular owned outputs report
-errors rather than authorizing deletion.
+### Keeping and removing old images
 
-A generation is eligible only after it exceeds `cache_keep` and its retirement
-grace has elapsed. Active requests, cached HTML and static export add protection.
-Pending cleanup is retried after requests, or during init/module reload; there is
-no periodic background cleanup when the server is idle. Cache hits and identical
-uncached output do not rewrite unchanged ownership records.
+Use `cache_keep` to retain previous versions and `cache_grace` to keep retired
+images available for a minimum time. Cleanup waits until both allowances have
+passed and the files are no longer needed by active requests, cached pages or
+the current export. It can happen later if the server is idle.
 
-If requests are active during reload, cleanup is scheduled for a later exclusive
-maintenance window. Reload does not block a nested local asset request that an
-API render needs in order to finish.
+Open browser pages and external services may still use older image URLs.
+Choose retention settings that cover their expected lifetime. Setting
+`cache_grace: 0s` removes the time allowance. If an external API stores image URLs,
+update those references when images change; see the
+[catalog-store example](https://github.com/hyperbricks/hyperbricks/blob/v1.3.3-beta/modules/catalog-store/README.md).
 
-External consumers and open browser pages are not tracked runtime references.
-Choose a grace period and retained-version count suitable for the lifetime of
-URLs you distribute. `0s` explicitly removes that time allowance. An external
-API that stores image URLs must refresh its manifest; `catalog-store` demonstrates
-refreshing on each image-dependent request while reusing generated image files.
-Generation or manifest errors remain visible and preserve previous files/data;
-there is no silent successful fallback to stale source results.
+HyperBricks removes only files it recorded as generated and whose contents have
+not been changed externally. It leaves handwritten files and unrecognized output
+from older versions alone. Unsafe paths or damaged tracking records produce an
+error rather than deleting files.
+
+### File tracking and write conflicts
+
+HyperBricks stores its image tracking records under your account:
+
+- macOS: `~/Library/Caches/hyperbricks/images/`
+- Linux: `~/.cache/hyperbricks/images/`
+- Windows: `hyperbricks/images/` under Local AppData
+
+These locations stay the same even if you override the cache directory. Let
+HyperBricks manage the records; deleting them can leave old generated files behind.
+When upgrading from a custom cache location, start once with your previous cache
+environment settings so its records can be migrated.
+
+Keep the tracking directory writable. If another process is already writing to
+the same output directory, stop that process or choose a separate destination.
 
 See [live caching](LIVE_MODE_HTTP.md#storage-expiry-and-cleanup) when planning
 content updates, and [static export configuration](HYPERBRICKS_CLI.md#package-configuration)

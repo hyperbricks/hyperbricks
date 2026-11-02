@@ -26,9 +26,9 @@ curl -fsS https://hyperbricks.eu/install.sh | sh
 
 **Windows / PowerShell**
 
-Using HyperBricks on Windows is not recommended yet. The full regression test suite has not yet been run on Windows. And please note that native Go plugins require WSL2 or Linux.
-
-Want to help test HyperBricks on Windows? Try the command below and share your feedback.
+Windows support is experimental and has not passed the full regression suite.
+Use WSL2 or Linux if your project needs native Go plugins. To try the Windows
+binary, run:
 
 ```powershell
 irm https://hyperbricks.eu/install.ps1 | iex
@@ -36,8 +36,10 @@ irm https://hyperbricks.eu/install.ps1 | iex
 
 The installer selects the package for your system, downloads the newest published
 binary from [hyperbricks-builder](https://github.com/hyperbricks/hyperbricks-builder/releases),
-and checks its SHA-256 before installing it. These commands execute the installer
-directly; the package checksum does not verify the script before execution.
+and verifies the downloaded package checksum before installing it. The commands
+above run the installer immediately. If you prefer to review it first, download
+and inspect the script before running it; the package check does not verify the
+installer script itself.
 
 Follow the installer's PATH instructions if needed, then open a new terminal.
 
@@ -62,8 +64,9 @@ hyperbricks version
 ```
 
 This should print the installed version. Use documentation matching that version.
-Go's `@latest` selection can differ from the builder's newest binary release,
-particularly when stable releases and prereleases coexist.
+The installer and `go install ...@latest` may select different versions when
+beta and stable releases are both available. To build a specific version from
+source, replace `@latest` with its release tag.
 
 The tutorial below uses Bash-compatible shell commands on macOS, Linux or WSL.
 The HyperBricks commands themselves also work in PowerShell.
