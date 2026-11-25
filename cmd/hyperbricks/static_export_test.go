@@ -42,13 +42,10 @@ func TestExportStaticZipContainsRenderedFilesOnly(t *testing.T) {
 
 func TestExportStaticZipEsbuildMapsEmbedSources(t *testing.T) {
 	type engineCase struct {
-		name, binary string
-		fingerprint  bool
+		name        string
+		fingerprint bool
 	}
 	engines := []engineCase{{name: "embedded"}, {name: "embedded-versioned", fingerprint: true}}
-	if binary := os.Getenv("ESBUILD_TEST_BINARY"); binary != "" {
-		engines = append(engines, engineCase{name: "external", binary: binary}, engineCase{name: "external-versioned", binary: binary, fingerprint: true})
-	}
 	for _, engine := range engines {
 		t.Run(engine.name, func(t *testing.T) {
 			moduleDir, renderDir := t.TempDir(), t.TempDir()
@@ -68,7 +65,7 @@ func TestExportStaticZipEsbuildMapsEmbedSources(t *testing.T) {
 			for _, asset := range []struct{ entry, outfile string }{{"css/site.css", "css/site.css"}, {"js/main.ts", "js/app.js"}} {
 				prepared := renderer.Prepare(component.EsbuildConfig{
 					Entry: filepath.Join(moduleDir, "resources", asset.entry), Outfile: filepath.Join(staticDir, asset.outfile),
-					Sourcemap: true, Cache: true, Binary: engine.binary, Fingerprint: engine.fingerprint,
+					Sourcemap: true, Cache: true, Fingerprint: engine.fingerprint,
 				})
 				publicURL, errs := prepared.Render(context.Background())
 				if len(errs) != 0 {

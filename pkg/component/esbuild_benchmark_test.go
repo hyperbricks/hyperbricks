@@ -21,7 +21,10 @@ func BenchmarkEsbuildLifecycle(b *testing.B) {
 		for _, phase := range []string{"cold", "warm", "changed"} {
 			b.Run(fmt.Sprintf("fingerprint=%t/%s", fingerprint, phase), func(b *testing.B) {
 				b.StopTimer()
-				root := b.TempDir()
+				root, err := filepath.EvalSymlinks(b.TempDir())
+				if err != nil {
+					b.Fatal(err)
+				}
 				source := filepath.Join(root, "resources")
 				static := filepath.Join(root, "static")
 				private := filepath.Join(root, "private")
@@ -84,6 +87,7 @@ func BenchmarkEsbuildLifecycle(b *testing.B) {
 					}
 					r = NewEsbuildRenderer(static)
 					r.store.cacheDir = private
+					r.store.ownershipDir = r.store.cacheDir
 					if err := r.BeginAssetSession(); err != nil {
 						b.Fatal(err)
 					}
@@ -204,6 +208,9 @@ func BenchmarkEsbuildLifecycle(b *testing.B) {
 						if err := os.Chtimes(dependency, stamp.ModTime(), stamp.ModTime()); err != nil {
 							b.Fatal(err)
 						}
+					}
+					if phase == "changed" {
+						r.Invalidate()
 					}
 					before := r.store.buildCount
 					b.StartTimer()

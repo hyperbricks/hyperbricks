@@ -2,6 +2,7 @@ package spaces
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
@@ -11,6 +12,9 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
+
+	"github.com/hyperbricks/hyperbricks/pkg/component"
 
 	"go.yaml.in/yaml/v4"
 )
@@ -251,6 +255,17 @@ func (s *service) replaceFile(path string, b []byte, old []byte) error {
 	}
 	if base == "" {
 		return fmt.Errorf("write is outside configured source and asset directories")
+	}
+	static := s.dirs["static"]
+	staticRelative, staticErr := filepath.Rel(static, path)
+	if static != "" && staticErr == nil && staticRelative != ".." && !strings.HasPrefix(staticRelative, ".."+string(filepath.Separator)) {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		unlock, err := component.LockAssetTree(ctx, static, false)
+		if err != nil {
+			return err
+		}
+		defer unlock()
 	}
 	if _, err := contained(base, relative(base, path)); err != nil {
 		return err

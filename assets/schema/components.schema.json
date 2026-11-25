@@ -1459,7 +1459,6 @@
             "fields": [
               "entry",
               "outfile",
-              "binary",
               "enclose"
             ]
           },
@@ -1492,23 +1491,6 @@
           "authoring": {
             "label": "Attributes",
             "control": "key-value",
-            "publish": {
-              "omit_empty": true,
-              "omit_false": true
-            }
-          }
-        },
-        {
-          "path": "binary",
-          "key": "binary",
-          "go_name": "Binary",
-          "go_type": "string",
-          "kind": "string",
-          "description": "Optional external esbuild executable; empty uses the embedded Go API.",
-          "authoring": {
-            "label": "Binary",
-            "control": "text",
-            "group": "source",
             "publish": {
               "omit_empty": true,
               "omit_false": true

@@ -232,7 +232,7 @@ func Definitions() []Definition {
 			ConfigType:  reflect.TypeOf(component.EsbuildConfig{}),
 			Description: "Native JavaScript, TypeScript, and CSS bundling with lazy cached or per-render builds.",
 			FormGroups: []FormGroup{
-				{Key: "source", Label: "Source and output", Fields: []string{"entry", "outfile", "binary", "enclose"}},
+				{Key: "source", Label: "Source and output", Fields: []string{"entry", "outfile", "enclose"}},
 				{Key: "build", Label: "Build options", Fields: []string{"minify", "minify_identifiers", "mangle", "sourcemap", "cache", "fingerprint", "debug", "target", "loader", "external"}},
 			},
 		},

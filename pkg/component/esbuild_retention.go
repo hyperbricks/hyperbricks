@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -9,12 +10,14 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"time"
 
 	"github.com/hyperbricks/hyperbricks/pkg/logging"
 )
 
-// Generation records share the native esbuild cache directory. They are
-// independent of cache reuse: even cache:false outputs have an owner/history.
+// Generation records use stable private ownership storage. They are
+// independent of build-manifest storage and cache reuse: even cache:false
+// outputs have an owner/history.
 type esbuildGeneration struct {
 	Entry   string                        `json:"entry"`
 	Outputs map[string]esbuildFingerprint `json:"outputs"`
@@ -30,11 +33,22 @@ type esbuildHistory struct {
 }
 
 func (s *esbuildStore) historyPath() (string, error) {
+	if s.ownershipDirErr != nil {
+		return "", s.ownershipDirErr
+	}
+	return s.historyPathIn(s.ownershipDir)
+}
+
+func (s *esbuildStore) legacyHistoryPath() (string, error) {
 	if s.cacheDirErr != nil {
 		return "", s.cacheDirErr
 	}
-	if s.cacheDir == "" {
-		return "", fmt.Errorf("esbuild asset ownership requires a private cache directory")
+	return s.historyPathIn(s.cacheDir)
+}
+
+func (s *esbuildStore) historyPathIn(directory string) (string, error) {
+	if directory == "" {
+		return "", fmt.Errorf("esbuild asset ownership requires a private directory")
 	}
 	root, err := filepath.Abs(s.staticDir)
 	if err != nil {
@@ -45,7 +59,7 @@ func (s *esbuildStore) historyPath() (string, error) {
 		return "", err
 	}
 	hash := sha256.Sum256([]byte(root))
-	path, err := filepath.Abs(filepath.Join(s.cacheDir, hex.EncodeToString(hash[:])+".generations.json"))
+	path, err := filepath.Abs(filepath.Join(directory, hex.EncodeToString(hash[:])+".generations.json"))
 	if err != nil {
 		return "", err
 	}
@@ -70,7 +84,19 @@ func (s *esbuildStore) loadHistory() (esbuildHistory, error) {
 	}
 	h := esbuildHistory{Version: 1, Root: root, Owners: map[string]*esbuildOwnerHistory{}}
 	data, err := os.ReadFile(path)
+	if os.IsNotExist(err) && !s.freshOutput {
+		legacy, pathErr := s.legacyHistoryPath()
+		if pathErr != nil {
+			return h, pathErr
+		}
+		if legacy != path {
+			data, err = os.ReadFile(legacy)
+		}
+	}
 	if os.IsNotExist(err) {
+		if s.freshOutput {
+			return h, nil
+		}
 		return s.adoptLegacyHistory(h)
 	}
 	if err != nil {
@@ -79,25 +105,121 @@ func (s *esbuildStore) loadHistory() (esbuildHistory, error) {
 	if err = json.Unmarshal(data, &h); err != nil {
 		return h, fmt.Errorf("esbuild generation history: %w", err)
 	}
-	if h.Version != 1 || h.Root != root || h.Owners == nil {
-		return h, fmt.Errorf("esbuild generation history has invalid identity")
-	}
-	for owner, history := range h.Owners {
-		if history == nil || history.Keep < 0 || esbuildOutputPath(root, owner) != nil {
-			return h, fmt.Errorf("invalid esbuild owner %s", owner)
-		}
-		for _, generation := range history.Generations {
-			if !generation.Outputs[generation.Entry].Exists {
-				return h, fmt.Errorf("invalid esbuild generation for %s", owner)
-			}
-			for output, stamp := range generation.Outputs {
-				if !stamp.Exists || !filepath.IsAbs(output) || esbuildOutputPath(root, output) != nil {
-					return h, fmt.Errorf("invalid owned esbuild output %s", output)
-				}
-			}
-		}
+	if err := normalizeEsbuildHistory(&h, root); err != nil {
+		return h, err
 	}
 	return h, nil
+}
+
+// Historic records may use a symlink spelling such as macOS /var. Canonicalize
+// validated owned paths so copy validation and new publication agree on one
+// physical output root without abandoning existing ownership evidence.
+func normalizeEsbuildHistory(h *esbuildHistory, root string) error {
+	if h.Version != 1 || h.Owners == nil || !filepath.IsAbs(h.Root) {
+		return fmt.Errorf("esbuild generation history has invalid identity")
+	}
+	storedRoot, err := esbuildExistingPath(h.Root)
+	if err != nil || storedRoot != root {
+		return fmt.Errorf("esbuild generation history has invalid identity")
+	}
+	owners := make(map[string]*esbuildOwnerHistory, len(h.Owners))
+	for owner, history := range h.Owners {
+		canonicalOwner, err := canonicalEsbuildOwnedPath(h.Root, root, owner)
+		if history == nil || history.Keep < 0 || err != nil {
+			return fmt.Errorf("invalid esbuild owner %s", owner)
+		}
+		for i, generation := range history.Generations {
+			if !generation.Outputs[generation.Entry].Exists {
+				return fmt.Errorf("invalid esbuild generation for %s", owner)
+			}
+			entry, err := canonicalEsbuildOwnedPath(h.Root, root, generation.Entry)
+			if err != nil {
+				return err
+			}
+			outputs := make(map[string]esbuildFingerprint, len(generation.Outputs))
+			for output, stamp := range generation.Outputs {
+				canonical, err := canonicalEsbuildOwnedPath(h.Root, root, output)
+				if !stamp.Exists || err != nil {
+					return fmt.Errorf("invalid owned esbuild output %s", output)
+				}
+				if previous, exists := outputs[canonical]; exists && previous != stamp {
+					return fmt.Errorf("conflicting esbuild output aliases: %s", output)
+				}
+				outputs[canonical] = stamp
+			}
+			history.Generations[i] = esbuildGeneration{Entry: entry, Outputs: outputs}
+		}
+		if previous, exists := owners[canonicalOwner]; exists && !reflect.DeepEqual(previous, history) {
+			return fmt.Errorf("conflicting esbuild owner aliases: %s", owner)
+		}
+		owners[canonicalOwner] = history
+	}
+	h.Root, h.Owners = root, owners
+	return nil
+}
+
+func canonicalEsbuildOwnedPath(storedRoot, root, path string) (string, error) {
+	if !filepath.IsAbs(path) || filepath.Clean(path) != path {
+		return "", fmt.Errorf("invalid owned esbuild path %s", path)
+	}
+	// Normalize the root alias only. Preserve the owned leaf so cleanup's Lstat
+	// still rejects a replacement symlink instead of claiming its target.
+	canonical, ok := esbuildMapRoot(path, storedRoot, root)
+	if !ok {
+		canonical, ok = esbuildMapRoot(path, root, root)
+	}
+	if !ok {
+		return "", fmt.Errorf("owned esbuild path is outside its root: %s", path)
+	}
+	if err := esbuildOutputPath(root, canonical); err != nil {
+		return "", err
+	}
+	return canonical, nil
+}
+
+// migrateLegacyHistory is called only while holding the output-tree write gate.
+// The first valid stable record is authoritative; never merge a second history.
+func (s *esbuildStore) migrateLegacyHistory() error {
+	path, err := s.historyPath()
+	if err != nil {
+		return err
+	}
+	if _, err := os.Lstat(path); err == nil {
+		return nil
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	legacy, err := s.legacyHistoryPath()
+	if err != nil {
+		return err
+	}
+	if legacy == path {
+		return nil
+	}
+	if info, err := os.Lstat(legacy); os.IsNotExist(err) {
+		return nil
+	} else if err != nil {
+		return err
+	} else if !info.Mode().IsRegular() {
+		return fmt.Errorf("esbuild ownership migration requires a regular history file")
+	}
+	h, err := s.loadHistory()
+	if err != nil {
+		return err
+	}
+	data, err := json.Marshal(h)
+	if err != nil {
+		return err
+	}
+	// An explicit empty record is authoritative too: persist it before removal
+	// so old build manifests cannot later re-adopt discarded ownership.
+	if err := writeAssetHistory(path, data, false, ".hb-esbuild-history-*"); err != nil {
+		return err
+	}
+	if err := os.Remove(legacy); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	return nil
 }
 
 func (s *esbuildStore) saveHistory(h esbuildHistory) error {
@@ -123,7 +245,11 @@ func (s *esbuildStore) retain(p *PreparedEsbuild, result *esbuildResult) (failur
 		return fmt.Errorf("asset_cleanup: %w", err)
 	}
 	owner := h.Owners[p.spec.Outfile]
-	if owner != nil && owner.Keep == p.cacheKeep && len(owner.Generations) > 0 &&
+	keep := s.configured[p.spec.Outfile].cacheKeep
+	if active, ok := s.activeOwners[p.spec.Outfile]; ok {
+		keep = active
+	}
+	if owner != nil && owner.Keep == keep && len(owner.Generations) > 0 &&
 		reflect.DeepEqual(owner.Generations[0], esbuildGeneration{Entry: result.entry, Outputs: result.outputs}) {
 		// A legacy build manifest can supply this generation before an ownership
 		// record exists. Persist that adoption once, including its retention.
@@ -141,7 +267,7 @@ func (s *esbuildStore) retain(p *PreparedEsbuild, result *esbuildResult) (failur
 		owner = &esbuildOwnerHistory{}
 		h.Owners[p.spec.Outfile] = owner
 	}
-	owner.Keep = p.cacheKeep
+	owner.Keep = keep
 	current := esbuildGeneration{Entry: result.entry, Outputs: result.outputs}
 	// Reusing a generation makes it current without manufacturing a duplicate.
 	var previous []esbuildGeneration
@@ -164,10 +290,7 @@ func (r *EsbuildRenderer) ScheduleAssetReconciliation(active map[string]int) {
 	s := r.store
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.activeOwners = make(map[string]int, len(active))
-	for owner, keep := range active {
-		s.activeOwners[owner] = keep
-	}
+	s.setActiveOwners(active)
 	s.pendingCleanup.Store(true)
 }
 
@@ -177,22 +300,48 @@ func (r *EsbuildRenderer) ReconcileAssets(active map[string]int) error {
 	s := r.store
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	unlock, err := s.lockAssetOperation()
+	if active != nil {
+		s.setActiveOwners(active)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	unlock, err := s.lockAssetOperation(ctx)
 	if err != nil {
 		return err
 	}
 	defer unlock()
+	if err := s.migrateLegacyHistory(); err != nil {
+		return err
+	}
 	h, err := s.loadHistory()
 	if err != nil {
 		return err
 	}
-	if active != nil {
-		s.activeOwners = make(map[string]int, len(active))
-		for owner, keep := range active {
-			s.activeOwners[owner] = keep
+	if active == nil && s.activeOwners == nil {
+		for output, configured := range s.configured {
+			if owner := h.Owners[output]; owner != nil {
+				owner.Keep = configured.cacheKeep
+			}
 		}
 	}
 	return s.pruneHistory(h, s.activeOwners)
+}
+
+func (s *esbuildStore) setActiveOwners(active map[string]int) {
+	s.activeOwners = make(map[string]int, len(active))
+	for owner, keep := range active {
+		s.activeOwners[owner] = keep
+	}
+	for output, configured := range s.configured {
+		if keep, exists := active[output]; !exists {
+			delete(s.results, configured.key)
+			delete(s.configured, output)
+		} else if configured.cacheKeep != keep {
+			policy := *configured
+			policy.cacheKeep = keep
+			s.configured[output] = &policy
+		}
+	}
 }
 
 // HasPendingAssetCleanup reports obsolete generations whose removal was
@@ -279,6 +428,7 @@ func (s *esbuildStore) pruneHistory(h esbuildHistory, active map[string]int) err
 				if err = os.Remove(path); err != nil {
 					return fmt.Errorf("asset_cleanup: remove %s: %w", path, err)
 				}
+				s.invalidateChangedOutputs(map[string]esbuildFingerprint{path: {}})
 				// Keep the known generated path for this session: the watcher may
 				// receive its removal event after cleanup releases the store lock.
 				// Durable ownership still comes exclusively from history records.
@@ -297,15 +447,21 @@ func (s *esbuildStore) pruneHistory(h esbuildHistory, active map[string]int) err
 	return nil
 }
 
-func (s *esbuildStore) lockAssetOperation() (func(), error) {
-	if s.sessionUnlock != nil {
-		return func() {}, nil
+func (s *esbuildStore) lockAssetOperation(ctx context.Context) (func(), error) {
+	releaseSession := func() {}
+	if s.sessionUnlock == nil {
+		var err error
+		releaseSession, err = LockAssetSession(s.staticDir, "esbuild")
+		if err != nil {
+			return nil, err
+		}
 	}
-	path, err := s.historyPath()
+	releaseTree, err := LockAssetTree(ctx, s.staticDir, false)
 	if err != nil {
+		releaseSession()
 		return nil, err
 	}
-	return lockEsbuildFile(path + ".lock")
+	return func() { releaseTree(); releaseSession() }, nil
 }
 
 // BeginAssetSession excludes another runtime/export using the same output root.
@@ -317,12 +473,55 @@ func (r *EsbuildRenderer) BeginAssetSession() error {
 	if s.sessionUnlock != nil {
 		return nil
 	}
+	var err error
+	s.sessionUnlock, err = LockAssetSession(s.staticDir, "esbuild")
+	return err
+}
+
+// ResetAssetsForFreshExport discards only this output root's old ownership.
+// The caller holds its destination reservation and has not yet copied assets
+// or prepared routes. Old private manifests must not adopt those copied files.
+func (r *EsbuildRenderer) ResetAssetsForFreshExport(ctx context.Context) error {
+	s := r.store
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.prepared || s.sessionUnlock == nil {
+		return fmt.Errorf("esbuild fresh export requires an unprepared asset session")
+	}
+	unlock, err := s.lockAssetOperation(ctx)
+	if err != nil {
+		return err
+	}
+	defer unlock()
 	path, err := s.historyPath()
 	if err != nil {
 		return err
 	}
-	s.sessionUnlock, err = lockEsbuildFile(path + ".lock")
-	return err
+	legacy, err := s.legacyHistoryPath()
+	if err != nil {
+		return err
+	}
+	for _, owned := range []string{path, legacy} {
+		if info, err := os.Lstat(owned); os.IsNotExist(err) {
+			continue
+		} else if err != nil {
+			return err
+		} else if !info.Mode().IsRegular() {
+			return fmt.Errorf("esbuild ownership reset requires a regular history file: %s", owned)
+		}
+	}
+	for _, owned := range []string{path, legacy} {
+		if err := os.Remove(owned); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+	}
+	s.freshOutput, s.reuseDisk = true, false
+	s.results = make(map[string]*esbuildResult)
+	s.owners = make(map[string]string)
+	s.generated = make(map[string]bool)
+	s.assetFailure = nil
+	s.pendingCleanup.Store(false)
+	return nil
 }
 func (r *EsbuildRenderer) CloseAssets() {
 	s := r.store
@@ -358,17 +557,18 @@ func (s *esbuildStore) adoptLegacyHistory(h esbuildHistory) (esbuildHistory, err
 			return h, err
 		}
 		var m esbuildManifest
-		if json.Unmarshal(data, &m) != nil || m.Version != esbuildManifestVersion || m.Spec.StaticDir != h.Root || !m.Outputs[m.Entry].Exists {
+		if json.Unmarshal(data, &m) != nil || m.Version != esbuildManifestVersion || !m.Outputs[m.Entry].Exists {
 			continue
 		}
-		valid := esbuildOutputPath(h.Root, m.Spec.Outfile) == nil
-		for path, stamp := range m.Outputs {
-			if !stamp.Exists || esbuildOutputPath(h.Root, path) != nil {
-				valid = false
-			}
-		}
-		if !valid {
+		legacy := esbuildHistory{Version: 1, Root: m.Spec.StaticDir, Owners: map[string]*esbuildOwnerHistory{
+			m.Spec.Outfile: {Generations: []esbuildGeneration{{Entry: m.Entry, Outputs: m.Outputs}}},
+		}}
+		if normalizeEsbuildHistory(&legacy, h.Root) != nil {
 			continue
+		}
+		for output, owner := range legacy.Owners {
+			m.Spec.StaticDir, m.Spec.Outfile = h.Root, output
+			m.Entry, m.Outputs = owner.Generations[0].Entry, owner.Generations[0].Outputs
 		}
 		info, err := entry.Info()
 		if err != nil {

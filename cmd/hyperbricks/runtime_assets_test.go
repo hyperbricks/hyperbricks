@@ -64,6 +64,10 @@ func TestRuntimeAssetCleanupWaitsForRequestsAndCachedHTML(t *testing.T) {
 		t.Fatal("request did not start")
 	}
 	write("2")
+	if warm := build(); warm != oldURL {
+		t.Fatal("warm cache observed changed source before invalidation")
+	}
+	renderer.Invalidate()
 	var newURL string
 	assetRequestMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { newURL = build(); w.Write([]byte("ok")) })).ServeHTTP(httptest.NewRecorder(), httptest.NewRequest("GET", "/", nil))
 	if !renderer.HasPendingAssetCleanup() {

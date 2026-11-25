@@ -1,9 +1,7 @@
 package component
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -17,14 +15,18 @@ import (
 
 func esbuildFixture(t *testing.T) (*EsbuildRenderer, EsbuildConfig) {
 	t.Helper()
-	root := t.TempDir()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	entry := filepath.Join(root, "custom resources", "main.js")
 	esbuildWrite(t, entry, `import {message} from "./message.js"; document.body.dataset.message = message;`)
 	esbuildWrite(t, filepath.Join(filepath.Dir(entry), "message.js"), `export const message = "first";`)
 	static := filepath.Join(root, "custom public")
 	r := NewEsbuildRenderer(static)
 	r.store.cacheDir = t.TempDir()
-	return r, EsbuildConfig{Entry: entry, Outfile: filepath.Join(static, "js", "app.js"), Cache: true,
+	r.store.ownershipDir = r.store.cacheDir
+	return r, EsbuildConfig{Entry: entry, Outfile: filepath.Join(r.store.staticDir, "js", "app.js"), Cache: true,
 		Component: shared.Component{Enclose: `<script src="|" defer></script>`}}
 }
 
@@ -88,6 +90,7 @@ func TestEsbuildLazyCacheConcurrentAndInvalidation(t *testing.T) {
 	if err := os.Chtimes(dep, info.ModTime(), info.ModTime()); err != nil {
 		t.Fatal(err)
 	}
+	r.Invalidate()
 	esbuildRender(t, p)
 	if r.store.buildCount != 2 || !strings.Contains(esbuildRead(t, cfg.Outfile), "other") {
 		t.Fatal("same-size/same-mtime dependency change remained cached")
@@ -95,6 +98,7 @@ func TestEsbuildLazyCacheConcurrentAndInvalidation(t *testing.T) {
 	if err := os.Remove(cfg.Outfile); err != nil {
 		t.Fatal(err)
 	}
+	r.Invalidate()
 	esbuildRender(t, p)
 	if r.store.buildCount != 3 {
 		t.Fatal("missing output remained cached")
@@ -140,6 +144,7 @@ func TestEsbuildFailedRebuildPreservesFilesAndRetries(t *testing.T) {
 	esbuildRender(t, p)
 	previous, previousMap := esbuildRead(t, cfg.Outfile), esbuildRead(t, cfg.Outfile+".map")
 	esbuildWrite(t, cfg.Entry, `function broken(`)
+	r.Invalidate()
 	if output, errs := p.Render(nil); output != "" || len(errs) == 0 {
 		t.Fatalf("bad source reported success: %q %v", output, errs)
 	}
@@ -215,6 +220,7 @@ func TestEsbuildCSSImportsAssetsTargetsAndSourcemaps(t *testing.T) {
 	if err := os.Remove(fonts[0]); err != nil {
 		t.Fatal(err)
 	}
+	r.Invalidate()
 	esbuildRender(t, p)
 	if r.store.buildCount != 2 {
 		t.Fatal("missing auxiliary asset remained cached")
@@ -236,7 +242,6 @@ func TestEsbuildOptionsValidationAndModuleIsolation(t *testing.T) {
 		{"duplicate target", func(c *EsbuildConfig) { c.Target = []string{"chrome110", "chrome120"} }},
 		{"loader", func(c *EsbuildConfig) { c.Loader = map[string]string{".png": "not-a-loader"} }},
 		{"external", func(c *EsbuildConfig) { c.External = []string{"a*b*c"} }},
-		{"missing binary", func(c *EsbuildConfig) { c.Binary = filepath.Join(t.TempDir(), "missing-esbuild") }},
 		{"CSS mangle", func(c *EsbuildConfig) {
 			c.Entry = filepath.Join(filepath.Dir(c.Entry), "site.css")
 			c.Outfile = filepath.Join(r.store.staticDir, "site.css")
@@ -272,7 +277,7 @@ func TestEsbuildOptionsValidationAndModuleIsolation(t *testing.T) {
 	}
 }
 
-func TestEsbuildEmbeddedAndExternalFlagMapping(t *testing.T) {
+func TestEsbuildEmbeddedOptionMapping(t *testing.T) {
 	r, cfg := esbuildFixture(t)
 	cfg.Minify, cfg.MinifyIdentifiers, cfg.Mangle, cfg.Sourcemap = true, false, true, true
 	cfg.Target = []string{"es2020", "chrome110"}
@@ -289,66 +294,9 @@ func TestEsbuildEmbeddedAndExternalFlagMapping(t *testing.T) {
 	if !opts.MinifyWhitespace || !opts.MinifySyntax || opts.MinifyIdentifiers || opts.MangleProps != ".*" || opts.Sourcemap != api.SourceMapLinked || opts.Target != api.ES2020 || opts.Loader[".png"] != api.LoaderFile {
 		t.Fatalf("wrong Go API options: %+v", opts)
 	}
-	args := strings.Join(p.spec.externalArgs("output.js", "metadata.json"), " ")
-	for _, want := range []string{"--minify-whitespace", "--minify-syntax", "--mangle-props=.*", "--sourcemap=linked", "--target=es2020,chrome110", "--loader:.png=file", "--external:/static/vendor/*"} {
-		if !strings.Contains(args, want) {
-			t.Errorf("missing flag %s in %s", want, args)
-		}
-	}
-	if strings.Contains(args, "--minify ") || strings.Contains(args, "--minify-identifiers") {
-		t.Fatal("CLI minify enabled identifiers implicitly")
-	}
 	cfg.Loader[".png"] = "dataurl"
 	if reflect.DeepEqual(cfg.Loader, p.spec.Loader) {
 		t.Fatal("prepared options retain mutable source map")
-	}
-}
-
-func TestEsbuildRealExternalParity(t *testing.T) {
-	binary := os.Getenv("ESBUILD_TEST_BINARY")
-	if binary == "" {
-		t.Skip("set ESBUILD_TEST_BINARY to test a real external esbuild executable")
-	}
-	r, cfg := esbuildFixture(t)
-	cfg.Minify, cfg.MinifyIdentifiers, cfg.Sourcemap = true, true, true
-	esbuildRender(t, r.Prepare(cfg))
-	apiOutput := esbuildRead(t, cfg.Outfile)
-	apiMap := esbuildRead(t, cfg.Outfile+".map")
-	cfg.Binary = binary
-	esbuildRender(t, r.Prepare(cfg))
-	if cliOutput := esbuildRead(t, cfg.Outfile); !bytes.Equal([]byte(apiOutput), []byte(cliOutput)) {
-		t.Fatalf("embedded/external output differs:\n%s\n%s", apiOutput, cliOutput)
-	}
-	var embeddedMap, externalMap interface{}
-	if err := json.Unmarshal([]byte(apiMap), &embeddedMap); err != nil {
-		t.Fatal(err)
-	}
-	if err := json.Unmarshal([]byte(esbuildRead(t, cfg.Outfile+".map")), &externalMap); err != nil {
-		t.Fatal(err)
-	}
-	if !reflect.DeepEqual(embeddedMap, externalMap) {
-		t.Fatalf("source maps differ: API=%#v CLI=%#v", embeddedMap, externalMap)
-	}
-	cfg.Entry = filepath.Join(filepath.Dir(cfg.Entry), "site.css")
-	cfg.Outfile = filepath.Join(r.store.staticDir, "css", "site.css")
-	cfg.Loader = map[string]string{".woff2": "file"}
-	cfg.Binary = ""
-	esbuildWrite(t, cfg.Entry, `@import "./color.css"; @font-face {font-family: Demo; src: url("./font.woff2")}`)
-	esbuildWrite(t, filepath.Join(filepath.Dir(cfg.Entry), "color.css"), `body { color: red; }`)
-	esbuildWrite(t, filepath.Join(filepath.Dir(cfg.Entry), "font.woff2"), "font fixture")
-	esbuildRender(t, r.Prepare(cfg))
-	apiCSS := esbuildRead(t, cfg.Outfile)
-	cfg.Binary = binary
-	esbuildRender(t, r.Prepare(cfg))
-	if cliCSS := esbuildRead(t, cfg.Outfile); cliCSS != apiCSS {
-		t.Fatalf("CSS differs: API=%s CLI=%s", apiCSS, cliCSS)
-	}
-	esbuildWrite(t, cfg.Entry, `@import "./missing-stylesheet.css";`)
-	if _, errs := r.Prepare(cfg).Render(nil); len(errs) == 0 {
-		t.Fatal("external compile failure not reported")
-	}
-	if esbuildRead(t, cfg.Outfile) != apiCSS {
-		t.Fatal("external compile failure replaced valid output")
 	}
 }
 
@@ -368,6 +316,7 @@ func TestEsbuildPublicationFailurePreservesEntryAndRemovesStaging(t *testing.T) 
 	}
 	esbuildWrite(t, filepath.Join(css, "manual.txt"), "preserve")
 	esbuildWrite(t, cfg.Entry, `import "./site.css"; console.log("second");`)
+	r.Invalidate()
 	if output, failures := r.Prepare(cfg).Render(context.Background()); output != "" || len(failures) == 0 {
 		t.Fatal("failed publication returned a success tag")
 	}

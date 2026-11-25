@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
@@ -50,6 +51,13 @@ func snapshotStaticRoutesContext(ctx context.Context, configs map[string]map[str
 		logging.GetLogger().Warn("No static snapshot targets found")
 		return nil
 	}
+	if activeStaticExport != nil {
+		for _, target := range targets {
+			if err := rejectExistingStaticSnapshot(renderDir, target.OutputPath); err != nil {
+				return err
+			}
+		}
+	}
 
 	runtime, err := startStaticSnapshotRuntime()
 	if err != nil {
@@ -69,6 +77,7 @@ func snapshotStaticRoutesContext(ctx context.Context, configs map[string]map[str
 	}
 
 	logger := logging.GetLogger()
+	written := map[string][32]byte{}
 	logger.Infow("Static snapshot runtime started", "base_url", runtime.baseURL, "target_count", len(targets))
 	for _, target := range targets {
 		if err := context.Cause(ctx); err != nil {
@@ -81,6 +90,19 @@ func snapshotStaticRoutesContext(ctx context.Context, configs map[string]map[str
 		}
 		if err := writeStaticSnapshotFile(renderDir, target.OutputPath, body); err != nil {
 			return err
+		}
+		if activeStaticExport != nil {
+			written[target.OutputPath] = sha256.Sum256(body)
+		}
+	}
+	for path, expected := range written {
+		filename, err := staticSnapshotOutputFile(renderDir, path)
+		if err != nil {
+			return err
+		}
+		body, err := os.ReadFile(filename)
+		if err != nil || sha256.Sum256(body) != expected {
+			return fmt.Errorf("static snapshot %s was changed by asset publication after rendering", path)
 		}
 	}
 	return nil
@@ -425,8 +447,36 @@ func writeStaticSnapshotFile(renderDir string, outputPath string, body []byte) e
 	if err := os.MkdirAll(filepath.Dir(targetPath), 0o755); err != nil {
 		return fmt.Errorf("create static snapshot directory for %s: %w", outputPath, err)
 	}
+	if activeStaticExport != nil {
+		if err := rejectExistingStaticSnapshot(renderDir, outputPath); err != nil {
+			return err
+		}
+		file, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+		if err != nil {
+			return fmt.Errorf("create static snapshot %s: %w", outputPath, err)
+		}
+		_, writeErr := file.Write(body)
+		closeErr := file.Close()
+		if err := errors.Join(writeErr, closeErr); err != nil {
+			return fmt.Errorf("write static snapshot %s: %w", outputPath, err)
+		}
+		return nil
+	}
 	if err := os.WriteFile(targetPath, body, 0o644); err != nil {
 		return fmt.Errorf("write static snapshot %s: %w", outputPath, err)
+	}
+	return nil
+}
+
+func rejectExistingStaticSnapshot(renderDir, output string) error {
+	path, err := staticSnapshotOutputFile(renderDir, output)
+	if err != nil {
+		return err
+	}
+	if _, err := os.Lstat(path); err == nil {
+		return fmt.Errorf("static snapshot %s conflicts with an existing asset", output)
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("inspect static snapshot destination %s: %w", output, err)
 	}
 	return nil
 }

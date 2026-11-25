@@ -38,8 +38,11 @@ def verify(binary, workspace):
         check(rows[-1]['exit_code'] == ('1' if outcome == 'failure' else '0'), f'Wrong exit: {rows[-1]}')
         events.unlink()
 
-    def bundles():
-        return {p.name: p.read_bytes() for p in assets.glob('site*.css')}
+    def bundles(directory=assets):
+        return {p.name: p.read_bytes() for p in directory.glob('site*.css')}
+
+    exported_assets = module / 'rendered/static/css'
+    source_bundles = bundles()
 
     def export(label, enabled=True, success=True):
         args = [binary, 'static', '-m', NAME, '--force', '--zip', '--non-interactive']
@@ -53,15 +56,15 @@ def verify(binary, workspace):
 
     export('disabled', enabled=False)
     check(not records(), 'Hooks executed without opt-in')
-    first = bundles()
+    first = bundles(exported_assets)
     check(len(first) == 1, f'Expected one fingerprinted bundle: {first.keys()}')
     export('success')
     phases(['before_static', 'after_static', 'finish'], 'success')
-    check(bundles() == first, 'Cache hit changed bundle bytes or names')
+    check(bundles(exported_assets) == first, 'Repeated export changed bundle bytes or names')
     css.write_text(original_css + '\n.configuration-proof { color: #123456; }\n')
     export('changed')
     phases(['before_static', 'after_static', 'finish'], 'success')
-    second = bundles()
+    second = bundles(exported_assets)
     check(len(second) == 1 and second.keys() != first.keys(), 'Obsolete fingerprint was retained')
     archives = list((project / 'exports' / NAME).glob('*.zip'))
     check(archives, 'ZIP missing')
@@ -69,12 +72,16 @@ def verify(binary, workspace):
         names = {Path(name).name for name in archive.namelist()}
         check(set(second) <= names and not (set(first) & names), 'ZIP contains stale or missing assets')
     check(sentinel.read_text() == '/* user-owned */', 'Cleanup removed unrelated assets')
+    check(bundles() == source_bundles, 'Export wrote generated bundles into development static')
+    completed_archives = {p: p.read_bytes() for p in archives}
     css.write_text('@import "./missing-configuration-fixture.css";\n')
     export('failed', success=False)
     phases(['before_static', 'finish'], 'failure', 'render')
-    check(bundles() == second, 'Failed build removed working assets')
+    check(bundles() == source_bundles, 'Failed export changed development assets')
+    check({p: p.read_bytes() for p in (project / 'exports' / NAME).glob('*.zip')} == completed_archives,
+          'Failed export replaced a completed archive or published a partial ZIP')
     css.write_text(original_css)
-    print('PASS static opt-in, hook order/outcomes, ZIP timing, cache hit, cleanup, failure preservation', flush=True)
+    print('PASS static opt-in, hook order/outcomes, ZIP timing, isolated assets, fresh export, failure preservation', flush=True)
 
     # Each session resolves the imported variable after entry overrides. The
     # second session also changes CSS, proving cleanup at a real restart.

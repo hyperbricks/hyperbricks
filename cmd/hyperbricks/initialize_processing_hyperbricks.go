@@ -80,7 +80,7 @@ func PreProcessAndPopulateConfigs() error {
 
 	if len(sourceErrors) == 0 && len(tempRouteSourceErrors) == 0 && activeImageOwners != nil {
 		images := runtimeImageProcessor()
-		dest := filepath.Join(getHyperBricksConfiguration().Directories["static"], "images")
+		dest := filepath.Join(runtimeStaticDirectory(), "images")
 		if runtimeAssetGate.TryLock() {
 			err := images.ReconcileAssets(dest, activeImageOwners)
 			runtimeAssetGate.Unlock()
