@@ -2,10 +2,10 @@
 
 **Licence:** MIT
 
-**Version:** v1.3.2-beta
+**Version:** v1.3.3-beta
 
 
-HyperBricks is under active development. Features, configuration, and APIs may change as the project evolves. See [CHANGELOG.md](CHANGELOG.md) for details about `v1.3.2-beta`.
+HyperBricks is under active development. Features, configuration, and APIs may change as the project evolves. See [CHANGELOG.md](CHANGELOG.md) for details about `v1.3.3-beta`.
 
 ## Build Status
 

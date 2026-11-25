@@ -2,9 +2,10 @@
 
 # Asset caching — esbuild and images
 
-Use `cache: true` on `esbuild`, `image`, or `images` to reuse generated files when
-sources are unchanged. When a component renders, it checks its inputs and generates
-new output if needed. The default is `cache: false`, which generates on every render.
+Use `cache: true` on `esbuild`, `image`, or `images` to reuse generated files.
+Esbuild reuses the output URL until the build cache is cleared, for example by a
+module reload. It does not check asset files on each render. Image components
+check their source and generated files when they render. The default is `cache: false`, which generates on every render.
 
 Page caching is separate: in live mode, HyperBricks can return a cached page
 without running its components.
@@ -19,7 +20,7 @@ flowchart TD
     REQUEST["Page request"] --> PAGE{"Live mode and usable page cache?"}
     PAGE -->|Yes| RETURN["Return cached page"]
     PAGE -->|No| RENDER["Render page"]
-    RENDER --> ASSET{"Component cache enabled and output still valid?"}
+    RENDER --> ASSET{"Component has a reusable cached result?"}
     ASSET -->|Yes| REUSE["Reuse asset"]
     ASSET -->|No| BUILD["Generate asset from current sources"]
     REUSE --> RESULT["Return page with asset URLs"]
@@ -44,16 +45,21 @@ implemented, including when `development.reload` is `true`.
 
 With component caching enabled:
 
-- Editing an existing JavaScript dependency causes esbuild to rebuild when next
-  rendered. A module reload also forces the next esbuild build.
-- Editing an image causes it to be regenerated when next rendered. Unchanged
-  images remain reusable after a module reload.
-- With no changes, generated assets are reused. Reading and checking files still
-  happens, but compilation or image transformation is avoided.
+- **JavaScript and CSS:** a watched source or configuration change reloads the
+  module. The next page request rebuilds the bundle. Until then, esbuild reuses
+  its saved URL without checking the files on every request.
+- **Images:** the next render checks for source changes and regenerates the image
+  if needed. Unchanged images can still be reused after a module reload.
 
-Watch reloads YAML and templates as well as the listed resources. Restart the
-process after changing package configuration. For esbuild dependency changes
-outside the recorded build inputs, see [build validation](ESBUILD.md#build-and-cache-lifecycle).
+The example includes `resources`, which is not watched by default. Add any other
+source or configuration directories your builds use. If you edit files outside
+those directories, or turn watching off, restart HyperBricks to pick up changes.
+An explicit module reload also works where your runtime provides it.
+Restart after changing `package.hyperbricks.yaml` itself.
+
+Generated assets stay on disk; the browser fetches them separately from the page.
+If you manually change or delete generated esbuild files, restart HyperBricks so
+it can check them and rebuild as needed. Cached page renders do not repair them.
 
 ## Cache JavaScript and give changed builds a new URL
 
@@ -146,4 +152,4 @@ remaining protection and image grace.
 For detailed options, see [Native esbuild](ESBUILD.md) and [Images](IMAGES.md).
 Generation errors are reported rather than silently returning an old successful
 result. If an external API stores image URLs, refresh those references as shown
-in [catalog-store](https://github.com/hyperbricks/hyperbricks/blob/v1.3.2-beta/modules/catalog-store/README.md).
+in [catalog-store](https://github.com/hyperbricks/hyperbricks/blob/v1.3.3-beta/modules/catalog-store/README.md).

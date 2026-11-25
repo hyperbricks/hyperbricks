@@ -1,11 +1,9 @@
 package component
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"runtime/debug"
@@ -30,14 +28,7 @@ type esbuildManifest struct {
 	Outputs map[string]esbuildFingerprint `json:"outputs"`
 }
 
-func (s esbuildSpec) engineIdentity(ctx context.Context) (string, error) {
-	if s.Binary != "" {
-		version, err := exec.CommandContext(ctx, s.Binary, "--version").CombinedOutput()
-		if err != nil {
-			return "", fmt.Errorf("esbuild binary version: %w: %s", err, version)
-		}
-		return "external:" + strings.TrimSpace(string(version)), nil
-	}
+func esbuildEngineIdentity() string {
 	version := esbuildEmbeddedVersion
 	if info, ok := debug.ReadBuildInfo(); ok {
 		for _, dep := range info.Deps {
@@ -50,7 +41,7 @@ func (s esbuildSpec) engineIdentity(ctx context.Context) (string, error) {
 			}
 		}
 	}
-	return "embedded:" + version, nil
+	return "embedded:" + version
 }
 
 func (s esbuildSpec) outputStem() string {
@@ -146,10 +137,8 @@ func (s *esbuildStore) restore(p *PreparedEsbuild, engine string) *esbuildResult
 	if manifest.Version != esbuildManifestVersion || manifest.Key != p.key || manifest.Engine != engine || !reflect.DeepEqual(manifest.Spec, p.spec) || !p.spec.validEntryOutput(manifest.Entry) {
 		return nil
 	}
-	if !manifest.Inputs[p.spec.Entry].Exists || !manifest.Outputs[manifest.Entry].Exists {
-		return nil
-	}
-	if p.spec.Binary != "" && !manifest.Inputs[p.spec.Binary].Exists {
+	entry, err := p.spec.entryInput()
+	if err != nil || !manifest.Inputs[entry].Exists || !manifest.Outputs[manifest.Entry].Exists {
 		return nil
 	}
 	for path := range manifest.Inputs {

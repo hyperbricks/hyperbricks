@@ -43,7 +43,7 @@ func protectRuntimeAsset(path string) bool {
 	if commands.RenderStatic || runtimeAssetRequests.Load() > 0 {
 		return true
 	}
-	root := getHyperBricksConfiguration().Directories["static"]
+	root := runtimeStaticDirectory()
 	root, _ = filepath.Abs(root)
 	// Image ownership uses the resolved output root (macOS /var is a symlink).
 	// Compare canonical paths when deriving the public URL for cache protection.
@@ -95,7 +95,7 @@ func assetRequestMiddleware(next http.Handler) http.Handler {
 					}
 				}
 				if pendingImages {
-					if err := images.ReconcileAssets(filepath.Join(getHyperBricksConfiguration().Directories["static"], "images"), nil); err != nil {
+					if err := images.ReconcileAssets(filepath.Join(runtimeStaticDirectory(), "images"), nil); err != nil {
 						logging.GetLogger().Errorw("Generated image cleanup failed", "error", err)
 					}
 				}
@@ -106,6 +106,11 @@ func assetRequestMiddleware(next http.Handler) http.Handler {
 }
 
 func closeRuntimeAssets() {
+	// Export owns these sessions through its finish hooks, including failures
+	// during initialization. The operation releases them in one outer defer.
+	if activeStaticExport != nil {
+		return
+	}
 	if images := runtimeImageProcessor(); images != nil {
 		images.CloseAssets()
 	}

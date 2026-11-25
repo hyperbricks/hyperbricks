@@ -96,6 +96,12 @@ func (f *esbuildFlowFixture) write(path, value string) {
 func (f *esbuildFlowFixture) setLabel(value string) {
 	f.write(f.dependency, fmt.Sprintf("export const label = %q;", value))
 }
+func (f *esbuildFlowFixture) reload() {
+	f.t.Helper()
+	if err := PreProcessAndPopulateConfigs(); err != nil {
+		f.t.Fatal(err)
+	}
+}
 func (f *esbuildFlowFixture) request() *httptest.ResponseRecorder {
 	f.t.Helper()
 	w := httptest.NewRecorder()
@@ -168,6 +174,13 @@ func TestEsbuildFlowModeAndCacheMatrix(t *testing.T) {
 							t.Fatal("cached live page unexpectedly ran esbuild")
 						}
 						f.expirePage()
+					}
+					if cached {
+						url, same := f.asset(f.request(), "initial")
+						if url != firstURL || !os.SameFile(unchanged, same) {
+							t.Fatal("warm component cache read changed source before invalidation")
+						}
+						f.reload()
 					}
 					updatedURL, updated := f.asset(f.request(), "updated")
 					if fingerprint == (updatedURL == firstURL) {
@@ -260,6 +273,10 @@ func TestEsbuildFlowFailureAndRecovery(t *testing.T) {
 			f := newEsbuildFlowFixture(t, shared.DEVELOPMENT_MODE, cached, true, false)
 			url, before := f.asset(f.request(), "initial")
 			f.write(f.entry, `import "./missing.js";`)
+			if cached {
+				f.asset(f.request(), "initial")
+				f.reload()
+			}
 			failed := f.request()
 			if count := failed.Header().Get(renderErrorCountHeader); count == "" || count == "0" {
 				t.Fatalf("failed build silently succeeded: %s", failed.Body.String())
@@ -281,6 +298,10 @@ func TestEsbuildFlowConcurrentChangedSource(t *testing.T) {
 			f := newEsbuildFlowFixture(t, shared.DEVELOPMENT_MODE, cached, true, false)
 			initialURL, _ := f.asset(f.request(), "initial")
 			f.setLabel("concurrent")
+			if cached {
+				f.asset(f.request(), "initial")
+				f.reload()
+			}
 			const count = 12
 			replies := make(chan *httptest.ResponseRecorder, count)
 			for i := 0; i < count; i++ {
@@ -350,6 +371,8 @@ func TestEsbuildFlowDevelopmentFixedURLDoesNotReturnStaleNotModified(t *testing.
 		t.Fatal("static response missing modification time")
 	}
 	f.setLabel("updated")
+	f.asset(f.request(), "initial")
+	f.reload()
 	f.asset(f.request(), "updated")
 	// HTTP modification dates have second precision. Simulate two different
 	// publications within the same tick of a filesystem/browser cache clock.

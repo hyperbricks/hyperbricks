@@ -1,6 +1,7 @@
 package component
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -40,6 +41,9 @@ type imageHistory struct {
 type imageStore struct {
 	mu                sync.Mutex
 	root, historyPath string
+	legacyHistoryPath string
+	historySource     string
+	treeRoot          string
 	history           imageHistory
 	loaded            bool
 	active            map[string]imagePolicy
@@ -84,6 +88,74 @@ func imageGroup(src string, width, height, quality int, multiple bool) (string, 
 // NewImageProcessor shares generation ownership across IMAGE and IMAGES.
 // Zero-value processors remain usable for component consumers.
 func NewImageProcessor() *ImageProcessor { return &ImageProcessor{} }
+
+// SetOutputRoot binds generated image destinations to an operation's output
+// tree. Source paths remain authored paths. Configure it before acquiring any
+// image store or session so publication, ownership and cleanup share one root.
+func (p *ImageProcessor) SetOutputRoot(sourceStatic, outputStatic string) error {
+	if strings.TrimSpace(sourceStatic) == "" || strings.TrimSpace(outputStatic) == "" {
+		return fmt.Errorf("image source and output static roots are required")
+	}
+	roots := []string{sourceStatic, outputStatic}
+	authoredStatic := ""
+	for i, root := range roots {
+		absolute, err := filepath.Abs(root)
+		if err != nil {
+			return err
+		}
+		if i == 0 {
+			authoredStatic = absolute
+		}
+		roots[i], err = esbuildExistingPath(absolute)
+		if err != nil {
+			return err
+		}
+	}
+	sourceStatic, outputStatic = roots[0], roots[1]
+	if sourceStatic != outputStatic && (esbuildOutputPath(sourceStatic, outputStatic) == nil || esbuildOutputPath(outputStatic, sourceStatic) == nil) {
+		return fmt.Errorf("image source and output static roots must not overlap")
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.sourceStatic == sourceStatic && p.outputStatic == outputStatic {
+		p.authoredStatic = authoredStatic
+		return nil
+	}
+	if len(p.stores) != 0 {
+		return fmt.Errorf("image output root must be configured before asset preparation")
+	}
+	p.sourceStatic, p.authoredStatic, p.outputStatic = sourceStatic, authoredStatic, outputStatic
+	return nil
+}
+
+// Redirect reads of exported static inputs without changing authored identities
+// used by image groups, owners, filenames, or public URLs.
+func (p *ImageProcessor) sourcePath(path string) (string, error) {
+	p.mu.Lock()
+	source, authored, output := p.sourceStatic, p.authoredStatic, p.outputStatic
+	p.mu.Unlock()
+	if output == "" || output == source {
+		return path, nil
+	}
+	absolute, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	for _, root := range []string{authored, source} {
+		if mapped, ok := esbuildMapRoot(absolute, root, output); ok {
+			return mapped, nil
+		}
+	}
+	resolved, err := esbuildExistingPath(absolute)
+	if err != nil {
+		return "", err
+	}
+	if mapped, ok := esbuildMapRoot(resolved, source, output); ok {
+		return mapped, nil
+	}
+	return path, nil
+}
+
 func (p *ImageProcessor) storeFor(dest string) (*imageStore, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -94,6 +166,22 @@ func (p *ImageProcessor) storeFor(dest string) (*imageStore, error) {
 	root, err = esbuildExistingPath(root)
 	if err != nil {
 		return nil, err
+	}
+	if p.outputStatic != "" {
+		if esbuildOutputPath(p.sourceStatic, root) == nil {
+			relative, err := filepath.Rel(p.sourceStatic, root)
+			if err != nil {
+				return nil, err
+			}
+			root = filepath.Join(p.outputStatic, relative)
+		}
+		if err := esbuildOutputPath(p.outputStatic, root); err != nil {
+			return nil, fmt.Errorf("image destination outside configured output: %w", err)
+		}
+		root, err = esbuildExistingPath(root)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if p.stores == nil {
 		p.stores = map[string]*imageStore{}
@@ -109,19 +197,34 @@ func (p *ImageProcessor) storeFor(dest string) (*imageStore, error) {
 		}
 		cache = filepath.Join(cache, "hyperbricks", "images")
 	}
-	cache, err = filepath.Abs(cache)
-	if err != nil {
-		return nil, err
+	ownership := p.ownershipDir
+	if ownership == "" {
+		ownership, err = assetOwnershipDirectory("images")
+		if err != nil {
+			return nil, err
+		}
 	}
-	resolved, err := esbuildExistingPath(cache)
-	if err != nil {
-		return nil, err
-	}
-	if esbuildOutputPath(root, resolved) == nil {
-		return nil, fmt.Errorf("image ownership storage must be outside generated images")
+	paths := []*string{&cache, &ownership}
+	for _, path := range paths {
+		*path, err = filepath.Abs(*path)
+		if err != nil {
+			return nil, err
+		}
+		resolved, err := esbuildExistingPath(*path)
+		if err != nil {
+			return nil, err
+		}
+		if root == resolved || esbuildOutputPath(root, resolved) == nil {
+			return nil, fmt.Errorf("image ownership storage must be outside generated images")
+		}
 	}
 	hash := sha256.Sum256([]byte(root))
-	s := &imageStore{root: root, historyPath: filepath.Join(cache, hex.EncodeToString(hash[:])+".json"), generated: map[string]bool{}, protect: p.protectOutput, now: time.Now}
+	filename := hex.EncodeToString(hash[:]) + ".json"
+	treeRoot := p.outputStatic
+	if treeRoot == "" {
+		treeRoot = filepath.Dir(root)
+	}
+	s := &imageStore{root: root, treeRoot: treeRoot, historyPath: filepath.Join(ownership, filename), legacyHistoryPath: filepath.Join(cache, filename), generated: map[string]bool{}, protect: p.protectOutput, now: time.Now}
 	p.stores[root] = s
 	return s, nil
 }
@@ -129,14 +232,19 @@ func (s *imageStore) lock() (func(), error) {
 	if s.unlock != nil {
 		return func() {}, nil
 	}
-	return lockAssetFile(s.historyPath+".lock", "image")
+	return LockAssetSession(s.root, "image")
 }
 func (s *imageStore) load() error {
 	if s.loaded {
 		return nil
 	}
 	h := imageHistory{Version: 1, Root: s.root, Owners: map[string]*imageOwnerRecord{}}
-	data, err := os.ReadFile(s.historyPath)
+	source := s.historyPath
+	data, err := os.ReadFile(source)
+	if os.IsNotExist(err) && s.legacyHistoryPath != s.historyPath {
+		source = s.legacyHistoryPath
+		data, err = os.ReadFile(source)
+	}
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
@@ -160,7 +268,45 @@ func (s *imageStore) load() error {
 		}
 	}
 	s.history = h
+	s.historySource = source
 	s.loaded = true
+	return nil
+}
+
+// Only callers already holding this root's write gate may migrate ownership.
+// Copy readers use load, which never creates or changes a history file.
+func (s *imageStore) loadForMutation() error {
+	if err := s.load(); err != nil {
+		return err
+	}
+	if s.historySource == s.historyPath {
+		return nil
+	}
+	if _, err := os.Lstat(s.historyPath); err == nil {
+		// Another operation published canonical ownership after a read-only load.
+		s.loaded = false
+		return s.load()
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	if info, err := os.Lstat(s.legacyHistoryPath); os.IsNotExist(err) {
+		return nil
+	} else if err != nil {
+		return err
+	} else if !info.Mode().IsRegular() {
+		return fmt.Errorf("image ownership migration requires a regular history file")
+	}
+	data, err := json.Marshal(s.history)
+	if err != nil {
+		return err
+	}
+	if err := writeAssetHistory(s.historyPath, data, false, ".hb-image-history-*"); err != nil {
+		return err
+	}
+	if err := os.Remove(s.legacyHistoryPath); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	s.historySource = s.historyPath
 	return nil
 }
 func validImageName(name string) bool {
@@ -220,7 +366,11 @@ func (s *imageStore) save() error {
 	if err != nil {
 		return err
 	}
-	return writeAssetHistory(s.historyPath, data, len(s.history.Owners) == 0, ".hb-image-history-*")
+	if err := writeAssetHistory(s.historyPath, data, len(s.history.Owners) == 0, ".hb-image-history-*"); err != nil {
+		return err
+	}
+	s.historySource = s.historyPath
+	return nil
 }
 func (s *imageStore) retain(owner, group, name string, policy imagePolicy) error {
 	if active, ok := s.active[owner]; ok {
@@ -352,7 +502,7 @@ func (s *imageStore) prune() (failure error) {
 	s.pending.Store(pending)
 	return nil
 }
-func (s *imageStore) updateGroup(group string, members map[string]imagePolicy) error {
+func (s *imageStore) updateGroup(ctx context.Context, group string, members map[string]imagePolicy) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	unlock, err := s.lock()
@@ -360,7 +510,15 @@ func (s *imageStore) updateGroup(group string, members map[string]imagePolicy) e
 		return err
 	}
 	defer unlock()
-	if err := s.load(); err != nil {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	unlockTree, err := LockAssetTree(ctx, s.treeRoot, false)
+	if err != nil {
+		return err
+	}
+	defer unlockTree()
+	if err := s.loadForMutation(); err != nil {
 		return err
 	}
 	if s.active == nil {
@@ -432,7 +590,11 @@ func (p *ImageProcessor) DiscoverImages(single *SingleImageConfig, multiple *Mul
 		if multiple.Width < 0 || multiple.Height < 0 || multiple.Quality < 0 || multiple.Quality > 100 {
 			return nil, fmt.Errorf("invalid image dimensions or quality")
 		}
-		files, err := os.ReadDir(multiple.Directory)
+		directory, err := p.sourcePath(multiple.Directory)
+		if err != nil {
+			return nil, err
+		}
+		files, err := os.ReadDir(directory)
 		if err != nil {
 			return nil, err
 		}
@@ -483,7 +645,12 @@ func (p *ImageProcessor) ReconcileAssets(dest string, active map[string]imagePol
 		return err
 	}
 	defer unlock()
-	if err := s.load(); err != nil {
+	unlockTree, err := LockAssetTree(context.Background(), s.treeRoot, false)
+	if err != nil {
+		return err
+	}
+	defer unlockTree()
+	if err := s.loadForMutation(); err != nil {
 		return err
 	}
 	if active != nil {
@@ -493,6 +660,56 @@ func (p *ImageProcessor) ReconcileAssets(dest string, active map[string]imagePol
 		}
 	}
 	return s.prune()
+}
+
+// ResetAssetsForFreshExport discards this destination's previous ownership
+// before a new export adopts copied input files. It never removes image files
+// or releases the export's already acquired session.
+func (p *ImageProcessor) ResetAssetsForFreshExport(ctx context.Context, dest string) error {
+	p.mu.Lock()
+	export := p.sourceStatic != "" && p.outputStatic != p.sourceStatic
+	p.mu.Unlock()
+	if !export {
+		return fmt.Errorf("image ownership reset requires a separate export output root")
+	}
+	s, err := p.storeFor(dest)
+	if err != nil {
+		return err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	unlock, err := s.lock()
+	if err != nil {
+		return err
+	}
+	defer unlock()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	unlockTree, err := LockAssetTree(ctx, s.treeRoot, false)
+	if err != nil {
+		return err
+	}
+	defer unlockTree()
+	for _, path := range []string{s.historyPath, s.legacyHistoryPath} {
+		if info, err := os.Lstat(path); err == nil && !info.Mode().IsRegular() {
+			return fmt.Errorf("image ownership reset requires a regular history file")
+		} else if err != nil && !os.IsNotExist(err) {
+			return err
+		}
+	}
+	for _, path := range []string{s.historyPath, s.legacyHistoryPath} {
+		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+	}
+	s.history = imageHistory{Version: 1, Root: s.root, Owners: map[string]*imageOwnerRecord{}}
+	s.historySource = s.historyPath
+	s.loaded = true
+	s.active = nil
+	s.generated = map[string]bool{}
+	s.pending.Store(false)
+	return nil
 }
 func (p *ImageProcessor) SetAssetProtection(protect func(string) bool) {
 	p.mu.Lock()

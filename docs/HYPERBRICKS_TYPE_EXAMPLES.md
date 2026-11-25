@@ -487,7 +487,7 @@ example_menu:
 ```yaml
 # Esbuild: entry and outfile are required. The entry must exist; outfile must
 # resolve inside static. Mount in a page head to render its asset tag.
-# The embedded Go API is the default; no external esbuild executable is required.
+# HyperBricks uses the embedded Go API; no separate esbuild executable is used.
 example_esbuild_js:
   - type: esbuild
   - entry: # Required source reference.

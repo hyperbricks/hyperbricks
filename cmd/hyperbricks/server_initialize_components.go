@@ -65,6 +65,9 @@ func registerRenderers() {
 	}
 
 	imageProcessor := component.NewImageProcessor()
+	if activeStaticExport != nil {
+		imageProcessor = activeStaticExport.images
+	}
 	singleImageRenderer := &component.SingleImageRenderer{
 		ImageProcessorInstance: imageProcessor,
 	}
@@ -152,7 +155,11 @@ func registerRenderers() {
 	rm.RegisterComponent(composite.HeadConfigGetName(), headRenderer, reflect.TypeOf(composite.HeadConfig{}))
 	rm.RegisterComponent(component.APIConfigGetName(), apiRenderer, reflect.TypeOf(component.APIConfig{}))
 	rm.RegisterComponent(component.GojaRenderConfigGetName(), &component.GojaRenderer{}, reflect.TypeOf(component.GojaRenderConfig{}))
-	rm.RegisterComponent(component.EsbuildConfigGetName(), component.NewEsbuildRenderer(rm.HbConfig.Directories["static"]), reflect.TypeOf(component.EsbuildConfig{}))
+	esbuildRenderer := component.NewEsbuildRenderer(rm.HbConfig.Directories["static"])
+	if activeStaticExport != nil {
+		esbuildRenderer = activeStaticExport.renderer
+	}
+	rm.RegisterComponent(component.EsbuildConfigGetName(), esbuildRenderer, reflect.TypeOf(component.EsbuildConfig{}))
 }
 
 func linkRendererResources() {

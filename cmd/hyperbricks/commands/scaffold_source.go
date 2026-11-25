@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -11,7 +12,9 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"time"
 
+	"github.com/hyperbricks/hyperbricks/pkg/component"
 	"github.com/hyperbricks/hyperbricks/pkg/shared"
 	yamlparser "github.com/hyperbricks/hyperbricks/pkg/yaml-parser"
 	"go.yaml.in/yaml/v4"
@@ -378,6 +381,22 @@ func (p *scaffoldPlan) verify() error {
 	return nil
 }
 func (p *scaffoldPlan) apply() error {
+	// A static copy must see the whole scaffold publication, including cleanup
+	// of the private staging files, on one side of its read lock.
+	static := p.module.Directories["static"]
+	for _, file := range p.Files {
+		rel, err := filepath.Rel(static, file.Path)
+		if err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			unlock, err := component.LockAssetTree(ctx, static, false)
+			if err != nil {
+				return err
+			}
+			defer unlock()
+			break
+		}
+	}
 	if err := p.verify(); err != nil {
 		return err
 	}

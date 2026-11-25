@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -15,6 +14,7 @@ import (
 func esbuildRestart(r *EsbuildRenderer) *EsbuildRenderer {
 	next := NewEsbuildRenderer(r.store.staticDir)
 	next.store.cacheDir = r.store.cacheDir
+	next.store.ownershipDir = r.store.ownershipDir
 	next.Invalidate() // The real module loader does this before its first Prepare.
 	return next
 }
@@ -142,6 +142,7 @@ func TestEsbuildFingerprintCSSAndAuxiliaryInvalidation(t *testing.T) {
 		}
 	}
 	esbuildWrite(t, fontSource, "updated font")
+	r.Invalidate()
 	second := esbuildRender(t, p)
 	if second == first || esbuildRead(t, firstPath) != css || esbuildRead(t, fonts[0]) != "original font" {
 		t.Fatal("font edit did not create a new, independently usable CSS generation")
@@ -264,8 +265,10 @@ func TestEsbuildPrivatePersistenceAndUnavailableCache(t *testing.T) {
 			if name == "unavailable" {
 				esbuildWrite(t, r.store.cacheDir+"/file", "not a directory")
 				r.store.cacheDir = filepath.Join(r.store.cacheDir, "file", "cache")
+				r.store.ownershipDir = r.store.cacheDir
 			} else if name == "inside static" {
 				r.store.cacheDir = filepath.Join(r.store.staticDir, "cache")
+				r.store.ownershipDir = r.store.cacheDir
 			} else if name == "relative inside static" {
 				cwd, err := os.Getwd()
 				if err != nil {
@@ -276,6 +279,7 @@ func TestEsbuildPrivatePersistenceAndUnavailableCache(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
+			r.store.ownershipDir = r.store.cacheDir
 			p := r.Prepare(cfg)
 			if name != "private" {
 				if _, errs := p.Render(context.Background()); len(errs) == 0 {
@@ -310,41 +314,13 @@ func TestEsbuildPrivatePersistenceAndUnavailableCache(t *testing.T) {
 	}
 }
 
-func TestEsbuildFingerprintExternalParityAndRestart(t *testing.T) {
-	binary := os.Getenv("ESBUILD_TEST_BINARY")
-	if binary == "" {
-		t.Skip("set ESBUILD_TEST_BINARY to verify the external engine")
-	}
+func TestEsbuildFingerprintCSSSiblingAndRestart(t *testing.T) {
 	r, cfg := esbuildFixture(t)
 	cfg.Enclose, cfg.Fingerprint, cfg.Sourcemap = "", true, true
 	esbuildWrite(t, cfg.Entry, `import "./site.css"; console.log("JS with CSS");`)
 	esbuildWrite(t, filepath.Join(filepath.Dir(cfg.Entry), "site.css"), `body { color: red; }`)
-	first := esbuildRender(t, r.Prepare(cfg))
-	mainPath := esbuildURLPath(t, r, first)
-	mainBytes := esbuildRead(t, mainPath)
-	mainMapBytes := esbuildRead(t, mainPath+".map")
-	cfg.Binary = binary
-	second := esbuildRender(t, r.Prepare(cfg))
-	secondPath := esbuildURLPath(t, r, second)
-	// The external engine hashes its source map before we rebase source labels
-	// from the staging directory. Hash spellings may differ between engines.
-	normalize := func(data, path string) string {
-		return strings.ReplaceAll(data, filepath.Base(path)+".map", "entry.js.map")
-	}
-	if normalize(esbuildRead(t, secondPath), secondPath) != normalize(mainBytes, mainPath) {
-		t.Fatal("engines produce different JavaScript")
-	}
-	var embeddedMap, externalMap interface{}
-	if err := json.Unmarshal([]byte(mainMapBytes), &embeddedMap); err != nil {
-		t.Fatal(err)
-	}
-	if err := json.Unmarshal([]byte(esbuildRead(t, secondPath+".map")), &externalMap); err != nil {
-		t.Fatal(err)
-	}
-	if !reflect.DeepEqual(embeddedMap, externalMap) {
-		t.Fatal("engines produce different rebased source maps")
-	}
 	p := r.Prepare(cfg)
+	publicURL := esbuildRender(t, p)
 	result := r.store.results[p.key]
 	cssCount := 0
 	for path := range result.outputs {
@@ -353,19 +329,20 @@ func TestEsbuildFingerprintExternalParityAndRestart(t *testing.T) {
 			if !strings.Contains(esbuildRead(t, path), "red") || !strings.Contains(esbuildRead(t, path), "sourceMappingURL="+filepath.Base(path)+".map") {
 				t.Fatal("broken sibling CSS output")
 			}
+			esbuildRead(t, path+".map")
 		}
 	}
 	if cssCount != 1 {
 		t.Fatalf("expected one generated CSS sibling, got %d", cssCount)
 	}
 	next := esbuildRestart(r)
-	if got := esbuildRender(t, next.Prepare(cfg)); got != second || next.store.buildCount != 0 {
-		t.Fatal("external build did not survive restart")
+	if got := esbuildRender(t, next.Prepare(cfg)); got != publicURL || next.store.buildCount != 0 {
+		t.Fatal("build did not survive restart")
 	}
 	cfg.Cache = false
 	for i := 0; i < 3; i++ {
-		if got := esbuildRender(t, next.Prepare(cfg)); got != second {
-			t.Fatalf("external URL depends on its temporary directory: %s, expected %s", got, second)
+		if got := esbuildRender(t, next.Prepare(cfg)); got != publicURL {
+			t.Fatalf("identical build URL changed: %s, expected %s", got, publicURL)
 		}
 	}
 }

@@ -13,74 +13,67 @@ import (
 )
 
 func TestEsbuildLowercaseEntryHashes(t *testing.T) {
-	engines := []struct{ name, binary string }{{name: "embedded"}}
-	if binary := os.Getenv("ESBUILD_TEST_BINARY"); binary != "" {
-		engines = append(engines, struct{ name, binary string }{"external", binary})
-	}
-	for _, engine := range engines {
-		for _, kind := range []string{"js", "css"} {
-			t.Run(engine.name+"/"+kind, func(t *testing.T) {
-				r, cfg := esbuildFixture(t)
-				cfg.Fingerprint, cfg.Sourcemap, cfg.Enclose = true, true, ""
-				cfg.Binary = engine.binary
-				cfg.Outfile = filepath.Join(r.store.staticDir, "Public Assets", "App Bundle."+kind)
-				css := filepath.Join(filepath.Dir(cfg.Entry), "style.css")
-				esbuildWrite(t, css, `body { color: red; }`)
-				if kind == "js" {
-					esbuildWrite(t, cfg.Entry, `import "./style.css"; console.log("Keep THIS Capitalized");`)
-				} else {
-					cfg.Entry = css
+	for _, kind := range []string{"js", "css"} {
+		t.Run(kind, func(t *testing.T) {
+			r, cfg := esbuildFixture(t)
+			cfg.Fingerprint, cfg.Sourcemap, cfg.Enclose = true, true, ""
+			cfg.Outfile = filepath.Join(r.store.staticDir, "Public Assets", "App Bundle."+kind)
+			css := filepath.Join(filepath.Dir(cfg.Entry), "style.css")
+			esbuildWrite(t, css, `body { color: red; }`)
+			if kind == "js" {
+				esbuildWrite(t, cfg.Entry, `import "./style.css"; console.log("Keep THIS Capitalized");`)
+			} else {
+				cfg.Entry = css
+			}
+			p := r.Prepare(cfg)
+			publicURL := esbuildRender(t, p)
+			entry := esbuildURLPath(t, r, publicURL)
+			result := r.store.results[p.key]
+			entries := 0
+			for path := range result.outputs {
+				if filepath.Ext(path) != ".js" && filepath.Ext(path) != ".css" {
+					continue
 				}
-				p := r.Prepare(cfg)
-				publicURL := esbuildRender(t, p)
-				entry := esbuildURLPath(t, r, publicURL)
-				result := r.store.results[p.key]
-				entries := 0
-				for path := range result.outputs {
-					if filepath.Ext(path) != ".js" && filepath.Ext(path) != ".css" {
-						continue
-					}
-					entries++
-					hash := strings.TrimSuffix(strings.TrimPrefix(filepath.Base(path), "App Bundle."), filepath.Ext(path))
-					if hash == "" || hash != strings.ToLower(hash) || !strings.HasPrefix(filepath.Base(path), "App Bundle.") || filepath.Base(filepath.Dir(path)) != "Public Assets" {
-						t.Fatalf("hash not lowercase or authored casing changed: %s", path)
-					}
-					mapURL := (&url.URL{Path: filepath.Base(path) + ".map"}).EscapedPath()
-					if !strings.Contains(esbuildRead(t, path), "sourceMappingURL="+mapURL) {
-						t.Fatal("source-map link has the wrong casing or escaping")
-					}
-					esbuildRead(t, path+".map")
-					// Check actual directory entries too; reads alone miss casing bugs
-					// on a case-insensitive developer filesystem.
-					files, err := os.ReadDir(filepath.Dir(path))
-					if err != nil {
-						t.Fatal(err)
-					}
-					found, foundMap := false, false
-					for _, file := range files {
-						found = found || file.Name() == filepath.Base(path)
-						foundMap = foundMap || file.Name() == filepath.Base(path)+".map"
-					}
-					if !found || !foundMap {
-						t.Fatalf("actual filenames do not match the returned URL: %s", path)
-					}
+				entries++
+				hash := strings.TrimSuffix(strings.TrimPrefix(filepath.Base(path), "App Bundle."), filepath.Ext(path))
+				if hash == "" || hash != strings.ToLower(hash) || !strings.HasPrefix(filepath.Base(path), "App Bundle.") || filepath.Base(filepath.Dir(path)) != "Public Assets" {
+					t.Fatalf("hash not lowercase or authored casing changed: %s", path)
 				}
-				want := 1
-				if kind == "js" {
-					want = 2 // A JS entry's CSS sibling must be normalized as well.
-					if !strings.Contains(esbuildRead(t, entry), "Keep THIS Capitalized") {
-						t.Fatal("application content was lowercased")
-					}
+				mapURL := (&url.URL{Path: filepath.Base(path) + ".map"}).EscapedPath()
+				if !strings.Contains(esbuildRead(t, path), "sourceMappingURL="+mapURL) {
+					t.Fatal("source-map link has the wrong casing or escaping")
 				}
-				if entries != want {
-					t.Fatalf("entry count = %d, want %d", entries, want)
+				esbuildRead(t, path+".map")
+				// Check actual directory entries too; reads alone miss casing bugs
+				// on a case-insensitive developer filesystem.
+				files, err := os.ReadDir(filepath.Dir(path))
+				if err != nil {
+					t.Fatal(err)
 				}
-				next := esbuildRestart(r)
-				if got := esbuildRender(t, next.Prepare(cfg)); got != publicURL || next.store.buildCount != 0 {
-					t.Fatal("lowercase build did not survive restart")
+				found, foundMap := false, false
+				for _, file := range files {
+					found = found || file.Name() == filepath.Base(path)
+					foundMap = foundMap || file.Name() == filepath.Base(path)+".map"
 				}
-			})
-		}
+				if !found || !foundMap {
+					t.Fatalf("actual filenames do not match the returned URL: %s", path)
+				}
+			}
+			want := 1
+			if kind == "js" {
+				want = 2 // A JS entry's CSS sibling must be normalized as well.
+				if !strings.Contains(esbuildRead(t, entry), "Keep THIS Capitalized") {
+					t.Fatal("application content was lowercased")
+				}
+			}
+			if entries != want {
+				t.Fatalf("entry count = %d, want %d", entries, want)
+			}
+			next := esbuildRestart(r)
+			if got := esbuildRender(t, next.Prepare(cfg)); got != publicURL || next.store.buildCount != 0 {
+				t.Fatal("lowercase build did not survive restart")
+			}
+		})
 	}
 }
 
@@ -123,7 +116,7 @@ func TestEsbuildLowercaseRejectsPreviousManifest(t *testing.T) {
 	r, cfg := esbuildFixture(t)
 	cfg.Enclose, cfg.Fingerprint, cfg.Sourcemap = "", true, true
 	p := r.Prepare(cfg)
-	outputs, meta, err := p.spec.compile(context.Background(), false)
+	outputs, meta, err := p.spec.compile(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,10 +132,7 @@ func TestEsbuildLowercaseRejectsPreviousManifest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	engine, err := p.spec.engineIdentity(context.Background())
-	if err != nil {
-		t.Fatal(err)
-	}
+	engine := esbuildEngineIdentity()
 	manifest := esbuildManifest{Version: esbuildManifestVersion - 1, Key: p.key, Engine: engine, Spec: p.spec, Entry: oldEntry, Inputs: inputs, Outputs: make(map[string]esbuildFingerprint)}
 	for path, data := range outputs {
 		esbuildWrite(t, path, string(data))

@@ -1,5 +1,38 @@
 # Changelog
 
+## v1.3.3-beta
+
+Changes since `v1.3.2-beta`.
+
+### Language server
+
+- Fix incorrect child-placement errors for component configurations inside plugin
+  `data`, including configurations using imports and inheritance.
+
+### Asset caching and export
+
+- With esbuild `cache: true`, reuse completed builds without checking asset files
+  on every page render. After a restart, files are still checked before reuse.
+- Export scripts, styles and images into `rendered/static/` without changing
+  development assets. Components that use earlier generated files read the
+  export's version. Public asset URLs stay the same.
+- Prevent competing processes from writing to the same asset or export directory.
+  Reject unsafe export destinations before clearing files.
+- Copy symlinked files into static exports so the exported site does not depend
+  on the original targets.
+- Keep generated-file cleanup records available when cache-directory settings
+  change, and migrate records from the previous configured location on upgrade.
+
+### Compatibility
+
+- Cached esbuild output is reused until the build cache is cleared, for example
+  by a module reload. Include source and configuration directories in
+  `development.watch_dirs`. If watching is disabled or files change outside those
+  directories, restart HyperBricks or use an available explicit module reload.
+- Remove `binary` from esbuild component configuration. HyperBricks now always uses
+  its built-in compiler. The `external` import option and `binary` asset loader
+  remain supported.
+
 ## v1.3.2-beta
 
 ### Platform compatibility
